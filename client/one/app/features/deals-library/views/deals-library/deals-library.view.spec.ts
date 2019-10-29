@@ -15,7 +15,7 @@ describe('DealsLibraryView', () => {
 
     beforeEach(() => {
         ajs$locationStub = {
-            search: () => {},
+            search: () => '',
         };
         TestBed.configureTestingModule({
             declarations: [DealsLibraryView],

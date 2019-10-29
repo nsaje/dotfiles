@@ -188,8 +188,17 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     }
 
     setActiveEntity(entity: Partial<Deal>): void {
-        const emptyEntity = new DealsLibraryStoreState().activeEntity.entity;
-        this.patchState({...emptyEntity, ...entity}, 'activeEntity', 'entity');
+        const emptyActiveEntity = new DealsLibraryStoreState().activeEntity;
+        this.setState({
+            ...this.state,
+            activeEntity: {
+                ...emptyActiveEntity,
+                entity: {
+                    ...emptyActiveEntity.entity,
+                    ...entity,
+                },
+            },
+        });
     }
 
     changeActiveEntity(event: ChangeEvent<Deal>): void {
