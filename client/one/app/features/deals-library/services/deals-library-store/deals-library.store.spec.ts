@@ -8,6 +8,7 @@ import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-e
 import {DealsLibraryStoreState} from './deals-library.store.state';
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
+import {DealConnection} from '../../../../core/deals/types/deal-connection';
 
 describe('DealsLibraryStore', () => {
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
@@ -16,6 +17,7 @@ describe('DealsLibraryStore', () => {
     let mockedDeals: Deal[];
     let mockedSources: Source[];
     let mockedAgencyId: string;
+    let mockedConnections: DealConnection[];
 
     beforeEach(() => {
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, [
@@ -90,10 +92,47 @@ describe('DealsLibraryStore', () => {
                 deprecated: false,
             },
         ];
+
+        mockedConnections = [
+            {
+                id: '10000003',
+                account: {},
+                campaign: {},
+                adgroup: {
+                    id: '221391',
+                    name: 'Blog Content [Mobile]',
+                },
+            },
+            {
+                id: '10000002',
+                account: {},
+                campaign: {
+                    id: '215744',
+                    name: 'New campaign',
+                },
+                adgroup: {},
+            },
+            {
+                id: '10000001',
+                account: {
+                    id: '525',
+                    name: 'Demo account',
+                },
+                campaign: {},
+                adgroup: {},
+            },
+            {
+                id: '10000000',
+                account: {},
+                campaign: {},
+                adgroup: {},
+            },
+        ];
+
         mockedAgencyId = '71';
     });
 
-    it('should correctly initalize store', fakeAsync(() => {
+    it('should correctly initialize store', fakeAsync(() => {
         const mockedOffset = 1;
         const mockedLimit = 10;
         dealsServiceStub.list.and
@@ -178,4 +217,28 @@ describe('DealsLibraryStore', () => {
             ...mockedDeal,
         });
     });
+
+    it('should load active entity connections', fakeAsync(() => {
+        const mockedDeal = clone(mockedDeals[0]);
+        store.setActiveEntity(mockedDeal);
+
+        dealsServiceStub.listConnections.and
+            .returnValue(of(mockedConnections, asapScheduler))
+            .calls.reset();
+        store.loadActiveEntityConnections();
+        tick();
+
+        expect(dealsServiceStub.listConnections).toHaveBeenCalledTimes(1);
+        expect(store.state.activeEntity.connections).toEqual(mockedConnections);
+    }));
+
+    it('should remove connection', fakeAsync(() => {
+        dealsServiceStub.removeConnection.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+        store.deleteActiveEntityConnection(mockedConnections[0].id);
+        tick();
+
+        expect(dealsServiceStub.removeConnection).toHaveBeenCalledTimes(1);
+    }));
 });

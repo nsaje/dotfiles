@@ -255,7 +255,7 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}/connections/${dealConnectionId}/`,
+            }/agencies/${agencyId}/deals/${dealId}/connections/${dealConnectionId}`,
             name: 'removeConnection',
         };
         requestStateUpdater(request.name, {

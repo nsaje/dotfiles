@@ -141,46 +141,51 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         });
     }
 
-    // TODO set methods when activating connections in UI
-    // loadActiveEntityConnections() {
-    //     this.dealsService
-    //         .listConnections(
-    //             this.state.agencyId,
-    //             this.state.activeEntity.entity.id,
-    //             this.requestStateUpdater
-    //         )
-    //         .pipe(takeUntil(this.ngUnsubscribe$))
-    //         .subscribe(
-    //             (connections: DealConnection[]) => {
-    //                 this.patchState(connections, 'activeEntity', 'connections');
-    //             },
-    //             error => {}
-    //         );
-    // }
-    //
-    // deleteActiveEntityConnection(
-    //     dealId: string,
-    //     dealConnectionId: string
-    // ) {
-    //     return new Promise<boolean>(resolve => {
-    //         this.dealsService
-    //             .removeConnection(
-    //                 this.state.agencyId,
-    //                 dealId,
-    //                 dealConnectionId,
-    //                 this.requestStateUpdater
-    //             )
-    //             .pipe(takeUntil(this.ngUnsubscribe$))
-    //             .subscribe(
-    //                 () => {
-    //                     resolve(true);
-    //                 },
-    //                 error => {
-    //                     resolve(false);
-    //                 }
-    //             );
-    //     });
-    // }
+    loadActiveEntityConnections(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.dealsService
+                .listConnections(
+                    this.state.agencyId,
+                    this.state.activeEntity.entity.id,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (connections: DealConnection[]) => {
+                        this.patchState(
+                            connections,
+                            'activeEntity',
+                            'connections'
+                        );
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    deleteActiveEntityConnection(dealConnectionId: string) {
+        return new Promise<void>((resolve, reject) => {
+            this.dealsService
+                .removeConnection(
+                    this.state.agencyId,
+                    this.state.activeEntity.entity.id,
+                    dealConnectionId,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
 
     setActiveEntity(entity: Partial<Deal>): void {
         const emptyEntity = new DealsLibraryStoreState().activeEntity.entity;

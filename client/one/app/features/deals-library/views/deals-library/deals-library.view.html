@@ -14,7 +14,7 @@
             [rowData]="state.entities"
             [columnDefs]="dealsColumnDefs"
             [context]="context"
-            [paginationOptions]="paginationOptions"
+            [paginationOptions]="dealsPaginationOptions"
             [paginationCount]="state.requests.list.count"
             (paginationChange)="onPaginationChange($event)"
         >
@@ -46,11 +46,9 @@
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
-                    class="zem-button zem-button--highlighted .zem-button--loading"
+                    class="zem-button zem-button--highlighted zem-button--loading"
                     disabled
-                >
-                    <span class="loader loader--white"></span>
-                </button>
+                ></button>
                 <button
                     *ngIf="
                         !state.requests.edit.inProgress &&
@@ -70,6 +68,38 @@
                     (click)="editDealModal.close()"
                 >
                     Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
+    <zem-modal
+        #connectionsModal
+        class="zem-modal zem-deals-library__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+        (onClose)="closeConnectionsModal()"
+    >
+        <ng-container *ngIf="connectionsModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ state.activeEntity.entity.name }} ({{ connectionType }})
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <zem-smart-grid
+                    [rowData]="connectionsRowData"
+                    [columnDefs]="connectionsColumnDefs"
+                    [context]="context"
+                    [paginationOptions]="connectionsPaginationOptions"
+                >
+                </zem-smart-grid>
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    class="zem-button zem-button--outlined"
+                    (click)="connectionsModal.close()"
+                >
+                    Close
                 </button>
             </div>
         </ng-container>
