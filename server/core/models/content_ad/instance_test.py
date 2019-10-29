@@ -14,47 +14,10 @@ from . import model
 
 
 class InstanceTest(TestCase):
+    @mock.patch.object(redirector_helper, "update_redirect")
     @mock.patch.object(email_helper, "send_ad_group_notification_email")
     @mock.patch.object(k1_helper, "update_content_ad")
-    def test_set_state(self, mock_k1_update, mock_email_helper):
-        content_ad = magic_mixer.blend(model.ContentAd, state=constants.ContentAdSourceState.INACTIVE)
-        magic_mixer.cycle(10).blend(
-            core.models.content_ad_source.model.ContentAdSource,
-            content_ad=content_ad,
-            state=constants.ContentAdSourceState.INACTIVE,
-        )
-        content_ad.ad_group.write_history = mock.MagicMock()
-
-        content_ad.set_state(None, constants.ContentAdSourceState.ACTIVE)
-        self.assertEqual(constants.ContentAdSourceState.ACTIVE, content_ad.state)
-        for cas in content_ad.contentadsource_set.all():
-            self.assertEqual(constants.ContentAdSourceState.ACTIVE, cas.state)
-        content_ad.ad_group.write_history.assert_called_with(
-            "Content ad %s set to Enabled." % content_ad.pk,
-            action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
-            user=None,
-        )
-        mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
-        # (msuber): email_helper should not be called because
-        # we are calling content_ad.set_state with None as request
-        mock_email_helper.assert_not_called()
-
-    @mock.patch.object(redirector_helper, "update_redirect")
-    def test_set_url(self, mock_update_redirect):
-        content_ad = magic_mixer.blend(model.ContentAd, url="http://what.com")
-        content_ad.ad_group.write_history = mock.MagicMock()
-
-        content_ad.set_url(None, "https://example.com")
-        self.assertEqual("https://example.com", content_ad.url)
-        content_ad.ad_group.write_history.assert_called_with(
-            "Content ad %s url set to https://example.com." % content_ad.pk,
-            action_type=constants.HistoryActionType.CONTENT_AD_EDIT,
-            user=None,
-        )
-        mock_update_redirect.assert_called_with("https://example.com", content_ad.redirect_id)
-
-    @mock.patch.object(k1_helper, "update_content_ad")
-    def test_update(self, mock_k1_update):
+    def test_update(self, mock_k1_update, mock_email_helper, mock_update_redirect):
         content_ad = magic_mixer.blend(model.ContentAd)
         content_ad.ad_group.write_history = mock.MagicMock()
 
@@ -65,6 +28,9 @@ class InstanceTest(TestCase):
         updates["icon_size"] = 200
         updates["document_id"] = 123
         updates["type"] = constants.AdType.CONTENT
+        updates["url"] = "https://example.com"
+        updates["state"] = constants.ContentAdSourceState.INACTIVE
+        updates["archived"] = True
         content_ad.update(None, **updates)
 
         for field in updates:
@@ -73,7 +39,32 @@ class InstanceTest(TestCase):
         content_ad.ad_group.write_history.assert_called_with(
             "Content ad %s edited." % content_ad.pk, action_type=constants.HistoryActionType.CONTENT_AD_EDIT, user=None
         )
-        mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
+
+        content_ad.ad_group.write_history.has_calls(
+            [
+                mock.call(
+                    "Content ad %s url set to https://example.com." % content_ad.pk,
+                    action_type=constants.HistoryActionType.CONTENT_AD_EDIT,
+                    user=None,
+                ),
+                mock.call(
+                    "Content ad %s set to Enabled." % content_ad.pk,
+                    action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
+                    user=None,
+                ),
+                mock.call(
+                    "Content ad %s set to Enabled." % content_ad.pk,
+                    action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
+                    user=None,
+                ),
+            ]
+        )
+        mock_k1_update.assert_has_calls(
+            [mock.call(content_ad, msg="ContentAd.set_state"), mock.call(content_ad, msg="ContentAd.update")]
+        )
+        # (tfischer): email_helper should not be called when passing user=None
+        mock_email_helper.assert_not_called()
+        mock_update_redirect.assert_called_with("https://example.com", content_ad.redirect_id)
 
     @mock.patch.object(k1_helper, "update_content_ad")
     def test_oen_document_data(self, mock_k1_update):

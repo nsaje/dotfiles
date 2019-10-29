@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "analytics",
     "prodops",
     "integrations.bizwire",
+    "integrations.product_feeds",
     "dcron",
     "dev",
     "demo",

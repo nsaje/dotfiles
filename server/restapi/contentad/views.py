@@ -39,16 +39,10 @@ class ContentAdViewDetails(RESTAPIBaseView):
         serializer = serializers.ContentAdSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        state = serializer.validated_data.get("state")
-        if state is not None and state != content_ad.state:
-            content_ad.set_state(request, state)
-
         url = serializer.validated_data.get("url")
         if url is not None and url != content_ad.url:
             if content_ad.ad_group.campaign.account_id not in ACCOUNTS_CAN_EDIT_URL:
                 raise rest_framework.serializers.ValidationError("URL can't be edited via API.")
-            content_ad.set_url(request, url)
-
         if (
             "brand_name" in serializer.validated_data
             and content_ad.ad_group.campaign.account_id not in ACCOUNTS_CAN_EDIT_BRAND_NAME

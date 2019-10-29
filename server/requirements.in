@@ -91,6 +91,8 @@ ua-parser==0.8.0
 
 # rss parser for product sync
 feedparser==5.2.1
+beautifulsoup4==4.8.0
+lxml==4.4.1
 
 # defusedxml for safer xml parsing
 defusedxml==0.5.0
