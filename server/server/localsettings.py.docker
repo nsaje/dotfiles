@@ -395,3 +395,5 @@ try:
     from server.localsettings_docker_override import *  # noqa
 except ImportError:
     pass
+
+LOGGING_FORMATTER = "readable"

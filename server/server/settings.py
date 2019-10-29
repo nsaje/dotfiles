@@ -10,7 +10,6 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 # isort:skip_file
 import copy
 from datetime import timedelta
-import pythonjsonlogger
 import logging
 import structlog
 
@@ -20,6 +19,7 @@ import structlog_sentry
 from secretcrypt import Secret
 
 from dcron import constants as dcron_constants
+import server.logging.trace_id
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -185,7 +185,7 @@ try:
     # Whether to log queries that are above an absolute limit (default: None - disabled)
     QUERY_INSPECT_ABSOLUTE_LIMIT = 1000  # in milliseconds
     # Whether to include tracebacks in the logs (default: False)
-    QUERY_INSPECT_LOG_TRACEBACKS = True
+    QUERY_INSPECT_LOG_TRACEBACKS = False
 except ImportError:
     pass
 
@@ -264,66 +264,59 @@ STATIC_URL = SERVER_STATIC_URL + "/"
 
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_REDIRECT_STDOUTS = False
+
+structlog_shared_chain = [
+    # chain that is common to both structlog log entries and stdlib logging ones
+    structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S"),
+    structlog.stdlib.add_logger_name,
+    structlog.stdlib.add_log_level,
+    server.logging.trace_id.trace_id_processor,
+]
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "standard": {
-            "format": "%(asctime)s [%(levelname)s] %(name)s PID=%(process)d trace_id=%(trace_id)s: %(message)s"
+        "json": {
+            "()": structlog.stdlib.ProcessorFormatter,
+            "processor": structlog.processors.JSONRenderer(),
+            "foreign_pre_chain": structlog_shared_chain,
         },
-        "timestamp": {"format": "%(asctime)s: %(message)s"},
-        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter"},
-    },
-    "filters": {"trace_id": {"()": "server.logging.trace_id_filter.TraceIdFilter"}},
-    "handlers": {
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.WatchedFileHandler",
-            "filename": LOG_FILE,
-            "formatter": "standard",
-            "filters": ["trace_id"],
-        },
-        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "json"},
-        "db_handler": {
-            "level": "INFO",
-            "class": "logging.handlers.WatchedFileHandler",
-            "filename": LOG_FILE,
-            "formatter": "standard",
-            "filters": ["trace_id"],
+        "readable": {
+            "()": structlog.stdlib.ProcessorFormatter,
+            "processor": structlog.dev.ConsoleRenderer(),
+            "foreign_pre_chain": structlog_shared_chain,
         },
     },
+    "handlers": {"console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": LOGGING_FORMATTER}},
     "loggers": {
-        "django.db.backends": {"handlers": ["db_handler"], "level": "INFO", "propagate": False},
-        "newrelic.core.data_collector": {"level": "ERROR"},
-        "django": {"handlers": ["file", "console"], "level": "INFO", "propagate": False},
-        "celery": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
-        "kombu": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
-        "boto": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
-        "requests": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
+        "newrelic.core.data_collector": {"handlers": ["console"], "level": "ERROR"},
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "celery": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "kombu": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "boto": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "requests": {"handlers": ["console"], "level": "WARNING", "propagate": False},
         "qinspect": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
-        "": {"handlers": ["file", "console"], "level": "INFO"},
+        "": {"handlers": ["console"], "level": "INFO"},
     },
 }
 
 structlog.configure(
-    processors=[
-        structlog.stdlib.filter_by_level,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
+    processors=[structlog.stdlib.filter_by_level]
+    + structlog_shared_chain
+    + [
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog_sentry.SentryJsonProcessor(level=logging.WARNING, tag_keys="__all__", as_extra=False),
         structlog.processors.UnicodeDecoder(),
-        structlog.stdlib.render_to_log_kwargs,
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
     context_class=dict,
     logger_factory=structlog.stdlib.LoggerFactory(),
     wrapper_class=structlog.stdlib.BoundLogger,
     cache_logger_on_first_use=True,
 )
-
-CELERYD_LOG_FORMAT = LOGGING["formatters"]["standard"]["format"]
 
 if TESTING:
     DISABLE_SIGNALS = True

@@ -653,6 +653,8 @@ RECAPTCHA_SECRET_KEY = (
 
 METRICS_PUSH_GATEWAY = "pushgateway:8000"
 
+LOGGING_FORMATTER = "json"
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 
@@ -671,3 +673,6 @@ if os.environ.get("IS_RUNSSH"):
 
     # enable some debugging tools
     ENABLE_DEBUG_TOOLBAR = True
+
+    # readable logs
+    LOGGING_FORMATTER = "readable"
