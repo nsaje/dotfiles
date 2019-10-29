@@ -76,22 +76,23 @@
     border-color: @color--danger;
 }
 
-.ng-dropdown-panel.zem-ng-select {
+.ng-dropdown-panel {
     background: white;
     border: 1px solid @border-color--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    line-height: @zem-form-group__line-height--default;
+    z-index: @z-index--popover !important;
 
     .ng-dropdown-panel-items {
         margin-bottom: 0;
         .ng-option {
-            height: @input__height--default;
-
-            &.ng-option-selected {
+            &.ng-option-selected,
+            &.ng-option-selected.ng-option-marked {
                 background-color: @color--lightest-neutral;
             }
 
             &.ng-option-marked {
-                background-color: @color--lightest-neutral;
+                background-color: tint(@color--lightest-neutral, 50%);
             }
         }
     }

@@ -31,6 +31,8 @@ export class DateFormGroupComponent implements OnChanges {
     @Input()
     maxDate: Date;
     @Input()
+    appendTo: 'body';
+    @Input()
     isDisabled: boolean = false;
     @Input()
     isFocused: boolean = false;

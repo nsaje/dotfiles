@@ -1,9 +1,11 @@
 <ng-select
+    #zemSelect
     class="zem-ng-select"
     [ngClass]="{'zem-ng-select--error': hasError}"
     placeholder="{{ placeholder }}"
     bindLabel="{{ bindLabel }}"
     bindValue="{{ bindValue }}"
+    [appendTo]="appendTo"
     [items]="formattedItems"
     [ngModel]="model"
     [disabled]="isDisabled"

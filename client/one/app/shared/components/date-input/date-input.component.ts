@@ -8,8 +8,15 @@ import {
     EventEmitter,
     Output,
     Input,
+    ViewChild,
+    OnDestroy,
+    OnInit,
 } from '@angular/core';
-import {NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
+import {
+    NgbDate,
+    NgbDateParserFormatter,
+    NgbInputDatepicker,
+} from '@ng-bootstrap/ng-bootstrap';
 import {DateInputFormatter} from './date-input.formatter';
 import * as commonHelpers from '../../helpers/common.helpers';
 
@@ -21,13 +28,15 @@ import * as commonHelpers from '../../helpers/common.helpers';
         {provide: NgbDateParserFormatter, useClass: DateInputFormatter},
     ],
 })
-export class DateInputComponent implements OnChanges {
+export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     value: Date;
     @Input('minDate')
     originalMinDate: Date;
     @Input('maxDate')
     originalMaxDate: Date;
+    @Input()
+    appendTo: 'body';
     @Input()
     isDisabled: boolean = false;
     @Input()
@@ -37,9 +46,22 @@ export class DateInputComponent implements OnChanges {
     @Output()
     valueChange = new EventEmitter<Date>();
 
+    @ViewChild('zemDatepicker', {static: false})
+    zemDatepicker: NgbInputDatepicker;
+
     minDate: NgbDate;
     maxDate: NgbDate;
     model: NgbDate;
+
+    private onWindowScrollCallback: any;
+
+    constructor() {
+        this.onWindowScrollCallback = this.onWindowScroll.bind(this);
+    }
+
+    ngOnInit(): void {
+        window.addEventListener('scroll', this.onWindowScrollCallback, true);
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
@@ -53,8 +75,22 @@ export class DateInputComponent implements OnChanges {
         }
     }
 
+    ngOnDestroy(): void {
+        window.removeEventListener('scroll', this.onWindowScrollCallback, true);
+    }
+
     onDateSelect($event: NgbDate) {
         this.valueChange.emit(this.convertFromNgbDateToDate($event));
+    }
+
+    onWindowScroll($event: any): void {
+        if (
+            !commonHelpers.isDefined(this.zemDatepicker) ||
+            !this.zemDatepicker.isOpen()
+        ) {
+            return;
+        }
+        this.zemDatepicker.close();
     }
 
     private convertFromDateToNgbDate(value: Date): NgbDate {

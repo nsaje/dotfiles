@@ -27,6 +27,8 @@ export class SelectFormGroupComponent implements OnChanges {
     @Input()
     bindValue: string;
     @Input()
+    appendTo: 'body';
+    @Input()
     items: any[];
     @Input()
     placeholder: string;
