@@ -14,6 +14,9 @@ class SyncAttemptAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
     fields = ("product_feed", "timestamp", "batches", "ads_skipped", "exception", "dry_run", "items_to_upload")
     readonly_fields = ("product_feed", "timestamp", "batches", "ads_skipped", "exception", "dry_run", "items_to_upload")
     ordering = ("timestamp", "product_feed")
@@ -26,6 +29,7 @@ class ProductFeedAdmin(admin.ModelAdmin):
     list_filter = ("name", "feed_url", "status")
     list_display = ("name", "feed_url", "feed_type", "status", "content_ads_ttl")
     formfield_overrides = {ArrayField: {"widget": Textarea(attrs={"rows": 20, "cols": 45})}}
+    raw_id_fields = ("ad_groups",)
 
     def ingest_and_create_ads_dry_run(self, request, queryset):
         for product_feed in queryset:
