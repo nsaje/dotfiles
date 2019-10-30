@@ -88,11 +88,12 @@
         .ng-option {
             &.ng-option-selected,
             &.ng-option-selected.ng-option-marked {
-                background-color: @color--lightest-neutral;
+                background-color: @color--secondary;
+                color: white;
             }
 
             &.ng-option-marked {
-                background-color: tint(@color--lightest-neutral, 50%);
+                background-color: @color--lightest-neutral;
             }
         }
     }
