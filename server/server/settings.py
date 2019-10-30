@@ -309,7 +309,7 @@ structlog.configure(
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
-        structlog_sentry.SentryJsonProcessor(level=logging.WARNING, tag_keys="__all__", as_extra=False),
+        structlog_sentry.SentryJsonProcessor(level=logging.WARNING),
         structlog.processors.UnicodeDecoder(),
         structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
