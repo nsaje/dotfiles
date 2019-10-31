@@ -570,7 +570,7 @@ class ContentAdsLoader(Loader):
         sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
         if not sspd_status and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
             return constants.ContentAdSubmissionStatus.PENDING, ""
-        elif sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
+        elif sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
             return sspd_status["status"], sspd_status["reason"]
         elif self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
