@@ -24,6 +24,7 @@ OUTBRAIN_SOURCE_SLUG = "outbrain"
 OEN_ACCOUNT_ID = 305
 MSN_SOURCE_ID = 120
 BIZWIRE_CAMPAIGN_ID = 1096
+SOURCES_SSPD_REQUIRED = (120, 170)  # MSN
 
 
 class ContentAdsView(K1APIView):
@@ -298,7 +299,7 @@ class ContentAdSourcesView(K1APIView):
 
         sspd_status = sspd_statuses.get(content_ad_source["id"])
 
-        if not sspd_status:
+        if not sspd_status and content_ad_source["source_id"] in SOURCES_SSPD_REQUIRED:
             metrics_compat.incr("content_ads_source.missing_sspd_status", 1)
             return True
 
