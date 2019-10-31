@@ -453,4 +453,4 @@ DCRON = {
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
 
-sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])
+sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"])
