@@ -15,6 +15,7 @@ import structlog
 
 import sentry_sdk
 import sentry_sdk.integrations.django
+import sentry_sdk.integrations.logging
 import structlog_sentry
 from secretcrypt import Secret
 
@@ -454,3 +455,4 @@ DCRON = {
 }
 
 sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"])
+sentry_sdk.integrations.logging.ignore_logger("restapi.common.exceptions")
