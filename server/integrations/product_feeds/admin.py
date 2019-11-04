@@ -1,6 +1,13 @@
+import json
+
 from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
 from django.forms import Textarea
+from django.utils.safestring import mark_safe
+
+from pygments import highlight
+from pygments.formatters.html import HtmlFormatter
+from pygments.lexers.html import XmlLexer
 
 from . import constants
 from .models import ProductFeed
@@ -17,9 +24,42 @@ class SyncAttemptAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    fields = ("product_feed", "timestamp", "batches", "ads_skipped", "exception", "dry_run", "items_to_upload")
-    readonly_fields = ("product_feed", "timestamp", "batches", "ads_skipped", "exception", "dry_run", "items_to_upload")
-    ordering = ("timestamp", "product_feed")
+    def ads_skipped_prettified(self, instance):
+        response = json.dumps(instance.ads_skipped, indent=1)
+        formatter = HtmlFormatter(style="colorful")
+        response = highlight(response, XmlLexer(), formatter)
+        style = "<style>" + formatter.get_style_defs() + "</style><br>"
+        return mark_safe(style + response)
+
+    def items_to_upload_prettified(self, instance):
+        response = json.dumps(instance.items_to_upload, indent=1)
+        formatter = HtmlFormatter(style="colorful")
+        response = highlight(response, XmlLexer(), formatter)
+        style = "<style>" + formatter.get_style_defs() + "</style><br>"
+        return mark_safe(style + response)
+
+    ads_skipped_prettified.short_description = "items_skipped"
+    items_to_upload_prettified.short_description = "items_uploaded"
+
+    fields = (
+        "timestamp",
+        "product_feed",
+        "batches",
+        "ads_skipped_prettified",
+        "exception",
+        "dry_run",
+        "items_to_upload_prettified",
+    )
+    readonly_fields = (
+        "product_feed",
+        "timestamp",
+        "batches",
+        "ads_skipped_prettified",
+        "exception",
+        "dry_run",
+        "items_to_upload_prettified",
+    )
+    ordering = ("-timestamp", "product_feed")
     search_fields = ("batches__adgroup", "product_feed")
     list_filter = ("product_feed", "timestamp", "dry_run")
     list_display = ("product_feed", "timestamp", "dry_run")

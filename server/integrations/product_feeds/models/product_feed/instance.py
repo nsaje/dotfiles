@@ -43,6 +43,7 @@ class ProductFeedInstanceMixin:
             batch_name = "{}_{}".format(self.name, dates_helper.local_now().strftime("%Y-%m-%d-%H%M"))
             all_parsed_items = []
             skipped_items = []
+            batches = []
 
             for item in all_items:
                 if item.is_empty_element:
@@ -61,21 +62,25 @@ class ProductFeedInstanceMixin:
                     )
                     all_parsed_items.append(parsed_item)
                 except exceptions.ValidationError as e:
-                    skipped_items.append({"item": item, "reason": e})
+                    skipped_items.append({"item": "{}".format(item), "reason": "{}".format(e)})
                     continue
 
             for ad_group in self.ad_groups.filter_active().exclude_archived():
                 items_to_upload = []
                 for item in all_parsed_items:
                     if self._is_ad_already_uploaded(item, ad_group):
-                        skipped_items.append({"item": item, "ad_group": ad_group, "reason": "Item already uploaded."})
+                        skipped_items.append(
+                            {
+                                "item": "{}".format(item),
+                                "ad_group": "{}".format(ad_group),
+                                "reason": "Item already uploaded.",
+                            }
+                        )
                         continue
                     items_to_upload.append(item)
                 if dry_run:
                     # We just log the 10 firsts, otherwise it might be too big.
-                    self._write_log(
-                        dry_run=dry_run, items_to_upload=items_to_upload[10:], ads_skipped=items_to_upload[10:]
-                    )
+                    self._write_log(dry_run=dry_run, ads_skipped=skipped_items[10:])
                     continue
                 batch, candidates = contentupload.upload.insert_candidates(
                     None,
@@ -86,15 +91,17 @@ class ProductFeedInstanceMixin:
                     filename="no-verify",
                     auto_save=True,
                 )
-                self._write_log(dry_run=dry_run, batches=batch, ads_skipped=skipped_items)
+                batches.append(batch)
+            self._write_log(dry_run=dry_run, batches=batches, ads_skipped=skipped_items)
 
         except Exception as e:
-            self._write_log(dry_run=dry_run, exception=e)
+            self._write_log(dry_run=dry_run, exception="{}".format(e))
             slack.publish(
                 "Something append with feed '{}', exception: {}".format(self.name, e),
                 msg_type=slack.MESSAGE_TYPE_WARNING,
                 username="Product Feeds",
             )
+            raise e
 
     def _get_feed_data(self):
         response = requests.get(self.feed_url)
@@ -148,7 +155,8 @@ class ProductFeedInstanceMixin:
         return ad_group.contentad_set.filter(label=label).exclude_archived().exists()
 
     def _write_log(self, **kwargs):
-        models.SyncAttempt.objects.create(self, **kwargs)
+        product_feed = self
+        models.SyncAttempt.objects.create(product_feed, **kwargs)
 
     def _contains_blacklisted_words(self, string):
         splitted_string = re.sub(r"[^\w]", " ", string.casefold()).split()
@@ -174,7 +182,10 @@ class ProductFeedInstanceMixin:
                 # Their resized image is too small so we must use the original one.
                 return url.rpartition("-/")[2]
         elif tag.name == "encoded":
-            return tag.find("img").get("src", "")
+            tag_content_as_html = BeautifulSoup(tag.next, features="lxml")
+            if tag_content_as_html.find("img"):
+                return tag_content_as_html.find("img").get("src", "")
+            return ""
         else:
             return tag.text
 

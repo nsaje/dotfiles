@@ -164,19 +164,9 @@ class ProductFeedTestCase(TestCase):
             """
         <item>
         <title>\tThis is a title\r\n</title>
-        <description>&lt;p&gt;&lt;a
-        href="https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html"&gt;This is a description&lt;p>
-        </description>
+        <description>&lt;p&gt;&lt;a href="https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html"&gt;This is a description&lt;p></description>
         <link>https://uk.sports.yahoo.com/news/harry-kane-praises-ruthless-tottenham-as-spurs-hit-belgrade-for-five-212521294.html?src=rss</link>
-        <pubDate>Mon, 21 Oct 2019 16:12:06 +0000</pubDate>
-        <source url="http://www.standard.co.uk/">Evening Standard</source>
-        <guid isPermaLink="false">police-manhunt-woman-raped-outside-161206935.html</guid>
-        <content:encoded>
-        <article><p><a href="https://uk.sports.yahoo.com/news/harry-kane-praises-ruthless-tottenham-as-spurs-hit-belgrade-for-five-212521294.html?src=rss"><img src="https://s.yimg.com/uu/api/res/1.2/zI8I9xSvejY7h5SH49hQEg--~B/aD05MDQ7dz0xMjY1O3NtPTE7YXBwaWQ9eXRhY2h5b24-/https://media-mbst-pub-ue1.s3.amazonaws.com/creatr-images/2019-10/9590d6d0-f510-11e9-bdfa-36e8881c8f93" width="1265" height="auto" style="max-width: 600px;"></img></a></p><p>Kane hailed his side as they comfortable defeated the Serbian side.
-        </p></article>
-        </content:encoded>
-        <media:credit role="publishing company"/>
-        </item>
+        <content:encoded>&lt;article&gt;&lt;p&gt;&lt;a href="https://esportes.yahoo.com/noticias/galiotte-nao-deseja-demitir-mattos-neste-ano-090017163.html?src=rss"&gt;&lt;img src="https://s.yimg.com/uu/api/res/1.2/UL3x8xhXCB2uz136rgCl_A--~B/aD0xNTA0O3c9MjI1NjtzbT0xO2FwcGlkPXl0YWNoeW9u/https://s.yimg.com/os/creatr-uploaded-images/2019-10/02c636d0-fa90-11e9-acfd-7f9ed55815d1" width="2256" height="auto" style="max-width: 600px;"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Mesmo sendo pressionado pela torcida e por conselheiros, o presidente do Palmeiras não pensa em demitir seu diretor de futebol em 2019&lt;/p&gt;&lt;/article&gt;</content:encoded>        </item>
         """,
             features="xml",
         )
@@ -191,8 +181,7 @@ class ProductFeedTestCase(TestCase):
         )
         self.assertEqual(
             parsed_item_2["image_url"],
-            "https://s.yimg.com/uu/api/res/1.2/zI8I9xSvejY7h5SH49hQEg--~B/aD05MDQ7dz0xMjY1O3NtPTE7YXBwaWQ9eXRhY2h5b24-"
-            "/https://media-mbst-pub-ue1.s3.amazonaws.com/creatr-images/2019-10/9590d6d0-f510-11e9-bdfa-36e8881c8f93",
+            "https://s.yimg.com/uu/api/res/1.2/UL3x8xhXCB2uz136rgCl_A--~B/aD0xNTA0O3c9MjI1NjtzbT0xO2FwcGlkPXl0YWNoeW9u/https://s.yimg.com/os/creatr-uploaded-images/2019-10/02c636d0-fa90-11e9-acfd-7f9ed55815d1",
         )
         self.assertEqual(
             parsed_item_2["display_url"],
