@@ -1,11 +1,11 @@
 import datetime
 
 import mock
+from bs4 import BeautifulSoup
 from django.test import TestCase
 
 import core.models
 import dash.constants
-from bs4 import BeautifulSoup
 from integrations.product_feeds import constants
 from integrations.product_feeds import exceptions
 from utils import test_helper

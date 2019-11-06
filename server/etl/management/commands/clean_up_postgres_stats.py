@@ -1,6 +1,5 @@
 import datetime
 
-import structlog
 from django.conf import settings
 
 import utils.dates_helper
@@ -9,9 +8,10 @@ from etl import redshift
 from etl import refresh
 from redshiftapi import db
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 POSTGRES_KEEP_DAYS = 64

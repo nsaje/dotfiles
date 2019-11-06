@@ -5,14 +5,14 @@ import decimal
 from django.db import migrations
 from django.db import models
 
-import structlog
 from core.models.settings.ad_group_settings.model import DEFAULT_CPC_VALUE
 from core.models.settings.ad_group_settings.model import DEFAULT_CPM_VALUE
 from dash import constants
+from utils import zlogging
 from utils.queryset_helper import chunk_iterator
 
 BATCH_SIZE = 10000
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def foward_migration(apps, schema_editor):

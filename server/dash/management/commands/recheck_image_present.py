@@ -3,12 +3,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 import botocore.exceptions
-import structlog
 
 import core.models
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 NUM_WORKERS = 20

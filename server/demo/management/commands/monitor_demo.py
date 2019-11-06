@@ -2,13 +2,13 @@ import json
 import time
 
 import requests
-import structlog
 
 import demo
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 NUM_RETRIES = 10
 

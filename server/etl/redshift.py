@@ -1,12 +1,12 @@
 import gzip
 import os.path
 
-import structlog
 from django.conf import settings
 
 import backtosql
 from redshiftapi import db
 from utils import s3helpers
+from utils import zlogging
 
 from . import constants
 from . import helpers
@@ -15,7 +15,7 @@ MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX = "materialized_views_replication"
 DUMP_S3_PREFIX = "debug_dumps"
 S3_FILE_URI = "s3://{bucket_name}/{key}"
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def unload_table(

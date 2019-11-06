@@ -1,11 +1,10 @@
-import structlog
-
 import core.features.yahoo_accounts
 import core.models
+from utils import zlogging
 
 from . import base
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class YahooAccountsView(base.K1APIView):

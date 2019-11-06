@@ -1,15 +1,14 @@
 import datetime
 
-import structlog
-
 import utils.dates_helper
 from etl import maintenance
 from etl import redshift
 from redshiftapi import db
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]

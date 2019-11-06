@@ -3,7 +3,6 @@ import traceback
 from collections import defaultdict
 from decimal import Decimal
 
-import structlog
 from django.db import transaction
 
 import dash.constants
@@ -16,6 +15,7 @@ from utils import k1_helper
 from utils import metrics_compat
 from utils import pagerduty_helper
 from utils import slack
+from utils import zlogging
 
 from . import bid
 from . import budgets
@@ -24,7 +24,7 @@ from . import helpers
 from . import prefetch
 from .campaign import calculate_campaigns_daily_budget
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (220,)
 

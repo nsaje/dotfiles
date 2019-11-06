@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
 from django.forms import Textarea
 from django.utils.safestring import mark_safe
-
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers.html import XmlLexer

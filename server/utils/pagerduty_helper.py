@@ -2,12 +2,12 @@ import traceback
 from functools import wraps
 
 import requests
-import structlog
 from django.conf import settings
 
+from utils import zlogging
 from utils.constant_base import ConstantBase
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class PagerDutyEventType(ConstantBase):

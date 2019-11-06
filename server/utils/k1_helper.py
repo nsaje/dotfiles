@@ -5,13 +5,13 @@ import urllib.parse
 import urllib.request
 
 import newrelic.agent
-import structlog
 from django.conf import settings
 
 from server.celery import app
 from utils import request_signer
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def update_accounts(accounts, msg="", priority=False):

@@ -4,7 +4,6 @@ import json
 import re
 
 import newrelic.agent
-import structlog
 from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.db import transaction
@@ -41,9 +40,10 @@ from utils import db_router
 from utils import email_helper
 from utils import exc
 from utils import slack
+from utils import zlogging
 from zemauth.models import User as ZemUser
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10

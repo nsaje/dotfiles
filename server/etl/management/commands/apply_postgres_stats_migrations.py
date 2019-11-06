@@ -1,6 +1,5 @@
 import os
 
-import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connections
@@ -8,8 +7,9 @@ from django.db import connections
 from etl import maintenance
 from etl import materialize
 from etl.materialize import MATERIALIZED_VIEWS
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(BaseCommand):

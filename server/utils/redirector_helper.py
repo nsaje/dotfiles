@@ -4,12 +4,12 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import structlog
 from django.conf import settings
 
 from utils import request_signer
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 NUM_RETRIES = 3
 

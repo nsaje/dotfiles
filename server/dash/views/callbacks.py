@@ -1,6 +1,5 @@
 import json
 
-import structlog
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
@@ -8,8 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 from dash.features import contentupload
 from utils import request_signer
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 @csrf_exempt

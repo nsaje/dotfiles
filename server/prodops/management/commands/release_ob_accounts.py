@@ -1,6 +1,5 @@
 import datetime
 
-import structlog
 from django.core.management.base import CommandError
 from django.db.models import Count
 
@@ -11,9 +10,10 @@ from dash.models import AdGroupSource
 from dash.models import OutbrainAccount
 from dash.models import Source
 from redshiftapi import db
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 OB = Source.objects.get(source_type__type=SourceType.OUTBRAIN)
 QUERY = """
 SELECT account_id, SUM(impressions)

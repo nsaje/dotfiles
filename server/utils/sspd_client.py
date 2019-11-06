@@ -4,14 +4,14 @@ import json
 
 import jwt
 import requests
-import structlog
 from django.conf import settings
 
 from dash import constants
 from dash import models
 from utils import dates_helper
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 APPROVAL_STATUS_URL = "/service/approvalstatus"
 CONTENT_AD_STATUS_URL = "/service/contentadstatus"

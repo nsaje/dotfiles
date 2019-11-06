@@ -1,12 +1,11 @@
 import copy
 
-import structlog
-
 from dash.features.bluekai import models
+from utils import zlogging
 
 from . import bluekaiapi
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 AUDIENCE_ID = 202305

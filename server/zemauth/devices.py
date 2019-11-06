@@ -4,7 +4,6 @@ from functools import partial
 
 import ipware.ip
 import requests
-import structlog
 from django.conf import settings
 from django.db import IntegrityError
 from django.db import transaction
@@ -14,9 +13,10 @@ from ua_parser import user_agent_parser
 from utils import dates_helper
 from utils import email_helper
 from utils import threads
+from utils import zlogging
 from zemauth import models
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 IP_INFO_TIMEOUT_SECONDS = 0.5
 IP_INFO_URL = "https://ipinfo.io/{ip}/json"

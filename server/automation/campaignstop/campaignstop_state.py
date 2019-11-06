@@ -1,4 +1,3 @@
-import structlog
 from django.db import models
 
 import core.models
@@ -8,10 +7,11 @@ from utils import dates_helper
 from utils import email_helper
 from utils import k1_helper
 from utils import url_helper
+from utils import zlogging
 
 from . import constants
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class CampaignStopState(models.Model):

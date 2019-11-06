@@ -1,16 +1,16 @@
 import json
 
-import structlog
 from django.urls import reverse
 
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
+from utils import zlogging
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class YahooTest(K1APIBaseTest):

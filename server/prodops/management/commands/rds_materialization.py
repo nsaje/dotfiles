@@ -1,11 +1,10 @@
-import structlog
-
 from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

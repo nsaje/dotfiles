@@ -1,4 +1,3 @@
-import structlog
 from django.core.cache import caches
 from django.db.models import Q
 
@@ -9,8 +8,9 @@ import dash.features.geolocation
 import dash.features.inventory_planning.nas
 from etl import maintenance
 from redshiftapi import db
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 TABLE_NAME = "mv_inventory"

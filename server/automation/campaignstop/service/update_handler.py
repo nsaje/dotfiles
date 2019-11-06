@@ -1,11 +1,11 @@
 import time
 from collections import defaultdict
 
-import structlog
 from django.conf import settings
 
 import core.models
 from utils import sqs_helper
+from utils import zlogging
 
 from .. import CampaignStopState
 from .. import constants
@@ -14,7 +14,7 @@ from . import update_campaigns_end_date
 from . import update_campaigns_start_date
 from . import update_campaigns_state
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 MAX_MESSAGES_TO_FETCH = 5000

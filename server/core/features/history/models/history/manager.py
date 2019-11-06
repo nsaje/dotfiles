@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import traceback
 
-import structlog
 from django.db import models
+
+from utils import zlogging
 
 from .. import history_stacktrace
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class HistoryQuerySetManager(models.Manager):

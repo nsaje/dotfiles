@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-import structlog
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Prefetch
@@ -15,8 +14,9 @@ import dash.constants
 import dash.infobox_helpers
 import dash.models
 import utils.csv_utils
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 CAMPAIGN_REPORT_HEADER = ("Account", "Campaign ID", "URL", "CS Rep", "Yesterday spend", "Daily Spend Cap", "Delivery")
 AD_GROUP_REPORT_HEADER = (

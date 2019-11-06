@@ -1,6 +1,6 @@
-import structlog
+from utils import zlogging
 
-logger = structlog.get_logger("zem.request")
+logger = zlogging.getLogger("zem.request")
 
 log_format_started = "STARTED {method} {full_path} elb={elb} traefik={traefik}"
 log_format_completed = "COMPLETED {method} {full_path} elb={elb} traefik={traefik} {status_code}"

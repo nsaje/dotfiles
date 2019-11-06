@@ -2,7 +2,6 @@ import re
 from collections import defaultdict
 from decimal import Decimal
 
-import structlog
 from django.conf import settings
 from django.db import transaction
 
@@ -13,8 +12,9 @@ from dash import models
 from dash.views import helpers
 from utils import email_helper
 from utils import k1_helper
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS = 30
 OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30

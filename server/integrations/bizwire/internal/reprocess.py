@@ -2,15 +2,15 @@ import datetime
 import json
 
 import boto3
-import structlog
 from django.conf import settings
 
 import dash.models
 from integrations.bizwire import config
 from integrations.bizwire.internal import helpers
 from utils import dates_helper
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 FIND_MISSING_NUM_DAYS = 7
 

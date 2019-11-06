@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import dateutil.parser
 import pytz
-import structlog
 from django.conf import settings
 from django.db.models import Max
 from django.db.models import Q
@@ -21,13 +20,14 @@ from restapi.access import get_content_ad  # noqa
 from restapi.access import get_upload_batch  # noqa
 from utils import columns
 from utils import exc
+from utils import zlogging
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
 SPECIAL_COLUMNS = ["performance", "styles"]
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def parse_datetime(dt_string):

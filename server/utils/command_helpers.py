@@ -1,11 +1,9 @@
 import datetime
-import logging
 import os
 import sys
 
 import dateutil.parser
 import newrelic.agent
-import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -13,8 +11,9 @@ import dash.models
 import swinfra.metrics
 from dcron import helpers
 from utils import profiler
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Z1Command(BaseCommand):
@@ -23,8 +22,8 @@ class Z1Command(BaseCommand):
 
     def execute(self, *args, **options):
         if int(options["verbosity"]) > 1:
-            root_logger = structlog.get_logger("")
-            root_logger.setLevel(structlog.stdlib.DEBUG)
+            root_logger = zlogging.getLogger("")
+            root_logger.setLevel(zlogging.DEBUG)
 
         job_name = helpers.get_command(sys.argv)
         swinfra.metrics.start_push_mode(
@@ -42,7 +41,7 @@ class Z1Command(BaseCommand):
         except SystemExit as err:
             raise err
         except Exception as err:
-            structlog.get_logger(self.__class__.__module__).exception("Uncaught exception in command")
+            zlogging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
             raise err
         finally:
             swinfra.metrics.flush_push_metrics()
@@ -94,10 +93,10 @@ def parse_date(options, field_name="date", default=None):
 def set_logger_verbosity(logger_, options):
     verbosity = int(options["verbosity"])
     if verbosity == 0:
-        logger_.setLevel(logging.CRITICAL)
+        logger_.setLevel(zlogging.CRITICAL)
     elif verbosity == 1:  # default
-        logger_.setLevel(structlog.stdlib.INFO)
+        logger_.setLevel(zlogging.INFO)
     elif verbosity == 2:
-        logger_.setLevel(structlog.stdlib.DEBUG)
+        logger_.setLevel(zlogging.DEBUG)
     elif verbosity > 2:
-        logger_.setLevel(logging.NOTSET)
+        logger_.setLevel(zlogging.NOTSET)

@@ -3,14 +3,14 @@ import os
 import random
 import string
 
-import structlog
 from django.conf import settings
 
 from core import models
 from utils import csv_utils
 from utils import s3helpers
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_AGENCY = 55
 

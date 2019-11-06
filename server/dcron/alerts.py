@@ -3,7 +3,6 @@ import typing
 import urllib.parse
 
 import croniter
-import structlog
 from django.conf import settings
 from django.urls import reverse
 
@@ -12,8 +11,9 @@ from dcron import models
 from utils import dates_helper
 from utils import pagerduty_helper
 from utils import slack
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 SLACK_USERNAME = "Dcron Alert"
 SLACK_CHANNEL_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX

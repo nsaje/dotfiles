@@ -6,7 +6,6 @@ import urllib.request
 from collections import OrderedDict
 from functools import partial
 
-import structlog
 from django.conf import settings
 from django.core.cache import caches
 from django.http import Http404
@@ -22,10 +21,11 @@ from redshiftapi import db
 from utils import metrics_compat
 from utils import request_signer
 from utils import threads
+from utils import zlogging
 
 from . import config
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 CACHE_KEY_FMT = "bizwire_promotion_export_{}"
 VALID_US_STATES = [

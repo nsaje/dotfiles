@@ -1,11 +1,10 @@
 import datetime
 
-import structlog
-
 from k1api.views import ga_accounts
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Request:

@@ -5,18 +5,17 @@ from decimal import Decimal
 from random import betavariate
 from random import random
 
-import structlog
-
 import core.features.bcm
 import dash
 import dash.constants
 import dash.views.helpers
+from utils import zlogging
 
 from . import constants
 from . import helpers
 from . import settings
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(

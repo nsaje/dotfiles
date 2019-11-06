@@ -1,12 +1,11 @@
 import csv
 
-import structlog
-
 import dash.features.geolocation
 import dash.regions
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

@@ -1,18 +1,18 @@
 import json
 from functools import partial
 
-import structlog
 from dateutil import rrule
 
 from etl import helpers
 from etl import redshift
 from etl import s3
 from redshiftapi import db
+from utils import zlogging
 
 from .materialize import Materialize
 from .mv_master import MasterView
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class MVConversions(Materialize):

@@ -1,7 +1,6 @@
 import collections
 import datetime
 
-import structlog
 from django.db.models import Model
 from django.db.models import QuerySet
 
@@ -12,8 +11,9 @@ from stats import constants
 from stats import fields
 from utils import exc
 from utils import sort_helper
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 Goals = collections.namedtuple("Goals", "campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals")
 

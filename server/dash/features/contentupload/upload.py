@@ -1,6 +1,5 @@
 import concurrent.futures
 
-import structlog
 from django.conf import settings
 from django.db import transaction
 from django.template.defaultfilters import pluralize
@@ -15,11 +14,12 @@ from utils import k1_helper
 from utils import lambda_helper
 from utils import redirector_helper
 from utils import sspd_client
+from utils import zlogging
 
 from . import exc
 from . import upload_dev
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(["image_crop", "description", "display_url", "brand_name", "call_to_action", "ad_tag"])
 VALID_UPDATE_FIELDS = set(

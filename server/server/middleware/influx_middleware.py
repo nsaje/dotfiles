@@ -1,11 +1,11 @@
-import structlog
 from django.conf import settings
 from django.db import connections
 
 from utils import influx_helper
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 DATABASE_NAMES = ["default"] + settings.DATABASE_READ_REPLICAS
 

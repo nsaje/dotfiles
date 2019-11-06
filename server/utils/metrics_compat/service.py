@@ -3,11 +3,12 @@ from contextlib import contextmanager
 
 import decorator
 import influx
-import structlog
+
+from utils import zlogging
 
 from . import prometheus
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def gauge(name, value, **tags):

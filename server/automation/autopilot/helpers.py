@@ -1,7 +1,6 @@
 import datetime
 from collections import defaultdict
 
-import structlog
 from django.db.models import Q
 
 import core.features.bcm
@@ -10,10 +9,11 @@ import dash.constants
 import dash.models
 from automation import campaignstop
 from automation import models
+from utils import zlogging
 
 from . import settings
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def get_active_ad_groups_on_autopilot(autopilot_state=None):

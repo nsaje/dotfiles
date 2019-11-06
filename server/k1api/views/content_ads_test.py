@@ -7,7 +7,6 @@ from datetime import datetime
 from datetime import timedelta
 
 import mock
-import structlog
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -17,13 +16,14 @@ import dash.features.geolocation
 import dash.models
 from utils import sspd_client
 from utils import test_helper
+from utils import zlogging
 from utils.magic_mixer import magic_mixer
 
 from . import content_ads
 from .base_test import K1APIBaseTest
 
-logger = structlog.get_logger(__name__)
-logger.setLevel(structlog.stdlib.INFO)
+logger = zlogging.getLogger(__name__)
+logger.setLevel(zlogging.INFO)
 
 
 @mock.patch("utils.sspd_client.get_approval_status", mock.MagicMock())

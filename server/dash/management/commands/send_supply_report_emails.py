@@ -2,7 +2,6 @@ import datetime
 from decimal import Decimal
 
 import pytz
-import structlog
 from django.conf import settings
 from django.db import connections
 
@@ -12,9 +11,10 @@ import utils.pagerduty_helper as pgdh
 from etl import helpers
 from utils import converters
 from utils import csv_utils
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

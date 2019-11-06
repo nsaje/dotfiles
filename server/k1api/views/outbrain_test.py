@@ -3,7 +3,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import structlog
 from django.db.models import F
 from django.urls import reverse
 from mock import patch
@@ -13,11 +12,12 @@ import dash.features.ga
 import dash.features.geolocation
 import dash.models
 from utils import email_helper
+from utils import zlogging
 
 from .base_test import K1APIBaseTest
 
-logger = structlog.get_logger(__name__)
-logger.setLevel(structlog.stdlib.INFO)
+logger = zlogging.getLogger(__name__)
+logger.setLevel(zlogging.INFO)
 
 
 class OutbrainTest(K1APIBaseTest):

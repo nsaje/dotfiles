@@ -10,17 +10,14 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 # isort:skip_file
 import copy
 from datetime import timedelta
-import logging
-import structlog
 
 import sentry_sdk
+import swinfra.logging
+import daiquiri
 import sentry_sdk.integrations.django
-import sentry_sdk.integrations.logging
-import structlog_sentry
 from secretcrypt import Secret
 
 from dcron import constants as dcron_constants
-import server.logging.trace_id
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -267,30 +264,22 @@ STATIC_URL = SERVER_STATIC_URL + "/"
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERY_REDIRECT_STDOUTS = False
 
-structlog_shared_chain = [
-    # chain that is common to both structlog log entries and stdlib logging ones
-    structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S"),
-    structlog.stdlib.add_logger_name,
-    structlog.stdlib.add_log_level,
-    server.logging.trace_id.trace_id_processor,
-]
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "json": {
-            "()": structlog.stdlib.ProcessorFormatter,
-            "processor": structlog.processors.JSONRenderer(),
-            "foreign_pre_chain": structlog_shared_chain,
-        },
-        "readable": {
-            "()": structlog.stdlib.ProcessorFormatter,
-            "processor": structlog.dev.ConsoleRenderer(),
-            "foreign_pre_chain": structlog_shared_chain,
-        },
+        "json": {"()": swinfra.logging.OBJsonFormatter, "version_getter": lambda: BUILD_NUMBER},
+        "readable": {"()": daiquiri.formatter.ColorExtrasFormatter, "fmt": daiquiri.formatter.DEFAULT_EXTRAS_FORMAT},
     },
-    "handlers": {"console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": LOGGING_FORMATTER}},
+    "filters": {"trace_id": {"()": "server.logging.trace_id_filter.TraceIdFilter"}},
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "filters": ["trace_id"],
+            "formatter": LOGGING_FORMATTER,
+        }
+    },
     "loggers": {
         "newrelic.core.data_collector": {"handlers": ["console"], "level": "ERROR"},
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
@@ -303,22 +292,6 @@ LOGGING = {
     },
 }
 
-structlog.configure(
-    processors=[structlog.stdlib.filter_by_level]
-    + structlog_shared_chain
-    + [
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.format_exc_info,
-        structlog_sentry.SentryJsonProcessor(level=logging.WARNING),
-        structlog.processors.UnicodeDecoder(),
-        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
-    ],
-    context_class=dict,
-    logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
-    cache_logger_on_first_use=True,
-)
 
 if TESTING:
     DISABLE_SIGNALS = True
@@ -454,5 +427,4 @@ DCRON = {
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
 
-sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"])
-sentry_sdk.integrations.logging.ignore_logger("restapi.common.exceptions")
+sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])

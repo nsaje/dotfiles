@@ -1,4 +1,3 @@
-import structlog
 from rest_framework import exceptions
 from rest_framework import permissions
 from rest_framework import serializers
@@ -9,8 +8,9 @@ from dash.features.reports import reportjob
 from dash.features.reports import reports
 from dash.features.reports import serializers as reports_serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class ReportsViewSet(RESTAPIBaseViewSet):

@@ -1,16 +1,15 @@
 import datetime
 from decimal import Decimal
 
-import structlog
-
 import core.features.multicurrency
 from utils import dates_helper
 from utils import numbers
+from utils import zlogging
 
 from .. import RealTimeCampaignDataHistory
 from . import config
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 MAX_RT_DATA_AGE_MINUTES = 15
 CHECK_FREQUENCY_MINUTES = 2

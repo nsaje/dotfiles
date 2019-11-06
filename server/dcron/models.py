@@ -1,11 +1,11 @@
-import structlog
 from django.conf import settings
 from django.db import models
 from django.db import transaction
 
 from dcron import constants
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class DCronJob(models.Model):

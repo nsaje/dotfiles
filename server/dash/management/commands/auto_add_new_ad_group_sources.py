@@ -1,11 +1,10 @@
-import structlog
-
 import core.models
 import utils.exc
 from core.features.source_adoption import auto_add_new_ad_group_sources
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

@@ -1,7 +1,6 @@
 import calendar
 import collections
 
-import structlog
 from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.utils.functional import cached_property
@@ -21,9 +20,10 @@ from dash.dashapi import data_helper
 from dash.views import helpers as view_helpers
 from utils import outbrain_internal_helper
 from utils import sspd_client
+from utils import zlogging
 from zemauth.models import User as ZemUser
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.

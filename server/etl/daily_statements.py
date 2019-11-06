@@ -2,7 +2,6 @@ import datetime
 from collections import defaultdict
 from decimal import Decimal
 
-import structlog
 from dateutil import rrule
 from django.conf import settings
 from django.db import connections
@@ -17,8 +16,9 @@ from etl import helpers
 from redshiftapi import db
 from utils import converters
 from utils import dates_helper
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 OEN_ACCOUNT_ID = 305

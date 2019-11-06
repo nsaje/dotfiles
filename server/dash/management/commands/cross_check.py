@@ -1,13 +1,12 @@
 import collections
 
-import structlog
-
 from dash import constants
 from dash import models
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

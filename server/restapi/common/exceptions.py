@@ -1,7 +1,6 @@
 import traceback
 
 import rest_framework.views
-import structlog
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
@@ -9,8 +8,9 @@ from rest_framework import serializers
 from rest_framework.response import Response
 
 from utils import exc
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def custom_exception_handler(exception, context):

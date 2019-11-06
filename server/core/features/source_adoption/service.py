@@ -1,16 +1,16 @@
 import time
 
-import structlog
 from django.db import transaction
 from django.db.models import Q
 
 import core.models
 import dash.constants
 import utils.exc
+from utils import zlogging
 
 from . import exceptions
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 LOGGER_UPDATE_BATCH_SIZE = 512
 PAUSE_INTERVAL = 30
 

@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-import structlog
 from django.db.models import F
 from django.db.models import Sum
 
@@ -15,8 +14,9 @@ import etl.refresh
 import redshiftapi.db
 from automation import autopilot
 from utils import converters
+from utils import zlogging
 
-logger = structlog.get_logger("stats.monitor")
+logger = zlogging.getLogger("stats.monitor")
 
 MAX_ERR = 10 ** 9  # 0.0001$
 

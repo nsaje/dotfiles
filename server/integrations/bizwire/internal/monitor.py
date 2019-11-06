@@ -1,7 +1,6 @@
 import datetime
 
 import pytz
-import structlog
 from dateutil import rrule
 
 import backtosql
@@ -13,8 +12,9 @@ from redshiftapi import db
 from utils import dates_helper
 from utils import email_helper
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 MISSING_CLICKS_THRESHOLD = 3
 MISSING_CLICKS_ALERT_HOUR_UTC = 8

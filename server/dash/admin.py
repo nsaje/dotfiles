@@ -1,7 +1,6 @@
 import datetime
 import json
 
-import structlog
 import tagulous
 from django import forms
 from django.conf import settings
@@ -35,10 +34,11 @@ from dash import forms as dash_forms
 from dash import models
 from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from dash.features.submission_filters.admin import SubmissionFilterAdmin
+from utils import zlogging
 from utils.admin_common import SaveWithRequestMixin
 from zemauth.models import User as ZemUser
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 # Forms for inline user functionality.

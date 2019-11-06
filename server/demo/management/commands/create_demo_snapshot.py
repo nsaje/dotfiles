@@ -9,7 +9,6 @@ import sys
 import tarfile
 
 import faker
-import structlog
 from django.conf import settings
 from django.core.serializers import serialize
 from django.db import connections
@@ -30,9 +29,10 @@ from utils import json_helper
 from utils import metrics_compat
 from utils import s3helpers
 from utils import unique_ordered_list
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
 
@@ -114,9 +114,9 @@ class Command(Z1Command):
     @_postgres_read_only(using="default")
     def handle(self, *args, **options):
         if options.get("verbosity", 0) > 1:
-            logger.setLevel(structlog.stdlib.DEBUG)
+            logger.setLevel(zlogging.DEBUG)
             ch = logging.StreamHandler()
-            ch.setLevel(structlog.stdlib.DEBUG)
+            ch.setLevel(zlogging.DEBUG)
             logger.addHandler(ch)
 
         signal.signal(signal.SIGALRM, alarm_handler)

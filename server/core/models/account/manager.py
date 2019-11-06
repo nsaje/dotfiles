@@ -1,4 +1,3 @@
-import structlog
 from django.db import transaction
 
 import core.common
@@ -8,12 +7,13 @@ import dash.features.custom_flags.constants
 from dash import constants
 from prodops import hacks
 from utils import slack
+from utils import zlogging
 
 from . import exceptions
 from . import model
 from .validation import OUTBRAIN_SALESFORCE_SERVICE_USER
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class AccountManager(core.common.BaseManager):

@@ -1,6 +1,5 @@
 import time
 
-import structlog
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -10,9 +9,10 @@ from rest_framework.views import APIView
 
 from utils import influx_helper
 from utils import metrics_compat
+from utils import zlogging
 from utils.rest_common import authentication
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class K1APIView(APIView):

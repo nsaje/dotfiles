@@ -1,15 +1,15 @@
 import typing
 
 import crontab
-import structlog
 from django.conf import settings
 
 from dcron import commands
 from dcron import constants
 from dcron import exceptions
 from dcron import models
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def process_crontab_items(file_name: typing.Optional[str] = None, file_contents: typing.Optional[str] = None) -> None:

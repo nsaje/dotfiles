@@ -1,12 +1,12 @@
 from threading import Thread
 
-import structlog
 from django.conf import settings
 from django.db import connection
 
 import utils.request_context
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 TRANSACTION_END_WAIT = 3
 

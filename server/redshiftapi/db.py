@@ -1,7 +1,6 @@
 import contextlib
 from collections import namedtuple
 
-import structlog
 from django.core.cache import caches
 from django.db import connections
 from django.db import transaction
@@ -9,10 +8,11 @@ from django.db import transaction
 import utils.db_router
 from utils import cache_helper
 from utils import metrics_compat
+from utils import zlogging
 
 from . import queries
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 CACHE_MISS_FLAG = None
 

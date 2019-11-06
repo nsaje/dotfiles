@@ -1,15 +1,16 @@
 import json
+import logging
 
 import mock
-import structlog
 from django.urls import reverse
 
 import dash.models
+from utils import zlogging
 
 from .base_test import K1APIBaseTest
 
-logger = structlog.get_logger(__name__)
-logger.setLevel(structlog.stdlib.INFO)
+logger = zlogging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class SourcesTest(K1APIBaseTest):

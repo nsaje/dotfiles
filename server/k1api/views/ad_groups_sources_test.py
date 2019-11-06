@@ -6,7 +6,6 @@ import urllib.request
 from operator import itemgetter
 
 import mock
-import structlog
 from django.test import override_settings
 from django.urls import reverse
 
@@ -17,12 +16,13 @@ import dash.features.geolocation
 import dash.models
 from dash.features import custom_flags
 from utils import dates_helper
+from utils import zlogging
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
 
-logger = structlog.get_logger(__name__)
-logger.setLevel(structlog.stdlib.INFO)
+logger = zlogging.getLogger(__name__)
+logger.setLevel(zlogging.INFO)
 
 
 @override_settings(AD_LOOKUP_AD_GROUP_ID=9999)

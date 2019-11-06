@@ -3,15 +3,15 @@ import io
 import os.path
 from functools import partial
 
-import structlog
 from django.conf import settings
 
 from utils import s3helpers
 from utils import threads
+from utils import zlogging
 
 from . import constants
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 MATERIALIZED_VIEWS_S3_PREFIX = "materialized_views"
 MATERIALIZED_VIEWS_FILENAME = "{}_{}.csv"

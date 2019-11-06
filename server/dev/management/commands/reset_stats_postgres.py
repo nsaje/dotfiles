@@ -1,7 +1,6 @@
 import datetime
 import os
 
-import structlog
 from django.conf import settings
 from django.db import connections
 
@@ -10,9 +9,10 @@ from etl import materialize
 from etl import redshift
 from etl.materialize import MATERIALIZED_VIEWS
 from utils import s3helpers
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

@@ -3,10 +3,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import structlog
 from django.conf import settings
 
-logger = structlog.get_logger(__name__)
+from utils import zlogging
+
+logger = zlogging.getLogger(__name__)
 
 DASH_URL = "https://one.zemanta.com/v2/analytics/{level}/{id}/{tab}"
 

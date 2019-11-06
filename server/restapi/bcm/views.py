@@ -1,7 +1,6 @@
 import json
 from decimal import Decimal
 
-import structlog
 from django.forms.models import model_to_dict
 
 import core.features.bcm
@@ -15,8 +14,9 @@ from dash.views import helpers
 from utils import api_common
 from utils import exc
 from utils import slack
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305)
 

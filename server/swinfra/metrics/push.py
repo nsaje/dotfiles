@@ -2,11 +2,12 @@ import threading
 import time
 
 import prometheus_client
-import structlog
+
+from utils import zlogging
 
 from . import registry
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 IN_PUSH_MODE = False

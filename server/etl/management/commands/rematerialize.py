@@ -1,14 +1,13 @@
 import datetime
 
-import structlog
-
 import redshiftapi.db
 import utils.slack
 from core.models.account import Account
 from etl import refresh
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 NUM_OF_BATCHES = 4
 
 

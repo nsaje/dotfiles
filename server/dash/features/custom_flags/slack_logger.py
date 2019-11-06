@@ -1,10 +1,9 @@
-import structlog
-
 from utils import slack
+from utils import zlogging
 
 from .model import CustomFlag
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class SlackLoggerMixin(object):

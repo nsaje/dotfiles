@@ -3,7 +3,6 @@ import time
 import djangorestframework_camel_case.util
 import ipware.ip
 import rest_framework.renderers
-import structlog
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -13,8 +12,9 @@ from rest_framework.viewsets import ViewSetMixin
 import utils.rest_common.authentication
 from utils import json_helper
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):

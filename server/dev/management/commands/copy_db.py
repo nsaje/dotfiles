@@ -1,11 +1,11 @@
-import structlog
 from django.conf import settings
 from django.db import connections
 
+from utils import zlogging
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

@@ -1,11 +1,11 @@
-import structlog
 from django.core.cache import caches
 
 from utils import cache_helper
+from utils import zlogging
 
 from . import bluekaiapi
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 CACHE_TIMEOUT = 3 * 24 * 60 * 60  # 3 days

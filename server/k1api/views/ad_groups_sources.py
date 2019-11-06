@@ -1,4 +1,3 @@
-import structlog
 from django.conf import settings
 
 import automation.campaignstop.service
@@ -9,10 +8,11 @@ from dash import constants
 from utils import converters
 from utils import db_router
 from utils import url_helper
+from utils import zlogging
 
 from .base import K1APIView
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class AdGroupSourcesView(K1APIView):

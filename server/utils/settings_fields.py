@@ -1,8 +1,9 @@
-import structlog
 from django.db.models import OneToOneField
 from django.db.models.fields.related_descriptors import ForwardOneToOneDescriptor
 
-logger = structlog.get_logger(__name__)
+from utils import zlogging
+
+logger = zlogging.getLogger(__name__)
 
 
 def resolve_related_model_field_name(settings_instance):

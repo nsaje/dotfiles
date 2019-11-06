@@ -2,13 +2,13 @@
 
 from django.db import migrations
 
-import structlog
 from core.features import bid_modifiers
 from dash import constants
+from utils import zlogging
 from utils.queryset_helper import chunk_iterator
 
 BATCH_SIZE = 200000
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def foward_migration(apps, schema_editor):

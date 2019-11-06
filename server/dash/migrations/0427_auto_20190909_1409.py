@@ -5,11 +5,11 @@ from django.db import migrations
 from django.db import models
 from django.db import transaction
 
-import structlog
+from utils import zlogging
 from utils.queryset_helper import chunk_iterator
 
 BATCH_SIZE = 1000
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def fix_direct_deal_connections(apps, schema_editor):

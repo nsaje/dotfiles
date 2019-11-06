@@ -1,4 +1,3 @@
-import structlog
 from django.conf import settings
 from django.db import transaction
 
@@ -8,11 +7,12 @@ import dash.constants
 import dash.retargeting_helper
 import utils.exc
 import utils.k1_helper
+from utils import zlogging
 
 from . import exceptions
 from . import model
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class AdGroupSourceManager(core.common.BaseManager):

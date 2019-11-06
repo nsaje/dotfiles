@@ -1,9 +1,8 @@
-import structlog
-
 import backtosql
 from redshiftapi import db
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def _execute_query(db_name, query, *params):

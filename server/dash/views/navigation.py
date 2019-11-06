@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import structlog
-
 import automation.campaignstop
 from dash import forms
 from dash import models
@@ -9,8 +7,9 @@ from dash.views import navigation_helpers
 from utils import api_common
 from utils import exc
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 ACCOUNTS_EXCLUDED_FROM_SEARCH = [305]

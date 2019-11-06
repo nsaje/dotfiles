@@ -4,11 +4,11 @@ import re
 from urllib.parse import urlparse
 
 import requests
+from bs4 import BeautifulSoup
 from django.utils.html import strip_tags
 
 import core.models
 import dash.constants
-from bs4 import BeautifulSoup
 from dash.features import contentupload
 from integrations.product_feeds import constants
 from integrations.product_feeds import exceptions

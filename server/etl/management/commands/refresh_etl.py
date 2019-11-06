@@ -1,13 +1,12 @@
 import datetime
 
-import structlog
-
 from analytics import monitor
 from etl import materialize
 from etl import refresh
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

@@ -13,7 +13,6 @@ from functools import partial
 
 import newrelic.agent
 import pytz
-import structlog
 from django.conf import settings
 from django.db.models import Q
 from django.http import Http404
@@ -46,8 +45,9 @@ from utils import exc
 from utils import lc_helper
 from utils import metrics_compat
 from utils import threads
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 YAHOO_DASH_URL = "https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}"
 OUTBRAIN_DASH_URL = (

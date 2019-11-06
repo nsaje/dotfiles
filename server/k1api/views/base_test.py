@@ -1,7 +1,6 @@
 import time
 from itertools import cycle
 
-import structlog
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
@@ -14,11 +13,12 @@ import dash.features.ga
 import dash.features.geolocation
 import dash.models
 from utils import request_signer
+from utils import zlogging
 
 from .. import urls
 
-logger = structlog.get_logger(__name__)
-logger.setLevel(structlog.stdlib.INFO)
+logger = zlogging.getLogger(__name__)
+logger.setLevel(zlogging.INFO)
 
 
 class K1APIBaseTest(TestCase):

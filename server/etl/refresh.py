@@ -4,7 +4,6 @@ import string
 from functools import partial
 
 import newrelic.agent
-import structlog
 from django.conf import settings
 from django.core.cache import caches
 
@@ -17,8 +16,9 @@ from etl import materialize
 from etl import redshift
 from utils import metrics_compat
 from utils import threads
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 SLACK_MIN_DAYS_TO_PROCESS = 7

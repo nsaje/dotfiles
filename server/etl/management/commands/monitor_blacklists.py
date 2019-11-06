@@ -2,7 +2,6 @@ import collections
 import datetime
 
 import dateutil.parser
-import structlog
 
 import backtosql
 import redshiftapi.db
@@ -12,9 +11,10 @@ from dash import models
 from dash import publisher_helpers
 from utils import list_helper
 from utils import metrics_compat
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 OEN = 305
 

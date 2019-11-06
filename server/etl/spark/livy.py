@@ -3,13 +3,14 @@ import time
 from os import path
 
 import requests
-import structlog
 from django.conf import settings
+
+from utils import zlogging
 
 FILE_PREFIX = "etl/spark/code"
 LIVY_URL = "http://{}:8998"
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def get_session():

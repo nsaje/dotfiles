@@ -2,7 +2,6 @@ import shlex
 import sys
 
 import django_pglocks
-import structlog
 from django.conf import settings
 from django.core import management
 
@@ -14,8 +13,9 @@ from dcron import helpers
 from dcron import models
 from utils import dates_helper
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class DCronCommand(management.base.BaseCommand):

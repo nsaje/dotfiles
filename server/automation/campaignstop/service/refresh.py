@@ -1,16 +1,15 @@
-import structlog
-
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
 import dash.features.realtimestats
 from utils import dates_helper
 from utils import metrics_compat
+from utils import zlogging
 
 from .. import RealTimeCampaignDataHistory
 from .. import RealTimeDataHistory
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 CURRENT_DATA_LIMIT_SECONDS = 120

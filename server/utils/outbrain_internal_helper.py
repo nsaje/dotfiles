@@ -2,10 +2,11 @@ import base64
 import json
 
 import requests
-import structlog
 from django.conf import settings
 
-logger = structlog.get_logger(__name__)
+from utils import zlogging
+
+logger = zlogging.getLogger(__name__)
 
 COMMON_HEADERS = {"Host": "obproxy-ingress.zemanta.com"}
 

@@ -1,7 +1,6 @@
 import datetime
 
 import newrelic.agent
-import structlog
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -9,8 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.models
 import redshiftapi.api_breakdowns
 from utils import request_signer
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 @csrf_exempt

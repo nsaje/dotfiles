@@ -1,6 +1,5 @@
 import datetime
 
-import structlog
 from django.db import transaction
 
 import automation.campaignstop
@@ -9,9 +8,10 @@ import utils.exc
 from dash import constants
 from dash import models
 from utils import dates_helper
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 DAYS_INACTIVE = 90
 

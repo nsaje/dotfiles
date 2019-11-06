@@ -1,12 +1,11 @@
 import datetime
 
-import structlog
-
 from dash.features.reports.reports import clean_up_old_in_progress_reports
 from utils import dates_helper
+from utils import zlogging
 from utils.command_helpers import Z1Command
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 IN_PROGRESS_MINUTES = 60
 

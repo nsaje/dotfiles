@@ -1,4 +1,3 @@
-import structlog
 from django.db import transaction
 from django.db.models import F
 from django.http import Http404
@@ -7,10 +6,11 @@ import dash.constants
 import dash.models
 from utils import db_router
 from utils import email_helper
+from utils import zlogging
 
 from .base import K1APIView
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class OutbrainPublishersBlacklistView(K1APIView):

@@ -7,7 +7,6 @@ import random
 import string
 import traceback
 
-import structlog
 from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
@@ -28,13 +27,14 @@ from server import celery
 from utils import csv_utils
 from utils import metrics_compat
 from utils import threads
+from utils import zlogging
 
 from . import constants
 from . import format_helper
 from . import helpers
 from .reportjob import ReportJob
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 BATCH_ROWS = 100000
 

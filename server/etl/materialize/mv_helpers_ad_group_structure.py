@@ -1,14 +1,13 @@
-import structlog
-
 import backtosql
 import dash.models
 from etl import redshift
 from etl import s3
 from redshiftapi import db
+from utils import zlogging
 
 from .materialize import Materialize
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class MVHelpersAdGroupStructure(Materialize):

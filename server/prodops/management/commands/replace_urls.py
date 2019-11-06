@@ -1,14 +1,14 @@
 import argparse
 
-import structlog
 import unicodecsv
 from django.core.management.base import CommandError
 
 from dash.models import ContentAd
+from utils import zlogging
 from utils.command_helpers import Z1Command
 from utils.redirector_helper import update_redirect
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):

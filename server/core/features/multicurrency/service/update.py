@@ -1,14 +1,14 @@
-import structlog
 from django.db import transaction
 
 import core.models
 import dash.constants
 from utils import dates_helper
+from utils import zlogging
 
 from ..currency_exchange_rate import CurrencyExchangeRate
 from . import ecb
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class MissingExchangeRateMappingException(Exception):

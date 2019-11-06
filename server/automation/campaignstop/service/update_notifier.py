@@ -1,11 +1,11 @@
-import structlog
 from django.conf import settings
 
 from utils import sqs_helper
+from utils import zlogging
 
 from .. import constants
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 AD_GROUP_SETTINGS_FIELDS = [

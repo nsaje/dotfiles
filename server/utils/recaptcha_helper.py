@@ -1,8 +1,9 @@
 import requests
-import structlog
 from django.conf import settings
 
-logger = structlog.get_logger(__name__)
+from utils import zlogging
+
+logger = zlogging.getLogger(__name__)
 
 
 def check_recaptcha(request):

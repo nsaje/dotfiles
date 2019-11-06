@@ -2,7 +2,6 @@ from datetime import datetime
 from functools import partial
 
 import newrelic.agent
-import structlog
 from django.http import Http404
 
 import dash.constants
@@ -14,10 +13,11 @@ from utils import db_router
 from utils import metrics_compat
 from utils import sspd_client
 from utils import threads
+from utils import zlogging
 
 from .base import K1APIView
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 OUTBRAIN_SOURCE_SLUG = "outbrain"

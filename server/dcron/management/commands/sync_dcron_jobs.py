@@ -1,10 +1,10 @@
-import structlog
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from dcron.cron import process_crontab_items
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class Command(BaseCommand):

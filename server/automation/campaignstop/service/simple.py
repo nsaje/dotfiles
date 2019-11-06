@@ -2,7 +2,6 @@ import datetime
 import decimal
 
 import pytz
-import structlog
 from django.conf import settings
 from django.db.models import Q
 
@@ -13,8 +12,9 @@ import utils.email_helper
 import utils.k1_helper
 import utils.url_helper
 from utils import metrics_compat
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 DEPLETING_AVAILABLE_BUDGET_SCALAR = decimal.Decimal(1.5)
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"

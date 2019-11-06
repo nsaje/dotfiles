@@ -1,7 +1,6 @@
 import json
 import time
 
-import structlog
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
@@ -10,10 +9,11 @@ from django.views.generic import View
 from utils import influx_helper
 from utils import json_helper
 from utils import metrics_compat
+from utils import zlogging
 
 from . import exc
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 class BaseApiView(View):

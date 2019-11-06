@@ -4,7 +4,6 @@ import json
 from collections import defaultdict
 from decimal import Decimal
 
-import structlog
 import unicodecsv as csv
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import DateField
@@ -30,6 +29,7 @@ from redshiftapi import db
 from utils import bigquery_helper
 from utils import converters
 from utils import queryset_helper
+from utils import zlogging
 from zemauth.models import User
 
 DATASET_NAME = "ba"
@@ -38,7 +38,7 @@ BIGQUERY_TIMEOUT = 300
 
 AD_GROUP_CHUNK_SIZE = 2000
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def create_report():

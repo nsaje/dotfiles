@@ -2,7 +2,6 @@ import json
 import random
 from collections import defaultdict
 
-import structlog
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
@@ -18,8 +17,9 @@ from integrations.bizwire.internal import helpers
 from utils import k1_helper
 from utils import metrics_compat
 from utils import request_signer
+from utils import zlogging
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 @csrf_exempt
