@@ -1,6 +1,7 @@
 import datetime
 
 from dash import constants as dash_constants
+from dash import models
 from stats import constants
 from stats import fields
 from stats import helpers
@@ -14,6 +15,9 @@ def augment(breakdown, rows):
     # TODO not fully supported, value is wrong
     remove_status = breakdown == ["content_ad_id", "source_id"] or breakdown == ["source_id", "content_ad_id"]
 
+    target_dimension_mapping = get_target_dimension_mapping(target_dimension)
+    augment_target_dimension_mapping(target_dimension_mapping, target_dimension, rows)
+
     for row in rows:
         row["breakdown_id"] = helpers.encode_breakdown_id(breakdown, row)
         row["parent_breakdown_id"] = (
@@ -21,10 +25,10 @@ def augment(breakdown, rows):
         )
 
         if target_dimension in constants.DeliveryDimension._ALL:
-            augment_row_delivery(row, target_dimension)
+            _augment_row_delivery(row, target_dimension, target_dimension_mapping)
 
         if target_dimension in constants.TimeDimension._ALL:
-            augment_row_time(row, target_dimension)
+            _augment_row_time(row, target_dimension)
 
         row["breakdown_name"] = row["name"]
 
@@ -55,8 +59,7 @@ def cleanup(rows, target_dimension, constraints):
         rows.remove(row)
 
 
-def augment_row_delivery(row, target_dimension):
-
+def get_target_dimension_mapping(target_dimension):
     mapping = {
         constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
         constants.DeliveryDimension.DEVICE_OS: dash_constants.OperatingSystem,
@@ -69,20 +72,41 @@ def augment_row_delivery(row, target_dimension):
         constants.DeliveryDimension.AGE: dash_constants.Age,
         constants.DeliveryDimension.GENDER: dash_constants.Gender,
         constants.DeliveryDimension.AGE_GENDER: dash_constants.AgeGender,
-    }
+    }.get(target_dimension)
 
-    if target_dimension in mapping:
+    if mapping is not None:
+        mapping = mapping._VALUES.copy()
+
+    return mapping
+
+
+def augment_target_dimension_mapping(target_dimension_mapping, target_dimension, rows):
+    if target_dimension in (
+        constants.DeliveryDimension.COUNTRY,
+        constants.DeliveryDimension.REGION,
+        constants.DeliveryDimension.DMA,
+    ):
+        geolocation_keys = [row[target_dimension] for row in rows if row[target_dimension] is not None]
+        geolocation_mapping = {
+            record["key"]: record["name"]
+            for record in models.Geolocation.objects.filter(key__in=geolocation_keys).values("key", "name")
+        }
+        target_dimension_mapping.update(geolocation_mapping)
+
+
+def _augment_row_delivery(row, target_dimension, target_dimension_mapping):
+    if target_dimension_mapping is not None:
         value = row[target_dimension]
         if target_dimension == constants.DeliveryDimension.DMA:
             value = str(value) if value else None
 
-        row["name"] = mapping[target_dimension].get_text(value) or value or UNKNOWN
+        row["name"] = target_dimension_mapping.get(value) or value or UNKNOWN
 
     else:
         row["name"] = row.get(target_dimension) or UNKNOWN  # when we don't have a designated mapping
 
 
-def augment_row_time(row, target_dimension):
+def _augment_row_time(row, target_dimension):
     if target_dimension == constants.TimeDimension.DAY:
         date = row[constants.TimeDimension.DAY]
         row["name"] = date.isoformat()

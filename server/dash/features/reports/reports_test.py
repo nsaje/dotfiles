@@ -10,6 +10,7 @@ import core.models
 import dash.constants
 import utils.dates_helper
 import utils.test_helper
+from dash.features import geolocation
 from dash.features import scheduled_reports
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
@@ -372,6 +373,44 @@ class ReportsGetReportCSVTest(TestCase):
         mock_totals.return_value = row.copy()
         output, filename = ReportJobExecutor.get_report(self.reportJob)
         expected = """"Ad Group Id";"Total Spend";"Clicks";"Currency"\r\n"1";"12,3000";"5";"USD"\r\n"1";"12,3000";"5";"USD"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("stats.api_reports.query")
+    def test_device(self, mock_query):
+        self.reportJob.query = self.build_query(["Device"])
+        row = {"device_type": 4, "etfm_cost": Decimal("12.3"), "clicks": 5, "status": "ACTIVE"}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Device","Device Name"\r\n"MOBILE","Mobile"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("stats.api_reports.query")
+    def test_device_os(self, mock_query):
+        self.reportJob.query = self.build_query(["Operating System"])
+        row = {"device_os": "android", "etfm_cost": Decimal("12.3"), "clicks": 5, "status": "ACTIVE"}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Operating System","Operating System Name"\r\n"ANDROID","Android"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_state_region(self, mock_query):
+        magic_mixer.blend(geolocation.Geolocation, key="IT-25", name="Lombardy, Italy")
+        self.reportJob.query = self.build_query(["State / Region"])
+        row = {"region": "IT-25", "etfm_cost": Decimal("12.3"), "clicks": 5, "status": "ACTIVE"}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"State / Region","State / Region Name"\r\n"IT-25","Lombardy, Italy"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_device_clicks_state_region(self, mock_query):
+        magic_mixer.blend(geolocation.Geolocation, key="IT-25", name="Lombardy, Italy")
+        self.reportJob.query = self.build_query(["Device", "Clicks", "State / Region"])
+        row = {"device_type": 4, "region": "IT-25", "etfm_cost": Decimal("12.3"), "clicks": 5, "status": "ACTIVE"}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Device","Device Name","Clicks","State / Region","State / Region Name"\r\n"MOBILE","Mobile","5","IT-25","Lombardy, Italy"\r\n"""
         self.assertEqual(expected, output)
 
 

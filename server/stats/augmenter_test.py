@@ -2,7 +2,9 @@ import datetime
 
 from django.test import TestCase
 
+from dash import models
 from stats import augmenter
+from utils.magic_mixer import magic_mixer
 
 
 class AugmenterTestCase(TestCase):
@@ -148,6 +150,66 @@ class AugmenterTestCase(TestCase):
                     "breakdown_name": "Not reported",
                     "name": "Not reported",
                     "gender": None,
+                    "clicks": 30,
+                },
+            ],
+        )
+
+    def test_augment_region(self):
+        self.maxDiff = None
+        magic_mixer.blend(models.Geolocation, key="US-TX", name="Texas, United States")
+        magic_mixer.blend(models.Geolocation, key="IT-25", name="Lombardy, Italy")
+
+        rows = [
+            {"region": "US-FL", "clicks": 15},
+            {"region": "US-TX", "clicks": 10},
+            {"region": "IT-25", "clicks": 20},
+            {"region": "IT-28", "clicks": 25},
+            {"region": None, "clicks": 30},
+        ]
+
+        augmenter.augment(["region"], rows)
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "parent_breakdown_id": "",
+                    "breakdown_id": "US-FL",
+                    "breakdown_name": "Florida",
+                    "name": "Florida",
+                    "region": "US-FL",
+                    "clicks": 15,
+                },
+                {
+                    "parent_breakdown_id": "",
+                    "breakdown_id": "US-TX",
+                    "breakdown_name": "Texas, United States",
+                    "name": "Texas, United States",
+                    "region": "US-TX",
+                    "clicks": 10,
+                },
+                {
+                    "parent_breakdown_id": "",
+                    "breakdown_id": "IT-25",
+                    "breakdown_name": "Lombardy, Italy",
+                    "name": "Lombardy, Italy",
+                    "region": "IT-25",
+                    "clicks": 20,
+                },
+                {
+                    "parent_breakdown_id": "",
+                    "breakdown_id": "IT-28",
+                    "breakdown_name": "IT-28",
+                    "name": "IT-28",
+                    "region": "IT-28",
+                    "clicks": 25,
+                },
+                {
+                    "parent_breakdown_id": "",
+                    "breakdown_id": "-None-",
+                    "breakdown_name": "Not reported",
+                    "name": "Not reported",
+                    "region": None,
                     "clicks": 30,
                 },
             ],

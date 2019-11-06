@@ -4,8 +4,8 @@ from dash.constants import CampaignGoalKPI
 from dash.constants import Level
 from stats import constants
 from stats import fields
-from stats.constants import DeliveryDimension
 from stats.constants import StructureDimension
+from stats.constants import is_extended_delivery_dimension
 from stats.constants import is_top_level_delivery_dimension
 from stats.constraints_helper import get_uses_bcm_v2
 from utils import exc
@@ -385,7 +385,7 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     if delivery_dimension is not None and not user.has_perm("zemauth.can_view_breakdown_by_delivery"):
         raise exc.MissingDataError()
 
-    if delivery_dimension in DeliveryDimension._EXTENDED and not user.has_perm(
+    if is_extended_delivery_dimension(delivery_dimension) and not user.has_perm(
         "zemauth.can_view_breakdown_by_delivery_extended"
     ):
         raise exc.MissingDataError()

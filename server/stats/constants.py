@@ -150,8 +150,16 @@ def get_delivery_dimension(breakdown):
     return dimension.pop()
 
 
+def is_extended_delivery_dimension(dimension):
+    return dimension in DeliveryDimension._EXTENDED
+
+
 def is_top_level_delivery_dimension(dimension):
     return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED)
+
+
+def get_top_level_delivery_dimensions():
+    return [dimension for dimension in DeliveryDimension._ALL if dimension not in DeliveryDimension._EXTENDED]
 
 
 def get_time_dimension(breakdown):

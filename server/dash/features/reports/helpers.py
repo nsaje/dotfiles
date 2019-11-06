@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 import dash.constants
 import dash.views.helpers
+import stats.augmenter
 import stats.constants
 import utils.columns
 
@@ -173,3 +174,46 @@ def extract_column_names(fields_list):
             fieldnames.append(field)
 
     return fieldnames
+
+
+def fill_delivery_name_values_if_necessary(rows, breakdown):
+    delivery_dimensions = set(stats.constants.get_top_level_delivery_dimensions())
+
+    for dimension in breakdown:
+        if dimension not in delivery_dimensions:
+            continue
+
+        target_dimension_mapping = stats.augmenter.get_target_dimension_mapping(dimension)
+        stats.augmenter.augment_target_dimension_mapping(target_dimension_mapping, dimension, rows)
+
+        column_name = "{}_name".format(dimension)
+        for row in rows:
+            value = row[dimension]
+            if dimension == stats.constants.DeliveryDimension.DMA:
+                value = str(value) if value else None
+
+            row[column_name] = target_dimension_mapping.get(value, value)
+
+
+def insert_delivery_name_columns_if_necessary(requested_columns, field_name_mapping):
+    requested_field_map = {
+        field_name_mapping[column]: {"column": column, "index": i} for i, column in enumerate(requested_columns)
+    }
+
+    delivery_fileds = set(stats.constants.get_top_level_delivery_dimensions()) & set(requested_field_map.keys())
+
+    columns_to_insert = []
+
+    for delivery_field in delivery_fileds:
+        delivery_column_name = "{} Name".format(requested_field_map[delivery_field]["column"])
+        delivery_field_name = "{}_name".format(delivery_field)
+
+        columns_to_insert.append((requested_field_map[delivery_field]["index"], delivery_column_name))
+        field_name_mapping[delivery_column_name] = delivery_field_name
+
+    inserted_count = 0
+    for i, column_name in sorted(columns_to_insert, key=lambda x: x[0]):
+        requested_columns.insert(i + 1 + inserted_count, column_name)
+        inserted_count += 1
+
+    return requested_columns

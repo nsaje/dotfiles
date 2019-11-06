@@ -318,7 +318,7 @@ urlpatterns += [
     ),
     url(
         r"^api/ad_groups/(?P<ad_group_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
-            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+            "|".join(stats.constants.get_top_level_delivery_dimensions())
         ),
         login_required(dash.features.daily_stats.views.AdGroupDeliveryDailyStats.as_view()),
         name="ad_group_delivery_daily_stats",
@@ -340,7 +340,7 @@ urlpatterns += [
     ),
     url(
         r"^api/campaigns/(?P<campaign_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
-            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+            "|".join(stats.constants.get_top_level_delivery_dimensions())
         ),
         login_required(dash.features.daily_stats.views.CampaignDeliveryDailyStats.as_view()),
         name="campaign_delivery_daily_stats",
@@ -362,7 +362,7 @@ urlpatterns += [
     ),
     url(
         r"^api/accounts/(?P<account_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
-            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+            "|".join(stats.constants.get_top_level_delivery_dimensions())
         ),
         login_required(dash.features.daily_stats.views.AccountDeliveryDailyStats.as_view()),
         name="account_delivery_daily_stats",
@@ -384,7 +384,7 @@ urlpatterns += [
     ),
     url(
         r"^api/all_accounts/(?P<delivery_dimension>({}))/daily_stats/$".format(
-            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+            "|".join(stats.constants.get_top_level_delivery_dimensions())
         ),
         login_required(dash.features.daily_stats.views.AllAccountsDeliveryDailyStats.as_view()),
         name="accounts_delivery_daily_stats",

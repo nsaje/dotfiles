@@ -238,6 +238,7 @@ class ReportJobExecutor(JobExecutor):
         column_names = helpers.extract_column_names(job.query["fields"])
         cls._append_currency_column_if_necessary(column_names, column_to_field_name_map)
         cls._append_entity_tag_columns_if_necessary(user, constraints, breakdown, column_names)
+        helpers.insert_delivery_name_columns_if_necessary(column_names, column_to_field_name_map)
 
         currency = None
         account_currency_map = None
@@ -277,6 +278,7 @@ class ReportJobExecutor(JobExecutor):
             else:
                 stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
             helpers.fill_currency_column(rows, columns, currency, account_currency_map)
+            helpers.fill_delivery_name_values_if_necessary(rows, breakdown)
             format_helper.format_values(rows, columns, csv_decimal_separator=csv_decimal_separator)
 
             cls.convert_to_csv(

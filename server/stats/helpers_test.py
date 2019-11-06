@@ -255,7 +255,7 @@ class HelpersTest(TestCase):
             self.assertTrue(helpers.should_query_dashapi([dimension], dimension))
             self.assertTrue(helpers.should_query_dashapi([dimension, "country"], dimension))
 
-        for dimension in set(constants.DeliveryDimension._ALL) - set(constants.DeliveryDimension._EXTENDED):
+        for dimension in constants.get_top_level_delivery_dimensions():
             self.assertTrue(helpers.should_query_dashapi([dimension], dimension))
             self.assertFalse(helpers.should_query_dashapi([dimension, "day"], dimension))
 

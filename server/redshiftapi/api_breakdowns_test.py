@@ -23,7 +23,7 @@ class ApiTest(TestCase):
         self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "ad_group_id"]))
         self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "source_id"]))
 
-        for field in set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED):
+        for field in stats.constants.get_top_level_delivery_dimensions():
             self.assertFalse(api_breakdowns.should_query_all([field]))
             self.assertFalse(api_breakdowns.should_query_all([field, field]))
 
