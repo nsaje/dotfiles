@@ -121,6 +121,18 @@ def get_entity_credits(z1_account_id):
     return core.features.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))
 
 
+def _update_outbrain_account(marketer_id):
+    if not marketer_id:
+        return
+    marketer = core.models.OutbrainAccount.objects.filter(marketer_id=marketer_id).first()
+    if not marketer:
+        core.models.OutbrainAccount.objects.create(marketer_id=marketer_id, used=True)
+        return
+    if marketer and not marketer.used:
+        marketer.used = True
+        marketer.save()
+
+
 def create_agency(request, **params):
     params.update({"is_externally_managed": True})
     return core.models.Agency.objects.create(request, **params)
@@ -148,13 +160,7 @@ def create_account(request, **kwargs):
     new_account = core.models.Account.objects.create(request, agency=agency, **kwargs)
     new_account.settings.update(request, account_type=dash.constants.AccountType.MANAGED, **settings_updates)
 
-    marketer_id = kwargs.get("outbrain_marketer_id")
-    marketer = core.models.OutbrainAccount.objects.filter(marketer_id=marketer_id).first()
-    if marketer_id and not marketer:
-        core.models.OutbrainAccount.objects.create(marketer_id=marketer_id, used=True)
-    elif marketer_id and marketer and marketer.used is False:
-        marketer.used = True
-        marketer.save()
+    _update_outbrain_account(kwargs.get("outbrain_marketer_id", None))
 
     return new_account
 
@@ -163,4 +169,5 @@ def update_account(request, account, **kwargs):
     settings_updates = kwargs.pop("settings", {})
     account.update(request, **kwargs)
     account.settings.update(request, **settings_updates)
+    _update_outbrain_account(kwargs.get("outbrain_marketer_id", None))
     return account

@@ -914,8 +914,7 @@ class AccountTestCase(TestCase):
         )
 
     def test_post_valid_with_id(self, mock_modified_dt):
-        new_ob_account = core.models.OutbrainAccount(marketer_id="EXTERNAL ID", used=False)
-        new_ob_account.save()
+        core.models.OutbrainAccount.objects.create(marketer_id="EXTERNAL ID", used=False)
 
         url = reverse("service.salesforce.account")
         r = self.client.post(
@@ -1372,6 +1371,49 @@ class AccountTestCase(TestCase):
                 }
             },
         )
+
+    def test_put_marketer(self, mock_modified_dt):
+        # create a new OB account
+        acc = magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+            salesforce_id=123,
+        )
+        acc.save(None)
+        acc.settings.update(None, default_account_manager=self.user2, default_sales_representative=self.user)
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.put(
+            url, data={"external_marketer_id": "1234", "internal_marketer_id": "09876"}, format="json"
+        )
+        self.assertEqual(response.data["data"]["external_marketer_id"], "1234")
+        self.assertEqual(response.data["data"]["internal_marketer_id"], "09876")
+        self.assertTrue(core.models.OutbrainAccount.objects.filter(marketer_id="1234", used=True).exists())
+
+        # with existing OB account
+        new_ob_account = core.models.OutbrainAccount.objects.create(marketer_id="qwerty", used=False)
+        acc2 = magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=2,
+            name="Account 2",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+            salesforce_id=123,
+        )
+        acc2.save(None)
+        acc2.settings.update(None, default_account_manager=self.user2, default_sales_representative=self.user)
+        url = reverse("service.salesforce.account", kwargs={"account_id": 2})
+        response = self.client.put(
+            url, data={"external_marketer_id": "qwerty", "internal_marketer_id": "09876"}, format="json"
+        )
+        self.assertEqual(response.data["data"]["external_marketer_id"], "qwerty")
+        self.assertEqual(response.data["data"]["internal_marketer_id"], "09876")
+        new_ob_account.refresh_from_db()
+        self.assertTrue(new_ob_account.used)
 
     def test_put_valid_set_tags(self, mock_modified_dt):
         account = magic_mixer.blend(
