@@ -1,3 +1,4 @@
+import core.features.bid_modifiers.constants
 from utils.constant_base import ConstantBase
 
 
@@ -33,16 +34,28 @@ class TargetType(ConstantBase):
     }
 
 
-TARGET_MV_COLUMNS_MAPPING = {
+TARGET_TYPE_MV_COLUMNS_MAPPING = {
     TargetType.AD_GROUP: ["ad_group_id"],
     TargetType.AD: ["content_ad_id"],
-    TargetType.PUBLISHER: ["publisher_id", "publisher"],
+    TargetType.PUBLISHER: ["publisher", "source_id"],
     TargetType.DEVICE: ["device_type"],
     TargetType.COUNTRY: ["country"],
     TargetType.STATE: ["state"],
     TargetType.DMA: ["dma"],
     TargetType.OS: ["device_os"],
     TargetType.SOURCE: ["source_id"],
+}
+
+
+TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING = {
+    TargetType.AD: core.features.bid_modifiers.constants.BidModifierType.AD,
+    TargetType.PUBLISHER: core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
+    TargetType.DEVICE: core.features.bid_modifiers.constants.BidModifierType.DEVICE,
+    TargetType.COUNTRY: core.features.bid_modifiers.constants.BidModifierType.COUNTRY,
+    TargetType.STATE: core.features.bid_modifiers.constants.BidModifierType.STATE,
+    TargetType.DMA: core.features.bid_modifiers.constants.BidModifierType.DMA,
+    TargetType.OS: core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
+    TargetType.SOURCE: core.features.bid_modifiers.constants.BidModifierType.SOURCE,
 }
 
 
@@ -113,30 +126,31 @@ class MetricType(ConstantBase):
     AVG_CPC = 10
     AVG_CPM = 11
     VISITS = 12
-    UNIQUE_USERS = 13
-    NEW_USERS = 14
-    RETURNING_USERS = 15
-    NEW_USERS_RATIO = 16
-    CLICK_DISCREPANCY = 17
-    PAGEVIEWS = 18
-    PAGEVIEWS_PER_VISIT = 19
-    BOUNCED_VISITS = 20
-    NON_BOUNCED_VISITS = 21
-    BOUNCED_RATE = 22
-    TOTAL_SECONDS = 23
-    TIME_ON_SITE = 24
-    AVG_COST_PER_VISIT = 25
-    AVG_COST_PER_NEW_VISITOR = 26
-    AVG_COST_PER_PAGEVIEW = 27
-    AVG_COST_PER_NON_BOUNCED_VISIT = 28
-    AVG_COST_PER_MINUTE = 29
-    VIDEO_START = 30
-    VIDEO_FIRST_QUARTILE = 31
-    VIDEO_MIDPOINT = 32
-    VIDEO_THIRD_QUARTILE = 33
-    VIDEO_COMPLETE = 34
-    AVG_CPV = 35
-    AVG_CPCV = 36
+    NEW_VISITS = 13
+    UNIQUE_USERS = 14
+    NEW_USERS = 15
+    RETURNING_USERS = 16
+    NEW_USERS_RATIO = 17
+    CLICK_DISCREPANCY = 18
+    PAGEVIEWS = 19
+    PAGEVIEWS_PER_VISIT = 20
+    BOUNCED_VISITS = 21
+    NON_BOUNCED_VISITS = 22
+    BOUNCED_RATE = 23
+    TOTAL_SECONDS = 24
+    AVG_TIME_ON_SITE = 25
+    AVG_COST_PER_VISIT = 26
+    AVG_COST_PER_NEW_VISITOR = 27
+    AVG_COST_PER_PAGEVIEW = 28
+    AVG_COST_PER_NON_BOUNCED_VISIT = 29
+    AVG_COST_PER_MINUTE = 30
+    VIDEO_START = 31
+    VIDEO_FIRST_QUARTILE = 32
+    VIDEO_MIDPOINT = 33
+    VIDEO_THIRD_QUARTILE = 34
+    VIDEO_COMPLETE = 35
+    AVG_CPV = 36
+    AVG_CPCV = 37
 
     _VALUES = {
         DAILY_CAP: "Daily cap",
@@ -151,10 +165,11 @@ class MetricType(ConstantBase):
         AVG_CPC: "Average CPC",
         AVG_CPM: "Average CPM",
         VISITS: "Visits",
+        NEW_VISITS: "New visits",
         UNIQUE_USERS: "Unique users",
         NEW_USERS: "New users",
         RETURNING_USERS: "Returning users",
-        NEW_USERS_RATIO: "New users percentage",  # TODO(anej): ??
+        NEW_USERS_RATIO: "New users percentage",
         CLICK_DISCREPANCY: "Click discrepancy",
         PAGEVIEWS: "Pageviews",
         PAGEVIEWS_PER_VISIT: "Pageviews per visit",
@@ -162,7 +177,7 @@ class MetricType(ConstantBase):
         NON_BOUNCED_VISITS: "Non-bounced visits",
         BOUNCED_RATE: "Bounced rate",
         TOTAL_SECONDS: "Total seconds",
-        TIME_ON_SITE: "Time on site",
+        AVG_TIME_ON_SITE: "Average time on site",
         AVG_COST_PER_VISIT: "Average cost per visit",
         AVG_COST_PER_NEW_VISITOR: "Average cost per new visitor",
         AVG_COST_PER_PAGEVIEW: "Average cost per pageview",
@@ -176,6 +191,42 @@ class MetricType(ConstantBase):
         AVG_CPV: "Average CPV",
         AVG_CPCV: "Average CPCV",
     }
+
+
+METRIC_MV_COLUMNS_MAPPING = {
+    MetricType.CLICKS: "clicks",
+    MetricType.IMPRESSIONS: "impressions",
+    MetricType.TOTAL_SPEND: "local_etfm_cost",
+    MetricType.CTR: "ctr",
+    MetricType.AVG_CPC: "local_etfm_cpc",
+    MetricType.AVG_CPM: "local_etfm_cpm",
+    MetricType.VISITS: "visits",
+    MetricType.PAGEVIEWS: "pageviews",
+    MetricType.CLICK_DISCREPANCY: "click_discrepancy",
+    MetricType.NEW_VISITS: "new_visits",
+    MetricType.NEW_USERS_RATIO: "percent_new_users",
+    MetricType.BOUNCED_RATE: "bounce_rate",
+    MetricType.PAGEVIEWS_PER_VISIT: "pv_per_visit",
+    MetricType.AVG_TIME_ON_SITE: "avg_tos",
+    MetricType.RETURNING_USERS: "returning_users",
+    MetricType.UNIQUE_USERS: "unique_users",
+    MetricType.NEW_USERS: "new_users",
+    MetricType.BOUNCED_VISITS: "bounced_visits",
+    MetricType.TOTAL_SECONDS: "total_seconds",
+    MetricType.NON_BOUNCED_VISITS: "non_bounced_visits",
+    MetricType.AVG_COST_PER_VISIT: "local_avg_etfm_cost_per_visit",
+    MetricType.AVG_COST_PER_NEW_VISITOR: "local_avg_etfm_cost_for_new_visitor",
+    MetricType.AVG_COST_PER_PAGEVIEW: "local_avg_etfm_cost_per_pageview",
+    MetricType.AVG_COST_PER_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
+    MetricType.AVG_COST_PER_MINUTE: "local_avg_etfm_cost_per_minute",
+    MetricType.VIDEO_START: "video_start",
+    MetricType.VIDEO_FIRST_QUARTILE: "video_first_quartile",
+    MetricType.VIDEO_MIDPOINT: "video_midpoint",
+    MetricType.VIDEO_THIRD_QUARTILE: "video_third_quartile",
+    MetricType.VIDEO_COMPLETE: "video_complete",
+    MetricType.AVG_CPV: "local_video_etfm_cpv",
+    MetricType.AVG_CPCV: "local_video_etfm_cpcv",
+}
 
 
 # TODO: find a better name
@@ -205,8 +256,11 @@ class ValueType(ConstantBase):
         AD_GROUP_CLICK_DAILY_CAP: "Ad group click daily cap",
         DAILY_CAP: "Daily cap",
         TOTAL_SPEND: "Total spend",
-        TOTAL_SPEND_DAILY_AVG: "Total spend (daily average)",
+        TOTAL_SPEND_DAILY_AVG: "Total spend (daily average)",  # TODO: AUTOCAMP
     }
+
+
+VALUE_MV_COLUMNS_MAPPING = {ValueType.TOTAL_SPEND: "local_etfm_cost"}
 
 
 class Operator(ConstantBase):
@@ -214,8 +268,8 @@ class Operator(ConstantBase):
     NOT_EQUALS = 2
     LESS_THAN = 3
     GREATER_THAN = 4
-    BETWEEN = 5
-    NOT_BETWEEN = 6
+    BETWEEN = 5  # will this just be possible user input and then 2 conditions are created automatically?
+    NOT_BETWEEN = 6  # same ^
     CONTAINS = 7
     NOT_CONTAINS = 8
 
@@ -229,3 +283,10 @@ class Operator(ConstantBase):
         CONTAINS: "Contains",
         NOT_CONTAINS: "Does not contain",
     }
+
+
+class ApplyStatus(ConstantBase):
+    SUCCESS = 1
+    FAILURE = 2
+
+    _VALUES = {SUCCESS: "Rule application successful", FAILURE: "Rule application failed"}

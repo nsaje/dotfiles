@@ -9,7 +9,7 @@ class RuleCondition(models.Model):
 
     left_operand_window = models.IntegerField(choices=constants.MetricWindow.get_choices())
     left_operand_type = models.IntegerField(choices=constants.MetricType.get_choices())
-    left_operand_value = models.CharField(max_length=127)
+    left_operand_modifier = models.FloatField(default=1.0)
 
     operator = models.IntegerField(choices=constants.Operator.get_choices())
 

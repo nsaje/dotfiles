@@ -5,6 +5,7 @@ import core.models
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
+from .. import RuleHistory
 from .. import constants
 from . import service
 
@@ -13,12 +14,18 @@ class ServiceTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_process_rules(self, mock_stats, mock_format, mock_apply):
+    def test_process_publisher_rules(self, mock_stats, mock_format, mock_apply):
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
         mock_stats.return_value = [123]
         mock_format.return_value = {ag.id: {} for ag in ad_groups}
-        magic_mixer.blend(Rule, target=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:4])
-        magic_mixer.blend(Rule, target=constants.TargetType.OS, ad_groups_included=ad_groups[1:5])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:4])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[1:5])
+        magic_mixer.blend(
+            Rule,
+            state=constants.RuleState.PAUSED,
+            target_type=constants.TargetType.PUBLISHER,
+            ad_groups_included=ad_groups,
+        )
 
         service.process_rules()
 
@@ -30,6 +37,29 @@ class ServiceTest(TestCase):
         self.assertEqual([mock.call(constants.TargetType.PUBLISHER, [123])], mock_format.call_args_list)
 
         self.assertEqual(4, mock_apply.call_count)
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_process_publisher_rules_fail(self, mock_stats, mock_format, mock_apply):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        mock_stats.return_value = [123]
+        mock_format.return_value = {ad_group.id: {}}
+        mock_apply.side_effect = Exception("test")
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            ad_groups_included=[ad_group],
+        )
+        self.assertFalse(RuleHistory.objects.exists())
+
+        service.process_rules()
+
+        history = RuleHistory.objects.get()
+        self.assertEqual(rule, history.rule)
+        self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
+        self.assertTrue("Traceback (most recent call last):" in history.changes_text)
 
     def test_get_rules_by_ad_group_map(self):
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
@@ -49,12 +79,12 @@ class ServiceTest(TestCase):
             rules_map,
         )
 
-    def test_format_stats(self):
-        target = constants.TargetType.PUBLISHER
+    def test_format_publisher_stats(self):
+        target_type = constants.TargetType.PUBLISHER
         stats = [
             {
                 "ad_group_id": 123,
-                "publisher_id": "pub1",
+                "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
                 "cpc": 0.5,
@@ -62,7 +92,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 123,
-                "publisher_id": "pub1",
+                "source_id": 12,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_30_DAYS,
                 "cpc": 0.3,
@@ -70,7 +100,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 123,
-                "publisher_id": "pub2",
+                "source_id": 12,
                 "publisher": "pub2.com",
                 "window_key": constants.MetricWindow.LAST_DAY,
                 "cpc": 0.5,
@@ -78,7 +108,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 123,
-                "publisher_id": "pub2",
+                "source_id": 12,
                 "publisher": "pub2.com",
                 "window_key": constants.MetricWindow.LIFETIME,
                 "cpc": None,
@@ -86,7 +116,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 321,
-                "publisher_id": "pub1",
+                "source_id": 32,
                 "publisher": "pub1.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
                 "cpc": 0.1,
@@ -94,7 +124,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 321,
-                "publisher_id": "pub3",
+                "source_id": 21,
                 "publisher": "pub3.com",
                 "window_key": constants.MetricWindow.LAST_DAY,
                 "cpc": 0.2,
@@ -102,7 +132,7 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": None,
-                "publisher_id": "pub4",
+                "source_id": 12,
                 "publisher": "pub4.com",
                 "window_key": constants.MetricWindow.LAST_3_DAYS,
                 "cpc": 0.5,
@@ -110,37 +140,41 @@ class ServiceTest(TestCase):
             },
             {
                 "ad_group_id": 123,
-                "publisher_id": None,
-                "publisher": "None",
+                "source_id": 12,
+                "publisher": None,
+                "window_key": constants.MetricWindow.LAST_30_DAYS,
+                "cpc": 0.5,
+                "cpm": 0.7,
+            },
+            {
+                "ad_group_id": 123,
+                "source_id": None,
+                "publisher": "pub4.com",
                 "window_key": constants.MetricWindow.LAST_7_DAYS,
                 "cpc": 0.5,
                 "cpm": 0.7,
             },
             {"ad_group_id": 321, "publisher": "pub5", "window_key": None, "cpc": 0.5, "cpm": 0.7},
         ]
-        formatted_stats = service._format_stats(target, stats)
+        formatted_stats = service._format_stats(target_type, stats)
         self.assertEqual(
             {
                 123: {
-                    "pub1": {
-                        "publisher": "pub1.com",
+                    "pub1.com__12": {
                         "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.5, constants.MetricWindow.LAST_30_DAYS: 0.3},
                         "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.7, constants.MetricWindow.LAST_30_DAYS: 0.1},
                     },
-                    "pub2": {
-                        "publisher": "pub2.com",
+                    "pub2.com__12": {
                         "cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
                         "cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
                     },
                 },
                 321: {
-                    "pub1": {
-                        "publisher": "pub1.com",
+                    "pub1.com__32": {
                         "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.1},
                         "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.2},
                     },
-                    "pub3": {
-                        "publisher": "pub3.com",
+                    "pub3.com__21": {
                         "cpc": {constants.MetricWindow.LAST_DAY: 0.2},
                         "cpm": {constants.MetricWindow.LAST_DAY: 0.1},
                     },

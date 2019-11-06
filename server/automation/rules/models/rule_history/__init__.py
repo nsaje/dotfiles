@@ -1,1 +1,2 @@
-from .model import RuleHistory
+from .models import RuleHistory
+from .models import RuleTriggerHistory

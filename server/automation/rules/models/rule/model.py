@@ -15,11 +15,11 @@ class Rule(models.Model):
 
     ad_groups_included = models.ManyToManyField(core.models.AdGroup)
 
-    target = models.IntegerField(choices=constants.TargetType.get_choices())
+    target_type = models.IntegerField(choices=constants.TargetType.get_choices())
 
     action_type = models.IntegerField(choices=constants.ActionType.get_choices())
-    change_step = models.DecimalField(max_digits=10, decimal_places=4)
-    change_limit = models.DecimalField(max_digits=10, decimal_places=4)
+    change_step = models.FloatField()
+    change_limit = models.FloatField()
     cooldown = models.IntegerField()
     window = models.IntegerField(choices=constants.MetricWindow.get_choices(), default=constants.MetricWindow.LIFETIME)
 
