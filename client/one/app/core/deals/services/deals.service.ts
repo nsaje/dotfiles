@@ -12,11 +12,18 @@ export class DealsService {
 
     list(
         agencyId: string,
-        offset: number,
-        limit: number,
+        offset: number | null,
+        limit: number | null,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal[]> {
-        return this.endpoint.list(agencyId, offset, limit, requestStateUpdater);
+        return this.endpoint.list(
+            agencyId,
+            offset,
+            limit,
+            keyword,
+            requestStateUpdater
+        );
     }
 
     save(

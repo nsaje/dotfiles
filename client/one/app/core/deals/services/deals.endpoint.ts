@@ -14,8 +14,9 @@ export class DealsEndpoint {
 
     list(
         agencyId: string,
-        offset: number,
-        limit: number,
+        offset: number | null,
+        limit: number | null,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal[]> {
         const request = {
@@ -29,7 +30,11 @@ export class DealsEndpoint {
 
         return this.http
             .get<ApiResponse<Deal[]>>(request.url, {
-                params: {offset: `${offset}`, limit: `${limit}`},
+                params: {
+                    offset: `${offset}`,
+                    limit: `${limit}`,
+                    keyword: keyword,
+                },
             })
             .pipe(
                 map(response => {

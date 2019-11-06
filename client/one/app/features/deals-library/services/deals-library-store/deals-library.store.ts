@@ -46,6 +46,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                     this.state.agencyId,
                     offset,
                     pageSize,
+                    null,
                     this.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

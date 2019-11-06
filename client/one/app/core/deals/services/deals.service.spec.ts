@@ -79,12 +79,13 @@ describe('DealsService', () => {
     it('should get deals via endpoint', () => {
         const limit = 10;
         const offset = 0;
+        const keyword = 'blue';
         dealsEndpointStub.list.and
             .returnValue(of(mockedDeals, asapScheduler))
             .calls.reset();
 
         service
-            .list(mockedAgencyId, offset, limit, requestStateUpdater)
+            .list(mockedAgencyId, offset, limit, keyword, requestStateUpdater)
             .subscribe(deals => {
                 expect(deals).toEqual(mockedDeals);
             });
@@ -93,6 +94,7 @@ describe('DealsService', () => {
             mockedAgencyId,
             offset,
             limit,
+            keyword,
             requestStateUpdater
         );
     });
