@@ -10,9 +10,12 @@ import {
     ViewChild,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
+import {merge, Subject, Observable} from 'rxjs';
+import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {ColDef} from 'ag-grid-community';
 import * as moment from 'moment';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
+import {FieldErrors} from 'one/app/shared/types/field-errors';
 import {Deal} from '../../../../core/deals/types/deal';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {DealConnectionRowData} from '../../types/deal-connection-row-data';
@@ -22,8 +25,7 @@ import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/ty
 import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal-actions-cell.component';
 import {ConnectionActionsCellComponent} from '../../components/connection-actions-cell/connection-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {merge, Subject, Observable} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -125,6 +127,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     ];
     connectionsRowData: DealConnectionRowData[];
     connectionType: string;
+    canSaveActiveEntity = false;
 
     constructor(
         public store: DealsLibraryStore,
@@ -232,9 +235,26 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     private subscribeToStateUpdates() {
-        merge(this.createConnectionsUpdater$())
+        merge(
+            this.createConnectionsUpdater$(),
+            this.createActiveEntityErrorUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
+    }
+
+    private createActiveEntityErrorUpdater$(): Observable<any> {
+        return this.store.state$.pipe(
+            map(state => state.activeEntity.fieldsErrors),
+            distinctUntilChanged(),
+            tap(fieldsErrors => {
+                // @ts-ignore
+                this.canSaveActiveEntity = Object.values(fieldsErrors).every(
+                    (fieldValue: FieldErrors) =>
+                        arrayHelpers.isEmpty(fieldValue)
+                );
+            })
+        );
     }
 
     private createConnectionsUpdater$(): Observable<DealConnection[]> {

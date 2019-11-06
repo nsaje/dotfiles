@@ -55,13 +55,14 @@
                         !state.requests.create.inProgress
                     "
                     class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                    [disabled]="!canSaveActiveEntity"
                     (click)="saveDeal()"
                 >
                     Save
                 </button>
                 <button
                     class="zem-button zem-button--outlined"
-                    [attr.disabled]="
+                    [disabled]="
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
