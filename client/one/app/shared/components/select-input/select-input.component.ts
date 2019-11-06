@@ -115,8 +115,13 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
         ) {
             return;
         }
-        const className = 'ng-dropdown-panel-items';
-        if (($event.target.className as string).indexOf(className) > -1) {
+        const tagName = 'ng-dropdown';
+        if (
+            commonHelpers.isDefined($event.target.offsetParent) &&
+            ($event.target.offsetParent.tagName as string)
+                .toLowerCase()
+                .indexOf(tagName) > -1
+        ) {
             return;
         }
         this.zemSelect.close();

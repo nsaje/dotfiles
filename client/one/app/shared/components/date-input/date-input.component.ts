@@ -90,6 +90,15 @@ export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
         ) {
             return;
         }
+        const tagName = 'ngb-datepicker';
+        if (
+            commonHelpers.isDefined($event.target.offsetParent) &&
+            ($event.target.offsetParent.tagName as string)
+                .toLowerCase()
+                .indexOf(tagName) > -1
+        ) {
+            return;
+        }
         this.zemDatepicker.close();
     }
 
