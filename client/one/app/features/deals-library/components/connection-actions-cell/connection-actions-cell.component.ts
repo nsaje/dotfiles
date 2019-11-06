@@ -18,7 +18,7 @@ export class ConnectionActionsCellComponent
     }
 
     removeConnection() {
-        this.params.context.componentParent.removeConnection(this.connection);
+        this.params.context.componentParent.onRemoveConnection(this.connection);
     }
 
     refresh(): boolean {

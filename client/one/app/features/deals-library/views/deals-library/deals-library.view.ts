@@ -17,13 +17,10 @@ import * as moment from 'moment';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {FieldErrors} from 'one/app/shared/types/field-errors';
 import {Deal} from '../../../../core/deals/types/deal';
-import {DealConnection} from '../../../../core/deals/types/deal-connection';
-import {DealConnectionRowData} from '../../types/deal-connection-row-data';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {DealsLibraryStore} from '../../services/deals-library-store/deals-library.store';
 import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/types/pagination-change-event';
 import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal-actions-cell.component';
-import {ConnectionActionsCellComponent} from '../../components/connection-actions-cell/connection-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 
@@ -53,11 +50,11 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         pageSize: 20,
     };
 
-    dealsPaginationOptions: PaginationOptions = {
+    paginationOptions: PaginationOptions = {
         type: 'server',
     };
 
-    dealsColumnDefs: ColDef[] = [
+    columnDefs: ColDef[] = [
         {headerName: 'Id', field: 'id'},
         {headerName: 'Deal name', field: 'name'},
         {headerName: 'Deal Id', field: 'dealId'},
@@ -112,20 +109,6 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         },
     ];
 
-    connectionsPaginationOptions: PaginationOptions = {
-        type: 'client',
-    };
-    connectionsColumnDefs: ColDef[] = [
-        {headerName: 'Connection name', field: 'name'},
-        {
-            headerName: '',
-            width: 40,
-            suppressSizeToFit: true,
-            cellRendererFramework: ConnectionActionsCellComponent,
-            pinned: 'right',
-        },
-    ];
-    connectionsRowData: DealConnectionRowData[];
     connectionType: string;
     canSaveActiveEntity = false;
 
@@ -142,8 +125,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         if (commonHelpers.isDefined(this.agencyId)) {
             this.subscribeToStateUpdates();
             const preselectedPagination = this.getPreselectedPagination();
-            this.dealsPaginationOptions = {
-                ...this.dealsPaginationOptions,
+            this.paginationOptions = {
+                ...this.paginationOptions,
                 ...preselectedPagination,
             };
             this.store
@@ -220,25 +203,14 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         this.store.loadEntities(pagination.page, pagination.pageSize);
     }
 
-    removeConnection(connection: DealConnectionRowData) {
-        if (
-            confirm(
-                `Are you sure you wish to delete ${connection.name} connection?`
-            )
-        ) {
-            this.store
-                .deleteActiveEntityConnection(connection.connectionId)
-                .then(() => {
-                    this.store.loadActiveEntityConnections();
-                });
-        }
+    removeConnection(connectionId: string) {
+        this.store.deleteActiveEntityConnection(connectionId).then(() => {
+            this.store.loadActiveEntityConnections();
+        });
     }
 
     private subscribeToStateUpdates() {
-        merge(
-            this.createConnectionsUpdater$(),
-            this.createActiveEntityErrorUpdater$()
-        )
+        merge(this.createActiveEntityErrorUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -252,31 +224,6 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                 this.canSaveActiveEntity = Object.values(fieldsErrors).every(
                     (fieldValue: FieldErrors) =>
                         arrayHelpers.isEmpty(fieldValue)
-                );
-            })
-        );
-    }
-
-    private createConnectionsUpdater$(): Observable<DealConnection[]> {
-        return this.store.state$.pipe(
-            map(state => state.activeEntity.connections),
-            distinctUntilChanged(),
-            tap(connections => {
-                const rowData = connections.filter(
-                    (connection: DealConnection) => {
-                        return commonHelpers.isNotEmpty(
-                            connection[this.connectionType]
-                        );
-                    }
-                );
-                this.connectionsRowData = rowData.map(
-                    (connection: DealConnection) => {
-                        return {
-                            ...connection[this.connectionType],
-                            connectionId: connection.id,
-                            connectionType: this.connectionType,
-                        };
-                    }
                 );
             })
         );

@@ -12,9 +12,9 @@
         </div>
         <zem-smart-grid
             [rowData]="state.entities"
-            [columnDefs]="dealsColumnDefs"
+            [columnDefs]="columnDefs"
             [context]="context"
-            [paginationOptions]="dealsPaginationOptions"
+            [paginationOptions]="paginationOptions"
             [paginationCount]="state.requests.list.count"
             (paginationChange)="onPaginationChange($event)"
         >
@@ -87,13 +87,11 @@
                 </div>
             </div>
             <div class="zem-modal__body">
-                <zem-smart-grid
-                    [rowData]="connectionsRowData"
-                    [columnDefs]="connectionsColumnDefs"
-                    [context]="context"
-                    [paginationOptions]="connectionsPaginationOptions"
-                >
-                </zem-smart-grid>
+                <zem-connections-list
+                    [connections]="state.activeEntity.connections"
+                    [connectionType]="connectionType"
+                    (removeConnection)="removeConnection($event)"
+                ></zem-connections-list>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button
