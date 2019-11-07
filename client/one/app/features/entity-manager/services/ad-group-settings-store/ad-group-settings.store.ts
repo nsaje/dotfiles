@@ -43,7 +43,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
-        this.dealsRequestStateUpdater = this.getDealsRequestStateUpdater();
+        this.dealsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'dealsRequests'
+        );
     }
 
     loadEntityDefaults(campaignId: string) {
@@ -492,20 +495,5 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 this.state.entity.manageRtbSourcesAsOne
             )
         );
-    }
-
-    private getDealsRequestStateUpdater(): RequestStateUpdater {
-        return (requestName, requestState) => {
-            this.setState({
-                ...this.state,
-                dealsRequests: {
-                    ...this.state.dealsRequests,
-                    [requestName]: {
-                        ...this.state.requests[requestName],
-                        ...requestState,
-                    },
-                },
-            });
-        };
     }
 }

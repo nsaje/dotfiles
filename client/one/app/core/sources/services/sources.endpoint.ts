@@ -19,7 +19,7 @@ export class SourcesEndpoint {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
             }/agencies/${agencyId}/sources/`,
-            name: 'listSources',
+            name: 'list',
         };
 
         requestStateUpdater(request.name, {

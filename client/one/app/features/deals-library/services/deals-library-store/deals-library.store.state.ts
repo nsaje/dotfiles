@@ -29,6 +29,9 @@ export class DealsLibraryStoreState {
         fieldsErrors: new DealsLibraryStoreFieldsErrorsState(),
     };
     sources: Source[] = [];
+    sourcesRequests = {
+        list: {} as RequestState,
+    };
     requests = {
         list: {} as RequestState,
         create: {} as RequestState,
@@ -38,6 +41,5 @@ export class DealsLibraryStoreState {
         remove: {} as RequestState,
         listConnections: {} as RequestState,
         removeConnection: {} as RequestState,
-        listSources: {} as RequestState,
     };
 }

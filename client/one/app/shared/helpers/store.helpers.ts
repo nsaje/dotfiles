@@ -3,11 +3,14 @@ import {RequestStateUpdater} from '../types/request-state-updater';
 import * as commonHelpers from './common.helpers';
 import * as deepmerge from 'deepmerge';
 
-export function getStoreRequestStateUpdater(store: any): RequestStateUpdater {
+export function getStoreRequestStateUpdater(
+    store: any,
+    requestsStateName: string = 'requests'
+): RequestStateUpdater {
     return (requestName, requestState) => {
         store.setState({
             ...store.state,
-            requests: {
+            [requestsStateName]: {
                 ...store.state.requests,
                 [requestName]: {
                     ...store.state.requests[requestName],

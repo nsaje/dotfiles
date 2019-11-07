@@ -18,6 +18,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private sourcesRequestStateUpdater: RequestStateUpdater;
 
     constructor(
         private dealsService: DealsService,
@@ -26,6 +27,10 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         super(new DealsLibraryStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
+        );
+        this.sourcesRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'sourcesRequests'
         );
     }
 
@@ -214,7 +219,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     private loadSources(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.sourcesService
-                .list(this.state.agencyId, this.requestStateUpdater)
+                .list(this.state.agencyId, this.sourcesRequestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     sources => {
