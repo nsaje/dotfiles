@@ -23,7 +23,7 @@ class ActionsTest(TestCase):
 
         self.assertFalse(core.features.bid_modifiers.BidModifier.objects.exists())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier = core.features.bid_modifiers.BidModifier.objects.get(
             ad_group=ad_group,
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
@@ -31,12 +31,12 @@ class ActionsTest(TestCase):
             source=source,
         )
         self.assertEqual(1.8, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
     def test_adjust_publisher_bid_modifier_increase(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -58,20 +58,20 @@ class ActionsTest(TestCase):
             change_limit=2.0,
         )
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.9, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(2.0, bid_modifier.modifier)
-        self.assertFalse(changed)
+        self.assertFalse(update.has_changes())
 
     def test_adjust_publisher_bid_modifier_decrease_new(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -86,7 +86,7 @@ class ActionsTest(TestCase):
 
         self.assertFalse(core.features.bid_modifiers.BidModifier.objects.exists())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier = core.features.bid_modifiers.BidModifier.objects.get(
             ad_group=ad_group,
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
@@ -94,12 +94,12 @@ class ActionsTest(TestCase):
             source=source,
         )
         self.assertEqual(0.7, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(0.5, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
     def test_adjust_publisher_bid_modifier_decrease(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -121,20 +121,20 @@ class ActionsTest(TestCase):
             change_limit=1.6,
         )
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.7, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.6, bid_modifier.modifier)
-        self.assertTrue(changed)
+        self.assertTrue(update.has_changes())
 
-        changed = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
+        update = actions.adjust_bid_modifier("publisher1.com__" + str(source.id), rule, ad_group)
         bid_modifier.refresh_from_db()
         self.assertEqual(1.6, bid_modifier.modifier)
-        self.assertFalse(changed)
+        self.assertFalse(update.has_changes())
 
     def test_adjust_publisher_bid_modifier_unsupported_action(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)

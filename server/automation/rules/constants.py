@@ -268,18 +268,14 @@ class Operator(ConstantBase):
     NOT_EQUALS = 2
     LESS_THAN = 3
     GREATER_THAN = 4
-    BETWEEN = 5  # will this just be possible user input and then 2 conditions are created automatically?
-    NOT_BETWEEN = 6  # same ^
-    CONTAINS = 7
-    NOT_CONTAINS = 8
+    CONTAINS = 5
+    NOT_CONTAINS = 6
 
     _VALUES = {
         EQUALS: "Is equal to",
         NOT_EQUALS: "Is not equal to",
         LESS_THAN: "Is less than",
         GREATER_THAN: "Is greater than",
-        BETWEEN: "Is between",
-        NOT_BETWEEN: "Is not between",
         CONTAINS: "Contains",
         NOT_CONTAINS: "Does not contain",
     }

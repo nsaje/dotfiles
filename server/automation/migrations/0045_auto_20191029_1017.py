@@ -4,7 +4,7 @@ import django.db.models.deletion
 from django.db import migrations
 from django.db import models
 
-import automation.rules.models.rule_history.instance
+import automation.rules.models.common
 
 
 class Migration(migrations.Migration):
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={"verbose_name": "Rule trigger history", "verbose_name_plural": "Rule trigger history"},
-            bases=(automation.rules.models.rule_history.instance.RuleHistoryInstanceMixin, models.Model),
+            bases=(automation.rules.models.common.RuleHistoryInstanceMixin, models.Model),
         ),
         migrations.RenameField(model_name="rule", old_name="target", new_name="target_type"),
         migrations.RemoveField(model_name="rulecondition", name="left_operand_value"),

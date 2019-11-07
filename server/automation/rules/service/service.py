@@ -1,11 +1,12 @@
 import traceback
+from collections import ChainMap
 from collections import defaultdict
 from typing import Callable
 from typing import DefaultDict
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Sequence
-from typing import Union
 
 import automation.rules.constants
 import core.models
@@ -15,6 +16,7 @@ from utils import zlogging
 from .. import Rule
 from .. import RuleHistory
 from .. import constants
+from .actions import ValueChangeData
 from .apply import apply_rule
 
 logger = zlogging.getLogger(__name__)
@@ -36,17 +38,15 @@ def process_rules() -> None:
 
             for rule in relevant_rules:
                 try:
-                    apply_rule(rule, ad_group, stats.get(ad_group.id, {}))
+                    changes = apply_rule(rule, ad_group, stats.get(ad_group.id, {}))
+                    if changes:
+                        _write_history(rule, ad_group, constants.ApplyStatus.SUCCESS, changes=changes)
+
                 except Exception as e:
                     logger.warning(
                         "Rule application failed: {}".format(str(e)), ad_group_id=str(ad_group), rule_id=str(rule)
                     )
-                    RuleHistory.objects.create(
-                        rule=rule,
-                        ad_group=ad_group,
-                        status=constants.ApplyStatus.FAILURE,
-                        changes_text=traceback.format_exc(),
-                    )
+                    _write_history(rule, ad_group, constants.ApplyStatus.FAILURE, changes_text=traceback.format_exc())
 
 
 def _get_rules_by_ad_group_map(rules: Sequence[Rule]) -> DefaultDict[core.models.AdGroup, List[Rule]]:
@@ -61,7 +61,7 @@ def _get_rules_by_ad_group_map(rules: Sequence[Rule]) -> DefaultDict[core.models
 
 def _format_stats(
     target_type: int, stats: Sequence[Dict]
-) -> DefaultDict[int, DefaultDict[str, DefaultDict[str, DefaultDict[int, Union[None, int, float]]]]]:
+) -> DefaultDict[int, DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]]]:
 
     dict_tree: Callable[[], DefaultDict] = lambda: defaultdict(dict_tree)  # noqa
     formatted_stats = dict_tree()
@@ -82,3 +82,23 @@ def _format_stats(
             formatted_stats[ad_group_id][target_key][metric][window_key] = value
 
     return formatted_stats
+
+
+def _write_history(
+    rule: Rule,
+    ad_group: core.models.AdGroup,
+    status: int,
+    changes: Optional[Sequence[ValueChangeData]] = None,
+    changes_text: Optional[str] = None,
+) -> None:
+    if changes and changes_text is None:
+        # TODO: text formatting
+        changes_text = "Updated targets: {}".format(", ".join([str(change.target) for change in changes]))
+
+    RuleHistory.objects.create(
+        rule=rule,
+        ad_group=ad_group,
+        status=status,
+        changes=dict(ChainMap(*[c.to_dict() for c in changes])) if changes else None,
+        changes_text=changes_text,
+    )

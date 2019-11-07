@@ -2,28 +2,16 @@ from django.test import TestCase
 
 from utils.magic_mixer import magic_mixer
 
-from . import models
-
-
-class RuleTriggerHistoryManagerTest(TestCase):
-    def test_update(self):
-        magic_mixer.blend(models.RuleTriggerHistory)
-        with self.assertRaises(AssertionError):
-            models.RuleTriggerHistory.objects.update()
-
-    def test_delete(self):
-        magic_mixer.blend(models.RuleTriggerHistory)
-        with self.assertRaises(AssertionError):
-            models.RuleTriggerHistory.objects.delete()
+from . import model
 
 
 class RuleHistoryManagerTest(TestCase):
     def test_update(self):
-        magic_mixer.blend(models.RuleHistory)
+        magic_mixer.blend(model.RuleHistory)
         with self.assertRaises(AssertionError):
-            models.RuleHistory.objects.update()
+            model.RuleHistory.objects.update()
 
     def test_delete(self):
-        magic_mixer.blend(models.RuleHistory)
+        magic_mixer.blend(model.RuleHistory)
         with self.assertRaises(AssertionError):
-            models.RuleHistory.objects.delete()
+            model.RuleHistory.objects.delete()

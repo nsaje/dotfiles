@@ -1,4 +1,4 @@
 from .rule import Rule
 from .rule_condition import RuleCondition
 from .rule_history import RuleHistory
-from .rule_history import RuleTriggerHistory
+from .rule_trigger_history import RuleTriggerHistory

@@ -1,3 +1,8 @@
+import dataclasses
+from typing import Dict
+from typing import Optional
+from typing import Union
+
 import core.features.bid_modifiers
 import core.models
 
@@ -5,7 +10,20 @@ from .. import Rule
 from .. import constants
 
 
-def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup) -> bool:
+@dataclasses.dataclass
+class ValueChangeData:
+    target: Union[str, int]
+    old_value: Optional[Union[str, float]] = None
+    new_value: Optional[Union[str, float]] = None
+
+    def has_changes(self) -> bool:
+        return self.new_value != self.old_value
+
+    def to_dict(self) -> Dict[Union[str, int], Dict[str, Optional[Union[str, float]]]]:
+        return {self.target: {"old_value": self.old_value, "new_value": self.new_value}}
+
+
+def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
     if rule.action_type == constants.ActionType.INCREASE_BID_MODIFIER:
         limiter, change = min, rule.change_step
     elif rule.action_type == constants.ActionType.DECREASE_BID_MODIFIER:
@@ -36,4 +54,4 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup) 
         ad_group, bid_modifier_type, target, source, modifier, write_history=False, propagate_to_k1=False
     )
 
-    return modifier != base_modifier
+    return ValueChangeData(target=target, old_value=base_modifier, new_value=modifier)

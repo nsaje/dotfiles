@@ -1,6 +1,8 @@
 import datetime
 from typing import DefaultDict
 from typing import Dict
+from typing import Optional
+from typing import Sequence
 from typing import Union
 
 from django.db import transaction
@@ -13,6 +15,7 @@ from .. import Rule
 from .. import RuleTriggerHistory
 from .. import constants
 from . import actions
+from .actions import ValueChangeData
 
 ACTION_TYPE_APPLY_FN_MAPPING = {
     constants.ActionType.INCREASE_BID_MODIFIER: actions.adjust_bid_modifier,
@@ -23,16 +26,22 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
 def apply_rule(
     rule: Rule,
     ad_group: core.models.AdGroup,
-    ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Union[None, int, float]]]], Dict],
-) -> None:
+    ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
+) -> Sequence[ValueChangeData]:
+    changes = []
+
     for target, target_stats in ad_group_stats.items():
         if _is_on_cooldown(target, rule, ad_group):
             continue
 
         if _meets_all_conditions(rule, target_stats):
             with transaction.atomic():
-                if _apply_action(target, rule, ad_group):
+                update = _apply_action(target, rule, ad_group)
+                if update.has_changes():
                     _write_trigger_history(target, rule, ad_group)
+                    changes.append(update)
+
+    return changes
 
 
 def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> bool:
@@ -42,9 +51,7 @@ def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> b
     ).exists()
 
 
-def _meets_all_conditions(
-    rule: Rule, target_stats: DefaultDict[str, DefaultDict[int, Union[None, int, float]]]
-) -> bool:
+def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]) -> bool:
     for condition in rule.conditions.all():
         left_operand_key = constants.METRIC_MV_COLUMNS_MAPPING[condition.left_operand_type]
         left_operand_stat_value = target_stats[left_operand_key][condition.left_operand_window]
@@ -91,7 +98,7 @@ def _meets_condition(operator: int, left_value, right_value) -> bool:
     raise ValueError("Invalid operator type")
 
 
-def _apply_action(target: str, rule: Rule, ad_group: core.models.AdGroup) -> bool:
+def _apply_action(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
     apply_fn = ACTION_TYPE_APPLY_FN_MAPPING[rule.action_type]
     return apply_fn(target, rule, ad_group)
 
