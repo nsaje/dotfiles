@@ -10,6 +10,7 @@ import {
     NgbPaginationModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
+import {NgOptionHighlightModule} from '@ng-select/ng-option-highlight';
 import {NgxFileDropModule} from 'ngx-file-drop';
 import {AgGridModule} from 'ag-grid-angular';
 
@@ -51,6 +52,8 @@ import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
 import {LoadingOverlayComponent} from './components/smart-grid/components/loading-overlay/loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
+import {SelectListComponent} from './components/select-list/select-list.component';
+import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -61,6 +64,7 @@ const EXPORTED_DECLARATIONS = [
     FocusDirective,
     PopoverDirective,
     InternalFeatureDirective,
+    TextHighlightDirective,
 
     // Components
     CategorizedSelectComponent,
@@ -96,6 +100,7 @@ const EXPORTED_DECLARATIONS = [
     LoadingOverlayComponent,
     NoRowsOverlayComponent,
     DealEditFormComponent,
+    SelectListComponent,
 ];
 
 @NgModule({
@@ -107,6 +112,7 @@ const EXPORTED_DECLARATIONS = [
         HighchartsChartModule,
         NgbDatepickerModule,
         NgSelectModule,
+        NgOptionHighlightModule,
         NgbPopoverModule,
         NgxFileDropModule,
         AgGridModule.withComponents([

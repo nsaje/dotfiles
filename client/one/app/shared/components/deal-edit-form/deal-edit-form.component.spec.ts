@@ -18,6 +18,7 @@ import {DecimalInputComponent} from '../decimal-input/decimal-input.component';
 import {DecimalFormGroupComponent} from '../decimal-form-group/decimal-form-group.component';
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event/filter-keydown-event.directive';
+import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 
 describe('DealEditFormComponent', () => {
     let component: DealEditFormComponent;
@@ -29,6 +30,7 @@ describe('DealEditFormComponent', () => {
                 FocusDirective,
                 PopoverDirective,
                 FilterKeydownEventDirective,
+                TextHighlightDirective,
                 HelpPopoverComponent,
                 CheckboxInputComponent,
                 PrefixedInputComponent,

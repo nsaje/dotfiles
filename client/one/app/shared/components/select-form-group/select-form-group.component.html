@@ -24,8 +24,14 @@
             [isClearable]="isClearable"
             [groupByValue]="groupByValue"
             [orderByValue]="orderByValue"
+            [closeOnSelect]="closeOnSelect"
+            [clearSearchOnSelect]="clearSearchOnSelect"
+            [isLoading]="isLoading"
+            [searchFn]="searchFn"
+            [debounceTime]="debounceTime"
             [hasError]="errors && errors.length > 0"
             (valueChange)="onValueChange($event)"
+            (search)="onSearch($event)"
         ></zem-select-input>
         <div
             class="zem-form-group__content-item zem-message zem-message--error"

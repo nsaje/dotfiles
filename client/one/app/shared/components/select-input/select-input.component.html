@@ -12,9 +12,35 @@
     [searchable]="isSearchable"
     [groupBy]="groupByValue"
     [clearable]="isClearable"
+    [closeOnSelect]="closeOnSelect"
+    [loading]="isLoading"
+    [searchFn]="searchFn"
     (change)="onChange($event)"
+    (search)="onSearch($event.term)"
 >
     <ng-template ng-optgroup-tmp let-item="item">
-        {{ item[groupByValue] }}
+        <ng-container
+            *ngTemplateOutlet="
+                optionGroupTemplate
+                    ? optionGroupTemplate
+                    : defaultOptionGroupTemplate;
+                context: {item: item}
+            "
+        ></ng-container>
+    </ng-template>
+    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+        <ng-container
+            *ngTemplateOutlet="
+                optionTemplate ? optionTemplate : defaultOptionTemplate;
+                context: {item: item, search: search}
+            "
+        ></ng-container>
     </ng-template>
 </ng-select>
+
+<ng-template #defaultOptionGroupTemplate let-item="item">
+    {{ item[groupByValue] }}
+</ng-template>
+<ng-template #defaultOptionTemplate let-item="item" let-search="search">
+    <span [zemTextHighlight]="search">{{ item[bindLabel] }}</span>
+</ng-template>

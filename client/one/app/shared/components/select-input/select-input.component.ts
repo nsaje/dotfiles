@@ -12,10 +12,14 @@ import {
     OnDestroy,
     OnInit,
     ViewChild,
+    TemplateRef,
+    ContentChild,
 } from '@angular/core';
 import * as commonHelpers from '../../helpers/common.helpers';
 import * as clone from 'clone';
 import {NgSelectComponent} from '@ng-select/ng-select';
+import {Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 
 @Component({
     selector: 'zem-select-input',
@@ -46,12 +50,33 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     orderByValue: string;
     @Input()
+    closeOnSelect: boolean = true;
+    @Input()
+    clearSearchOnSelect: boolean = false;
+    @Input()
+    isLoading: boolean = false;
+    @Input()
+    searchFn: Function;
+    @Input()
+    debounceTime: number;
+    @Input()
     hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    search = new EventEmitter<string>();
+
+    private ngUnsubscribe$: Subject<void> = new Subject();
+    private searchDebouncer$: Subject<string> = new Subject<string>();
 
     @ViewChild('zemSelect', {static: false})
     zemSelect: NgSelectComponent;
+
+    @ContentChild('optionGroupTemplate', {read: TemplateRef, static: false})
+    optionGroupTemplate: TemplateRef<any>;
+
+    @ContentChild('optionTemplate', {read: TemplateRef, static: false})
+    optionTemplate: TemplateRef<any>;
 
     model: string;
     formattedItems: any[];
@@ -64,6 +89,17 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
 
     ngOnInit(): void {
         window.addEventListener('scroll', this.onWindowScrollCallback, true);
+        this.searchDebouncer$
+            .pipe(
+                debounceTime(
+                    commonHelpers.getValueOrDefault(this.debounceTime, 200)
+                ),
+                distinctUntilChanged(),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(term => {
+                this.search.emit(term);
+            });
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -102,10 +138,22 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
 
     ngOnDestroy(): void {
         window.removeEventListener('scroll', this.onWindowScrollCallback, true);
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
     onChange($event: any) {
         this.valueChange.emit($event ? $event[this.bindValue] : null);
+        if (this.clearSearchOnSelect) {
+            // TODO (msuber): remove handleClearClick workaround when
+            // https://github.dyf62976.workers.dev/ng-select/ng-select/pull/1257
+            // is resolved and merged to master.
+            this.zemSelect.handleClearClick();
+        }
+    }
+
+    onSearch($event: string) {
+        this.searchDebouncer$.next($event);
     }
 
     onWindowScroll($event: any): void {

@@ -6,6 +6,7 @@ import {FocusDirective} from '../../directives/focus/focus.directive';
 import {PopoverDirective} from '../popover/popover.directive';
 import {HelpPopoverComponent} from '../help-popover/help-popover.component';
 import {NgSelectModule} from '@ng-select/ng-select';
+import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 
 describe('SelectFormGroupComponent', () => {
     let component: SelectFormGroupComponent;
@@ -16,6 +17,7 @@ describe('SelectFormGroupComponent', () => {
             declarations: [
                 SelectInputComponent,
                 FocusDirective,
+                TextHighlightDirective,
                 PopoverDirective,
                 HelpPopoverComponent,
                 SelectFormGroupComponent,

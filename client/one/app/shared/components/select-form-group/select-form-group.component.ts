@@ -43,9 +43,21 @@ export class SelectFormGroupComponent implements OnChanges {
     @Input()
     orderByValue: string;
     @Input()
+    closeOnSelect: boolean = true;
+    @Input()
+    clearSearchOnSelect: boolean = false;
+    @Input()
+    isLoading: boolean = false;
+    @Input()
+    searchFn: Function;
+    @Input()
+    debounceTime: number;
+    @Input()
     errors: string[];
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    search = new EventEmitter<string>();
 
     model: string;
 
@@ -57,5 +69,9 @@ export class SelectFormGroupComponent implements OnChanges {
 
     onValueChange($event: string) {
         this.valueChange.emit($event);
+    }
+
+    onSearch($event: string) {
+        this.search.emit($event);
     }
 }

@@ -4,6 +4,7 @@ import {NgSelectModule} from '@ng-select/ng-select';
 import {SelectInputComponent} from './select-input.component';
 import {FocusDirective} from '../../directives/focus/focus.directive';
 import {SimpleChange} from '@angular/core';
+import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 
 describe('SelectInputComponent', () => {
     let component: SelectInputComponent;
@@ -11,7 +12,11 @@ describe('SelectInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [SelectInputComponent, FocusDirective],
+            declarations: [
+                FocusDirective,
+                TextHighlightDirective,
+                SelectInputComponent,
+            ],
             imports: [FormsModule, NgSelectModule],
         });
     });
