@@ -12,7 +12,6 @@ class OBJsonFormatter(jsonlogger.JsonFormatter):
         self.version_getter = version_getter or (lambda: "1")
 
     def add_fields(self, log_record: dict, record: logging.LogRecord, message_dict):
-        breakpoint()
         super(OBJsonFormatter, self).add_fields(log_record, record, message_dict)
         log_record["level"] = record.levelname
         log_record["thread"] = record.processName + "-" + str(record.process)
