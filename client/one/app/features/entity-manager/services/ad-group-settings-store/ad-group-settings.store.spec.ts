@@ -11,9 +11,12 @@ import {
     InterestCategory,
     AdGroupAutopilotState,
 } from '../../../../app.constants';
+import {DealsService} from '../../../../core/deals/services/deals.service';
+import {Deal} from '../../../../core/deals/types/deal';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
+    let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let store: AdGroupSettingsStore;
     let adGroupWithExtras: AdGroupWithExtras;
     let adGroup: AdGroup;
@@ -27,8 +30,9 @@ describe('AdGroupSettingsStore', () => {
             'save',
             'archive',
         ]);
+        dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
 
-        store = new AdGroupSettingsStore(serviceStub);
+        store = new AdGroupSettingsStore(serviceStub, dealsServiceStub);
         adGroup = clone(store.state.entity);
         adGroupExtras = clone(store.state.extras);
         adGroupWithExtras = {
@@ -283,6 +287,79 @@ describe('AdGroupSettingsStore', () => {
 
         expect(serviceStub.archive).toHaveBeenCalledTimes(1);
         expect(shouldReload).toBe(false);
+    });
+
+    it('should correctly load available deals via deals service', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = 'bla';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(store.state.availableDeals).toEqual(mockedAvailableDeals);
+    }));
+
+    it('should correctly skip loading available deals with empty keyword', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = ' ';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(0);
+    }));
+
+    it('should correctly add deal', () => {
+        const mockedDeal = {
+            id: '10000000',
+            dealId: '45345',
+            description: 'test directDeal',
+            name: 'test directDeal',
+            source: 'urska',
+            floorPrice: '0.0002',
+            createdDt: new Date(),
+            modifiedDt: new Date(),
+            createdBy: 'test@test.com',
+            numOfAccounts: 0,
+            numOfCampaigns: 0,
+            numOfAdgroups: 0,
+        };
+        store.addDeal(mockedDeal);
+
+        expect(store.state.entity.deals).toEqual([mockedDeal]);
+    });
+
+    it('should correctly remove deal', () => {
+        store.state.entity.deals = [
+            {
+                id: '10000000',
+                dealId: '45345',
+                description: 'test directDeal',
+                name: 'test directDeal',
+                source: 'urska',
+                floorPrice: '0.0002',
+                createdDt: new Date(),
+                modifiedDt: new Date(),
+                createdBy: 'test@test.com',
+                numOfAccounts: 0,
+                numOfCampaigns: 0,
+                numOfAdgroups: 0,
+            },
+        ];
+
+        store.removeDeal('10000000');
+        expect(store.state.entity.deals).toEqual([]);
     });
 
     it('should correctly determine if ad group settings have unsaved changes', fakeAsync(() => {

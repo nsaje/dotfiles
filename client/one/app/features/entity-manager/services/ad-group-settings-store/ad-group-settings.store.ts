@@ -24,19 +24,26 @@ import {IncludedExcluded} from '../../../../core/entities/types/common/included-
 import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {DealsService} from '../../../../core/deals/services/deals.service';
+import {Deal} from '../../../../core/deals/types/deal';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private dealsRequestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
-    constructor(private adGroupService: AdGroupService) {
+    constructor(
+        private adGroupService: AdGroupService,
+        private dealsService: DealsService
+    ) {
         super(new AdGroupSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
+        this.dealsRequestStateUpdater = this.getDealsRequestStateUpdater();
     }
 
     loadEntityDefaults(campaignId: string) {
@@ -142,6 +149,45 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                     }
                 );
         });
+    }
+
+    loadAvailableDeals(agencyId: string, keyword: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (commonHelpers.isDefined(keyword) && keyword.trim()) {
+                this.dealsService
+                    .list(
+                        agencyId,
+                        null,
+                        null,
+                        keyword,
+                        this.dealsRequestStateUpdater
+                    )
+                    .pipe(takeUntil(this.ngUnsubscribe$))
+                    .subscribe(
+                        (deals: Deal[]) => {
+                            this.patchState(deals, 'availableDeals');
+                            resolve();
+                        },
+                        error => {
+                            reject();
+                        }
+                    );
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    addDeal(deal: Deal) {
+        const deals = [...this.state.entity.deals, deal];
+        this.patchState(deals, 'entity', 'deals');
+    }
+
+    removeDeal(dealId: string) {
+        const deals = this.state.entity.deals.filter(deal => {
+            return deal.id !== dealId;
+        });
+        this.patchState(deals, 'entity', 'deals');
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {
@@ -446,5 +492,20 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 this.state.entity.manageRtbSourcesAsOne
             )
         );
+    }
+
+    private getDealsRequestStateUpdater(): RequestStateUpdater {
+        return (requestName, requestState) => {
+            this.setState({
+                ...this.state,
+                dealsRequests: {
+                    ...this.state.dealsRequests,
+                    [requestName]: {
+                        ...this.state.requests[requestName],
+                        ...requestState,
+                    },
+                },
+            });
+        };
     }
 }

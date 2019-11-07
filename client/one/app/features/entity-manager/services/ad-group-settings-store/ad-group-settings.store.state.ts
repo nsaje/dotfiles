@@ -2,6 +2,7 @@ import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {RequestState} from '../../../../shared/types/request-state';
+import {Deal} from '../../../../core/deals/types/deal';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -21,6 +22,7 @@ export class AdGroupSettingsStoreState {
         deliveryType: null,
         clickCappingDailyAdGroupMaxClicks: null,
         dayparting: null,
+        deals: [],
         targeting: {
             devices: [],
             placements: [],
@@ -63,10 +65,7 @@ export class AdGroupSettingsStoreState {
                 matchingEnabled: null,
             },
         },
-        autopilot: {
-            state: null,
-            dailyBudget: null,
-        },
+        autopilot: {state: null, dailyBudget: null},
         manageRtbSourcesAsOne: false,
         frequencyCapping: null,
         notes: null,
@@ -108,7 +107,11 @@ export class AdGroupSettingsStoreState {
         hacks: [],
         deals: [],
     };
+    availableDeals: Deal[] = [];
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
+    dealsRequests = {
+        list: {} as RequestState,
+    };
     requests = {
         defaults: {} as RequestState,
         get: {} as RequestState,

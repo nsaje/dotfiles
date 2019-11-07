@@ -17,6 +17,7 @@ export const adGroupMock: AdGroup = {
     deliveryType: null,
     clickCappingDailyAdGroupMaxClicks: null,
     dayparting: null,
+    deals: [],
     targeting: {
         devices: [],
         placements: [],

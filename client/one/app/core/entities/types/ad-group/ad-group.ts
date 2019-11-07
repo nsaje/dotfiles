@@ -6,6 +6,7 @@ import {
 import {AdGroupDayparting} from './ad-group-dayparting';
 import {AdGroupAutopilot} from './ad-group-autopilot';
 import {AdGroupTargetings} from './ad-group-targetings';
+import {Deal} from '../../../deals/types/deal';
 
 export interface AdGroup {
     id: string;
@@ -24,6 +25,7 @@ export interface AdGroup {
     deliveryType: DeliveryType;
     clickCappingDailyAdGroupMaxClicks: number;
     dayparting: AdGroupDayparting;
+    deals: Deal[];
     targeting: AdGroupTargetings;
     autopilot: AdGroupAutopilot;
     manageRtbSourcesAsOne: boolean;
