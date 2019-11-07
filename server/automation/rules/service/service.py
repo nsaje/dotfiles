@@ -7,18 +7,17 @@ from typing import List
 from typing import Sequence
 from typing import Union
 
-import structlog
-
 import automation.rules.constants
 import core.models
 import redshiftapi.api_rules
+from utils import zlogging
 
 from .. import Rule
 from .. import RuleHistory
 from .. import constants
 from .apply import apply_rule
 
-logger = structlog.get_logger(__name__)
+logger = zlogging.getLogger(__name__)
 
 
 def process_rules() -> None:
