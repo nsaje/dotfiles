@@ -5,10 +5,25 @@ import boto.sqs
 from boto.sqs.message import Message
 from django.conf import settings
 
+DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS = 5
+DEFAULT_METADATA_SERVICE_TIMEOUT = 5.0
+
 MAX_MESSAGES_PER_BATCH = 10
 
 
+def _ensure_boto_defaults():
+    if not boto.config._parser.has_section("Boto"):
+        boto.config._parser.add_section("Boto")
+
+    if not boto.config._parser.has_option("Boto", "metadata_service_num_attempts"):
+        boto.config._parser.set("Boto", "metadata_service_num_attempts", str(DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS))
+
+    if not boto.config._parser.has_option("Boto", "metadata_service_timeout"):
+        boto.config._parser.set("Boto", "metadata_service_timeout", str(DEFAULT_METADATA_SERVICE_TIMEOUT))
+
+
 def _get_connection():
+    _ensure_boto_defaults()
     return boto.sqs.connect_to_region(settings.SQS_REGION)
 
 
