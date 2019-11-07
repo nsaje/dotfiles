@@ -10,6 +10,9 @@ from django.conf import settings
 
 import utils.threads
 
+DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS = 5
+DEFAULT_METADATA_SERVICE_TIMEOUT = 5.0
+
 
 class TimeoutException(Exception):
     pass
@@ -23,6 +26,7 @@ class S3Helper(object):
     def __init__(self, bucket_name=settings.S3_BUCKET):
         self.use_s3 = settings.USE_S3 and not settings.TESTING
         if self.use_s3:
+            _ensure_boto_defaults()
             self.bucket = boto.connect_s3().get_bucket(bucket_name)
 
     def get(self, key):
@@ -188,6 +192,7 @@ def get_credentials_string():
     if not settings.USE_S3:
         return ""
 
+    _ensure_boto_defaults()
     s3_client = boto.s3.connect_to_region("us-east-1")
 
     access_key = s3_client.aws_access_key_id
@@ -198,3 +203,14 @@ def get_credentials_string():
         security_token_param = ";token=%s" % s3_client.provider.security_token
 
     return "aws_access_key_id=%s;aws_secret_access_key=%s%s" % (access_key, access_secret, security_token_param)
+
+
+def _ensure_boto_defaults():
+    if not boto.config._parser.has_section("Boto"):
+        boto.config._parser.add_section("Boto")
+
+    if not boto.config._parser.has_option("Boto", "metadata_service_num_attempts"):
+        boto.config._parser.set("Boto", "metadata_service_num_attempts", str(DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS))
+
+    if not boto.config._parser.has_option("Boto", "metadata_service_timeout"):
+        boto.config._parser.set("Boto", "metadata_service_timeout", str(DEFAULT_METADATA_SERVICE_TIMEOUT))

@@ -13,12 +13,6 @@ ADD docker/bash_logout.sh /root/.bash_logout
 # Add project to docker image
 ADD server/ .
 
-# Add boto2 config file
-ADD docker/boto2.config /root/.boto
-
-# Add boto3 config file
-ADD docker/boto3.config /root/.aws/config
-
 # update needed requirements.txt
 # FIXME(nsaje): cd to /opt so pip install -e installs packages there. Can remove once pip-freeze supports git requirements properly
 RUN bash -c 'if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-installed|md5sum)" ]]; then \
