@@ -9,9 +9,12 @@ import {asapScheduler, of, throwError} from 'rxjs';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
 import {AccountType, Currency} from '../../../../app.constants';
 import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
+import {DealsService} from '../../../../core/deals/services/deals.service';
+import {Deal} from '../../../../core/deals/types/deal';
 
 describe('AccountSettingsStore', () => {
     let accountServiceStub: jasmine.SpyObj<AccountService>;
+    let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let store: AccountSettingsStore;
     let accountWithExtras: AccountWithExtras;
     let account: Account;
@@ -25,8 +28,9 @@ describe('AccountSettingsStore', () => {
             'save',
             'archive',
         ]);
+        dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
 
-        store = new AccountSettingsStore(accountServiceStub);
+        store = new AccountSettingsStore(accountServiceStub, dealsServiceStub);
         account = clone(store.state.entity);
         accountExtras = clone(store.state.extras);
         accountWithExtras = {
@@ -507,5 +511,78 @@ describe('AccountSettingsStore', () => {
         );
         store.removeFromAllowedMediaSources(['1', '2']);
         expect(store.state.entity.allowedMediaSources).toEqual([]);
+    });
+
+    it('should correctly load available deals via deals service', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = 'bla';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(store.state.availableDeals).toEqual(mockedAvailableDeals);
+    }));
+
+    it('should correctly skip loading available deals with empty keyword', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = ' ';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(0);
+    }));
+
+    it('should correctly add deal', () => {
+        const mockedDeal = {
+            id: '10000000',
+            dealId: '45345',
+            description: 'test directDeal',
+            name: 'test directDeal',
+            source: 'urska',
+            floorPrice: '0.0002',
+            createdDt: new Date(),
+            modifiedDt: new Date(),
+            createdBy: 'test@test.com',
+            numOfAccounts: 0,
+            numOfCampaigns: 0,
+            numOfAdgroups: 0,
+        };
+        store.addDeal(mockedDeal);
+
+        expect(store.state.entity.deals).toEqual([mockedDeal]);
+    });
+
+    it('should correctly remove deal', () => {
+        store.state.entity.deals = [
+            {
+                id: '10000000',
+                dealId: '45345',
+                description: 'test directDeal',
+                name: 'test directDeal',
+                source: 'urska',
+                floorPrice: '0.0002',
+                createdDt: new Date(),
+                modifiedDt: new Date(),
+                createdBy: 'test@test.com',
+                numOfAccounts: 0,
+                numOfCampaigns: 0,
+                numOfAdgroups: 0,
+            },
+        ];
+
+        store.removeDeal('10000000');
+        expect(store.state.entity.deals).toEqual([]);
     });
 });

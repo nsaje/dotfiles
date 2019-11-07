@@ -2,6 +2,7 @@ import {Account} from '../../../../core/entities/types/account/account';
 import {AccountExtras} from '../../../../core/entities/types/account/account-extras';
 import {RequestState} from '../../../../shared/types/request-state';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
+import {Deal} from '../../../../core/deals/types/deal';
 
 export class AccountSettingsStoreState {
     entity: Account = {
@@ -25,6 +26,7 @@ export class AccountSettingsStoreState {
             },
         },
         allowedMediaSources: [],
+        deals: [],
     };
     extras: AccountExtras = {
         archived: null,
@@ -40,7 +42,11 @@ export class AccountSettingsStoreState {
         deals: [],
         availableMediaSources: [],
     };
+    availableDeals: Deal[] = [];
     fieldsErrors = new AccountSettingsStoreFieldsErrorsState();
+    dealsRequests = {
+        list: {} as RequestState,
+    };
     requests = {
         defaults: {} as RequestState,
         get: {} as RequestState,

@@ -21,4 +21,5 @@ export const accountMock: Account = {
         },
     },
     allowedMediaSources: [],
+    deals: [],
 };
