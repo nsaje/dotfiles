@@ -24,10 +24,13 @@ import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversi
 import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
+import {DealsService} from '../../../../core/deals/services/deals.service';
+import {Deal} from '../../../../core/deals/types/deal';
 
 describe('CampaignSettingsStore', () => {
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
     let conversionPixelsServiceStub: jasmine.SpyObj<ConversionPixelsService>;
+    let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let store: CampaignSettingsStore;
     let campaignWithExtras: CampaignWithExtras;
     let campaign: Campaign;
@@ -42,6 +45,7 @@ describe('CampaignSettingsStore', () => {
             'save',
             'archive',
         ]);
+        dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
         conversionPixelsServiceStub = jasmine.createSpyObj(
             ConversionPixelsService.name,
             ['list', 'create', 'edit']
@@ -49,7 +53,8 @@ describe('CampaignSettingsStore', () => {
 
         store = new CampaignSettingsStore(
             campaignServiceStub,
-            conversionPixelsServiceStub
+            conversionPixelsServiceStub,
+            dealsServiceStub
         );
         campaign = clone(store.state.entity);
         campaignExtras = clone(store.state.extras);
@@ -886,5 +891,78 @@ describe('CampaignSettingsStore', () => {
 
         store.changeCampaignTracking(changeEvent);
         expect(store.state.entity.tracking.ga.enabled).toEqual(false);
+    });
+
+    it('should correctly load available deals via deals service', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = 'bla';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(store.state.availableDeals).toEqual(mockedAvailableDeals);
+    }));
+
+    it('should correctly skip loading available deals with empty keyword', fakeAsync(() => {
+        const mockedAgencyId = '1';
+        const mockedKeyword = ' ';
+        const mockedAvailableDeals: Deal[] = [];
+
+        dealsServiceStub.list.and
+            .returnValue(of(mockedAvailableDeals, asapScheduler))
+            .calls.reset();
+
+        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        tick();
+
+        expect(dealsServiceStub.list).toHaveBeenCalledTimes(0);
+    }));
+
+    it('should correctly add deal', () => {
+        const mockedDeal = {
+            id: '10000000',
+            dealId: '45345',
+            description: 'test directDeal',
+            name: 'test directDeal',
+            source: 'urska',
+            floorPrice: '0.0002',
+            createdDt: new Date(),
+            modifiedDt: new Date(),
+            createdBy: 'test@test.com',
+            numOfAccounts: 0,
+            numOfCampaigns: 0,
+            numOfAdgroups: 0,
+        };
+        store.addDeal(mockedDeal);
+
+        expect(store.state.entity.deals).toEqual([mockedDeal]);
+    });
+
+    it('should correctly remove deal', () => {
+        store.state.entity.deals = [
+            {
+                id: '10000000',
+                dealId: '45345',
+                description: 'test directDeal',
+                name: 'test directDeal',
+                source: 'urska',
+                floorPrice: '0.0002',
+                createdDt: new Date(),
+                modifiedDt: new Date(),
+                createdBy: 'test@test.com',
+                numOfAccounts: 0,
+                numOfCampaigns: 0,
+                numOfAdgroups: 0,
+            },
+        ];
+
+        store.removeDeal('10000000');
+        expect(store.state.entity.deals).toEqual([]);
     });
 });

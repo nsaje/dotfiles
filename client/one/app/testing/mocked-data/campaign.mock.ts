@@ -30,4 +30,5 @@ export const campaignMock: Campaign = {
             excluded: [],
         },
     },
+    deals: [],
 };

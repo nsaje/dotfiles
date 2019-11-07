@@ -28,21 +28,29 @@ import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-
 import * as moment from 'moment';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
+import {Deal} from '../../../../core/deals/types/deal';
+import {DealsService} from '../../../../core/deals/services/deals.service';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private dealsRequestStateUpdater: RequestStateUpdater;
     private originalEntity: Campaign;
 
     constructor(
         private campaignService: CampaignService,
-        private conversionPixelsService: ConversionPixelsService
+        private conversionPixelsService: ConversionPixelsService,
+        private dealsService: DealsService
     ) {
         super(new CampaignSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
+        );
+        this.dealsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'dealsRequests'
         );
     }
 
@@ -155,6 +163,45 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                     }
                 );
         });
+    }
+
+    loadAvailableDeals(agencyId: string, keyword: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (commonHelpers.isDefined(keyword) && keyword.trim()) {
+                this.dealsService
+                    .list(
+                        agencyId,
+                        null,
+                        null,
+                        keyword,
+                        this.dealsRequestStateUpdater
+                    )
+                    .pipe(takeUntil(this.ngUnsubscribe$))
+                    .subscribe(
+                        (deals: Deal[]) => {
+                            this.patchState(deals, 'availableDeals');
+                            resolve();
+                        },
+                        error => {
+                            reject();
+                        }
+                    );
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    addDeal(deal: Deal) {
+        const deals = [...this.state.entity.deals, deal];
+        this.patchState(deals, 'entity', 'deals');
+    }
+
+    removeDeal(dealId: string) {
+        const deals = this.state.entity.deals.filter(deal => {
+            return deal.id !== dealId;
+        });
+        this.patchState(deals, 'entity', 'deals');
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

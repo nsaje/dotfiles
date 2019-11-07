@@ -3,6 +3,7 @@ import {CampaignGoal} from './campaign-goal';
 import {CampaignBudget} from './campaign-budget';
 import {CampaignType, IabCategory, Language} from '../../../../app.constants';
 import {CampaignTargetings} from './campaign-targetings';
+import {Deal} from '../../../deals/types/deal';
 
 export interface Campaign {
     id: string;
@@ -19,4 +20,5 @@ export interface Campaign {
     goals: CampaignGoal[];
     budgets: CampaignBudget[];
     targeting: CampaignTargetings;
+    deals: Deal[];
 }

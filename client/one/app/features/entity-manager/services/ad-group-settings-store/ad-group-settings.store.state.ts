@@ -65,7 +65,10 @@ export class AdGroupSettingsStoreState {
                 matchingEnabled: null,
             },
         },
-        autopilot: {state: null, dailyBudget: null},
+        autopilot: {
+            state: null,
+            dailyBudget: null,
+        },
         manageRtbSourcesAsOne: false,
         frequencyCapping: null,
         notes: null,
