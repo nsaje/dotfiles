@@ -2054,19 +2054,19 @@ class AutoSaveTest(TestCase):
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         mock_persist_batch.assert_not_called()
 
-    @patch("dash.features.contentupload.upload._clean_candidates")
+    @patch("dash.features.contentupload.upload.get_clean_candidates_and_errors")
     @patch("dash.features.contentupload.upload.persist_batch")
-    def test_batch_should_fail(self, mock_persist_batch, mock_clean_candidates):
-        mock_clean_candidates.return_value = (None, {1: {"title": "too long"}})
+    def test_batch_should_fail(self, mock_persist_batch, mockget_clean_candidates_and_errors):
+        mockget_clean_candidates_and_errors.return_value = (None, {1: {"title": "too long"}})
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         contentupload.upload._handle_auto_save(batch)
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
         mock_persist_batch.assert_not_called()
 
-    @patch("dash.features.contentupload.upload._clean_candidates")
+    @patch("dash.features.contentupload.upload.get_clean_candidates_and_errors")
     @patch("dash.features.contentupload.upload.persist_batch")
-    def test_batch_should_succeed(self, mock_persist_batch, mock_clean_candidates):
-        mock_clean_candidates.return_value = (None, {})
+    def test_batch_should_succeed(self, mock_persist_batch, mockget_clean_candidates_and_errors):
+        mockget_clean_candidates_and_errors.return_value = (None, {})
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         contentupload.upload._handle_auto_save(batch)
         mock_persist_batch.assert_called_with(batch)

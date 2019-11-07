@@ -22,7 +22,10 @@ class ProductFeed(ProductFeedInstanceMixin, models.Model):
         help_text="If True, it will be truncated by words and 3 dots will be appended. Otherwise ad will be ignored.",
     )
     default_brand_name = models.CharField(
-        max_length=255, blank=False, null=False, help_text="Default to use when brand is not specified in the feed"
+        max_length=25, blank=False, null=False, help_text="Default to use when brand is not specified in the feed"
+    )
+    default_display_url = models.CharField(
+        max_length=35, blank=False, null=False, help_text="Default to use when display url is not specified in the feed"
     )
     default_call_to_action = models.CharField(
         max_length=255,

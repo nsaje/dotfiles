@@ -2,6 +2,8 @@ from utils.constant_base import ConstantBase
 
 MAX_TITLE_LENGTH = 90
 MAX_DESCRIPTION_LENGTH = 150
+MAX_DISPLAY_URL_LENGTH = 35
+MAX_BRAND_NAME_LENGTH = 25
 
 
 class FeedTypes(ConstantBase):
@@ -22,23 +24,11 @@ class FeedStatus(ConstantBase):
 FEEDS_TAG_MAPPING = {
     FeedTypes.YAHOO_NEWS_RSS: {
         "elements_name": "item",
-        "elements_mapping": {
-            "title": "title",
-            "description": "description",
-            "url": "link",
-            "image_url": "content",
-            "display_url": "link",
-        },
+        "elements_mapping": {"title": "title", "description": "description", "url": "link", "image_url": "content"},
     },
     FeedTypes.YAHOO_SPORTS_RSS: {
         "elements_name": "item",
-        "elements_mapping": {
-            "title": "title",
-            "description": "description",
-            "url": "link",
-            "image_url": "encoded",
-            "display_url": "link",
-        },
+        "elements_mapping": {"title": "title", "description": "description", "url": "link", "image_url": "encoded"},
     },
     FeedTypes.GOOGLE_FEED: {
         "elements_name": "product",
@@ -47,7 +37,6 @@ FEEDS_TAG_MAPPING = {
             "description": "description",
             "url": "link",
             "image_url": "image_link",
-            "display_url": "link",
             "brand_name": "brand",
         },
     },

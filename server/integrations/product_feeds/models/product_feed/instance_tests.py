@@ -73,6 +73,7 @@ class ProductFeedTestCase(TestCase):
             feed_type=constants.FeedTypes.YAHOO_NEWS_RSS,
             default_brand_name="SomeBrand",
             blacklisted_keywords=["badword1", "Badword2"],
+            default_display_url="news.yahoo.com",
         )
         self.product_feed.save()
         self.product_feed.ad_groups.add(*[self.ad_group_1, self.ad_group_2])
@@ -153,9 +154,7 @@ class ProductFeedTestCase(TestCase):
             parsed_item_1["image_url"],
             "https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae",
         )
-        self.assertEqual(
-            parsed_item_1["display_url"], "https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html"
-        )
+        self.assertEqual(parsed_item_1["display_url"], "news.yahoo.com")
         self.assertEqual(parsed_item_1["brand_name"], "SomeBrand")
         self.assertEqual(parsed_item_1["call_to_action"], "Read more")
 
@@ -184,9 +183,7 @@ class ProductFeedTestCase(TestCase):
             "https://s.yimg.com/uu/api/res/1.2/UL3x8xhXCB2uz136rgCl_A--~B/aD0xNTA0O3c9MjI1NjtzbT0xO2FwcGlkPXl0YWNoeW9u/https://s.yimg.com/os/creatr-uploaded-images/2019-10/02c636d0-fa90-11e9-acfd-7f9ed55815d1",
         )
         self.assertEqual(
-            parsed_item_2["display_url"],
-            "https://uk.sports.yahoo.com/news/harry-kane-praises-ruthless-totten"
-            "ham-as-spurs-hit-belgrade-for-five-212521294.html?src=rss",
+            parsed_item_2["display_url"], "news.yahoo.com", "ham-as-spurs-hit-belgrade-for-five-212521294.html?src=rss"
         )
         self.assertEqual(parsed_item_2["brand_name"], "SomeBrand")
         self.assertEqual(parsed_item_2["call_to_action"], "Read more")
@@ -241,9 +238,7 @@ class ProductFeedTestCase(TestCase):
             parsed_item_2["image_url"],
             "https://d15udtvdbbfasl.cloudfront.net/catalog/product/large_image/09_413121.jpg",
         )
-        self.assertEqual(
-            parsed_item_2["display_url"], "https://www.uniqlo.com/sg/store/women-ezy-ankle-length-pants-4131210010.html"
-        )
+        self.assertEqual(parsed_item_2["display_url"], "news.yahoo.com")
         self.assertEqual(parsed_item_2["brand_name"], "Uniqlo")
         self.assertEqual(parsed_item_2["call_to_action"], "Read more")
 
@@ -265,7 +260,7 @@ class ProductFeedTestCase(TestCase):
         self.assertEqual(parsed_item["description"], "Yahoo Actualités - Toute l'actualité en France & dans l’Europe")
         self.assertEqual(parsed_item["url"], None)
         self.assertEqual(parsed_item["image_url"], None)
-        self.assertEqual(parsed_item["display_url"], None)
+        self.assertEqual(parsed_item["display_url"], "news.yahoo.com")
         self.assertEqual(parsed_item["brand_name"], "SomeBrand")
         self.assertEqual(parsed_item["call_to_action"], "Read more")
 
@@ -285,7 +280,7 @@ class ProductFeedTestCase(TestCase):
         self.assertIsNone(parsed_item["description"])
         self.assertIsNone(parsed_item["url"])
         self.assertIsNone(parsed_item["image_url"])
-        self.assertIsNone(parsed_item["display_url"])
+        self.assertIsNotNone(parsed_item["display_url"])
         self.assertEqual(parsed_item["brand_name"], "SomeBrand")
         self.assertEqual(parsed_item["call_to_action"], "Read more")
 
@@ -365,11 +360,45 @@ class ProductFeedTestCase(TestCase):
             self.product_feed._validate_item(item)
 
         item = dict(
+            title="title1",
+            url="http://existingurl.com",
+            image_url="http://existingimageurl.com",
+            description="description",
+            display_url="http://displayurl.com",
+            brand_name="a" * 32,
+        )
+        with self.assertRaisesMessage(exceptions.ValidationError, "Brand name is too long."):
+            self.product_feed._validate_item(item)
+
+        item = dict(
+            title="title1",
+            url="http://existingurl.com",
+            image_url="http://existingimageurl.com",
+            description="description",
+            display_url="a" * 54,
+            brand_name="Some brand",
+        )
+        with self.assertRaisesMessage(exceptions.ValidationError, "Display url is too long."):
+            self.product_feed._validate_item(item)
+
+        item = dict(
+            title="title1",
+            url="http://existingurl.com",
+            image_url="http://existingimageurl.com",
+            description="description" * 30,
+            display_url="something.com",
+            brand_name="Some brand",
+        )
+        with self.assertRaisesMessage(exceptions.ValidationError, "Description is too long."):
+            self.product_feed._validate_item(item)
+
+        item = dict(
             title="Existing title",
             url="http://existingurl.com",
             image_url="http://existingimageurl.com",
             description="description",
             display_url="http://displayurl.com",
+            brand_name="some brand",
         )
         self.assertTrue(self.product_feed._validate_item(item))
 
@@ -380,7 +409,9 @@ class ProductFeedTestCase(TestCase):
         self.product_feed.content_ads_ttl = 2
 
         self.product_feed.pause_and_archive_ads(dry_run=True)
-        mock_write_log.assert_called_with(dry_run=True, ads_paused_and_archived=[self.content_ad_1, self.content_ad_2])
+        self.assertTrue(mock_write_log.called)
+        self.assertTrue(mock_write_log.call_args[1]["dry_run"])
+        self.assertTrue(len(mock_write_log.call_args[1]["ads_paused_and_archived"]), 2)
 
         self.product_feed.pause_and_archive_ads(dry_run=False)
         self.content_ad_1.refresh_from_db()
@@ -392,7 +423,9 @@ class ProductFeedTestCase(TestCase):
         self.content_ad_3.refresh_from_db()
         self.assertTrue(self.content_ad_3.state == dash.constants.ContentAdSourceState.INACTIVE)
         self.assertTrue(self.content_ad_3.archived)
-        mock_write_log.assert_called_with(dry_run=False, ads_paused_and_archived=[self.content_ad_1, self.content_ad_2])
+        self.assertTrue(mock_write_log.called)
+        self.assertFalse(mock_write_log.call_args[1]["dry_run"])
+        self.assertTrue(len(mock_write_log.call_args[1]["ads_paused_and_archived"]), 2)
 
     @mock.patch("integrations.product_feeds.models.ProductFeed._write_log")
     @mock.patch("utils.dates_helper.local_now")
@@ -487,7 +520,7 @@ class ProductFeedTestCase(TestCase):
                 title="This is a title",
                 description="desc 1",
                 url="https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html",
-                display_url="https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html",
+                display_url="news.yahoo.com",
                 image_url="https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae",
                 brand_name="SomeBrand",
             ).exists()
@@ -497,7 +530,7 @@ class ProductFeedTestCase(TestCase):
                 title="title 2",
                 description="This is a description",
                 url="https://uk.news.yahoo.com/botswana-faces-first-tight-election-173231503.html",
-                display_url="https://uk.news.yahoo.com/botswana-faces-first-tight-election-173231503.html",
+                display_url="news.yahoo.com",
                 image_url="https://media.zenfs.com/en/france_24_english_articles_100/4f075adb1f596cc00b81cc7e58406716",
                 brand_name="SomeBrand",
             ).exists()
@@ -529,6 +562,7 @@ class ProductFeedTestCase(TestCase):
     def test_ingest_and_create_ads_google(self, mock_feed_data, mock_today, mock_write_log):
         self.product_feed.feed_type = constants.FeedTypes.GOOGLE_FEED
         self.product_feed.truncate_description = True
+        self.product_feed.default_display_url = "test.com"
         mock_today.return_value = datetime.datetime(2019, 10, 24, 10, 25)
         mock_feed_data.return_value = """
             <product>
@@ -575,7 +609,7 @@ class ProductFeedTestCase(TestCase):
         ad = core.models.ContentAdCandidate.objects.get(
             title="WOMEN EZY Ankle Pants",
             url="https://www.uniqlo.com/sg/store/women-ezy-ankle-length-pants-4131210009.html",
-            display_url="https://www.uniqlo.com/sg/store/women-ezy-ankle-length-pants-4131210009.html",
+            display_url="test.com",
             image_url="https://d15udtvdbbfasl.cloudfront.net/catalog/product/large_image/09_413121.jpg",
             brand_name="Uniqlo",
         )

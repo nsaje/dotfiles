@@ -214,7 +214,7 @@ def clean_candidates(batch):
 
     candidates = batch.contentadcandidate_set.all().order_by("pk")
 
-    cleaned_candidates, errors = _clean_candidates(candidates)
+    cleaned_candidates, errors = get_clean_candidates_and_errors(candidates)
     if errors:
         raise exc.CandidateErrorsRemaining("Save not permitted - candidate errors exist")
 
@@ -262,7 +262,7 @@ def _save_history(batch, content_ads):
 
 
 def get_candidates_with_errors(candidates):
-    _, errors = _clean_candidates(candidates)
+    _, errors = get_clean_candidates_and_errors(candidates)
     result = []
     for candidate in candidates:
         candidate_dict = candidate.to_dict()
@@ -362,7 +362,7 @@ def cancel_upload(batch):
     batch.contentadcandidate_set.all().delete()
 
 
-def _clean_candidates(candidates):
+def get_clean_candidates_and_errors(candidates):
     cleaned_candidates = []
     errors = {}
     campaign = candidates[0].ad_group.campaign if (candidates and candidates[0].ad_group) else None
@@ -599,7 +599,7 @@ def _handle_auto_save(batch):
         return
 
     should_fail = False
-    _, errors = _clean_candidates(batch.contentadcandidate_set.all())
+    _, errors = get_clean_candidates_and_errors(batch.contentadcandidate_set.all())
     for error_dict in list(errors.values()):
         keys = set(error_dict.keys())
         keys.discard("__all__")

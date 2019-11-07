@@ -80,7 +80,11 @@ class ProductFeedInstanceMixin:
                     items_to_upload.append(item)
                 if dry_run:
                     # We just log the 10 firsts, otherwise it might be too big.
-                    self._write_log(dry_run=dry_run, ads_skipped=skipped_items[10:])
+                    self._write_log(
+                        dry_run=dry_run,
+                        ads_skipped=skipped_items[:10],
+                        items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:10]])),
+                    )
                     continue
                 batch, candidates = contentupload.upload.insert_candidates(
                     None,
@@ -92,7 +96,7 @@ class ProductFeedInstanceMixin:
                     auto_save=True,
                 )
                 batches.append(batch)
-            self._write_log(dry_run=dry_run, batches=batches, ads_skipped=skipped_items)
+            self._write_log(dry_run=dry_run, batches=batches, ads_skipped=skipped_items[:10])
 
         except Exception as e:
             self._write_log(dry_run=dry_run, exception="{}".format(e))
@@ -132,6 +136,8 @@ class ProductFeedInstanceMixin:
 
         if "brand_name" not in item_values:
             item_values["brand_name"] = self.default_brand_name
+        if "display_url" not in item_values:
+            item_values["display_url"] = self.default_display_url
         item_values["call_to_action"] = self.default_call_to_action
         return self._clean_strings(**item_values)
 
@@ -147,7 +153,11 @@ class ProductFeedInstanceMixin:
         if len(parsed_item["title"]) > constants.MAX_TITLE_LENGTH and not self.truncate_title:
             raise exceptions.ValidationError("Title too long.")
         if len(parsed_item["description"]) > constants.MAX_DESCRIPTION_LENGTH and not self.truncate_description:
-            raise exceptions.ValidationError("Description too long.")
+            raise exceptions.ValidationError("Description is too long.")
+        if len(parsed_item["display_url"]) > constants.MAX_DISPLAY_URL_LENGTH:
+            raise exceptions.ValidationError("Display url is too long.")
+        if len(parsed_item["brand_name"]) > constants.MAX_BRAND_NAME_LENGTH:
+            raise exceptions.ValidationError("Brand name is too long.")
         return True
 
     def _is_ad_already_uploaded(self, item, ad_group):

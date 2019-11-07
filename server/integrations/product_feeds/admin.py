@@ -8,6 +8,9 @@ from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers.html import XmlLexer
 
+import dash.constants
+from dash.features.contentupload import upload
+
 from . import constants
 from .models import ProductFeed
 from .models import SyncAttempt
@@ -37,31 +40,57 @@ class SyncAttemptAdmin(admin.ModelAdmin):
         style = "<style>" + formatter.get_style_defs() + "</style><br>"
         return mark_safe(style + response)
 
-    ads_skipped_prettified.short_description = "items_skipped"
-    items_to_upload_prettified.short_description = "items_uploaded"
+    def content_ads_candidates_errors(self, instance):
+        errors = dict()
+        if instance.batches.all():
+            for batch in instance.batches.all():
+                if batch.status == dash.constants.UploadBatchStatus.FAILED:
+                    _, errs = upload.get_clean_candidates_and_errors(batch.contentadcandidate_set.all())
+                    errors.update(errs)
+
+        return "\n".join([str(err) for err in errors.items()])
+
+    def global_upload_status(self, instance):
+        successes = []
+        if instance.batches.all():
+            for batch in instance.batches.all():
+                if batch.status == dash.constants.UploadBatchStatus.FAILED:
+                    successes.append(False)
+        return all(successes)
+
+    content_ads_candidates_errors.short_description = "Content ads candidates errors"
+    ads_skipped_prettified.short_description = "items skipped"
+    items_to_upload_prettified.short_description = "items uploaded"
+    global_upload_status.short_description = "global upload success"
+
+    global_upload_status.boolean = True
 
     fields = (
         "timestamp",
         "product_feed",
         "batches",
-        "ads_skipped_prettified",
-        "exception",
+        "global_upload_status",
         "dry_run",
+        "exception",
+        "ads_skipped_prettified",
         "items_to_upload_prettified",
+        "content_ads_candidates_errors",
     )
     readonly_fields = (
         "product_feed",
         "timestamp",
         "batches",
-        "ads_skipped_prettified",
-        "exception",
+        "global_upload_status",
         "dry_run",
+        "exception",
+        "ads_skipped_prettified",
         "items_to_upload_prettified",
+        "content_ads_candidates_errors",
     )
     ordering = ("-timestamp", "product_feed")
     search_fields = ("batches__adgroup", "product_feed")
     list_filter = ("product_feed", "timestamp", "dry_run")
-    list_display = ("product_feed", "timestamp", "dry_run")
+    list_display = ("timestamp", "dry_run", "global_upload_status", "product_feed")
 
 
 class ProductFeedAdmin(admin.ModelAdmin):
