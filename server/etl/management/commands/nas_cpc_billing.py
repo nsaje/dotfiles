@@ -28,7 +28,7 @@ class Command(Z1Command):
         if options.get("until"):
             until = datetime.datetime.strptime(options["until"], "%Y-%m-%d").date()
         else:
-            until = datetime.datetime.today()
+            until = datetime.date.today()
         try:
             since = datetime.datetime.strptime(options["from"], "%Y-%m-%d").date()
         except (ValueError, TypeError):

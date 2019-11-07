@@ -64,7 +64,11 @@ class Command(Z1Command):
             try:
                 refresh.refresh(since, acc_id)
             except Exception as e:
-                print("Exception:", e)
+                utils.slack.publish(
+                    "Materialization of account {} failed: {}".format(acc_id, e),
+                    msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
+                    username=utils.slack.USER_ETL_MATERIALIZE,
+                )
             finally:
                 from django import db
 
