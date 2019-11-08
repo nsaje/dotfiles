@@ -5,7 +5,7 @@ import boto.sqs
 from boto.sqs.message import Message
 from django.conf import settings
 
-DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS = 5
+DEFAULT_METADATA_SERVICE_NUM_ATTEMPTS = 10
 DEFAULT_METADATA_SERVICE_TIMEOUT = 5.0
 
 MAX_MESSAGES_PER_BATCH = 10
