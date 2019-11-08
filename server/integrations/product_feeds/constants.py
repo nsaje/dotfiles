@@ -38,6 +38,7 @@ FEEDS_TAG_MAPPING = {
             "url": "link",
             "image_url": "image_link",
             "brand_name": "brand",
+            "display_url": "link",
         },
     },
 }

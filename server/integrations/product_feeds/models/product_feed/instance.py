@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import html
 import re
 from urllib.parse import urlparse
 
@@ -44,6 +45,7 @@ class ProductFeedInstanceMixin:
             all_parsed_items = []
             skipped_items = []
             batches = []
+            items_to_upload = []
 
             for item in all_items:
                 if item.is_empty_element:
@@ -66,7 +68,6 @@ class ProductFeedInstanceMixin:
                     continue
 
             for ad_group in self.ad_groups.filter_active().exclude_archived():
-                items_to_upload = []
                 for item in all_parsed_items:
                     if self._is_ad_already_uploaded(item, ad_group):
                         skipped_items.append(
@@ -78,26 +79,23 @@ class ProductFeedInstanceMixin:
                         )
                         continue
                     items_to_upload.append(item)
-                if dry_run:
-                    # We just log the 10 firsts, otherwise it might be too big.
-                    self._write_log(
-                        dry_run=dry_run,
-                        ads_skipped=skipped_items[:10],
-                        items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:10]])),
-                    )
-                    continue
-                batch, candidates = contentupload.upload.insert_candidates(
-                    None,
-                    ad_group.campaign.account,
-                    items_to_upload,
-                    ad_group,
-                    batch_name,
-                    filename="no-verify",
-                    auto_save=True,
-                )
-                batches.append(batch)
-            self._write_log(dry_run=dry_run, batches=batches, ads_skipped=skipped_items[:10])
-
+                    if not dry_run:
+                        batch, candidates = contentupload.upload.insert_candidates(
+                            None,
+                            ad_group.campaign.account,
+                            [item],
+                            ad_group,
+                            batch_name,
+                            filename="no-verify",
+                            auto_save=True,
+                        )
+                        batches.append(batch)
+            self._write_log(
+                dry_run=dry_run,
+                batches=batches,
+                ads_skipped=skipped_items[:100],
+                items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:100]])),
+            )
         except Exception as e:
             self._write_log(dry_run=dry_run, exception="{}".format(e))
             slack.publish(
@@ -161,8 +159,7 @@ class ProductFeedInstanceMixin:
         return True
 
     def _is_ad_already_uploaded(self, item, ad_group):
-        label = self._hash_label(item["title"], item["url"], item["image_url"])
-        return ad_group.contentad_set.filter(label=label).exclude_archived().exists()
+        return ad_group.contentad_set.filter(label=item["label"]).exclude_archived().exists()
 
     def _write_log(self, **kwargs):
         product_feed = self
@@ -174,13 +171,13 @@ class ProductFeedInstanceMixin:
             return True
         return False
 
-    @staticmethod
-    def _clean_strings(**kwargs):
+    def _clean_strings(self, **kwargs):
         cleaned_strings = dict()
         for k, v in kwargs.items():
-            if k == "display_url" and v:
+            if k == "display_url" and v != self.default_display_url:
                 cleaned_strings[k] = urlparse(v).netloc
-            cleaned_strings[k] = re.compile(r"\s").sub(" ", strip_tags(v).strip()) if v else None
+                continue
+            cleaned_strings[k] = html.unescape(re.compile(r"\s").sub(" ", strip_tags(v).strip())) if v else None
         return cleaned_strings
 
     @staticmethod
