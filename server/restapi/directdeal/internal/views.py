@@ -1,6 +1,7 @@
 import rest_framework.permissions
 import rest_framework.response
 from django.db import transaction
+from django.db.models import Q
 
 import core.features.deals
 import restapi.access
@@ -32,6 +33,14 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             .select_related("source", "agency")
             .order_by("-created_dt")
         )
+        keyword = request.query_params.get("keyword")
+        if keyword:
+            deal_items = deal_items.filter(
+                Q(name__icontains=keyword)
+                | Q(deal_id__icontains=keyword)
+                | Q(source__name__icontains=keyword)
+                | Q(source__bidder_slug__icontains=keyword)
+            )
         paginator = StandardPagination()
         deal_items_paginated = paginator.paginate_queryset(deal_items, request)
         return paginator.get_paginated_response(

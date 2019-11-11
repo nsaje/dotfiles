@@ -94,6 +94,36 @@ class DirectDealViewSetTest(RESTAPITest):
 
         self.assertEqual(resp_json["data"][10:20], resp_json_paginated["data"])
 
+    def test_list_with_keyword(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        source = magic_mixer.blend(core.models.Source, name="Test name", bidder_slug="Test bidder_slug")
+
+        magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, name="Deal 1", deal_id="DEAL_1")
+        magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, name="Deal 2", deal_id="DEAL_2")
+        magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, name="Deal 3", deal_id="DEAL_3")
+
+        r = self.client.get(
+            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
+            {"offset": 0, "limit": 20, "keyword": "test"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(resp_json["count"], 3)
+        self.assertIsNone(resp_json["previous"])
+        self.assertIsNone(resp_json["next"])
+
+        r = self.client.get(
+            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
+            {"offset": 0, "limit": 20, "keyword": "DEAL_1"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(resp_json["count"], 1)
+        self.assertIsNone(resp_json["previous"])
+        self.assertIsNone(resp_json["next"])
+
+        self.assertEqual(resp_json["data"][0]["dealId"], "DEAL_1")
+
     def test_put(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)
