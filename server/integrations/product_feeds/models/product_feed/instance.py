@@ -10,6 +10,7 @@ from django.utils.html import strip_tags
 
 import core.models
 import dash.constants
+from core.common.entity_limits import EntityLimitExceeded
 from dash.features import contentupload
 from integrations.product_feeds import constants
 from integrations.product_feeds import exceptions
@@ -96,7 +97,7 @@ class ProductFeedInstanceMixin:
                 ads_skipped=skipped_items[:100],
                 items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:100]])),
             )
-        except Exception as e:
+        except (Exception, EntityLimitExceeded) as e:
             self._write_log(dry_run=dry_run, exception="{}".format(e))
             slack.publish(
                 "Something append with feed '{}', exception: {}".format(self.name, e),

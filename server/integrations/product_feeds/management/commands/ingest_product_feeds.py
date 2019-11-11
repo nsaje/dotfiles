@@ -1,5 +1,6 @@
 import concurrent.futures
 
+from core.common.entity_limits import EntityLimitExceeded
 from integrations.product_feeds import constants
 from integrations.product_feeds.models import ProductFeed
 from utils.command_helpers import Z1Command
@@ -18,5 +19,8 @@ class Command(Z1Command):
     def handle(self, *args, **options):
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             for product_feed in ProductFeed.objects.filter(status=constants.FeedStatus.ENABLED):
-                executor.map(product_feed.pause_and_archive_ads(dry_run=options["dry_run"]))
-                executor.map(product_feed.ingest_and_create_ads(dry_run=options["dry_run"]))
+                try:
+                    executor.map(product_feed.pause_and_archive_ads(dry_run=options["dry_run"]))
+                    executor.map(product_feed.ingest_and_create_ads(dry_run=options["dry_run"]))
+                except EntityLimitExceeded:
+                    continue
