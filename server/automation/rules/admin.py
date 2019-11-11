@@ -66,3 +66,12 @@ class RuleAdmin(admin.ModelAdmin):
         if obj is None:
             return []
         return list(obj.ad_groups_included.all().values_list("id", flat=True))
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
