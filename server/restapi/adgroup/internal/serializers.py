@@ -6,6 +6,7 @@ import dash.constants
 import restapi.adgroup.v1.serializers
 import restapi.directdeal.internal.serializers
 import restapi.serializers.base
+import restapi.serializers.bid_modifiers
 import restapi.serializers.deals
 import restapi.serializers.fields
 import restapi.serializers.hack
@@ -64,6 +65,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     deals = rest_framework.serializers.ListField(
         child=restapi.serializers.deals.DealSerializer(), default=[], allow_empty=True
+    )
+    bid_modifier_type_summaries = rest_framework.serializers.ListField(
+        child=restapi.serializers.bid_modifiers.BidModifierTypeSummary(), required=False
     )
 
 

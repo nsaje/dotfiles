@@ -667,7 +667,7 @@ class ContentAdsOnAdGroupLevelLoader(ContentAdsLoader):
     def min_max_modifiers(self):
         if not self.ad_group:
             return None, None
-        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
             self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.AD]
         )
         return min_factor, max_factor
@@ -923,7 +923,7 @@ class AdGroupSourcesLoader(Loader):
 
     @cached_property
     def min_max_modifiers(self):
-        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
             self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.SOURCE]
         )
         return min_factor, max_factor
@@ -1050,7 +1050,5 @@ class DeliveryLoader(Loader):
     @cached_property
     def min_max_modifiers(self):
         modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(self.delivery_dimension)
-        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
-            self.ad_group.id, excluded_types=[modifier_type]
-        )
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(self.ad_group.id, excluded_types=[modifier_type])
         return min_factor, max_factor

@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 import dash.constants
+from core.features import bid_modifiers
 
 from . import serializers
 
@@ -46,6 +47,10 @@ class ExtraDataSerializerTest(TestCase):
                     "description": "DEAL FOR SOURCE",
                     "is_applied": True,
                 }
+            ],
+            "bid_modifier_type_summaries": [
+                {"type": bid_modifiers.constants.BidModifierType.DEVICE, "count": 7, "min": 0.85, "max": 1.2},
+                {"type": bid_modifiers.constants.BidModifierType.STATE, "count": 3, "min": 0.9, "max": 1.1},
             ],
         }
         self.serialized = {
@@ -93,6 +98,24 @@ class ExtraDataSerializerTest(TestCase):
                     "description": "DEAL FOR SOURCE",
                     "is_applied": True,
                 }
+            ],
+            "bid_modifier_type_summaries": [
+                {
+                    "type": bid_modifiers.constants.BidModifierType.get_name(
+                        bid_modifiers.constants.BidModifierType.DEVICE
+                    ),
+                    "count": 7,
+                    "min": 0.85,
+                    "max": 1.2,
+                },
+                {
+                    "type": bid_modifiers.constants.BidModifierType.get_name(
+                        bid_modifiers.constants.BidModifierType.STATE
+                    ),
+                    "count": 3,
+                    "min": 0.9,
+                    "max": 1.1,
+                },
             ],
         }
 

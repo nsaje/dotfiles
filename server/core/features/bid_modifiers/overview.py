@@ -1,13 +1,31 @@
+import dataclasses
 import functools
 import operator
+from typing import List
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
+from django.db.models import Count
 from django.db.models import Max
 from django.db.models import Min
 
 from . import models
 
 
-def get_min_max_factors(ad_group_id, included_types=None, excluded_types=None):
+@dataclasses.dataclass
+class BidModifierTypeSummary:
+    type: int
+    count: int
+    min: float
+    max: float
+
+
+def get_min_max_factors(
+    ad_group_id: int,
+    included_types: Union[None, Sequence[int]] = None,
+    excluded_types: Union[None, Sequence[int]] = None,
+) -> Tuple[float, float]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
 
     if included_types is not None:
@@ -27,3 +45,37 @@ def get_min_max_factors(ad_group_id, included_types=None, excluded_types=None):
     max_factor = functools.reduce(operator.mul, [max(e["max_modifier"], 1.) for e in min_max_list], 1.)
 
     return min_factor, max_factor
+
+
+def get_type_summaries(
+    ad_group_id: int,
+    included_types: Union[None, Sequence[int]] = None,
+    excluded_types: Union[None, Sequence[int]] = None,
+    include_ones: bool = True,
+) -> List[BidModifierTypeSummary]:
+    query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
+
+    if included_types is not None:
+        query_set = query_set.filter(type__in=included_types)
+
+    if excluded_types is not None:
+        query_set = query_set.exclude(type__in=excluded_types)
+
+    modifiers = [
+        BidModifierTypeSummary(**kwargs)
+        for kwargs in query_set.values("type")
+        .annotate(count=Count("type"))
+        .distinct()
+        .annotate(min=Min("modifier"), max=Max("modifier"))
+        .values("type", "count", "min", "max")
+        .order_by("type")
+    ]
+
+    if include_ones:
+        for entry in modifiers:
+            if entry.max < 1:
+                entry.max = 1.0
+            elif entry.min > 1:
+                entry.min = 1.0
+
+    return modifiers

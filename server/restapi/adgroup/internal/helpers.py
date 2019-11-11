@@ -6,6 +6,7 @@ import dash.features.custom_flags
 import dash.models
 import dash.retargeting_helper
 import restapi.common.helpers
+from core.features import bid_modifiers
 
 
 def get_extra_data(user, ad_group):
@@ -42,6 +43,11 @@ def get_extra_data(user, ad_group):
 
     if user.has_perm("zemauth.can_see_deals_in_ui"):
         extra["deals"] = get_deals(ad_group)
+
+    if user.has_perm("zemauth.can_review_and_set_bid_modifiers_in_settings"):
+        overview = get_bid_modifier_type_summaries(ad_group)
+        if overview is not None:
+            extra["bid_modifier_type_summaries"] = overview
 
     return extra
 
@@ -128,3 +134,9 @@ def get_hacks(ad_group):
     return dash.models.CustomHack.objects.all().filter_applied(ad_group=ad_group).filter_active(
         True
     ).to_dict_list() + dash.features.custom_flags.helpers.get_all_custom_flags_on_ad_group(ad_group)
+
+
+def get_bid_modifier_type_summaries(ad_group):
+    if ad_group.id is None:
+        return None
+    return bid_modifiers.get_type_summaries(ad_group.id)

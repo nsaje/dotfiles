@@ -4,7 +4,9 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 import dash.constants
+from core.features import bid_modifiers
 from restapi.common.views_base_test import RESTAPITest
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -247,3 +249,90 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
+
+    def test_get_bid_modifier_type_summaries(self):
+        test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
+
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.DEVICE,
+            modifier=1.02,
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.DEVICE,
+            modifier=1.01,
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.DEVICE,
+            modifier=1.05,
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier, ad_group=ad_group, type=bid_modifiers.BidModifierType.STATE, modifier=1.5
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier, ad_group=ad_group, type=bid_modifiers.BidModifierType.STATE, modifier=0.7
+        )
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(
+            resp_json["extra"]["bidModifierTypeSummaries"],
+            [
+                {
+                    "count": 3,
+                    "max": 1.05,
+                    "min": 1.0,
+                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.DEVICE),
+                },
+                {
+                    "count": 2,
+                    "max": 1.5,
+                    "min": 0.7,
+                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.STATE),
+                },
+            ],
+        )
+
+    def test_get_default_bid_modifier_type_summaries(self):
+        test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
+        resp_json = self.assertResponseValid(r)
+
+        self.assertTrue("extra" in resp_json)
+        self.assertFalse("bidModifierTypeSummaries" in resp_json["extra"])
+
+    def test_get_bid_modifier_type_summaries_no_permission(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
+
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.DEVICE,
+            modifier=1.02,
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier, ad_group=ad_group, type=bid_modifiers.BidModifierType.STATE, modifier=0.7
+        )
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertTrue("extra" in resp_json)
+        self.assertFalse("bidModifierTypeSummaries" in resp_json["extra"])
