@@ -34,7 +34,7 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     @Input('selectSearchFn')
     searchFn: Function;
     @Output()
-    itemSelected = new EventEmitter<any>();
+    itemSelect = new EventEmitter<any>();
     @Output()
     search = new EventEmitter<string>();
 
@@ -72,14 +72,14 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
         return index.toString();
     }
 
-    onItemSelected($event: any) {
+    onItemSelect($event: any) {
         if (!commonHelpers.isDefined($event)) {
             return;
         }
         const item = this.availableItemsFiltered.filter(
             item => item[this.bindValue] === $event
         )[0];
-        this.itemSelected.emit(item);
+        this.itemSelect.emit(item);
     }
 
     onSearch($event: string) {

@@ -35,7 +35,7 @@
     [isLoading]="isLoading"
     [searchFn]="searchFn"
     [debounceTime]="1000"
-    (valueChange)="onItemSelected($event)"
+    (valueChange)="onItemSelect($event)"
     (search)="onSearch($event)"
 >
     <ng-template #optionTemplate let-item="item" let-search="search">

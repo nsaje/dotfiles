@@ -64,7 +64,7 @@ describe('SelectListComponent', () => {
         ]);
     });
 
-    it('should correctly emit itemSelected event', () => {
+    it('should correctly emit itemSelect event', () => {
         const bindValue = 'value';
         const selectedItems: any[] = [
             {name: 'Nejc', value: 1},
@@ -83,7 +83,7 @@ describe('SelectListComponent', () => {
         component.selectedItems = selectedItems;
         component.availableItems = availableItems;
 
-        spyOn(component.itemSelected, 'emit').and.stub();
+        spyOn(component.itemSelect, 'emit').and.stub();
 
         component.ngOnChanges({
             bindValue: new SimpleChange(null, bindValue, false),
@@ -96,15 +96,15 @@ describe('SelectListComponent', () => {
             {name: 'Matjaz', value: 5},
         ]);
 
-        component.onItemSelected(5);
-        expect(component.itemSelected.emit).toHaveBeenCalledWith({
+        component.onItemSelect(5);
+        expect(component.itemSelect.emit).toHaveBeenCalledWith({
             name: 'Matjaz',
             value: 5,
         });
-        (<any>component.itemSelected.emit).calls.reset();
+        (<any>component.itemSelect.emit).calls.reset();
 
-        component.onItemSelected(null);
-        expect(component.itemSelected.emit).not.toHaveBeenCalled();
-        (<any>component.itemSelected.emit).calls.reset();
+        component.onItemSelect(null);
+        expect(component.itemSelect.emit).not.toHaveBeenCalled();
+        (<any>component.itemSelect.emit).calls.reset();
     });
 });
