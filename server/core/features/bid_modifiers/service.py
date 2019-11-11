@@ -119,7 +119,7 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
 
 
 @transaction.atomic
-def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True):
+def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True, propagate_to_k1=True):
     bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group.id)
     if user:
         bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
@@ -136,6 +136,9 @@ def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True):
             user=user,
             action_type=dash_constants.HistoryActionType.BID_MODIFIER_DELETE,
         )
+
+    if propagate_to_k1 and num_deleted > 0:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.delete", priority=True)
 
 
 @transaction.atomic
