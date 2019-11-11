@@ -1,3 +1,4 @@
+import datetime
 import traceback
 from collections import ChainMap
 from collections import defaultdict
@@ -8,9 +9,12 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 
+import automation.models
 import automation.rules.constants
 import core.models
+import etl.models
 import redshiftapi.api_rules
+from utils import dates_helper
 from utils import zlogging
 
 from .. import Rule
@@ -22,11 +26,23 @@ from .apply import apply_rule
 logger = zlogging.getLogger(__name__)
 
 
-def process_rules() -> None:
+def execute_rules() -> None:
+    if automation.models.RulesDailyJobLog.objects.filter(created_dt__gte=dates_helper.utc_today()).exists():
+        logger.info("Execution of rules was aborted since the daily run was already completed.")
+        return
+
+    # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
+    from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
+
+    if not etl.models.MaterializationRun.objects.filter(finished_dt__gte=from_date_time).exists():
+        logger.info("Execution of rules was aborted since materialized data is not yet available.")
+        return
+
     for target_type in [constants.TargetType.PUBLISHER]:
         rules = Rule.objects.filter(state=constants.RuleState.ENABLED, target_type=target_type).prefetch_related(
             "ad_groups_included", "conditions"
         )
+
         rules_map = _get_rules_by_ad_group_map(rules)
 
         ad_groups = list(rules_map.keys())
@@ -47,6 +63,8 @@ def process_rules() -> None:
                         "Rule application failed: {}".format(str(e)), ad_group_id=str(ad_group), rule_id=str(rule)
                     )
                     _write_history(rule, ad_group, constants.ApplyStatus.FAILURE, changes_text=traceback.format_exc())
+
+    automation.models.RulesDailyJobLog.objects.create()
 
 
 def _get_rules_by_ad_group_map(rules: Sequence[Rule]) -> DefaultDict[core.models.AdGroup, List[Rule]]:

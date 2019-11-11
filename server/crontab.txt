@@ -65,3 +65,4 @@
 */15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_reports
 0 */6 * * *      /home/ubuntu/docker-manage-py.sh ingest_product_feeds
 0 */9 * * *      /home/ubuntu/docker-manage-py.sh monitor_product_feeds_uploads
+#0 */6 * * *     /home/ubuntu/docker-manage-py.sh execute_automation_rules

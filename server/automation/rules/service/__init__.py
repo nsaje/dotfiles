@@ -1,1 +1,1 @@
-from .service import process_rules
+from .service import execute_rules

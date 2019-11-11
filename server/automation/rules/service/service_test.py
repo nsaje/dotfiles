@@ -1,7 +1,11 @@
+import datetime
+
 import mock
 from django.test import TestCase
 
+import automation.models
 import core.models
+import etl.models
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
@@ -12,10 +16,11 @@ from .actions import ValueChangeData
 
 
 class ServiceTest(TestCase):
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_process_publisher_rules(self, mock_stats, mock_format, mock_apply):
+    def test_execute_publisher_rules(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
         mock_stats.return_value = [123]
         mock_format.return_value = {ag.id: {} for ag in ad_groups}
@@ -31,9 +36,12 @@ class ServiceTest(TestCase):
             target_type=constants.TargetType.PUBLISHER,
             ad_groups_included=ad_groups,
         )
+        magic_mixer.blend(etl.models.MaterializationRun)
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.process_rules()
+        service.execute_rules()
 
+        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         self.assertEqual([mock.call(constants.TargetType.PUBLISHER, [mock.ANY] * 4)], mock_stats.call_args_list)
         self.assertCountEqual(
             [ad_groups[0], ad_groups[1], ad_groups[2], ad_groups[3]], mock_stats.call_args_list[0][0][1]
@@ -55,10 +63,11 @@ class ServiceTest(TestCase):
             )
             self.assertEqual("Updated targets: pub1.com__12, pub2.com__21", history.changes_text)
 
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_process_publisher_rules_fail(self, mock_stats, mock_format, mock_apply):
+    def test_execute_publisher_rules_fail(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         mock_stats.return_value = [123]
         mock_format.return_value = {ad_group.id: {}}
@@ -69,19 +78,23 @@ class ServiceTest(TestCase):
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
             ad_groups_included=[ad_group],
         )
+        magic_mixer.blend(etl.models.MaterializationRun)
         self.assertFalse(RuleHistory.objects.exists())
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.process_rules()
+        service.execute_rules()
 
+        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         history = RuleHistory.objects.get()
         self.assertEqual(rule, history.rule)
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertIsNone(history.changes)
         self.assertTrue("Traceback (most recent call last):" in history.changes_text)
 
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_process_publisher_rules_no_changes(self, mock_stats, mock_format):
+    def test_execute_publisher_rules_no_changes(self, mock_stats, mock_format, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         mock_stats.return_value = [123]
         mock_format.return_value = {ad_group.id: {}}
@@ -91,11 +104,49 @@ class ServiceTest(TestCase):
             action_type=constants.ActionType.DECREASE_BID_MODIFIER,
             ad_groups_included=[ad_group],
         )
+        magic_mixer.blend(etl.models.MaterializationRun)
+        self.assertFalse(RuleHistory.objects.exists())
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+
+        service.execute_rules()
+
+        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         self.assertFalse(RuleHistory.objects.exists())
 
-        service.process_rules()
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rules_daily_run_completed(self, mock_stats, mock_time):
+        magic_mixer.blend(automation.models.RulesDailyJobLog)
+        magic_mixer.blend(etl.models.MaterializationRun)
 
-        self.assertFalse(RuleHistory.objects.exists())
+        service.execute_rules()
+
+        mock_stats.assert_not_called()
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rules_no_materialized_data(self, mock_stats, mock_time):
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+        self.assertFalse(etl.models.MaterializationRun.objects.exists())
+
+        service.execute_rules()
+        mock_stats.assert_not_called()
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+
+        etl_run = magic_mixer.blend(etl.models.MaterializationRun)
+        etl_run.finished_dt = "2018-12-31 09:59:59"
+        etl_run.save()
+
+        service.execute_rules()
+        mock_stats.assert_not_called()
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+
+        etl_run.finished_dt = "2018-12-31 10:00:00"
+        etl_run.save()
+
+        service.execute_rules()
+        mock_stats.assert_called_once()
+        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
     def test_get_rules_by_ad_group_map(self):
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
