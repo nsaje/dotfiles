@@ -186,6 +186,7 @@ class CampaignViewSetTest(RESTAPITest):
             "language": dash.constants.Language.ENGLISH,
             "can_archive": True,
             "can_restore": True,
+            "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
             "goals_defaults": {
                 dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
@@ -238,6 +239,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
                 "canArchive": True,
                 "canRestore": True,
+                "agencyId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "goalsDefaults": {
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.TIME_ON_SITE): "30.00",
@@ -333,6 +335,7 @@ class CampaignViewSetTest(RESTAPITest):
             "language": dash.constants.Language.ENGLISH,
             "can_archive": True,
             "can_restore": True,
+            "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
             "goals_defaults": {
                 dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
@@ -429,6 +432,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
                 "canArchive": True,
                 "canRestore": True,
+                "agencyId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "goalsDefaults": {
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.TIME_ON_SITE): "30.00",

@@ -15,6 +15,7 @@ def get_extra_data(user, campaign):
         "language": campaign.settings.language,
         "can_archive": campaign.can_archive(),
         "can_restore": campaign.can_restore(),
+        "agency_id": campaign.account.agency_id,
         "currency": campaign.account.currency,
     }
 

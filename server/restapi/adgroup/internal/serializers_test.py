@@ -14,6 +14,7 @@ class ExtraDataSerializerTest(TestCase):
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
+            "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
             "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
             "default_settings": {
@@ -59,6 +60,7 @@ class ExtraDataSerializerTest(TestCase):
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": "12345",
+            "agency_id": "12345",
             "currency": dash.constants.Currency.USD,
             "optimization_objective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
             "default_settings": {

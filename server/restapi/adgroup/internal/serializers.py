@@ -48,6 +48,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     is_campaign_autopilot_enabled = rest_framework.serializers.BooleanField(default=False, required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
+    agency_id = restapi.serializers.fields.IdField(required=False)
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, default=dash.constants.Currency.USD, required=False
     )

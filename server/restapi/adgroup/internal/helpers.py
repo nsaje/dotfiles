@@ -30,6 +30,7 @@ def get_extra_data(user, ad_group):
         "can_restore": ad_group.can_restore(),
         "is_campaign_autopilot_enabled": ad_group.campaign.settings.autopilot,
         "account_id": ad_group.campaign.account_id,
+        "agency_id": ad_group.campaign.account.agency_id,
         "currency": ad_group.campaign.account.currency,
         "optimization_objective": primary_campaign_goal.type if primary_campaign_goal else None,
         "default_settings": default_settings,
