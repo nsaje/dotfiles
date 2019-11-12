@@ -44,7 +44,7 @@ services:
           GUNICORN_WORKER_CLASS: "gevent"
         expose:
           - "8000"
-        mem_limit: 2g
+        mem_limit: 4g
         labels:
           SERVICE_NAME: z1
           SERVICE_IGNORE: "false"
