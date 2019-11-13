@@ -27,7 +27,8 @@ def populate_name_field(apps, schema_editor):
             for deal in deals_chunk:
                 if not deal.name:
                     if deal.description:
-                        deal.update(name=deal.descriptiondata[:124])
+                        deal.name = deal.description[:124]
+                        deal.save()
                     else:
                         deal.name = f"{deal.source.name} / {deal.agency.name}"
                         deal.save()
