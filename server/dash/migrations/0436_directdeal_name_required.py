@@ -30,8 +30,12 @@ def populate_name_field(apps, schema_editor):
                         deal.name = deal.description[:124]
                         deal.save()
                     else:
-                        deal.name = f"{deal.source.name} / {deal.agency.name}"
-                        deal.save()
+                        if deal.agency:
+                            deal.name = f"{deal.source.name} / {deal.agency.name}"
+                            deal.save()
+                        else:
+                            deal.name = f"{deal.source.name}"
+                            deal.save()
 
         logger.info("Chunk number %s processed...", chunk_number)
 
