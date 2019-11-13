@@ -532,7 +532,7 @@ class CampaignViewSetTest(RESTAPITest):
             campaign_manager=self.user.id,
             goals=[campaign_goal_time_on_site, campaign_goal_new_unique_visitors],
             budgets=[campaign_budget],
-            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug}],
+            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name}],
         )
 
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_list"), data=new_campaign, format="json")

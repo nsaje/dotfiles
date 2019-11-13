@@ -11,12 +11,14 @@ class InstanceTestCase(TestCase):
         agency = magic_mixer.blend(core.models.Agency, users=[request.user])
         source = magic_mixer.blend(core.models.Source)
         deal_id = "DEAL_123"
+        deal_name = "DEAL_NAME"
 
-        deal = core.features.deals.DirectDeal.objects.create(request, agency, source, deal_id)
+        deal = core.features.deals.DirectDeal.objects.create(request, agency, source, deal_id, deal_name)
 
         self.assertEqual(deal.deal_id, deal_id)
         self.assertEqual(deal.agency_id, agency.id)
         self.assertEqual(deal.source_id, source.id)
+        self.assertEqual(deal.name, deal_name)
 
     def test_update(self):
         request = magic_mixer.blend_request_user()

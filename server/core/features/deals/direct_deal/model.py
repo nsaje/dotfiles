@@ -20,7 +20,7 @@ class DirectDeal(instance.DirectDealMixin, models.Model):
     id = models.AutoField(primary_key=True)
     deal_id = models.CharField(max_length=100, null=False, blank=True)
     description = models.TextField(blank=True, null=True)
-    name = models.CharField(max_length=127, null=True, blank=True)
+    name = models.CharField(max_length=127, null=False, blank=False)
     source = models.ForeignKey("Source", null=False, blank=False, on_delete=models.PROTECT)
     agency = models.ForeignKey("Agency", null=True, blank=True, on_delete=models.PROTECT)
     floor_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)

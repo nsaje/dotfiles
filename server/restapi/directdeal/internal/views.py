@@ -70,7 +70,11 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
 
         with transaction.atomic():
             new_deal = core.features.deals.DirectDeal.objects.create(
-                request, agency=agency, source=settings.get("source"), deal_id=settings.get("deal_id")
+                request,
+                agency=agency,
+                source=settings.get("source"),
+                deal_id=settings.get("deal_id"),
+                name=settings.get("name"),
             )
             new_deal.update(request, **settings)
 

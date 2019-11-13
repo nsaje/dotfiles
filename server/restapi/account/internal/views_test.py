@@ -524,7 +524,7 @@ class AccountViewSetTest(RESTAPITest):
             autoAddNewSources=True,
             salesforceUrl="http://salesforce.com",
             allowedMediaSources=[],
-            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug}],
+            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name}],
         )
 
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
