@@ -303,6 +303,33 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
+                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_deals_in_ui'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-deals-list
+                        class="zem-deals-list zem-settings-section__item"
+                        [deals]="store.state.entity.deals"
+                        [availableDeals]="store.state.availableDeals"
+                        [isLoading]="store.state.dealsRequests.list.inProgress"
+                        (dealSelect)="store.addDeal($event)"
+                        (dealRemove)="store.removeDeal($event)"
+                        (search)="store.loadAvailableDeals($event)"
+                    ></zem-deals-list>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
                     zemPermissions.hasPermission(
                         'zemauth.can_set_white_blacklist_publisher_groups'
                     ) &&
@@ -375,7 +402,6 @@
                     ></zem-hacks>
                 </div>
             </div>
-
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="

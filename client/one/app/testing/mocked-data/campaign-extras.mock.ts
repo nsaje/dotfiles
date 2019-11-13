@@ -2,6 +2,7 @@ import {CampaignExtras} from '../../core/entities/types/campaign/campaign-extras
 import {CampaignGoalKPI} from '../../app.constants';
 
 export const campaignExtrasMock: CampaignExtras = {
+    agencyId: null,
     archived: null,
     language: null,
     canArchive: null,

@@ -141,12 +141,12 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         });
     }
 
-    loadAvailableDeals(agencyId: string, keyword: string): Promise<void> {
+    loadAvailableDeals(keyword: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (commonHelpers.isDefined(keyword) && keyword.trim()) {
                 this.dealsService
                     .list(
-                        agencyId,
+                        this.state.entity.agencyId,
                         null,
                         null,
                         keyword,

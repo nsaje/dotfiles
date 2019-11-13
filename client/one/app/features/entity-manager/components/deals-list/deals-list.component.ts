@@ -26,7 +26,7 @@ export class DealsListComponent {
     @Output()
     dealSelect = new EventEmitter<Deal>();
     @Output()
-    dealRemove = new EventEmitter<Deal>();
+    dealRemove = new EventEmitter<string>();
     @Output()
     search = new EventEmitter<string>();
 
@@ -35,7 +35,7 @@ export class DealsListComponent {
     }
 
     removeDeal(deal: Deal) {
-        this.dealRemove.emit(deal);
+        this.dealRemove.emit(deal.id);
     }
 
     onSearch($event: string) {

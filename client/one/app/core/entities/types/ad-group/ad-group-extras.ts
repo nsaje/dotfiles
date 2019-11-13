@@ -7,6 +7,7 @@ import {Currency, CampaignGoalKPI} from '../../../../app.constants';
 import {Deal} from '../common/deal';
 
 export interface AdGroupExtras {
+    agencyId: string;
     actionIsWaiting: boolean;
     canArchive: boolean;
     canRestore: boolean;

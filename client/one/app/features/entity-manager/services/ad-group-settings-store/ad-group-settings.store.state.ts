@@ -74,6 +74,7 @@ export class AdGroupSettingsStoreState {
         notes: null,
     };
     extras: AdGroupExtras = {
+        agencyId: null,
         actionIsWaiting: null,
         canArchive: null,
         canRestore: null,

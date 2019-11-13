@@ -8,6 +8,7 @@ import {AccountCredit} from '../account/account-credit';
 import {User} from '../common/user';
 
 export interface CampaignExtras {
+    agencyId: string;
     archived: boolean;
     language: Language;
     canArchive: boolean;

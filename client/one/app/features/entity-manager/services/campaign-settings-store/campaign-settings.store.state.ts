@@ -41,6 +41,7 @@ export class CampaignSettingsStoreState {
         deals: [],
     };
     extras: CampaignExtras = {
+        agencyId: null,
         archived: null,
         language: null,
         canArchive: null,

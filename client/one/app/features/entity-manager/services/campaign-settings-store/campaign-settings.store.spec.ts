@@ -894,7 +894,6 @@ describe('CampaignSettingsStore', () => {
     });
 
     it('should correctly load available deals via deals service', fakeAsync(() => {
-        const mockedAgencyId = '1';
         const mockedKeyword = 'bla';
         const mockedAvailableDeals: Deal[] = [];
 
@@ -902,7 +901,7 @@ describe('CampaignSettingsStore', () => {
             .returnValue(of(mockedAvailableDeals, asapScheduler))
             .calls.reset();
 
-        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        store.loadAvailableDeals(mockedKeyword);
         tick();
 
         expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
@@ -910,7 +909,6 @@ describe('CampaignSettingsStore', () => {
     }));
 
     it('should correctly skip loading available deals with empty keyword', fakeAsync(() => {
-        const mockedAgencyId = '1';
         const mockedKeyword = ' ';
         const mockedAvailableDeals: Deal[] = [];
 
@@ -918,7 +916,7 @@ describe('CampaignSettingsStore', () => {
             .returnValue(of(mockedAvailableDeals, asapScheduler))
             .calls.reset();
 
-        store.loadAvailableDeals(mockedAgencyId, mockedKeyword);
+        store.loadAvailableDeals(mockedKeyword);
         tick();
 
         expect(dealsServiceStub.list).toHaveBeenCalledTimes(0);
