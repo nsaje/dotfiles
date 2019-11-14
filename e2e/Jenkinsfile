@@ -1,0 +1,55 @@
+#!groovy
+import hudson.model.Run
+
+node('master') {
+    stage('Kill previous builds') {
+        Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+
+        while (previousBuild != null) {
+            if (previousBuild.isInProgress()) {
+                echo ">> Aborting older build #${previousBuild.number}"
+                previousBuild.doTerm()
+            }
+
+            previousBuild = previousBuild.getPreviousBuildInProgress()
+        }
+    }
+
+    stage('Setup') {
+        sh 'export'
+        env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
+        sh 'mkdir -p ${CACHE_DIR}'
+        env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
+        env.AWS_DEFAULT_REGION="us-east-1"
+
+        def upstream = currentBuild.rawBuild.getCause(hudson.model.Cause$UpstreamCause)
+        if (upstream != null) {
+            env.BUILD_NUMBER = upstream.getUpstreamBuild()
+        }
+    }
+
+    stage('Code checkout') {
+        checkout scm
+        // parse git branch name
+        env.BRANCH_NAME = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+        // make sure we don't have leftovers from previous builds
+        sh 'sudo git clean --force -d -x'
+        // remove old lingering containsers and volumes
+        sh 'docker-compose kill; docker-compose rm -v -f'
+    }
+
+    stage('Prepare containers') {
+        sh 'make rebuild_if_differ'
+        sh 'make build'
+    }
+
+    withCredentials([string(credentialsId: 'testim_token', variable: 'TESTIM_TOKEN')]) {
+        stage('Testim e2e tests') {
+            sh 'make test_e2e'
+        }
+    }
+
+    stage('Cleanup workspace') {
+        sh 'docker-compose kill; docker-compose rm -v -f'
+    }
+}
