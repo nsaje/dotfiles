@@ -22,6 +22,7 @@ angular.module('one.common').factory('zemDeviceTargetingConstants', function() {
         {value: 'ANDROID_8_0', name: '8.0 Oreo'},
         {value: 'ANDROID_8_1', name: '8.1 Oreo'},
         {value: 'ANDROID_9_0', name: '9.0 Pie'},
+        {value: 'ANDROID_10_0', name: 'Android 10'},
     ];
 
     var VERSIONS_IOS = [
@@ -52,6 +53,12 @@ angular.module('one.common').factory('zemDeviceTargetingConstants', function() {
         {value: 'IOS_11_0', name: '11.0'},
         {value: 'IOS_12_0', name: '12.0'},
         {value: 'IOS_12_1', name: '12.1'},
+        {value: 'IOS_12_2', name: '12.2'},
+        {value: 'IOS_12_3', name: '12.3'},
+        {value: 'IOS_12_4', name: '12.4'},
+        {value: 'IOS_13_0', name: '13.0'},
+        {value: 'IOS_13_1', name: '13.1'},
+        {value: 'IOS_13_2', name: '13.2'},
     ];
 
     var VERSIONS_OSX = [
@@ -66,6 +73,7 @@ angular.module('one.common').factory('zemDeviceTargetingConstants', function() {
         {value: 'MACOSX_10_12', name: '10.12 Sierra'},
         {value: 'MACOSX_10_13', name: '10.13 High Sierra'},
         {value: 'MACOSX_10_14', name: '10.14 Mojave'},
+        {value: 'MACOSX_10_15', name: '10.15 Catalina'},
     ];
 
     var VERSIONS_WINDOWS = [

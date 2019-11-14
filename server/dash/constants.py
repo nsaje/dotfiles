@@ -2069,6 +2069,7 @@ class OperatingSystemVersion(ConstantBase):
     ANDROID_8_0 = "android_8_0"
     ANDROID_8_1 = "android_8_1"
     ANDROID_9_0 = "android_9_0"
+    ANDROID_10_0 = "android_10_0"
     IOS_3_2 = "ios_3_2"
     IOS_4_0 = "ios_4_0"
     IOS_4_1 = "ios_4_1"
@@ -2096,6 +2097,12 @@ class OperatingSystemVersion(ConstantBase):
     IOS_11_0 = "ios_11_0"
     IOS_12_0 = "ios_12_0"
     IOS_12_1 = "ios_12_1"
+    IOS_12_2 = "ios_12_2"
+    IOS_12_3 = "ios_12_3"
+    IOS_12_4 = "ios_12_4"
+    IOS_13_0 = "ios_13_0"
+    IOS_13_1 = "ios_13_1"
+    IOS_13_2 = "ios_13_2"
     WINPHONE_7 = "winphone_7"
     WINPHONE_8_0 = "winphone_8_0"
     WINPHONE_8_1 = "winphone_8_1"
@@ -2119,6 +2126,7 @@ class OperatingSystemVersion(ConstantBase):
     MACOSX_10_12 = "macosx_10_12"
     MACOSX_10_13 = "macosx_10_13"
     MACOSX_10_14 = "macosx_10_14"
+    MACOSX_10_15 = "macosx_10_15"
 
     _VALUES = {
         ANDROID_2_1: "2.1 Eclair",
@@ -2140,6 +2148,7 @@ class OperatingSystemVersion(ConstantBase):
         ANDROID_8_0: "8.0 Oreo",
         ANDROID_8_1: "8.1 Oreo",
         ANDROID_9_0: "9.0 Pie",
+        ANDROID_10_0: "Android 10",
         IOS_3_2: "3.2",
         IOS_4_0: "4.0",
         IOS_4_1: "4.1",
@@ -2167,6 +2176,12 @@ class OperatingSystemVersion(ConstantBase):
         IOS_11_0: "11.0",
         IOS_12_0: "12.0",
         IOS_12_1: "12.1",
+        IOS_12_2: "12.2",
+        IOS_12_3: "12.3",
+        IOS_12_4: "12.4",
+        IOS_13_0: "13.0",
+        IOS_13_1: "13.1",
+        IOS_13_2: "13.2",
         WINPHONE_7: "7",
         WINPHONE_8_0: "8.0",
         WINPHONE_8_1: "8.1",
@@ -2190,6 +2205,7 @@ class OperatingSystemVersion(ConstantBase):
         MACOSX_10_12: "10.12 Sierra",
         MACOSX_10_13: "10.13 High Sierra",
         MACOSX_10_14: "10.14 Mojave",
+        MACOSX_10_15: "10.15 Catalina",
     }
 
 
@@ -2215,6 +2231,7 @@ OSV_MAPPING = {
         OperatingSystemVersion.ANDROID_8_0,
         OperatingSystemVersion.ANDROID_8_1,
         OperatingSystemVersion.ANDROID_9_0,
+        OperatingSystemVersion.ANDROID_10_0,
     ],
     OperatingSystem.IOS: [
         OperatingSystemVersion.IOS_3_2,
@@ -2245,6 +2262,12 @@ OSV_MAPPING = {
         OperatingSystemVersion.IOS_11_0,
         OperatingSystemVersion.IOS_12_0,
         OperatingSystemVersion.IOS_12_1,
+        OperatingSystemVersion.IOS_12_2,
+        OperatingSystemVersion.IOS_12_3,
+        OperatingSystemVersion.IOS_12_4,
+        OperatingSystemVersion.IOS_13_0,
+        OperatingSystemVersion.IOS_13_1,
+        OperatingSystemVersion.IOS_13_2,
     ],
     OperatingSystem.WINPHONE: [
         OperatingSystemVersion.WINPHONE_7,
@@ -2274,6 +2297,7 @@ OSV_MAPPING = {
         OperatingSystemVersion.MACOSX_10_12,
         OperatingSystemVersion.MACOSX_10_13,
         OperatingSystemVersion.MACOSX_10_14,
+        OperatingSystemVersion.MACOSX_10_15,
     ],
 }
 
