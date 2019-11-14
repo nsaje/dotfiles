@@ -3,6 +3,7 @@ import json
 from django.contrib import admin
 from django.contrib.postgres.fields import ArrayField
 from django.forms import Textarea
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
@@ -58,6 +59,16 @@ class SyncAttemptAdmin(admin.ModelAdmin):
                     successes.append(False)
         return all(successes)
 
+    def ad_groups_links(self, instance):
+        links = []
+        for ad_group in instance.product_feed.ad_groups.all():
+            links.append(
+                "<a href=https://one.zemanta.com/v2/analytics/adgroup/{}>{} ({}) </a>".format(
+                    ad_group.id, ad_group.name, ad_group.settings.state
+                )
+            )
+        return format_html(", ".join(links))
+
     content_ads_candidates_errors.short_description = "Content ads candidates errors"
     ads_skipped_prettified.short_description = "items skipped"
     items_to_upload_prettified.short_description = "items uploaded"
@@ -69,23 +80,27 @@ class SyncAttemptAdmin(admin.ModelAdmin):
         "timestamp",
         "product_feed",
         "batches",
+        "ad_groups_links",
         "global_upload_status",
         "dry_run",
         "exception",
         "ads_skipped_prettified",
         "items_to_upload_prettified",
         "content_ads_candidates_errors",
+        "ads_paused_and_archived",
     )
     readonly_fields = (
         "product_feed",
         "timestamp",
         "batches",
+        "ad_groups_links",
         "global_upload_status",
         "dry_run",
         "exception",
         "ads_skipped_prettified",
         "items_to_upload_prettified",
         "content_ads_candidates_errors",
+        "ads_paused_and_archived",
     )
     ordering = ("-timestamp", "product_feed")
     search_fields = ("batches__adgroup", "product_feed")

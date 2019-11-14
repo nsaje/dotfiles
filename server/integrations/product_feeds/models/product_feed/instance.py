@@ -24,20 +24,22 @@ class ProductFeedInstanceMixin:
         return self.name
 
     def pause_and_archive_ads(self, dry_run=False):
-        if self.content_ads_ttl > 0:
-            ads_to_pause_and_archive = (
-                core.models.ContentAd.objects.filter_active()
-                .filter(
-                    ad_group__in=self.ad_groups.exclude_archived(),
-                    created_dt__lte=dates_helper.local_today() - datetime.timedelta(self.content_ads_ttl),
-                )
-                .exclude_archived()
-                .exclude(label__exact="")
+        if self.content_ads_ttl <= 0:
+            return
+        ads_to_pause_and_archive = (
+            core.models.ContentAd.objects.filter_active()
+            .filter(
+                ad_group__in=self.ad_groups.exclude_archived(),
+                created_dt__lte=dates_helper.local_today() - datetime.timedelta(self.content_ads_ttl),
             )
-            if not dry_run:
-                for ad in ads_to_pause_and_archive:
-                    ad.update(None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True)
-            self._write_log(dry_run=dry_run, ads_paused_and_archived=list(ads_to_pause_and_archive))
+            .exclude_archived()
+        )
+        if not dry_run:
+            for ad in ads_to_pause_and_archive:
+                ad.update(None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True)
+        self._write_log(
+            dry_run=dry_run, ads_paused_and_archived=list(ads_to_pause_and_archive), exception="Pause and archive Ads."
+        )
 
     def ingest_and_create_ads(self, dry_run=False):
         try:
@@ -68,7 +70,8 @@ class ProductFeedInstanceMixin:
                     skipped_items.append({"item": "{}".format(item), "reason": "{}".format(e)})
                     continue
 
-            for ad_group in self.ad_groups.filter_active().exclude_archived():
+            ad_groups = self.ad_groups.filter_active().exclude_archived()
+            for ad_group in ad_groups:
                 for item in all_parsed_items:
                     if self._is_ad_already_uploaded(item, ad_group):
                         skipped_items.append(
@@ -95,6 +98,7 @@ class ProductFeedInstanceMixin:
                 dry_run=dry_run,
                 batches=batches,
                 ads_skipped=skipped_items[:100],
+                exception="No active ad_groups" if not ad_groups else "",
                 items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:100]])),
             )
         except (Exception, EntityLimitExceeded) as e:
