@@ -2,15 +2,14 @@
 
 <ng-container *ngIf="agencyId && (store.state$ | async) as state">
     <div class="zem-panel zem-panel--with-padding zem-deals-library__panel">
-        <div class="zem-deals-library__buttons-container">
-            <button
-                class="zem-button zem-button--with-icon add-icon zem-deals-library__button"
-                (click)="openEditDealModal({})"
-            >
-                Add new deal
-            </button>
-        </div>
+        <zem-deals-library-actions
+            class="zem-deals-library-actions zem-deals-library__item"
+            (search)="searchDeals($event)"
+            (dealCreate)="openEditDealModal({})"
+        >
+        </zem-deals-library-actions>
         <zem-smart-grid
+            class="zem-smart-grid zem-deals-library__item"
             [rowData]="state.entities"
             [columnDefs]="columnDefs"
             [context]="context"

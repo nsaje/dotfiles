@@ -7,6 +7,7 @@ import {map, catchError} from 'rxjs/operators';
 import {Deal} from '../types/deal';
 import {DealConnection} from '../types/deal-connection';
 import {APP_CONFIG} from '../../../app.config';
+import * as commonHelpers from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class DealsEndpoint {
@@ -23,6 +24,15 @@ export class DealsEndpoint {
             url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/`,
             name: 'list',
         };
+        const params = {
+            offset: `${offset}`,
+            limit: `${limit}`,
+        };
+
+        if (commonHelpers.isDefined(keyword)) {
+            // tslint:disable-next-line: no-string-literal
+            params['keyword'] = keyword;
+        }
 
         requestStateUpdater(request.name, {
             inProgress: true,
@@ -30,11 +40,7 @@ export class DealsEndpoint {
 
         return this.http
             .get<ApiResponse<Deal[]>>(request.url, {
-                params: {
-                    offset: `${offset}`,
-                    limit: `${limit}`,
-                    keyword: keyword,
-                },
+                params: params,
             })
             .pipe(
                 map(response => {

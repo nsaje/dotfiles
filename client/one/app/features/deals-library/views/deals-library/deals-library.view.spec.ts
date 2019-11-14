@@ -8,6 +8,7 @@ import {SourcesService} from '../../../../core/sources/services/sources.service'
 import {SourcesEndpoint} from '../../../../core/sources/services/sources.endpoint';
 import {DealsEndpoint} from '../../../../core/deals/services/deals.endpoint';
 import {ConnectionsListComponent} from '../../components/connections-list/connections-list.component';
+import {DealsLibraryActionsComponent} from '../../components/deals-library-actions/deals-library-actions.component';
 
 describe('DealsLibraryView', () => {
     let component: DealsLibraryView;
@@ -19,7 +20,11 @@ describe('DealsLibraryView', () => {
             search: () => '',
         };
         TestBed.configureTestingModule({
-            declarations: [DealsLibraryView, ConnectionsListComponent],
+            declarations: [
+                DealsLibraryView,
+                ConnectionsListComponent,
+                DealsLibraryActionsComponent,
+            ],
             imports: [FormsModule, SharedModule],
             providers: [
                 DealsLibraryStore,

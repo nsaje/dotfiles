@@ -141,7 +141,7 @@ describe('DealsLibraryStore', () => {
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
-        store.initStore(mockedAgencyId, mockedOffset, mockedLimit);
+        store.initStore(mockedAgencyId, mockedOffset, mockedLimit, null);
         tick();
 
         expect(store.state.entities).toEqual(mockedDeals);

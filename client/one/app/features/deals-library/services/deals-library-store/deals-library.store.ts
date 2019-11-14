@@ -34,16 +34,28 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         );
     }
 
-    initStore(agencyId: string, page: number, pageSize: number): Promise<void> {
+    initStore(
+        agencyId: string,
+        page: number,
+        pageSize: number,
+        keyword: string | null
+    ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.patchState(agencyId, 'agencyId');
-            Promise.all([this.loadEntities(page, pageSize), this.loadSources()])
+            Promise.all([
+                this.loadEntities(page, pageSize, keyword),
+                this.loadSources(),
+            ])
                 .then(() => resolve())
                 .catch(() => reject());
         });
     }
 
-    loadEntities(page: number, pageSize: number): Promise<void> {
+    loadEntities(
+        page: number,
+        pageSize: number,
+        keyword: string | null = null
+    ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const offset = this.getOffset(page, pageSize);
             this.dealsService
@@ -51,7 +63,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                     this.state.agencyId,
                     offset,
                     pageSize,
-                    null,
+                    keyword,
                     this.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

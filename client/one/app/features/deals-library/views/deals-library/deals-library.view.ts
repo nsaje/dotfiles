@@ -125,6 +125,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         if (commonHelpers.isDefined(this.agencyId)) {
             this.subscribeToStateUpdates();
             const preselectedPagination = this.getPreselectedPagination();
+            const keyword = this.getPreselectedKeyword();
             this.paginationOptions = {
                 ...this.paginationOptions,
                 ...preselectedPagination,
@@ -133,7 +134,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                 .initStore(
                     this.agencyId,
                     preselectedPagination.page,
-                    preselectedPagination.pageSize
+                    preselectedPagination.pageSize,
+                    keyword
                 )
                 .then(() => {
                     this.updateUrlParamsWithSelectedPagination(
@@ -148,14 +150,18 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             page: null,
             pageSize: null,
         });
+        this.updateUrlParamsWithKeyword(null);
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
 
     onPaginationChange($event: PaginationChangeEvent) {
-        this.store.loadEntities($event.page, $event.pageSize).then(() => {
-            this.updateUrlParamsWithSelectedPagination($event);
-        });
+        const keyword = this.getPreselectedKeyword();
+        this.store
+            .loadEntities($event.page, $event.pageSize, keyword)
+            .then(() => {
+                this.updateUrlParamsWithSelectedPagination($event);
+            });
     }
 
     openEditDealModal(deal: Partial<Deal>) {
@@ -165,6 +171,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
 
     removeDeal(deal: Deal) {
         const pagination = this.getPreselectedPagination();
+        const keyword = this.getPreselectedKeyword();
         if (
             confirm(
                 `Are you sure you wish to delete ${deal.name} for ${
@@ -177,7 +184,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                 .then(() =>
                     this.store.loadEntities(
                         pagination.page,
-                        pagination.pageSize
+                        pagination.pageSize,
+                        keyword
                     )
                 );
         }
@@ -185,10 +193,24 @@ export class DealsLibraryView implements OnInit, OnDestroy {
 
     saveDeal() {
         const pagination = this.getPreselectedPagination();
+        const keyword = this.getPreselectedKeyword();
         this.store.saveActiveEntity().then(() => {
             this.editDealModal.close();
-            this.store.loadEntities(pagination.page, pagination.pageSize);
+            this.store.loadEntities(
+                pagination.page,
+                pagination.pageSize,
+                keyword
+            );
         });
+    }
+
+    searchDeals(keyword: string) {
+        const pagination = this.getPreselectedPagination();
+        this.store
+            .loadEntities(pagination.page, pagination.pageSize, keyword)
+            .then(() => {
+                this.updateUrlParamsWithKeyword(keyword);
+            });
     }
 
     openConnectionsModal(deal: Partial<Deal>, type: string) {
@@ -200,7 +222,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
 
     closeConnectionsModal() {
         const pagination = this.getPreselectedPagination();
-        this.store.loadEntities(pagination.page, pagination.pageSize);
+        const keyword = this.getPreselectedKeyword();
+        this.store.loadEntities(pagination.page, pagination.pageSize, keyword);
     }
 
     removeConnection(connectionId: string) {
@@ -248,6 +271,16 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             }
         });
         return pagination;
+    }
+
+    private updateUrlParamsWithKeyword(keyword: string | null): void {
+        keyword = keyword ? keyword : null;
+        this.ajs$location.search('keyword', keyword).replace();
+    }
+
+    private getPreselectedKeyword(): string | null {
+        const keyword = this.ajs$location.search().keyword;
+        return commonHelpers.isDefined(keyword) ? keyword : null;
     }
 
     private formatDate(date: Date): string {
