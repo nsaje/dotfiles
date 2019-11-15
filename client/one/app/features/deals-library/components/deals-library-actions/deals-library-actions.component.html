@@ -1,13 +1,16 @@
-<zem-text-input
-    class="zem-text-input"
-    [placeholder]="'Search deals'"
-    (valueChange)="onChange($event)"
+<div
+    class="zem-prefixed-input zem-prefixed-input--with-icon zem-magnifier-bg-icon zem-deals-library-actions__search"
 >
-</zem-text-input>
+    <zem-text-input
+        class="zem-text-input zem-prefixed-input__input"
+        [placeholder]="'Search by name, media source or deal id'"
+        (valueChange)="onSearchChange($event)"
+    ></zem-text-input>
+</div>
 <div class="zem-deals-library-actions__buttons">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-deals-library-actions__button"
-        (click)="onDealCreate()"
+        (click)="dealCreate.emit()"
     >
         Add new deal
     </button>

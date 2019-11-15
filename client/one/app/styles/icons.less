@@ -1,9 +1,15 @@
 @import 'variables';
 
-.zem-calendar-bg-icon::before {
-    background-image: url('images/calendar-gray.svg');
-}
-
+.zem-calendar-bg-icon::before,
 .zem-calendar-bg-icon::after {
     background-image: url('images/calendar-gray.svg');
+    background-size: @input__height--default - 12;
+    width: 34px;
+}
+
+.zem-magnifier-bg-icon::before,
+.zem-magnifier-bg-icon::after {
+    background-image: url('images/magnifier-gray.svg');
+    background-size: @input__height--default - 15;
+    width: 30px;
 }

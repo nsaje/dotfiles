@@ -42,11 +42,7 @@ export class DealsLibraryActionsComponent implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    onChange($event: string) {
+    onSearchChange($event: string) {
         this.searchDebouncer$.next($event);
-    }
-
-    onDealCreate() {
-        this.dealCreate.emit();
     }
 }
