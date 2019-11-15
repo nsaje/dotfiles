@@ -56,5 +56,4 @@ testim \
     --base-url "http://$SERVER_ENDPOINT" \
     --parallel 2 \
     --test-config "Chrome" \
-    --test-config "Firefox" --mode selenium \
     --report-file testim-tests-report.xml
