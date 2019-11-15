@@ -42,7 +42,7 @@ while true; do
 done
 echo "Server opened port"
 
-# Launch testim CLI
+# Launch testim CLI for Chrome
 testim \
     --name "User Login" \
     --name "Create account" \
@@ -56,4 +56,20 @@ testim \
     --base-url "http://$SERVER_ENDPOINT" \
     --parallel 2 \
     --test-config "Chrome" \
+    --report-file testim-tests-report.xml
+
+# Launch testim CLI for Firefox
+testim \
+    --name "User Login" \
+    --name "Create account" \
+    --name "Create account credit" \
+    --name "Create campaign" \
+    --name "Create ad group" \
+    --token "$TESTIM_TOKEN" \
+    --project "$TESTIM_PROJECT" \
+    --host "$GRID_HOST" \
+    --port "$GRID_PORT" \
+    --base-url "http://$SERVER_ENDPOINT" \
+    --parallel 2 \
+    --test-config "Firefox" --mode selenium \
     --report-file testim-tests-report.xml
