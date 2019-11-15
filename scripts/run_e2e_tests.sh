@@ -55,7 +55,6 @@ testim \
     --port "$GRID_PORT" \
     --base-url "http://$SERVER_ENDPOINT" \
     --parallel 2 \
-    --test-config "Chrome-1920x1080" \
-    --test-config "Firefox-1920x1080" \
-    --mode selenium \
+    --test-config "Chrome" \
+    --test-config "Firefox" --mode selenium \
     --report-file testim-tests-report.xml
