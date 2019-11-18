@@ -485,7 +485,9 @@ class AccountViewSetTest(RESTAPITest):
                 "id": str(deal_to_be_added.id),
                 "dealId": deal_to_be_added.deal_id,
                 "source": deal_to_be_added.source.bidder_slug,
-            }
+                "name": deal_to_be_added.name,
+            },
+            {"id": None, "dealId": "NEW_DEAL", "source": sources[0].bidder_slug, "name": "NEW DEAL NAME"},
         ]
 
         r = self.client.put(
@@ -502,11 +504,15 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 1)
         self.assertEqual(resp_json["data"]["allowedMediaSources"][0]["id"], str(sources[0].id))
 
-        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 2)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
 
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
@@ -524,7 +530,10 @@ class AccountViewSetTest(RESTAPITest):
             autoAddNewSources=True,
             salesforceUrl="http://salesforce.com",
             allowedMediaSources=[],
-            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name}],
+            deals=[
+                {"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name},
+                {"id": None, "dealId": "NEW_DEAL", "source": sources[0].bidder_slug, "name": "NEW DEAL NAME"},
+            ],
         )
 
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
@@ -543,11 +552,15 @@ class AccountViewSetTest(RESTAPITest):
 
         self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 0)
 
-        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 2)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
 
     @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
     @mock.patch("utils.slack.publish")

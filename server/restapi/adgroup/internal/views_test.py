@@ -238,7 +238,9 @@ class AdGroupViewSetTest(RESTAPITest):
                 "id": str(deal_to_be_added.id),
                 "dealId": deal_to_be_added.deal_id,
                 "source": deal_to_be_added.source.bidder_slug,
-            }
+                "name": deal_to_be_added.name,
+            },
+            {"id": None, "dealId": "NEW_DEAL", "source": source.bidder_slug, "name": "NEW DEAL NAME"},
         ]
 
         r = self.client.put(
@@ -248,11 +250,15 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
 
-        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 2)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 1)
 
     def test_get_bid_modifier_type_summaries(self):
         test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])

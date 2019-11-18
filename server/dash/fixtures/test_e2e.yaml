@@ -100,6 +100,7 @@
             - ['can_see_credit_refunds', 'zemauth', 'user']
             - ['can_see_currency_setting', 'zemauth', 'user']
             - ['can_see_deals_in_ui', 'zemauth', 'user']
+            - ['can_see_direct_deals_section', 'zemauth', 'user']
             - ['can_see_grid_actions', 'zemauth', 'user']
             - ['can_see_history_in_drawer', 'zemauth', 'user']
             - ['can_see_id_columns_in_table', 'zemauth', 'user']

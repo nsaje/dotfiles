@@ -70,7 +70,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
             "allowed_media_sources": "zemauth.can_modify_allowed_sources",
-            "deals": "zemauth.can_see_deals_in_ui",
+            "deals": "zemauth.can_see_direct_deals_section",
         }
 
     account_type = restapi.serializers.fields.DashConstantField(

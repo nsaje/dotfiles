@@ -532,7 +532,10 @@ class CampaignViewSetTest(RESTAPITest):
             campaign_manager=self.user.id,
             goals=[campaign_goal_time_on_site, campaign_goal_new_unique_visitors],
             budgets=[campaign_budget],
-            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name}],
+            deals=[
+                {"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name},
+                {"id": None, "dealId": "NEW_DEAL", "source": source.bidder_slug, "name": "NEW DEAL NAME"},
+            ],
         )
 
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_list"), data=new_campaign, format="json")
@@ -562,11 +565,15 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["budgets"][0]["creditId"], campaign_budget["creditId"])
         self.assertEqual(resp_json["data"]["budgets"][0]["amount"], campaign_budget["amount"])
         self.assertEqual(resp_json["data"]["budgets"][0]["comment"], campaign_budget["comment"])
-        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 2)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
 
     def test_post_campaign_manager_error(self):
         agency = magic_mixer.blend(core.models.Agency)
@@ -685,7 +692,9 @@ class CampaignViewSetTest(RESTAPITest):
                 "id": str(deal_to_be_added.id),
                 "dealId": deal_to_be_added.deal_id,
                 "source": deal_to_be_added.source.bidder_slug,
-            }
+                "name": deal_to_be_added.name,
+            },
+            {"id": None, "dealId": "NEW_DEAL", "source": source.bidder_slug, "name": "NEW DEAL NAME"},
         ]
 
         r = self.client.put(
@@ -720,8 +729,12 @@ class CampaignViewSetTest(RESTAPITest):
 
         self.assertEqual(resp_json["data"]["budgets"][0]["amount"], str(updated_amount))
 
-        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 2)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)

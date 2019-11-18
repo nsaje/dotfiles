@@ -32,7 +32,7 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     deal_id = rest_framework.serializers.CharField(max_length=100, allow_null=False, allow_blank=False)
     description = rest_framework.serializers.CharField(allow_null=True, allow_blank=True, required=False)
-    name = rest_framework.serializers.CharField(max_length=127, allow_null=True, allow_blank=False, required=True)
+    name = rest_framework.serializers.CharField(max_length=127, allow_null=False, allow_blank=False, required=True)
     source = restapi.serializers.fields.SourceIdSlugField(required=True, allow_null=False)
     floor_price = rest_framework.serializers.DecimalField(
         decimal_places=4, max_digits=10, required=False, allow_null=True, rounding=decimal.ROUND_HALF_DOWN

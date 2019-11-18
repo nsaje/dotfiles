@@ -57,6 +57,7 @@
       - ['can_see_all_available_sources', 'zemauth', 'user']
       - ['can_manage_agency_margin', 'zemauth', 'user']
       - ['can_see_deals_in_ui', 'zemauth', 'user']
+      - ['can_see_direct_deals_section', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

@@ -117,7 +117,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
             "frequency_capping": "zemauth.can_set_frequency_capping",
             "additional_data": "zemauth.can_use_ad_additional_data",
-            "deals": "zemauth.can_see_deals_in_ui",
+            "deals": "zemauth.can_see_direct_deals_section",
         }
 
     redirect_pixel_urls = restapi.serializers.fields.NullListField(

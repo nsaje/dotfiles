@@ -91,7 +91,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         if request.user.has_perm("zemauth.can_modify_allowed_sources"):
             account.allowed_media_sources = helpers.get_allowed_sources(request.user, account)
         account.deals = []
-        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+        if request.user.has_perm("zemauth.can_see_direct_deals_section"):
             account.deals = account.get_deals()
 
     @staticmethod
@@ -142,11 +142,23 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         new_deals = []
 
         for item in data:
-            try:
-                new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
+            if item.get("id") is not None:
+                try:
+                    new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
+                    errors.append(None)
+                except utils.exc.MissingDataError as err:
+                    errors.append({"id": [str(err)]})
+            else:
+                new_deal = core.features.deals.DirectDeal.objects.create(
+                    request,
+                    agency=account.agency,
+                    source=item.get("source"),
+                    deal_id=item.get("deal_id"),
+                    name=item.get("name"),
+                )
+                new_deal.update(request, **item)
+                new_deals.append(new_deal)
                 errors.append(None)
-            except utils.exc.MissingDataError as err:
-                errors.append({"id": [str(err)]})
 
         if any([error is not None for error in errors]):
             raise utils.exc.ValidationError(errors={"deals": errors})

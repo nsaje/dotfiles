@@ -76,7 +76,7 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
             "campaign_manager": "zemauth.can_modify_campaign_manager",
             "goals": "zemauth.can_see_campaign_goals",
             "budgets": "zemauth.can_see_new_budgets",
-            "deals": "zemauth.can_see_deals_in_ui",
+            "deals": "zemauth.can_see_direct_deals_section",
         }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)
