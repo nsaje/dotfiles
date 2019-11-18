@@ -39,6 +39,7 @@ node('master') {
     }
 
     stage('Prepare containers') {
+        sh 'make pull_testim'
         sh 'make rebuild_if_differ'
         sh 'make build'
     }

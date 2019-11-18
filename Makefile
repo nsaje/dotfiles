@@ -183,6 +183,9 @@ pull: login	## pulls zemanta docker images
 	docker pull $(ECR_BASE)/z1:master && docker tag $(ECR_BASE)/z1:master $(ECR_BASE)/z1:latest
 	docker pull $(ECR_BASE)/z1-client:master && docker tag $(ECR_BASE)/z1-client:master $(ECR_BASE)/z1-client:latest
 
+pull_testim:
+	docker pull testim/docker-cli
+
 push_baseimage:	## pushes zemanta/z1-base docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH)
 	test -n "$(GIT_HASH)"	&& docker push $(ECR_BASE)/z1-base:$(GIT_HASH)
