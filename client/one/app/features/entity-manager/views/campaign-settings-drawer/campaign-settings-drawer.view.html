@@ -507,11 +507,13 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_direct_deals_section'
+                    )
                 "
                 [zemInternalFeature]="
                     zemPermissions.isPermissionInternal(
-                        'zemauth.can_see_deals_in_ui'
+                        'zemauth.can_see_direct_deals_section'
                     )
                 "
             >
