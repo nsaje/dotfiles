@@ -9,6 +9,9 @@
     (itemSelect)="onDealSelect($event)"
     (search)="onSearch($event)"
 >
+    <ng-template #headerTemplate>
+        <div class="zem-deals-list__title">Connected deals</div>
+    </ng-template>
     <ng-template #itemTemplate let-item="item">
         <div class="zem-deals-list__deal">
             <div class="zem-deals-list__deal-info">
@@ -18,7 +21,11 @@
                     </div>
                     <div class="zem-deals-list__deal-info-item">
                         Notes:
-                        <div class="zem-dashed-box">{{ item.description }}</div>
+                        <div
+                            class="zem-dashed-box zem-deals-list__deal-description"
+                        >
+                            {{ item.description }}
+                        </div>
                     </div>
                 </ng-template>
                 <span

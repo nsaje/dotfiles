@@ -182,8 +182,14 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     addDeal(deal: Deal) {
-        const deals = [...this.state.entity.deals, deal];
-        this.patchState(deals, 'entity', 'deals');
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                deals: [...this.state.entity.deals, deal],
+            },
+            availableDeals: [],
+        });
     }
 
     removeDeal(dealId: string) {

@@ -53,7 +53,7 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     availableItemsFiltered: any[] = [];
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.items || changes.availableItems) {
+        if (changes.selectedItems || changes.availableItems) {
             this.availableItemsFiltered = this.availableItems.filter(x => {
                 return this.selectedItems.every(
                     y => y[this.bindValue] !== x[this.bindValue]

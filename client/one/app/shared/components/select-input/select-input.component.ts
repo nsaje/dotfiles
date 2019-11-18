@@ -58,6 +58,8 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     searchFn: Function;
     @Input()
+    dropdownPosition: 'bottom' | 'top' | 'auto' = 'auto';
+    @Input()
     debounceTime: number;
     @Input()
     hasError: boolean = false;
@@ -83,18 +85,20 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
 
     private onWindowScrollCallback: any;
 
-    constructor() {
-        this.onWindowScrollCallback = this.onWindowScroll.bind(this);
-    }
-
     ngOnInit(): void {
-        window.addEventListener('scroll', this.onWindowScrollCallback, true);
+        if (this.appendTo === 'body') {
+            this.onWindowScrollCallback = this.onWindowScroll.bind(this);
+            window.addEventListener(
+                'scroll',
+                this.onWindowScrollCallback,
+                true
+            );
+        }
         this.searchDebouncer$
             .pipe(
                 debounceTime(
                     commonHelpers.getValueOrDefault(this.debounceTime, 200)
                 ),
-                distinctUntilChanged(),
                 takeUntil(this.ngUnsubscribe$)
             )
             .subscribe(term => {
@@ -137,7 +141,13 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        window.removeEventListener('scroll', this.onWindowScrollCallback, true);
+        if (commonHelpers.isDefined(this.onWindowScrollCallback)) {
+            window.removeEventListener(
+                'scroll',
+                this.onWindowScrollCallback,
+                true
+            );
+        }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }

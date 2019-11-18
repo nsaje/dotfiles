@@ -460,6 +460,38 @@
                 class="zem-panel zem-settings__panel"
                 *ngIf="
                     zemPermissions.hasPermission(
+                        'zemauth.can_see_direct_deals_section'
+                    )
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_direct_deals_section'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__description">
+                        Deals connected to this campaign.
+                    </div>
+                    <zem-deals-list
+                        class="zem-deals-list zem-settings-section__item"
+                        [deals]="store.state.entity.deals"
+                        [availableDeals]="store.state.availableDeals"
+                        [isLoading]="store.state.dealsRequests.list.inProgress"
+                        (dealSelect)="store.addDeal($event)"
+                        (dealRemove)="store.removeDeal($event)"
+                        (search)="store.loadAvailableDeals($event)"
+                    ></zem-deals-list>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
                         'zemauth.can_see_backend_hacks'
                     )
                 "
@@ -485,28 +517,6 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
-                "
-                [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
-                        'zemauth.can_see_deals_in_ui'
-                    )
-                "
-            >
-                <div class="zem-panel__header">
-                    <h2 class="zem-settings__panel-header-title">Deals</h2>
-                </div>
-                <div class="zem-settings-section">
-                    <zem-deals
-                        class="zem-deals zem-settings-section__item"
-                        [deals]="state.extras.deals"
-                    ></zem-deals>
-                </div>
-            </div>
-
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="
                     zemPermissions.hasPermission(
                         'zemauth.can_see_direct_deals_section'
                     )
@@ -521,15 +531,10 @@
                     <h2 class="zem-settings__panel-header-title">Deals</h2>
                 </div>
                 <div class="zem-settings-section">
-                    <zem-deals-list
-                        class="zem-deals-list zem-settings-section__item"
-                        [deals]="store.state.entity.deals"
-                        [availableDeals]="store.state.availableDeals"
-                        [isLoading]="store.state.dealsRequests.list.inProgress"
-                        (dealSelect)="store.addDeal($event)"
-                        (dealRemove)="store.removeDeal($event)"
-                        (search)="store.loadAvailableDeals($event)"
-                    ></zem-deals-list>
+                    <zem-deals
+                        class="zem-deals zem-settings-section__item"
+                        [deals]="state.extras.deals"
+                    ></zem-deals>
                 </div>
             </div>
         </div>
