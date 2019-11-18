@@ -9,7 +9,6 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {PaginationOptions} from 'one/app/shared/components/smart-grid/types/pagination-options';
 import {ColDef} from 'ag-grid-community';
 import {ConnectionActionsCellComponent} from '../connection-actions-cell/connection-actions-cell.component';
 import {DealConnectionRowData} from '../../types/deal-connection-row-data';
@@ -30,9 +29,6 @@ export class ConnectionsListComponent implements OnChanges {
     removeConnection = new EventEmitter<string>();
 
     context: any;
-    paginationOptions: PaginationOptions = {
-        type: 'client',
-    };
     columnDefs: ColDef[] = [
         {headerName: 'Connection name', field: 'name'},
         {
