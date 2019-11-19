@@ -67,6 +67,8 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     valueChange = new EventEmitter<string>();
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    open = new EventEmitter<void>();
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private searchDebouncer$: Subject<string> = new Subject<string>();

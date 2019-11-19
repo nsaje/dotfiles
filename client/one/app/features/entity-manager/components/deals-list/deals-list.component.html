@@ -3,11 +3,12 @@
     [selectedItems]="deals"
     [availableItems]="availableDeals"
     [selectBindValue]="'id'"
-    [selectPlaceholder]="'Add deal'"
+    [selectPlaceholder]="'Search by name, media source or deal id'"
     [selectIsLoading]="isLoading"
     [selectSearchFn]="selectSearchFn"
     (itemSelect)="onDealSelect($event)"
     (search)="onSearch($event)"
+    (open)="open.emit()"
 >
     <ng-template #headerTemplate>
         <div class="zem-deals-list__title">Connected deals</div>

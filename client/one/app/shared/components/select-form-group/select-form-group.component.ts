@@ -58,6 +58,8 @@ export class SelectFormGroupComponent implements OnChanges {
     valueChange = new EventEmitter<string>();
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    open = new EventEmitter<void>();
 
     model: string;
 

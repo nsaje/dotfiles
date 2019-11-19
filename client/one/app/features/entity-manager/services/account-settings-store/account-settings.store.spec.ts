@@ -528,20 +528,6 @@ describe('AccountSettingsStore', () => {
         expect(store.state.availableDeals).toEqual(mockedAvailableDeals);
     }));
 
-    it('should correctly skip loading available deals with empty keyword', fakeAsync(() => {
-        const mockedKeyword = ' ';
-        const mockedAvailableDeals: Deal[] = [];
-
-        dealsServiceStub.list.and
-            .returnValue(of(mockedAvailableDeals, asapScheduler))
-            .calls.reset();
-
-        store.loadAvailableDeals(mockedKeyword);
-        tick();
-
-        expect(dealsServiceStub.list).toHaveBeenCalledTimes(0);
-    }));
-
     it('should correctly add deal', () => {
         const mockedDeal = {
             id: '10000000',

@@ -38,6 +38,7 @@
     [debounceTime]="1000"
     (valueChange)="onItemSelect($event)"
     (search)="onSearch($event)"
+    (open)="open.emit()"
 >
     <ng-template #optionTemplate let-item="item" let-search="search">
         <ng-container

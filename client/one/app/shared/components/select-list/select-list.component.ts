@@ -37,6 +37,8 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     itemSelect = new EventEmitter<any>();
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    open = new EventEmitter<void>();
 
     @ContentChild('headerTemplate', {read: TemplateRef, static: false})
     headerTemplate: TemplateRef<any>;

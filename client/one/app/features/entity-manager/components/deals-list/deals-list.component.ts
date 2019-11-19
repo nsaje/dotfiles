@@ -29,6 +29,8 @@ export class DealsListComponent {
     dealRemove = new EventEmitter<string>();
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    open = new EventEmitter<void>();
 
     onDealSelect(deal: Deal) {
         this.dealSelect.emit(deal);

@@ -154,30 +154,27 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    loadAvailableDeals(keyword: string): Promise<void> {
+    loadAvailableDeals(keyword: string | null): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (commonHelpers.isDefined(keyword) && keyword.trim()) {
-                this.dealsService
-                    .list(
-                        this.state.extras.agencyId,
-                        null,
-                        null,
-                        keyword,
-                        this.dealsRequestStateUpdater
-                    )
-                    .pipe(takeUntil(this.ngUnsubscribe$))
-                    .subscribe(
-                        (deals: Deal[]) => {
-                            this.patchState(deals, 'availableDeals');
-                            resolve();
-                        },
-                        error => {
-                            reject();
-                        }
-                    );
-            } else {
-                resolve();
-            }
+            const isKeywordDefined = commonHelpers.isDefined(keyword);
+            this.dealsService
+                .list(
+                    this.state.extras.agencyId,
+                    !isKeywordDefined ? 0 : null,
+                    !isKeywordDefined ? 10 : null,
+                    !isKeywordDefined ? null : keyword.trim(),
+                    this.dealsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (deals: Deal[]) => {
+                        this.patchState(deals, 'availableDeals');
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
         });
     }
 

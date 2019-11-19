@@ -18,6 +18,7 @@
     [dropdownPosition]="dropdownPosition"
     (change)="onChange($event)"
     (search)="onSearch($event.term)"
+    (open)="open.emit()"
 >
     <ng-template ng-optgroup-tmp let-item="item">
         <ng-container
