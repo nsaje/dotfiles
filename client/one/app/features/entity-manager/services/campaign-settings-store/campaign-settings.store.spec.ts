@@ -26,16 +26,20 @@ import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-
 import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
+import {Source} from '../../../../core/sources/types/source';
 
 describe('CampaignSettingsStore', () => {
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
     let conversionPixelsServiceStub: jasmine.SpyObj<ConversionPixelsService>;
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
+    let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let store: CampaignSettingsStore;
     let campaignWithExtras: CampaignWithExtras;
     let campaign: Campaign;
     let campaignExtras: CampaignExtras;
     let conversionPixels: ConversionPixel[];
+    let mockedSources: Source[];
 
     beforeEach(() => {
         campaignServiceStub = jasmine.createSpyObj(CampaignService.name, [
@@ -46,6 +50,9 @@ describe('CampaignSettingsStore', () => {
             'archive',
         ]);
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
+        sourcesServiceStub = jasmine.createSpyObj(SourcesService.name, [
+            'list',
+        ]);
         conversionPixelsServiceStub = jasmine.createSpyObj(
             ConversionPixelsService.name,
             ['list', 'create', 'edit']
@@ -54,7 +61,8 @@ describe('CampaignSettingsStore', () => {
         store = new CampaignSettingsStore(
             campaignServiceStub,
             conversionPixelsServiceStub,
-            dealsServiceStub
+            dealsServiceStub,
+            sourcesServiceStub
         );
         campaign = clone(store.state.entity);
         campaignExtras = clone(store.state.extras);
@@ -83,6 +91,10 @@ describe('CampaignSettingsStore', () => {
                 conversionWindows: [],
             },
         ];
+
+        mockedSources = [
+            {slug: 'smaato', name: 'Smaato', released: true, deprecated: false},
+        ];
     });
 
     it('should get default campaign via service', fakeAsync(() => {
@@ -96,6 +108,10 @@ describe('CampaignSettingsStore', () => {
 
         conversionPixelsServiceStub.list.and
             .returnValue(of(clone(conversionPixels)))
+            .calls.reset();
+
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.state.entity).toEqual(campaign);
@@ -114,9 +130,11 @@ describe('CampaignSettingsStore', () => {
             new CampaignSettingsStoreFieldsErrorsState()
         );
         expect(store.state.conversionPixels).toEqual(conversionPixels);
+        expect(store.state.sources).toEqual(mockedSources);
 
         expect(campaignServiceStub.defaults).toHaveBeenCalledTimes(1);
         expect(conversionPixelsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should get campaign via service', fakeAsync(() => {
@@ -131,6 +149,10 @@ describe('CampaignSettingsStore', () => {
 
         conversionPixelsServiceStub.list.and
             .returnValue(of(clone(conversionPixels)))
+            .calls.reset();
+
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.state.entity).toEqual(campaign);
@@ -149,9 +171,11 @@ describe('CampaignSettingsStore', () => {
             new CampaignSettingsStoreFieldsErrorsState()
         );
         expect(store.state.conversionPixels).toEqual(conversionPixels);
+        expect(store.state.sources).toEqual(mockedSources);
 
         expect(campaignServiceStub.get).toHaveBeenCalledTimes(1);
         expect(conversionPixelsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when validating campaign via service', fakeAsync(() => {
@@ -217,6 +241,9 @@ describe('CampaignSettingsStore', () => {
         campaignServiceStub.save.and
             .returnValue(of(mockedCampaignWithExtras.campaign, asapScheduler))
             .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -225,10 +252,12 @@ describe('CampaignSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedCampaignWithExtras.campaign);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             new CampaignSettingsStoreFieldsErrorsState()
         );
         expect(campaignServiceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when saving campaign via service', fakeAsync(() => {
@@ -251,6 +280,9 @@ describe('CampaignSettingsStore', () => {
                 })
             )
             .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -259,6 +291,7 @@ describe('CampaignSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedCampaignWithExtras.campaign);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             jasmine.objectContaining({
                 ...new CampaignSettingsStoreFieldsErrorsState(),
@@ -266,6 +299,7 @@ describe('CampaignSettingsStore', () => {
             })
         );
         expect(campaignServiceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should successfully archive campaign via service', async () => {
@@ -318,6 +352,9 @@ describe('CampaignSettingsStore', () => {
             .calls.reset();
         conversionPixelsServiceStub.list.and
             .returnValue(of(clone(conversionPixels)))
+            .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
@@ -946,7 +983,7 @@ describe('CampaignSettingsStore', () => {
             },
         ];
 
-        store.removeDeal('10000000');
+        store.removeDeal(store.state.entity.deals[0]);
         expect(store.state.entity.deals).toEqual([]);
     });
 });

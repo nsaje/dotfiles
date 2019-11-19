@@ -3,6 +3,7 @@ import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-e
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {RequestState} from '../../../../shared/types/request-state';
 import {Deal} from '../../../../core/deals/types/deal';
+import {Source} from '../../../../core/sources/types/source';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -111,9 +112,13 @@ export class AdGroupSettingsStoreState {
         hacks: [],
         deals: [],
     };
+    sources: Source[] = [];
     availableDeals: Deal[] = [];
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     dealsRequests = {
+        list: {} as RequestState,
+    };
+    sourcesRequests = {
         list: {} as RequestState,
     };
     requests = {

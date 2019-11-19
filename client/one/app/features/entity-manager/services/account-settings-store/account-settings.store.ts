@@ -17,6 +17,8 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
+import {ChangeEvent} from '../../../../shared/types/change-event';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
 
 @Injectable()
 export class AccountSettingsStore extends Store<AccountSettingsStoreState>
@@ -24,11 +26,13 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private dealsRequestStateUpdater: RequestStateUpdater;
+    private sourcesRequestStateUpdater: RequestStateUpdater;
     private originalEntity: Account;
 
     constructor(
         private accountService: AccountService,
-        private dealsService: DealsService
+        private dealsService: DealsService,
+        private sourcesService: SourcesService
     ) {
         super(new AccountSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -37,6 +41,10 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         this.dealsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'dealsRequests'
+        );
+        this.sourcesRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'sourcesRequests'
         );
     }
 
@@ -51,6 +59,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                         entity: accountWithExtras.account,
                         extras: accountWithExtras.extras,
                     });
+                    this.loadSources(this.state.entity.agencyId);
                 },
                 error => {}
             );
@@ -68,6 +77,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                         entity: accountWithExtras.account,
                         extras: accountWithExtras.extras,
                     });
+                    this.loadSources(this.state.entity.agencyId);
                 },
                 error => {}
             );
@@ -141,6 +151,21 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         });
     }
 
+    loadSources(agencyId: string) {
+        this.sourcesService
+            .list(agencyId, this.sourcesRequestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                sources => {
+                    this.setState({
+                        ...this.state,
+                        sources: sources,
+                    });
+                },
+                error => {}
+            );
+    }
+
     loadAvailableDeals(keyword: string | null): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
@@ -166,6 +191,24 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     addDeal(deal: Deal) {
+        if (!commonHelpers.isDefined(deal)) {
+            deal = {
+                id: null,
+                dealId: null,
+                description: null,
+                name: null,
+                source: null,
+                floorPrice: null,
+                validFromDate: null,
+                validToDate: null,
+                createdDt: null,
+                modifiedDt: null,
+                createdBy: null,
+                numOfAccounts: null,
+                numOfCampaigns: null,
+                numOfAdgroups: null,
+            };
+        }
         this.setState({
             ...this.state,
             entity: {
@@ -176,11 +219,26 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         });
     }
 
-    removeDeal(dealId: string) {
-        const deals = this.state.entity.deals.filter(deal => {
-            return deal.id !== dealId;
+    removeDeal(deal: Deal) {
+        const deals = this.state.entity.deals.filter(item => {
+            return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+    }
+
+    changeDeal($event: ChangeEvent<Deal>) {
+        const deals = this.state.entity.deals.map(deal => {
+            if (deal === $event.target) {
+                return {
+                    ...$event.target,
+                    ...$event.changes,
+                };
+            } else {
+                return deal;
+            }
+        });
+        this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

@@ -26,6 +26,8 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
+import {ChangeEvent} from '../../../../shared/types/change-event';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -33,11 +35,13 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private dealsRequestStateUpdater: RequestStateUpdater;
+    private sourcesRequestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
     constructor(
         private adGroupService: AdGroupService,
-        private dealsService: DealsService
+        private dealsService: DealsService,
+        private sourcesService: SourcesService
     ) {
         super(new AdGroupSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -46,6 +50,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.dealsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'dealsRequests'
+        );
+        this.sourcesRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'sourcesRequests'
         );
     }
 
@@ -60,6 +68,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         entity: adGroupWithExtras.adGroup,
                         extras: adGroupWithExtras.extras,
                     });
+                    this.loadSources(this.state.extras.agencyId);
                 },
                 error => {}
             );
@@ -77,6 +86,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         entity: adGroupWithExtras.adGroup,
                         extras: adGroupWithExtras.extras,
                     });
+                    this.loadSources(this.state.extras.agencyId);
                 },
                 error => {}
             );
@@ -154,6 +164,21 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
+    loadSources(agencyId: string) {
+        this.sourcesService
+            .list(agencyId, this.sourcesRequestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                sources => {
+                    this.setState({
+                        ...this.state,
+                        sources: sources,
+                    });
+                },
+                error => {}
+            );
+    }
+
     loadAvailableDeals(keyword: string | null): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
@@ -179,6 +204,24 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     addDeal(deal: Deal) {
+        if (!commonHelpers.isDefined(deal)) {
+            deal = {
+                id: null,
+                dealId: null,
+                description: null,
+                name: null,
+                source: null,
+                floorPrice: null,
+                validFromDate: null,
+                validToDate: null,
+                createdDt: null,
+                modifiedDt: null,
+                createdBy: null,
+                numOfAccounts: null,
+                numOfCampaigns: null,
+                numOfAdgroups: null,
+            };
+        }
         this.setState({
             ...this.state,
             entity: {
@@ -189,11 +232,26 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    removeDeal(dealId: string) {
-        const deals = this.state.entity.deals.filter(deal => {
-            return deal.id !== dealId;
+    removeDeal(deal: Deal) {
+        const deals = this.state.entity.deals.filter(item => {
+            return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+    }
+
+    changeDeal($event: ChangeEvent<Deal>) {
+        const deals = this.state.entity.deals.map(deal => {
+            if (deal === $event.target) {
+                return {
+                    ...$event.target,
+                    ...$event.changes,
+                };
+            } else {
+                return deal;
+            }
+        });
+        this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

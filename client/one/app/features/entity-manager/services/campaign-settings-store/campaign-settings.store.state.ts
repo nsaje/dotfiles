@@ -6,6 +6,7 @@ import {CampaignGoalKPI} from '../../../../app.constants';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
 import {ConversionPixelErrors} from '../../types/conversion-pixel-errors';
 import {Deal} from '../../../../core/deals/types/deal';
+import {Source} from '../../../../core/sources/types/source';
 
 export class CampaignSettingsStoreState {
     entity: Campaign = {
@@ -76,6 +77,7 @@ export class CampaignSettingsStoreState {
         hacks: [],
         deals: [],
     };
+    sources: Source[] = [];
     availableDeals: Deal[] = [];
     fieldsErrors = new CampaignSettingsStoreFieldsErrorsState();
     conversionPixelsErrors: ConversionPixelErrors[] = [];
@@ -84,6 +86,9 @@ export class CampaignSettingsStoreState {
         edit: RequestState;
     }[] = [];
     dealsRequests = {
+        list: {} as RequestState,
+    };
+    sourcesRequests = {
         list: {} as RequestState,
     };
     requests = {

@@ -30,6 +30,7 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {Deal} from '../../../../core/deals/types/deal';
 import {DealsService} from '../../../../core/deals/services/deals.service';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
@@ -37,12 +38,14 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private dealsRequestStateUpdater: RequestStateUpdater;
+    private sourcesRequestStateUpdater: RequestStateUpdater;
     private originalEntity: Campaign;
 
     constructor(
         private campaignService: CampaignService,
         private conversionPixelsService: ConversionPixelsService,
-        private dealsService: DealsService
+        private dealsService: DealsService,
+        private sourcesService: SourcesService
     ) {
         super(new CampaignSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -51,6 +54,10 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         this.dealsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'dealsRequests'
+        );
+        this.sourcesRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'sourcesRequests'
         );
     }
 
@@ -68,6 +75,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                     this.loadConversionPixelsForAccount(
                         this.state.entity.accountId
                     );
+                    this.loadSources(this.state.extras.agencyId);
                 },
                 error => {}
             );
@@ -88,6 +96,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                     this.loadConversionPixelsForAccount(
                         this.state.entity.accountId
                     );
+                    this.loadSources(this.state.extras.agencyId);
                 },
                 error => {}
             );
@@ -165,6 +174,21 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         });
     }
 
+    loadSources(agencyId: string) {
+        this.sourcesService
+            .list(agencyId, this.sourcesRequestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                sources => {
+                    this.setState({
+                        ...this.state,
+                        sources: sources,
+                    });
+                },
+                error => {}
+            );
+    }
+
     loadAvailableDeals(keyword: string | null): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
@@ -190,6 +214,24 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     addDeal(deal: Deal) {
+        if (!commonHelpers.isDefined(deal)) {
+            deal = {
+                id: null,
+                dealId: null,
+                description: null,
+                name: null,
+                source: null,
+                floorPrice: null,
+                validFromDate: null,
+                validToDate: null,
+                createdDt: null,
+                modifiedDt: null,
+                createdBy: null,
+                numOfAccounts: null,
+                numOfCampaigns: null,
+                numOfAdgroups: null,
+            };
+        }
         this.setState({
             ...this.state,
             entity: {
@@ -200,11 +242,26 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         });
     }
 
-    removeDeal(dealId: string) {
-        const deals = this.state.entity.deals.filter(deal => {
-            return deal.id !== dealId;
+    removeDeal(deal: Deal) {
+        const deals = this.state.entity.deals.filter(item => {
+            return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+    }
+
+    changeDeal($event: ChangeEvent<Deal>) {
+        const deals = this.state.entity.deals.map(deal => {
+            if (deal === $event.target) {
+                return {
+                    ...$event.target,
+                    ...$event.changes,
+                };
+            } else {
+                return deal;
+            }
+        });
+        this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

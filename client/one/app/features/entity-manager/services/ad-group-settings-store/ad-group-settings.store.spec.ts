@@ -13,14 +13,18 @@ import {
 } from '../../../../app.constants';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
+import {Source} from '../../../../core/sources/types/source';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
+    let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let store: AdGroupSettingsStore;
     let adGroupWithExtras: AdGroupWithExtras;
     let adGroup: AdGroup;
     let adGroupExtras: AdGroupExtras;
+    let mockedSources: Source[];
 
     beforeEach(() => {
         serviceStub = jasmine.createSpyObj(AdGroupService.name, [
@@ -31,14 +35,24 @@ describe('AdGroupSettingsStore', () => {
             'archive',
         ]);
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
+        sourcesServiceStub = jasmine.createSpyObj(SourcesService.name, [
+            'list',
+        ]);
 
-        store = new AdGroupSettingsStore(serviceStub, dealsServiceStub);
+        store = new AdGroupSettingsStore(
+            serviceStub,
+            dealsServiceStub,
+            sourcesServiceStub
+        );
         adGroup = clone(store.state.entity);
         adGroupExtras = clone(store.state.extras);
         adGroupWithExtras = {
             adGroup: adGroup,
             extras: adGroupExtras,
         };
+        mockedSources = [
+            {slug: 'smaato', name: 'Smaato', released: true, deprecated: false},
+        ];
     });
 
     it('should get default ad group via service', fakeAsync(() => {
@@ -52,6 +66,10 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
 
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
         expect(store.state.fieldsErrors).toEqual(
@@ -63,11 +81,13 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             new AdGroupSettingsStoreFieldsErrorsState()
         );
 
         expect(serviceStub.defaults).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should get ad group via service', fakeAsync(() => {
@@ -82,6 +102,10 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
 
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
         expect(store.state.fieldsErrors).toEqual(
@@ -93,11 +117,13 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             new AdGroupSettingsStoreFieldsErrorsState()
         );
 
         expect(serviceStub.get).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when validating ad group via service', fakeAsync(() => {
@@ -162,6 +188,9 @@ describe('AdGroupSettingsStore', () => {
         serviceStub.save.and
             .returnValue(of(mockedAdGroupWithExtras.adGroup, asapScheduler))
             .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -170,10 +199,12 @@ describe('AdGroupSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             new AdGroupSettingsStoreFieldsErrorsState()
         );
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should save ad group only if user confirmed the changes', fakeAsync(() => {
@@ -194,6 +225,9 @@ describe('AdGroupSettingsStore', () => {
                 )
             )
             .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -209,6 +243,7 @@ describe('AdGroupSettingsStore', () => {
         store.saveEntity();
         tick();
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when saving ad group via service', fakeAsync(() => {
@@ -228,6 +263,9 @@ describe('AdGroupSettingsStore', () => {
                 })
             )
             .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -236,6 +274,7 @@ describe('AdGroupSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             jasmine.objectContaining({
                 ...new AdGroupSettingsStoreFieldsErrorsState(),
@@ -243,6 +282,7 @@ describe('AdGroupSettingsStore', () => {
             })
         );
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should successfully archive ad group via service', async () => {
@@ -342,13 +382,16 @@ describe('AdGroupSettingsStore', () => {
             },
         ];
 
-        store.removeDeal('10000000');
+        store.removeDeal(store.state.entity.deals[0]);
         expect(store.state.entity.deals).toEqual([]);
     });
 
     it('should correctly determine if ad group settings have unsaved changes', fakeAsync(() => {
         serviceStub.get.and
             .returnValue(of(clone(adGroupWithExtras), asapScheduler))
+            .calls.reset();
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);

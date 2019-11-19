@@ -11,14 +11,18 @@ import {AccountType, Currency} from '../../../../app.constants';
 import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
+import {Source} from '../../../../core/sources/types/source';
 
 describe('AccountSettingsStore', () => {
     let accountServiceStub: jasmine.SpyObj<AccountService>;
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
+    let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let store: AccountSettingsStore;
     let accountWithExtras: AccountWithExtras;
     let account: Account;
     let accountExtras: AccountExtras;
+    let mockedSources: Source[];
 
     beforeEach(() => {
         accountServiceStub = jasmine.createSpyObj(AccountService.name, [
@@ -29,23 +33,37 @@ describe('AccountSettingsStore', () => {
             'archive',
         ]);
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, ['list']);
+        sourcesServiceStub = jasmine.createSpyObj(SourcesService.name, [
+            'list',
+        ]);
 
-        store = new AccountSettingsStore(accountServiceStub, dealsServiceStub);
+        store = new AccountSettingsStore(
+            accountServiceStub,
+            dealsServiceStub,
+            sourcesServiceStub
+        );
         account = clone(store.state.entity);
         accountExtras = clone(store.state.extras);
         accountWithExtras = {
             account: account,
             extras: accountExtras,
         };
+        mockedSources = [
+            {slug: 'smaato', name: 'Smaato', released: true, deprecated: false},
+        ];
     });
 
-    it('should get default account via service', fakeAsync(() => {
+    it('should get default account and sources list via service', fakeAsync(() => {
         const mockedAccountWithExtras = clone(accountWithExtras);
         mockedAccountWithExtras.account.name = 'New account';
         mockedAccountWithExtras.account.agencyId = '12345';
 
         accountServiceStub.defaults.and
             .returnValue(of(mockedAccountWithExtras, asapScheduler))
+            .calls.reset();
+
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.state.entity).toEqual(account);
@@ -62,8 +80,10 @@ describe('AccountSettingsStore', () => {
         expect(store.state.fieldsErrors).toEqual(
             new AccountSettingsStoreFieldsErrorsState()
         );
+        expect(store.state.sources).toEqual(mockedSources);
 
         expect(accountServiceStub.defaults).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should get account via service', fakeAsync(() => {
@@ -74,6 +94,10 @@ describe('AccountSettingsStore', () => {
 
         accountServiceStub.get.and
             .returnValue(of(mockedAccountWithExtras, asapScheduler))
+            .calls.reset();
+
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.state.entity).toEqual(account);
@@ -90,8 +114,10 @@ describe('AccountSettingsStore', () => {
         expect(store.state.fieldsErrors).toEqual(
             new AccountSettingsStoreFieldsErrorsState()
         );
+        expect(store.state.sources).toEqual(mockedSources);
 
         expect(accountServiceStub.get).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when validating account via service', fakeAsync(() => {
@@ -157,6 +183,10 @@ describe('AccountSettingsStore', () => {
             .returnValue(of(mockedAccountWithExtras.account, asapScheduler))
             .calls.reset();
 
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+
         store.loadEntity('12345');
         tick();
 
@@ -167,7 +197,10 @@ describe('AccountSettingsStore', () => {
         expect(store.state.fieldsErrors).toEqual(
             new AccountSettingsStoreFieldsErrorsState()
         );
+        expect(store.state.sources).toEqual(mockedSources);
+
         expect(accountServiceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when saving account via service', fakeAsync(() => {
@@ -190,6 +223,10 @@ describe('AccountSettingsStore', () => {
             )
             .calls.reset();
 
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+
         store.loadEntity('12345');
         tick();
 
@@ -197,6 +234,7 @@ describe('AccountSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedAccountWithExtras.account);
+        expect(store.state.sources).toEqual(mockedSources);
         expect(store.state.fieldsErrors).toEqual(
             jasmine.objectContaining({
                 ...new AccountSettingsStoreFieldsErrorsState(),
@@ -204,6 +242,7 @@ describe('AccountSettingsStore', () => {
             })
         );
         expect(accountServiceStub.save).toHaveBeenCalledTimes(1);
+        expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should successfully archive account via service', async () => {
@@ -254,6 +293,10 @@ describe('AccountSettingsStore', () => {
     it('should correctly determine if account settings have unsaved changes', fakeAsync(() => {
         accountServiceStub.get.and
             .returnValue(of(clone(accountWithExtras), asapScheduler))
+            .calls.reset();
+
+        sourcesServiceStub.list.and
+            .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
@@ -566,7 +609,7 @@ describe('AccountSettingsStore', () => {
             },
         ];
 
-        store.removeDeal('10000000');
+        store.removeDeal(store.state.entity.deals[0]);
         expect(store.state.entity.deals).toEqual([]);
     });
 });

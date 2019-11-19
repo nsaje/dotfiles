@@ -3,6 +3,7 @@ import {AccountExtras} from '../../../../core/entities/types/account/account-ext
 import {RequestState} from '../../../../shared/types/request-state';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
 import {Deal} from '../../../../core/deals/types/deal';
+import {Source} from '../../../../core/sources/types/source';
 
 export class AccountSettingsStoreState {
     entity: Account = {
@@ -45,6 +46,10 @@ export class AccountSettingsStoreState {
     availableDeals: Deal[] = [];
     fieldsErrors = new AccountSettingsStoreFieldsErrorsState();
     dealsRequests = {
+        list: {} as RequestState,
+    };
+    sources: Source[] = [];
+    sourcesRequests = {
         list: {} as RequestState,
     };
     requests = {
