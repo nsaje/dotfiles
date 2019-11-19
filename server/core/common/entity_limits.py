@@ -13,6 +13,7 @@ DEFAULT_LIMITS = {
     "PublisherGroupEntry": 100000,
     "ConversionPixel": 20,
     "DirectDeal": 100000,
+    "Rule": 500,
 }
 
 ACCOUNT_EXCEPTIONS = defaultdict(

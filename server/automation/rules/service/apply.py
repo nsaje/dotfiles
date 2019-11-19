@@ -58,10 +58,10 @@ def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict
         if left_operand_stat_value is None:
             return False
 
-        left_operand_value = left_operand_stat_value * condition.left_operand_modifier
+        left_operand_modifier = left_operand_stat_value * condition.left_operand_modifier
 
         if condition.right_operand_type in [constants.ValueType.ABSOLUTE, constants.ValueType.CONSTANT]:
-            right_operand_value = type(left_operand_value)(condition.right_operand_value)
+            right_operand_value = type(left_operand_modifier)(condition.right_operand_value)
         else:
             right_operand_key = constants.VALUE_MV_COLUMNS_MAPPING[condition.right_operand_type]
             right_operand_stat_value = target_stats[right_operand_key][condition.right_operand_window]
@@ -75,7 +75,7 @@ def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict
 
             right_operand_value = right_operand_stat_value * right_operand_modifier
 
-        if not _meets_condition(condition.operator, left_operand_value, right_operand_value):
+        if not _meets_condition(condition.operator, left_operand_modifier, right_operand_value):
             return False
 
     return True

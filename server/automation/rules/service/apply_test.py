@@ -53,7 +53,8 @@ class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
     def test_apply_rule_invalid_action(self, cooldown_mock, conditions_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, action_type=9000)
+        # FIXME: works only because NOTIFY wasn't handled at the time of adding this
+        rule = magic_mixer.blend(Rule, action_type=constants.ActionType.NOTIFY)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
         cooldown_mock.return_value = False

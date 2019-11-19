@@ -26,38 +26,41 @@ import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
 import restapi.publishers.urls
 import restapi.report.urls
+import restapi.rules.urls
 import restapi.source.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
 
 urlpatterns = []
-urlpatterns += restapi.bcm.urls.urlpatterns
 urlpatterns += restapi.account.urls.urlpatterns
 urlpatterns += restapi.accountcredit.urls.urlpatterns
 urlpatterns += restapi.accountcreditrefund.urls.urlpatterns
-urlpatterns += restapi.campaign.urls.urlpatterns
-urlpatterns += restapi.campaignstats.urls.urlpatterns
-urlpatterns += restapi.campaigngoal.urls.urlpatterns
-urlpatterns += restapi.campaignbudget.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns
 urlpatterns += restapi.adgroupstats.urls.urlpatterns
 urlpatterns += restapi.adgroupsource.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcestats.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcesrtb.urls.urlpatterns
 urlpatterns += restapi.audience.urls.urlpatterns
+urlpatterns += restapi.bcm.urls.urlpatterns
+urlpatterns += restapi.campaign.urls.urlpatterns
+urlpatterns += restapi.campaignstats.urls.urlpatterns
+urlpatterns += restapi.campaigngoal.urls.urlpatterns
+urlpatterns += restapi.campaignbudget.urls.urlpatterns
 urlpatterns += restapi.bidmodifiers.urls.urlpatterns
 urlpatterns += restapi.bidmodifiers.internal.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns
 urlpatterns += restapi.conversion_pixel.urls.urlpatterns
-urlpatterns += restapi.report.urls.urlpatterns
+urlpatterns += restapi.directdeal.urls.urlpatterns
+urlpatterns += restapi.inventory_planning.urls.urlpatterns
 urlpatterns += restapi.geolocation.urls.urlpatterns
+urlpatterns += restapi.report.urls.urlpatterns
 urlpatterns += restapi.publishers.urls.urlpatterns
 urlpatterns += restapi.publishergroup.urls.urlpatterns
 urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.publisherbidmodifiers.urls.urlpatterns
-urlpatterns += restapi.inventory_planning.urls.urlpatterns
-urlpatterns += restapi.directdeal.urls.urlpatterns
+urlpatterns += restapi.rules.urls.urlpatterns
 urlpatterns += restapi.source.urls.urlpatterns
+
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns

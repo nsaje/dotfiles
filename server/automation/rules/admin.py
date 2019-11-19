@@ -33,10 +33,10 @@ class RuleHistoryAdmin(admin.TabularInline):
 
 class RuleAdmin(admin.ModelAdmin):
     inlines = [RuleConditionAdmin, RuleHistoryAdmin]
-    search_fields = ("account", "name", "target_type", "action_type")
+    search_fields = ("agency", "name", "target_type", "action_type")
     list_display = (
         "id",
-        "account",
+        "agency",
         "name",
         "state",
         "target_type",
@@ -46,7 +46,7 @@ class RuleAdmin(admin.ModelAdmin):
         "created_by",
     )
     readonly_fields = (
-        "account",
+        "agency",
         "name",
         "ad_groups_included_ids",
         "target_type",
