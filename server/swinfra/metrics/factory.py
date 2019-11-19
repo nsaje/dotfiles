@@ -10,24 +10,26 @@ def configure(project_name):
     _project_name = project_name
 
 
-def new_summary(name, documentation=None, labelnames=None):
-    return _new_metric(prometheus_client.Summary, name, documentation, labelnames)
+def new_summary(name, labelnames, documentation=None, **kwargs):
+    return _new_metric(prometheus_client.Summary, name, labelnames, documentation, **kwargs)
 
 
-def new_histogram(name, documentation=None, labelnames=None):
-    return _new_metric(prometheus_client.Histogram, name, documentation, labelnames)
+def new_histogram(name, labelnames, documentation=None, **kwargs):
+    return _new_metric(prometheus_client.Histogram, name, labelnames, documentation, **kwargs)
 
 
-def new_counter(name, documentation=None, labelnames=None):
-    return _new_metric(prometheus_client.Counter, name, documentation, labelnames)
+def new_counter(name, labelnames, documentation=None, **kwargs):
+    return _new_metric(prometheus_client.Counter, name, labelnames, documentation, **kwargs)
 
 
-def new_gauge(name, documentation=None, labelnames=None):
-    return _new_metric(prometheus_client.Gauge, name, documentation, labelnames)
+def new_gauge(name, labelnames, documentation=None, **kwargs):
+    return _new_metric(prometheus_client.Gauge, name, labelnames, documentation, **kwargs)
 
 
-def _new_metric(cls, name, documentation, labelnames):
-    return cls(_build_name(name), documentation or "", labelnames=labelnames, registry=registry.get_registry())
+def _new_metric(cls, name, labelnames, documentation, **kwargs):
+    return cls(
+        _build_name(name), documentation or "", labelnames=labelnames, registry=registry.get_registry(), **kwargs
+    )
 
 
 def _build_name(name):

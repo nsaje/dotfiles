@@ -30,7 +30,7 @@ class CompatMetricStore:
 
 _gauge_store = CompatMetricStore(swinfra.metrics.new_gauge)
 _counter_store = CompatMetricStore(swinfra.metrics.new_counter)
-_summary_store = CompatMetricStore(swinfra.metrics.new_summary)
+_histogram_store = CompatMetricStore(swinfra.metrics.new_histogram)
 
 
 def gauge(name, value, **tags):
@@ -48,7 +48,7 @@ def incr(name, count, **tags):
 
 
 def timing(name, seconds, **tags):
-    metric = _summary_store.get_metric(name, tags)
+    metric = _histogram_store.get_metric(name, tags)
     if tags:
         metric = metric.labels(**tags)
     metric.observe(seconds)

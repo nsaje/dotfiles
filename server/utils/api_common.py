@@ -6,14 +6,22 @@ from django.http import Http404
 from django.http import HttpResponse
 from django.views.generic import View
 
+from swinfra import metrics
 from utils import influx_helper
 from utils import json_helper
-from utils import metrics_compat
 from utils import zlogging
 
 from . import exc
 
 logger = zlogging.getLogger(__name__)
+
+# fmt: off
+REQUEST_TIMER = metrics.new_histogram(
+    "dash_request",
+    labelnames=("endpoint", "path", "method", "status"),
+    buckets=(.005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5, 10.0, 20.0, 30.0, 40.0, 50.0, float("inf")),
+)
+# fmt: on
 
 
 class BaseApiView(View):
@@ -98,14 +106,12 @@ class BaseApiView(View):
         start_time = time.time()
         try:
             response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
-            metrics_compat.timing(
-                "dash.request",
-                (time.time() - start_time),
+            REQUEST_TIMER.labels(
                 endpoint=self.__class__.__name__,
                 path=influx_helper.clean_path(request.path),
                 method=request.method,
                 status=str(response.status_code),
-            )
+            ).observe(time.time() - start_time)
             return response
         except Http404:
             raise  # django's default 404, will use template found in templates/404.html
