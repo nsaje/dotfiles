@@ -1,4 +1,5 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
+import {DealErrors} from '../../types/deal-errors';
 
 export class AccountSettingsStoreFieldsErrorsState {
     name: FieldErrors = [];
@@ -13,4 +14,5 @@ export class AccountSettingsStoreFieldsErrorsState {
     frequencyCapping: FieldErrors = [];
     allowedMediaSources: FieldErrors = [];
     autoAddNewSources: FieldErrors = [];
+    deals: DealErrors[] = [];
 }

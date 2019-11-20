@@ -6,9 +6,10 @@ import {
     Input,
     Output,
     EventEmitter,
+    TemplateRef,
+    ContentChild,
 } from '@angular/core';
 import {Deal} from '../../../../core/deals/types/deal';
-import * as moment from 'moment';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
@@ -26,18 +27,15 @@ export class DealsListComponent {
     @Output()
     dealSelect = new EventEmitter<Deal>();
     @Output()
-    dealRemove = new EventEmitter<Deal>();
-    @Output()
     search = new EventEmitter<string>();
     @Output()
     open = new EventEmitter<void>();
 
+    @ContentChild('dealItemTemplate', {read: TemplateRef, static: false})
+    dealItemTemplate: TemplateRef<any>;
+
     onDealSelect(deal: Deal) {
         this.dealSelect.emit(deal);
-    }
-
-    removeDeal(deal: Deal) {
-        this.dealRemove.emit(deal);
     }
 
     onSearch($event: string) {
@@ -60,11 +58,5 @@ export class DealsListComponent {
                 .toLowerCase()
                 .indexOf(term) > -1
         );
-    }
-
-    formatDate(date: Date): string {
-        return commonHelpers.isDefined(date)
-            ? moment(date).format('MM/DD/YYYY')
-            : 'N/A';
     }
 }

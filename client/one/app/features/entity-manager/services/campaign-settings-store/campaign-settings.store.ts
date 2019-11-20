@@ -213,7 +213,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         });
     }
 
-    addDeal(deal: Deal) {
+    addDeal(deal: Deal | null) {
         if (!commonHelpers.isDefined(deal)) {
             deal = {
                 id: null,

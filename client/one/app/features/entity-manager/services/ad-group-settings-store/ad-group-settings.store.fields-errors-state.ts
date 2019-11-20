@@ -1,4 +1,5 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
+import {DealErrors} from '../../types/deal-errors';
 
 export class AdGroupSettingsStoreFieldsErrorsState {
     name: FieldErrors = [];
@@ -16,4 +17,5 @@ export class AdGroupSettingsStoreFieldsErrorsState {
         dailyBudget: [] as FieldErrors,
     };
     frequencyCapping: FieldErrors = [];
+    deals: DealErrors[] = [];
 }

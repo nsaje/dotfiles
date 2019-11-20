@@ -1,0 +1,36 @@
+<div class="zem-deal__overview">
+    <div class="zem-deal__summary">
+        <div class="zem-deal__summary-item">
+            Name: <label>{{ deal.name || 'N/A' }}</label>
+        </div>
+        <div class="zem-deal__summary-item">
+            Source: <label>{{ deal.source }}</label>
+        </div>
+        <div class="zem-deal__summary-item">
+            Deal id: <label>{{ deal.dealId }}</label>
+        </div>
+        <div class="zem-deal__summary-item">
+            Floor price: <label>{{ deal.floorPrice || 'N/A' }}</label>
+        </div>
+        <div class="zem-deal__summary-item">
+            Valid from: <label>{{ formatDate(deal.validFromDate) }}</label>
+        </div>
+        <div class="zem-deal__summary-item">
+            Valid to: <label>{{ formatDate(deal.validToDate) }}</label>
+        </div>
+    </div>
+    <div class="zem-deal__actions">
+        <button
+            class="zem-button zem-button--small zem-button--icon-only zem-button--expand-icon zem-deal__action"
+            [class.zem-button--collapse-icon]="isEditFormVisible"
+            (click)="isEditFormVisible = !isEditFormVisible"
+        ></button>
+        <button
+            class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon zem-deal__action"
+            (click)="removeDeal()"
+        ></button>
+    </div>
+</div>
+<div class="zem-deal__edit-form" *ngIf="isEditFormVisible">
+    <ng-content></ng-content>
+</div>

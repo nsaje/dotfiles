@@ -1,5 +1,13 @@
 <zem-text-form-group
     class="zem-deal-edit-form__item zem-text-form-group"
+    *ngIf="!!deal.id"
+    [isDisabled]="true"
+    [label]="'Created by'"
+    [value]="deal.createdBy"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-deal-edit-form__item zem-text-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Deal name'"
     [value]="deal.name"
     [placeholder]="'Deal name'"
@@ -8,6 +16,7 @@
 ></zem-text-form-group>
 <zem-text-form-group
     class="zem-deal-edit-form__item zem-text-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Deal ID'"
     [value]="deal.dealId"
     [placeholder]="'Deal ID'"
@@ -16,7 +25,7 @@
 ></zem-text-form-group>
 <zem-select-form-group
     class="zem-deal-edit-form__item zem-select-form-group"
-    [isDisabled]="deal.id"
+    [isDisabled]="!!deal.id || isDisabled"
     [label]="'Source'"
     [value]="deal.source"
     [bindLabel]="'name'"
@@ -31,6 +40,7 @@
 ></zem-select-form-group>
 <zem-decimal-form-group
     class="zem-deal-edit-form__item zem-decimal-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Floor price'"
     [value]="deal.floorPrice"
     [placeholder]="'0.00'"
@@ -40,6 +50,7 @@
 ></zem-decimal-form-group>
 <zem-date-form-group
     class="zem-deal-edit-form__item zem-date-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Valid from'"
     [value]="deal.validFromDate"
     [errors]="dealErrors?.validFromDate"
@@ -47,6 +58,7 @@
 ></zem-date-form-group>
 <zem-date-form-group
     class="zem-deal-edit-form__item zem-date-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Valid to'"
     [value]="deal.validToDate"
     [errors]="dealErrors?.validToDate"
@@ -54,6 +66,7 @@
 ></zem-date-form-group>
 <zem-textarea-form-group
     class="zem-deal-edit-form__item zem-textarea-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Notes'"
     [value]="deal.description"
     [rows]="'10'"

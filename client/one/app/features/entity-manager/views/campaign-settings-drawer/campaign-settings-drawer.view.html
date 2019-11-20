@@ -483,10 +483,41 @@
                         [availableDeals]="store.state.availableDeals"
                         [isLoading]="store.state.dealsRequests.list.inProgress"
                         (dealSelect)="store.addDeal($event)"
-                        (dealRemove)="store.removeDeal($event)"
                         (search)="store.loadAvailableDeals($event)"
                         (open)="store.loadAvailableDeals()"
-                    ></zem-deals-list>
+                    >
+                        <ng-template
+                            #dealItemTemplate
+                            let-deal="deal"
+                            let-index="index"
+                        >
+                            <zem-deal
+                                class="zem-deal"
+                                [deal]="deal"
+                                (dealRemove)="store.removeDeal($event)"
+                            >
+                                <zem-deal-edit-form
+                                    class="zem-deal-edit-form"
+                                    [deal]="deal"
+                                    [sources]="store.state.sources"
+                                    [dealErrors]="
+                                        store.state.fieldsErrors.deals[index]
+                                    "
+                                    [isDisabled]="!!deal.id"
+                                    (dealChange)="store.changeDeal($event)"
+                                ></zem-deal-edit-form>
+                            </zem-deal>
+                        </ng-template>
+                    </zem-deals-list>
+                    <div class="zem-settings-section__item">
+                        <button
+                            type="button"
+                            class="zem-button zem-button--with-icon zem-button--add-icon"
+                            (click)="store.addDeal()"
+                        >
+                            Add new deal
+                        </button>
+                    </div>
                 </div>
             </div>
 

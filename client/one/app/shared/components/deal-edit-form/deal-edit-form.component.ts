@@ -24,6 +24,8 @@ export class DealEditFormComponent {
     dealErrors: DealErrors;
     @Input()
     sources: Source[];
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     dealChange = new EventEmitter<ChangeEvent<Deal>>();
 

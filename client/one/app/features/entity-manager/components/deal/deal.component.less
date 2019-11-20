@@ -1,0 +1,52 @@
+@import 'variables';
+
+.zem-deal {
+    display: block;
+    border: 1px solid @color--lighter-neutral;
+    border-radius: @border-radius--default;
+}
+
+.zem-deal__overview {
+    display: flex;
+}
+
+.zem-deal__summary {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 2px;
+}
+
+.zem-deal__summary-item {
+    flex: 0 0 auto;
+    max-width: 100%;
+    margin: 2px;
+    align-items: center;
+    padding: 2px 5px 2px 5px;
+    border-right: 1px solid @color--lighter-neutral;
+}
+
+.zem-deal__summary-item:last-child {
+    border-right: 0;
+}
+
+.zem-deal__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.zem-deal__action:not(:last-child) {
+    margin-right: 5px;
+}
+
+.zem-deal__edit-form {
+    border-bottom-right-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    border-top: 1px solid @color--lighter-neutral;
+    background: @color--lightest-neutral;
+    padding: 10px;
+}

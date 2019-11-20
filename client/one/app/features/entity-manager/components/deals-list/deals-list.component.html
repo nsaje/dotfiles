@@ -13,59 +13,13 @@
     <ng-template #headerTemplate>
         <div class="zem-deals-list__title">Connected deals</div>
     </ng-template>
-    <ng-template #itemTemplate let-item="item">
-        <div class="zem-deals-list__deal">
-            <div class="zem-deals-list__deal-info">
-                <ng-template #dealInfoTemplate>
-                    <div class="zem-deals-list__deal-info-item">
-                        Created by: <label>{{ item.createdBy || 'N/A' }}</label>
-                    </div>
-                    <div class="zem-deals-list__deal-info-item">
-                        Notes:
-                        <div
-                            class="zem-dashed-box zem-deals-list__deal-description"
-                        >
-                            {{ item.description }}
-                        </div>
-                    </div>
-                </ng-template>
-                <span
-                    class="zem-deals-list__deal-info-trigger"
-                    [zemPopover]="dealInfoTemplate"
-                    stayOpenOnHover="true"
-                    triggers="mouseenter:mouseleave"
-                    container="body"
-                    placement="top"
-                ></span>
-            </div>
-            <div class="zem-deals-list__deal-summary">
-                <div class="zem-deals-list__deal-summary-item">
-                    Name: <label>{{ item.name || 'N/A' }}</label>
-                </div>
-                <div class="zem-deals-list__deal-summary-item">
-                    Source: <label>{{ item.source }}</label>
-                </div>
-                <div class="zem-deals-list__deal-summary-item">
-                    Deal id: <label>{{ item.dealId }}</label>
-                </div>
-                <div class="zem-deals-list__deal-summary-item">
-                    Floor price: <label>{{ item.floorPrice || 'N/A' }}</label>
-                </div>
-                <div class="zem-deals-list__deal-summary-item">
-                    Valid from:
-                    <label>{{ formatDate(item.validFromDate) }}</label>
-                </div>
-                <div class="zem-deals-list__deal-summary-item">
-                    Valid to: <label>{{ formatDate(item.validToDate) }}</label>
-                </div>
-            </div>
-            <div class="zem-deals-list__deal-action">
-                <button
-                    class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
-                    (click)="removeDeal(item)"
-                ></button>
-            </div>
-        </div>
+    <ng-template #itemTemplate let-item="item" let-index="index">
+        <ng-container
+            *ngTemplateOutlet="
+                dealItemTemplate;
+                context: {deal: item, index: index}
+            "
+        ></ng-container>
     </ng-template>
     <ng-template #selectItemTemplate let-item="item" let-search="search">
         <span [zemTextHighlight]="search">

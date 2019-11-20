@@ -37,6 +37,7 @@ import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-
 import {CampaignPerformanceTrackingComponent} from './components/campaign-performance-tracking/campaign-performance-tracking.component';
 import {MediaSourcesComponent} from './components/media-sources/media-sources.component';
 import {DealsListComponent} from './components/deals-list/deals-list.component';
+import {DealComponent} from './components/deal/deal.component';
 
 @NgModule({
     declarations: [
@@ -73,6 +74,7 @@ import {DealsListComponent} from './components/deals-list/deals-list.component';
         CampaignBudgetOptimizationComponent,
         MediaSourcesComponent,
         DealsListComponent,
+        DealComponent,
     ],
     imports: [SharedModule],
     entryComponents: [EntitySettingsRouterOutlet],
