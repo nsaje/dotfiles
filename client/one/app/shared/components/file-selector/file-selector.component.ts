@@ -11,6 +11,9 @@ import {
     ViewChild,
     ElementRef,
     AfterViewInit,
+    ChangeDetectorRef,
+    NgZone,
+    Renderer2,
 } from '@angular/core';
 import {
     NgxFileDropComponent,
@@ -46,6 +49,14 @@ export class FileSelectorComponent extends NgxFileDropComponent
 
     filesToUpload: NgxFileDropEntry[];
 
+    constructor(
+        private changeDetectorRef: ChangeDetectorRef,
+        zone: NgZone,
+        renderer: Renderer2
+    ) {
+        super(zone, renderer);
+    }
+
     ngOnInit(): void {
         this.filesToUpload = [];
         this.onFileDrop
@@ -74,6 +85,7 @@ export class FileSelectorComponent extends NgxFileDropComponent
 
     clearFilesToUpload(): void {
         this.filesToUpload = [];
+        this.changeDetectorRef.markForCheck();
     }
 
     removeFile(fileToUpload: NgxFileDropEntry): void {
