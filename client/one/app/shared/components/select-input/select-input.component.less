@@ -9,7 +9,6 @@
         background: white;
         border: 1px solid @border-color--default;
         border-radius: @border-radius--default;
-        height: @input__height--default;
         min-height: @input__height--default;
         box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
         align-items: center;
@@ -85,6 +84,28 @@
 
             &.ng-option-marked {
                 background-color: @color--lightest-neutral;
+            }
+        }
+    }
+}
+
+.zem-ng-select.ng-select.ng-select-multiple {
+    .ng-select-container {
+        .ng-value-container {
+            .ng-value {
+                background: @color--secondary;
+
+                .ng-value-icon {
+                    color: white;
+
+                    &:hover {
+                        background: @color--secondary;
+                    }
+                }
+                .ng-value-label {
+                    background: tint(@color--secondary, 70%);
+                    color: @color--secondary;
+                }
             }
         }
     }

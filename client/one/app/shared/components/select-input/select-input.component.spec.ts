@@ -75,4 +75,25 @@ describe('SelectInputComponent', () => {
         component.onChange(null);
         expect(component.valueChange.emit).toHaveBeenCalledWith(null);
     });
+
+    it('should correctly emit model on change event with isMultiple = true', () => {
+        component.bindValue = 'value';
+
+        spyOn(component.valueChange, 'emit').and.stub();
+
+        component.onChange([
+            {name: 'Anej', value: 2},
+            {name: 'Jure', value: 3},
+            {name: 'Nejc', value: 1},
+        ]);
+        expect(component.valueChange.emit).toHaveBeenCalledWith([2, 3, 1]);
+        (<any>component.valueChange.emit).calls.reset();
+
+        component.onChange(undefined);
+        expect(component.valueChange.emit).toHaveBeenCalledWith(null);
+        (<any>component.valueChange.emit).calls.reset();
+
+        component.onChange(null);
+        expect(component.valueChange.emit).toHaveBeenCalledWith(null);
+    });
 });

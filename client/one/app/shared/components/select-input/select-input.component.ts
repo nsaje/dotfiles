@@ -28,7 +28,7 @@ import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 })
 export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
-    value: string;
+    value: string | string[];
     @Input()
     bindLabel: string;
     @Input()
@@ -45,6 +45,8 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     isSearchable: boolean = false;
     @Input()
     isClearable: boolean = true;
+    @Input()
+    isMultiple: boolean = false;
     @Input()
     groupByValue: string;
     @Input()
@@ -64,7 +66,7 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     hasError: boolean = false;
     @Output()
-    valueChange = new EventEmitter<string>();
+    valueChange = new EventEmitter<string | string[]>();
     @Output()
     search = new EventEmitter<string>();
     @Output()
@@ -82,7 +84,7 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @ContentChild('optionTemplate', {read: TemplateRef, static: false})
     optionTemplate: TemplateRef<any>;
 
-    model: string;
+    model: string | string[];
     formattedItems: any[];
 
     private onWindowScrollCallback: any;
@@ -154,8 +156,12 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    onChange($event: any) {
-        this.valueChange.emit($event ? $event[this.bindValue] : null);
+    onChange($event: any | any[]) {
+        if (Array.isArray($event)) {
+            this.valueChange.emit($event.map(value => value[this.bindValue]));
+        } else {
+            this.valueChange.emit($event ? $event[this.bindValue] : null);
+        }
         if (this.clearSearchOnSelect) {
             // TODO (msuber): remove handleClearClick workaround when
             // https://github.dyf62976.workers.dev/ng-select/ng-select/pull/1257

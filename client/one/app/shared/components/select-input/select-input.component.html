@@ -16,9 +16,10 @@
     [loading]="isLoading"
     [searchFn]="searchFn"
     [dropdownPosition]="dropdownPosition"
-    (change)="onChange($event)"
-    (search)="onSearch($event.term)"
+    [multiple]="isMultiple"
     (open)="open.emit()"
+    (search)="onSearch($event.term)"
+    (change)="onChange($event)"
 >
     <ng-template ng-optgroup-tmp let-item="item">
         <ng-container
