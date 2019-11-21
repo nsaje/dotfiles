@@ -70,4 +70,25 @@ describe('FileSelectorComponent', () => {
         expect(component.filesChange.emit).toHaveBeenCalledTimes(1);
         expect(component.filesChange.emit).toHaveBeenCalledWith([]);
     }));
+
+    it('should clear files to upload without emitting files change event', fakeAsync(() => {
+        component.ngOnInit();
+        component.filesToUpload = [mockedUploadFile];
+
+        spyOn(component.filesChange, 'emit').and.stub();
+        component.clearFilesToUpload();
+        tick();
+
+        expect(component.filesChange.emit).toHaveBeenCalledTimes(0);
+        expect(component.filesToUpload).toEqual([]);
+    }));
+
+    it('should correctly emit component ready event', fakeAsync(() => {
+        spyOn(component.componentReady, 'emit').and.stub();
+
+        component.ngAfterViewInit();
+        tick();
+
+        expect(component.componentReady.emit).toHaveBeenCalledTimes(1);
+    }));
 });

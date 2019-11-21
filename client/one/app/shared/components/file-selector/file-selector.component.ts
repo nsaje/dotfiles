@@ -10,6 +10,7 @@ import {
     ChangeDetectionStrategy,
     ViewChild,
     ElementRef,
+    AfterViewInit,
 } from '@angular/core';
 import {
     NgxFileDropComponent,
@@ -18,6 +19,7 @@ import {
 } from 'ngx-file-drop';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {FileSelectorApi} from './types/file-selector-api';
 
 @Component({
     selector: 'zem-file-selector',
@@ -25,7 +27,7 @@ import {takeUntil} from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileSelectorComponent extends NgxFileDropComponent
-    implements OnInit, OnDestroy {
+    implements OnInit, OnDestroy, AfterViewInit {
     @Input()
     isMultiple: boolean = true;
     @Input()
@@ -34,6 +36,8 @@ export class FileSelectorComponent extends NgxFileDropComponent
     browseButtonLabel: string;
     @Output()
     filesChange = new EventEmitter<File[]>();
+    @Output()
+    componentReady = new EventEmitter<FileSelectorApi>();
 
     @ViewChild('fileSelector', {static: false})
     fileSelector: ElementRef;
@@ -56,10 +60,20 @@ export class FileSelectorComponent extends NgxFileDropComponent
             });
     }
 
+    ngAfterViewInit(): void {
+        this.componentReady.emit({
+            clearFilesToUpload: this.clearFilesToUpload.bind(this),
+        });
+    }
+
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
         super.ngOnDestroy();
+    }
+
+    clearFilesToUpload(): void {
+        this.filesToUpload = [];
     }
 
     removeFile(fileToUpload: NgxFileDropEntry): void {
