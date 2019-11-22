@@ -214,6 +214,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     addDeal(deal: Deal | null) {
+        this.validateEntity();
         if (!commonHelpers.isDefined(deal)) {
             deal = {
                 id: null,
@@ -247,6 +248,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     changeDeal($event: ChangeEvent<Deal>) {
@@ -262,6 +264,19 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         });
         this.patchState(deals, 'entity', 'deals');
         this.validateEntity();
+    }
+
+    hasDealError(index: number): boolean {
+        if (this.state.fieldsErrors.deals.length > 0) {
+            const dealErrors = (this.state.fieldsErrors.deals || [])[index];
+            if (
+                commonHelpers.isDefined(dealErrors) &&
+                Object.keys(dealErrors).length > 0
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {
@@ -458,6 +473,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
      */
 
     createGoal() {
+        this.validateEntity();
         const goals = this.state.entity.goals.map(item => {
             return {
                 ...item,
@@ -550,6 +566,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     createBudget() {
+        this.validateEntity();
         const availableCredits =
             this.state.extras.accountCredits.filter(item => {
                 return item.isAvailable;

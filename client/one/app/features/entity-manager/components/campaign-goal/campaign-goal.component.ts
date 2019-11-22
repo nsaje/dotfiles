@@ -32,6 +32,8 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
     campaignGoalPrimaryChange = new EventEmitter<void>();
     @Output()
     campaignGoalDelete = new EventEmitter<void>();
+    @Output()
+    campaignGoalEditFormClose = new EventEmitter<void>();
 
     @ViewChild(ModalComponent, {static: false})
     pixelTagModal: ModalComponent;
@@ -58,9 +60,12 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
         this.campaignGoalPrimaryChange.emit();
     }
 
-    toggleEditCampaignGoal($event: any) {
+    toggleCampaignGoalEditForm($event: any) {
         $event.stopPropagation();
         this.isEditFormVisible = !this.isEditFormVisible;
+        if (!this.isEditFormVisible) {
+            this.campaignGoalEditFormClose.emit();
+        }
     }
 
     deleteCampaignGoal($event: any) {

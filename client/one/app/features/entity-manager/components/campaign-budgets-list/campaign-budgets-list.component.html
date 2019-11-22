@@ -53,9 +53,7 @@
                                 budgetRow.isExpanded
                             "
                             [disabled]="!isBudgetEditable(budget)"
-                            (click)="
-                                budgetRow.isExpanded = !budgetRow.isExpanded
-                            "
+                            (click)="toggleBudgetEditForm(budgetRow)"
                         ></button>
                         <button
                             class="zem-campaign-budgets-list__cell-button zem-button zem-button--danger zem-button--small zem-button--icon-only zem-button--remove-icon"

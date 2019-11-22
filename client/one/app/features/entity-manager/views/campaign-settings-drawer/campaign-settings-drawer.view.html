@@ -209,6 +209,7 @@
                         "
                         (campaignGoalChange)="store.changeGoal($event)"
                         (campaignGoalDelete)="store.deleteGoal($event)"
+                        (campaignGoalEditFormClose)="store.validateEntity()"
                         (conversionPixelCreate)="
                             store.createConversionPixel($event)
                         "
@@ -359,6 +360,7 @@
                             [accountCredits]="state.extras.accountCredits"
                             [editFormTemplate]="campaignBudgetEditFormTemplate"
                             (budgetDelete)="store.deleteBudget($event)"
+                            (budgetEditFormClose)="store.validateEntity()"
                         >
                         </zem-campaign-budgets-list>
                     </div>
@@ -493,8 +495,12 @@
                         >
                             <zem-deal
                                 class="zem-deal"
+                                [ngClass]="{
+                                    'zem-deal--error': store.hasDealError(index)
+                                }"
                                 [deal]="deal"
                                 (dealRemove)="store.removeDeal($event)"
+                                (dealEditFormClose)="store.validateEntity()"
                             >
                                 <zem-deal-edit-form
                                     class="zem-deal-edit-form"

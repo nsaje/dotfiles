@@ -345,6 +345,10 @@ describe('AdGroupSettingsStore', () => {
     }));
 
     it('should correctly add deal', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
         const mockedDeal = {
             id: '10000000',
             dealId: '45345',
@@ -365,6 +369,10 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly remove deal', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
         store.state.entity.deals = [
             {
                 id: '10000000',

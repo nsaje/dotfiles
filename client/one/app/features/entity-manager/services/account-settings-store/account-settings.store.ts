@@ -191,6 +191,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     addDeal(deal: Deal | null) {
+        this.validateEntity();
         if (!commonHelpers.isDefined(deal)) {
             deal = {
                 id: null,
@@ -224,6 +225,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     changeDeal($event: ChangeEvent<Deal>) {
@@ -239,6 +241,19 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         });
         this.patchState(deals, 'entity', 'deals');
         this.validateEntity();
+    }
+
+    hasDealError(index: number): boolean {
+        if (this.state.fieldsErrors.deals.length > 0) {
+            const dealErrors = (this.state.fieldsErrors.deals || [])[index];
+            if (
+                commonHelpers.isDefined(dealErrors) &&
+                Object.keys(dealErrors).length > 0
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

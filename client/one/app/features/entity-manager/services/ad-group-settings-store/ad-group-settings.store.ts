@@ -204,6 +204,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     addDeal(deal: Deal | null) {
+        this.validateEntity();
         if (!commonHelpers.isDefined(deal)) {
             deal = {
                 id: null,
@@ -237,6 +238,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             return item !== deal;
         });
         this.patchState(deals, 'entity', 'deals');
+        this.validateEntity();
     }
 
     changeDeal($event: ChangeEvent<Deal>) {
@@ -252,6 +254,19 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
         this.patchState(deals, 'entity', 'deals');
         this.validateEntity();
+    }
+
+    hasDealError(index: number): boolean {
+        if (this.state.fieldsErrors.deals.length > 0) {
+            const dealErrors = (this.state.fieldsErrors.deals || [])[index];
+            if (
+                commonHelpers.isDefined(dealErrors) &&
+                Object.keys(dealErrors).length > 0
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {

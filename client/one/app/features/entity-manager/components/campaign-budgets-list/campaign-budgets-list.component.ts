@@ -44,6 +44,8 @@ export class CampaignBudgetsListComponent implements OnChanges {
     editFormTemplate: TemplateRef<any>;
     @Output()
     budgetDelete = new EventEmitter<CampaignBudget>();
+    @Output()
+    budgetEditFormClose = new EventEmitter<void>();
 
     formattedBudgets: FormattedCampaignBudget[];
     isAnyBudgetEditable: boolean;
@@ -85,6 +87,13 @@ export class CampaignBudgetsListComponent implements OnChanges {
 
     deleteBudget(index: number) {
         this.budgetDelete.emit(this.budgets[index]);
+    }
+
+    toggleBudgetEditForm(budgetRow: {isExpanded: boolean}) {
+        budgetRow.isExpanded = !budgetRow.isExpanded;
+        if (!budgetRow.isExpanded) {
+            this.budgetEditFormClose.emit();
+        }
     }
 
     private getFormattedBudgets(

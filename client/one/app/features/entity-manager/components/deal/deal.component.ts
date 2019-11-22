@@ -22,6 +22,8 @@ export class DealComponent implements OnInit {
     deal: Deal;
     @Output()
     dealRemove = new EventEmitter<Deal>();
+    @Output()
+    dealEditFormClose = new EventEmitter<void>();
 
     isEditFormVisible: boolean = false;
 
@@ -31,6 +33,13 @@ export class DealComponent implements OnInit {
 
     removeDeal() {
         this.dealRemove.emit(this.deal);
+    }
+
+    toggleDealEditForm() {
+        this.isEditFormVisible = !this.isEditFormVisible;
+        if (!this.isEditFormVisible) {
+            this.dealEditFormClose.emit();
+        }
     }
 
     formatDate(date: Date): string {

@@ -724,8 +724,12 @@
                         >
                             <zem-deal
                                 class="zem-deal"
+                                [ngClass]="{
+                                    'zem-deal--error': store.hasDealError(index)
+                                }"
                                 [deal]="deal"
                                 (dealRemove)="store.removeDeal($event)"
+                                (dealEditFormClose)="store.validateEntity()"
                             >
                                 <zem-deal-edit-form
                                     class="zem-deal-edit-form"

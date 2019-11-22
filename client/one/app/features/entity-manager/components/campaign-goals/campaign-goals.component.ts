@@ -60,6 +60,8 @@ export class CampaignGoalsComponent implements OnChanges {
     @Output()
     campaignGoalDelete = new EventEmitter<CampaignGoal>();
     @Output()
+    campaignGoalEditFormClose = new EventEmitter<void>();
+    @Output()
     conversionPixelCreate = new EventEmitter<ConversionPixelChangeEvent>();
     @Output()
     conversionPixelCancel = new EventEmitter<ConversionPixelChangeEvent>();
