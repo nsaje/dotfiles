@@ -1,7 +1,12 @@
 <h1 class="content-container__title">Scheduled Reports</h1>
 <div class="custom-panel">
-    <div class="custom-panel__description">
-        Overview of your reports scheduled for this account.
+    <div class="custom-panel__description" ng-if="!!$ctrl.account">
+        Overview of reports scheduled for this account.
+    </div>
+    <div class="custom-panel__description" ng-if="!$ctrl.account">
+        Overview of reports that you scheduled across all accounts. To see
+        reports from all users for a particular account, first navigate to that
+        account and then select “Scheduled reports”.
     </div>
     <div
         class="message message--error-box message--with-icon zem-scheduled-reports__message"
@@ -14,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Report Name</th>
+                    <th>Created by</th>
                     <th>Report Level</th>
                     <th
                         ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"
@@ -45,6 +51,7 @@
                     <td>
                         <strong>{{ report.name }}</strong>
                     </td>
+                    <td>{{ report.user }}</td>
                     <td>{{ report.level }}</td>
                     <td
                         ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"

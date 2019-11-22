@@ -17,8 +17,6 @@ class ScheduledReportManager(models.Manager):
 
         if account:
             scheduled_reports = scheduled_reports.filter(account=account)
-            if account.get_current_settings().default_account_manager != user:
-                scheduled_reports = scheduled_reports.filter(user=user)
         else:
             scheduled_reports = scheduled_reports.filter(user=user)
 

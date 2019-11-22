@@ -11,6 +11,7 @@ from dash.views import helpers
 class ScheduledReportSerializer(serializers.Serializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     name = restapi.serializers.fields.PlainCharField(max_length=100)
+    user = serializers.SerializerMethodField()
 
     query = reports_serializers.ReportQuerySerializer(write_only=True)
 
@@ -45,3 +46,13 @@ class ScheduledReportSerializer(serializers.Serializer):
         if len(query["options"]["recipients"]) <= 0:
             raise serializers.ValidationError({"options": {"recipients": ["Please enter at least one recipient"]}})
         return query
+
+    def get_user(self, obj):
+        if not obj.user:
+            return ""
+
+        full_name = obj.user.get_full_name().strip()
+        if not full_name:
+            return "{}".format(obj.user.email)
+
+        return "{} ({})".format(full_name, obj.user.email)

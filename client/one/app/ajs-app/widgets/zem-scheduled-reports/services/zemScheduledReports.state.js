@@ -99,6 +99,7 @@ angular
                 return {
                     id: report.id,
                     name: report.name,
+                    user: report.user,
                     breakdown: report.breakdown.join(', '),
                     level: report.level,
                     dayOfWeek: dayOfWeek,
