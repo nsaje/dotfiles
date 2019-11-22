@@ -31,14 +31,14 @@ class SyncAttemptAdmin(admin.ModelAdmin):
         response = json.dumps(instance.ads_skipped, indent=1)
         formatter = HtmlFormatter(style="colorful")
         response = highlight(response, XmlLexer(), formatter)
-        style = "<style>" + formatter.get_style_defs() + "</style><br>"
+        style = "<style>{}</style><br>".format(formatter.get_style_defs())
         return mark_safe(style + response)
 
     def items_to_upload_prettified(self, instance):
         response = json.dumps(instance.items_to_upload, indent=1)
         formatter = HtmlFormatter(style="colorful")
         response = highlight(response, XmlLexer(), formatter)
-        style = "<style>" + formatter.get_style_defs() + "</style><br>"
+        style = "<style>{} <br></style>".format(formatter.get_style_defs())
         return mark_safe(style + response)
 
     def content_ads_candidates_errors(self, instance):
@@ -70,10 +70,9 @@ class SyncAttemptAdmin(admin.ModelAdmin):
         return format_html(", ".join(links))
 
     content_ads_candidates_errors.short_description = "Content ads candidates errors"
-    ads_skipped_prettified.short_description = "items skipped"
+    ads_skipped_prettified.short_description = "Feed items not uploaded (skipped because of validation)"
     items_to_upload_prettified.short_description = "items uploaded"
     global_upload_status.short_description = "global upload success"
-
     global_upload_status.boolean = True
 
     fields = (
@@ -105,7 +104,7 @@ class SyncAttemptAdmin(admin.ModelAdmin):
     ordering = ("-timestamp", "product_feed")
     search_fields = ("batches__adgroup", "product_feed")
     list_filter = ("product_feed", "timestamp", "dry_run")
-    list_display = ("timestamp", "dry_run", "global_upload_status", "product_feed")
+    list_display = ("timestamp", "dry_run", "global_upload_status", "product_feed", "exception")
 
 
 class ProductFeedAdmin(admin.ModelAdmin):
