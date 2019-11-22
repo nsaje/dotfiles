@@ -152,7 +152,7 @@ COVERAGE_ENABLED = "COVERAGE_ENABLED" in os.environ
 DEFAULT_FROM_EMAIL = ""
 
 ENABLE_DJANGO_EXTENSIONS = False
-ENABLE_DEBUG_TOOLBAR = True  # so that static is collected for it, disabled in prod config
+ENABLE_DEBUG_TOOLBAR = False
 ENABLE_SILK = False
 
 # cache settings
@@ -253,6 +253,10 @@ if ENABLE_DEBUG_TOOLBAR:
         "TIMEOUT": 86400,
         "OPTIONS": {"MAX_ENTRIES": 1000000},
     }
+
+if os.environ.get("IS_COLLECTSTATIC"):
+    # just so that the static is included
+    INSTALLED_APPS.extend(["debug_toolbar", "debug_panel", "template_profiler_panel"])
 
 if ENABLE_SILK and not TESTING:
     MIDDLEWARE = ["silk.middleware.SilkyMiddleware"] + MIDDLEWARE

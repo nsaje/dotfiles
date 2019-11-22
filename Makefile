@@ -114,6 +114,7 @@ collect_server_static:	## collects static files for production build
 	rm -rf server/static && mkdir server/static && chmod 777 server/static
 	docker run \
 		--rm \
+    --env IS_COLLECTSTATIC=1 \
 		-v $(PWD)/server/:/app/z1/ \
 		-v $(PWD)/server/.junit_xml/:/app/z1/.junit_xml/ \
 		-v $(PWD)/server/static/:/app/z1/static/ \
