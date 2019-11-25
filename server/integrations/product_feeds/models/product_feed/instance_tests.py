@@ -309,7 +309,6 @@ class ProductFeedTestCase(TestCase):
 
         string_too_short = "This is a string with less than 90 chars."
         truncated_description = self.product_feed._truncate(string_too_short, constants.MAX_TITLE_LENGTH)
-        print(truncated_description)
         self.assertEqual(len(string_too_short), len(truncated_description))
         truncated_description = self.product_feed._truncate(string_too_short, constants.MAX_DESCRIPTION_LENGTH)
         self.assertEqual(len(string_too_short), len(truncated_description))
@@ -630,3 +629,101 @@ class ProductFeedTestCase(TestCase):
         )
         self.assertEqual(core.models.ContentAdCandidate.objects.count(), 1)
         self.assertEqual(mock_write_log.call_count, 1)
+
+    @mock.patch("integrations.product_feeds.models.ProductFeed._get_feed_data")
+    def test_brand_matches_ad_group_brand(self, mock_feed_data):
+        self.ad_group_1.custom_flags = {constants.CUSTOM_FLAG_BRAND: "^alfa.RomEo$"}
+        self.ad_group_1.save(None)
+
+        self.assertTrue(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "Alfa Romeo"))
+        self.assertTrue(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "ALFA ROMEO"))
+        self.assertTrue(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "alfa romeo"))
+        self.assertTrue(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "ALFA&Romeo"))
+        self.assertFalse(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "Alfa and Romeo"))
+        self.assertFalse(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "Alfaromeo"))
+        self.assertFalse(ProductFeed._map_ads_to_ad_group_brand(self.ad_group_1, "Alfa&Romeo - professional"))
+
+        mock_feed_data.return_value = """
+        <items>
+            <item>
+                <id>1000_0070754_1913_1x1</id>
+                <market_dealer>1000_0070754</market_dealer>
+                <dealer_code>0070754</dealer_code>
+                <dealer_name>De Bona</dealer_name>
+                <model_id>1913</model_id>
+                <model_name>ALFA ROMEO GIULIETTA</model_name>
+                <brand_name_friendly>ALFA ROMEO</brand_name_friendly>
+                <logo>
+                https://secure-ds.serving-sys.com/BurstingRes/Site-126026/Type-0/44ddf990-cce8-4a9f-9682-be29bfe35d49.png
+                </logo>
+                <img>
+                https://image.url.com
+                </img>
+                <title>Alfa Romeo Giulietta</title>
+                <description>
+                Giulietta con cambio automatico doppia frizione TCT al prezzo del manuale.
+                </description>
+                <cta_text>Scopri di più</cta_text>
+                <url>
+                http://test.com
+                </url>
+                <displayed_url>https://www.debona-fcagroup.it/</displayed_url>
+                <impression_tracker>
+                https://tracker.com
+                </impression_tracker>
+            </item>
+            <item>
+                <id>1000_0070754_6300D_1x1</id>
+                <market_dealer>1000_0070754</market_dealer>
+                <dealer_code>0070754</dealer_code>
+                <dealer_name>De Bona</dealer_name>
+                <model_id>6300D</model_id>
+                <model_name>ALFA ROMEO STELVIO</model_name>
+                <brand_name_friendly>Alfa rOmEo</brand_name_friendly>
+                <logo>
+                https://secure-ds.serving-sys.com/BurstingRes/Site-126026/Type-0/44ddf990-cce8-4a9f-9682-be29bfe35d49.png
+                </logo>
+                <img>
+                https://image.url.com
+                </img>
+                <title>Alfa Romeo Stelvio</title>
+                <description>
+                Stelvio tuo da 299 euro al mese con noleggio, leasing o finanziamento
+                </description>
+                <cta_text>Scopri di più</cta_text>
+                <url>
+                http://test.com
+                </url>
+                <displayed_url>https://www.debona-fcagroup.it/</displayed_url>
+                <impression_tracker>
+                https://tracker.com
+                </impression_tracker>
+            </item>"
+        <items>
+        """
+
+        self.product_feed.feed_type = constants.FeedTypes.REPLY_IT_FEED
+        self.product_feed.ingest_and_create_ads()
+
+        ad = core.models.ContentAdCandidate.objects.get(
+            title="Alfa Romeo Giulietta",
+            url="http://test.com",
+            display_url="www.debona-fcagroup.it",
+            image_url="https://image.url.com",
+            brand_name="ALFA ROMEO",
+            primary_tracker_url="https://tracker.com",
+            description="Giulietta con cambio automatico doppia frizione TCT al prezzo del manuale.",
+            call_to_action="Scopri di più",
+        )
+        self.assertTrue(ad)
+        ad = core.models.ContentAdCandidate.objects.get(
+            title="Alfa Romeo Stelvio",
+            url="http://test.com",
+            display_url="www.debona-fcagroup.it",
+            image_url="https://image.url.com",
+            brand_name="Alfa rOmEo",
+            primary_tracker_url="https://tracker.com",
+            description="Stelvio tuo da 299 euro al mese con noleggio, leasing o finanziamento",
+            call_to_action="Scopri di più",
+        )
+        self.assertTrue(ad)

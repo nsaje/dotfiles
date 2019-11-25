@@ -7,7 +7,7 @@ from . import manager
 
 
 class SyncAttempt(models.Model):
-    product_feed = models.ForeignKey("ProductFeed", related_name="sync_attempts", on_delete=models.PROTECT)
+    product_feed = models.ForeignKey("ProductFeed", related_name="sync_attempts", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     batches = models.ManyToManyField("dash.UploadBatch")
     ads_skipped = jsonfield.JSONField(null=True, blank=True, default=dict)

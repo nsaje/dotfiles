@@ -73,6 +73,9 @@ class ProductFeedInstanceMixin:
             ad_groups = self.ad_groups.filter_active().exclude_archived()
             for ad_group in ad_groups:
                 for item in all_parsed_items:
+                    if ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND):
+                        if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
+                            continue
                     if self._is_ad_already_uploaded(item, ad_group):
                         skipped_items.append(
                             {
@@ -141,7 +144,8 @@ class ProductFeedInstanceMixin:
             item_values["brand_name"] = self.default_brand_name
         if "display_url" not in item_values:
             item_values["display_url"] = self.default_display_url
-        item_values["call_to_action"] = self.default_call_to_action
+        if "call_to_action" not in item_values:
+            item_values["call_to_action"] = self.default_call_to_action
         return self._clean_strings(**item_values)
 
     def _validate_item(self, parsed_item):
@@ -190,8 +194,8 @@ class ProductFeedInstanceMixin:
         if tag.name == "content":
             url = tag.get("url", "")
             if "-/" in url:
-                # The url is a link to an image resizer service and the image link is provided after the -/ delimiter.
-                # Their resized image is too small so we must use the original one.
+                # Yahoo new : The url is a link to an image resizer service and the image link is provided after
+                # the -/ delimiter. Their resized image is too small so we must use the original one.
                 return url.rpartition("-/")[2]
         elif tag.name == "encoded":
             tag_content_as_html = BeautifulSoup(tag.next, features="lxml")
@@ -221,3 +225,7 @@ class ProductFeedInstanceMixin:
     def _hash_label(title, url, image_url):
         to_hash = "{}{}{}".format(title, url, image_url)
         return hashlib.md5(to_hash.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _map_ads_to_ad_group_brand(ad_group, brand_name):
+        return bool(re.match(ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND, ""), brand_name, re.IGNORECASE))

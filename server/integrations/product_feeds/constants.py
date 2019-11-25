@@ -5,6 +5,8 @@ MAX_DESCRIPTION_LENGTH = 150
 MAX_DISPLAY_URL_LENGTH = 35
 MAX_BRAND_NAME_LENGTH = 25
 
+CUSTOM_FLAG_BRAND = "z1_product_feed_brand"
+
 
 class FeedTypes(ConstantBase):
     YAHOO_NEWS_RSS = 1
@@ -57,6 +59,7 @@ FEEDS_TAG_MAPPING = {
             "brand_name": "brand_name_friendly",
             "display_url": "displayed_url",
             "primary_tracker_url": "impression_tracker",
+            "call_to_action": "cta_text",
         },
     },
 }

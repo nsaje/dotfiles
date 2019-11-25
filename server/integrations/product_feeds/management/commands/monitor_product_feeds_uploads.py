@@ -27,12 +27,12 @@ class Command(Z1Command):
             return
 
         for sync_attempt in previous_sync_attempts:
-            for batch in sync_attempt.batches.all():
-                if batch.status != dash.constants.UploadBatchStatus.DONE:
-                    msg = "Batch upload for product feed {} is in status {} for ad groups {}. #{}".format(
-                        sync_attempt.product_feed.name,
-                        batch.status,
-                        ", ".join([str(i) for i in sync_attempt.product_feed.ad_groups.values_list("id", flat=True)]),
-                        sync_attempt.id,
-                    )
-                    slack.publish(msg, username="product feed", msg_type=slack.MESSAGE_TYPE_WARNING)
+            messages = []
+            if sync_attempt.batches.filter(
+                status__in=[dash.constants.UploadBatchStatus.FAILED or dash.constants.UploadBatchStatus.CANCELLED]
+            ).exists():
+                msg = "Batch upload for product feed {} is FAILED or CANCELED. See Sync attempt log: #{}".format(
+                    sync_attempt.product_feed.name, sync_attempt.id
+                )
+                messages.append(msg)
+            slack.publish("\n".join(messages), username="product feed", msg_type=slack.MESSAGE_TYPE_WARNING)
