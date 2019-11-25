@@ -1,7 +1,7 @@
 import {
     RuleConditionOperandType,
     RuleConditionOperandGroup,
-} from '../rules-library.constants';
+} from '../rules.constants';
 import {DataType, Unit} from '../../../app.constants';
 import {RuleConditionOperandValueModifier} from './rule-condition-operand-value-modifier';
 

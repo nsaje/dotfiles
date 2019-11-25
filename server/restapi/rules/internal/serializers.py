@@ -11,6 +11,12 @@ class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializ
     window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, source="left_operand_window")
     modifier = rest_framework.serializers.FloatField(source="left_operand_modifier", allow_null=True)
 
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        if "left_operand_modifier" not in data or data["left_operand_modifier"] is None:
+            data["left_operand_modifier"] = 1.0  # TODO: handle this on db level
+        return data
+
 
 class RuleConditionValueSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     type = restapi.serializers.fields.DashConstantField(automation.rules.ValueType, source="right_operand_type")

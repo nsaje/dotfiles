@@ -37,7 +37,7 @@
             [items]="availableDimensions"
             [isSearchable]="false"
             [isClearable]="false"
-            (valueChange)="store.selectRuleDimension($event)"
+            (valueChange)="store.selectRuleTarget($event)"
         ></zem-select-form-group>
         <div
             class="zem-rule-edit-form__section-item zem-rule-edit-form__section-description"
@@ -52,9 +52,15 @@
         </div>
         <zem-rule-edit-form-action
             class="zem-rule-edit-form__section-item zem-rule-edit-form-action"
-            [ruleAction]="state.rule.action"
+            [actionType]="state.rule.actionType"
+            [actionFrequency]="state.rule.actionFrequency"
+            [changeStep]="state.rule.changeStep"
+            [changeLimit]="state.rule.changeLimit"
             [availableActions]="state.availableActions"
-            (ruleActionChange)="store.setRuleAction($event)"
+            (actionTypeChange)="store.setRuleActionType($event)"
+            (actionFrequencyChange)="store.setRuleActionFrequency($event)"
+            (changeStepChange)="store.setRuleChangeStep($event)"
+            (changeLimitChange)="store.setRuleChangeLimit($event)"
         ></zem-rule-edit-form-action>
     </div>
     <div class="zem-rule-edit-form__section">
@@ -66,13 +72,15 @@
             class="zem-rule-edit-form__section-item zem-rule-edit-form-conditions"
             [ruleConditions]="state.rule.conditions"
             [availableConditions]="state.availableConditions"
-            (ruleConditionsChange)="store.updateConditions($event)"
+            (ruleConditionAdd)="store.addCondition($event)"
+            (ruleConditionChange)="store.updateCondition($event)"
+            (ruleConditionRemove)="store.removeCondition($event)"
         >
         </zem-rule-edit-form-conditions>
         <zem-select-form-group
             class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
             label="Time range"
-            [value]="state.rule.timeRange"
+            [value]="state.rule.window"
             helpMessage="The number of days in the past for which to aggregate the data."
             bindLabel="label"
             bindValue="value"
@@ -84,13 +92,17 @@
     </div>
     <div
         class="zem-rule-edit-form__section"
-        *ngIf="state.rule.action.type !== RuleActionType.SendEmail"
+        *ngIf="state.rule.actionType !== RuleActionType.SendEmail"
     >
         <div class="zem-rule-edit-form__section-title">Notification:</div>
         <zem-rule-edit-form-notification
             class="zem-rule-edit-form__section-item zem-rule-edit-form-notification"
-            [ruleNotification]="state.rule.notification"
-            (ruleNotificationChange)="store.setRuleNotification($event)"
+            [notificationType]="state.rule.notificationType"
+            [notificationRecipients]="state.rule.notificationRecipients"
+            (notificationTypeChange)="store.setRuleNotificationType($event)"
+            (notificationRecipientsChange)="
+                store.setRuleNotificationRecipients($event)
+            "
         >
         </zem-rule-edit-form-notification>
     </div>

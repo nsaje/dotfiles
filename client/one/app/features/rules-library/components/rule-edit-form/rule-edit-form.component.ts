@@ -1,10 +1,20 @@
 import './rule-edit-form.component.less';
 
-import {Component, ChangeDetectionStrategy, OnInit, Input} from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    OnInit,
+    Input,
+    Inject,
+    Output,
+    EventEmitter,
+    AfterViewInit,
+} from '@angular/core';
 import {RuleEditFormStore} from './services/rule-edit-form.store';
 import {EntityType} from '../../../../app.constants';
-import {RuleActionType} from '../../rules-library.constants';
+import {RuleActionType} from '../../../../core/rules/rules.constants';
 import {RULE_DIMENSIONS, TIME_RANGES} from '../../rules-library.config';
+import {RuleEditFormApi} from './types/rule-edit-form-api';
 
 @Component({
     selector: 'zem-rule-edit-form',
@@ -12,22 +22,42 @@ import {RULE_DIMENSIONS, TIME_RANGES} from '../../rules-library.config';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [RuleEditFormStore],
 })
-export class RuleEditFormComponent implements OnInit {
+export class RuleEditFormComponent implements OnInit, AfterViewInit {
     @Input()
     entityId: string;
     @Input()
     entityType: EntityType;
+    @Input()
+    agencyId: string;
+    @Output()
+    componentReady = new EventEmitter<RuleEditFormApi>();
 
     title: string = '';
     RuleActionType = RuleActionType;
     availableDimensions = RULE_DIMENSIONS;
     availableTimeRanges = TIME_RANGES;
 
-    constructor(public store: RuleEditFormStore) {}
+    constructor(
+        public store: RuleEditFormStore,
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+    ) {}
 
     ngOnInit(): void {
         // TODO (automation-rules): Remove when entity selector gets implemented
+        const activeAccount = this.zemNavigationNewService.getActiveAccount();
+        const agencyId = (activeAccount.data || {}).agencyId;
         this.title = this.getTitle(this.entityId, this.entityType);
+        this.store.initStore(agencyId, this.entityId);
+    }
+
+    ngAfterViewInit(): void {
+        this.componentReady.emit({
+            executeSave: this.saveEntity.bind(this),
+        });
+    }
+
+    saveEntity(): Promise<void> {
+        return this.store.saveEntity();
     }
 
     private getTitle(entityId: string, entityType: EntityType): string {

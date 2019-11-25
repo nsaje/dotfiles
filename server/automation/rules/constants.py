@@ -85,13 +85,13 @@ class ActionType(ConstantBase):
 
 class NotificationType(ConstantBase):
     NONE = 1
-    ON_RULE_TRIGGERED = 2
-    ON_RULE_ACTION_PERFORMED = 3
+    ON_RULE_RUN = 2
+    ON_RULE_ACTION_TRIGGERED = 3
 
     _VALUES = {
         NONE: "Never send an e-mail",
-        ON_RULE_TRIGGERED: "Send an e-mail whenever the rule runs",
-        ON_RULE_ACTION_PERFORMED: "Send an e-mail whenever the rule performs an action",
+        ON_RULE_RUN: "Send an e-mail whenever the rule runs",
+        ON_RULE_ACTION_TRIGGERED: "Send an e-mail whenever the rule performs an action",
     }
 
 

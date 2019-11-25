@@ -25,7 +25,7 @@ class RuleManagerTest(TestCase):
             change_limit=decimal.Decimal("2.50"),
             cooldown=24,
             window=constants.MetricWindow.LAST_30_DAYS,
-            notification_type=constants.NotificationType.ON_RULE_ACTION_PERFORMED,
+            notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
             notification_recipients=["test@test.com"],
             ad_groups_included=[ad_group],
             conditions=[
@@ -51,7 +51,7 @@ class RuleManagerTest(TestCase):
         self.assertEqual(2.50, rule.change_limit)
         self.assertEqual(24, rule.cooldown)
         self.assertEqual(constants.MetricWindow.LAST_30_DAYS, rule.window)
-        self.assertEqual(constants.NotificationType.ON_RULE_ACTION_PERFORMED, rule.notification_type)
+        self.assertEqual(constants.NotificationType.ON_RULE_ACTION_TRIGGERED, rule.notification_type)
         self.assertEqual(["test@test.com"], rule.notification_recipients)
         self.assertEqual([ad_group], list(rule.ad_groups_included.all()))
 

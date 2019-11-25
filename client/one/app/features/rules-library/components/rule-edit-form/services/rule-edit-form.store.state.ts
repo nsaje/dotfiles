@@ -1,26 +1,37 @@
-import {Rule} from '../../../types/rule';
-import {RuleActionConfig} from '../../../types/rule-action-config';
-import {RuleConditionConfig} from '../../../types/rule-condition-config';
+import {Rule} from '../../../../../core/rules/types/rule';
+import {RuleActionConfig} from '../../../../../core/rules/types/rule-action-config';
+import {RuleConditionConfig} from '../../../../../core/rules/types/rule-condition-config';
 import {
     TimeRange,
-    RuleNotificationPolicy,
-} from '../../../rules-library.constants';
+    RuleNotificationType,
+} from '../../../../../core/rules/rules.constants';
+import {RequestState} from '../../../../../shared/types/request-state';
+import {RulesEditFormStoreFieldsErrorsState} from './rule-edit-form.fields-errors-state';
 
 export class RuleEditFormStoreState {
+    agencyId: string = null;
     availableActions: RuleActionConfig[] = [];
     availableConditions: RuleConditionConfig[] = [];
+    fieldErrors: RulesEditFormStoreFieldsErrorsState = null;
+    requests = {
+        save: {} as RequestState,
+    };
     rule: Rule = {
+        id: null,
         name: null,
-        dimension: null,
-        action: {
-            type: null,
-            frequency: null,
+        entities: {
+            adGroup: {
+                included: [],
+            },
         },
+        targetType: null,
+        actionType: null,
+        actionFrequency: null,
+        changeStep: null,
+        changeLimit: null,
         conditions: [],
-        timeRange: TimeRange.Lifetime,
-        notification: {
-            policy: RuleNotificationPolicy.DisableNotifications,
-            recipients: '',
-        },
+        window: TimeRange.Lifetime,
+        notificationType: RuleNotificationType.None,
+        notificationRecipients: [],
     };
 }

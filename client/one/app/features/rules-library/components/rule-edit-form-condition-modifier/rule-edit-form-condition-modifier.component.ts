@@ -9,10 +9,10 @@ import {
     SimpleChanges,
     OnChanges,
 } from '@angular/core';
-import {TimeRange} from '../../rules-library.constants';
+import {TimeRange} from '../../../../core/rules/rules.constants';
 import {DataType, Unit} from '../../../../app.constants';
 import {TIME_RANGES} from '../../rules-library.config';
-import {RuleConditionOperandValueModifier} from '../../types/rule-condition-operand-value-modifier';
+import {RuleConditionOperandValueModifier} from '../../../../core/rules/types/rule-condition-operand-value-modifier';
 
 @Component({
     selector: 'zem-rule-edit-form-condition-modifier',

@@ -7,8 +7,7 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {RuleNotification} from '../../types/rule-notification';
-import {RuleNotificationPolicy} from '../../rules-library.constants';
+import {RuleNotificationType} from '../../../../core/rules/rules.constants';
 
 @Component({
     selector: 'zem-rule-edit-form-notification',
@@ -17,23 +16,25 @@ import {RuleNotificationPolicy} from '../../rules-library.constants';
 })
 export class RuleEditFormNotificationComponent {
     @Input()
-    ruleNotification: RuleNotification;
+    notificationType: RuleNotificationType;
+    @Input()
+    notificationRecipients: string;
     @Output()
-    ruleNotificationChange = new EventEmitter<RuleNotification>();
+    notificationTypeChange = new EventEmitter<RuleNotificationType>();
+    @Output()
+    notificationRecipientsChange = new EventEmitter<string[]>();
 
-    RuleNotificationPolicy = RuleNotificationPolicy;
+    RuleNotificationType = RuleNotificationType;
 
-    updateRuleNotificationPolicy(policy: RuleNotificationPolicy) {
-        this.ruleNotificationChange.emit({
-            ...this.ruleNotification,
-            policy: policy,
-        });
+    updateRuleNotificationType(notificationType: RuleNotificationType) {
+        this.notificationTypeChange.emit(notificationType);
     }
 
     updateRecipients(recipients: string) {
-        this.ruleNotificationChange.emit({
-            ...this.ruleNotification,
-            recipients: recipients,
-        });
+        let recipientsList: string[] = [];
+        if (recipients.length > 0) {
+            recipientsList = recipients.split(',');
+        }
+        this.notificationRecipientsChange.emit(recipientsList);
     }
 }

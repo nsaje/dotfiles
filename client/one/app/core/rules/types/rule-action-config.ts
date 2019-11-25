@@ -1,4 +1,4 @@
-import {RuleActionType, RuleActionFrequency} from '../rules-library.constants';
+import {RuleActionType, RuleActionFrequency} from '../rules.constants';
 import {Unit} from '../../../app.constants';
 
 export interface RuleActionConfig {

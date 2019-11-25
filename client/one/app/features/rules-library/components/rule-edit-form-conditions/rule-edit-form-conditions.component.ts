@@ -7,10 +7,11 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {RuleCondition} from '../../types/rule-condition';
+import {RuleCondition} from '../../../../core/rules/types/rule-condition';
 import * as ruleFormHelpers from '../rule-edit-form/helpers/rule-edit-form.helpers';
-import {RuleConditionConfig} from '../../types/rule-condition-config';
-import {TimeRange} from '../../rules-library.constants';
+import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-config';
+import {TimeRange} from '../../../../core/rules/rules.constants';
+import {ChangeEvent} from '../../../../shared/types/change-event';
 
 @Component({
     selector: 'zem-rule-edit-form-conditions',
@@ -23,30 +24,22 @@ export class RuleEditFormConditionsComponent {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Output()
-    ruleConditionsChange = new EventEmitter<RuleCondition[]>();
+    ruleConditionAdd = new EventEmitter<RuleCondition>();
+    @Output()
+    ruleConditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
+    @Output()
+    ruleConditionRemove = new EventEmitter<RuleCondition>();
 
     addCondition() {
-        this.ruleConditionsChange.emit([
-            ...this.ruleConditions,
-            this.generateNewCondition(),
-        ]);
+        this.ruleConditionAdd.emit(this.generateNewCondition());
     }
 
-    onConditionChange(changedCondition: RuleCondition) {
-        const changedConditions = this.ruleConditions.map(condition => {
-            if (condition.id === changedCondition.id) {
-                return changedCondition;
-            }
-            return condition;
-        });
-        this.ruleConditionsChange.emit(changedConditions);
+    onConditionChange(changedConditionEvent: ChangeEvent<RuleCondition>) {
+        this.ruleConditionChange.emit(changedConditionEvent);
     }
 
     onConditionRemove(removedCondition: RuleCondition) {
-        const changedConditions = this.ruleConditions.filter(condition => {
-            return condition.id !== removedCondition.id;
-        });
-        this.ruleConditionsChange.emit(changedConditions);
+        this.ruleConditionRemove.emit(removedCondition);
     }
 
     trackById(index: number, item: RuleCondition): string {
@@ -57,13 +50,17 @@ export class RuleEditFormConditionsComponent {
     private generateNewCondition(): RuleCondition {
         return {
             id: ruleFormHelpers.uuid(),
-            firstOperand: null,
-            firstOperandValue: null,
-            firstOperandTimeRange: TimeRange.Lifetime,
             operator: null,
-            secondOperand: null,
-            secondOperandValue: null,
-            secondOperandTimeRange: TimeRange.Lifetime,
+            metric: {
+                type: null,
+                window: TimeRange.Lifetime,
+                modifier: null,
+            },
+            value: {
+                type: null,
+                window: TimeRange.Lifetime,
+                value: null,
+            },
         };
     }
 }

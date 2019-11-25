@@ -28,7 +28,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             change_limit=2.50,
             cooldown=24,
             window=automation.rules.MetricWindow.LAST_30_DAYS,
-            notification_type=automation.rules.NotificationType.ON_RULE_ACTION_PERFORMED,
+            notification_type=automation.rules.NotificationType.ON_RULE_ACTION_TRIGGERED,
             notification_recipients=["test@test.com"],
             ad_groups_included=[self.ad_group],
             conditions=[
@@ -163,7 +163,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             change_step=0.11,
             change_limit=0.05,
             cooldown=48,
-            notification_type=automation.rules.NotificationType.ON_RULE_TRIGGERED,
+            notification_type=automation.rules.NotificationType.ON_RULE_RUN,
             notification_recipients=["user@domain.com"],
             conditions=[
                 {

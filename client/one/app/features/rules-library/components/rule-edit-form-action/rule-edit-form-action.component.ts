@@ -9,14 +9,11 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {RuleAction} from '../../types/rule-action';
 import {
     RuleActionType,
     RuleActionFrequency,
-    Macro,
-} from '../../rules-library.constants';
-import {EMAIL_MACROS} from '../../rules-library.config';
-import {RuleActionConfig} from '../../types/rule-action-config';
+} from '../../../../core/rules/rules.constants';
+import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 
 @Component({
@@ -26,110 +23,96 @@ import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 })
 export class RuleEditFormActionComponent implements OnChanges {
     @Input()
-    ruleAction: RuleAction;
+    actionType: RuleActionType;
+    @Input()
+    actionFrequency: RuleActionFrequency;
+    @Input()
+    changeStep: number;
+    @Input()
+    changeLimit: number;
     @Input()
     availableActions: RuleActionConfig[];
     @Output()
-    ruleActionChange = new EventEmitter<RuleAction>();
+    actionTypeChange = new EventEmitter<RuleActionType>();
+    @Output()
+    actionFrequencyChange = new EventEmitter<number>();
+    @Output()
+    changeStepChange = new EventEmitter<number>();
+    @Output()
+    changeLimitChange = new EventEmitter<number>();
 
     selectedActionConfig: RuleActionConfig;
-    selectedMacro: Macro;
-    shouldAppendMacroToSubject = true;
-    availableActionFrequencies: {label: string; value: RuleActionFrequency}[];
+    availableActionFrequencies: {label: string; value: number}[];
     RuleActionType = RuleActionType;
-    EMAIL_MACROS = EMAIL_MACROS;
 
     // TODO (automation-rules): Return correct currency symbol
     getUnitText = unitsHelpers.getUnitText;
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.ruleAction) {
-            this.selectedActionConfig = this.getSelectedActionConfig();
-            this.availableActionFrequencies = this.getAvailableActionFrequencies();
-        }
-    }
-
-    selectType(type: RuleActionType) {
-        const updatedAction: RuleAction = {
-            ...this.ruleAction,
-            type: type,
-        };
-        if (!updatedAction.type) {
-            updatedAction.frequency = null;
-        }
-        // TODO (automation-rules): Should we reset email fields too? Maybe reset it on "Save" if ruleAction.type !== "SEND_EMAIL"
-        this.ruleActionChange.emit(updatedAction);
-    }
-
-    updateValue(value: number) {
-        this.ruleActionChange.emit({...this.ruleAction, value: value});
-    }
-
-    updateLimit(limit: number) {
-        this.ruleActionChange.emit({...this.ruleAction, limit: limit});
-    }
-
-    selectFrequency(frequency: RuleActionFrequency) {
-        this.ruleActionChange.emit({...this.ruleAction, frequency: frequency});
-    }
-
-    updateEmailSubject(emailSubject: string) {
-        this.shouldAppendMacroToSubject = true;
-        this.ruleActionChange.emit({
-            ...this.ruleAction,
-            emailSubject: emailSubject,
-        });
-    }
-
-    updateEmailBody(emailBody: string) {
-        this.shouldAppendMacroToSubject = false;
-        this.ruleActionChange.emit({
-            ...this.ruleAction,
-            emailBody: emailBody,
-        });
-    }
-
-    updateEmailRecipients(emailRecipients: string) {
-        this.ruleActionChange.emit({
-            ...this.ruleAction,
-            emailRecipients: emailRecipients,
-        });
-    }
-
-    selectMacro(macro: Macro) {
-        this.selectedMacro = macro;
-    }
-
-    appendSelectedMacro() {
-        if (this.shouldAppendMacroToSubject) {
-            this.updateEmailSubject(
-                `${this.ruleAction.emailSubject || ''}${this.selectedMacro}`
+        if (changes.actionType) {
+            this.selectedActionConfig = this.getSelectedActionConfig(
+                this.availableActions,
+                this.actionType
             );
-        } else {
-            this.updateEmailBody(
-                `${this.ruleAction.emailBody || ''}${this.selectedMacro}`
+            this.availableActionFrequencies = this.getAvailableActionFrequencies(
+                this.selectedActionConfig
             );
         }
     }
 
-    getSelectedActionConfig() {
+    selectActionType(actionType: RuleActionType) {
+        this.actionTypeChange.emit(actionType);
+    }
+
+    selectActionFrequency(actionFrequency: number) {
+        this.actionFrequencyChange.emit(actionFrequency);
+    }
+
+    updateChangeStep(changeStep: number) {
+        this.changeStepChange.emit(changeStep);
+    }
+
+    updateChangeLimit(changeLimit: number) {
+        this.changeLimitChange.emit(changeLimit);
+    }
+
+    private getSelectedActionConfig(
+        availableActions: RuleActionConfig[],
+        actionType: RuleActionType
+    ): RuleActionConfig {
         return (
-            this.availableActions.find(action => {
-                return action.type === this.ruleAction.type;
+            availableActions.find(action => {
+                return action.type === actionType;
             }) || {label: null, type: null, frequencies: []}
         );
     }
 
-    getAvailableActionFrequencies(): {
+    private getAvailableActionFrequencies(
+        selectedActionConfig: RuleActionConfig
+    ): {
         label: string;
-        value: RuleActionFrequency;
+        value: number;
     }[] {
-        return this.selectedActionConfig.frequencies.map(frequency => {
-            return {value: frequency, label: this.getFrequencyLabel(frequency)};
+        return selectedActionConfig.frequencies.map(frequency => {
+            return {
+                value: this.getFrequencyValue(frequency),
+                label: this.getFrequencyLabel(frequency),
+            };
         });
     }
 
-    getFrequencyLabel(frequency: RuleActionFrequency): string {
+    private getFrequencyValue(frequency: RuleActionFrequency): number {
+        switch (frequency) {
+            case RuleActionFrequency.Day1:
+                return 24;
+            case RuleActionFrequency.Days3:
+                return 72;
+            case RuleActionFrequency.Days7:
+                return 168;
+        }
+    }
+
+    private getFrequencyLabel(frequency: RuleActionFrequency): string {
         switch (frequency) {
             case RuleActionFrequency.Day1:
                 return '1 day';

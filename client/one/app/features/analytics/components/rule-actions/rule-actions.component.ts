@@ -11,6 +11,7 @@ import {downgradeComponent} from '@angular/upgrade/static';
 import {DropdownDirective} from '../../../../shared/components/dropdown/dropdown.directive';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {EntityType} from '../../../../app.constants';
+import {RuleEditFormApi} from '../../../rules-library/components/rule-edit-form/types/rule-edit-form-api';
 
 @Component({
     selector: 'zem-rule-actions',
@@ -30,6 +31,8 @@ export class RuleActionsComponent {
 
     isSaveInProgress: boolean = false;
 
+    private ruleEditFormApi: RuleEditFormApi;
+
     constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
     openModal(): void {
@@ -38,17 +41,19 @@ export class RuleActionsComponent {
     }
 
     save(): void {
-        // Fake save request
         this.isSaveInProgress = true;
-        setTimeout(() => {
+        this.ruleEditFormApi.executeSave().then(() => {
             this.isSaveInProgress = false;
             this.ruleModal.close();
-            this.changeDetectorRef.detectChanges();
-        }, 1000);
+        });
     }
 
     cancel(): void {
         this.ruleModal.close();
+    }
+
+    onRuleEditFormReady($event: RuleEditFormApi) {
+        this.ruleEditFormApi = $event;
     }
 }
 

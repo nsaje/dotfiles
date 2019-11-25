@@ -1,56 +1,55 @@
 import {
-    RuleDimension,
+    RuleTargetType,
     RuleActionType,
     RuleActionFrequency,
     RuleConditionOperator,
-    Macro,
     RuleConditionOperandType,
     RuleConditionOperandGroup,
     TimeRange,
-} from './rules-library.constants';
+} from '../../core/rules/rules.constants';
 import {DataType, Unit} from '../../app.constants';
 
 export const RULE_DIMENSIONS = [
-    {label: 'Ad', value: RuleDimension.Ad},
-    {label: 'Ad group', value: RuleDimension.AdGroup},
+    // {label: 'Ad', value: RuleTargetType.Ad},
+    // {label: 'Ad group', value: RuleTargetType.AdGroup},
     {
         label: 'Ad group / publishers',
-        value: RuleDimension.AdGroupPublisher,
+        value: RuleTargetType.AdGroupPublisher,
     },
-    {
-        label: 'Ad group / devices',
-        value: RuleDimension.AdGroupDevice,
-    },
-    {
-        label: 'Ad group / countries',
-        value: RuleDimension.AdGroupCountry,
-    },
-    {
-        label: 'Ad group / regions',
-        value: RuleDimension.AdGroupRegion,
-    },
-    {
-        label: 'Ad group / DMAs',
-        value: RuleDimension.AdGroupDma,
-    },
-    {
-        label: 'Ad group / OS',
-        value: RuleDimension.AdGroupOs,
-    },
-    {
-        label: 'Ad group / placements',
-        value: RuleDimension.AdGroupPlacement,
-    },
-    {
-        label: 'Ad group / sources',
-        value: RuleDimension.AdGroupSource,
-    },
+    // {
+    //     label: 'Ad group / devices',
+    //     value: RuleTargetType.AdGroupDevice,
+    // },
+    // {
+    //     label: 'Ad group / countries',
+    //     value: RuleTargetType.AdGroupCountry,
+    // },
+    // {
+    //     label: 'Ad group / regions',
+    //     value: RuleTargetType.AdGroupRegion,
+    // },
+    // {
+    //     label: 'Ad group / DMAs',
+    //     value: RuleTargetType.AdGroupDma,
+    // },
+    // {
+    //     label: 'Ad group / OS',
+    //     value: RuleTargetType.AdGroupOs,
+    // },
+    // {
+    //     label: 'Ad group / placements',
+    //     value: RuleTargetType.AdGroupPlacement,
+    // },
+    // {
+    //     label: 'Ad group / sources',
+    //     value: RuleTargetType.AdGroupSource,
+    // },
 ];
 
 export const RULE_ACTIONS_OPTIONS = {
-    [RuleActionType.IncreaseCpc]: {
-        label: 'Increase bid CPC',
-        type: RuleActionType.IncreaseCpc,
+    [RuleActionType.IncreaseBid]: {
+        label: 'Increase bid',
+        type: RuleActionType.IncreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
             RuleActionFrequency.Days3,
@@ -59,12 +58,12 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Maximum bid CPC',
-        limitDescription: 'Bid CPC will not increase past this value.',
+        limitLabel: 'Maximum bid',
+        limitDescription: 'Bid will not increase past this value.',
     },
-    [RuleActionType.DecreaseCpc]: {
-        label: 'Decrease bid CPC',
-        type: RuleActionType.DecreaseCpc,
+    [RuleActionType.DecreaseBid]: {
+        label: 'Decrease bid',
+        type: RuleActionType.DecreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
             RuleActionFrequency.Days3,
@@ -73,36 +72,8 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Minimum bid CPC',
-        limitDescription: 'Bid CPC will not decrease past this value.',
-    },
-    [RuleActionType.IncreaseCpm]: {
-        label: 'Increase bid CPM',
-        type: RuleActionType.IncreaseCpm,
-        frequencies: [
-            RuleActionFrequency.Day1,
-            RuleActionFrequency.Days3,
-            RuleActionFrequency.Days7,
-        ],
-        hasValue: true,
-        unit: Unit.CurrencySign,
-        hasLimit: true,
-        limitLabel: 'Maximum bid CPM',
-        limitDescription: 'Bid CPM will not increase past this value.',
-    },
-    [RuleActionType.DecreaseCpm]: {
-        label: 'Decrease bid CPM',
-        type: RuleActionType.DecreaseCpm,
-        frequencies: [
-            RuleActionFrequency.Day1,
-            RuleActionFrequency.Days3,
-            RuleActionFrequency.Days7,
-        ],
-        hasValue: true,
-        unit: Unit.CurrencySign,
-        hasLimit: true,
-        limitLabel: 'Minimum bid CPM',
-        limitDescription: 'Bid CPM will not decrease past this value.',
+        limitLabel: 'Minimum bid',
+        limitDescription: 'Bid will not decrease past this value.',
     },
     [RuleActionType.IncreaseBidModifier]: {
         label: 'Increase bid modifier',
@@ -161,7 +132,7 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Daily budget will not decrease past this value.',
     },
     [RuleActionType.TurnOff]: {
-        label: 'Turn off / blacklist',
+        label: 'Turn off',
         type: RuleActionType.TurnOff,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -169,9 +140,9 @@ export const RULE_ACTIONS_OPTIONS = {
             RuleActionFrequency.Days7,
         ],
     },
-    [RuleActionType.SendEmail]: {
-        label: 'Send an email',
-        type: RuleActionType.SendEmail,
+    [RuleActionType.Blacklist]: {
+        label: 'Blacklist',
+        type: RuleActionType.Blacklist,
         frequencies: [
             RuleActionFrequency.Day1,
             RuleActionFrequency.Days3,
@@ -182,8 +153,8 @@ export const RULE_ACTIONS_OPTIONS = {
 
 export const TIME_RANGES = [
     {
-        label: 'Yesterday',
-        value: TimeRange.Yesterday,
+        label: 'Last Day',
+        value: TimeRange.LastDay,
     },
     {
         label: 'Last 3 days',
@@ -194,43 +165,12 @@ export const TIME_RANGES = [
         value: TimeRange.LastSevenDays,
     },
     {
+        label: 'Last 30 days',
+        value: TimeRange.LastThirtyDays,
+    },
+    {
         label: 'Lifetime',
         value: TimeRange.Lifetime,
-    },
-];
-
-export const EMAIL_MACROS = [
-    {
-        label: 'Account name',
-        value: Macro.AccountName,
-    },
-    {
-        label: 'Campaign name',
-        value: Macro.CampaignName,
-    },
-    {
-        label: 'Ad group name',
-        value: Macro.AdGroupName,
-    },
-    {
-        label: 'Ad group daily cap',
-        value: Macro.AdGroupDailyCap,
-    },
-    {
-        label: 'Total spend (last 1 day)',
-        value: Macro.TotalSpendLastDay,
-    },
-    {
-        label: 'Total spend (last 3 day)',
-        value: Macro.TotalSpendLastThreeDays,
-    },
-    {
-        label: 'Total spend (last 7 day)',
-        value: Macro.TotalSpendLastSevenDays,
-    },
-    {
-        label: 'Total spend (lifetime)',
-        value: Macro.TotalSpendLifetime,
     },
 ];
 
@@ -560,7 +500,7 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
 
 export const RULE_CONDITIONS_OPTIONS = {
     [RuleConditionOperandType.TotalSpend]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.TotalSpend
             ],
@@ -568,7 +508,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -589,7 +529,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Impressions]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.Impressions
             ],
@@ -597,7 +537,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -607,13 +547,13 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Clicks]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Clicks],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -626,13 +566,12 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Ctr]: {
-        firstOperand:
-            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Ctr],
+        metric: RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Ctr],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -647,13 +586,12 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Cpc]: {
-        firstOperand:
-            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Cpc],
+        metric: RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Cpc],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -668,13 +606,12 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Cpm]: {
-        firstOperand:
-            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Cpm],
+        metric: RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Cpm],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -689,13 +626,13 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Visits]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Visits],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -705,7 +642,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.UniqueUsers]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.UniqueUsers
             ],
@@ -713,7 +650,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -723,13 +660,13 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.NewUsers]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.NewUsers],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -739,7 +676,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.ReturningUsers]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.ReturningUsers
             ],
@@ -747,7 +684,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -757,7 +694,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.PercentNewUsers]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.PercentNewUsers
             ],
@@ -765,7 +702,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -780,7 +717,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.ClickDiscrepancy]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.ClickDiscrepancy
             ],
@@ -788,7 +725,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -800,13 +737,13 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.Pageviews]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Pageviews],
         availableOperators: [
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -816,7 +753,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.PageviewsPerVisit]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.PageviewsPerVisit
             ],
@@ -824,7 +761,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -837,7 +774,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.BouncedVisits]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.BouncedVisits
             ],
@@ -845,7 +782,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -855,7 +792,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.NonBouncedVisits]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.NonBouncedVisits
             ],
@@ -863,7 +800,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -873,7 +810,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.BounceRate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.BounceRate
             ],
@@ -881,7 +818,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -896,7 +833,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.TotalSeconds]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.TotalSeconds
             ],
@@ -904,7 +841,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -915,7 +852,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.TimeOnSite]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.TimeOnSite
             ],
@@ -923,7 +860,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -938,7 +875,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.RemainingCampaignBudget]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.RemainingCampaignBudget
             ],
@@ -946,7 +883,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -964,7 +901,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignBudgetMargin]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignBudgetMargin
             ],
@@ -972,7 +909,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -984,7 +921,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignBudgetStartDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignBudgetStartDate
             ],
@@ -992,7 +929,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1005,7 +942,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignBudgetEndDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignBudgetEndDate
             ],
@@ -1013,7 +950,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1026,7 +963,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysSinceCampaignBudgetStart]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysSinceCampaignBudgetStart
             ],
@@ -1034,7 +971,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1044,7 +981,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysUntilCampaignBudgetEnd]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysUntilCampaignBudgetEnd
             ],
@@ -1052,7 +989,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1062,7 +999,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AccountName]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AccountName
             ],
@@ -1072,7 +1009,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1082,7 +1019,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AccountCreationDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AccountCreationDate
             ],
@@ -1090,7 +1027,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1103,7 +1040,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysSinceAccountCreation]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysSinceAccountCreation
             ],
@@ -1111,7 +1048,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1121,7 +1058,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignName]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignName
             ],
@@ -1131,7 +1068,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1141,7 +1078,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignCreationDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignCreationDate
             ],
@@ -1149,7 +1086,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1162,7 +1099,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysSinceCampaignCreation]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysSinceCampaignCreation
             ],
@@ -1170,7 +1107,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1180,7 +1117,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CampaignManager]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CampaignManager
             ],
@@ -1190,7 +1127,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1203,7 +1140,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AdGroupName]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AdGroupName
             ],
@@ -1213,7 +1150,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1223,7 +1160,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AdGroupCreationDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AdGroupCreationDate
             ],
@@ -1231,7 +1168,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1244,7 +1181,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysSinceAdGroupCreation]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysSinceAdGroupCreation
             ],
@@ -1252,7 +1189,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1262,7 +1199,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AdGroupStartDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AdGroupStartDate
             ],
@@ -1270,7 +1207,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1283,7 +1220,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AdGroupEndDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AdGroupEndDate
             ],
@@ -1291,7 +1228,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1304,7 +1241,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.AdGroupDailyBudget]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.AdGroupDailyBudget
             ],
@@ -1312,7 +1249,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1327,7 +1264,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CreativeName]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CreativeName
             ],
@@ -1337,7 +1274,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1347,7 +1284,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CreativeLabel]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CreativeLabel
             ],
@@ -1357,7 +1294,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1367,7 +1304,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.CreativeCreationDate]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.CreativeCreationDate
             ],
@@ -1375,7 +1312,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
@@ -1388,7 +1325,7 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
     [RuleConditionOperandType.DaysSinceCreativeCreation]: {
-        firstOperand:
+        metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
                 RuleConditionOperandType.DaysSinceCreativeCreation
             ],
@@ -1396,7 +1333,7 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.LessThan,
             RuleConditionOperator.GreaterThan,
         ],
-        availableSecondOperands: [
+        availableValueTypes: [
             {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue

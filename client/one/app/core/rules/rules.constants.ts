@@ -1,27 +1,26 @@
-export enum RuleDimension {
+export enum RuleTargetType {
     Ad = 'AD',
     AdGroup = 'AD_GROUP',
-    AdGroupPublisher = 'AD_GROUP_PUBLISHER',
-    AdGroupCountry = 'AD_GROUP_COUNTRY',
-    AdGroupRegion = 'AD_GROUP_REGION',
-    AdGroupDma = 'AD_GROUP_DMA',
-    AdGroupDevice = 'AD_GROUP_DEVICE',
-    AdGroupOs = 'AD_GROUP_OS',
-    AdGroupPlacement = 'AD_GROUP_PLACEMENT',
-    AdGroupSource = 'AD_GROUP_SOURCE',
+    AdGroupPublisher = 'PUBLISHER',
+    AdGroupCountry = 'COUNTRY',
+    AdGroupRegion = 'REGION',
+    AdGroupDma = 'DMA',
+    AdGroupDevice = 'DEVICE',
+    AdGroupOs = 'OS',
+    AdGroupPlacement = 'PLACEMENT',
+    AdGroupSource = 'SOURCE',
 }
 
 export enum RuleActionType {
-    IncreaseCpc = 'INCREASE_CPC',
-    DecreaseCpc = 'DECREASE_CPC',
-    IncreaseCpm = 'INCREASE_CPM',
-    DecreaseCpm = 'DECREASE_CPM',
+    IncreaseBid = 'INCREASE_BID',
+    DecreaseBid = 'DECREASE_BID',
     IncreaseBidModifier = 'INCREASE_BID_MODIFIER',
     DecreaseBidModifier = 'DECREASE_BID_MODIFIER',
     IncreaseDailyBudget = 'INCREASE_BUDGET',
     DecreaseDailyBudget = 'DECREASE_BUDGET',
     TurnOff = 'TURN_OFF',
-    SendEmail = 'SEND_EMAIL',
+    Blacklist = 'BLACKLIST',
+    Notify = 'SEND_EMAIL',
 }
 
 export enum RuleActionFrequency {
@@ -30,19 +29,8 @@ export enum RuleActionFrequency {
     Days7 = '7_DAYS',
 }
 
-export enum Macro {
-    AccountName = 'ACCOUNT_NAME',
-    CampaignName = 'CAMPAIGN_NAME',
-    AdGroupName = 'AD_GROUP_NAME',
-    AdGroupDailyCap = 'AD_GROUP_DAILY_CAP',
-    TotalSpendLastDay = 'TOTAL_SPEND_LAST_1_DAY',
-    TotalSpendLastThreeDays = 'TOTAL_SPEND_LAST_3_DAYS',
-    TotalSpendLastSevenDays = 'TOTAL_SPEND_LAST_7_DAYS',
-    TotalSpendLifetime = 'TOTAL_SPEND_LIFETIME',
-}
-
 export enum RuleConditionOperandType {
-    AbsoluteValue = 'ABSOLUTE_VALUE',
+    AbsoluteValue = 'ABSOLUTE',
     CurrentDate = 'CURRENT_DATE',
     TotalSpend = 'TOTAL_SPEND',
     AverageDailyTotalSpend = 'AVERAGE_DAILY_TOTAL_SPEND',
@@ -107,10 +95,10 @@ export enum RuleConditionOperandGroup {
     Settings = 'Settings',
 }
 
-export enum RuleNotificationPolicy {
-    DisableNotifications = 'DISABLE_NOTIFICATIONS',
-    NotifyRuleRan = 'NOTIFY_RULE_RAN',
-    NotifyActionExecuted = 'NOTIFY_ACTION_EXECUTED',
+export enum RuleNotificationType {
+    None = 'NONE',
+    OnRuleRun = 'ON_RULE_RUN',
+    OnRuleActionTriggered = 'ON_RULE_ACTION_TRIGGERED',
 }
 
 export enum RuleConditionOperator {
@@ -123,8 +111,9 @@ export enum RuleConditionOperator {
 }
 
 export enum TimeRange {
-    Yesterday = 'YESTERDAY',
-    LastThreeDays = 'LAST_THREE_DAYS',
-    LastSevenDays = 'LAST_SEVEN_DAYS',
+    LastDay = 'LAST_DAY',
+    LastThreeDays = 'LAST_3_DAYS',
+    LastSevenDays = 'LAST_7_DAYS',
+    LastThirtyDays = 'LAST_30_DAYS',
     Lifetime = 'LIFETIME',
 }

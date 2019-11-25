@@ -9,17 +9,19 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import {RuleCondition} from '../../types/rule-condition';
+import {RuleCondition} from '../../../../core/rules/types/rule-condition';
+import {RuleConditionMetric} from '../../../../core/rules/types/rule-condition-metric';
 import {
     RuleConditionOperator,
     TimeRange,
     RuleConditionOperandType,
     RuleConditionOperandGroup,
-} from '../../rules-library.constants';
+} from '../../../../core/rules/rules.constants';
 import {DataType, Unit} from '../../../../app.constants';
-import {RuleConditionConfig} from '../../types/rule-condition-config';
-import {RuleConditionOperandConfig} from '../../types/rule-condition-operand-config';
+import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-config';
+import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-condition-operand-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
+import {ChangeEvent} from '../../../../shared/types/change-event';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -32,24 +34,24 @@ export class RuleEditFormConditionComponent implements OnChanges {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Output()
-    conditionChange = new EventEmitter<RuleCondition>();
+    conditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()
     conditionRemove = new EventEmitter<RuleCondition>();
 
-    availableFirstOperands: {
+    availableMetrics: {
         label: string;
         type: RuleConditionOperandType;
         group?: RuleConditionOperandGroup;
     }[];
     availableOperators: {label: string; operator: RuleConditionOperator}[];
-    availableSecondOperands: {
+    availableValueTypes: {
         label: string;
         type: RuleConditionOperandType;
         group?: RuleConditionOperandGroup;
     }[];
     selectedConditionConfig: RuleConditionConfig;
-    selectedFirstOperandConfig: RuleConditionOperandConfig;
-    selectedSecondOperandConfig: RuleConditionOperandConfig;
+    selectedMetricConfig: RuleConditionOperandConfig;
+    selectedValueConfig: RuleConditionOperandConfig;
 
     RuleConditionOperandType = RuleConditionOperandType;
     Unit = Unit;
@@ -61,75 +63,127 @@ export class RuleEditFormConditionComponent implements OnChanges {
     // TODO (automation-rules): When unit === Date, operand value must be converted from/to string
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.availableConditions) {
-            this.availableFirstOperands = this.getAvailableFirstOperands();
+            this.availableMetrics = this.getAvailableFirstOperands(
+                this.availableConditions,
+                this.ruleCondition
+            );
             this.availableOperators = [];
-            this.availableSecondOperands = [];
+            this.availableValueTypes = [];
         }
 
         if (changes.ruleCondition) {
-            this.selectedConditionConfig = this.getSelectedConditionConfig();
-            this.availableOperators = this.getAvailableOperators();
-            this.selectedFirstOperandConfig = this.getSelectedFirstOperandConfig();
-            this.selectedSecondOperandConfig = this.getSelectedSecondOperandConfig();
-            this.availableFirstOperands = this.getAvailableFirstOperands();
-            this.availableSecondOperands = this.getAvailableSecondOperands();
+            this.selectedConditionConfig = this.getSelectedConditionConfig(
+                this.availableConditions,
+                this.ruleCondition.metric
+            );
+            this.availableOperators = this.getAvailableOperators(
+                this.selectedConditionConfig
+            );
+            this.selectedMetricConfig = this.getSelectedFirstOperandConfig(
+                this.selectedConditionConfig
+            );
+            this.selectedValueConfig = this.getSelectedValueConfig(
+                this.selectedConditionConfig,
+                this.ruleCondition
+            );
+            this.availableMetrics = this.getAvailableFirstOperands(
+                this.availableConditions,
+                this.ruleCondition
+            );
+            this.availableValueTypes = this.getAvailableValueTypes(
+                this.selectedConditionConfig,
+                this.ruleCondition
+            );
         }
     }
 
-    selectFirstOperand(operand: RuleConditionOperandType) {
+    selectMetricType(metricType: RuleConditionOperandType) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            firstOperand: operand,
-            firstOperandValue: null,
-            firstOperandTimeRange: TimeRange.Lifetime,
-            operator: null,
-            secondOperand: null,
-            secondOperandValue: null,
-            secondOperandTimeRange: TimeRange.Lifetime,
+            target: this.ruleCondition,
+            changes: {
+                operator: null,
+                metric: {
+                    type: metricType,
+                    modifier: null,
+                    window: TimeRange.Lifetime,
+                },
+                value: {
+                    type: null,
+                    value: null,
+                    window: TimeRange.Lifetime,
+                },
+            },
         });
     }
 
-    updateFirstOperandValue(value: string) {
+    updateMetricModifier(modifier: string) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            firstOperandValue: value,
+            target: this.ruleCondition,
+            changes: {
+                metric: {
+                    ...this.ruleCondition.metric,
+                    modifier: modifier,
+                },
+            },
         });
     }
 
-    updateFirstOperandTimeRange(timeRange: TimeRange) {
+    updateMetricWindow(window: TimeRange) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            firstOperandTimeRange: timeRange,
+            target: this.ruleCondition,
+            changes: {
+                metric: {
+                    ...this.ruleCondition.metric,
+                    window: window,
+                },
+            },
         });
     }
 
     selectOperator(operator: RuleConditionOperator) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            operator: operator,
+            target: this.ruleCondition,
+            changes: {
+                operator: operator,
+            },
         });
     }
 
-    selectSecondOperand(operand: RuleConditionOperandType) {
+    selectValueType(operand: RuleConditionOperandType) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            secondOperand: operand,
-            secondOperandValue: null,
-            secondOperandTimeRange: TimeRange.Lifetime,
+            target: this.ruleCondition,
+            changes: {
+                value: {
+                    ...this.ruleCondition.value,
+                    type: operand,
+                    value: null,
+                    window: TimeRange.Lifetime,
+                },
+            },
         });
     }
 
-    updateSecondOperandValue(value: string) {
+    updateValueValue(value: string) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            secondOperandValue: value,
+            target: this.ruleCondition,
+            changes: {
+                value: {
+                    ...this.ruleCondition.value,
+                    value: value,
+                },
+            },
         });
     }
 
-    updateSecondOperandTimeRange(timeRange: TimeRange) {
+    updateValueWindow(window: TimeRange) {
         this.conditionChange.emit({
-            ...this.ruleCondition,
-            secondOperandTimeRange: timeRange,
+            target: this.ruleCondition,
+            changes: {
+                value: {
+                    ...this.ruleCondition.value,
+                    window: window,
+                },
+            },
         });
     }
 
@@ -146,69 +200,76 @@ export class RuleEditFormConditionComponent implements OnChanges {
         );
     }
 
-    private getSelectedConditionConfig(): RuleConditionConfig {
-        if (!this.ruleCondition.firstOperand) {
+    private getSelectedConditionConfig(
+        availableConditions: RuleConditionConfig[],
+        metric: RuleConditionMetric
+    ): RuleConditionConfig {
+        if (!metric) {
             return null;
         }
         return (
-            this.availableConditions.find(availableCondition => {
-                return (
-                    availableCondition.firstOperand.type ===
-                    this.ruleCondition.firstOperand
-                );
+            availableConditions.find(availableCondition => {
+                return availableCondition.metric.type === metric.type;
             }) || null
         );
     }
 
-    private getSelectedFirstOperandConfig(): RuleConditionOperandConfig {
-        if (!this.selectedConditionConfig) {
+    private getSelectedFirstOperandConfig(
+        selectedConditionConfig: RuleConditionConfig
+    ): RuleConditionOperandConfig {
+        if (!selectedConditionConfig) {
             return null;
         }
-        return this.selectedConditionConfig.firstOperand;
+        return selectedConditionConfig.metric;
     }
 
-    private getSelectedSecondOperandConfig(): RuleConditionOperandConfig {
-        if (!this.selectedConditionConfig) {
+    private getSelectedValueConfig(
+        selectedConditionConfig: RuleConditionConfig,
+        ruleCondition: RuleCondition
+    ): RuleConditionOperandConfig {
+        if (!selectedConditionConfig) {
             return null;
         }
         return (
-            this.selectedConditionConfig.availableSecondOperands.find(
+            selectedConditionConfig.availableValueTypes.find(
                 availableOperand => {
-                    return (
-                        availableOperand.type ===
-                        this.ruleCondition.secondOperand
-                    );
+                    return availableOperand.type === ruleCondition.value.type;
                 }
             ) || null
         );
     }
 
-    private getAvailableFirstOperands(): {
+    private getAvailableFirstOperands(
+        availableConditions: RuleConditionConfig[],
+        ruleCondition: RuleCondition
+    ): {
         label: string;
         type: RuleConditionOperandType;
         group?: RuleConditionOperandGroup;
     }[] {
-        return (this.availableConditions || []).map(availableCondition => {
+        return (availableConditions || []).map(availableCondition => {
             return {
                 label: this.getOperandLabel(
-                    availableCondition.firstOperand,
-                    this.ruleCondition.firstOperand,
-                    this.ruleCondition.firstOperandValue
+                    availableCondition.metric,
+                    ruleCondition.metric.type,
+                    ruleCondition.metric.modifier
                 ),
-                type: availableCondition.firstOperand.type,
-                group: availableCondition.firstOperand.group || null,
+                type: availableCondition.metric.type,
+                group: availableCondition.metric.group || null,
             };
         });
     }
 
-    private getAvailableOperators(): {
+    private getAvailableOperators(
+        selectedConditionConfig: RuleConditionConfig
+    ): {
         label: string;
         operator: RuleConditionOperator;
     }[] {
-        if (!this.selectedConditionConfig) {
+        if (!selectedConditionConfig) {
             return [];
         }
-        return (this.selectedConditionConfig.availableOperators || []).map(
+        return (selectedConditionConfig.availableOperators || []).map(
             operator => {
                 return {
                     label: this.getOperatorLabel(operator),
@@ -218,21 +279,24 @@ export class RuleEditFormConditionComponent implements OnChanges {
         );
     }
 
-    private getAvailableSecondOperands(): {
+    private getAvailableValueTypes(
+        selectedConditionConfig: RuleConditionConfig,
+        ruleCondition: RuleCondition
+    ): {
         label: string;
         type: RuleConditionOperandType;
         group?: RuleConditionOperandGroup;
     }[] {
-        if (!this.selectedConditionConfig) {
+        if (!selectedConditionConfig) {
             return [];
         }
-        return (this.selectedConditionConfig.availableSecondOperands || []).map(
+        return (selectedConditionConfig.availableValueTypes || []).map(
             operand => {
                 return {
                     label: this.getOperandLabel(
                         operand,
-                        this.ruleCondition.secondOperand,
-                        this.ruleCondition.secondOperandValue
+                        ruleCondition.value.type,
+                        ruleCondition.value.value
                     ),
                     type: operand.type,
                     group: operand.group || null,
