@@ -345,7 +345,7 @@ class InstanceTest(TestCase):
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_max_cpc_change_changes_source_cpcs(self, mock_get_exchange_rate, mock_autopilot):
         # setup
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup, b1_sources_group=True, b1_sources_group_cpc_cc=Decimal("0.1"))
         magic_mixer.cycle(3).blend(core.models.AdGroupSource, ad_group=ad_group)
         mock_get_exchange_rate.return_value = Decimal("2.0")
         ad_group.settings.update(None, cpc_cc=Decimal("0.20"))
@@ -354,12 +354,14 @@ class InstanceTest(TestCase):
 
         # updating usd value
         ad_group.settings.update(None, cpc_cc=Decimal("0.50"))
+        self.assertEqual(ad_group.settings.b1_sources_group_cpc_cc, Decimal("0.5"))
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.5"))
             self.assertEqual(source.settings.local_cpc_cc, Decimal("1.0"))
 
         # updating local value
         ad_group.settings.update(None, local_cpc_cc=Decimal("1.20"))
+        self.assertEqual(ad_group.settings.local_b1_sources_group_cpc_cc, Decimal("1.2"))
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.6"))
             self.assertEqual(source.settings.local_cpc_cc, Decimal("1.2"))

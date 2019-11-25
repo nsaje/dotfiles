@@ -206,7 +206,7 @@ class AdGroupSettingsMixin(object):
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             # Changing adgroup max cpm
             if changes.get("max_cpm") and new_settings.b1_sources_group_enabled:
-                new_settings.b1_sources_group_cpm = min(changes.get("max_cpm"), new_settings.b1_sources_group_cpm)
+                new_settings.b1_sources_group_cpm = changes.get("max_cpm")  # reset to max, as implemented in #3353
 
             if self.b1_sources_group_cpm != new_settings.b1_sources_group_cpm:
                 adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
@@ -219,7 +219,7 @@ class AdGroupSettingsMixin(object):
         else:
             # Changing adgroup max cpc
             if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
-                new_settings.b1_sources_group_cpc_cc = min(changes.get("cpc_cc"), new_settings.b1_sources_group_cpc_cc)
+                new_settings.b1_sources_group_cpc_cc = changes.get("cpc_cc")  # reset to max, as implemented in #3353
 
             if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
                 adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
