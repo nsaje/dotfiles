@@ -517,15 +517,15 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.CurrencySign,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CampaignBudget
-            ],
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.RemainingCampaignBudget
-            ],
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AdGroupDailyBudget
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CampaignBudget
+            // ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.RemainingCampaignBudget
+            // ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.AdGroupDailyBudget
+            // ],
         ],
     },
     [RuleConditionOperandType.Impressions]: {
@@ -560,9 +560,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Integer,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AdGroupDailyClickCap
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.AdGroupDailyClickCap
+            // ],
         ],
     },
     [RuleConditionOperandType.Ctr]: {
@@ -580,9 +580,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.Percent,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CtrCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CtrCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.Cpc]: {
@@ -600,9 +600,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.CurrencySign,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CpcCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CpcCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.Cpm]: {
@@ -620,9 +620,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.CurrencySign,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CpmCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CpmCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.Visits]: {
@@ -711,9 +711,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.Percent,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.PercentNewUsersCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.PercentNewUsersCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.ClickDiscrepancy]: {
@@ -768,9 +768,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Integer,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.PageviewsPerVisitCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.PageviewsPerVisitCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.BouncedVisits]: {
@@ -827,9 +827,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.Percent,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.BounceRateCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.BounceRateCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.TotalSeconds]: {
@@ -869,9 +869,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.Second,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.TimeOnSiteCampaignGoal
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.TimeOnSiteCampaignGoal
+            // ],
         ],
     },
     [RuleConditionOperandType.RemainingCampaignBudget]: {
@@ -892,12 +892,12 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.CurrencySign,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CampaignBudget
-            ],
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.TotalSpend
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CampaignBudget
+            // ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.TotalSpend
+            // ],
         ],
     },
     [RuleConditionOperandType.CampaignBudgetMargin]: {
@@ -936,9 +936,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.CampaignBudgetEndDate]: {
@@ -957,9 +957,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.DaysSinceCampaignBudgetStart]: {
@@ -1034,9 +1034,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.DaysSinceAccountCreation]: {
@@ -1093,9 +1093,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.DaysSinceCampaignCreation]: {
@@ -1134,9 +1134,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.String,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AccountManager
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.AccountManager
+            // ],
         ],
     },
     [RuleConditionOperandType.AdGroupName]: {
@@ -1175,9 +1175,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.DaysSinceAdGroupCreation]: {
@@ -1214,9 +1214,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.AdGroupEndDate]: {
@@ -1235,9 +1235,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.AdGroupDailyBudget]: {
@@ -1258,9 +1258,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 unit: Unit.CurrencySign,
                 fractionSize: 2,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AverageDailyTotalSpend
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.AverageDailyTotalSpend
+            // ],
         ],
     },
     [RuleConditionOperandType.CreativeName]: {
@@ -1319,9 +1319,9 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ],
                 dataType: DataType.Date,
             },
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CurrentDate
-            ],
+            // RULE_CONDITION_OPERANDS_OPTIONS[
+            //     RuleConditionOperandType.CurrentDate
+            // ],
         ],
     },
     [RuleConditionOperandType.DaysSinceCreativeCreation]: {
