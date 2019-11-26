@@ -21,8 +21,6 @@ logger = zlogging.getLogger(__name__)
 
 
 OUTBRAIN_SOURCE_SLUG = "outbrain"
-OEN_ACCOUNT_ID = 305
-MSN_SOURCE_ID = 120
 BIZWIRE_CAMPAIGN_ID = 1096
 SOURCES_SSPD_REQUIRED = (120, 170)  # MSN
 
@@ -257,19 +255,12 @@ class ContentAdSourcesView(K1APIView):
         return sspd_thread.get_result()
 
     def _get_content_ad_source_state(self, content_ad_source, amplify_review_statuses, sspd_statuses):
-        if not self._bypass_reviews(content_ad_source) and (
-            self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses)
-            or self._is_blocked_by_sspd(content_ad_source, sspd_statuses)
+        if self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses) or self._is_blocked_by_sspd(
+            content_ad_source, sspd_statuses
         ):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source["state"]
-
-    def _bypass_reviews(self, content_ad_source):
-        # special case for OEN and sources that aren't managed through sspd
-        account_id = content_ad_source["content_ad__ad_group__campaign__account_id"]
-        source_id = content_ad_source["source_id"]
-        return account_id == OEN_ACCOUNT_ID and source_id == MSN_SOURCE_ID
 
     @staticmethod
     def _is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
