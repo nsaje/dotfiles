@@ -68,12 +68,46 @@ export class RuleEditFormActionComponent implements OnChanges {
         this.actionFrequencyChange.emit(actionFrequency);
     }
 
-    updateChangeStep(changeStep: number) {
+    updateChangeStep(changeStep: number, actionType: RuleActionType) {
+        if (
+            actionType === RuleActionType.IncreaseBidModifier ||
+            actionType === RuleActionType.DecreaseBidModifier
+        ) {
+            changeStep = changeStep / 100.0;
+        }
         this.changeStepChange.emit(changeStep);
     }
 
-    updateChangeLimit(changeLimit: number) {
+    updateChangeLimit(changeLimit: number, actionType: RuleActionType) {
+        if (
+            actionType === RuleActionType.IncreaseBidModifier ||
+            actionType === RuleActionType.DecreaseBidModifier
+        ) {
+            changeLimit = changeLimit / 100.0 + 1;
+        }
         this.changeLimitChange.emit(changeLimit);
+    }
+
+    formatChangeStep(changeStep: number, actionType: RuleActionType) {
+        if (
+            changeStep &&
+            (actionType === RuleActionType.IncreaseBidModifier ||
+                actionType === RuleActionType.DecreaseBidModifier)
+        ) {
+            return changeStep * 100.0;
+        }
+        return changeStep;
+    }
+
+    formatChangeLimit(changeLimit: number, actionType: RuleActionType) {
+        if (
+            changeLimit &&
+            (actionType === RuleActionType.IncreaseBidModifier ||
+                actionType === RuleActionType.DecreaseBidModifier)
+        ) {
+            return (changeLimit - 1) * 100.0;
+        }
+        return changeLimit;
     }
 
     private getSelectedActionConfig(

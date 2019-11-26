@@ -15,9 +15,9 @@
     class="zem-rule-edit-form__section-item zem-currency-form-group zem-rule-edit-form__currency-setting"
     *ngIf="selectedActionConfig.hasValue"
     label="Increase/decrease by"
-    [value]="changeStep"
+    [value]="formatChangeStep(changeStep, actionType)"
     [currencySymbol]="getUnitText(selectedActionConfig.unit)"
-    (valueChange)="updateChangeStep($event)"
+    (valueChange)="updateChangeStep($event, actionType)"
 ></zem-currency-form-group>
 
 <!-- TODO (automation-rules): Check why help message is not updated when selectedActionConfig.limitDescription changes -->
@@ -25,10 +25,10 @@
     class="zem-rule-edit-form__section-item zem-currency-form-group zem-rule-edit-form__currency-setting"
     *ngIf="selectedActionConfig.hasLimit"
     [label]="selectedActionConfig.limitLabel"
-    [value]="changeLimit"
+    [value]="formatChangeLimit(changeLimit, actionType)"
     [helpMessage]="selectedActionConfig.limitDescription"
     [currencySymbol]="getUnitText(selectedActionConfig.unit)"
-    (valueChange)="updateChangeLimit($event)"
+    (valueChange)="updateChangeLimit($event, actionType)"
 ></zem-currency-form-group>
 
 <zem-select-form-group
