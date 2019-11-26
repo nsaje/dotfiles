@@ -12,41 +12,47 @@ class AccountViewSetTest(RESTAPITest):
     @classmethod
     def account_repr(
         cls,
-        accountId=None,
-        agencyId=None,
-        accountName=None,
+        account_id=None,
+        agency_id=None,
+        account_name=None,
         archived=False,
         currency=dash.constants.Currency.USD,
-        frequencyCapping=None,
-        accountType=dash.constants.AccountType.UNKNOWN,
-        defaultAccountManager=None,
-        defaultSalesRepresentative=None,
-        defaultCsRepresentative=None,
-        obRepresentative=None,
-        autoAddNewSources=None,
-        salesforceUrl=None,
-        allowedMediaSources=[],
+        frequency_capping=None,
+        account_type=dash.constants.AccountType.UNKNOWN,
+        default_account_manager=None,
+        default_sales_representative=None,
+        default_cs_representative=None,
+        ob_representative=None,
+        auto_add_new_sources=None,
+        salesforce_url=None,
+        allowed_media_sources=[],
         deals=[],
+        default_icon_url=None,
+        default_icon_base64=None,
     ):
         representation = {
-            "id": str(accountId) if accountId is not None else None,
-            "agencyId": str(agencyId) if agencyId is not None else None,
+            "id": str(account_id) if account_id is not None else None,
+            "agencyId": str(agency_id) if agency_id is not None else None,
             "targeting": {"publisherGroups": {"included": [], "excluded": []}},
-            "name": accountName,
+            "name": account_name,
             "archived": archived,
             "currency": dash.constants.Currency.get_name(currency),
-            "frequencyCapping": frequencyCapping,
-            "accountType": dash.constants.AccountType.get_name(accountType),
-            "defaultAccountManager": str(defaultAccountManager) if defaultAccountManager is not None else None,
-            "defaultSalesRepresentative": str(defaultSalesRepresentative)
-            if defaultSalesRepresentative is not None
+            "frequencyCapping": frequency_capping,
+            "accountType": dash.constants.AccountType.get_name(account_type),
+            "defaultAccountManager": str(default_account_manager) if default_account_manager is not None else None,
+            "defaultSalesRepresentative": str(default_sales_representative)
+            if default_sales_representative is not None
             else None,
-            "defaultCsRepresentative": str(defaultCsRepresentative) if defaultCsRepresentative is not None else None,
-            "obRepresentative": str(obRepresentative) if obRepresentative is not None else None,
-            "autoAddNewSources": autoAddNewSources,
-            "salesforceUrl": salesforceUrl,
-            "allowedMediaSources": allowedMediaSources,
+            "defaultCsRepresentative": str(default_cs_representative)
+            if default_cs_representative is not None
+            else None,
+            "obRepresentative": str(ob_representative) if ob_representative is not None else None,
+            "autoAddNewSources": auto_add_new_sources,
+            "salesforceUrl": salesforce_url,
+            "allowedMediaSources": allowed_media_sources,
             "deals": deals,
+            "defaultIconUrl": default_icon_url,
+            "defaultIconBase64": default_icon_base64,
         }
         return cls.normalize(representation)
 
@@ -214,6 +220,9 @@ class AccountViewSetTest(RESTAPITest):
     def test_get(self, mock_get_extra_data):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        default_icon = magic_mixer.blend(
+            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=150, height=150, file_size=1000
+        )
         account.settings.update_unsafe(
             None,
             name=account.name,
@@ -224,6 +233,7 @@ class AccountViewSetTest(RESTAPITest):
             ob_representative=None,
             auto_add_new_sources=True,
             salesforce_url="Generic URL",
+            default_icon=default_icon,
         )
 
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
@@ -355,6 +365,7 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+        self.assertEqual(resp_json["data"]["defaultIconUrl"], account.settings.default_icon.get_url())
 
         self.assertEqual(
             resp_json["extra"],
@@ -514,6 +525,222 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
 
+        self.assertIsNone(resp_json["data"]["defaultIconUrl"])
+
+    @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
+    @mock.patch("utils.lambda_helper.invoke_lambda")
+    @mock.patch("utils.slack.publish")
+    def test_put_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "New generic account"
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "icon.url": {
+                        "valid": True,
+                        "id": "icon_id",
+                        "hash": "icon_hash",
+                        "width": 150,
+                        "height": 150,
+                        "file_size": 1000,
+                    }
+                }
+            },
+        }
+        put_data["default_icon_url"] = None
+        put_data[
+            "default_icon_base64"
+        ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC"  # noqa
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual("/icon_id.jpg?w=150&h=150&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account.refresh_from_db()
+        self.assertEqual("icon_id", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual(150, account.settings.default_icon.width)
+        self.assertEqual(150, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(1000, account.settings.default_icon.file_size)
+        self.assertIsNone(account.settings.default_icon.origin_url)
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "http://icon.url.com": {
+                        "valid": True,
+                        "id": "icon_id2",
+                        "hash": "icon_hash2",
+                        "width": 130,
+                        "height": 130,
+                        "file_size": 1001,
+                    }
+                }
+            },
+        }
+        put_data["default_icon_base64"] = None
+        put_data["default_icon_url"] = "http://icon.url.com"
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual("/icon_id2.jpg?w=130&h=130&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account.refresh_from_db()
+        self.assertEqual("icon_id2", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash2", account.settings.default_icon.hash)
+        self.assertEqual(130, account.settings.default_icon.width)
+        self.assertEqual(130, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(1001, account.settings.default_icon.file_size)
+        self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "http://icon.url2.com": {
+                        "valid": True,
+                        "id": "icon_id3",
+                        "hash": "icon_hash3",
+                        "width": 190,
+                        "height": 190,
+                        "file_size": 9000,
+                    }
+                }
+            },
+        }
+        put_data[
+            "default_icon_base64"
+        ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC"  # noqa
+        put_data["default_icon_url"] = "http://icon.url2.com"
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual("/icon_id3.jpg?w=190&h=190&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account.refresh_from_db()
+        self.assertEqual("icon_id3", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash3", account.settings.default_icon.hash)
+        self.assertEqual(190, account.settings.default_icon.width)
+        self.assertEqual(190, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(9000, account.settings.default_icon.file_size)
+        self.assertEqual("http://icon.url2.com", account.settings.default_icon.origin_url)
+
+    @mock.patch("utils.lambda_helper.invoke_lambda")
+    @mock.patch("utils.slack.publish")
+    def test_put_default_icon_fail(self, mock_slack_publish, mock_external_validation):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "New generic account"
+        put_data["default_icon_base64"] = "data:image/png;base64,123456789012"
+
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "http://icon.url.com": {
+                        "valid": False,
+                        "id": "icon_id",
+                        "hash": "icon_hash",
+                        "width": 150,
+                        "height": 150,
+                        "file_size": 1000,
+                    }
+                }
+            },
+        }
+        put_data[
+            "default_icon_base64"
+        ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC"  # noqa
+        put_data["default_icon_url"] = "http://icon.url.com"
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["valid"] = True
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["id"] = None
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["id"] = "icon_id"
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 151
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 127
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 127
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 10001
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 10001
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 128
+        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 128
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account.refresh_from_db()
+        self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
@@ -523,13 +750,13 @@ class AccountViewSetTest(RESTAPITest):
         deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
 
         new_account = self.account_repr(
-            agencyId=agency.id,
-            accountName="Generic account",
-            accountType=dash.constants.AccountType.ACTIVATED,
-            defaultAccountManager=self.user.id,
-            autoAddNewSources=True,
-            salesforceUrl="http://salesforce.com",
-            allowedMediaSources=[],
+            agency_id=agency.id,
+            account_name="Generic account",
+            account_type=dash.constants.AccountType.ACTIVATED,
+            default_account_manager=self.user.id,
+            auto_add_new_sources=True,
+            salesforce_url="http://salesforce.com",
+            allowed_media_sources=[],
             deals=[
                 {"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug, "name": deal.name},
                 {"id": None, "dealId": "NEW_DEAL", "source": sources[0].bidder_slug, "name": "NEW DEAL NAME"},
@@ -561,6 +788,188 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 1)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
+
+        self.assertIsNone(resp_json["data"]["defaultIconUrl"])
+
+    @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
+    @mock.patch("utils.lambda_helper.invoke_lambda")
+    @mock.patch("utils.slack.publish")
+    def test_post_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "icon.url": {
+                        "valid": True,
+                        "id": "icon_id",
+                        "hash": "icon_hash",
+                        "width": 170,
+                        "height": 170,
+                        "file_size": 2000,
+                    }
+                }
+            },
+        }
+        new_account = self.account_repr(
+            agency_id=agency.id,
+            account_name="Generic account",
+            account_type=dash.constants.AccountType.ACTIVATED,
+            default_account_manager=self.user.id,
+            auto_add_new_sources=True,
+            default_icon_base64="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC",  # noqa
+        )
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual("/icon_id.jpg?w=170&h=170&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account = core.models.Account.objects.get(id=resp_json["data"]["id"])
+        self.assertEqual("icon_id", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual(170, account.settings.default_icon.width)
+        self.assertEqual(170, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(2000, account.settings.default_icon.file_size)
+        self.assertIsNone(account.settings.default_icon.origin_url)
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "http://icon.url.com": {
+                        "valid": True,
+                        "id": "icon_id2",
+                        "hash": "icon_hash2",
+                        "width": 171,
+                        "height": 171,
+                        "file_size": 2001,
+                    }
+                }
+            },
+        }
+        new_account["default_icon_base64"] = None
+        new_account["default_icon_url"] = "http://icon.url.com"
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual("/icon_id2.jpg?w=171&h=171&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account = core.models.Account.objects.get(id=resp_json["data"]["id"])
+        self.assertEqual("icon_id2", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash2", account.settings.default_icon.hash)
+        self.assertEqual(171, account.settings.default_icon.width)
+        self.assertEqual(171, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(2001, account.settings.default_icon.file_size)
+        self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "http://icon.url2.com": {
+                        "valid": True,
+                        "id": "icon_id3",
+                        "hash": "icon_hash3",
+                        "width": 172,
+                        "height": 172,
+                        "file_size": 2002,
+                    }
+                }
+            },
+        }
+        new_account[
+            "default_icon_base64"
+        ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC"  # noqa
+        new_account["default_icon_url"] = "http://icon.url2.com"
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertEqual("/icon_id3.jpg?w=172&h=172&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account = core.models.Account.objects.get(id=resp_json["data"]["id"])
+        self.assertEqual("icon_id3", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash3", account.settings.default_icon.hash)
+        self.assertEqual(172, account.settings.default_icon.width)
+        self.assertEqual(172, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(2002, account.settings.default_icon.file_size)
+        self.assertEqual("http://icon.url2.com", account.settings.default_icon.origin_url)
+
+    @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
+    @mock.patch("utils.lambda_helper.invoke_lambda")
+    @mock.patch("utils.slack.publish")
+    def test_post_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+
+        new_account = self.account_repr(
+            agency_id=agency.id,
+            account_name="Generic account",
+            account_type=dash.constants.AccountType.ACTIVATED,
+            default_account_manager=self.user.id,
+            auto_add_new_sources=True,
+            default_icon_base64="invalid_image_base64",
+        )
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value = {
+            "status": "ok",
+            "candidate": {
+                "images": {
+                    "icon.url": {
+                        "valid": False,
+                        "id": "icon_id",
+                        "hash": "icon_hash",
+                        "width": 150,
+                        "height": 150,
+                        "file_size": 3000,
+                    }
+                }
+            },
+        }
+        new_account[
+            "default_icon_base64"
+        ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACW0lEQVR42u3UMQEAAAjDMMC/52EAByQSerSTpICXRgIwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMADAAwAAAAwAMAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwAMADAAAADAAwADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAAwAMAAAAMADAC4LB6wBfy1zhUaAAAAAElFTkSuQmCC"  # noqa
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["valid"] = True
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["id"] = None
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["id"] = "icon_id"
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 151
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 127
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 127
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 10001
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 10001
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 128
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 128
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+
+        account = core.models.Account.objects.get(id=resp_json["data"]["id"])
+        self.assertEqual("icon_id", account.settings.default_icon.image_id)
+        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual(128, account.settings.default_icon.width)
+        self.assertEqual(128, account.settings.default_icon.height)
+        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
+        self.assertEqual(3000, account.settings.default_icon.file_size)
+        self.assertIsNone(account.settings.default_icon.origin_url)
 
     @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
     @mock.patch("utils.slack.publish")

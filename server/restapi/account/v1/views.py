@@ -1,3 +1,5 @@
+import functools
+
 from django.db import transaction
 
 import core.models
@@ -13,6 +15,7 @@ UPDATABLE_SETTINGS_FIELDS = (
     "whitelist_publisher_groups",
     "blacklist_publisher_groups",
     "frequency_capping",
+    "default_icon",
 )
 
 
@@ -27,9 +30,10 @@ class AccountViewSet(RESTAPIBaseViewSet):
         account = restapi.access.get_account(request.user, account_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        settings = serializer.validated_data.get("settings")
+        settings = serializer.validated_data.get("settings", {})
 
         with transaction.atomic():
+            settings = self._process_default_icon(settings, account, serializer.validated_data)
             settings_valid = {key: value for key, value in list(settings.items()) if key in UPDATABLE_SETTINGS_FIELDS}
             self._update_account(request, account, settings_valid)
 
@@ -56,11 +60,38 @@ class AccountViewSet(RESTAPIBaseViewSet):
                 agency=agency,
                 currency=serializer.validated_data.get("currency"),
             )
-            settings = serializer.validated_data.get("settings")
+            settings = serializer.validated_data.get("settings", {})
+            settings = self._process_default_icon(settings, new_account, serializer.validated_data)
             settings_valid = {key: value for key, value in list(settings.items()) if key in UPDATABLE_SETTINGS_FIELDS}
             self._update_account(request, new_account, settings_valid)
 
         return self.response_ok(self.serializer(new_account, context={"request": request}).data, status=201)
+
+    @staticmethod
+    def _process_default_icon(settings, account, data):
+        if data.get("default_icon_url"):
+            icon_create_fn = functools.partial(
+                core.models.ImageAsset.objects.create_from_origin_url, data["default_icon_url"]
+            )
+
+        elif data.get("default_icon_base64"):
+            icon_create_fn = functools.partial(
+                core.models.ImageAsset.objects.create_from_image_base64, data["default_icon_base64"], account.id
+            )
+
+        else:
+            return settings
+
+        try:
+            settings["default_icon"] = icon_create_fn()
+
+        except (
+            core.models.image_asset.exceptions.ImageAssetExternalValidationFailed,
+            core.models.image_asset.exceptions.ImageAssetInvalid,
+        ):
+            raise utils.exc.ValidationError(errors={"default_icon_url": "Default icon could not be processed."})
+
+        return settings
 
     @staticmethod
     def _update_account(request, account, data):
@@ -72,3 +103,10 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
         except core.models.settings.account_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"excluded": [str(err)]}}})
+
+        except (
+            core.models.settings.account_settings.exceptions.DefaultIconNotSquare,
+            core.models.settings.account_settings.exceptions.DefaultIconTooSmall,
+            core.models.settings.account_settings.exceptions.DefaultIconTooBig,
+        ) as err:
+            raise utils.exc.ValidationError(errors={"default_icon_url": [str(err)]})

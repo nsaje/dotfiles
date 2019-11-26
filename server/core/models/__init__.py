@@ -20,3 +20,4 @@ from .upload_batch import UploadBatch
 from .content_ad_candidate import ContentAdCandidate
 from .conversion_pixel import ConversionPixel
 from .source_type_pixel import SourceTypePixel
+from .image_asset import ImageAsset

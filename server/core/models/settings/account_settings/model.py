@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
-
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db import transaction
 
-import core.common
-import core.features.history
+import core.features.publisher_groups
 import core.models
 import utils.demo_anonymizer
-import utils.exc
-import utils.string_helper
 from dash import constants
 
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from . import instance
 from . import manager
 from . import validation
 
 
-class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
+class AccountSettings(validation.AccountSettingsValidatorMixin, instance.AccountSettingsMixin, SettingsBase):
     class Meta:
         app_label = "dash"
         ordering = ("-created_dt",)
@@ -30,6 +26,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     _settings_fields = [
         "name",
         "archived",
+        "default_icon",
         "default_account_manager",
         "default_sales_representative",
         "default_cs_representative",
@@ -46,6 +43,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     id = models.AutoField(primary_key=True)
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
+
+    default_icon = models.ForeignKey(core.models.ImageAsset, null=True, on_delete=models.PROTECT)
     default_account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT
     )
@@ -74,53 +73,12 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
 
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
 
-    @transaction.atomic
-    def update(self, request, **kwargs):
-        clean_updates = {field: value for field, value in kwargs.items() if field in self._settings_fields}
-        changes = self.get_changes(clean_updates)
-        if not changes:
-            return
-
-        self._validate_update(changes)
-        self.clean(changes)
-
-        super().update(request, **changes)
-
-        if changes:
-            self._handle_archived(request, changes)
-
-        self._update_account(request, changes)
-
-    def _validate_update(self, changes):
-        if self.archived:
-            if changes.get("archived") is False:
-                if not self.account.can_restore():
-                    raise utils.exc.ForbiddenError("Account can not be restored")
-            else:
-                raise utils.exc.ForbiddenError("Account must not be archived in order to update it.")
-        else:
-            if changes.get("archived"):
-                if not self.account.can_archive():
-                    raise utils.exc.ForbiddenError("Account can not be archived.")
-
-    def _update_account(self, request, changes):
-        if any(field in changes for field in ["name", "archived"]):
-            if "name" in changes:
-                self.account.name = changes["name"]
-            if "archived" in changes:
-                self.account.archived = changes["archived"]
-            self.account.save(request)
-
-    def _handle_archived(self, request, changes):
-        if changes.get("archived"):
-            for campaign in self.account.campaign_set.all():
-                campaign.archive(request)
-
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {
             "name": "Name",
             "archived": "Archived",
+            "default_icon": "Default icon",
             "default_account_manager": "Account Manager",
             "default_sales_representative": "Sales Representative",
             "default_cs_representative": "Customer Success Representative",
@@ -138,6 +96,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     def get_human_value(cls, prop_name, value):
         if prop_name == "archived":
             value = str(value)
+        elif prop_name == "default_icon":
+            return value.origin_url or "uploaded image"
         elif prop_name in (
             "default_account_manager",
             "default_sales_representative",
@@ -159,16 +119,6 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
         elif prop_name == "account_type":
             value = constants.AccountType.get_text(value)
         return value
-
-    def add_to_history(self, user, action_type, changes, history_changes_text=None):
-        # this is a temporary state until cleaning up of settings changes text
-        if not changes and not self.post_init_newly_created:
-            return
-        if "salesforce_url" in changes:
-            return
-
-        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
-        self.account.write_history(changes_text, changes=changes, action_type=action_type, user=user)
 
     class QuerySet(SettingsQuerySet):
         pass

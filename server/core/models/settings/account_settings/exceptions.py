@@ -7,3 +7,15 @@ class PublisherWhitelistInvalid(ValidationError):
 
 class PublisherBlacklistInvalid(ValidationError):
     pass
+
+
+class DefaultIconNotSquare(ValidationError):
+    pass
+
+
+class DefaultIconTooSmall(ValidationError):
+    pass
+
+
+class DefaultIconTooBig(ValidationError):
+    pass

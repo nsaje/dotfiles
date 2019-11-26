@@ -1,4 +1,5 @@
 import rest_framework.serializers
+from drf_base64.fields import Base64ImageField
 
 import dash.constants
 import restapi.account.v1.serializers
@@ -71,6 +72,8 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "salesforce_url": "zemauth.can_see_salesforce_url",
             "allowed_media_sources": "zemauth.can_modify_allowed_sources",
             "deals": "zemauth.can_see_direct_deals_section",
+            "default_icon_url": "zemauth.can_use_creative_icon",
+            "default_icon_base64": "zemauth.can_use_creative_icon",
         }
 
     account_type = restapi.serializers.fields.DashConstantField(
@@ -103,6 +106,8 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     deals = rest_framework.serializers.ListSerializer(
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
+    default_icon_url = rest_framework.serializers.URLField(required=False, allow_null=True, allow_blank=True)
+    default_icon_base64 = Base64ImageField(required=False, allow_null=True, write_only=True)
 
     def validate_default_account_manager(self, value):
         if value is None:

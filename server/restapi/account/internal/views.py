@@ -45,10 +45,12 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         account = restapi.access.get_account(request.user, account_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        settings = serializer.validated_data.get("settings")
+        settings = serializer.validated_data.get("settings", {})
 
         with transaction.atomic():
+            settings = self._process_default_icon(settings, account, serializer.validated_data)
             self._update_account(request, account, settings)
+            # self._validate_default_icon(account)
             if "allowed_media_sources" in serializer.validated_data.keys():
                 self._handle_allowed_media_sources(
                     request, account, serializer.validated_data.get("allowed_media_sources", [])
@@ -75,8 +77,10 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
                 agency=agency,
                 currency=serializer.validated_data.get("currency"),
             )
-            settings = serializer.validated_data.get("settings")
+            settings = serializer.validated_data.get("settings", {})
+            settings = self._process_default_icon(settings, new_account, serializer.validated_data)
             self._update_account(request, new_account, settings)
+            # self._validate_default_icon(new_account)
             self._handle_allowed_media_sources(
                 request, new_account, serializer.validated_data.get("allowed_media_sources", [])
             )
@@ -93,6 +97,11 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         account.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
             account.deals = account.get_deals()
+
+    @staticmethod
+    def _validate_default_icon(account):
+        if not account.is_archived() and not account.settings.default_icon_id:
+            raise utils.exc.ValidationError("Default icon must be set before updating or creating a new account.")
 
     @staticmethod
     def _handle_allowed_media_sources(request, account, data):

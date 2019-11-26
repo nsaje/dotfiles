@@ -19,7 +19,10 @@ class AccountSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}
+        permissioned_fields = {
+            "frequency_capping": "zemauth.can_set_frequency_capping",
+            "default_icon_url": "zemauth.can_use_creative_icon",
+        }
 
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
@@ -34,3 +37,15 @@ class AccountSerializer(
     frequency_capping = restapi.serializers.fields.BlankIntegerField(
         allow_null=True, required=False, source="settings.frequency_capping"
     )
+    default_icon_url = serializers.URLField(required=False, allow_blank=True)
+
+    def to_representation(self, instance):
+        self.fields["default_icon_url"] = serializers.SerializerMethodField()
+        return super().to_representation(instance)
+
+    def get_default_icon_url(self, account):
+        default_icon = account.settings.default_icon
+        if not default_icon:
+            return None
+
+        return default_icon.get_url()

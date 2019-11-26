@@ -3647,6 +3647,7 @@ class AccountSettingsTest(TestCase):
                 "blacklist_publisher_groups": [1],
                 "auto_add_new_sources": False,
                 "frequency_capping": 45,
+                "default_icon": None,
             },
         )
         self.assertEqual(content["data"]["settings"]["facebook_page"], "http://www.facebook.com/dummy_page")

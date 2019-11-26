@@ -69,6 +69,7 @@ oauthlib==2.1.0
 djangorestframework-camel-case==0.2.0
 djangorestframework-recursive==0.1.2
 dredd-hooks==0.2.0
+drf-base64==2.0
 
 # rate limiting
 django-ratelimit==1.1.0
