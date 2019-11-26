@@ -423,6 +423,7 @@ DCRON = {
         "create_demand_report": 7200,  # 2 h
         "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
+        "cross_check": 7200,  # 2h
     },
     # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
