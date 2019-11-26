@@ -26,8 +26,8 @@ class Command(Z1Command):
             )
             return
 
+        messages = []
         for sync_attempt in previous_sync_attempts:
-            messages = []
             if sync_attempt.batches.filter(
                 status__in=[dash.constants.UploadBatchStatus.FAILED or dash.constants.UploadBatchStatus.CANCELLED]
             ).exists():
@@ -35,4 +35,5 @@ class Command(Z1Command):
                     sync_attempt.product_feed.name, sync_attempt.id
                 )
                 messages.append(msg)
+        if messages:
             slack.publish("\n".join(messages), username="product feed", msg_type=slack.MESSAGE_TYPE_WARNING)

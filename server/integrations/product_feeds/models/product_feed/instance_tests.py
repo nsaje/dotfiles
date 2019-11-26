@@ -710,20 +710,20 @@ class ProductFeedTestCase(TestCase):
             url="http://test.com",
             display_url="www.debona-fcagroup.it",
             image_url="https://image.url.com",
-            brand_name="ALFA ROMEO",
             primary_tracker_url="https://tracker.com",
             description="Giulietta con cambio automatico doppia frizione TCT al prezzo del manuale.",
             call_to_action="Scopri di più",
         )
         self.assertTrue(ad)
+        self.assertEqual(ad.brand_name, "De Bona")
         ad = core.models.ContentAdCandidate.objects.get(
             title="Alfa Romeo Stelvio",
             url="http://test.com",
             display_url="www.debona-fcagroup.it",
             image_url="https://image.url.com",
-            brand_name="Alfa rOmEo",
             primary_tracker_url="https://tracker.com",
             description="Stelvio tuo da 299 euro al mese con noleggio, leasing o finanziamento",
             call_to_action="Scopri di più",
         )
         self.assertTrue(ad)
+        self.assertEqual(ad.brand_name, "De Bona")

@@ -76,6 +76,7 @@ class ProductFeedInstanceMixin:
                     if ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND):
                         if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
                             continue
+                        item["brand_name"] = item["dealer_name"]
                     if self._is_ad_already_uploaded(item, ad_group):
                         skipped_items.append(
                             {

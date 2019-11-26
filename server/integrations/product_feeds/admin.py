@@ -49,12 +49,12 @@ class SyncAttemptAdmin(admin.ModelAdmin):
         return "\n".join([str(err) for err in errors.items()])
 
     def global_upload_status(self, instance):
-        successes = []
-        if instance.batches.all():
-            for batch in instance.batches.all():
-                if batch.status == dash.constants.UploadBatchStatus.FAILED:
-                    successes.append(False)
-        return all(successes)
+        if not instance.batches.all():
+            return None
+        elif instance.batches.filter(status=dash.constants.UploadBatchStatus.FAILED).exists():
+            return False
+        else:
+            return True
 
     def ad_groups_links(self, instance):
         links = []
@@ -69,7 +69,7 @@ class SyncAttemptAdmin(admin.ModelAdmin):
     content_ads_candidates_errors.short_description = "Content ads candidates errors"
     ads_skipped_prettified.short_description = "Feed items not uploaded (skipped because of validation)"
     items_to_upload_prettified.short_description = "items uploaded"
-    global_upload_status.short_description = "global upload success"
+    global_upload_status.short_description = "All Ads uploaded successfully"
     global_upload_status.boolean = True
 
     fields = (
