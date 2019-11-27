@@ -77,25 +77,31 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         {
             headerName: 'Accounts',
             field: 'numOfAccounts',
-            cellClass: ['zem-deals-library__grid-cell--clickable'],
+            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
             onCellClicked: $event => {
-                this.openConnectionsModal($event.data, 'account');
+                if ($event.value >= 1) {
+                    this.openConnectionsModal($event.data, 'account');
+                }
             },
         },
         {
             headerName: 'Campaigns',
             field: 'numOfCampaigns',
-            cellClass: ['zem-deals-library__grid-cell--clickable'],
+            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
             onCellClicked: $event => {
-                this.openConnectionsModal($event.data, 'campaign');
+                if ($event.value >= 1) {
+                    this.openConnectionsModal($event.data, 'campaign');
+                }
             },
         },
         {
             headerName: 'Ad Groups',
             field: 'numOfAdgroups',
-            cellClass: ['zem-deals-library__grid-cell--clickable'],
+            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
             onCellClicked: $event => {
-                this.openConnectionsModal($event.data, 'adgroup');
+                if ($event.value >= 1) {
+                    this.openConnectionsModal($event.data, 'adgroup');
+                }
             },
         },
         {headerName: 'Notes', field: 'description'},
