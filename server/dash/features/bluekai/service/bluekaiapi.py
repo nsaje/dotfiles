@@ -9,6 +9,7 @@ import urllib.parse
 import urllib.request
 
 import requests
+import retrying
 from django.conf import settings
 
 from utils import dates_helper
@@ -110,7 +111,7 @@ def _format_expression(expression):
 
 def get_audience(audience_id):
     url = AUDIENCES_URL + str(audience_id)
-    response = _perform_request("GET", url, params={})
+    response = _perform_request_with_retry("GET", url, params={})
     return json.loads(response.content)
 
 
@@ -177,6 +178,11 @@ def _get_signed_params(method, url, params, data):
     params_signed["bkuid"] = settings.BLUEKAI_API_USER_KEY
     params_signed["bksig"] = signature
     return params_signed
+
+
+@retrying.retry(stop_max_attempt_number=10, wait_exponential_multiplier=4000, wait_exponential_max=120000)
+def _perform_request_with_retry(method, url, params=None, data=""):
+    _perform_request(method, url, params=params, data=data)
 
 
 def _perform_request(method, url, params=None, data=""):
