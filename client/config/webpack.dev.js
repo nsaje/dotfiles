@@ -2,6 +2,7 @@ var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
     .BundleAnalyzerPlugin;
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
@@ -60,6 +61,12 @@ function generateMainConfig(appEnvironment) {
         test: /\.less$/,
         loader: 'null-loader',
     });
+
+    config.plugins = config.plugins.concat([
+        // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+        // Runs typescript type checking in a separate process.
+        new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
+    ]);
 
     if (appEnvironment.analyze) {
         config.plugins = config.plugins.concat([

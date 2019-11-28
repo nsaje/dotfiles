@@ -3,22 +3,30 @@ var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+var TerserPlugin = require('terser-webpack-plugin');
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 var SentryPlugin = require('webpack-sentry-plugin');
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
-// Main app config
-var mainConfig = generateMainConfig(appEnvironment);
-configs.push(mainConfig);
+if (appEnvironment.buildWhitelabels) {
+    var themes = common.getThemes();
+    Object.keys(themes).forEach(function(key) {
+        if (key !== appEnvironment.theme) {
+            var styleConfig = generateStyleConfig(appEnvironment, themes[key]);
+            configs.push(styleConfig);
+        }
+    });
+} else {
+    var mainConfig = generateMainConfig(appEnvironment);
+    configs.push(mainConfig);
 
-// Themes configs
-var themes = common.getThemes();
-Object.keys(themes).forEach(function(key) {
-    var styleConfig = generateStyleConfig(appEnvironment, themes[key]);
+    var theme = common.getTheme(appEnvironment.theme);
+    var styleConfig = generateStyleConfig(appEnvironment, theme);
     configs.push(styleConfig);
-});
+}
 
 module.exports = configs;
 
@@ -46,9 +54,8 @@ function generateMainConfig(appEnvironment) {
             // https://github.com/NMFR/optimize-css-assets-webpack-plugin
             // A Webpack plugin to optimize \ minimize CSS assets.
             new OptimizeCSSAssetsPlugin({}),
-            new UglifyJsPlugin({
+            new TerserPlugin({
                 sourceMap: true,
-                parallel: true,
             }),
         ],
         splitChunks: {
@@ -83,7 +90,7 @@ function generateMainConfig(appEnvironment) {
         new webpack.optimize.ModuleConcatenationPlugin(),
 
         // https://webpack.js.org/plugins/copy-webpack-plugin/
-        // Copies individual files or entire directories to the build directory
+        // Copies individual files or entire directories to the build directory.
         new CopyWebpackPlugin([
             {
                 from: common.root('./one/images'),
@@ -94,6 +101,10 @@ function generateMainConfig(appEnvironment) {
                 to: 'assets',
             },
         ]),
+
+        // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+        // Runs typescript type checking in a separate process.
+        new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
     ]);
 
     if (appEnvironment.branchName === 'master') {
@@ -154,6 +165,43 @@ function generateStyleConfig(appEnvironment, theme) {
             new OptimizeCSSAssetsPlugin({}),
         ],
     };
+
+    config.plugins = config.plugins.concat([
+        // https://github.com/mzgoddard/hard-source-webpack-plugin
+        // Provides an intermediate caching step for modules.
+        new HardSourceWebpackPlugin({
+            configHash: function() {
+                return 'styles-cache';
+            },
+            environmentHash: {
+                files: ['npm-shrinkwrap.json'],
+            },
+            cachePrune: {
+                // Caches younger than `maxAge` are not considered for deletion. They must
+                // be at least this (10 min) old in milliseconds.
+                maxAge: 10 * 60 * 1000,
+                // All caches together must be larger than `sizeThreshold` before any
+                // caches will be deleted. Together they must be at least this
+                // (500 MB) big in bytes.
+                sizeThreshold: 500 * 1024 * 1024,
+            },
+        }),
+        new HardSourceWebpackPlugin.ExcludeModulePlugin([
+            {
+                test: /mini-css-extract-plugin[\\/]dist[\\/]loader/,
+            },
+            {
+                test: /css-loader/,
+            },
+            {
+                test: /postcss-loader/,
+            },
+            {
+                test: /less-loader/,
+            },
+        ]),
+        new HardSourceWebpackPlugin.SerializerCacachePlugin(),
+    ]);
 
     config.devtool = 'none';
     config.mode = 'production';

@@ -1,13 +1,24 @@
 var webpack = require('webpack');
 var common = require('./webpack.common.js');
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 var appEnvironment = common.getAppEnvironment();
 var config = common.generateMainConfig(appEnvironment);
 
 config.module.rules = [
     {
+        // Angular TypeScript and template loaders
         test: /\.tsx?$/,
-        loaders: ['awesome-typescript-loader', 'angular2-template-loader'],
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'awesome-typescript-loader',
+                options: {
+                    transpileOnly: true,
+                },
+            },
+            {loader: 'angular2-template-loader'},
+        ],
     },
     {
         // https://github.com/angular/universal-starter/pull/593/commits/644c5f6f28a760f94ef111f5a611e2c9ed679b6a
@@ -42,7 +53,11 @@ config.plugins.push(
     new webpack.SourceMapDevToolPlugin({
         filename: null,
         test: /\.(ts|js)($|\?)/i,
-    })
+    }),
+
+    // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+    // Runs typescript type checking in a separate process.
+    new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true})
 );
 
 config.devtool = 'inline-source-map';

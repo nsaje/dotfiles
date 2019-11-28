@@ -65,7 +65,15 @@ function generateMainConfig(appEnvironment) {
             // Angular TypeScript and template loaders
             test: /\.tsx?$/,
             exclude: /node_modules/,
-            loaders: ['awesome-typescript-loader', 'angular2-template-loader'],
+            use: [
+                {
+                    loader: 'awesome-typescript-loader',
+                    options: {
+                        transpileOnly: true,
+                    },
+                },
+                {loader: 'angular2-template-loader'},
+            ],
         },
         {
             // https://github.com/angular/universal-starter/pull/593/commits/644c5f6f28a760f94ef111f5a611e2c9ed679b6a
@@ -200,9 +208,10 @@ function generateAppEnvironment(env) {
         },
         buildNumber: env.npm_config_build_number || '',
         branchName: env.npm_config_branch_name || '',
-        theme: env.npm_config_theme || '',
+        theme: env.npm_config_theme || THEMES.one,
         analyze: env.npm_config_analyze === 'true' || false,
         sentryToken: env.npm_config_sentry_token || '',
+        buildWhitelabels: env.npm_config_build_whitelabels === 'true' || false,
     };
 
     config.staticUrl = getStaticUrl(config);
