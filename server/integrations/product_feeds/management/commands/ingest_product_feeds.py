@@ -22,5 +22,5 @@ class Command(Z1Command):
                 try:
                     executor.map(product_feed.pause_and_archive_ads(dry_run=options["dry_run"]))
                     executor.map(product_feed.ingest_and_create_ads(dry_run=options["dry_run"]))
-                except EntityLimitExceeded:
+                except (EntityLimitExceeded, Exception):
                     continue

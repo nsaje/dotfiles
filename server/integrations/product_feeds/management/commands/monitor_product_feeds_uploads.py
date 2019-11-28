@@ -29,9 +29,9 @@ class Command(Z1Command):
         messages = []
         for sync_attempt in previous_sync_attempts:
             if sync_attempt.batches.filter(
-                status__in=[dash.constants.UploadBatchStatus.FAILED or dash.constants.UploadBatchStatus.CANCELLED]
+                status__in=[dash.constants.UploadBatchStatus.FAILED, dash.constants.UploadBatchStatus.CANCELLED]
             ).exists():
-                msg = "Batch upload for product feed {} is FAILED or CANCELED. See Sync attempt log: #{}".format(
+                msg = "upload for product feed {} is FAILED or CANCELED. See Sync attempt log: #{}".format(
                     sync_attempt.product_feed.name, sync_attempt.id
                 )
                 messages.append(msg)
