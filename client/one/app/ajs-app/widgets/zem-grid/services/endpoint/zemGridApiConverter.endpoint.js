@@ -277,15 +277,6 @@ angular
 
         function convertBidModifierValue(config, metaData, column, value) {
             if (value) {
-                if (metaData.breakdown === constants.breakdown.PUBLISHER) {
-                    return convertValueToDefaultObject(
-                        config,
-                        metaData,
-                        column,
-                        value
-                    );
-                }
-
                 var convertedValue = {};
                 convertedValue.id = value.id;
                 convertedValue.type = value.type;

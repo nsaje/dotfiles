@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.urls import reverse
 
-import core.features.publisher_bid_modifiers
+import core.features.bid_modifiers
 import core.models
 import dash.constants
 import restapi.common.views_base_test
@@ -148,8 +148,12 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             [{"publisher": "testpub1", "source": source, "include_subdomains": True}],
             self.test_ad_group,
         )
-        core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub1", source, 0.5)
-        core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub2", source, 4.6)
+        core.features.bid_modifiers.set(
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", source, 0.5
+        )
+        core.features.bid_modifiers.set(
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", source, 4.6
+        )
 
         self.assertEqual(
             self._get_resp_json(self.test_ad_group.id)["data"],
@@ -172,7 +176,11 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(resp_json["data"], test_put)
 
         self.assertEqual(
-            core.features.publisher_bid_modifiers.get(self.test_ad_group),
+            self._convert_bid_modifiers_service_get_result(
+                core.features.bid_modifiers.get(
+                    self.test_ad_group, include_types=[core.features.bid_modifiers.BidModifierType.PUBLISHER]
+                )
+            ),
             [
                 {"publisher": "testpub1", "source": source, "modifier": 0.5},
                 {"publisher": "testpub2", "source": source, "modifier": 4.6},
@@ -181,8 +189,12 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_modifiers_unset(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub1", source, 0.5)
-        core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub2", source, 4.6)
+        core.features.bid_modifiers.set(
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", source, 0.5
+        )
+        core.features.bid_modifiers.set(
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", source, 4.6
+        )
         test_put = [{"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": None}]
         r = self.client.put(
             reverse("publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}), data=test_put, format="json"
@@ -191,6 +203,21 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(resp_json["data"], test_put)
 
         self.assertEqual(
-            core.features.publisher_bid_modifiers.get(self.test_ad_group),
+            self._convert_bid_modifiers_service_get_result(
+                core.features.bid_modifiers.get(
+                    self.test_ad_group, include_types=[core.features.bid_modifiers.BidModifierType.PUBLISHER]
+                )
+            ),
             [{"publisher": "testpub2", "source": source, "modifier": 4.6}],
         )
+
+    def _convert_bid_modifiers_service_get_result(self, bm_list):
+        new_bm_list = []
+        for bm in bm_list:
+            new_bm = bm.copy()
+            new_bm["publisher"] = new_bm["target"]
+            del new_bm["target"]
+            del new_bm["type"]
+            new_bm_list.append(new_bm)
+
+        return new_bm_list

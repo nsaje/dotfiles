@@ -3,7 +3,7 @@ import json
 from django.urls import reverse
 
 import core.features.bid_modifiers
-from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
+from core.features.bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest

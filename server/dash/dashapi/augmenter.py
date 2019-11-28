@@ -490,14 +490,39 @@ def augment_publisher(row, loader, is_base_level=False):
 
     if loader.has_bid_modifiers:
         modifier_map = loader.modifier_map
-        bid_value_map = loader.bid_value_map
         modifier = modifier_map.get((source_id, domain))
-        source_bid_value = bid_value_map.get(source_id)
+        min_factor, max_factor = loader.min_max_modifiers
 
         if modifier is not None:
-            row.update({"bid_modifier": {"modifier": modifier, "source_bid_value": source_bid_value}})
+            row.update(
+                {
+                    "bid_modifier": _create_bid_modifier_dict(
+                        modifier,
+                        modifier_type=core.features.bid_modifiers.BidModifierType.get_name(modifier.type),
+                        target=core.features.bid_modifiers.ApiConverter.from_target(modifier.type, modifier.target),
+                        source_slug=modifier.source_slug,
+                        bid_min=min_factor,
+                        bid_max=max_factor,
+                    )
+                }
+            )
         else:
-            row.update({"bid_modifier": {"modifier": 1.0, "source_bid_value": source_bid_value}})
+            row.update(
+                {
+                    "bid_modifier": _create_bid_modifier_dict(
+                        None,
+                        modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
+                            core.features.bid_modifiers.BidModifierType.PUBLISHER
+                        ),
+                        target=core.features.bid_modifiers.ApiConverter.from_target(
+                            core.features.bid_modifiers.BidModifierType.PUBLISHER, domain
+                        ),
+                        source_slug=source.bidder_slug,
+                        bid_min=min_factor,
+                        bid_max=max_factor,
+                    )
+                }
+            )
 
         editable = True
         message = None
@@ -528,7 +553,7 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
     if loader.has_bid_modifiers:
         modifier_map = loader.modifier_map
         modifier = modifier_map.get((source_id, domain))
-        row.update({"bid_modifier": modifier})
+        row.update({"bid_modifier": modifier.modifier if modifier else None})
 
 
 def augment_delivery(row, loader, is_base_level=True):
@@ -561,14 +586,16 @@ def augment_delivery(row, loader, is_base_level=True):
     row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
 
 
-def _create_bid_modifier_dict(bid_modifier_or_none, modifier_type=None, target=None, bid_min=None, bid_max=None):
+def _create_bid_modifier_dict(
+    bid_modifier_or_none, modifier_type=None, target=None, source_slug=None, bid_min=None, bid_max=None
+):
     bid_modifier_dict = {
         "id": None,
         "type": modifier_type,
         "target": target,
         "bid_min": bid_min,
         "bid_max": bid_max,
-        "source_slug": None,
+        "source_slug": source_slug,
         "modifier": None,
     }
     if bid_modifier_or_none:

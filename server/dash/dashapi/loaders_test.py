@@ -5,7 +5,7 @@ from django.test import TestCase
 
 import stats.constants
 from core.features import bid_modifiers
-from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
+from core.features.bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from dash import constants
 from dash import models
 from dash.dashapi import loaders
@@ -910,7 +910,7 @@ class PublisherBidModifierLoaderTest(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
         source = magic_mixer.blend(models.Source, id=1)
         add_non_publisher_bid_modifiers(ad_group=ad_group, source=source)
-        magic_mixer.blend(
+        self.bid_modifier = magic_mixer.blend(
             bid_modifiers.BidModifier,
             ad_group=ad_group,
             source=source,
@@ -932,7 +932,7 @@ class PublisherBidModifierLoaderTest(TestCase):
 
     def test_modifier_map(self):
         modifier_map = self.loader.modifier_map
-        self.assertDictEqual(modifier_map, {(1, "pub3.com"): 0.5})
+        self.assertDictEqual(modifier_map, {(1, "pub3.com"): self.bid_modifier})
 
 
 class DeliveryLoaderTest(TestCase):

@@ -6,7 +6,7 @@ from django.test import TestCase
 import dash.constants
 import stats.constants
 from core.features import bid_modifiers
-from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
+from core.features.bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from dash import models
 from dash.dashapi import augmenter
 from dash.dashapi import loaders
@@ -19,7 +19,7 @@ class PublisherAugmenterTest(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
         source = magic_mixer.blend(models.Source, id=1)
         add_non_publisher_bid_modifiers(ad_group=ad_group, source=source)
-        magic_mixer.blend(
+        self.bid_modifier = magic_mixer.blend(
             bid_modifiers.BidModifier,
             ad_group=ad_group,
             source=source,
@@ -47,9 +47,20 @@ class PublisherAugmenterTest(TestCase):
     def test_augmenter_bid_modifiers(self):
         row = {"publisher_id": "pub1.com__1", "source_id": 1}
         self.augmenter([row], self.bid_modifier_loader)
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.bid_modifier.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.PUBLISHER]
+        )
         self.assertDictEqual(
             row["bid_modifier"],
-            {"modifier": 0.5, "source_bid_value": {"bid_value": Decimal("1.5000"), "currency_symbol": "$"}},
+            {
+                "id": self.bid_modifier.id,
+                "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+                "modifier": self.bid_modifier.modifier,
+                "target": self.bid_modifier.target,
+                "source_slug": self.bid_modifier.source_slug,
+                "bid_max": max_factor,
+                "bid_min": min_factor,
+            },
         )
 
     def test_report_augmenter_bid_modifiers(self):

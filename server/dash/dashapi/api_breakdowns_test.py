@@ -418,7 +418,17 @@ PUBLISHER_1__SOURCE_1 = {
     "blacklisted_level_description": "Blacklisted globally",
     "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5010"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub1.com",
+        "source_slug": "adsnative",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_1 = {
@@ -434,7 +444,17 @@ PUBLISHER_2__SOURCE_1 = {
     "status": 3,
     "blacklisted": "Active",
     "can_blacklist_publisher": True,
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5010"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub2.com",
+        "source_slug": "adsnative",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_2 = {
@@ -453,7 +473,17 @@ PUBLISHER_2__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub2.com",
+        "source_slug": "gravity",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_3__SOURCE_2 = {
@@ -472,7 +502,17 @@ PUBLISHER_3__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this ad group"},
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub3.com",
+        "source_slug": "gravity",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_4__SOURCE_2 = {
@@ -491,7 +531,17 @@ PUBLISHER_4__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this campaign",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this campaign"},
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub4.com",
+        "source_slug": "gravity",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_5__SOURCE_2 = {
@@ -510,7 +560,17 @@ PUBLISHER_5__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this account",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this account"},
-    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
+    "bid_modifier": {
+        "id": None,
+        "type": core.features.bid_modifiers.BidModifierType.get_name(
+            core.features.bid_modifiers.BidModifierType.PUBLISHER
+        ),
+        "target": "pub5.com",
+        "source_slug": "gravity",
+        "modifier": None,
+        "bid_min": 1.0,
+        "bid_max": 1.0,
+    },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 

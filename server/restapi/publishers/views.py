@@ -1,8 +1,7 @@
 from django.db import transaction
 from rest_framework import permissions
 
-import core.features.bid_modifiers.exceptions
-import core.features.publisher_bid_modifiers
+import core.features.bid_modifiers
 import core.features.publisher_groups.publisher_group_helpers
 import dash.constants
 import dash.views.helpers
@@ -69,8 +68,10 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return publishers
 
     def _augment_with_bid_modifiers(self, items, ad_group):
-        modifiers = core.features.publisher_bid_modifiers.get(ad_group)
-        modifiers_by_publisher_source = {(m["publisher"], m["source"]): m for m in modifiers}
+        modifiers = core.features.bid_modifiers.get(
+            ad_group, include_types=[core.features.bid_modifiers.BidModifierType.PUBLISHER]
+        )
+        modifiers_by_publisher_source = {(m["target"], m["source"]): m for m in modifiers}
         remaining_modifiers_keys = set(modifiers_by_publisher_source.keys())
 
         for item in items:
@@ -85,7 +86,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             modifier = modifiers_by_publisher_source[publisher_source_key]
             items.append(
                 {
-                    "name": modifier["publisher"],
+                    "name": modifier["target"],
                     "source": modifier["source"],
                     "status": dash.constants.PublisherStatus.ENABLED,
                     "level": dash.constants.PublisherBlacklistLevel.ADGROUP,
@@ -120,10 +121,16 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
                 bid_modifier = entry.get("modifier")
                 try:
-                    core.features.publisher_bid_modifiers.set(
-                        ad_group, entry["name"], entry["source"], bid_modifier, user=request.user, propagate_to_k1=False
+                    core.features.bid_modifiers.set(
+                        ad_group,
+                        core.features.bid_modifiers.BidModifierType.PUBLISHER,
+                        entry["name"],
+                        entry["source"],
+                        bid_modifier,
+                        user=request.user,
+                        propagate_to_k1=False,
                     )
-                except core.features.bid_modifiers.exceptions.BidModifierInvalid:
+                except core.features.bid_modifiers.BidModifierInvalid:
                     raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
 
     @staticmethod

@@ -22,7 +22,6 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             ctrl.type = getFieldType();
             ctrl.gridBodyElement = getGridBodyElement();
             ctrl.showAutopilotIcon = isAutopilotIconShown();
-            ctrl.canSeePublisherBidModifierCell = canSeePublisherBidModifierCell;
             ctrl.canSeeBidModifierCell = canSeeBidModifierCell;
             ctrl.updateBidModifier = updateBidModifier;
             var stateValues = zemGridStateAndStatusHelpers.getStateValues(
@@ -77,26 +76,6 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 }
             }
 
-            function canSeePublisherBidModifierCell() {
-                if (
-                    !ctrl.row ||
-                    ctrl.row.level === zemGridConstants.gridRowLevel.FOOTER
-                ) {
-                    return false;
-                }
-
-                if (!ctrl.data || !ctrl.data.value) {
-                    return false;
-                }
-
-                return (
-                    getFieldType() ===
-                        zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
-                    ctrl.grid.meta.data.breakdown ===
-                        constants.breakdown.PUBLISHER
-                );
-            }
-
             function canSeeBidModifierCell() {
                 if (
                     !ctrl.row ||
@@ -111,9 +90,7 @@ angular.module('one.widgets').directive('zemGridCell', function() {
 
                 return (
                     ctrl.type ===
-                        zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
-                    ctrl.grid.meta.data.breakdown !==
-                        constants.breakdown.PUBLISHER
+                    zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD
                 );
             }
 

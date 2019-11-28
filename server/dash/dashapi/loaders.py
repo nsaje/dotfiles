@@ -1000,20 +1000,14 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
     def modifier_map(self):
         modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=self.ad_group)
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
-        return {(x.source_id, x.target): x.modifier for x in modifiers}
+        return {(x.source_id, x.target): x for x in modifiers}
 
     @cached_property
-    def bid_value_map(self):
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=self.ad_group.id).select_related("settings")
-        return {
-            ags.source_id: {
-                "bid_value": ags.settings.local_cpc_cc
-                if ags.ad_group.bidding_type == constants.BiddingType.CPC
-                else ags.settings.local_cpm,
-                "currency_symbol": core.features.multicurrency.get_currency_symbol(ags.settings.get_currency()),
-            }
-            for ags in ad_group_sources
-        }
+    def min_max_modifiers(self):
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.PUBLISHER]
+        )
+        return min_factor, max_factor
 
 
 class DeliveryLoader(Loader):

@@ -21,7 +21,6 @@ import restapi.conversion_pixel.urls
 import restapi.directdeal.urls
 import restapi.geolocation.urls
 import restapi.inventory_planning.urls
-import restapi.publisherbidmodifiers.urls
 import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
 import restapi.publishers.urls
@@ -57,7 +56,6 @@ urlpatterns += restapi.report.urls.urlpatterns
 urlpatterns += restapi.publishers.urls.urlpatterns
 urlpatterns += restapi.publishergroup.urls.urlpatterns
 urlpatterns += restapi.publishergroupentry.urls.urlpatterns
-urlpatterns += restapi.publisherbidmodifiers.urls.urlpatterns
 urlpatterns += restapi.rules.urls.urlpatterns
 urlpatterns += restapi.source.urls.urlpatterns
 

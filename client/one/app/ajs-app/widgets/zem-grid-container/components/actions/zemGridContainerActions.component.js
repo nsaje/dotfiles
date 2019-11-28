@@ -113,7 +113,16 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.entity &&
                 $ctrl.entity.type === constants.entityType.AD_GROUP &&
                 (areDeliveryBidModifierActionsVisible() ||
-                    areSourceBidModifierActionsVisible())
+                    areSourceBidModifierActionsVisible() ||
+                    arePublisherBidModifierActionsVisible())
+            );
+        }
+
+        function arePublisherBidModifierActionsVisible() {
+            return (
+                zemPermissions.hasPermission(
+                    'zemauth.can_use_publisher_bid_modifiers_in_ui'
+                ) && $ctrl.breakdown === constants.breakdown.PUBLISHER
             );
         }
 

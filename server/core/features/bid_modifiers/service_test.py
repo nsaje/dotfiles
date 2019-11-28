@@ -17,6 +17,32 @@ from . import models
 from . import service
 
 
+def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
+    """Add some non publisher bid modifiers that should not alter test results."""
+    omit_types = omit_types or set()
+    all_types = {
+        constants.BidModifierType.SOURCE,
+        constants.BidModifierType.DEVICE,
+        constants.BidModifierType.OPERATING_SYSTEM,
+        constants.BidModifierType.PLACEMENT,
+        constants.BidModifierType.COUNTRY,
+        constants.BidModifierType.STATE,
+        constants.BidModifierType.DMA,
+    }
+    included_types = all_types - omit_types
+
+    blend_kwargs = {
+        "publisher": ("somerandompub%s.com" % i for i in range(len(included_types))),
+        "modifier": 0.5,
+        "type": (t for t in included_types),
+    }
+    blend_kwargs.update(kwargs)
+    if "source" in blend_kwargs:
+        blend_kwargs["source_slug"] = blend_kwargs["source"].bidder_slug
+
+    magic_mixer.cycle(len(included_types)).blend(models.BidModifier, **blend_kwargs)
+
+
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
 class TestBidModifierService(TestCase):
     def setUp(self):
