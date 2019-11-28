@@ -95,7 +95,7 @@
             class="zem-text-form-group"
             [label]="'Adobe tracking parameter'"
             [helpMessage]="
-                'Name of the tracking parameter used for Adobe Analytics.'
+                '(Optional) Name of the tracking parameter used for Adobe Analytics.'
             "
             [value]="campaignTracking.adobe.trackingParameter"
             [maxLength]="10"
@@ -109,8 +109,12 @@
             <div
                 class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
             >
+                API reporting allows the system to automatically download
+                reports from your Adobe Analytics reporting suite. It requires
+                that you add Zemanta service integration permissions. Please see
+                the instructions below. <br />
                 <a
-                    href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"
+                    href="https://help.zemanta.com/article/show/99103-adobe-analytics-api-peformance-tracking"
                     target="_blank"
                     class="alternative-link"
                     >Download a guide to setting up Automated Adobe Analytics
