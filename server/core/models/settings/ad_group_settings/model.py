@@ -192,7 +192,7 @@ class AdGroupSettings(
     brand_name = models.CharField(max_length=25, blank=True, default="")
     description = models.CharField(max_length=140, blank=True, default="")
     call_to_action = models.CharField(max_length=25, blank=True, default="")
-    ad_group_name = models.CharField(max_length=127, blank=True, default="")
+    ad_group_name = models.CharField(max_length=256, blank=True, default="")
     autopilot_state = models.IntegerField(
         blank=True,
         null=True,

@@ -68,7 +68,7 @@ class CampaignSerializer(
     id = restapi.serializers.fields.IdField(read_only=True, source="campaign.id")
     account_id = restapi.serializers.fields.IdField(source="campaign.account_id")
     name = restapi.serializers.fields.PlainCharField(
-        max_length=127, error_messages={"required": "Please specify campaign name."}
+        max_length=256, error_messages={"required": "Please specify campaign name."}
     )
     iab_category = restapi.serializers.fields.DashConstantField(constants.IABCategory, required=False)
     language = restapi.serializers.fields.DashConstantField(constants.Language, required=False)

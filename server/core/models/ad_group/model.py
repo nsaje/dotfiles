@@ -29,7 +29,7 @@ class AdGroup(validation.AdGroupValidatorMixin, instance.AdGroupInstanceMixin, b
     _clone_fields = ["bidding_type"]
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, editable=True, blank=False, null=False)
+    name = models.CharField(max_length=256, editable=True, blank=False, null=False)
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
     sources = models.ManyToManyField("Source", through="AdGroupSource")
     bidding_type = models.IntegerField(default=constants.BiddingType.CPC, choices=constants.BiddingType.get_choices())

@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
   id                       INTEGER PRIMARY KEY,
-  name                     VARCHAR(127),
+  name                     VARCHAR(256),
   type                     VARCHAR(100)  NULL,
   account_id               INTEGER,
   real_time_campaign_stop  BOOLEAN,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CONTENT_AD (
 
 CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   id                                      integer PRIMARY KEY,
-  name                                    VARCHAR(127),
+  name                                    VARCHAR(256),
   campaign_id                             INTEGER,
   amplify_review                          BOOLEAN           NULL,
   state                                   VARCHAR(20),

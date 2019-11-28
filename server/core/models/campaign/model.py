@@ -36,7 +36,7 @@ class Campaign(
     _clone_fields = ["default_whitelist", "default_blacklist", "custom_flags"]
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, editable=True, blank=False, null=False)
+    name = models.CharField(max_length=256, editable=True, blank=False, null=False)
     type = models.IntegerField(
         default=dash.constants.CampaignType.CONTENT,
         choices=dash.constants.CampaignType.get_choices(),
