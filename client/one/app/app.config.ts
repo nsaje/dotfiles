@@ -34,7 +34,7 @@ export const APP_CONFIG = {
         [Currency.INR]: '₹',
         [Currency.JPY]: '¥',
         [Currency.CAD]: 'C$',
-        [Currency.CAD]: 'NZ$',
+        [Currency.NZD]: 'NZ$',
         [Currency.TRY]: '₺',
     },
 };
