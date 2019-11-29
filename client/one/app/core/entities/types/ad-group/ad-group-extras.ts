@@ -3,6 +3,7 @@ import {AdGroupExtrasWarnings} from './ad-group-extras-warnings';
 import {AdGroupExtrasAudience} from './ad-group-extras-audience';
 import {AdGroupExtrasRetargetableAdGroup} from './ad-group-extras-retargetable-ad-group';
 import {AdGroupExtrasDefaultSettings} from './ad-group-extras-default-settings';
+import {BidModifierTypeSummary} from '../../../bid-modifiers/types/bid-modifier-type-summary';
 import {Currency, CampaignGoalKPI} from '../../../../app.constants';
 import {Deal} from '../common/deal';
 
@@ -21,4 +22,5 @@ export interface AdGroupExtras {
     warnings: AdGroupExtrasWarnings;
     hacks: Hack[];
     deals: Deal[];
+    bidModifierTypeSummaries?: BidModifierTypeSummary[];
 }

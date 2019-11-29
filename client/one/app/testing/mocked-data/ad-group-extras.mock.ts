@@ -37,4 +37,5 @@ export const adGroupExtrasMock: AdGroupExtras = {
     },
     hacks: [],
     deals: [],
+    bidModifierTypeSummaries: null,
 };

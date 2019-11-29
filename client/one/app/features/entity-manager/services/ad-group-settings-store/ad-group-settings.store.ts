@@ -8,6 +8,8 @@ import * as clone from 'clone';
 import {AdGroupSettingsStoreState} from './ad-group-settings.store.state';
 import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
+import {BidModifiersService} from '../../../../core/bid-modifiers/services/bid-modifiers.service';
+import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 import {AdGroupWithExtras} from '../../../../core/entities/types/ad-group/ad-group-with-extras';
@@ -18,6 +20,7 @@ import {
     InterestCategory,
 } from '../../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
+import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
 import {AdGroupDayparting} from '../../../../core/entities/types/ad-group/ad-group-dayparting';
 import {OperatingSystem} from '../../../../core/entities/types/common/operating-system';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
@@ -36,12 +39,14 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     private requestStateUpdater: RequestStateUpdater;
     private dealsRequestStateUpdater: RequestStateUpdater;
     private sourcesRequestStateUpdater: RequestStateUpdater;
+    private bidModifierRequestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
     constructor(
         private adGroupService: AdGroupService,
         private dealsService: DealsService,
-        private sourcesService: SourcesService
+        private sourcesService: SourcesService,
+        private bidModifierService: BidModifiersService
     ) {
         super(new AdGroupSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -54,6 +59,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.sourcesRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'sourcesRequests'
+        );
+        this.bidModifierRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'bidModifiersRequests'
         );
     }
 
@@ -129,7 +138,19 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                             entity: adGroup,
                             fieldsErrors: new AdGroupSettingsStoreFieldsErrorsState(),
                         });
-                        resolve(true);
+                        if (
+                            commonHelpers.isDefined(
+                                this.state.bidModifiersImportFile
+                            )
+                        ) {
+                            this.importBidModifiersFile().then(
+                                (importSuccess: boolean) => {
+                                    resolve(importSuccess);
+                                }
+                            );
+                        } else {
+                            resolve(true);
+                        }
                     },
                     (error: HttpErrorResponse) => {
                         const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
@@ -550,6 +571,100 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
         this.patchState(geoTargeting, 'entity', 'targeting', 'geo');
         this.validateEntity();
+    }
+
+    handleBidModifierImportFileChange(file: File): void {
+        this.updateBidModifiersImportFile(file);
+        this.validateBidModifiersFile();
+    }
+
+    updateBidModifiersImportFile(file: File): void {
+        this.setState({
+            ...this.state,
+            bidModifiersImportFile: file,
+            bidModifiersImportSummary: null,
+            bidModifiersImportError: null,
+        });
+    }
+
+    importBidModifiersFile(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            if (!commonHelpers.isDefined(this.state.bidModifiersImportFile)) {
+                resolve(false);
+                return;
+            }
+            const adGroupId = commonHelpers.isDefined(this.state.entity.id)
+                ? parseInt(this.state.entity.id, 10)
+                : null;
+            this.bidModifierService
+                .importFromFile(
+                    adGroupId,
+                    null,
+                    this.state.bidModifiersImportFile,
+                    this.bidModifierRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (bidModifierUploadSummary: BidModifierUploadSummary) => {
+                        this.patchState(
+                            bidModifierUploadSummary,
+                            'bidModifiersImportSummary'
+                        );
+                        resolve(true);
+                    },
+                    (errorResponse: HttpErrorResponse) => {
+                        const bidModifiersImportError = storeHelpers.getStoreFieldsErrorsState(
+                            new BidModifiersImportErrorState(),
+                            errorResponse
+                        );
+                        this.patchState(
+                            bidModifiersImportError,
+                            'bidModifiersImportError'
+                        );
+                        resolve(false);
+                    }
+                );
+        });
+    }
+
+    validateBidModifiersFile(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            if (!commonHelpers.isDefined(this.state.bidModifiersImportFile)) {
+                resolve(false);
+                return;
+            }
+            const adGroupId = commonHelpers.isDefined(this.state.entity.id)
+                ? parseInt(this.state.entity.id, 10)
+                : null;
+            this.bidModifierService
+                .validateImportFile(
+                    adGroupId,
+                    null,
+                    this.state.bidModifiersImportFile,
+                    this.bidModifierRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (bidModifierUploadSummary: BidModifierUploadSummary) => {
+                        this.patchState(
+                            bidModifierUploadSummary,
+                            'bidModifiersImportSummary'
+                        );
+                        resolve(true);
+                    },
+                    (errorResponse: HttpErrorResponse) => {
+                        const bidModifiersImportError = storeHelpers.getStoreFieldsErrorsState(
+                            new BidModifiersImportErrorState(),
+                            errorResponse
+                        );
+                        this.patchState(
+                            bidModifiersImportError,
+                            'bidModifiersImportError'
+                        );
+                        resolve(false);
+                    }
+                );
+        });
     }
 
     ngOnDestroy() {
