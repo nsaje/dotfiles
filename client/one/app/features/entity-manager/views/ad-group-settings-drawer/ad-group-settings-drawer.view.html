@@ -805,6 +805,35 @@
                     ></zem-deals>
                 </div>
             </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_review_and_set_bid_modifiers_in_settings'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Bid modifiers
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-bid-modifiers-overview
+                        class="zem-bid-modifiers-overview"
+                        [adGroupId]="entityId"
+                        [bidModifierTypeSummaries]="
+                            state.extras.bidModifierTypeSummaries
+                        "
+                        [importError]="state.bidModifiersImportError"
+                        [importSummary]="state.bidModifiersImportSummary"
+                        (importFileChange)="
+                            store.handleBidModifierImportFileChange($event)
+                        "
+                    ></zem-bid-modifiers-overview>
+                </div>
+            </div>
         </div>
 
         <zem-settings-drawer-footer
@@ -822,10 +851,14 @@
             [isArchiveActionDisabled]="!state.extras.canArchive"
             [isLoading]="
                 state.requests.create.inProgress ||
-                state.requests.edit.inProgress
+                state.requests.edit.inProgress ||
+                state.bidModifiersRequests.import.inProgress ||
+                state.bidModifiersRequests.validateFile.inProgress
             "
             [hasError]="
-                state.requests.create.error || state.requests.edit.error
+                state.requests.create.error ||
+                state.requests.edit.error ||
+                state.bidModifiersRequests.import.error
             "
             (save)="saveSettings()"
             (cancel)="cancel()"

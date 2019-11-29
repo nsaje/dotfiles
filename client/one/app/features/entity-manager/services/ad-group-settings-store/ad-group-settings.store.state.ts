@@ -1,6 +1,8 @@
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
+import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
+import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
 import {RequestState} from '../../../../shared/types/request-state';
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
@@ -111,6 +113,7 @@ export class AdGroupSettingsStoreState {
         },
         hacks: [],
         deals: [],
+        bidModifierTypeSummaries: null,
     };
     sources: Source[] = [];
     availableDeals: Deal[] = [];
@@ -127,5 +130,12 @@ export class AdGroupSettingsStoreState {
         validate: {} as RequestState,
         create: {} as RequestState,
         edit: {} as RequestState,
+    };
+    bidModifiersImportFile: File = null;
+    bidModifiersImportSummary: BidModifierUploadSummary = null;
+    bidModifiersImportError: BidModifiersImportErrorState = null;
+    bidModifiersRequests = {
+        import: {} as RequestState,
+        validateFile: {} as RequestState,
     };
 }
