@@ -1,7 +1,8 @@
-from unittest.mock import patch
+from unittest import mock
 
 import django.test
 
+import core.models
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
@@ -10,7 +11,7 @@ from . import service
 
 
 class AccountStatusCacheTestCase(django.test.TestCase):
-    @patch.object(service, "get_accounts_statuses")
+    @mock.patch.object(service, "get_accounts_statuses")
     def test_refresh_accounts_statuses_cache(self, mock_get_statuses):
         mock_get_statuses.return_value = {
             1: dash.constants.AdGroupRunningStatus.ACTIVE,
@@ -39,4 +40,27 @@ class AccountStatusCacheTestCase(django.test.TestCase):
                 (5, dash.constants.AdGroupRunningStatus.INACTIVE),
                 (6, dash.constants.AdGroupRunningStatus.ACTIVE),
             ],
+        )
+
+    @mock.patch("automation.campaignstop.get_campaignstop_states")
+    def test_get_statuses(self, mock_campaignstop):
+        acc1 = magic_mixer.blend(core.models.Account, id=1)  # ag active and allowed to run
+        acc2 = magic_mixer.blend(core.models.Account, id=2)  # ag inactive and allowed to run
+        acc3 = magic_mixer.blend(core.models.Account, id=3)  # ag active and not allowed to run
+        ag1 = magic_mixer.blend(core.models.AdGroup, campaign__account=acc1)
+        ag1.settings.update_unsafe(None, state=dash.constants.AdGroupRunningStatus.ACTIVE)
+        ag2 = magic_mixer.blend(core.models.AdGroup, campaign__account=acc1)
+        ag2.settings.update_unsafe(None, state=dash.constants.AdGroupRunningStatus.INACTIVE)
+        ag3 = magic_mixer.blend(core.models.AdGroup, campaign__account=acc2)
+        ag3.settings.update_unsafe(None, state=dash.constants.AdGroupRunningStatus.INACTIVE)
+        ag4 = magic_mixer.blend(core.models.AdGroup, campaign__account=acc3)
+        ag4.settings.update_unsafe(None, state=dash.constants.AdGroupRunningStatus.ACTIVE)
+        mock_campaignstop.return_value = {
+            ag1.campaign_id: {"allowed_to_run": True},
+            ag2.campaign_id: {"allowed_to_run": True},
+            ag3.campaign_id: {"allowed_to_run": True},
+            ag4.campaign_id: {"allowed_to_run": False},
+        }
+        self.assertEqual(
+            dict(service.get_accounts_statuses([1, 2, 3])), {1: dash.constants.AdGroupRunningStatus.ACTIVE}
         )

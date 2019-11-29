@@ -8,6 +8,7 @@ from django.utils.functional import cached_property
 import automation.campaignstop
 import core.features.bcm.calculations
 import core.features.bid_modifiers.constants
+import core.features.entity_status
 import core.features.multicurrency
 import stats.constants
 import stats.helpers
@@ -178,28 +179,7 @@ class AccountsLoader(Loader):
         return settings_map
 
     def _get_status_map(self):
-        """
-        Returns dict with account_id as key and status as value
-        """
-
-        account_ids_state = (
-            models.AdGroup.objects.filter(
-                campaign__account_id__in=self.objs_ids, settings__state=constants.AdGroupRunningStatus.ACTIVE
-            )
-            .values_list("campaign_id", "campaign__account_id")
-            .distinct()
-            .order_by()
-        )  # removes default ordering to speed up the query
-        campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            models.Campaign.objects.filter(account_id__in=self.objs_ids)
-        )
-
-        status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-        for campaign_id, account_id in account_ids_state:
-            if campaignstop_states.get(campaign_id, {}).get("allowed_to_run", False):
-                status_map[account_id] = constants.AdGroupRunningStatus.ACTIVE
-
-        return status_map
+        return core.features.entity_status.get_accounts_statuses_cached(self.objs_ids)
 
     @cached_property
     def _projections(self):

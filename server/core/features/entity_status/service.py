@@ -9,11 +9,15 @@ import dash.constants
 from . import models
 
 
-def get_accounts_statuses_cached(account_ids: Iterable[int]) -> Dict[int, bool]:
-    return {
-        r["account_id"]: r["status"]
-        for r in models.AccountStatusCache.objects.filter(account_id__in=account_ids).values()
-    }
+def get_accounts_statuses_cached(account_ids: Iterable[int]) -> Dict[int, int]:
+    status_map: Dict[int, int] = collections.defaultdict(lambda: dash.constants.AdGroupRunningStatus.INACTIVE)
+    status_map.update(
+        {
+            r["account_id"]: r["status"]
+            for r in models.AccountStatusCache.objects.filter(account_id__in=account_ids).values()
+        }
+    )
+    return status_map
 
 
 def refresh_accounts_statuses_cache():

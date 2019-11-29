@@ -55,7 +55,7 @@ class AccountsLoaderTest(TestCase):
             {
                 1: {
                     "archived": False,
-                    "status": constants.AdGroupRunningStatus.ACTIVE,
+                    "status": constants.AdGroupRunningStatus.INACTIVE,
                     "default_account_manager": "mad.max@zemanta.com",
                     "default_sales_representative": "supertestuser@test.com",
                     "default_cs_representative": "supercsuser@test.com",
@@ -78,7 +78,7 @@ class AccountsLoaderTest(TestCase):
             {
                 1: {
                     "archived": False,
-                    "status": constants.AdGroupRunningStatus.ACTIVE,
+                    "status": constants.AdGroupRunningStatus.INACTIVE,
                     "default_account_manager": "mad.max@zemanta.com",
                     "default_sales_representative": "supertestuser@test.com",
                     "default_cs_representative": "supercsuser@test.com",

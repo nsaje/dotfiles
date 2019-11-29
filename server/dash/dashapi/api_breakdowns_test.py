@@ -58,7 +58,7 @@ ACCOUNT_1 = {
     "agency_id": None,
     "archived": False,
     "name": "test account 1",
-    "status": 1,
+    "status": 2,
     "default_account_manager": "mad.max@zemanta.com",
     "default_sales_representative": "supertestuser@test.com",
     "salesforce_url": "",
