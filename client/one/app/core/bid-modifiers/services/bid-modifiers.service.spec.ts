@@ -9,7 +9,7 @@ import * as clone from 'clone';
 describe('BidModifiersService', () => {
     let service: BidModifiersService;
     let endpointStub: jasmine.SpyObj<BidModifiersEndpoint>;
-    let mockedAdGroupId: number;
+    let mocketAdGroupId: number;
     let mockedBidModifier: BidModifier;
     let mockedBreakdown: Breakdown;
     let mockedFile: File;
@@ -20,10 +20,9 @@ describe('BidModifiersService', () => {
             'create',
             'edit',
             'upload',
-            'validateUpload',
         ]);
         service = new BidModifiersService(endpointStub);
-        mockedAdGroupId = 1234;
+        mocketAdGroupId = 1234;
         mockedBidModifier = {
             id: null,
             type: BidModifierType.DEVICE,
@@ -47,14 +46,14 @@ describe('BidModifiersService', () => {
             .calls.reset();
 
         service
-            .save(mockedAdGroupId, mockedBidModifier, requestStateUpdater)
+            .save(mocketAdGroupId, mockedBidModifier, requestStateUpdater)
             .subscribe(response => {
                 expect(response).toEqual(createBidModifier);
             });
 
         expect(endpointStub.create).toHaveBeenCalledTimes(1);
         expect(endpointStub.create).toHaveBeenCalledWith(
-            mockedAdGroupId,
+            mocketAdGroupId,
             mockedBidModifier,
             requestStateUpdater
         );
@@ -68,14 +67,14 @@ describe('BidModifiersService', () => {
         endpointStub.edit.and.returnValue(of(editBidModifier)).calls.reset();
 
         service
-            .save(mockedAdGroupId, editBidModifier, requestStateUpdater)
+            .save(mocketAdGroupId, editBidModifier, requestStateUpdater)
             .subscribe(response => {
                 expect(response).toEqual(editBidModifier);
             });
 
         expect(endpointStub.edit).toHaveBeenCalledTimes(1);
         expect(endpointStub.edit).toHaveBeenCalledWith(
-            mockedAdGroupId,
+            mocketAdGroupId,
             editBidModifier,
             requestStateUpdater
         );
@@ -87,7 +86,7 @@ describe('BidModifiersService', () => {
 
         service
             .importFromFile(
-                mockedAdGroupId,
+                mocketAdGroupId,
                 mockedBreakdown,
                 mockedFile,
                 requestStateUpdater
@@ -96,28 +95,7 @@ describe('BidModifiersService', () => {
 
         expect(endpointStub.upload).toHaveBeenCalledTimes(1);
         expect(endpointStub.upload).toHaveBeenCalledWith(
-            mockedAdGroupId,
-            mockedBreakdown,
-            mockedFile,
-            requestStateUpdater
-        );
-    });
-
-    it('should correctly validate bid modifiers import file', () => {
-        endpointStub.validateUpload.and.returnValue(of()).calls.reset();
-
-        service
-            .validateImportFile(
-                mockedAdGroupId,
-                mockedBreakdown,
-                mockedFile,
-                requestStateUpdater
-            )
-            .subscribe();
-
-        expect(endpointStub.validateUpload).toHaveBeenCalledTimes(1);
-        expect(endpointStub.validateUpload).toHaveBeenCalledWith(
-            mockedAdGroupId,
+            mocketAdGroupId,
             mockedBreakdown,
             mockedFile,
             requestStateUpdater

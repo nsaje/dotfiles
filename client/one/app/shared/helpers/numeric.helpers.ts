@@ -64,11 +64,12 @@ export function convertToPercentValue(
         return null;
     }
 
-    return convertNumberToPercentValue(
-        Number.parseFloat(numericValue),
-        includePercentUnit,
+    const percentValue = (Number.parseFloat(numericValue) * 100).toFixed(
         fractionSize
     );
+    return includePercentUnit
+        ? `${percentValue}${unitsHelpers.getUnitText(Unit.Percent)}`
+        : percentValue;
 }
 
 export function convertFromPercentValue(
@@ -86,15 +87,4 @@ export function convertFromPercentValue(
     return Number.parseFloat(
         (Number.parseFloat(numericValue) / 100).toFixed(maxFractionSize)
     ).toString();
-}
-
-export function convertNumberToPercentValue(
-    value: number,
-    includePercentUnit: boolean = true,
-    fractionSize: number = 2
-) {
-    const percentValue = (value * 100).toFixed(fractionSize);
-    return includePercentUnit
-        ? `${percentValue}${unitsHelpers.getUnitText(Unit.Percent)}`
-        : percentValue;
 }

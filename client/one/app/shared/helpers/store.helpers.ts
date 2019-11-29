@@ -11,9 +11,9 @@ export function getStoreRequestStateUpdater(
         store.setState({
             ...store.state,
             [requestsStateName]: {
-                ...store.state[requestsStateName],
+                ...store.state.requests,
                 [requestName]: {
-                    ...store.state[requestsStateName][requestName],
+                    ...store.state.requests[requestName],
                     ...requestState,
                 },
             },

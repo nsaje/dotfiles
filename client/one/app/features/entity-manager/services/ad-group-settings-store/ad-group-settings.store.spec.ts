@@ -7,7 +7,6 @@ import {AdGroupWithExtras} from '../../../../core/entities/types/ad-group/ad-gro
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
-import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
 import {
     InterestCategory,
     AdGroupAutopilotState,
@@ -16,14 +15,11 @@ import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {Source} from '../../../../core/sources/types/source';
-import {BidModifiersService} from '../../../../core/bid-modifiers/services/bid-modifiers.service';
-import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
-    let bidModifiersServiceStub: jasmine.SpyObj<BidModifiersService>;
     let store: AdGroupSettingsStore;
     let adGroupWithExtras: AdGroupWithExtras;
     let adGroup: AdGroup;
@@ -42,16 +38,11 @@ describe('AdGroupSettingsStore', () => {
         sourcesServiceStub = jasmine.createSpyObj(SourcesService.name, [
             'list',
         ]);
-        bidModifiersServiceStub = jasmine.createSpyObj(
-            BidModifiersService.name,
-            ['save', 'importFromFile', 'validateImportFile']
-        );
 
         store = new AdGroupSettingsStore(
             serviceStub,
             dealsServiceStub,
-            sourcesServiceStub,
-            bidModifiersServiceStub
+            sourcesServiceStub
         );
         adGroup = clone(store.state.entity);
         adGroupExtras = clone(store.state.extras);
@@ -701,176 +692,4 @@ describe('AdGroupSettingsStore', () => {
         });
         expect(store.isLocationTargetingDifferentFromDefault()).toEqual(true);
     });
-
-    it('should correctly reset bid modifiers import file import summary and error state', () => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        const mockedBidModifiersImportSummary = {} as BidModifierUploadSummary;
-        const mockedBidModifiersImportError = new BidModifiersImportErrorState();
-        store.setState({
-            ...store.state,
-            bidModifiersImportFile: mockedBidModifierImportFile,
-            bidModifiersImportSummary: mockedBidModifiersImportSummary,
-            bidModifiersImportError: mockedBidModifiersImportError,
-        });
-
-        store.updateBidModifiersImportFile(null);
-
-        expect(store.state.bidModifiersImportFile).toEqual(null);
-        expect(store.state.bidModifiersImportSummary).toEqual(null);
-        expect(store.state.bidModifiersImportError).toEqual(null);
-    });
-
-    it('should correctly reset bid modifiers import summary and error state', () => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        const mockedBidModifiersImportSummary = {} as BidModifierUploadSummary;
-        const mockedBidModifiersImportError = new BidModifiersImportErrorState();
-        store.setState({
-            ...store.state,
-            bidModifiersImportFile: null,
-            bidModifiersImportSummary: mockedBidModifiersImportSummary,
-            bidModifiersImportError: mockedBidModifiersImportError,
-        });
-
-        store.updateBidModifiersImportFile(mockedBidModifierImportFile);
-
-        expect(store.state.bidModifiersImportFile).toEqual(
-            mockedBidModifierImportFile
-        );
-        expect(store.state.bidModifiersImportSummary).toEqual(null);
-        expect(store.state.bidModifiersImportError).toEqual(null);
-    });
-
-    it('should correctly import bid modifiers file via bid modifier service', fakeAsync(() => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        const mockedBidModifierUploadSummariy: BidModifierUploadSummary = {
-            deleted: {
-                count: 0,
-                dimensions: 0,
-                summary: [],
-            },
-            created: {
-                count: 0,
-                dimensions: 0,
-                summary: [],
-            },
-        };
-        store.patchState('1', 'entity', 'id');
-        store.patchState(mockedBidModifierImportFile, 'bidModifiersImportFile');
-
-        bidModifiersServiceStub.importFromFile.and
-            .returnValue(of(mockedBidModifierUploadSummariy, asapScheduler))
-            .calls.reset();
-
-        store.importBidModifiersFile();
-        tick();
-
-        expect(bidModifiersServiceStub.importFromFile).toHaveBeenCalledTimes(1);
-        expect(
-            bidModifiersServiceStub.importFromFile.calls.mostRecent().args[1]
-        ).toEqual(null);
-        expect(store.state.bidModifiersImportSummary).toEqual(
-            mockedBidModifierUploadSummariy
-        );
-    }));
-
-    it('should correctly handle error while importing bid modifiers file via bid modifier service', fakeAsync(() => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        store.patchState('1', 'entity', 'id');
-        store.patchState(mockedBidModifierImportFile, 'bidModifiersImportFile');
-
-        bidModifiersServiceStub.importFromFile.and
-            .returnValue(
-                throwError({
-                    message: 'Validation error',
-                    error: {
-                        details: {
-                            file: 'Errors in CSV file!',
-                            errorFileUrl: 'abcdef',
-                        },
-                    },
-                })
-            )
-            .calls.reset();
-
-        store.importBidModifiersFile();
-        tick();
-
-        expect(bidModifiersServiceStub.importFromFile).toHaveBeenCalledTimes(1);
-        expect(
-            bidModifiersServiceStub.importFromFile.calls.mostRecent().args[1]
-        ).toEqual(null);
-        expect(store.state.bidModifiersImportError.errorFileUrl).toEqual(
-            'abcdef'
-        );
-    }));
-
-    it('should correctly validate bid modifiers import file via bid modifier service', fakeAsync(() => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        const mockedBidModifierUploadSummariy: BidModifierUploadSummary = {
-            deleted: {
-                count: 0,
-                dimensions: 0,
-                summary: [],
-            },
-            created: {
-                count: 0,
-                dimensions: 0,
-                summary: [],
-            },
-        };
-        store.patchState('1', 'entity', 'id');
-        store.patchState(mockedBidModifierImportFile, 'bidModifiersImportFile');
-
-        bidModifiersServiceStub.validateImportFile.and
-            .returnValue(of(mockedBidModifierUploadSummariy, asapScheduler))
-            .calls.reset();
-
-        store.validateBidModifiersFile();
-        tick();
-
-        expect(
-            bidModifiersServiceStub.validateImportFile
-        ).toHaveBeenCalledTimes(1);
-        expect(
-            bidModifiersServiceStub.validateImportFile.calls.mostRecent()
-                .args[1]
-        ).toEqual(null);
-        expect(store.state.bidModifiersImportSummary).toEqual(
-            mockedBidModifierUploadSummariy
-        );
-    }));
-
-    it('should correctly handle error while importing bid modifiers file via bid modifier service', fakeAsync(() => {
-        const mockedBidModifierImportFile = {name: 'upload.csv'} as File;
-        store.patchState('1', 'entity', 'id');
-        store.patchState(mockedBidModifierImportFile, 'bidModifiersImportFile');
-
-        bidModifiersServiceStub.validateImportFile.and
-            .returnValue(
-                throwError({
-                    message: 'Validation error',
-                    error: {
-                        details: {
-                            file: 'Errors in CSV file!',
-                            errorFileUrl: 'abcdef',
-                        },
-                    },
-                })
-            )
-            .calls.reset();
-
-        store.validateBidModifiersFile();
-        tick();
-
-        expect(
-            bidModifiersServiceStub.validateImportFile
-        ).toHaveBeenCalledTimes(1);
-        expect(
-            bidModifiersServiceStub.validateImportFile.calls.mostRecent()
-                .args[1]
-        ).toEqual(null);
-        expect(store.state.bidModifiersImportError.errorFileUrl).toEqual(
-            'abcdef'
-        );
-    }));
 });

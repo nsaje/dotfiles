@@ -25,7 +25,6 @@ import {AdGroupAutopilotStateSettingComponent} from './components/ad-group-autop
 import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group-rtb-sources-management-setting/ad-group-rtb-sources-management-setting.component';
 import {HacksComponent} from './components/hacks/hacks.component';
 import {DealsComponent} from './components/deals/deals.component';
-import {BidModifiersOverviewComponent} from './components/bid-modifiers-overview/bid-modifiers-overview.component';
 import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer/settings-drawer-footer.component';
 import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
 import {CampaignGoalsComponent} from './components/campaign-goals/campaign-goals.component';
@@ -65,7 +64,6 @@ import {DealComponent} from './components/deal/deal.component';
         AdGroupRTBSourcesManagementSettingComponent,
         HacksComponent,
         DealsComponent,
-        BidModifiersOverviewComponent,
         CampaignGoalsComponent,
         CampaignGoalComponent,
         CampaignGoalEditFormComponent,

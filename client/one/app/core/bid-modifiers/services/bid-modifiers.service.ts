@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {BidModifiersEndpoint} from './bid-modifiers.endpoint';
 import {BidModifier} from '../types/bid-modifier';
-import {BidModifierUploadSummary} from '../types/bid-modifier-upload-summary';
 import {RequestStateUpdater} from 'one/app/shared/types/request-state-updater';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
 import {Breakdown} from '../../../app.constants';
@@ -31,22 +30,8 @@ export class BidModifiersService {
         breakdown: Breakdown,
         file: File,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<BidModifierUploadSummary> {
+    ): Observable<void> {
         return this.endpoint.upload(
-            adGroupId,
-            breakdown,
-            file,
-            requestStateUpdater
-        );
-    }
-
-    validateImportFile(
-        adGroupId: number,
-        breakdown: Breakdown,
-        file: File,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<BidModifierUploadSummary> {
-        return this.endpoint.validateUpload(
             adGroupId,
             breakdown,
             file,

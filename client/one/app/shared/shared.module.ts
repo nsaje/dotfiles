@@ -51,7 +51,6 @@ import {PaginationComponent} from './components/pagination/pagination.component'
 import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
 import {LoadingOverlayComponent} from './components/smart-grid/components/loading-overlay/loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
-import {HelpPopoverHeaderComponent} from './components/smart-grid/components/header/help-popover/help-popover-header.component';
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
 import {SelectListComponent} from './components/select-list/select-list.component';
 import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
@@ -100,7 +99,6 @@ const EXPORTED_DECLARATIONS = [
     SmartGridComponent,
     LoadingOverlayComponent,
     NoRowsOverlayComponent,
-    HelpPopoverHeaderComponent,
     DealEditFormComponent,
     SelectListComponent,
 ];
@@ -120,7 +118,6 @@ const EXPORTED_DECLARATIONS = [
         AgGridModule.withComponents([
             LoadingOverlayComponent,
             NoRowsOverlayComponent,
-            HelpPopoverHeaderComponent,
         ]),
         NgbPaginationModule,
     ],
