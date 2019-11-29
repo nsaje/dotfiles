@@ -10,6 +10,7 @@ from django.db.models import Count
 from django.db.models import Max
 from django.db.models import Min
 
+from . import constants
 from . import models
 
 
@@ -27,6 +28,10 @@ def get_min_max_factors(
     excluded_types: Union[None, Sequence[int]] = None,
 ) -> Tuple[float, float]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
+
+    # TEMP(tkusterle) temporarily disable source bid modifiers
+    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
+    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
 
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)
@@ -54,6 +59,10 @@ def get_type_summaries(
     include_ones: bool = True,
 ) -> List[BidModifierTypeSummary]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
+
+    # TEMP(tkusterle) temporarily disable source bid modifiers
+    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
+    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
 
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)

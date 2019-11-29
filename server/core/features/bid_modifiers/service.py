@@ -1,12 +1,12 @@
 import csv
 import dataclasses
 import io as StringIO
-import os
 from collections import defaultdict
 from typing import Sequence
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Count
 
 from core.models.source import model as source_model
 from dash import constants as dash_constants
@@ -61,6 +61,7 @@ def set_bulk(
             bid_modifier_data.source,
             bid_modifier_data.modifier,
             user,
+            write_history=write_history,
         )
         if instance:
             instances.append(instance)
@@ -142,9 +143,44 @@ def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True, prop
 
 
 @transaction.atomic
+def delete_types(ad_group, types_list, user=None, write_history=True, propagate_to_k1=True):
+    if not types_list:
+        return
+
+    bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group.id, type__in=types_list)
+    if user:
+        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+
+    num_deleted, _ = bid_modifiers_qs.delete()
+    if write_history:
+        ad_group.write_history(
+            "Removed %s bid modifier%s." % (num_deleted, "s" if num_deleted > 1 else ""),
+            user=user,
+            action_type=dash_constants.HistoryActionType.BID_MODIFIER_DELETE,
+        )
+
+    if propagate_to_k1 and num_deleted > 0:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.delete", priority=True)
+
+    return num_deleted
+
+
+def count_types(ad_group_id, types_list, user=None):
+    if not types_list:
+        return
+
+    bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group_id, type__in=types_list)
+    if user:
+        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+
+    return bid_modifiers_qs.values("type").annotate(count=Count("type"))
+
+
+@transaction.atomic
 def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history=True, propagate_to_k1=True):
+    instances = []
     for entry in cleaned_entries:
-        set(
+        instance, _ = set(
             ad_group,
             entry["type"],
             entry["target"],
@@ -154,9 +190,12 @@ def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history
             write_history=write_history,
             propagate_to_k1=False,
         )
+        instances.append(instance)
 
     if propagate_to_k1:
         k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set_from_cleaned_entries")
+
+    return instances
 
 
 def clean_entries(entries):
@@ -229,59 +268,68 @@ def parse_csv_file_entries(csv_file, modifier_type=None):
 
         entries.append(entry)
 
-    return entries
+    return entries, modifier_type
 
 
-def process_csv_file_upload(ad_group, csv_file, modifier_type=None, user=None):
-    entries = parse_csv_file_entries(csv_file, modifier_type=modifier_type)
+def validate_csv_file_upload(ad_group_id, csv_file, modifier_type=None):
+    entries, modifier_type = parse_csv_file_entries(csv_file, modifier_type=modifier_type)
     cleaned_entries, error = clean_entries(entries)
 
     if error:
         modifier_type, target_column_name = helpers.extract_modifier_type(entries[0])
         error_csv_columns = helpers.make_csv_file_columns(modifier_type) + ["Errors"]
-        return make_and_store_csv_error_file(entries, error_csv_columns, ad_group.id)
+        return [], modifier_type, make_and_store_csv_error_file(entries, error_csv_columns, ad_group_id)
 
-    set_from_cleaned_entries(ad_group, cleaned_entries, user=user)
-    return None
+    return cleaned_entries, modifier_type, None
 
 
-def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
+def process_csv_file_upload(ad_group, csv_file, modifier_type=None, user=None):
+    cleaned_entries, modifier_type, csv_error_key = validate_csv_file_upload(
+        ad_group, csv_file, modifier_type=modifier_type
+    )
+
+    if csv_error_key is not None:
+        return 0, [], csv_error_key
+
+    with transaction.atomic():
+        number_of_deleted = delete_types(
+            ad_group, [modifier_type], user=user, write_history=False, propagate_to_k1=False
+        )
+        created_instances = set_from_cleaned_entries(
+            ad_group, cleaned_entries, user=user, write_history=False, propagate_to_k1=False
+        )
+        _write_upload_history(ad_group, number_of_deleted, len(created_instances), user=user)
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
+
+    return number_of_deleted, created_instances, None
+
+
+def validate_bulk_csv_file_upload(ad_group_id, bulk_csv_file):
     sub_files = helpers.split_bulk_csv_file(bulk_csv_file)
     entries_list = []
 
     for sub_file in sub_files:
         try:
-            entries_list.append(parse_csv_file_entries(sub_file))
+            entries_list.append(parse_csv_file_entries(sub_file)[0])
         except exceptions.InvalidBidModifierFile as e:
             entries_list.append(e)
 
     overall_error = False
-    cleaned_entries_list = []
+    cleaned_entries = []
 
     for entries in entries_list:
         if isinstance(entries, exceptions.InvalidBidModifierFile):
             overall_error = True
         else:
-            cleaned_entries, error = clean_entries(entries)
+            cleaned_entries_for_type, error = clean_entries(entries)
 
             if error:
                 overall_error = True
 
-            cleaned_entries_list.append(cleaned_entries)
+            cleaned_entries.extend(cleaned_entries_for_type)
 
     if not overall_error:
-        set_from_cleaned_entries(
-            ad_group,
-            [
-                e
-                for cleaned_entries in cleaned_entries_list
-                for e in cleaned_entries
-                # TEMP(tkusterle) temporarily disable source bid modifiers
-                if e["type"] != constants.BidModifierType.SOURCE
-            ],
-            user=user,
-        )
-        return None
+        return cleaned_entries, None
 
     def sub_file_generator(entries_list, sub_files):
         for idx, entries in enumerate(entries_list):
@@ -300,14 +348,39 @@ def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
 
     csv_error_key = helpers.create_csv_error_key()
 
-    csv_error_content = helpers.create_bulk_csv_file(sub_file_generator(entries_list, sub_files))
+    csv_error_content = helpers.create_bulk_csv_file(sub_file_generator(entries_list, sub_files)).getvalue()
 
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
-    s3_helper.put(
-        os.path.join("bid_modifier_errors", "ad_group_{}".format(ad_group.id), csv_error_key + ".csv"),
-        csv_error_content,
-    )
-    return csv_error_key
+    s3_helper.put(helpers.create_error_file_path(ad_group_id, csv_error_key), csv_error_content)
+    return [], csv_error_key
+
+
+def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
+    cleaned_entries, csv_error_key = validate_bulk_csv_file_upload(ad_group, bulk_csv_file)
+
+    if csv_error_key:
+        return 0, [], csv_error_key
+
+    with transaction.atomic():
+        # TEMP(tkusterle) temporarily disable source bid modifiers
+        all_types = set_built_in(constants.BidModifierType.get_all()) - {constants.BidModifierType.SOURCE}
+        number_of_deleted = delete_types(ad_group, all_types, user=user, write_history=False, propagate_to_k1=False)
+        created_instances = set_from_cleaned_entries(
+            ad_group,
+            [
+                e
+                for e in cleaned_entries
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                if e["type"] != constants.BidModifierType.SOURCE
+            ],
+            user=user,
+            write_history=False,
+            propagate_to_k1=False,
+        )
+        _write_upload_history(ad_group, number_of_deleted, len(created_instances), user=user)
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
+
+    return number_of_deleted, created_instances, None
 
 
 def make_csv_file(modifier_type, cleaned_entries):
@@ -357,10 +430,7 @@ def make_and_store_csv_error_file(entries, csv_columns, ad_group_id):
     csv_error_key = helpers.create_csv_error_key()
 
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
-    s3_helper.put(
-        os.path.join("bid_modifier_errors", "ad_group_{}".format(ad_group_id), csv_error_key + ".csv"),
-        csv_error_content,
-    )
+    s3_helper.put(helpers.create_error_file_path(ad_group_id, csv_error_key), csv_error_content)
 
     return csv_error_key
 
@@ -420,3 +490,16 @@ def make_bulk_csv_example_file():
             yield make_csv_example_file(modifier_type)
 
     return helpers.create_bulk_csv_file(sub_file_generator())
+
+
+def _write_upload_history(ad_group, number_of_deleted, number_of_created, user=None):
+    messages = ["Uploaded bid modifiers."]
+
+    if number_of_deleted > 0:
+        messages.append("Removed %s bid modifier%s." % (number_of_deleted, "s" if number_of_deleted > 1 else ""))
+    if number_of_created > 0:
+        messages.append("Created %s bid modifier%s." % (number_of_created, "s" if number_of_created > 1 else ""))
+
+    ad_group.write_history(
+        " ".join(messages), user=user, action_type=dash_constants.HistoryActionType.BID_MODIFIER_UPDATE
+    )

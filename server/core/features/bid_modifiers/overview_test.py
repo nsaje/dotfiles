@@ -200,7 +200,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_min_factor = _multiply_modifiers(
             min,
             self.ag_test_publisher_2,
-            self.ag_test_source_1,
+            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
             self.ag_test_placement_1,
@@ -212,7 +212,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_max_factor = _multiply_modifiers(
             max,
             self.ag_test_publisher_3,
-            self.ag_test_source_4,
+            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
             self.ag_test_placement_2,
@@ -229,10 +229,16 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
 
     def test_included_types(self):
         expected_min_factor = _multiply_modifiers(
-            min, self.ag_test_source_1, self.ag_test_operating_system_4, self.ag_test_country_4
+            min,
+            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_operating_system_4,
+            self.ag_test_country_4,
         )
         expected_max_factor = _multiply_modifiers(
-            max, self.ag_test_source_4, self.ag_test_operating_system_3, self.ag_test_country_2
+            max,
+            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_operating_system_3,
+            self.ag_test_country_2,
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
@@ -289,7 +295,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_min_factor = _multiply_modifiers(
             min,
             self.ag_test_publisher_2,
-            self.ag_test_source_1,
+            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
             self.ag_test_placement_1,
@@ -301,7 +307,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_max_factor = _multiply_modifiers(
             max,
             self.ag_test_publisher_3,
-            self.ag_test_source_4,
+            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
             self.ag_test_placement_2,
@@ -337,9 +343,9 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                 bid_modifiers.BidModifierTypeSummary(
                     count=3, max=1.15, min=0.11, type=bid_modifiers.BidModifierType.PUBLISHER
                 ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                ),
+                # bid_modifiers.BidModifierTypeSummary(
+                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
                 bid_modifiers.BidModifierTypeSummary(
                     count=2, max=1.32, min=0.13, type=bid_modifiers.BidModifierType.DEVICE
                 ),
@@ -371,9 +377,9 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                 bid_modifiers.BidModifierTypeSummary(
                     count=3, max=1.15, min=0.11, type=bid_modifiers.BidModifierType.PUBLISHER
                 ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                ),
+                # bid_modifiers.BidModifierTypeSummary(
+                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
                 bid_modifiers.BidModifierTypeSummary(
                     count=2, max=1.32, min=0.13, type=bid_modifiers.BidModifierType.DEVICE
                 ),
@@ -409,9 +415,9 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                 ],
             ),
             [
-                bid_modifiers.BidModifierTypeSummary(
-                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                ),
+                # bid_modifiers.BidModifierTypeSummary(
+                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
                 bid_modifiers.BidModifierTypeSummary(
                     count=5, max=2.1, min=0.02, type=bid_modifiers.BidModifierType.OPERATING_SYSTEM
                 ),
@@ -458,18 +464,18 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
             bid_modifiers.get_type_summaries(
                 self.ad_group.id,
                 included_types=[
-                    bid_modifiers.BidModifierType.SOURCE,
+                    # bid_modifiers.BidModifierType.SOURCE,
                     bid_modifiers.BidModifierType.OPERATING_SYSTEM,
                     bid_modifiers.BidModifierType.COUNTRY,
                 ],
                 excluded_types=[bid_modifiers.BidModifierType.OPERATING_SYSTEM],
             ),
             [
-                bid_modifiers.BidModifierTypeSummary(
-                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                ),
+                # bid_modifiers.BidModifierTypeSummary(
+                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
                 bid_modifiers.BidModifierTypeSummary(
                     count=5, max=2.1, min=0.49, type=bid_modifiers.BidModifierType.COUNTRY
-                ),
+                )
             ],
         )

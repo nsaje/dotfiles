@@ -1,12 +1,11 @@
 import codecs
-import os
 
 from django.conf import settings
 from rest_framework import permissions
 from rest_framework import serializers
 from rest_framework.parsers import MultiPartParser
-from rest_framework.response import Response
 
+import core.models
 import restapi
 from core.features import bid_modifiers
 from restapi.common import permissions as restapi_permissions
@@ -27,7 +26,9 @@ class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
             cleaned_modifiers = bid_modifiers.service.get(ad_group, include_types=[modifier_type])
             csv_content = bid_modifiers.service.make_csv_file(modifier_type, cleaned_modifiers)
         else:
-            cleaned_modifiers = bid_modifiers.service.get(ad_group)
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            temp_exclude_types = [bid_modifiers.BidModifierType.SOURCE]
+            cleaned_modifiers = bid_modifiers.service.get(ad_group, exclude_types=temp_exclude_types)
             csv_content = bid_modifiers.service.make_bulk_csv_file(cleaned_modifiers)
 
         return csv_utils.create_csv_response(data=csv_content, filename="bid_modifiers_export")
@@ -36,6 +37,54 @@ class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
 class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
     parser_classes = (MultiPartParser,)
+
+    def validate_new(self, request, breakdown_name=None):
+        return self._validate(request, ad_group_id=None, breakdown_name=breakdown_name)
+
+    def validate(self, request, ad_group_id, breakdown_name=None):
+        _ = restapi.access.get_ad_group(request.user, ad_group_id)
+        return self._validate(request, ad_group_id=ad_group_id, breakdown_name=breakdown_name)
+
+    def _validate(self, request, ad_group_id=None, breakdown_name=None):
+        csv_file = codecs.iterdecode(request.data["file"], "utf-8")
+
+        try:
+            if breakdown_name:
+                modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
+
+                cleaned_entries, _, csv_error_key = bid_modifiers.service.validate_csv_file_upload(
+                    ad_group_id, csv_file, modifier_type=modifier_type
+                )
+
+                delete_type_counts = (
+                    bid_modifiers.count_types(ad_group_id, [modifier_type], user=request.user)
+                    if ad_group_id is not None
+                    else {}
+                )
+            else:
+                cleaned_entries, csv_error_key = bid_modifiers.service.validate_bulk_csv_file_upload(
+                    ad_group_id, csv_file
+                )
+
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                all_types = set(bid_modifiers.BidModifierType.get_all()) - {bid_modifiers.BidModifierType.SOURCE}
+                delete_type_counts = (
+                    bid_modifiers.count_types(ad_group_id, all_types, user=request.user)
+                    if ad_group_id is not None
+                    else {}
+                )
+
+            if csv_error_key:
+                raise serializers.ValidationError({"file": "Errors in CSV file!", "errorFileUrl": csv_error_key})
+
+        except bid_modifiers.exceptions.InvalidBidModifierFile as exc:
+            raise serializers.ValidationError({"file": str(exc)})
+
+        return self.response_ok(
+            bid_modifiers.helpers.create_upload_summary_response(
+                delete_type_counts, [bid_modifiers.BidModifierData(**e) for e in cleaned_entries]
+            )
+        )
 
     def upload(self, request, ad_group_id, breakdown_name=None):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
@@ -46,11 +95,16 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
             if breakdown_name:
                 modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
 
-                csv_error_key = bid_modifiers.service.process_csv_file_upload(
+                number_of_deleted, instances, csv_error_key = bid_modifiers.service.process_csv_file_upload(
                     ad_group, csv_file, modifier_type=modifier_type, user=request.user
                 )
+                delete_type_counts = [{"type": modifier_type, "count": number_of_deleted}]
             else:
-                csv_error_key = bid_modifiers.service.process_bulk_csv_file_upload(
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                all_types = set(bid_modifiers.BidModifierType.get_all()) - {bid_modifiers.BidModifierType.SOURCE}
+                delete_type_counts = bid_modifiers.count_types(ad_group, all_types, user=request.user)
+
+                number_of_deleted, instances, csv_error_key = bid_modifiers.service.process_bulk_csv_file_upload(
                     ad_group, csv_file, user=request.user
                 )
 
@@ -60,19 +114,23 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
         except bid_modifiers.exceptions.InvalidBidModifierFile as exc:
             raise serializers.ValidationError({"file": str(exc)})
 
-        return Response({}, status=200)
+        return self.response_ok(bid_modifiers.helpers.create_upload_summary_response(delete_type_counts, instances))
 
 
 class BidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
     def download(self, request, ad_group_id, csv_error_key):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        _ = restapi.access.get_ad_group(request.user, ad_group_id)
 
+        return self._download(request, ad_group_id, csv_error_key)
+
+    def download_new(self, request, csv_error_key):
+        return self._download(request, None, csv_error_key)
+
+    def _download(self, request, ad_group_id, csv_error_key):
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
-        content = s3_helper.get(
-            os.path.join("bid_modifier_errors", "ad_group_{}".format(ad_group.id), csv_error_key + ".csv")
-        )
+        content = s3_helper.get(bid_modifiers.create_error_file_path(ad_group_id, csv_error_key))
 
         return csv_utils.create_csv_response(data=content, filename="bid_modifiers_errors")
 
@@ -92,3 +150,18 @@ class BidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSe
             csv_example_file = bid_modifiers.service.make_bulk_csv_example_file()
 
         return csv_utils.create_csv_response(data=csv_example_file, filename="example_bid_modifiers")
+
+
+class BidModifierTypeSummariesViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+
+    def retrieve(self, request, ad_group_id):
+        try:
+            ad_group = core.models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+        except core.models.AdGroup.DoesNotExist:
+            raise util_exc.MissingDataError("Ad Group does not exist")
+
+        type_summaries = bid_modifiers.overview.get_type_summaries(ad_group.id)
+        return self.response_ok(
+            restapi.serializers.bid_modifiers.BidModifierTypeSummary(type_summaries, many=True).data
+        )

@@ -101,6 +101,9 @@ class DeliveryAugmenterTest(TestCase):
             0.5,
             bid_modifiers.BidModifier.objects.filter(ad_group=ad_group)
             .exclude(type=bid_modifiers.BidModifierType.DEVICE)
+            .exclude(
+                type=bid_modifiers.BidModifierType.SOURCE
+            )  # TEMP(tkusterle) temporarily disable source bid modifiers
             .count(),
         )
         self.expected_max = 1.0

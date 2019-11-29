@@ -2,8 +2,10 @@ import csv
 import decimal
 import io as StringIO
 import numbers
+import os
 import random
 import string
+from collections import Counter
 
 from django.core.exceptions import ValidationError
 
@@ -230,3 +232,31 @@ def split_bulk_csv_file(bulk_csv_file):
         sub_files.append(sub_file)
 
     return sub_files
+
+
+def create_upload_summary_response(delete_type_counts, instances):
+    delete_types_counter = {e["type"]: e["count"] for e in delete_type_counts if e["count"] > 0}
+    types_counter = Counter(i.type for i in instances)
+    return {
+        "deleted": {
+            "count": sum(delete_types_counter.values()),
+            "dimensions": len(delete_types_counter),
+            "summary": [
+                {"type": constants.BidModifierType.get_name(t), "count": c}
+                for t, c in sorted(delete_types_counter.items(), key=lambda x: x[0])
+            ],
+        },
+        "created": {
+            "count": len(instances),
+            "dimensions": len(types_counter),
+            "summary": [
+                {"type": constants.BidModifierType.get_name(t), "count": c}
+                for t, c in sorted(types_counter.items(), key=lambda x: x[0])
+            ],
+        },
+    }
+
+
+def create_error_file_path(ad_group_id, csv_error_key):
+    ad_group_string = "ad_group_{}".format(ad_group_id) if ad_group_id is not None else "temporary"
+    return os.path.join("bid_modifier_errors", ad_group_string, csv_error_key + ".csv")

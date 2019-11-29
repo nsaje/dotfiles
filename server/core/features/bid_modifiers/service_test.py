@@ -536,7 +536,7 @@ class TestBidModifierService(TestCase):
         for modifier_type in constants.BidModifierType.get_all():
             input_csv_file = service.make_csv_example_file(modifier_type)
 
-            entries = service.parse_csv_file_entries(input_csv_file)
+            entries, _ = service.parse_csv_file_entries(input_csv_file)
             cleaned_entries, has_error = service.clean_entries(entries)
             self.assertFalse(has_error)
 
@@ -635,7 +635,7 @@ class TestBidModifierService(TestCase):
             writer.writerows([entry])
             csv_file.seek(0)
 
-            entries = service.parse_csv_file_entries(csv_file)
+            entries, _ = service.parse_csv_file_entries(csv_file)
             cleaned_entries, has_error = service.clean_entries(entries)
             self.assertEqual(has_error, result_entires[idx]["Errors"] != "")
 
