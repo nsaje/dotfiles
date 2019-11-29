@@ -2644,10 +2644,16 @@ angular
                     COLUMNS.conversionCount,
                     {
                         restApiName: name,
-                        name: 'Conversions (' + attribution + ')',
+                        name:
+                            'Conversions / ' +
+                            attribution +
+                            '(' +
+                            pixel.name +
+                            ')',
                         help: conversionsHelp,
                         window: window.value,
-                        attribution: attributionSuffix,
+                        attribution: attribution,
+                        performance: 'Conversions',
                         pixel: pixel.prefix,
                         field: conversionsField,
                         shown: true,
@@ -2656,9 +2662,10 @@ angular
                 );
                 var cpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
                     restApiName: 'CPA (' + name + ')',
-                    name: 'CPA (' + attribution + ')',
+                    name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
                     window: window.value,
-                    attribution: attributionSuffix,
+                    attribution: attribution,
+                    performance: 'CPA',
                     pixel: pixel.prefix,
                     field: cpaField,
                     shown: true,
@@ -2667,9 +2674,15 @@ angular
                 });
                 var etCpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
                     restApiName: 'Platform CPA (' + name + ')',
-                    name: 'Platform CPA (' + attribution + ')',
+                    name:
+                        'Platform CPA /' +
+                        attribution +
+                        ' (' +
+                        pixel.name +
+                        ')',
                     window: window.value,
-                    attribution: attributionSuffix,
+                    attribution: attribution,
+                    performance: 'Platform CPA',
                     pixel: pixel.prefix,
                     field: AVG_ET_COST_PREFIX + pixelSuffix,
                     shown: 'zemauth.can_view_platform_cost_breakdown_derived',
@@ -2684,10 +2697,11 @@ angular
                     COLUMNS.conversionCpa,
                     {
                         restApiName: 'CPA (' + name + ')',
-                        name: 'CPA (' + attribution + ')',
+                        name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
                         help: cpaHelp,
                         window: window.value,
-                        attribution: attributionSuffix,
+                        attribution: attribution,
+                        performance: 'CPA',
                         pixel: pixel.prefix,
                         field: AVG_ETFM_COST_PREFIX + pixelSuffix,
                         shown: 'zemauth.can_view_end_user_cost_breakdown',
@@ -2700,9 +2714,10 @@ angular
 
                 var roasNewColumn = Object.assign({}, COLUMNS.conversionRoas, {
                     restApiName: 'ROAS (' + name + ')',
-                    name: 'ROAS (' + attribution + ')',
+                    name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
                     window: window.value,
-                    attribution: attributionSuffix,
+                    attribution: attribution,
+                    performance: 'ROAS',
                     pixel: pixel.prefix,
                     field: roasField,
                     shown: 'zemauth.fea_can_see_roas',
@@ -2714,9 +2729,10 @@ angular
                     COLUMNS.conversionRoas,
                     {
                         restApiName: 'Platform ROAS (' + name + ')',
-                        name: 'ROAS (' + attribution + ')',
+                        name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
                         window: window.value,
-                        attribution: attributionSuffix,
+                        attribution: attribution,
+                        performance: 'Platform ROAS',
                         pixel: pixel.prefix,
                         field: ROAS_PREFIX + pixelSuffix,
                         shown: [
@@ -2733,9 +2749,10 @@ angular
                     COLUMNS.conversionRoas,
                     {
                         restApiName: 'ROAS (' + name + ')',
-                        name: 'ROAS (' + attribution + ')',
+                        name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
                         window: window.value,
-                        attribution: attributionSuffix,
+                        attribution: attribution,
+                        performance: 'ROAS',
                         pixel: pixel.prefix,
                         field: ETFM_ROAS_PREFIX + pixelSuffix,
                         shown: [

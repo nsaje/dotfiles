@@ -1,102 +1,105 @@
-<div class="zem-attribution-column-picker__item">
-    <div class="zem-attribution-column-picker__subtitle">Conversion pixel:</div>
-    <zem-select-input
-        class="zem-select-input"
-        [items]="pixelColumns"
-        [placeholder]="'Select pixel'"
-        [value]="selectedPixel?.name"
-        [bindLabel]="'name'"
-        [bindValue]="'name'"
-        [isClearable]="false"
-        (valueChange)="onSelectedPixelChange($event)"
-    >
-    </zem-select-input>
-</div>
-<div class="zem-attribution-column-picker__item">
-    <div
-        class="zem-attribution-column-picker__subtitle"
-        *ngIf="availableColumns.length > 0"
-    >
-        Columns:
+<ng-container *ngIf="(store.state$ | async) as state">
+    <div class="zem-attribution-column-picker__item">
+        <div class="zem-attribution-column-picker__subtitle">
+            Conversion pixel:
+        </div>
+        <zem-select-input
+            class="zem-select-input"
+            [items]="pixelColumns"
+            [placeholder]="'Select pixels'"
+            [value]="pixelsNames"
+            [bindLabel]="'name'"
+            [bindValue]="'name'"
+            [isMultiple]="true"
+            (valueChange)="onPixelChange($event)"
+        >
+        </zem-select-input>
     </div>
-    <zem-checkbox-input
-        *ngFor="let column of availableColumns"
-        class="zem-checkbox-input"
-        [isChecked]="column.visible"
-        (toggle)="onColumnToggled($event, column)"
-    >
-        {{ column.data.name }}
-    </zem-checkbox-input>
-</div>
-<div class="zem-attribution-column-picker__item">
-    <span class="zem-attribution-column-picker__subtitle">
-        Attribution lookback window:
-    </span>
-    <span
-        class="zem-attribution-column-picker__link"
-        *ngIf="CLICK_CONVERSION_WINDOWS.length > 1"
-        #clickConversionWindowPopover="zemPopover"
-        [zemPopover]="clickConversionWindowPopoverTemplate"
-        [popoverTitle]="'Click lookback window'"
-        autoClose="outside"
-        placement="top-left"
-        triggers="manual"
-        (click)="clickConversionWindowPopover.open()"
-    >
-        <ng-template #clickConversionWindowPopoverTemplate>
-            <zem-attribution-lookback-window-picker
-                class="zem-attribution-lookback-window-picker"
-                [conversionWindows]="CLICK_CONVERSION_WINDOWS"
-                [selectedConversionWindow]="selectedClickConversionWindow"
-                (changeWindow)="
-                    [
-                        clickConversionWindowPopover.close(),
-                        onClickConversionWindowChange($event)
-                    ]
-                "
-            >
-            </zem-attribution-lookback-window-picker>
-        </ng-template>
-        {{ selectedClickConversionWindow.name }} click
-    </span>
-    <span
-        class="zem-attribution-column-picker__link--disabled"
-        *ngIf="CLICK_CONVERSION_WINDOWS.length === 1"
-    >
-        {{ selectedClickConversionWindow.name }} click
-    </span>
-    and
-    <span
-        class="zem-attribution-column-picker__link"
-        *ngIf="VIEW_CONVERSION_WINDOWS.length > 1"
-        #viewConversionWindowPopover="zemPopover"
-        [zemPopover]="viewConversionWindowPopoverTemplate"
-        [popoverTitle]="'View lookback window'"
-        autoClose="outside"
-        placement="top-right"
-        triggers="manual"
-        (click)="viewConversionWindowPopover.open()"
-    >
-        <ng-template #viewConversionWindowPopoverTemplate>
-            <zem-attribution-lookback-window-picker
-                class="zem-attribution-lookback-window-picker"
-                [conversionWindows]="VIEW_CONVERSION_WINDOWS"
-                [selectedConversionWindow]="selectedViewConversionWindow"
-                (changeWindow)="
-                    [
-                        selectedConversionWindow.close(),
-                        onViewConversionWindowChange($event)
-                    ]
-                "
-            >
-            </zem-attribution-lookback-window-picker>
-        </ng-template>
-        {{ selectedViewConversionWindow.name }} view
-    </span>
-    <span
-        class="zem-attribution-column-picker__link--disabled"
-        *ngIf="VIEW_CONVERSION_WINDOWS.length === 1"
-    >
-        {{ selectedViewConversionWindow.name }} view
-    </span>
-</div>
+
+    <div class="zem-attribution-column-picker__item">
+        <div class="zem-attribution-column-picker__subtitle">Columns:</div>
+        <zem-checkbox-input
+            *ngFor="let metrics of METRICS_OPTIONS"
+            class="zem-checkbox-input"
+            [isChecked]="isMetricsSelected(metrics)"
+            (toggle)="onMetricToggle($event, metrics)"
+        >
+            {{ metrics.performance }} ({{ metrics.attribution }})
+        </zem-checkbox-input>
+    </div>
+
+    <div class="zem-attribution-column-picker__item">
+        <span class="zem-attribution-column-picker__subtitle">
+            Attribution lookback window:
+        </span>
+        <span
+            class="zem-attribution-column-picker__link"
+            *ngIf="CLICK_CONVERSION_WINDOWS.length > 1"
+            #clickConversionWindowPopover="zemPopover"
+            [zemPopover]="clickConversionWindowPopoverTemplate"
+            [popoverTitle]="'Click lookback window'"
+            autoClose="outside"
+            placement="top-left"
+            triggers="manual"
+            (click)="clickConversionWindowPopover.open()"
+        >
+            <ng-template #clickConversionWindowPopoverTemplate>
+                <zem-attribution-lookback-window-picker
+                    class="zem-attribution-lookback-window-picker"
+                    [conversionWindows]="CLICK_CONVERSION_WINDOWS"
+                    [selectedConversionWindow]="state.clickConversionWindow"
+                    (changeWindow)="
+                        [
+                            clickConversionWindowPopover.close(),
+                            onClickConversionWindowChange($event)
+                        ]
+                    "
+                >
+                </zem-attribution-lookback-window-picker>
+            </ng-template>
+            {{ state.clickConversionWindow.name }} click
+        </span>
+        <span
+            class="zem-attribution-column-picker__link--disabled"
+            *ngIf="CLICK_CONVERSION_WINDOWS.length === 1"
+        >
+            {{ state.clickConversionWindow.name }} click
+        </span>
+        and
+        <span
+            class="zem-attribution-column-picker__link"
+            *ngIf="VIEW_CONVERSION_WINDOWS.length > 1"
+            #viewConversionWindowPopover="zemPopover"
+            [zemPopover]="viewConversionWindowPopoverTemplate"
+            [popoverTitle]="'View lookback window'"
+            autoClose="outside"
+            placement="top-right"
+            triggers="manual"
+            (click)="viewConversionWindowPopover.open()"
+        >
+            <ng-template #viewConversionWindowPopoverTemplate>
+                <zem-attribution-lookback-window-picker
+                    class="zem-attribution-lookback-window-picker"
+                    [conversionWindows]="VIEW_CONVERSION_WINDOWS"
+                    [selectedConversionWindow]="
+                        store.state.viewConversionWindow
+                    "
+                    (changeWindow)="
+                        [
+                            viewConversionWindowPopover.close(),
+                            onViewConversionWindowChange($event)
+                        ]
+                    "
+                >
+                </zem-attribution-lookback-window-picker>
+            </ng-template>
+            {{ state.viewConversionWindow.name }} view
+        </span>
+        <span
+            class="zem-attribution-column-picker__link--disabled"
+            *ngIf="VIEW_CONVERSION_WINDOWS.length === 1"
+        >
+            {{ state.viewConversionWindow.name }} view
+        </span>
+    </div>
+</ng-container>
