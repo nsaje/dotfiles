@@ -236,7 +236,7 @@ def split_bulk_csv_file(bulk_csv_file):
 
 def create_upload_summary_response(delete_type_counts, instances):
     delete_types_counter = {e["type"]: e["count"] for e in delete_type_counts if e["count"] > 0}
-    types_counter = Counter(i.type for i in instances)
+    types_counter = Counter(i.type for i in instances if i is not None)
     return {
         "deleted": {
             "count": sum(delete_types_counter.values()),
@@ -247,7 +247,7 @@ def create_upload_summary_response(delete_type_counts, instances):
             ],
         },
         "created": {
-            "count": len(instances),
+            "count": sum(types_counter.values()),
             "dimensions": len(types_counter),
             "summary": [
                 {"type": constants.BidModifierType.get_name(t), "count": c}

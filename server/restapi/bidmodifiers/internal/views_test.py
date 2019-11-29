@@ -101,6 +101,65 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
 
         self.assertEqual([row for row in csv_reader], entries)  # The last two entries were ignored.
 
+    def test_upload_and_download_modifiers_equal_to_one(self):
+        csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")
+        target_column_name = bid_modifiers.helpers.output_modifier_type(
+            bid_modifiers.constants.BidModifierType.PUBLISHER
+        )
+        csv_columns = [target_column_name, "Source Slug", "Bid Modifier"]
+        entries = [{target_column_name: "example.com", "Source Slug": self.source.bidder_slug, "Bid Modifier": "1.0"}]
+
+        csv_writer = csv.DictWriter(csv_file, csv_columns)
+        csv_writer.writeheader()
+        csv_writer.writerows(entries)
+        csv_file.seek(0)
+
+        response = self.client.post(
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
+            {"file": csv_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "data": {
+                    "deleted": {"count": 0, "dimensions": 0, "summary": []},
+                    "created": {"count": 0, "dimensions": 0, "summary": []},
+                }
+            },
+        )
+
+        updated_modifiers = bid_modifiers.service.get(self.ad_group)
+        self.assertEqual(len(updated_modifiers), 0)
+
+        self.assertEqual(bid_modifiers.service.get(self.ad_group), [])
+
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_download",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+
+        csv_reader = csv.DictReader(io.StringIO(response.content.decode("utf8")))
+
+        self.assertEqual([row for row in csv_reader], [])
+
     def test_validate_upload_modifiers(self):
         csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")
         target_column_name = bid_modifiers.helpers.output_modifier_type(
