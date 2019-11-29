@@ -14,6 +14,7 @@ from core.features.multicurrency import *
 from core.features.yahoo_accounts.models import *
 from core.features.deals import *
 from core.features.videoassets.models import *
+from core.features.entity_status.models import *
 
 # Core helpers
 from core.features.bcm.helpers import *
