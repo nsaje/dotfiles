@@ -7,10 +7,7 @@ import random
 import string
 from collections import Counter
 
-from django.core.exceptions import ValidationError
-
 from stats import constants as stats_constants
-from utils import validation_helper
 
 from . import constants
 from . import converters
@@ -138,31 +135,10 @@ def clean_bid_modifier_value_input(modifier, errors):
 
 
 def validate_publisher(publisher):
-    if not publisher:
+    if not publisher.strip():
         raise exceptions.BidModifierTargetInvalid("Publisher should not be empty")
 
-    errors = []
-
-    publisher = publisher.strip()
-    prefixes = ("http://", "https://")
-    if any(publisher.startswith(x) for x in prefixes):
-        errors.append("Remove the following prefixes: http, https")
-
-        for prefix in ("http://", "https://"):
-            publisher = publisher.replace(prefix, "")
-
-    if "/" in publisher:
-        errors.append("Publisher should not contain /")
-
-    if errors:
-        raise exceptions.BidModifierTargetInvalid("; ".join(errors))
-
-    try:
-        validation_helper.validate_domain_name(publisher)
-    except ValidationError as exc:
-        raise exceptions.BidModifierTargetInvalid(str(exc.message))
-
-    return publisher.lower()
+    return publisher.strip().lower()
 
 
 def clean_target_input(input_value, modifier_type, errors):

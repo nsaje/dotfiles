@@ -348,14 +348,9 @@ class TestBidModifierService(TestCase):
 
         entries = [
             {
-                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "https://example.com",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "",
                 "Source Slug": "bad_slug",
                 "Bid Modifier": 12.0,
-            },
-            {
-                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example2.com/",
-                "Source Slug": "some_slug",
-                "Bid Modifier": 0.0,
             },
             {
                 helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example3.com",
@@ -377,15 +372,11 @@ class TestBidModifierService(TestCase):
         self.assertEqual(has_error, True)
         self.assertEqual(
             entries[0]["Errors"],
-            "%s; Invalid Source Slug; Remove the following prefixes: http, https"
-            % helpers._get_modifier_bounds_error_message(12.0),
+            "%s; Invalid Source Slug; Publisher should not be empty" % helpers._get_modifier_bounds_error_message(12.0),
         )
-        self.assertEqual(
-            entries[1]["Errors"], "%s; Publisher should not contain /" % helpers._get_modifier_bounds_error_message(0.0)
-        )
-        self.assertEqual(entries[2]["Errors"], "Invalid Bid Modifier")
-        self.assertEqual(entries[3]["Errors"], "'all publishers' can not have a bid modifier set")
-        self.assertEqual(entries[4]["Errors"], "Invalid Device Type")
+        self.assertEqual(entries[1]["Errors"], "Invalid Bid Modifier")
+        self.assertEqual(entries[2]["Errors"], "'all publishers' can not have a bid modifier set")
+        self.assertEqual(entries[3]["Errors"], "Invalid Device Type")
 
     def test_set_from_cleaned_entries(self):
         cleaned_entries = [

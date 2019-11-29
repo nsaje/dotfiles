@@ -31,21 +31,6 @@ class TestTargetConverter(TestCase):
         target_value = self.converter.to_target(constants.BidModifierType.PUBLISHER, output_value)
         self.assertEqual(target_value, publisher_domain)
 
-        # illegal input target value tests
-        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PUBLISHER, "invalid")
-        self.assertEqual(str(ctx.exception), "Invalid domain name")
-
-        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PUBLISHER, "http://example.com")
-        self.assertEqual(str(ctx.exception), "Remove the following prefixes: http, https")
-
-        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PUBLISHER, "http://example.com/")
-        self.assertEqual(
-            str(ctx.exception), "Remove the following prefixes: http, https; Publisher should not contain /"
-        )
-
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.PUBLISHER, "")
         self.assertEqual(str(ctx.exception), "Publisher should not be empty")

@@ -519,7 +519,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         bm = {
             "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
             "sourceSlug": self.source.bidder_slug,
-            "target": "examplecom",
+            "target": "",
             "modifier": 2.5,
         }
 
@@ -530,7 +530,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         result = self.assertResponseError(response, "ValidationError")
         self.assertEqual(
-            result, {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Invalid domain name"]}}
+            result, {"errorCode": "ValidationError", "details": {"target": ["This field may not be blank."]}}
         )
 
     def test_create_unsupported_operating_system(self):
