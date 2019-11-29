@@ -211,6 +211,15 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             [{"publisher": "testpub2", "source": source, "modifier": 4.6}],
         )
 
+    def test_modifiers_set_no_source(self):
+        test_put = [{"level": "ADGROUP", "name": "testpub1", "source": None, "status": "ENABLED", "modifier": 0.5}]
+        r = self.client.put(
+            reverse("publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}), data=test_put, format="json"
+        )
+        self.assertEqual(r.status_code, 400)
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(resp_json["details"], "{'modifier': 'Bid modifier invalid!'}")
+
     def _convert_bid_modifiers_service_get_result(self, bm_list):
         new_bm_list = []
         for bm in bm_list:

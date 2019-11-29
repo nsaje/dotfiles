@@ -7,6 +7,7 @@ import dash.constants
 import dash.views.helpers
 import restapi.access
 import restapi.common.views_base
+from utils import exc
 from utils import k1_helper
 
 from . import serializers
@@ -131,7 +132,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                         propagate_to_k1=False,
                     )
                 except core.features.bid_modifiers.BidModifierInvalid:
-                    raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
+                    raise exc.ValidationError({"modifier": "Bid modifier invalid!"})
 
     @staticmethod
     def _get_level_entity(ad_group, entry):
