@@ -197,7 +197,9 @@ def fill_delivery_name_values_if_necessary(rows, breakdown):
 
 def insert_delivery_name_columns_if_necessary(requested_columns, field_name_mapping):
     requested_field_map = {
-        field_name_mapping[column]: {"column": column, "index": i} for i, column in enumerate(requested_columns)
+        field_name_mapping[column]: {"column": column, "index": i}
+        for i, column in enumerate(requested_columns)
+        if column in field_name_mapping
     }
 
     delivery_fileds = set(stats.constants.get_top_level_delivery_dimensions()) & set(requested_field_map.keys())
