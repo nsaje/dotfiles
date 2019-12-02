@@ -93,6 +93,7 @@ class AdGroupsTest(K1APIBaseTest):
                         "experiment_enabled": True,
                         "control_group_percentage": "0.200",
                     },
+                    "high_impact": False,
                 },
             },
         )
@@ -178,6 +179,7 @@ class AdGroupsTest(K1APIBaseTest):
                         "experiment_enabled": True,
                         "control_group_percentage": "0.200",
                     },
+                    "high_impact": False,
                 },
             },
         )

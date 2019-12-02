@@ -543,7 +543,8 @@
                 "enabled": true,
                 "experiment_enabled": true,
                 "control_group_percentage": "0.200"
-            }
+            },
+            "high_impact": false
         }
     model: dash.adgroupsettings
     pk: 1
