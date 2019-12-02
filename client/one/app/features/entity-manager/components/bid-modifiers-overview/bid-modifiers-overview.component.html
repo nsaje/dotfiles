@@ -67,8 +67,12 @@
     </div>
     <div *ngIf="!!importError" class="zem-message--error">
         File isn't a valid CSV file. Download
-        <a (click)="downloadErrorsFile()">the errors file</a> to see details
-        about the error.
+        <a
+            class="zem-bid-modifiers-overview__error_file_link"
+            (click)="downloadErrorsFile()"
+            >the errors file</a
+        >
+        to see details about the error.
     </div>
     <div *ngIf="!importSummary && !importError">
         <a (click)="downloadCsvSampleFile()">Download CSV sample</a>
