@@ -211,3 +211,21 @@ CREATE TABLE IF NOT EXISTS MV_RDS_SOURCE_TAG (
   name      VARCHAR(255) UNIQUE,
   slug      VARCHAR(50)
 );
+
+CREATE TABLE IF NOT EXISTS MV_RDS_CUSTOM_HACK (
+  id                  INTEGER PRIMARY KEY,
+  agency_id           INTEGER NULL,
+  account_id          INTEGER NULL,
+  campaign_id         INTEGER NULL,
+  ad_group_id         INTEGER NULL,
+  source_id           INTEGER NULL,
+  rtb_only            BOOLEAN,
+  summary             VARCHAR(255),
+  service             VARCHAR(100),
+  trello_ticket_url   VARCHAR(255),
+  created_dt          DATETIME,
+  removed_dt          DATETIME NULL,
+  confirmed_dt        DATETIME NULL,
+  client_id           INTEGER NULL,
+  client_name         VARCHAR(255)
+);

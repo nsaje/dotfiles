@@ -6,11 +6,13 @@ from django.db.models import CharField
 from django.db.models import F
 from django.db.models import Value
 from django.db.models import When
+from django.db.models.functions import Coalesce
 
 import core.features.goals
 import core.features.videoassets
 import core.models
 import dash.constants
+import dash.features.custom_hacks
 import dash.features.geolocation
 import dash.features.publisher_classification
 from etl import redshift
@@ -38,10 +40,7 @@ class RDSModelization(object):
 
     def _get_rds_queryset(self):
         qs = self.MODEL.objects.values(self.PK).annotate(
-            **{
-                k if not isinstance(v, Case) else k: F(v) if not isinstance(v, Case) else v
-                for k, v in self.FIELDS.items()
-            }
+            **{k: F(v) if isinstance(v, str) else v for k, v in self.FIELDS.items()}
         )
         if hasattr(self, "EXCLUDE"):
             qs = qs.exclude(**self.EXCLUDE)
@@ -323,6 +322,41 @@ class RDSSourceTag(RDSModelization):
     EXCLUDE = dict(source__isnull=True)
 
 
+class RDSCustomHack(RDSModelization):
+    MODEL = dash.features.custom_hacks.CustomHack
+    TABLE = "mv_rds_custom_hack"
+    FIELDS = OrderedDict(
+        agency_id="agency_id",
+        account_id="account_id",
+        campaign_id="campaign_id",
+        ad_group_id="ad_group_id",
+        source_id="source_id",
+        rtb_only="rtb_only",
+        summary="summary",
+        service="service",
+        trello_ticket_url="trello_ticket_url",
+        created_dt="created_dt",
+        removed_dt="removed_dt",
+        confirmed_dt="confirmed_dt",
+        client_id=Coalesce(
+            "agency__id",
+            "account__agency__id",
+            "campaign__account__agency__id",
+            "ad_group__campaign__account__agency__id",
+            Value(0),
+        ),
+        client_name=Coalesce(
+            "agency__name",
+            "account__agency__name",
+            "campaign__account__agency__name",
+            "ad_group__campaign__account__agency__name",
+            "account__name",
+            "campaign__account__name",
+            "ad_group__campaign__account__name",
+        ),
+    )
+
+
 RDS_MATERIALIAZED_VIEW = [
     RDSAgency,
     RDSSource,
@@ -338,4 +372,5 @@ RDS_MATERIALIAZED_VIEW = [
     RDSCampaignTag,
     RDSAdgroupTag,
     RDSSourceTag,
+    RDSCustomHack,
 ]
