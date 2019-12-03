@@ -78,7 +78,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, blank=False, null=False)
+    name = models.CharField(max_length=256, blank=False, null=False)
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
     system_user = models.PositiveSmallIntegerField(
         choices=constants.SystemUserType.get_choices(), null=True, blank=True

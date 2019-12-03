@@ -188,7 +188,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     bidding_type = forms.TypedChoiceField(
         choices=constants.BiddingType.get_choices(), coerce=int, empty_value=None, required=False
     )
-    name = PlainCharField(max_length=127, error_messages={"required": "Please specify ad group name."})
+    name = PlainCharField(max_length=256, error_messages={"required": "Please specify ad group name."})
     state = forms.TypedChoiceField(choices=constants.AdGroupSettingsState.get_choices(), coerce=int, empty_value=None)
     start_date = forms.DateField(error_messages={"required": "Please provide start date."})
     end_date = forms.DateField(required=False)
@@ -761,7 +761,7 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
 
 class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
-    name = PlainCharField(max_length=127, error_messages={"required": "Please specify campaign name."})
+    name = PlainCharField(max_length=256, error_messages={"required": "Please specify campaign name."})
     campaign_goal = forms.TypedChoiceField(choices=constants.CampaignGoal.get_choices(), coerce=int, empty_value=None)
     target_devices = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.DevicesSerializer,
