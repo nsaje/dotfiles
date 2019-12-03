@@ -61,6 +61,7 @@ FEEDS_TAG_MAPPING = {
             "primary_tracker_url": "impression_tracker",
             "call_to_action": "cta_text",
             "dealer_name": "dealer_name",
+            "id": "id",
         },
     },
 }

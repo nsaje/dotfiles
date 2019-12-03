@@ -329,11 +329,11 @@ class ProductFeedTestCase(TestCase):
     def test_is_ad_already_uploaded(self):
         item = dict(title="Existing title 1", url="http://existingurl1.com", image_url="http://existingimageurl1.com")
         item["label"] = ProductFeed._hash_label(item["title"], item["url"], item["image_url"])
-        self.assertTrue(self.product_feed._is_ad_already_uploaded(item, self.ad_group_1))
+        self.assertTrue(self.product_feed._get_existing_content_ad(item, self.ad_group_1))
 
         item = dict(title="Updated title", url="http://existingurl1.com", image_url="http://existingimageurl1.com")
         item["label"] = ProductFeed._hash_label(item["title"], item["url"], item["image_url"])
-        self.assertFalse(self.product_feed._is_ad_already_uploaded(item, self.ad_group_1))
+        self.assertFalse(self.product_feed._get_existing_content_ad(item, self.ad_group_1))
 
     def test_validate_item(self):
         item = dict(title="Existing title", url="http://existingurl.com", image_url="http://existingimageurl.com")

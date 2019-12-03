@@ -62,8 +62,10 @@ class ProductFeedInstanceMixin:
                     )
                 try:
                     self._validate_item(parsed_item)
-                    parsed_item["label"] = self._hash_label(
-                        parsed_item["title"], parsed_item["url"], parsed_item["image_url"]
+                    parsed_item["label"] = (
+                        parsed_item["id"]
+                        if parsed_item.get("id")
+                        else self._hash_label(parsed_item["title"], parsed_item["url"], parsed_item["image_url"])
                     )
                     all_parsed_items.append(parsed_item)
                 except exceptions.ValidationError as e:
@@ -72,20 +74,29 @@ class ProductFeedInstanceMixin:
 
             ad_groups = self.ad_groups.filter_active().exclude_archived()
             for ad_group in ad_groups:
+                is_brand_ad_group = bool(
+                    ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND)
+                )
                 for item in all_parsed_items:
-                    if ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND):
+                    if is_brand_ad_group:
                         if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
                             continue
                         item["brand_name"] = item["dealer_name"]
-                    if self._is_ad_already_uploaded(item, ad_group):
-                        skipped_items.append(
-                            {
-                                "item": "{}".format(item),
-                                "ad_group": "{}".format(ad_group),
-                                "reason": "Item already uploaded.",
-                            }
-                        )
-                        continue
+                    ad_already_uploaded = self._get_existing_content_ad(item, ad_group)
+                    if ad_already_uploaded:
+                        if is_brand_ad_group and not self._all_fields_are_matching(ad_already_uploaded, item):
+                            ad_already_uploaded.update(
+                                None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True
+                            )
+                        else:
+                            skipped_items.append(
+                                {
+                                    "item": "{}".format(item),
+                                    "ad_group": "{}".format(ad_group),
+                                    "reason": "Item already uploaded.",
+                                }
+                            )
+                            continue
                     items_to_upload.append(item)
                     if not dry_run:
                         batch, candidates = contentupload.upload.insert_candidates(
@@ -168,8 +179,8 @@ class ProductFeedInstanceMixin:
             raise exceptions.ValidationError("Brand name is too long.")
         return True
 
-    def _is_ad_already_uploaded(self, item, ad_group):
-        return ad_group.contentad_set.filter(label=item["label"]).exclude_archived().exists()
+    def _get_existing_content_ad(self, item, ad_group):
+        return ad_group.contentad_set.filter(label=item["label"]).exclude_archived().first()
 
     def _write_log(self, **kwargs):
         product_feed = self
@@ -230,3 +241,17 @@ class ProductFeedInstanceMixin:
     @staticmethod
     def _map_ads_to_ad_group_brand(ad_group, brand_name):
         return bool(re.match(ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND, ""), brand_name, re.IGNORECASE))
+
+    @staticmethod
+    def _all_fields_are_matching(ad_already_uploaded, item):
+        if (
+            item["title"] == ad_already_uploaded.title
+            and item["description"] == ad_already_uploaded.description
+            and item["url"] == ad_already_uploaded.url
+            and item["primary_tracker_url"] in ad_already_uploaded.tracker_urls
+            and item["brand_name"] == ad_already_uploaded.brand_name
+            and item["display_url"] == ad_already_uploaded.display_url
+            and item["call_to_action"] == ad_already_uploaded.call_to_action
+        ):
+            return True
+        return False
