@@ -86,7 +86,8 @@ class ContentAdsView(K1APIView):
                 "image_hash": item.image_hash,
                 "image_crop": item.image_crop,
                 "icon_id": item.icon_id,
-                "icon_size": item.icon_size,
+                "icon_width": item.icon_size,
+                "icon_height": item.icon_size,
                 "icon_hash": item.icon_hash,
                 "description": "" if item.ad_group_id == 156382 else item.description,
                 "brand_name": item.brand_name,
@@ -100,6 +101,16 @@ class ContentAdsView(K1APIView):
                 "document_features": item.document_features,
                 "ad_tag": item.ad_tag,
             }
+
+            if content_ad["icon_id"] is None:
+                default_icon = item.ad_group.campaign.account.settings.default_icon
+
+                if default_icon:
+                    content_ad["icon_id"] = default_icon.image_id
+                    content_ad["icon_width"] = default_icon.width
+                    content_ad["icon_height"] = default_icon.height
+                    content_ad["icon_hash"] = default_icon.hash
+
             response.append(content_ad)
 
         return self.response_ok(response)

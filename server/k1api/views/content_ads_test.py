@@ -142,7 +142,100 @@ class ContentAdsTest(K1APIBaseTest):
                 "ad_tag": None,
                 "icon_id": "987654321",
                 "icon_hash": None,
-                "icon_size": None,
+                "icon_width": None,
+                "icon_height": None,
+            }
+        ]
+        self.assertEqual(data, expected)
+
+    def test_get_content_ads_by_id_default_icon(self):
+        default_icon = magic_mixer.blend(
+            dash.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=200, height=200
+        )
+        account = magic_mixer.blend(dash.models.Account)
+        content_ad = magic_mixer.blend(
+            dash.models.ContentAd, ad_group__campaign__account=account, icon_id=None, icon_size=None, icon_hash=None
+        )
+
+        response = self.client.get(reverse("k1api.content_ads"), {"content_ad_ids": content_ad.id})
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        expected = [
+            {
+                "image_crop": content_ad.image_crop,
+                "image_hash": content_ad.image_hash,
+                "description": "",
+                "ad_group_id": content_ad.ad_group.id,
+                "campaign_id": content_ad.ad_group.campaign.id,
+                "account_id": account.id,
+                "agency_id": None,
+                "type": dash.constants.AdType.CONTENT,
+                "language": "en",
+                "call_to_action": "",
+                "url": content_ad.url,
+                "title": content_ad.title,
+                "brand_name": "",
+                "image_width": content_ad.image_width,
+                "image_id": content_ad.image_id,
+                "video_asset": None,
+                "image_height": content_ad.image_height,
+                "display_url": "",
+                "redirect_id": content_ad.redirect_id,
+                "id": content_ad.id,
+                "tracker_urls": [],
+                "label": "",
+                "additional_data": None,
+                "document_id": None,
+                "document_features": None,
+                "ad_tag": None,
+                "icon_id": None,
+                "icon_hash": None,
+                "icon_width": None,
+                "icon_height": None,
+            }
+        ]
+        self.assertEqual(data, expected)
+
+        account.settings.update_unsafe(None, default_icon=default_icon)
+        response = self.client.get(reverse("k1api.content_ads"), {"content_ad_ids": content_ad.id})
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        expected = [
+            {
+                "image_crop": content_ad.image_crop,
+                "image_hash": content_ad.image_hash,
+                "description": "",
+                "ad_group_id": content_ad.ad_group.id,
+                "campaign_id": content_ad.ad_group.campaign.id,
+                "account_id": account.id,
+                "agency_id": None,
+                "type": dash.constants.AdType.CONTENT,
+                "language": "en",
+                "call_to_action": "",
+                "url": content_ad.url,
+                "title": content_ad.title,
+                "brand_name": "",
+                "image_width": content_ad.image_width,
+                "image_id": content_ad.image_id,
+                "video_asset": None,
+                "image_height": content_ad.image_height,
+                "display_url": "",
+                "redirect_id": content_ad.redirect_id,
+                "id": content_ad.id,
+                "tracker_urls": [],
+                "label": "",
+                "additional_data": None,
+                "document_id": None,
+                "document_features": None,
+                "ad_tag": None,
+                "icon_id": "icon_id",
+                "icon_hash": "icon_hash",
+                "icon_width": 200,
+                "icon_height": 200,
             }
         ]
         self.assertEqual(data, expected)
