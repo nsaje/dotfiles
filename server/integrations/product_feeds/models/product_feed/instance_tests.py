@@ -727,3 +727,92 @@ class ProductFeedTestCase(TestCase):
         )
         self.assertTrue(ad)
         self.assertEqual(ad.brand_name, "De Bona")
+
+    @mock.patch("utils.dates_helper.local_today")
+    @mock.patch("integrations.product_feeds.models.ProductFeed._get_feed_data")
+    def test_is_max_daily_uploads_reached(self, mock_feed_data, mock_today):
+        mock_feed_data.return_value = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <rss xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+        <channel>
+            <items>
+                <item>
+                    <title>This is a title</title>
+                    <description>desc 1 </description>
+                    <link>https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html</link>
+                    <pubDate>Mon, 21 Oct 2019 16:12:06 +0000</pubDate>
+                    <source url="http://www.standard.co.uk/">Evening Standard</source>
+                    <guid isPermaLink="false">police-manhunt-woman-raped-outside-161206935.html</guid>
+                    <media:content height="86"
+                                   url="http://l1.yimg.com/uu/api/res/1.2/3L5FebuCK.wH_eXbalJduw--/YXBwaWQ9eXRhY2h5b247aD04Njt3PTEzMDs-/https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae"
+                                   width="130"/>
+                    <media:credit role="publishing company"/>
+                </item>
+                <item>
+                    <title>title 2</title>
+                    <description>This is a description\n</description>
+                    <link>https://uk.news.yahoo.com/botswana-faces-first-tight-election-173231503.html</link>
+                    <pubDate>Mon, 21 Oct 2019 17:32:31 +0000</pubDate>
+                    <source url="http://www.france24.com/en/">France 24</source>
+                    <guid isPermaLink="false">botswana-faces-first-tight-election-173231503.html</guid>
+                    <media:content height="86"
+                                   url="http://l.yimg.com/uu/api/res/1.2/4v359gKa05EvvOmY0HoVUw--/YXBwaWQ9eXRhY2h5b247aD04Njt3PTEzMDs-/https://media.zenfs.com/en/france_24_english_articles_100/4f075adb1f596cc00b81cc7e58406716"
+                                   width="130"/>
+                    <media:credit role="publishing company"/>
+                </item>
+                <item>
+                    <title>something</title>
+                    <description> description </description>
+                    <link>https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html</link>
+                    <pubDate>Mon, 21 Oct 2019 16:12:06 +0000</pubDate>
+                    <source url="http://www.standard.co.uk/">Evening Standard</source>
+                    <guid isPermaLink="false">police-manhunt-woman-raped-outside-161206935.html</guid>
+                    <media:content height="86"
+                                   url="http://l1.yimg.com/uu/api/res/1.2/3L5FebuCK.wH_eXbalJduw--/YXBwaWQ9eXRhY2h5b247aD04Njt3PTEzMDs-/https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae"
+                                   width="130"/>
+                    <media:credit role="publishing company"/>
+                </item>
+                <item>
+                    <title>blalbla</title>
+                    <description>blalbla2 </description>
+                    <link>https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html</link>
+                    <pubDate>Mon, 21 Oct 2019 16:12:06 +0000</pubDate>
+                    <source url="http://www.standard.co.uk/">Evening Standard</source>
+                    <guid isPermaLink="false">police-manhunt-woman-raped-outside-161206935.html</guid>
+                    <media:content height="86"
+                                   url="http://l1.yimg.com/uu/api/res/1.2/3L5FebuCK.wH_eXbalJduw--/YXBwaWQ9eXRhY2h5b247aD04Njt3PTEzMDs-/https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae"
+                                   width="130"/>
+                    <media:credit role="publishing company"/>
+                </item>
+                <item>
+                    <title>again something</title>
+                    <description>blalbla2 </description>
+                    <link>https://uk.news.yahoo.com/police-manhunt-woman-raped-outside-161206935.html</link>
+                    <pubDate>Mon, 21 Oct 2019 16:12:06 +0000</pubDate>
+                    <source url="http://www.standard.co.uk/">Evening Standard</source>
+                    <guid isPermaLink="false">police-manhunt-woman-raped-outside-161206935.html</guid>
+                    <media:content height="86"
+                                   url="http://l1.yimg.com/uu/api/res/1.2/3L5FebuCK.wH_eXbalJduw--/YXBwaWQ9eXRhY2h5b247aD04Njt3PTEzMDs-/https://media.zenfs.com/en/evening_standard_239/a2aaa1d3edd79c203485271648b7f0ae"
+                                   width="130"/>
+                    <media:credit role="publishing company"/>
+                </item>
+            </items>
+        </channel>
+        """
+        mock_today.return_value = datetime.datetime(2019, 10, 23)
+
+        self.product_feed.max_daily_uploads = 2
+        self.assertEqual(core.models.ContentAd.objects.filter(ad_group__in=[self.ad_group_1]).count(), 3)
+        self.assertTrue(self.product_feed._is_max_daily_uploads_reached(self.ad_group_1))
+        self.product_feed.ingest_and_create_ads()
+        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 0)
+
+        self.product_feed.max_daily_uploads = 4
+        self.product_feed.ingest_and_create_ads()
+        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 4)
+
+        self.product_feed.max_daily_uploads = 0
+        core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).delete()
+        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 0)
+        self.product_feed.ingest_and_create_ads()
+        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 5)

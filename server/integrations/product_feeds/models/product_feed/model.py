@@ -42,3 +42,6 @@ class ProductFeed(ProductFeedInstanceMixin, models.Model):
     )
     blacklisted_keywords = ArrayField(models.CharField(max_length=255), blank=True, null=True, default=list)
     ad_groups = models.ManyToManyField("dash.AdGroup", blank=False)
+    max_daily_uploads = models.IntegerField(
+        blank=True, default=0, help_text="Maximum of number of ads that will be uploaded every day."
+    )

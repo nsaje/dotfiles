@@ -120,7 +120,7 @@ class ProductFeedAdmin(admin.ModelAdmin):
 
     def ingest_and_create_ads(self, request, queryset):
         for product_feed in queryset.filter(status=constants.FeedStatus.ENABLED):
-            product_feed.ingest_and_create_ads(dry_run=False)
+            product_feed.ingest_and_create_ads(dry_run=False, active_ad_group_only=False)
 
     def pause_and_archive_ads(self, request, queryset):
         for product_feed in queryset.filter(status=constants.FeedStatus.ENABLED):

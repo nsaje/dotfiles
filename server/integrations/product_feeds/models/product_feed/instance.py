@@ -41,7 +41,7 @@ class ProductFeedInstanceMixin:
             dry_run=dry_run, ads_paused_and_archived=list(ads_to_pause_and_archive), exception="Pause and archive Ads."
         )
 
-    def ingest_and_create_ads(self, dry_run=False):
+    def ingest_and_create_ads(self, dry_run=False, active_ad_groups_only=True):
         try:
             all_items = self._get_all_feed_items()
             batch_name = "{}_{}".format(self.name, dates_helper.local_now().strftime("%Y-%m-%d-%H%M"))
@@ -72,8 +72,13 @@ class ProductFeedInstanceMixin:
                     skipped_items.append({"item": "{}".format(item), "reason": "{}".format(e)})
                     continue
 
-            ad_groups = self.ad_groups.filter_active().exclude_archived()
+            ad_groups = self.ad_groups.exclude_archived()
+            if active_ad_groups_only:
+                ad_groups = ad_groups.filter_active()
+
             for ad_group in ad_groups:
+                if self._is_max_daily_uploads_reached(ad_group):
+                    continue
                 is_brand_ad_group = bool(
                     ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND)
                 )
@@ -97,6 +102,8 @@ class ProductFeedInstanceMixin:
                                 }
                             )
                             continue
+                    if self.max_daily_uploads > 0 and len(items_to_upload) >= self.max_daily_uploads:
+                        break
                     items_to_upload.append(item)
                     if not dry_run:
                         batch, candidates = contentupload.upload.insert_candidates(
@@ -200,6 +207,15 @@ class ProductFeedInstanceMixin:
                 continue
             cleaned_strings[k] = html.unescape(re.compile(r"\s").sub(" ", strip_tags(v).strip())) if v else None
         return cleaned_strings
+
+    def _is_max_daily_uploads_reached(self, ad_group):
+        if self.max_daily_uploads > 0:
+            ads_already_uploaded_count = (
+                ad_group.contentad_set.filter(created_dt__date=dates_helper.local_today()).exclude_archived().count()
+            )
+            if ads_already_uploaded_count >= self.max_daily_uploads:
+                return True
+        return False
 
     @staticmethod
     def _get_image_link(tag):
