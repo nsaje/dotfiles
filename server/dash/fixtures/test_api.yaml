@@ -1445,3 +1445,41 @@
         created_dt: '2014-06-04T00:00:00'
     model: dash.bluekaicategory
     pk: 600
+
+# test supply reports
+
+-   fields:
+      first_name: 'NameA'
+      last_name: 'SurnameA'
+      email: 'example.a@source.one'
+      source: 1
+      custom_subject: 'Subject'
+      publishers_report: False
+      created_dt: '2015-09-23T09:57:22'
+      modified_dt: '2015-09-23T09:57:22'
+    model: dash.supplyreportrecipient
+    pk: 1
+
+-   fields:
+      first_name: 'NameB'
+      last_name: 'SurnameB'
+      email: 'example.b@source.one'
+      source: 1
+      custom_subject: ''
+      publishers_report: False
+      created_dt: '2015-09-23T10:57:22'
+      modified_dt: '2015-09-23T10:57:22'
+    model: dash.supplyreportrecipient
+    pk: 2
+
+-   fields:
+      first_name: 'NameC'
+      last_name: 'SurnameC'
+      email: 'example.c@source.two'
+      source: 2
+      custom_subject: 'Subject'
+      publishers_report: False
+      created_dt: '2015-09-23T10:57:22'
+      modified_dt: '2015-09-23T10:57:22'
+    model: dash.supplyreportrecipient
+    pk: 3
