@@ -23,17 +23,16 @@ class ProductFeedInstanceMixin:
     def __str__(self):
         return self.name
 
-    def pause_and_archive_ads(self, dry_run=False):
+    def pause_and_archive_ads(self, dry_run=False, active_ad_groups_only=True):
         if self.content_ads_ttl <= 0:
             return
-        ads_to_pause_and_archive = (
-            core.models.ContentAd.objects.filter_active()
-            .filter(
-                ad_group__in=self.ad_groups.exclude_archived(),
-                created_dt__lte=dates_helper.local_today() - datetime.timedelta(self.content_ads_ttl),
-            )
-            .exclude_archived()
-        )
+
+        ads_to_pause_and_archive = core.models.ContentAd.objects.filter(
+            ad_group__in=self.ad_groups.exclude_archived(),
+            created_dt__lte=dates_helper.local_today() - datetime.timedelta(self.content_ads_ttl),
+        ).exclude_archived()
+        if active_ad_groups_only:
+            ads_to_pause_and_archive = ads_to_pause_and_archive.filter_active()
         if not dry_run:
             for ad in ads_to_pause_and_archive:
                 ad.update(None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True)
@@ -131,6 +130,17 @@ class ProductFeedInstanceMixin:
                 username="Product Feeds",
             )
             raise e
+
+    def update(self, **kwargs):
+        for k, v in kwargs.items():
+            if k in self._update_fields:
+                if k == "ad_groups":
+                    self.ad_groups.clear()
+                    if v:
+                        self.ad_groups.add(*v)
+                else:
+                    setattr(self, k, v)
+            self.save()
 
     def _get_feed_data(self):
         response = requests.get(self.feed_url)

@@ -7,6 +7,24 @@ from .instance import ProductFeedInstanceMixin
 
 
 class ProductFeed(ProductFeedInstanceMixin, models.Model):
+    _update_fields = (
+        "name",
+        "feed_url",
+        "status",
+        "feed_type",
+        "truncate_description",
+        "truncate_title",
+        "default_brand_name",
+        "default_display_url",
+        "default_brand_name",
+        "default_display_url",
+        "default_call_to_action",
+        "content_ads_ttl",
+        "blacklisted_keywords",
+        "ad_groups",
+        "max_daily_uploads",
+    )
+
     name = models.CharField(max_length=255, blank=False, null=False)
     feed_url = models.CharField(max_length=255, blank=False, null=False)
     status = models.IntegerField(default=constants.FeedStatus.ENABLED, choices=constants.FeedStatus.get_choices())

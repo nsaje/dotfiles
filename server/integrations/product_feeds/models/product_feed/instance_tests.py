@@ -816,3 +816,23 @@ class ProductFeedTestCase(TestCase):
         self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 0)
         self.product_feed.ingest_and_create_ads()
         self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 5)
+
+    def test_update(self):
+        self.product_feed.update(
+            name="new_name",
+            content_ads_ttl=1,
+            status=constants.FeedStatus.DISABLED,
+            blacklisted_keywords=["something", "something else"],
+            feed_url="http://blabla.com",
+            ad_groups=[],
+        )
+        self.assertEqual(self.product_feed.name, "new_name")
+        self.assertEqual(self.product_feed.content_ads_ttl, 1)
+        self.assertEqual(self.product_feed.status, constants.FeedStatus.DISABLED)
+        self.assertEqual(self.product_feed.blacklisted_keywords, ["something", "something else"])
+        self.assertEqual(self.product_feed.feed_url, "http://blabla.com")
+        self.assertEqual(self.product_feed.ad_groups.all().count(), 0)
+
+        self.product_feed.refresh_from_db()
+        self.product_feed.update(ad_groups=[self.ad_group_1, self.ad_group_2])
+        self.assertEqual(self.product_feed.ad_groups.all().count(), 2)

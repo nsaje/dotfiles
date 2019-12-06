@@ -110,6 +110,13 @@ class ProductFeedAdmin(admin.ModelAdmin):
     formfield_overrides = {ArrayField: {"widget": Textarea(attrs={"rows": 20, "cols": 45})}}
     raw_id_fields = ("ad_groups",)
 
+    def save_model(self, request, obj, form, change):
+        old_obj = ProductFeed.objects.get(id=obj.id)
+        fields_to_update = {
+            k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
+        }
+        old_obj.update(**fields_to_update)
+
     def ingest_and_create_ads_dry_run(self, request, queryset):
         for product_feed in queryset:
             product_feed.ingest_and_create_ads(dry_run=True)
@@ -120,13 +127,28 @@ class ProductFeedAdmin(admin.ModelAdmin):
 
     def ingest_and_create_ads(self, request, queryset):
         for product_feed in queryset.filter(status=constants.FeedStatus.ENABLED):
-            product_feed.ingest_and_create_ads(dry_run=False, active_ad_group_only=False)
+            product_feed.ingest_and_create_ads(dry_run=False, active_ad_groups_only=False)
 
     def pause_and_archive_ads(self, request, queryset):
         for product_feed in queryset.filter(status=constants.FeedStatus.ENABLED):
-            product_feed.ingest_and_create_ads(dry_run=False)
+            product_feed.pause_and_archive_ads(dry_run=False, active_ad_groups_only=False)
 
-    actions = [ingest_and_create_ads_dry_run, pause_and_archive_dry_run, ingest_and_create_ads, pause_and_archive_ads]
+    def enable_feed(self, request, queryset):
+        for product_feed in queryset.filter(status=constants.FeedStatus.DISABLED):
+            product_feed.update(status=constants.FeedStatus.ENABLED)
+
+    def disable_feed(self, request, queryset):
+        for product_feed in queryset.filter(status=constants.FeedStatus.ENABLED):
+            product_feed.update(status=constants.FeedStatus.DISABLED)
+
+    actions = [
+        ingest_and_create_ads_dry_run,
+        pause_and_archive_dry_run,
+        ingest_and_create_ads,
+        pause_and_archive_ads,
+        enable_feed,
+        disable_feed,
+    ]
 
 
 admin.site.register(SyncAttempt, SyncAttemptAdmin)
