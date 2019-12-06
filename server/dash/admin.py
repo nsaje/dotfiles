@@ -403,7 +403,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         "settings",
         "_accounts_cs",
         "custom_attributes",
-        "is_disabled",
     )
     inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
