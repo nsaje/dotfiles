@@ -131,6 +131,7 @@ def _get_source_params(ad_group, use_source_tz=False):
     ad_group_sources = (
         models.AdGroupSource.objects.select_related("source__source_type")
         .filter(ad_group=ad_group)
+        .exclude(ad_review_only=True)
         .filter(source__source_type__type__in=source_types)
     )
 
