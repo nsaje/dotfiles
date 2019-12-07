@@ -28,6 +28,7 @@ class R1MappingView(K1APIView):
             .exclude_archived()
             .select_related("campaign")
             .filter(campaign__account_id__in=accounts)
+            .only("id", "campaign_id", "campaign__account_id")
         )
         for ad_group in ad_groups:
             data[ad_group.campaign.account_id]["ad_groups"][ad_group.id] = {"campaign_id": ad_group.campaign_id}
