@@ -42,6 +42,9 @@
     class="zem-deal-edit-form__item zem-decimal-form-group"
     [isDisabled]="isDisabled"
     [label]="'Floor price'"
+    [helpMessage]="
+        'The Price Floor for impressions to be sold programmatically via an online auction is the minimum closing price set by the publisher. Imputed price is for informational use only and it will not affect your set bid.'
+    "
     [value]="deal.floorPrice"
     [placeholder]="'0.00'"
     [errors]="dealErrors?.floorPrice"
@@ -52,6 +55,9 @@
     class="zem-deal-edit-form__item zem-date-form-group"
     [isDisabled]="isDisabled"
     [label]="'Valid from'"
+    [helpMessage]="
+        'Publisher can set a start date for each deal and inventory is available only after this date till expiry. Imputed date is for your informational purposes only.'
+    "
     [value]="deal.validFromDate"
     [errors]="dealErrors?.validFromDate"
     (valueChange)="onValidFromDateChange($event)"
@@ -60,6 +66,9 @@
     class="zem-deal-edit-form__item zem-date-form-group"
     [isDisabled]="isDisabled"
     [label]="'Valid to'"
+    [helpMessage]="
+        'Publisher can set an expiry date for each deal and inventory is no longer available after this date. Imputed date is for your informational purposes only.'
+    "
     [value]="deal.validToDate"
     [errors]="dealErrors?.validToDate"
     (valueChange)="onValidToDateChange($event)"
