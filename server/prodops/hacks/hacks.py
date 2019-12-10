@@ -112,13 +112,9 @@ def override_campaign_settings(campaign, updates):
 
 def apply_create_user_hacks(user, account):
     if account.agency_id == constants.AGENCY_RCS_ID:
-        for group in authmodels.Group.objects.filter(name__in=("Public - default for all new accounts",)):
-            user.groups.remove(group)
         for group in authmodels.Group.objects.filter(name__in=("NAS - RCS",)):
             user.groups.add(group)
     if account.agency_id == constants.AGENCY_NEWSCORP_ID:
-        for group in authmodels.Group.objects.filter(name__in=("Public - default for all new accounts",)):
-            user.groups.remove(group)
         for group in authmodels.Group.objects.filter(name__in=("NAS - Newscorp",)):
             user.groups.add(group)
 
