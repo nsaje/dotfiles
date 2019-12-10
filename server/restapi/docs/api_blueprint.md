@@ -1337,6 +1337,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
 
     + Attributes (AdGroupResponse)
 
+<a name="ad-group-sources"></a>
 ## Ad Group Sources [/rest/v1/adgroups/{adGroupId}/sources/]
 
 Each Ad Group has specific configurable settings for each media source.
@@ -1465,13 +1466,14 @@ dailyBudget | [money](#money)     | daily budget for the given source
 
 The sources you can promote your content on come in two flavours: real-time
 bidding (RTB) and non-real-time bidding (Non-RTB) sources. RTB sources are all
-sources except `yahoo`, `outbrain`, `instagram` and `facebook`.
+sources except `yahoo` (US clients only) and `outbrain` (deprecated, please use `outbrainrtb`).
 
 In order to simplify manual source management (when not using Zemanta Autopilot),
 you can use this special RTB settings endpoint, which allows you to group
 all RTB sources together and treat them as a single source. This allows you to set
 the state and daily budget of all RTB sources at once. The daily budget set by
-this endpoint will be shared among all RTB sources.
+this endpoint will be shared among all RTB sources. Daily budget for non-RTB sources
+must still be set through the [Ad Group Sources](#ad-group-sources) endpoint.
 
 This setting has to be enabled in order to be able to set [autopilot](#autopilot)
 state to `ACTIVE_CPC_BUDGET`.
