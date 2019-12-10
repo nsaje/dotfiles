@@ -1,4 +1,9 @@
-<div class="zem-message" *ngIf="deals.length === 0">No deals set.</div>
+<div
+    class="zem-message zem-settings-section__description"
+    *ngIf="deals.length === 0"
+>
+    No deals set.
+</div>
 <ng-container *ngIf="deals.length > 0">
     <button
         class="button button-bar"

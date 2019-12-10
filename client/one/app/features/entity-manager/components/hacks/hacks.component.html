@@ -1,4 +1,9 @@
-<div class="zem-message" *ngIf="hacks.length === 0">No backend hacks set.</div>
+<div
+    class="zem-message zem-settings-section__description"
+    *ngIf="hacks.length === 0"
+>
+    No backend hacks set.
+</div>
 <ng-container *ngIf="hacks.length > 0">
     <button
         class="button button-bar"

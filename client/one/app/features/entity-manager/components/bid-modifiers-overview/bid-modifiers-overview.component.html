@@ -1,11 +1,12 @@
-<div class="zem-bid-modifiers-overview__item">
+<div class="zem-settings-section__description">
     You can review and configure bid modifiers across all dimensions here.
 </div>
-<div class="zem-bid-modifiers-overview__item">
-    <div class="zem-settings-section__title zem-bid-modifiers-overview__title">
-        Bid modifiers in use
-    </div>
-    <div *ngIf="!adGroupId || !gridRowData || gridRowData.length == 0">
+<div class="zem-settings-section__item">
+    <div class="zem-settings-section__title">Bid modifiers in use</div>
+    <div
+        *ngIf="!adGroupId || !gridRowData || gridRowData.length == 0"
+        class="zem-settings-section__description"
+    >
         This ad group has no bid modifiers.
     </div>
     <div
@@ -28,20 +29,18 @@
         </div>
     </div>
 </div>
-<div class="zem-bid-modifiers-overview__item">
-    <div class="zem-settings-section__title zem-bid-modifiers-overview__title">
-        Configure bid modifiers
-    </div>
-    <p>
+<div class="zem-settings-section__item">
+    <div class="zem-settings-section__title">Configure bid modifiers</div>
+    <div class="zem-settings-section__description">
         Configure bid modifiers across all dimensions by uploading a CSV file.
-    </p>
+    </div>
     <div
-        class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+        class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-settings-section__item"
     >
         <strong>Warning:</strong> The upload will remove all preexisting bid
         modifiers on all dimensions.
     </div>
-    <div>
+    <div class="zem-settings-section__item">
         <zem-file-selector
             class="zem-file-selector zem-bid-modifiers-overview__file-selector"
             [dropZoneLabel]="'Drop your file here to upload or'"
@@ -76,9 +75,9 @@
     </div>
     <div *ngIf="!importSummary && !importError">
         <a (click)="downloadCsvSampleFile()">Download CSV sample</a>
-        <p>
+        <div class="zem-settings-section__description">
             To create the CSV file download the sample above or read about the
             format here.
-        </p>
+        </div>
     </div>
 </div>
