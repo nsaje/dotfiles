@@ -71,7 +71,7 @@ class CloneServiceTest(TestCase):
         self.assertEqual(2, core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).count())
         self.assertNotEqual(self.content_ads, core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign))
 
-        self.assertEqual(5, cloned_campaign.budgets.count())
+        self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
 
         self.assertTrue(cloned_campaign.campaigngoal_set.exists())
@@ -91,7 +91,7 @@ class CloneServiceTest(TestCase):
         self.assertFalse(cloned_campaign.adgroup_set.exists())
         self.assertFalse(core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).exists())
 
-        self.assertEqual(5, cloned_campaign.budgets.count())
+        self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
 
         self.assertTrue(cloned_campaign.campaigngoal_set.exists())
@@ -111,7 +111,7 @@ class CloneServiceTest(TestCase):
         self.assertNotEqual(self.ad_group, cloned_campaign.adgroup_set.get())
         self.assertFalse(core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).exists())
 
-        self.assertEqual(5, cloned_campaign.budgets.count())
+        self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
 
         self.assertTrue(cloned_campaign.campaigngoal_set.exists())
@@ -129,7 +129,7 @@ class CloneServiceTest(TestCase):
         self.assertFalse(cloned_campaign.adgroup_set.exists())
         self.assertFalse(core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).exists())
 
-        self.assertEqual(5, cloned_campaign.budgets.count())
+        self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
 
         self.assertTrue(cloned_campaign.campaigngoal_set.exists())
@@ -147,7 +147,7 @@ class CloneServiceTest(TestCase):
         self.assertNotEqual(self.ad_group, cloned_campaign.adgroup_set.get())
         self.assertFalse(core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).exists())
 
-        self.assertEqual(5, cloned_campaign.budgets.count())
+        self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
 
         self.assertTrue(cloned_campaign.campaigngoal_set.exists())

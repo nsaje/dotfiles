@@ -60,7 +60,7 @@ class CampaignManager(core.common.BaseManager):
 
         return campaign
 
-    def clone(self, request, source_campaign, new_name):
+    def clone(self, request, source_campaign, new_name, clone_budget=False):
         core.common.entity_limits.enforce(
             model.Campaign.objects.filter(account=source_campaign.account).exclude_archived(),
             source_campaign.account.id,
@@ -77,8 +77,9 @@ class CampaignManager(core.common.BaseManager):
             )
             campaign.save(request)
 
-            for budget in source_campaign.budgets.all().filter_today():
-                core.features.bcm.BudgetLineItem.objects.clone(request, budget, campaign)
+            if clone_budget:
+                for budget in source_campaign.budgets.all().filter_today():
+                    core.features.bcm.BudgetLineItem.objects.clone(request, budget, campaign)
 
             for campaign_goal in source_campaign.campaigngoal_set.all():
                 core.features.goals.CampaignGoal.objects.clone(request, campaign_goal, campaign)
