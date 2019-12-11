@@ -2,6 +2,7 @@ import mock
 from django.test import TestCase
 
 import core.models.content_ad_source.model
+import core.models.image_asset
 from dash import constants
 from utils import email_helper
 from utils import exc
@@ -25,7 +26,7 @@ class InstanceTest(TestCase):
         updates["tracker_urls"] = ["test1", "test2"]
         updates["image_width"] = 300
         updates["image_height"] = 250
-        updates["icon_size"] = 200
+        updates["icon"] = magic_mixer.blend(core.models.image_asset.ImageAsset)
         updates["document_id"] = 123
         updates["type"] = constants.AdType.CONTENT
         updates["url"] = "https://example.com"

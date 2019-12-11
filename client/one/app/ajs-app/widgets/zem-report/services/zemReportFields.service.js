@@ -14,7 +14,7 @@ angular
         };
 
         if (zemPermissions.hasPermission('zemauth.can_use_creative_icon')) {
-            REMAPPED_FIELDS.Thumbnail.push('Icon Image Hash', 'Icon Image URL');
+            REMAPPED_FIELDS.Thumbnail.push('Brand Logo Hash', 'Brand Logo URL');
         }
 
         var FIELDS_WITH_IDS = [

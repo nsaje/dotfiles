@@ -207,3 +207,20 @@
 .zem-button--highlighted.zem-button--loading::before {
     background-image: url('images/loader-white.gif');
 }
+
+.zem-button-as-text {
+    color: @color--primary;
+    background: transparent;
+    text-align: left;
+    border: 0;
+    padding: 0;
+    outline: 0;
+    cursor: pointer;
+
+    &:hover,
+    &:active,
+    &:focus {
+        outline: 0;
+        text-decoration: underline;
+    }
+}

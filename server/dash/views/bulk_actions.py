@@ -282,7 +282,7 @@ class AdGroupContentAdEdit(BaseBulkActionView):
             raise exc.ValidationError(str(err))
 
         return self.create_api_response(
-            {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(candidates)}
+            {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(request, candidates)}
         )
 
 
@@ -394,7 +394,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             content_ad_dict = {
                 "url": content_ad.url,
                 "title": content_ad.title,
-                "image_url": content_ad.get_original_image_url(),
+                "image_url": content_ad.get_base_image_url(),
                 "display_url": content_ad.display_url,
                 "brand_name": content_ad.brand_name,
                 "description": content_ad.description,
@@ -414,7 +414,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 request.user.has_perm("zemauth.can_use_creative_icon")
                 and ad_group.campaign.type != constants.CampaignType.DISPLAY
             ):
-                content_ad_dict["icon_url"] = content_ad.get_original_icon_url()
+                content_ad_dict["icon_url"] = content_ad.get_base_icon_url()
 
             if content_ad.tracker_urls:
                 if len(content_ad.tracker_urls) > 0:

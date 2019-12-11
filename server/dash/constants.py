@@ -1165,6 +1165,36 @@ class IABCategory(ConstantBase):
     }
 
 
+IAB_CATEGORY_DEFAULT_ICON_MAP = {
+    "IAB1": "d/icons/IAB1",
+    "IAB2": "d/icons/IAB2",
+    "IAB3": "d/icons/IAB3",
+    "IAB4": "d/icons/IAB4",
+    "IAB5": "d/icons/IAB5",
+    "IAB6": "d/icons/IAB6",
+    "IAB7": "d/icons/IAB7",
+    "IAB8": "d/icons/IAB8",
+    "IAB9": "d/icons/IAB9",
+    "IAB10": "d/icons/IAB10",
+    "IAB11": "d/icons/IAB11",
+    "IAB12": "d/icons/IAB12",
+    "IAB13": "d/icons/IAB13",
+    "IAB14": "d/icons/IAB14",
+    "IAB15": "d/icons/IAB15",
+    "IAB16": "d/icons/IAB16",
+    "IAB17": "d/icons/IAB17",
+    "IAB18": "d/icons/IAB18",
+    "IAB19": "d/icons/IAB19",
+    "IAB20": "d/icons/IAB20",
+    "IAB21": "d/icons/IAB21",
+    "IAB22": "d/icons/IAB22",
+    "IAB23": "d/icons/IAB23",
+    "IAB24": "d/icons/IAB24",
+    "IAB25": "d/icons/IAB25",
+    "IAB26": "d/icons/IAB26",
+}
+
+
 class InterestCategory(ConstantBase):
     ENTERTAINMENT = "entertainment"
     FUN_QUIZZES = "fun_quizzes"

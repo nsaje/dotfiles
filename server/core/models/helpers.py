@@ -1,6 +1,8 @@
 from django.core.cache import caches
 
 import core.models
+import dash.constants
+import dash.image_helper
 
 NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL = 3  # number of days an ad group is paused before it can be archived.
 
@@ -67,3 +69,16 @@ def create_default_name(objects, name):
             name += " {}".format(num)
 
     return name
+
+
+def get_hosted_default_icon_url(content_ad, size=None):
+    iab_category_key = content_ad.ad_group.campaign.settings.iab_category.split("-")[0]
+    default_icon_id = dash.constants.IAB_CATEGORY_DEFAULT_ICON_MAP.get(iab_category_key)
+
+    if not default_icon_id:
+        return None
+
+    if size:
+        return dash.image_helper.get_image_url(default_icon_id, size, size, dash.constants.ImageCrop.CENTER)
+    else:
+        return dash.image_helper.get_base_image_url(default_icon_id)

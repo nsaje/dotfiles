@@ -73,6 +73,21 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, instance.Account
 
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
 
+    def get_base_default_icon_url(self):
+        if not self.default_icon:
+            return None
+
+        return self.default_icon.get_base_url()
+
+    def get_default_icon_url(self, size=None):
+        if not self.default_icon:
+            return None
+
+        if size is None:
+            size = self.default_icon.width
+
+        return self.default_icon.get_url(width=size, height=size)
+
     @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {

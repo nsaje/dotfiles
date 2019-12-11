@@ -40,11 +40,15 @@ class UploadBatch(api_common.BaseApiView):
         candidates = []
         if not request.GET.get("withoutCandidates"):
             candidates = [upload.add_candidate(batch)]
+
+        can_use_icon = ad_group.campaign.type != constants.CampaignType.DISPLAY and request.user.has_perm(
+            "zemauth.can_use_creative_icon"
+        )
         return self.create_api_response(
             {
                 "batch_id": batch.id,
                 "batch_name": batch.name,
-                "candidates": [candidate.to_dict() for candidate in candidates],
+                "candidates": [candidate.to_dict(can_use_icon) for candidate in candidates],
             }
         )
 
@@ -69,7 +73,7 @@ class UploadCsv(api_common.BaseApiView):
         except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
             raise utils.exc.ValidationError(message=str(err))
 
-        candidates_result = upload.get_candidates_with_errors(candidates)
+        candidates_result = upload.get_candidates_with_errors(request, candidates)
         return self.create_api_response(
             {"batch_id": batch.id, "batch_name": batch.name, "candidates": candidates_result}
         )
@@ -86,7 +90,9 @@ class UploadStatus(api_common.BaseApiView):
             candidate_ids = candidate_ids.strip().split(",")
             candidates = candidates.filter(id__in=candidate_ids)
 
-        candidates_result = {candidate["id"]: candidate for candidate in upload.get_candidates_with_errors(candidates)}
+        candidates_result = {
+            candidate["id"]: candidate for candidate in upload.get_candidates_with_errors(request, candidates)
+        }
         return self.create_api_response({"candidates": candidates_result})
 
 
@@ -187,7 +193,7 @@ class Candidate(api_common.BaseApiView):
             raise utils.exc.MissingDataError("Batch does not exist")
 
         return self.create_api_response(
-            {"candidates": upload.get_candidates_with_errors(batch.contentadcandidate_set.all())}
+            {"candidates": upload.get_candidates_with_errors(request, batch.contentadcandidate_set.all())}
         )
 
     def post(self, request, batch_id, candidate_id=None):

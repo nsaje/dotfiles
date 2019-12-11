@@ -339,7 +339,7 @@
                         ng-if="ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
                     >
                         <label class="form__label" for="icon-url-input"
-                            >Icon image</label
+                            >Brand logo</label
                         >
                         <zem-file-input
                             class="content-upload__image-input"
@@ -390,7 +390,7 @@
                             {{ error }}
                         </div>
                         <div class="form__text--small">
-                            The minimum required size for the icon image is
+                            The minimum required size for the brand logo is
                             128x128 pixels.
                         </div>
                         <div class="form__text--small">
@@ -400,8 +400,8 @@
                                 tabindex="-1"
                                 ng-if="!ctrl.isEdit"
                             >
-                                If you want to upload an icon image URL, click
-                                here to switch to the URL form.
+                                If you want to upload a brand logo using a URL,
+                                click here to switch to the URL form.
                             </a>
                         </div>
                     </div>
@@ -412,7 +412,7 @@
                         ng-if="!ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
                     >
                         <label class="form__label" for="icon-url-input"
-                            >Icon image URL</label
+                            >Brand Logo URL</label
                         >
                         <input
                             class="input-text"
@@ -450,7 +450,7 @@
                             {{ error }}
                         </div>
                         <div class="form__text--small">
-                            The minimum required size for the icon image is
+                            The minimum required size for the brand logo is
                             128x128 pixels.
                         </div>
                         <div class="form__text--small">
@@ -460,8 +460,9 @@
                                 ng-click="ctrl.toggleIconUpload()"
                                 tabindex="-1"
                             >
-                                If you have the icon image on your computer,
-                                switch to the image uploading form.
+                                If you have the brand logo on your computer,
+                                click here to switch to the image uploading
+                                form.
                             </a>
                         </div>
                     </div>

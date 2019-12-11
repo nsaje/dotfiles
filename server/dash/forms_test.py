@@ -1144,7 +1144,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         files["icon"] = self.invalid_image
         f = forms.ContentAdCandidateForm(None, data, files)
         self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["icon"], ["Invalid icon file"])
+        self.assertEqual(f.errors["icon"], ["Invalid image file"])
 
     def test_skipped_call_to_action(self):
         data, files = self._get_valid_data()
@@ -1397,49 +1397,49 @@ class ContentAdFormTestCase(TestCase):
         data["icon_url"] = "ttp://example.com"
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Invalid icon URL"]}, f.errors)
+        self.assertEqual({"icon_url": ["Invalid image URL"]}, f.errors)
 
     def test_invalid_icon_status(self):
         data = self._get_valid_icon_data()
         data["icon_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image could not be processed"]}, f.errors)
 
     def test_missing_icon_id(self):
         data = self._get_valid_icon_data()
         del data["icon_id"]
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image could not be processed"]}, f.errors)
 
     def test_missing_icon_hash(self):
         data = self._get_valid_icon_data()
         del data["icon_hash"]
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image could not be processed"]}, f.errors)
 
     def test_missing_icon_width(self):
         data = self._get_valid_icon_data()
         del data["icon_width"]
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image could not be processed"]}, f.errors)
 
     def test_missing_icon_height(self):
         data = self._get_valid_icon_data()
         del data["icon_height"]
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image could not be processed"]}, f.errors)
 
     def test_is_icon_square(self):
         data = self._get_valid_icon_data()
         data["icon_width"] = data["icon_height"] + 1
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon's height and width must be equal"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image height and width must be equal"]}, f.errors)
 
     def test_icon_min_size(self):
         data = self._get_valid_icon_data()
@@ -1447,7 +1447,7 @@ class ContentAdFormTestCase(TestCase):
         data["icon_width"] = 1
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon too small (minimum size is 128x128 px)"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image too small (minimum size is 128x128 px)"]}, f.errors)
 
     def test_icon_max_size(self):
         data = self._get_valid_icon_data()
@@ -1455,7 +1455,7 @@ class ContentAdFormTestCase(TestCase):
         data["icon_width"] = 40001
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"icon_url": ["Icon too big (maximum size is 10000x10000 px)"]}, f.errors)
+        self.assertEqual({"icon_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
 
     def test_icon_size_oen(self):
         self.campaign.account.id = 305

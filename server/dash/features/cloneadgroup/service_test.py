@@ -23,16 +23,20 @@ class Clone(TestCase):
         self.request = magic_mixer.blend_request_user()
 
     def test_clone(self, mock_insert_adgroup, mock_redirects, mock_autopilot):
-        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group, archived=False)
+        icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
+        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group, archived=False, icon=icon)
 
         cloned_ad_group = service.clone(self.request, self.ad_group, self.dest_campaign, "Something", clone_ads=True)
 
         self.assertNotEqual(self.ad_group, cloned_ad_group)
-        self.assertTrue(core.models.ContentAd.objects.filter(ad_group=cloned_ad_group).exists())
+        cloned_ads = core.models.ContentAd.objects.filter(ad_group=cloned_ad_group)
+        self.assertTrue(cloned_ads.exists())
+        self.assertEqual(icon, cloned_ads[0].icon)
 
     def test_clone_unicode(self, mock_insert_adgroup, mock_redirects, mock_autopilot):
         self.ad_group.name = "Non–Gated"
-        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group, archived=False)
+        icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
+        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group, archived=False, icon=icon)
 
         cloned_ad_group = service.clone(self.request, self.ad_group, self.dest_campaign, "Something", clone_ads=True)
 

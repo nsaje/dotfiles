@@ -180,7 +180,7 @@ class UploadBatchSerializer(rest_framework.serializers.Serializer):
     def to_representation(self, batch):
         external_data = super(UploadBatchSerializer, self).to_representation(batch)
         cleaned_candidates = dash.features.contentupload.upload.get_candidates_with_errors(
-            batch.contentadcandidate_set.all()
+            None, batch.contentadcandidate_set.all()
         )
         external_data["validationStatus"] = [candidate["errors"] for candidate in cleaned_candidates]
         return external_data

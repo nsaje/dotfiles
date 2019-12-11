@@ -41,14 +41,14 @@ class AccountSettingsValidatorMixin(object):
             return
 
         if default_icon.width != default_icon.height:
-            raise exceptions.DefaultIconNotSquare("Default icon's height and width must be equal.")
+            raise exceptions.DefaultIconNotSquare("Image height and width must be equal.")
 
         if default_icon.width < self.MIN_DEFAULT_ICON_SIZE:
             raise exceptions.DefaultIconTooSmall(
-                "Default icon too small (minimum size is {min}x{min} px).".format(min=self.MIN_DEFAULT_ICON_SIZE)
+                "Image too small (minimum size is {min}x{min} px).".format(min=self.MIN_DEFAULT_ICON_SIZE)
             )
 
         if default_icon.width > self.MAX_DEFAULT_ICON_SIZE:
             raise exceptions.DefaultIconTooBig(
-                "Default icon too big (maximum size is {max}x{max} px).".format(max=self.MAX_DEFAULT_ICON_SIZE)
+                "Image too big (maximum size is {max}x{max} px).".format(max=self.MAX_DEFAULT_ICON_SIZE)
             )

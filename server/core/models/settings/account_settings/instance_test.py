@@ -79,12 +79,12 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         account = magic_mixer.blend(core.models.Account)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=150, height=150, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
         account.settings.update(None, default_icon=default_icon)
 
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(150, account.settings.default_icon.width)
         self.assertEqual(150, account.settings.default_icon.height)
         self.assertEqual(1000, account.settings.default_icon.file_size)
@@ -92,7 +92,7 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         default_icon = magic_mixer.blend(
             core.models.ImageAsset,
             image_id="icon_id2",
-            hash="icon_hash2",
+            image_hash="icon_hash2",
             width=151,
             height=151,
             file_size=1001,
@@ -101,7 +101,7 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         account.settings.update(None, default_icon=default_icon)
 
         self.assertEqual("icon_id2", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash2", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash2", account.settings.default_icon.image_hash)
         self.assertEqual(151, account.settings.default_icon.width)
         self.assertEqual(151, account.settings.default_icon.height)
         self.assertEqual(1001, account.settings.default_icon.file_size)
@@ -111,19 +111,19 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         account = magic_mixer.blend(core.models.Account)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=151, height=150, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=151, height=150, file_size=1000
         )
         with self.assertRaises(exceptions.DefaultIconNotSquare):
             account.settings.update(None, default_icon=default_icon)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=149, height=150, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=149, height=150, file_size=1000
         )
         with self.assertRaises(exceptions.DefaultIconNotSquare):
             account.settings.update(None, default_icon=default_icon)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, id="icon_id", hash="icon_hash", width=150, height=150, file_size=1000
+            core.models.ImageAsset, id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
         self.account.settings.update(None, default_icon=default_icon)
 
@@ -131,13 +131,13 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         account = magic_mixer.blend(core.models.Account)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=127, height=127, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=127, height=127, file_size=1000
         )
         with self.assertRaises(exceptions.DefaultIconTooSmall):
             account.settings.update(None, default_icon=default_icon)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, id="icon_id", hash="icon_hash", width=128, height=128, file_size=1000
+            core.models.ImageAsset, id="icon_id", image_hash="icon_hash", width=128, height=128, file_size=1000
         )
         self.account.settings.update(None, default_icon=default_icon)
 
@@ -145,12 +145,17 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         account = magic_mixer.blend(core.models.Account)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=10001, height=10001, file_size=1000
+            core.models.ImageAsset,
+            image_id="icon_id",
+            image_hash="icon_hash",
+            width=10001,
+            height=10001,
+            file_size=1000,
         )
         with self.assertRaises(exceptions.DefaultIconTooBig):
             account.settings.update(None, default_icon=default_icon)
 
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, id="icon_id", hash="icon_hash", width=9999, height=9999, file_size=1000
+            core.models.ImageAsset, id="icon_id", image_hash="icon_hash", width=9999, height=9999, file_size=1000
         )
         self.account.settings.update(None, default_icon=default_icon)

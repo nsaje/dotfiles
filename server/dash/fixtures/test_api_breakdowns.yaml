@@ -473,6 +473,18 @@
     model: dash.adgroupsourcesettings
     pk: 5
 
+# test image asset
+
+-   fields:
+        image_id: '1000'
+        image_hash: '1000'
+        width: 400
+        height: 400
+        file_size: 1000
+        origin_url: null
+        created_dt: '2015-02-21T00:00:00'
+    model: dash.imageasset
+    pk: '1000'
 
 # test contentad
 
@@ -481,9 +493,7 @@
         image_hash: '100'
         image_width: 200
         image_height: 300
-        icon_id: '1000'
-        icon_hash: '1000'
-        icon_size: 400
+        icon: '1000'
         batch: 1
         archived: False
         url: 'http://testurl1.com'

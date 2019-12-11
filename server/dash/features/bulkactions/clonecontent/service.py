@@ -37,7 +37,7 @@ def clone_edit(
         request.user, content_ads, destination_ad_group, new_batch_name, overridden_state
     )
 
-    return destination_edit_batch, dash.features.contentupload.upload.get_candidates_with_errors(candidates)
+    return destination_edit_batch, dash.features.contentupload.upload.get_candidates_with_errors(request, candidates)
 
 
 def _validate_same_account(source_ad_group, destination_ad_group):

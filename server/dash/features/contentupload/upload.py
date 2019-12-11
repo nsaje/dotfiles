@@ -21,6 +21,7 @@ from . import upload_dev
 
 logger = zlogging.getLogger(__name__)
 
+DISPLAY_AD_TYPES = [constants.AdType.IMAGE, constants.AdType.AD_TAG]
 VALID_DEFAULTS_FIELDS = set(["image_crop", "description", "display_url", "brand_name", "call_to_action", "ad_tag"])
 VALID_UPDATE_FIELDS = set(
     [
@@ -34,11 +35,6 @@ VALID_UPDATE_FIELDS = set(
         "secondary_tracker_url",
         "call_to_action",
         "ad_tag",
-        "type",
-        "image_height",
-        "image_width",
-        "icon_height",
-        "icon_width",
     ]
 )
 
@@ -120,7 +116,7 @@ def _reset_candidate_async_status(candidate):
         candidate.image_width = None
         candidate.image_height = None
         candidate.image_file_size = None
-    if candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG] and candidate.icon_url:
+    if candidate.type not in DISPLAY_AD_TYPES and candidate.icon_url:
         candidate.icon_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidate.icon_id = None
         candidate.icon_hash = None
@@ -151,7 +147,7 @@ def _invoke_external_validation(candidate, batch):
         "imageUrls": [],
         "callbackUrl": settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
         "skipUrlValidation": skip_url_validation,
-        "normalize": candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG],
+        "normalize": candidate.type not in DISPLAY_AD_TYPES,
         "impressionTrackers": [it for it in [candidate.primary_tracker_url, candidate.secondary_tracker_url] if it],
     }
 
@@ -261,14 +257,22 @@ def _save_history(batch, content_ads):
     batch.ad_group.write_history(changes_text, user=batch.created_by, action_type=action_type)
 
 
-def get_candidates_with_errors(candidates):
+def get_candidates_with_errors(request, candidates):
+    has_icon_permission = request and request.user.has_perm("zemauth.can_use_creative_icon")
+
     _, errors = get_clean_candidates_and_errors(candidates)
+
     result = []
     for candidate in candidates:
         candidate_dict = candidate.to_dict()
+
+        if has_icon_permission and candidate.type not in DISPLAY_AD_TYPES:
+            candidate_dict["hosted_icon_url"] = candidate.get_hosted_icon_url(300)
+
         candidate_dict["errors"] = {}
         if candidate.id in errors:
             candidate_dict["errors"] = errors[candidate.id]
+
         result.append(candidate_dict)
     return result
 
@@ -478,7 +482,7 @@ def add_candidate(batch):
     campaign_type = batch.ad_group.campaign.type if batch.ad_group else None
 
     return batch.contentadcandidate_set.create(
-        ad_group_id=batch.ad_group_id,
+        ad_group=batch.ad_group,
         image_crop=batch.default_image_crop,
         display_url=batch.default_display_url,
         brand_name=batch.default_brand_name,
@@ -535,8 +539,7 @@ def _process_image_url_update(candidate, image_url, callback_data):
 
 
 def _process_icon_url_update(candidate, icon_url, callback_data):
-    display_ad_types = [constants.AdType.IMAGE, constants.AdType.AD_TAG]
-    if candidate.type in display_ad_types or icon_url not in callback_data.get("images", {}):
+    if candidate.type in DISPLAY_AD_TYPES or icon_url not in callback_data.get("images", {}):
         return
 
     if candidate.icon_status == constants.AsyncUploadJobStatus.PENDING_START:
@@ -546,7 +549,7 @@ def _process_icon_url_update(candidate, icon_url, callback_data):
     candidate.icon_status = constants.AsyncUploadJobStatus.FAILED
     icon_data = callback_data["images"][icon_url]
     try:
-        if candidate.type not in display_ad_types and icon_data["valid"]:
+        if candidate.type not in DISPLAY_AD_TYPES and icon_data["valid"]:
             candidate.icon_id = icon_data["id"]
             candidate.icon_width = icon_data["width"]
             candidate.icon_height = icon_data["height"]
@@ -708,10 +711,9 @@ def _apply_content_ad_edit(request, candidate):
         tracker_urls.append(secondary_tracker_url)
 
     updates = {k: v for k, v in list(f.cleaned_data.items()) if k in VALID_UPDATE_FIELDS}
-    if all(field in updates for field in ["icon_height", "icon_width"]):
-        updates["icon_size"] = updates["icon_height"]
     if tracker_urls != content_ad.tracker_urls:
         updates["tracker_urls"] = tracker_urls
+
     content_ad.update(request, write_history=False, **updates)
 
     return content_ad

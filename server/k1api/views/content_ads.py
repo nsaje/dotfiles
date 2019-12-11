@@ -85,10 +85,11 @@ class ContentAdsView(K1APIView):
                 "image_height": item.image_height,
                 "image_hash": item.image_hash,
                 "image_crop": item.image_crop,
-                "icon_id": item.icon_id,
-                "icon_width": item.icon_size,
-                "icon_height": item.icon_size,
-                "icon_hash": item.icon_hash,
+                # TODO: ICONS: remove after migrate
+                "icon_id": item.icon.image_id if hasattr(item, "icon") and item.icon else None,
+                "icon_width": item.icon.width if hasattr(item, "icon") and item.icon else None,
+                "icon_height": item.icon.height if hasattr(item, "icon") and item.icon else None,
+                "icon_hash": item.icon.image_hash if hasattr(item, "icon") and item.icon else None,
                 "description": "" if item.ad_group_id == 156382 else item.description,
                 "brand_name": item.brand_name,
                 "display_url": item.display_url,
@@ -109,7 +110,7 @@ class ContentAdsView(K1APIView):
                     content_ad["icon_id"] = default_icon.image_id
                     content_ad["icon_width"] = default_icon.width
                     content_ad["icon_height"] = default_icon.height
-                    content_ad["icon_hash"] = default_icon.hash
+                    content_ad["icon_hash"] = default_icon.image_hash
 
             response.append(content_ad)
 

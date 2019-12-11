@@ -537,6 +537,7 @@
 
 - fields:
     ad_group: 6
+    type: 2
     batch_id: 6
     created_dt: '2016-05-31T09:00:00'
     label: 'label'

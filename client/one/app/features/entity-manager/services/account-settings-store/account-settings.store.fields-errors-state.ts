@@ -15,4 +15,5 @@ export class AccountSettingsStoreFieldsErrorsState {
     allowedMediaSources: FieldErrors = [];
     autoAddNewSources: FieldErrors = [];
     deals: DealErrors[] = [];
+    defaultIconUrl: FieldErrors[] = [];
 }

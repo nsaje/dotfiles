@@ -55,6 +55,7 @@ import {HelpPopoverHeaderComponent} from './components/smart-grid/components/hea
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
 import {SelectListComponent} from './components/select-list/select-list.component';
 import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
+import {ContentFormGroupComponent} from './components/content-form-group/content-form-group.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -96,6 +97,7 @@ const EXPORTED_DECLARATIONS = [
     HelpPopoverComponent,
     CommentPopoverComponent,
     FileSelectorComponent,
+    ContentFormGroupComponent,
     PaginationComponent,
     SmartGridComponent,
     LoadingOverlayComponent,

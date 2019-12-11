@@ -22,4 +22,6 @@ export const accountMock: Account = {
     },
     allowedMediaSources: [],
     deals: [],
+    defaultIconUrl: null,
+    defaultIconBase64: null,
 };

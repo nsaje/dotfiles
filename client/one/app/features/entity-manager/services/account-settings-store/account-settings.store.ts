@@ -14,6 +14,8 @@ import * as deepEqual from 'fast-deep-equal';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {AccountType, Currency} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
+import * as fileHelpers from '../../../../shared/helpers/file.helpers';
 import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
@@ -319,6 +321,14 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         }
         this.patchState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
+    }
+
+    async setDefaultIcon(files: File[]) {
+        let defaultIconBase64 = null;
+        if (!arrayHelpers.isEmpty(files)) {
+            defaultIconBase64 = await fileHelpers.encodeBase64(files[0]);
+        }
+        this.patchState(defaultIconBase64, 'entity', 'defaultIconBase64');
     }
 
     setPublisherGroupsTargeting(publisherGroupsTargeting: {

@@ -69,14 +69,14 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
     @staticmethod
     def _process_default_icon(settings, account, data):
-        if data.get("default_icon_url"):
-            icon_create_fn = functools.partial(
-                core.models.ImageAsset.objects.create_from_origin_url, data["default_icon_url"]
-            )
-
-        elif data.get("default_icon_base64"):
+        if data.get("default_icon_base64"):
             icon_create_fn = functools.partial(
                 core.models.ImageAsset.objects.create_from_image_base64, data["default_icon_base64"], account.id
+            )
+
+        elif data.get("default_icon_url"):
+            icon_create_fn = functools.partial(
+                core.models.ImageAsset.objects.create_from_origin_url, data["default_icon_url"]
             )
 
         else:
@@ -89,7 +89,7 @@ class AccountViewSet(RESTAPIBaseViewSet):
             core.models.image_asset.exceptions.ImageAssetExternalValidationFailed,
             core.models.image_asset.exceptions.ImageAssetInvalid,
         ):
-            raise utils.exc.ValidationError(errors={"default_icon_url": "Default icon could not be processed."})
+            raise utils.exc.ValidationError(errors={"default_icon_url": ["Could not be processed."]})
 
         return settings
 

@@ -81,7 +81,7 @@ class ContentAdEdit(api_common.BaseApiView):
             raise exc.ValidationError(str(err))
 
         return self.create_api_response(
-            {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(candidates)}
+            {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(request, candidates)}
         )
 
 

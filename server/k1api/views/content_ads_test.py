@@ -141,16 +141,16 @@ class ContentAdsTest(K1APIBaseTest):
                 "document_features": None,
                 "ad_tag": None,
                 "icon_id": "987654321",
-                "icon_hash": None,
-                "icon_width": None,
-                "icon_height": None,
+                "icon_hash": "098765432",
+                "icon_width": 200,
+                "icon_height": 200,
             }
         ]
         self.assertEqual(data, expected)
 
     def test_get_content_ads_by_id_default_icon(self):
         default_icon = magic_mixer.blend(
-            dash.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=200, height=200
+            dash.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=200, height=200
         )
         account = magic_mixer.blend(dash.models.Account)
         content_ad = magic_mixer.blend(

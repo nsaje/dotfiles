@@ -157,7 +157,7 @@ class Command(Z1Command):
             time.sleep(1)
 
         if batch.status == constants.UploadBatchStatus.FAILED:
-            cleaned_candidates = contentupload.upload.get_candidates_with_errors(batch.entitycandidate_set.all())
+            cleaned_candidates = contentupload.upload.get_candidates_with_errors(None, batch.entitycandidate_set.all())
             print([candidate["errors"] for candidate in cleaned_candidates])
             raise Exception("Upload failed")
 

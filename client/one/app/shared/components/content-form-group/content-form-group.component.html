@@ -1,0 +1,14 @@
+<div class="zem-form-group">
+    <label
+        class="zem-form-group__label zem-form-group__label--match-input-height"
+    >
+        {{ label }}
+        <zem-help-popover
+            class="zem-help-popover"
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content"><ng-content></ng-content></div>
+</div>

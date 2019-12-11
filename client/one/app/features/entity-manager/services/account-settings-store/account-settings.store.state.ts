@@ -28,6 +28,8 @@ export class AccountSettingsStoreState {
         },
         allowedMediaSources: [],
         deals: [],
+        defaultIconUrl: null,
+        defaultIconBase64: null,
     };
     extras: AccountExtras = {
         archived: null,

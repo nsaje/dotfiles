@@ -40,7 +40,7 @@ class UploadCsvTestCase(TestCase):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Title,Image URL,Label,Image Crop,Icon Image URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"URL,Title,Image URL,Label,Image Crop,Brand Logo URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
             b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
             b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
@@ -55,6 +55,7 @@ class UploadCsvTestCase(TestCase):
         candidate = batch.contentadcandidate_set.get()
 
         expected_candidate = candidate.to_dict()
+        expected_candidate["hosted_icon_url"] = "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center"
         expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
 
         self.assertEqual(response.status_code, 200)
@@ -87,7 +88,7 @@ class UploadCsvTestCase(TestCase):
 
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Title,Image URL,Label,Image Crop,Icon Image URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"URL,Title,Image URL,Label,Image Crop,Brand Logo URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
             b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
             b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
@@ -104,7 +105,7 @@ class UploadCsvTestCase(TestCase):
                 "data": {
                     "error_code": "ValidationError",
                     "message": None,
-                    "errors": {"candidates": ['Unrecognized column name "Icon Image URL".']},
+                    "errors": {"candidates": ['Unrecognized column name "Brand Logo URL".']},
                     "data": None,
                 },
             },
@@ -268,6 +269,7 @@ class UploadCsvTestCase(TestCase):
         candidate = batch.contentadcandidate_set.get()
 
         expected_candidate = candidate.to_dict()
+        expected_candidate["hosted_icon_url"] = "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center"
         expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
 
         self.assertEqual(response.status_code, 200)
@@ -314,6 +316,7 @@ class UploadCsvTestCase(TestCase):
         candidate = batch.contentadcandidate_set.get()
 
         expected_candidate = candidate.to_dict()
+        expected_candidate["hosted_icon_url"] = "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center"
         expected_candidate["errors"] = {
             "__all__": ["Content ad still processing"],
             "description": ["Missing description"],
@@ -467,7 +470,7 @@ class UploadStatusTestCase(TestCase):
         expected_candidate = candidate.to_dict()
         expected_candidate["errors"] = {
             "image_url": ["Image could not be processed"],
-            "icon_url": ["Icon could not be processed"],
+            "icon_url": ["Image could not be processed"],
             "url": ["Content unreachable or invalid"],
             "primary_tracker_url": ["Invalid or unreachable tracker URL"],
             "secondary_tracker_url": ["Invalid or unreachable tracker URL"],
@@ -728,7 +731,7 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             (
-                '"URL","Title","Image URL","Icon Image URL","Display URL","Brand name","Description","Call to action",'
+                '"URL","Title","Image URL","Brand Logo URL","Display URL","Brand name","Description","Call to action",'
                 '"Label","Image crop","Primary impression tracker URL","Secondary impression'
                 ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
                 '"http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg","zemanta.com","Zemanta","Zemanta blog",'
@@ -923,7 +926,7 @@ class CandidateTest(TestCase):
         batch_id = 1
         self.maxDiff = None
 
-        response = _get_client().get(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
+        response = _get_client(True).get(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
 
         response = json.loads(response.content)
@@ -960,7 +963,7 @@ class CandidateTest(TestCase):
                             "icon_hash": None,
                             "icon_file_size": None,
                             "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
-                            "hosted_icon_url": None,
+                            "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
                             "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                             "primary_tracker_url": None,
                             "secondary_tracker_url": None,

@@ -17,7 +17,17 @@ class Clone(TestCase):
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        self.source_content_ads = magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.source_ad_group)
+        icon = magic_mixer.blend(
+            core.models.ImageAsset,
+            hash="iconhash",
+            width=200,
+            height=200,
+            file_size=1000,
+            origin_url="http://origin.url.com",
+        )
+        self.source_content_ads = magic_mixer.cycle(5).blend(
+            core.models.ContentAd, ad_group=self.source_ad_group, icon=icon
+        )
         self.request = magic_mixer.blend_request_user()
 
     @patch("utils.sspd_client.sync_batch", autospec=True)
@@ -25,10 +35,20 @@ class Clone(TestCase):
     def test_clone(self, mock_update_ad_group, mock_sspd_sync, _):
         batch = service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
+        cloned_ads = core.models.ContentAd.objects.filter(batch=batch)
         self.assertCountEqual(
             [x.to_cloned_candidate_dict() for x in self.source_content_ads],
-            [x.to_cloned_candidate_dict() for x in core.models.ContentAd.objects.filter(batch=batch)],
+            [x.to_cloned_candidate_dict() for x in cloned_ads],
         )
+        source_icon = self.source_content_ads[0].icon
+        cloned_icon = cloned_ads[0].icon
+        self.assertEqual(source_icon.image_id, cloned_icon.image_id)
+        self.assertEqual(source_icon.image_hash, cloned_icon.image_hash)
+        self.assertEqual(source_icon.width, cloned_icon.height)
+        self.assertEqual(source_icon.height, cloned_icon.height)
+        self.assertEqual(source_icon.file_size, cloned_icon.file_size)
+        self.assertEqual(source_icon.origin_url, cloned_icon.origin_url)
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
 
         self.assertEqual(batch.ad_group, self.ad_group)
         mock_update_ad_group.assert_called_with(batch.ad_group, msg="clonecontent.clone")

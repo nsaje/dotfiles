@@ -47,7 +47,7 @@ class AccountViewSetTest(RESTAPITest):
             currency=account_db.currency,
             frequency_capping=settings_db.frequency_capping,
         )
-        expected["defaultIconUrl"] = settings_db.default_icon.get_url() if settings_db.default_icon else None
+        expected["defaultIconUrl"] = settings_db.get_base_default_icon_url() if settings_db.default_icon else None
         self.assertEqual(expected, account)
 
     def test_accounts_list(self):
@@ -249,18 +249,19 @@ class AccountViewSetTest(RESTAPITest):
     def test_accounts_get_default_icon(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=150, height=150, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
         account.settings.update_unsafe(None, default_icon=default_icon)
         r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
-        self.assertEqual("/icon_id.jpg?w=150&h=150&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
-        self.assertEqual(resp_json["data"]["defaultIconUrl"], account.settings.default_icon.get_url())
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual(resp_json["data"]["defaultIconUrl"], account.settings.get_base_default_icon_url())
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3")
     @mock.patch("utils.lambda_helper.invoke_lambda")
-    def test_accounts_put_default_icon(self, mock_external_validation, mock_s3_upload):
+    def test_accounts_put_default_icon(self, mock_external_validation, mock_s3_upload, _):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         mock_external_validation.return_value = {
             "status": "ok",
@@ -284,19 +285,20 @@ class AccountViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         account.refresh_from_db()
-        self.assertEqual("/icon_id.jpg?w=180&h=180&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(180, account.settings.default_icon.width)
         self.assertEqual(180, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(1000, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+
         mock_s3_upload.assert_not_called()
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3")
     @mock.patch("utils.lambda_helper.invoke_lambda")
-    def test_accounts_put_default_icon_fail(self, mock_external_validation, mock_s3_upload):
+    def test_accounts_put_default_icon_fail(self, mock_external_validation, mock_s3_upload, _):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         mock_external_validation.return_value = {
             "status": "ok",
@@ -355,19 +357,20 @@ class AccountViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         account.refresh_from_db()
-        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(128, account.settings.default_icon.width)
         self.assertEqual(128, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(1000, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+
         mock_s3_upload.assert_not_called()
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3")
     @mock.patch("utils.lambda_helper.invoke_lambda")
-    def test_accounts_post_default_icon(self, mock_external_validation, mock_s3_upload):
+    def test_accounts_post_default_icon(self, mock_external_validation, mock_s3_upload, _):
         mock_external_validation.return_value = {
             "status": "ok",
             "candidate": {
@@ -398,20 +401,22 @@ class AccountViewSetTest(RESTAPITest):
         new_account["id"] = resp_json["data"]["id"]
         new_account["defaultIconUrl"] = resp_json["data"]["defaultIconUrl"]
         self.assertEqual(resp_json["data"], new_account)
-        self.assertEqual("/icon_id.jpg?w=170&h=170&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=new_account["id"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(170, account.settings.default_icon.width)
         self.assertEqual(170, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(2000, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
 
+        mock_s3_upload.assert_not_called()
+
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3")
     @mock.patch("utils.lambda_helper.invoke_lambda")
-    def test_accounts_post_default_icon_fail(self, mock_external_validation, mock_s3_upload):
+    def test_accounts_post_default_icon_fail(self, mock_external_validation, mock_s3_upload, _):
         new_account = self.account_repr(
             name="mytest",
             agency_id=1,
@@ -468,14 +473,13 @@ class AccountViewSetTest(RESTAPITest):
         new_account["id"] = resp_json["data"]["id"]
         new_account["defaultIconUrl"] = resp_json["data"]["defaultIconUrl"]
         self.assertEqual(resp_json["data"], new_account)
-        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=new_account["id"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(128, account.settings.default_icon.width)
         self.assertEqual(128, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(2000, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
 

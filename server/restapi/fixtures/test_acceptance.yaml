@@ -509,6 +509,19 @@
     model: dash.uploadbatch
     pk: 1302
 
+# test image asset
+
+-   fields:
+        image_id: '234567890'
+        image_hash: '098765432'
+        width: 200
+        height: 200
+        file_size: 1000
+        origin_url: null
+        created_dt: '2015-02-21T00:00:00'
+    model: dash.imageasset
+    pk: '234567890'
+
 # test contentad
 
 -   fields:
@@ -516,9 +529,7 @@
         image_hash: '987654321'
         image_width: 200
         image_height: 300
-        icon_id: '234567890'
-        icon_hash: '098765432'
-        icon_size: 200
+        icon: '234567890'
         batch: 1302
         archived: False
         url: 'http://testurl.com'

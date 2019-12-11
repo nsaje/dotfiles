@@ -14,9 +14,11 @@ import {
     CURRENCIES,
 } from '../../entity-manager.config';
 import {AccountSettingsStore} from '../../services/account-settings-store/account-settings.store';
-import {Subject} from 'rxjs';
+import {Subject, merge, Observable} from 'rxjs';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 import {LevelStateParam, EntityType} from '../../../../app.constants';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 
 @Component({
     selector: 'zem-account-settings-drawer',
@@ -36,6 +38,7 @@ export class AccountSettingsDrawerView
 
     isOpen: boolean;
     isNewEntity: boolean;
+    isDefaultIconPreviewVisible: boolean;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -48,6 +51,8 @@ export class AccountSettingsDrawerView
 
     ngOnInit(): void {
         this.isNewEntity = !this.entityId;
+
+        this.subscribeToStateUpdates();
     }
 
     ngAfterViewInit() {
@@ -99,6 +104,10 @@ export class AccountSettingsDrawerView
         }
     }
 
+    toggleDefaultIconPreview() {
+        this.isDefaultIconPreviewVisible = !this.isDefaultIconPreviewVisible;
+    }
+
     async saveSettings() {
         const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
@@ -139,5 +148,23 @@ export class AccountSettingsDrawerView
             id: entityId,
         });
         this.ajs$location.url(url);
+    }
+
+    private subscribeToStateUpdates() {
+        merge(this.createDefaultIconPreviewUpdater$())
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe();
+    }
+
+    private createDefaultIconPreviewUpdater$(): Observable<string> {
+        return this.store.state$.pipe(
+            map(state => state.entity.defaultIconUrl),
+            distinctUntilChanged(),
+            tap(defaultIconUrl => {
+                this.isDefaultIconPreviewVisible = commonHelpers.isDefined(
+                    defaultIconUrl
+                );
+            })
+        );
     }
 }

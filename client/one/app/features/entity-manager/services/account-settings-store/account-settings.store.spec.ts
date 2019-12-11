@@ -426,6 +426,24 @@ describe('AccountSettingsStore', () => {
         expect(store.state.entity.frequencyCapping).toEqual(30);
     });
 
+    it('should correctly change base64 encoded default icon', done => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.patchState('icon', 'entity', 'defaultIconBase64');
+        expect(store.state.entity.defaultIconBase64).toEqual('icon');
+
+        const blob = new Blob(['abcd'], {type: 'text/html'});
+
+        store.setDefaultIcon([<File>blob]).then(result => {
+            expect(store.state.entity.defaultIconBase64).toEqual(
+                'data:text/html;base64,YWJjZA=='
+            );
+            done();
+        });
+    });
+
     it('should correctly set publisher groups', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()

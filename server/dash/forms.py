@@ -888,7 +888,7 @@ NATIVE_SPECIFIC_FIELDS = ["icon_url"]
 DISPLAY_SPECIFIC_FIELDS = ["creative_size", "ad_tag"]
 
 EXPRESSIVE_FIELD_NAME_MAPPING = {
-    "icon_image_url": "icon_url",
+    "brand_logo_url": "icon_url",
     "primary_impression_tracker_url": "primary_tracker_url",
     "secondary_impression_tracker_url": "secondary_tracker_url",
 }
@@ -911,7 +911,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict(
         ["title", "Title"],
         ["image_url", "Image URL"],
         ["image_crop", "Image crop"],
-        ["icon_url", "Icon Image URL"],
+        ["icon_url", "Brand Logo URL"],
         ["display_url", "Display URL"],
         ["brand_name", "Brand name"],
         ["call_to_action", "Call to action"],
@@ -1367,7 +1367,7 @@ class BreakdownForm(ViewFilterForm):
 
 class ContentAdCandidateForm(forms.ModelForm):
     image = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid image file"})
-    icon = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid icon file"})
+    icon = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid image file"})
     # TODO: Set queryset in __init__ to filter video assets by account
     video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
     type = forms.TypedChoiceField(
@@ -1579,7 +1579,7 @@ class ContentAdForm(ContentAdCandidateForm):
         try:
             return self._validate_url(icon_url)
         except forms.ValidationError:
-            raise forms.ValidationError("Invalid icon URL")
+            raise forms.ValidationError("Invalid image URL")
 
     def clean_icon_id(self):
         return self.cleaned_data.get("icon_id") or None
@@ -1672,7 +1672,7 @@ class ContentAdForm(ContentAdCandidateForm):
             return
 
         if icon_status == constants.AsyncUploadJobStatus.FAILED:
-            return "Icon could not be processed"
+            return "Image could not be processed"
 
         return self._validate_icon_parameters(cleaned_data) or self._validate_icon_size(cleaned_data)
 
@@ -1685,7 +1685,7 @@ class ContentAdForm(ContentAdCandidateForm):
             cleaned_data["icon_file_size"],
         ]
         if not (all(icon_fields) or not any(icon_fields)):
-            return "Icon could not be processed"
+            return "Image could not be processed"
 
     def _validate_icon_size(self, cleaned_data):
         if self.campaign and self.campaign.account.id == 305:
@@ -1698,13 +1698,13 @@ class ContentAdForm(ContentAdCandidateForm):
             return
 
         if icon_width != icon_height:
-            return "Icon's height and width must be equal"
+            return "Image height and width must be equal"
 
         if icon_width < self.MIN_ICON_SIZE:
-            return "Icon too small (minimum size is {min}x{min} px)".format(min=self.MIN_ICON_SIZE)
+            return "Image too small (minimum size is {min}x{min} px)".format(min=self.MIN_ICON_SIZE)
 
         if icon_width > self.MAX_IMAGE_SIZE:
-            return "Icon too big (maximum size is {max}x{max} px)".format(max=self.MAX_IMAGE_SIZE)
+            return "Image too big (maximum size is {max}x{max} px)".format(max=self.MAX_IMAGE_SIZE)
 
     def _get_url_error_msg(self, cleaned_data):
         url_status = cleaned_data["url_status"]
@@ -1836,6 +1836,8 @@ class ImageAdForm(ContentAdForm):
         self.cleaned_data["icon_url"] = None
         self.cleaned_data["icon_id"] = None
         self.cleaned_data["icon_hash"] = None
+        self.cleaned_data["icon_width"] = None
+        self.cleaned_data["icon_height"] = None
         self.cleaned_data["icon_file_size"] = None
         self.cleaned_data["icon_status"] = constants.AsyncUploadJobStatus.OK
         self.cleaned_data["ad_tag"] = None
@@ -1878,6 +1880,8 @@ class AdTagForm(ImageAdForm):
         self.cleaned_data["icon_url"] = None
         self.cleaned_data["icon_id"] = None
         self.cleaned_data["icon_hash"] = None
+        self.cleaned_data["icon_width"] = None
+        self.cleaned_data["icon_height"] = None
         self.cleaned_data["icon_file_size"] = None
         self.cleaned_data["icon_status"] = constants.AsyncUploadJobStatus.OK
 

@@ -11,3 +11,7 @@ class AdGroupIsArchived(ValidationError):
 
 class IconNotSquare(ValidationError):
     pass
+
+
+class IconInvalid(ValidationError):
+    pass

@@ -31,13 +31,12 @@ class ContentAdManager(models.Manager):
             }.get(batch.ad_group.campaign.type, constants.AdType.CONTENT),
         )
 
+        updates = self._handle_icon(updates)
+
         for field in updates:
             if not hasattr(content_ad, field):
                 continue
             setattr(content_ad, field, updates[field])
-
-        if all(field in updates for field in ["icon_height", "icon_width"]):
-            setattr(content_ad, "icon_size", updates["icon_height"])
 
         if batch.default_state == constants.ContentAdSourceState.ACTIVE:
             content_ad.state = constants.ContentAdSourceState.ACTIVE
@@ -57,7 +56,27 @@ class ContentAdManager(models.Manager):
 
     def _validate_icon(self, updates):
         if updates.get("icon_height") != updates.get("icon_width"):
-            raise exceptions.IconNotSquare("Icon's height and width must be equal.")
+            raise exceptions.IconNotSquare("Image height and width must be equal.")
+
+    def _handle_icon(self, updates):
+        icon_fields = ["icon_id", "icon_hash", "icon_height", "icon_width", "icon_file_size"]
+
+        if all(updates.get(field) for field in icon_fields):
+            updates["icon"] = core.models.ImageAsset.objects.create(
+                image_id=updates["icon_id"],
+                image_hash=updates["icon_hash"],
+                width=updates["icon_width"],
+                height=updates["icon_height"],
+                file_size=updates["icon_file_size"],
+                origin_url=updates.get("icon_url"),
+            )
+        elif any(updates.get(field) for field in icon_fields):
+            raise exceptions.IconInvalid("Can not create icon due to incomplete data.")
+
+        for field in icon_fields + ["icon_url"]:
+            updates.pop(field, None)
+
+        return updates
 
     @transaction.atomic
     def bulk_create_from_candidates(self, candidate_dicts, batch, r1_resolve=True):

@@ -1,12 +1,15 @@
+import django.db.utils
 import mock
+from django.conf import settings
 from django.test import TestCase
+from django.test import override_settings
 
 import core.models
-import dash.constants
 
 from . import exceptions
 
 
+@override_settings(LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME="test_mock")
 class ImageAssetManagerTest(TestCase):
     @mock.patch("utils.lambda_helper.invoke_lambda")
     def test_external_validation_fail(self, mock_external_validation):
@@ -89,22 +92,9 @@ class ImageAssetManagerTest(TestCase):
         }
         image_asset = core.models.ImageAsset.objects.create_from_origin_url("http://image.url.com")
         self.assertEqual("image_id", image_asset.image_id)
-        self.assertEqual("image_hash", image_asset.hash)
+        self.assertEqual("image_hash", image_asset.image_hash)
         self.assertEqual(190, image_asset.width)
         self.assertEqual(200, image_asset.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, image_asset.crop)
-        self.assertEqual(9000, image_asset.file_size)
-        self.assertEqual("http://image.url.com", image_asset.origin_url)
-
-        mock_external_validation.return_value["candidate"]["images"]["http://image.url.com"]["id"] = "image_id_2"
-        image_asset = core.models.ImageAsset.objects.create_from_origin_url(
-            "http://image.url.com", crop=dash.constants.ImageCrop.ENTROPY
-        )
-        self.assertEqual("image_id_2", image_asset.image_id)
-        self.assertEqual("image_hash", image_asset.hash)
-        self.assertEqual(190, image_asset.width)
-        self.assertEqual(200, image_asset.height)
-        self.assertEqual(dash.constants.ImageCrop.ENTROPY, image_asset.crop)
         self.assertEqual(9000, image_asset.file_size)
         self.assertEqual("http://image.url.com", image_asset.origin_url)
 
@@ -128,29 +118,70 @@ class ImageAssetManagerTest(TestCase):
                 }
             },
         }
-        image_asset = core.models.ImageAsset.objects.create_from_image_base64("image_base64_1", "upload_id1")
+        image_asset = core.models.ImageAsset.objects.create_from_image_base64("image_base64", "upload_id")
         self.assertEqual("image_id", image_asset.image_id)
-        self.assertEqual("image_hash", image_asset.hash)
+        self.assertEqual("image_hash", image_asset.image_hash)
         self.assertEqual(190, image_asset.width)
         self.assertEqual(200, image_asset.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, image_asset.crop)
         self.assertEqual(9000, image_asset.file_size)
         self.assertIsNone(image_asset.origin_url)
 
-        mock_external_validation.return_value["candidate"]["images"]["image.url"]["id"] = "image_id_2"
-        image_asset = core.models.ImageAsset.objects.create_from_image_base64(
-            "image_base64_2", "upload_id2", crop=dash.constants.ImageCrop.FACES
-        )
-        self.assertEqual("image_id_2", image_asset.image_id)
-        self.assertEqual("image_hash", image_asset.hash)
-        self.assertEqual(190, image_asset.width)
-        self.assertEqual(200, image_asset.height)
-        self.assertEqual(dash.constants.ImageCrop.FACES, image_asset.crop)
-        self.assertEqual(9000, image_asset.file_size)
-        self.assertIsNone(image_asset.origin_url)
+        mock_s3_upload.assert_called_once_with("image_base64", "upload_id")
 
-        self.assertEqual(2, mock_s3_upload.call_count)
-        self.assertEqual(
-            [mock.call("image_base64_1", "upload_id1"), mock.call("image_base64_2", "upload_id2")],
-            mock_s3_upload.call_args_list,
+    @mock.patch("dash.image_helper.upload_image_to_s3", return_value="image.url")
+    @mock.patch("utils.lambda_helper.invoke_lambda")
+    def test_exists_update_origin_url(self, mock_external_validation, mock_s3_upload):
+        s3_origin_url = settings.IMAGE_THUMBNAIL_URL + "test"
+        image_data = {"valid": True, "id": "image_id", "hash": "hash", "width": 250, "height": 250, "file_size": 2500}
+        mock_external_validation.return_value = {"status": "ok", "candidate": {"images": {s3_origin_url: image_data}}}
+        image_asset = core.models.ImageAsset.objects.create(
+            image_id="image_id", image_hash="hash", width=250, height=250, file_size=2500
         )
+        image_asset.save()
+        self.assertIsNone(image_asset.origin_url)
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
+
+        new_image_asset = core.models.ImageAsset.objects.create_from_origin_url(s3_origin_url)
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
+
+        image_asset.refresh_from_db()
+        self.assertEqual("image_id", new_image_asset.image_id)
+        self.assertEqual(image_asset.image_id, new_image_asset.image_id)
+        self.assertEqual(s3_origin_url, image_asset.origin_url)
+
+        mock_external_validation.return_value["candidate"]["images"]["http://image.url.com"] = image_data
+        new_image_asset = core.models.ImageAsset.objects.create_from_origin_url("http://image.url.com")
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
+
+        image_asset.refresh_from_db()
+        self.assertEqual("image_id", new_image_asset.image_id)
+        self.assertEqual(image_asset.image_id, new_image_asset.image_id)
+        self.assertEqual("http://image.url.com", image_asset.origin_url)
+
+    def test_create(self):
+        image_asset = core.models.ImageAsset.objects.create(
+            image_id="image_id", image_hash="hash", width=250, height=250, file_size=2500
+        )
+        image_asset.save()
+        self.assertIsNone(image_asset.origin_url)
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
+
+        new_image_asset = core.models.ImageAsset.objects.create(
+            image_id="image_id",
+            image_hash="hash",
+            width=250,
+            height=250,
+            file_size=2500,
+            origin_url="http://image.url.com",
+        )
+        self.assertEqual(1, core.models.ImageAsset.objects.all().count())
+
+        image_asset.refresh_from_db()
+        self.assertEqual("image_id", new_image_asset.image_id)
+        self.assertEqual(image_asset.image_id, new_image_asset.image_id)
+        self.assertEqual("http://image.url.com", image_asset.origin_url)
+
+        with self.assertRaises(django.db.utils.IntegrityError):
+            core.models.ImageAsset.objects.create(
+                image_id="image_id", image_hash="hash", width=250, height=250, file_size=2501
+            )

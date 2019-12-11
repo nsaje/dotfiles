@@ -227,6 +227,104 @@
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
                     ></zem-integer-form-group>
+                    <zem-content-form-group
+                        class="zem-content-form-group zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_use_creative_icon'
+                            ) && isDefaultIconPreviewVisible
+                        "
+                        helpMessage="Icon preview placeholder text"
+                        [label]="'Brand logo'"
+                    >
+                        <img
+                            class="zem-account-settings-drawer__icon-preview"
+                            src="{{ state.entity.defaultIconUrl }}"
+                        />
+                    </zem-content-form-group>
+                    <zem-content-form-group
+                        class="zem-content-form-group zem-settings-section__item"
+                        [hidden]="
+                            !zemPermissions.hasPermission(
+                                'zemauth.can_use_creative_icon'
+                            ) || isDefaultIconPreviewVisible
+                        "
+                        helpMessage="Icon info placeholder text"
+                        [label]="'Brand logo'"
+                    >
+                        <zem-file-selector
+                            class="zem-file-selector zem-account-settings-drawer__icon-file-selector"
+                            [ngClass]="{
+                                'zem-file-selector--error':
+                                    state.fieldsErrors.defaultIconUrl &&
+                                    state.fieldsErrors.defaultIconUrl.length > 0
+                            }"
+                            [dropZoneLabel]="'Drop your file here or'"
+                            [accept]="'image/*'"
+                            [isMultiple]="false"
+                            [showBrowseButton]="true"
+                            [browseButtonLabel]="'Choose file'"
+                            (filesChange)="store.setDefaultIcon($event)"
+                        ></zem-file-selector>
+                        <div
+                            class="zem-form-group__content-item zem-message zem-message--error"
+                            *ngFor="
+                                let error of state.fieldsErrors.defaultIconUrl
+                            "
+                        >
+                            {{ error }}
+                        </div>
+                    </zem-content-form-group>
+                    <div
+                        class="zem-settings-section__item zem-settings-section__item--indented"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_use_creative_icon'
+                            )
+                        "
+                    >
+                        <div
+                            class="zem-account-settings-drawer__required-icon-size-message"
+                        >
+                            The minimum required size for the brand logo is
+                            128x128 pixels.
+                        </div>
+                    </div>
+                    <div
+                        class="zem-settings-section__item--indented"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_use_creative_icon'
+                            ) && isDefaultIconPreviewVisible
+                        "
+                    >
+                        <button
+                            class="zem-button-as-text zem-account-settings-drawer__icon-preview-toggle"
+                            (click)="toggleDefaultIconPreview()"
+                        >
+                            If you want to upload a new brand logo click here to
+                            switch to the upload form.
+                        </button>
+                    </div>
+                    <div
+                        class="zem-settings-section__item--indented"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_use_creative_icon'
+                            ) &&
+                            !isDefaultIconPreviewVisible &&
+                            state.entity.defaultIconUrl
+                        "
+                    >
+                        <button
+                            class="zem-button-as-text zem-account-settings-drawer__icon-preview-toggle"
+                            (click)="toggleDefaultIconPreview()"
+                            ng-if="state.entity.defaultIconUrl"
+                        >
+                            If you want to preview the brand logo click here to
+                            switch to the preview form.
+                        </button>
+                    </div>
                 </div>
             </div>
 

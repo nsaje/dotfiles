@@ -346,6 +346,7 @@ class InsertEditCandidatesTestCase(TestCase):
 class PersistBatchTestCase(TestCase):
     fixtures = ["test_upload.yaml"]
 
+    @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
     @patch("utils.sspd_client.sync_batch", Mock())
     @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
@@ -359,14 +360,15 @@ class PersistBatchTestCase(TestCase):
         mock_insert_redirects.side_effect = redirector_response
 
         batch = models.UploadBatch.objects.get(id=2)
-        self.assertEqual(1, batch.contentadcandidate_set.count())
-        self.assertEqual(0, batch.contentad_set.count())
 
         candidate = batch.contentadcandidate_set.get()
         candidate.type = constants.AdType.VIDEO
         candidate.save()
         candidate.ad_group.campaign.type = constants.CampaignType.VIDEO
         candidate.ad_group.campaign.save()
+
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
 
         contentupload.upload.persist_batch(batch)
         self.assertEqual(0, batch.contentadcandidate_set.count())
@@ -389,11 +391,62 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.image_width, content_ad.image_width)
         self.assertEqual(candidate.image_height, content_ad.image_height)
         self.assertEqual(candidate.image_hash, content_ad.image_hash)
+        self.assertEqual(candidate.icon_id, content_ad.icon.image_id)
+        self.assertEqual(candidate.icon_width, content_ad.icon.width)
+        self.assertEqual(candidate.icon_height, content_ad.icon.height)
+        self.assertEqual(candidate.icon_hash, content_ad.icon.image_hash)
+        self.assertEqual(candidate.icon_file_size, content_ad.icon.file_size)
+        self.assertEqual(candidate.icon_url, content_ad.icon.origin_url)
         self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
         self.assertTrue(mock_insert_redirects.called)
+
+        ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
+        batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+        candidate2 = magic_mixer.blend(
+            models.ContentAdCandidate,
+            batch=batch2,
+            ad_group=ad_group,
+            type=constants.AdType.VIDEO,
+            url_status=constants.AsyncUploadJobStatus.OK,
+            image_status=constants.AsyncUploadJobStatus.OK,
+            icon_status=constants.AsyncUploadJobStatus.OK,
+            url="http://url.com",
+            title="test",
+            image_url="https://image.url",
+            display_url="https://display.url",
+            brand_name="test",
+            description="test",
+            image_id=candidate.image_id,
+            image_hash=candidate.image_hash,
+            image_width=candidate.image_width,
+            image_height=candidate.image_height,
+            image_file_size=candidate.image_file_size,
+            icon_id=candidate.icon_id,
+            icon_hash=candidate.icon_hash,
+            icon_width=candidate.icon_width,
+            icon_height=candidate.icon_height,
+            icon_file_size=candidate.icon_file_size,
+            icon_url="https://test2.com",
+            original_content_ad=None,
+            video_asset_id="12345678-abcd-1234-abcd-123abcd12345",
+        )
+
+        contentupload.upload.persist_batch(batch2)
+        self.assertEqual(0, batch2.contentadcandidate_set.count())
+        self.assertEqual(1, batch2.contentad_set.count())
+
+        content_ad2 = batch2.contentad_set.get()
+        self.assertEqual(candidate2.icon_id, content_ad2.icon.image_id)
+        self.assertEqual(candidate2.icon_width, content_ad2.icon.width)
+        self.assertEqual(candidate2.icon_height, content_ad2.icon.height)
+        self.assertEqual(candidate2.icon_hash, content_ad2.icon.image_hash)
+        self.assertEqual(candidate2.icon_file_size, content_ad2.icon.file_size)
+        self.assertEqual(candidate.icon_url, content_ad2.icon.origin_url)
+
+        self.assertEqual(1, models.ImageAsset.objects.all().count())
 
     @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
@@ -438,6 +491,7 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.image_file_size, content_ad.image_file_size)
         self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
         self.assertFalse(candidate.ad_tag)
+        self.assertIsNone(content_ad.icon)
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
@@ -584,10 +638,6 @@ class PersistEditBatchTestCase(TestCase):
                 self.assertTrue(getattr(candidate, field) in new_content_ad.tracker_urls)
                 self.assertFalse(getattr(candidate, field) in content_ad.tracker_urls)
                 continue
-            if field in ["icon_width", "icon_height"]:
-                self.assertNotEqual(getattr(content_ad, "icon_size"), getattr(new_content_ad, "icon_size"))
-                self.assertEqual(getattr(candidate, field), getattr(new_content_ad, "icon_size"))
-                continue
             self.assertNotEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             self.assertEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
@@ -595,7 +645,8 @@ class PersistEditBatchTestCase(TestCase):
             if field in ["image_url", "icon_url"]:
                 continue
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
-            self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))
+            if field != "type":
+                self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
         mock_update_redirects.assert_called_with([new_content_ad])
 
@@ -782,12 +833,13 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     def test_valid_candidate(self):
         data = [valid_candidate]
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = contentupload.upload.insert_candidates(
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -816,7 +868,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_file_size": None,
-                    "hosted_icon_url": None,
+                    "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
                     "icon_hash": None,
                     "icon_height": None,
                     "icon_width": None,
@@ -840,13 +892,14 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_candidate]
 
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = contentupload.upload.insert_candidates(
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
 
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -885,7 +938,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_file_size": None,
-                    "hosted_icon_url": None,
+                    "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
                     "icon_hash": None,
                     "icon_id": None,
                     "icon_height": None,
@@ -910,6 +963,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     def test_valid_display_candidate(self):
         data = [valid_display_candidate]
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -917,7 +971,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
 
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -969,6 +1023,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_display_candidate]
 
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -976,7 +1031,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
 
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -1036,6 +1091,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     def test_valid_display_ad_tag_candidate(self):
         data = [valid_display_ad_tag_candidate]
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1043,7 +1099,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
 
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -1095,6 +1151,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_display_ad_tag_candidate]
 
         # prepare candidate
+        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1102,7 +1159,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
 
-        result = contentupload.upload.get_candidates_with_errors(candidates)
+        result = contentupload.upload.get_candidates_with_errors(request, candidates)
         self.assertEqual(
             [
                 {
@@ -1384,7 +1441,7 @@ class GetCandidatesCsvTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=1)
         content = contentupload.upload.get_candidates_csv(self.request, batch)
         self.assertEqual(
-            '"URL","Title","Image URL","Icon Image URL","Display URL","Brand name","Description","Call to action",'
+            '"URL","Title","Image URL","Brand Logo URL","Display URL","Brand name","Description","Call to action",'
             '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg",'
             '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","",""\r\n',
@@ -1409,7 +1466,7 @@ class GetCandidatesCsvTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=2)
         content = contentupload.upload.get_candidates_csv(self.request, batch)
         self.assertEqual(
-            '"URL","Title","Image URL","Icon Image URL","Display URL","Brand name","Description","Call to action",'
+            '"URL","Title","Image URL","Brand Logo URL","Display URL","Brand name","Description","Call to action",'
             '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg",'
             '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'

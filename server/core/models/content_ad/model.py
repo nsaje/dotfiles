@@ -7,8 +7,10 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db import transaction
 
+import core.models.helpers
 import utils.demo_anonymizer
 import utils.string_helper
+from core.models.image_asset import ImageAsset
 from dash import constants
 from dash import image_helper
 
@@ -56,10 +58,7 @@ class ContentAd(
     image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
     image_present = models.BooleanField(default=True)
 
-    icon_id = models.CharField(max_length=256, editable=False, null=True)
-    icon_size = models.PositiveIntegerField(null=True)
-    icon_hash = models.CharField(max_length=128, null=True)
-    icon_file_size = models.PositiveIntegerField(null=True)
+    icon = models.ForeignKey(ImageAsset, null=True, on_delete=models.PROTECT)
 
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
     ad_tag = models.TextField(null=True, blank=True)
@@ -86,7 +85,7 @@ class ContentAd(
         self.clean()
         super().save(*args, **kwargs)
 
-    def get_original_image_url(self, width=None, height=None):
+    def get_base_image_url(self, width=None, height=None):
         if self.image_id is None:
             return None
 
@@ -101,17 +100,27 @@ class ContentAd(
 
         return image_helper.get_image_url(self.image_id, width, height, self.image_crop)
 
-    def get_original_icon_url(self, size=None):
-        if self.icon_id is None:
+    def get_base_icon_url(self):
+        if self.icon is None:
             return None
 
-        return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, "{icon_id}.jpg".format(icon_id=self.icon_id))
+        return self.icon.get_base_url()
 
     def get_icon_url(self, size=None):
-        if size is None:
-            size = self.icon_size
+        if not self.icon:
+            return None
 
-        return image_helper.get_image_url(self.icon_id, size, size, constants.ImageCrop.CENTER)
+        if size is None:
+            size = self.icon.width
+
+        return self.icon.get_url(width=size, height=size)
+
+    def get_hosted_icon_url(self, size=None):
+        icon_url = self.get_icon_url(size) or self.ad_group.campaign.account.settings.get_default_icon_url(size)
+        if icon_url:
+            return icon_url
+
+        return core.models.helpers.get_hosted_default_icon_url(self, size)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
@@ -164,10 +173,11 @@ class ContentAd(
             "image_height": self.image_height,
             "image_crop": self.image_crop,
             "icon_url": self.get_icon_url(),
-            "icon_id": self.icon_id,
-            "icon_hash": self.icon_hash,
-            "icon_width": self.icon_size,
-            "icon_height": self.icon_size,
+            "icon_id": self.icon.image_id if self.icon else None,
+            "icon_hash": self.icon.image_hash if self.icon else None,
+            "icon_width": self.icon.width if self.icon else None,
+            "icon_height": self.icon.height if self.icon else None,
+            "icon_file_size": self.icon.file_size if self.icon else None,
             "video_asset_id": str(self.video_asset.id) if self.video_asset else None,
             "ad_tag": self.ad_tag,
             "display_url": self.display_url,
@@ -195,8 +205,6 @@ class ContentAd(
             "crop_areas",
             "image_crop",
             "image_present",
-            "icon_id",
-            "icon_hash",
             "state",
             "tracker_urls",
             "video_asset_id",
@@ -210,8 +218,13 @@ class ContentAd(
         for field in fields:
             candidate[field] = getattr(self, field)
 
-        for field in ["icon_width", "icon_height"]:
-            candidate[field] = getattr(self, "icon_size")
+        if self.icon:
+            candidate["icon_id"] = self.icon.image_id
+            candidate["icon_hash"] = self.icon.image_hash
+            candidate["icon_width"] = self.icon.width
+            candidate["icon_height"] = self.icon.height
+            candidate["icon_file_size"] = self.icon.file_size
+            candidate["icon_url"] = self.icon.origin_url
 
         return candidate
 

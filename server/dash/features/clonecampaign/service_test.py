@@ -24,7 +24,10 @@ class CloneServiceTest(TestCase):
         account = magic_mixer.blend(core.models.Account, users=[self.request.user])
         self.campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        self.content_ads = magic_mixer.cycle(2).blend(core.models.ContentAd, ad_group=self.ad_group, archived=False)
+        icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
+        self.content_ads = magic_mixer.cycle(2).blend(
+            core.models.ContentAd, ad_group=self.ad_group, archived=False, icon=icon
+        )
 
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
@@ -69,7 +72,9 @@ class CloneServiceTest(TestCase):
         self.assertNotEqual(self.ad_group, cloned_campaign.adgroup_set.get())
 
         self.assertEqual(2, core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).count())
-        self.assertNotEqual(self.content_ads, core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign))
+        cloned_ads = core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign)
+        self.assertNotEqual(self.content_ads, cloned_ads)
+        self.assertEqual(self.content_ads[0].icon, cloned_ads[0].icon)
 
         self.assertEqual(0, cloned_campaign.budgets.count())
         self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())

@@ -269,13 +269,13 @@ class TestBatchUpload(TestCase):
 
     @staticmethod
     def _approve_candidates(batch, is_display_ad=False):
-        for candidate in batch.contentadcandidate_set.all():
+        for i, candidate in enumerate(batch.contentadcandidate_set.all()):
             candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
             candidate.image_hash = "1234"
             candidate.image_height = 250 if is_display_ad else 500
             candidate.image_width = 300 if is_display_ad else 500
             candidate.image_file_size = 120000
-            candidate.icon_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3f"
+            candidate.icon_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3f{}".format(str(i))
             candidate.icon_hash = "2345"
             candidate.icon_height = 300
             candidate.icon_width = 300

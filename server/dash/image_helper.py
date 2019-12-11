@@ -10,6 +10,14 @@ from utils import s3helpers
 UPLOADED_IMAGE_KEY_FMT = "u/{batch_id}/{ts}{rand}{ext}"
 
 
+def get_base_image_url(image_id):
+    if image_id is None:
+        return None
+
+    path = "/{}.jpg".format(image_id)
+    return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, path)
+
+
 def get_image_url(image_id, width, height, crop):
     if image_id is None or width is None or height is None or crop is None:
         return None

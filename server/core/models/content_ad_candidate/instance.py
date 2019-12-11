@@ -1,9 +1,10 @@
+import core.models.helpers
 import dash.constants
 import dash.image_helper
 
 
 class ContentAdCandidateMixin:
-    def to_dict(self):
+    def to_dict(self, can_use_icon=False):
         return {
             "id": self.id,
             "label": self.label,
@@ -35,7 +36,7 @@ class ContentAdCandidateMixin:
             "hosted_image_url": self.get_image_url(300, 300),
             "landscape_hosted_image_url": self.get_image_url(720, 450),
             "display_hosted_image_url": self.get_image_url(),
-            "hosted_icon_url": self.get_icon_url(),
+            "hosted_icon_url": self.get_hosted_icon_url(300) if can_use_icon else None,
             "primary_tracker_url": self.primary_tracker_url,
             "secondary_tracker_url": self.secondary_tracker_url,
             "additional_data": self.additional_data,
@@ -54,6 +55,9 @@ class ContentAdCandidateMixin:
         return dash.image_helper.get_image_url(self.image_id, width, height, self.image_crop)
 
     def get_icon_url(self, width=None, height=None):
+        if self.icon_id is None:
+            return None
+
         if width is None:
             width = self.icon_width
 
@@ -61,3 +65,10 @@ class ContentAdCandidateMixin:
             height = self.icon_height
 
         return dash.image_helper.get_image_url(self.icon_id, width, height, dash.constants.ImageCrop.CENTER)
+
+    def get_hosted_icon_url(self, size=None):
+        icon_url = self.get_icon_url(size, size) or self.ad_group.campaign.account.settings.get_default_icon_url(size)
+        if icon_url:
+            return icon_url
+
+        return core.models.helpers.get_hosted_default_icon_url(self, size)

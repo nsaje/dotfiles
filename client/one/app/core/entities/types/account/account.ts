@@ -20,4 +20,6 @@ export interface Account {
     targeting: AccountTargeting;
     allowedMediaSources: AccountMediaSource[];
     deals: Deal[];
+    defaultIconUrl: string;
+    defaultIconBase64: string;
 }

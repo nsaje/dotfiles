@@ -221,7 +221,7 @@ class AccountViewSetTest(RESTAPITest):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
         default_icon = magic_mixer.blend(
-            core.models.ImageAsset, image_id="icon_id", hash="icon_hash", width=150, height=150, file_size=1000
+            core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
         account.settings.update_unsafe(
             None,
@@ -365,7 +365,7 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
-        self.assertEqual(resp_json["data"]["defaultIconUrl"], account.settings.default_icon.get_url())
+        self.assertEqual(resp_json["data"]["defaultIconUrl"], account.settings.get_base_default_icon_url())
 
         self.assertEqual(
             resp_json["extra"],
@@ -527,10 +527,11 @@ class AccountViewSetTest(RESTAPITest):
 
         self.assertIsNone(resp_json["data"]["defaultIconUrl"])
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
-    def test_put_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+    def test_put_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
 
@@ -565,14 +566,13 @@ class AccountViewSetTest(RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseValid(r)
-        self.assertEqual("/icon_id.jpg?w=150&h=150&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account.refresh_from_db()
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(150, account.settings.default_icon.width)
         self.assertEqual(150, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(1000, account.settings.default_icon.file_size)
         self.assertIsNone(account.settings.default_icon.origin_url)
 
@@ -599,14 +599,13 @@ class AccountViewSetTest(RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseValid(r)
-        self.assertEqual("/icon_id2.jpg?w=130&h=130&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id2.jpg", resp_json["data"]["defaultIconUrl"])
 
         account.refresh_from_db()
         self.assertEqual("icon_id2", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash2", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash2", account.settings.default_icon.image_hash)
         self.assertEqual(130, account.settings.default_icon.width)
         self.assertEqual(130, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(1001, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
 
@@ -614,7 +613,7 @@ class AccountViewSetTest(RESTAPITest):
             "status": "ok",
             "candidate": {
                 "images": {
-                    "http://icon.url2.com": {
+                    "icon.url": {
                         "valid": True,
                         "id": "icon_id3",
                         "hash": "icon_hash3",
@@ -635,20 +634,21 @@ class AccountViewSetTest(RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseValid(r)
-        self.assertEqual("/icon_id3.jpg?w=190&h=190&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id3.jpg", resp_json["data"]["defaultIconUrl"])
 
         account.refresh_from_db()
         self.assertEqual("icon_id3", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash3", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash3", account.settings.default_icon.image_hash)
         self.assertEqual(190, account.settings.default_icon.width)
         self.assertEqual(190, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(9000, account.settings.default_icon.file_size)
-        self.assertEqual("http://icon.url2.com", account.settings.default_icon.origin_url)
+        self.assertIsNone(account.settings.default_icon.origin_url)
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
+    @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
-    def test_put_default_icon_fail(self, mock_slack_publish, mock_external_validation):
+    def test_put_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
 
@@ -670,7 +670,7 @@ class AccountViewSetTest(RESTAPITest):
             "status": "ok",
             "candidate": {
                 "images": {
-                    "http://icon.url.com": {
+                    "icon.url": {
                         "valid": False,
                         "id": "icon_id",
                         "hash": "icon_hash",
@@ -692,8 +692,8 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["valid"] = True
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["id"] = None
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["valid"] = True
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["id"] = None
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
             data=put_data,
@@ -701,8 +701,8 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["id"] = "icon_id"
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 151
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["id"] = "icon_id"
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 151
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
             data=put_data,
@@ -710,8 +710,8 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 127
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 127
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 127
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 127
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
             data=put_data,
@@ -719,8 +719,8 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 10001
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 10001
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 10001
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 10001
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
             data=put_data,
@@ -728,18 +728,18 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["width"] = 128
-        mock_external_validation.return_value["candidate"]["images"]["http://icon.url.com"]["height"] = 128
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["width"] = 128
+        mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 128
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
             data=put_data,
             format="json",
         )
         resp_json = self.assertResponseValid(r)
-        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account.refresh_from_db()
-        self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
+        self.assertIsNone(account.settings.default_icon.origin_url)
 
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
@@ -791,10 +791,11 @@ class AccountViewSetTest(RESTAPITest):
 
         self.assertIsNone(resp_json["data"]["defaultIconUrl"])
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
-    def test_post_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+    def test_post_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
 
         mock_external_validation.return_value = {
@@ -823,14 +824,13 @@ class AccountViewSetTest(RESTAPITest):
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
-        self.assertEqual("/icon_id.jpg?w=170&h=170&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=resp_json["data"]["id"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(170, account.settings.default_icon.width)
         self.assertEqual(170, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(2000, account.settings.default_icon.file_size)
         self.assertIsNone(account.settings.default_icon.origin_url)
 
@@ -854,14 +854,13 @@ class AccountViewSetTest(RESTAPITest):
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
-        self.assertEqual("/icon_id2.jpg?w=171&h=171&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id2.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=resp_json["data"]["id"])
         self.assertEqual("icon_id2", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash2", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash2", account.settings.default_icon.image_hash)
         self.assertEqual(171, account.settings.default_icon.width)
         self.assertEqual(171, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(2001, account.settings.default_icon.file_size)
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
 
@@ -869,7 +868,7 @@ class AccountViewSetTest(RESTAPITest):
             "status": "ok",
             "candidate": {
                 "images": {
-                    "http://icon.url2.com": {
+                    "icon.url": {
                         "valid": True,
                         "id": "icon_id3",
                         "hash": "icon_hash3",
@@ -887,21 +886,21 @@ class AccountViewSetTest(RESTAPITest):
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
-        self.assertEqual("/icon_id3.jpg?w=172&h=172&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id3.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=resp_json["data"]["id"])
         self.assertEqual("icon_id3", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash3", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash3", account.settings.default_icon.image_hash)
         self.assertEqual(172, account.settings.default_icon.width)
         self.assertEqual(172, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(2002, account.settings.default_icon.file_size)
-        self.assertEqual("http://icon.url2.com", account.settings.default_icon.origin_url)
+        self.assertIsNone(account.settings.default_icon.origin_url)
 
+    @mock.patch("django.conf.settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME", return_value="test_mock")
     @mock.patch("dash.image_helper.upload_image_to_s3", return_value="icon.url")
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
-    def test_post_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload):
+    def test_post_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
 
         new_account = self.account_repr(
@@ -960,14 +959,13 @@ class AccountViewSetTest(RESTAPITest):
         mock_external_validation.return_value["candidate"]["images"]["icon.url"]["height"] = 128
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
-        self.assertEqual("/icon_id.jpg?w=128&h=128&fit=crop&crop=center", resp_json["data"]["defaultIconUrl"])
+        self.assertEqual("/icon_id.jpg", resp_json["data"]["defaultIconUrl"])
 
         account = core.models.Account.objects.get(id=resp_json["data"]["id"])
         self.assertEqual("icon_id", account.settings.default_icon.image_id)
-        self.assertEqual("icon_hash", account.settings.default_icon.hash)
+        self.assertEqual("icon_hash", account.settings.default_icon.image_hash)
         self.assertEqual(128, account.settings.default_icon.width)
         self.assertEqual(128, account.settings.default_icon.height)
-        self.assertEqual(dash.constants.ImageCrop.CENTER, account.settings.default_icon.crop)
         self.assertEqual(3000, account.settings.default_icon.file_size)
         self.assertIsNone(account.settings.default_icon.origin_url)
 

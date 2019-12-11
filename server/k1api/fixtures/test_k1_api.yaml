@@ -779,11 +779,26 @@
     model: dash.uploadbatch
     pk: 1
 
+
+# test image asset
+
+-   fields:
+        image_id: '987654321'
+        image_hash: '098765432'
+        width: 200
+        height: 200
+        file_size: 1000
+        origin_url: null
+        created_dt: '2015-02-21T00:00:00'
+    model: dash.imageasset
+    pk: '987654321'
+
+
 # test contentad
 
 -   fields:
         image_id: '123456789'
-        icon_id: '987654321'
+        icon: '987654321'
         batch: 1
         url: 'http://testurl.com'
         title: 'Test Article 1'

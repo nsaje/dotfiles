@@ -10,35 +10,59 @@ from . import model
 
 
 class ImageAssetManager(models.Manager):
-    def create_from_origin_url(self, origin_url, crop=None):
-        image_data = self._invoke_external_validation(origin_url)
-        image = model.ImageAsset(
+    def create_from_origin_url(self, origin_url):
+        image_url = origin_url.split("?")[0]
+        image_data = self._invoke_external_validation(image_url)
+        return self.create(
             image_id=image_data["id"],
-            hash=image_data["hash"],
+            image_hash=image_data["hash"],
             width=image_data["width"],
             height=image_data["height"],
-            crop=crop or dash.constants.ImageCrop.CENTER,
             file_size=image_data["file_size"],
-            origin_url=origin_url,
+            origin_url=image_url,
         )
-        image.save()
-        return image
 
-    def create_from_image_base64(self, image_base64, upload_id, crop=None):
+    def create_from_image_base64(self, image_base64, upload_id):
         image_url = dash.image_helper.upload_image_to_s3(image_base64, upload_id)
         image_data = self._invoke_external_validation(image_url)
-        image = model.ImageAsset(
+        return self.create(
             image_id=image_data["id"],
-            hash=image_data["hash"],
+            image_hash=image_data["hash"],
             width=image_data["width"],
             height=image_data["height"],
-            crop=crop or dash.constants.ImageCrop.CENTER,
             file_size=image_data["file_size"],
         )
-        image.save()
-        return image
+
+    def create(self, image_id, image_hash, width, height, file_size, origin_url=None):
+        try:
+            image = model.ImageAsset.objects.get(
+                image_id=image_id, image_hash=image_hash, width=width, height=height, file_size=file_size
+            )
+
+            #  Origin url can be the url from the temp bucket on s3 when uploading an image directly.
+            #  It can either be updated with a newer s3 url or user's source one.
+            if origin_url and (not image.origin_url or image.origin_url.startswith(settings.IMAGE_THUMBNAIL_URL)):
+                image.origin_url = origin_url
+                image.save()
+
+            return image
+
+        except model.ImageAsset.DoesNotExist:
+            image = model.ImageAsset(
+                image_id=image_id,
+                image_hash=image_hash,
+                width=width,
+                height=height,
+                file_size=file_size,
+                origin_url=origin_url,
+            )
+            image.save()
+            return image
 
     def _invoke_external_validation(self, image_url):
+        if settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME == "mock":
+            return self._external_validation_mock()
+
         payload = {
             "namespace": settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,
             "candidateID": 0,
@@ -62,3 +86,8 @@ class ImageAssetManager(models.Manager):
             raise exceptions.ImageAssetInvalid("Image asset could not be processed.")
 
         return image_data
+
+    def _external_validation_mock(self):
+        assert settings.DEBUG or settings.TESTING
+        data = {"id": "d/icons/IAB2", "hash": "mock_image_hash", "width": 280, "height": 280, "file_size": 2800}
+        return data

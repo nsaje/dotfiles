@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.test import override_settings
 from mock import patch
 
 import core.models
@@ -28,12 +29,33 @@ class CreateContentAd(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
-
-        content_ad_1 = core.models.ContentAd.objects.create(batch, sources, icon_size=100)
-        content_ad_2 = core.models.ContentAd.objects.create(batch, sources, icon_height=100, icon_width=100)
-
-        self.assertEqual(100, content_ad_1.icon_size)
-        self.assertEqual(100, content_ad_2.icon_size)
+        icon = magic_mixer.blend(core.models.ImageAsset, image_id="icon", width=200, height=200)
+        content_ad_1 = core.models.ContentAd.objects.create(
+            batch, sources, icon_id=None, icon_hash=None, icon_height=None, icon_width=None, icon_file_size=None
+        )
+        content_ad_2 = core.models.ContentAd.objects.create(batch, sources, icon=icon)
+        content_ad_3 = core.models.ContentAd.objects.create(
+            batch, sources, icon_id="icon2", icon_hash="hash", icon_width=100, icon_height=100, icon_file_size=1000
+        )
+        content_ad_4 = core.models.ContentAd.objects.create(
+            batch,
+            sources,
+            icon_id="icon3",
+            icon_hash="hash",
+            icon_width=300,
+            icon_height=300,
+            icon_file_size=1000,
+            icon_url="test.com",
+        )
+        self.assertIsNone(content_ad_1.icon)
+        self.assertEqual(200, content_ad_2.icon.width)
+        self.assertEqual(200, content_ad_2.icon.height)
+        self.assertEqual(100, content_ad_3.icon.width)
+        self.assertEqual(100, content_ad_3.icon.height)
+        self.assertIsNone(content_ad_3.icon.origin_url)
+        self.assertEqual(300, content_ad_4.icon.width)
+        self.assertEqual(300, content_ad_4.icon.height)
+        self.assertEqual("test.com", content_ad_4.icon.origin_url)
 
     def test_create_ad_group_archived(self, mock_insert_redirects):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=True)
@@ -55,6 +77,72 @@ class CreateContentAd(TestCase):
             core.models.ContentAd.objects.create(batch, sources, icon_width=100)
         mock_insert_redirects.assert_not_called()
 
+    def test_create_icon_incomplete_data(self, mock_insert_redirects):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
+        sources = magic_mixer.cycle(5).blend(core.models.Source)
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch,
+                sources,
+                icon_id="icon_id",
+                icon_hash="icon_hash",
+                icon_height=200,
+                icon_width=200,
+                icon_file_size=None,
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch, sources, icon_id="icon_id", icon_hash="icon_hash", icon_height=200, icon_width=200
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch,
+                sources,
+                icon_id="icon_id",
+                icon_hash="icon_hash",
+                icon_height=None,
+                icon_width=None,
+                icon_file_size=1000,
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch, sources, icon_id="icon_id", icon_hash="icon_hash", icon_file_size=1000
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch, sources, icon_id="icon_id", icon_hash=None, icon_height=200, icon_width=200, icon_file_size=1000
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch, sources, icon_id="icon_id", icon_height=200, icon_width=200, icon_file_size=1000
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch,
+                sources,
+                icon_id=None,
+                icon_hash="icon_hash",
+                icon_height=200,
+                icon_width=200,
+                icon_file_size=1000,
+            )
+        with self.assertRaises(exceptions.IconInvalid):
+            core.models.ContentAd.objects.create(
+                batch, sources, icon_hash="icon_hash", icon_height=200, icon_width=200, icon_file_size=1000
+            )
+        mock_insert_redirects.assert_not_called()
+        core.models.ContentAd.objects.create(
+            batch,
+            sources,
+            icon_id="icon_id",
+            icon_hash="icon_hash",
+            icon_height=200,
+            icon_width=200,
+            icon_file_size=1000,
+        )
+        mock_insert_redirects.assert_called_once()
+
     def _blend_a_batch(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         sources = magic_mixer.cycle(3).blend(
@@ -70,10 +158,19 @@ class CreateContentAd(TestCase):
 
         return magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
 
+    @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
     def test_bulk_create_from_candidates(self, mock_insert_redirects):
         batch = self._blend_a_batch()
-        candidates = [x.to_candidate_dict() for x in magic_mixer.cycle(3).blend(core.models.ContentAd)]
-
+        icon = magic_mixer.blend(
+            core.models.ImageAsset,
+            image_id="icon_id",
+            image_hash="icon_hash",
+            width=200,
+            height=200,
+            file_size=1234,
+            origin_url="test.com",
+        )
+        candidates = [x.to_candidate_dict() for x in magic_mixer.cycle(3).blend(core.models.ContentAd, icon=icon)]
         content_ads = core.models.ContentAd.objects.bulk_create_from_candidates(candidates, batch)
 
         self.assertEqual(len(content_ads), 3)
@@ -84,6 +181,12 @@ class CreateContentAd(TestCase):
             self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()], list(batch.ad_group.sources.all())
             )
+            self.assertEqual("icon_id", content_ad.icon.image_id)
+            self.assertEqual("icon_hash", content_ad.icon.image_hash)
+            self.assertEqual(200, content_ad.icon.width)
+            self.assertEqual(200, content_ad.icon.height)
+            self.assertEqual(1234, content_ad.icon.file_size)
+            self.assertEqual("test.com", content_ad.icon.origin_url)
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
@@ -94,8 +197,17 @@ class CreateContentAd(TestCase):
         batch = self._blend_a_batch()
         batch.default_state = None
         batch.save()
+        icon = magic_mixer.blend(
+            core.models.ImageAsset,
+            image_id="icon_id",
+            image_hash="icon_hash",
+            width=200,
+            height=200,
+            file_size=1234,
+            origin_url="test.com",
+        )
         source_content_ads = magic_mixer.cycle(3).blend(
-            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
+            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE, icon=icon
         )
 
         content_ads = core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
@@ -109,6 +221,12 @@ class CreateContentAd(TestCase):
             self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()], list(batch.ad_group.sources.all())
             )
+            self.assertEqual("icon_id", content_ad.icon.image_id)
+            self.assertEqual("icon_hash", content_ad.icon.image_hash)
+            self.assertEqual(200, content_ad.icon.width)
+            self.assertEqual(200, content_ad.icon.height)
+            self.assertEqual(1234, content_ad.icon.file_size)
+            self.assertEqual("test.com", content_ad.icon.origin_url)
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
@@ -119,8 +237,17 @@ class CreateContentAd(TestCase):
         batch = self._blend_a_batch()
         batch.default_state = constants.ContentAdSourceState.ACTIVE
         batch.save()
+        icon = magic_mixer.blend(
+            core.models.ImageAsset,
+            image_id="icon_id",
+            image_hash="icon_hash",
+            width=200,
+            height=200,
+            file_size=1234,
+            origin_url="test.com",
+        )
         source_content_ads = magic_mixer.cycle(3).blend(
-            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
+            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE, icon=icon
         )
 
         content_ads = core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
@@ -134,6 +261,12 @@ class CreateContentAd(TestCase):
             self.assertCountEqual(
                 [x.source for x in content_ad.contentadsource_set.all()], list(batch.ad_group.sources.all())
             )
+            self.assertEqual("icon_id", content_ad.icon.image_id)
+            self.assertEqual("icon_hash", content_ad.icon.image_hash)
+            self.assertEqual(200, content_ad.icon.width)
+            self.assertEqual(200, content_ad.icon.height)
+            self.assertEqual(1234, content_ad.icon.file_size)
+            self.assertEqual("test.com", content_ad.icon.origin_url)
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
@@ -143,8 +276,9 @@ class CreateContentAd(TestCase):
     def test_bulk_clone_archived_ad_group_fail(self, mock_archived, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
+        icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
         source_content_ads = magic_mixer.cycle(3).blend(
-            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
+            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE, icon=icon
         )
 
         with self.assertRaises(exceptions.AdGroupIsArchived):

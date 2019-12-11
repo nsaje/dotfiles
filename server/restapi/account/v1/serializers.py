@@ -44,8 +44,4 @@ class AccountSerializer(
         return super().to_representation(instance)
 
     def get_default_icon_url(self, account):
-        default_icon = account.settings.default_icon
-        if not default_icon:
-            return None
-
-        return default_icon.get_url()
+        return account.settings.get_base_default_icon_url()

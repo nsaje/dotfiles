@@ -754,14 +754,13 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
         )
-
         self.assertEqual(response.content, expected_content)
 
     def test_get_all_no_icon_permission(self):
@@ -813,10 +812,10 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -832,8 +831,8 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -849,9 +848,9 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -867,10 +866,10 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -886,9 +885,9 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Brand Logo URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","/234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
