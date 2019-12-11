@@ -21,7 +21,7 @@ SKIP_TABLES = ["mv_master", "mv_master_pubs"]  # not on postgres
 class Command(Z1Command):
     @metrics_compat.timer("etl.clean_up_postgres_stats")
     def handle(self, *args, **options):
-        for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+        for db_name in settings.STATS_DB_POSTGRES:
             for table in refresh.get_all_views_table_names():
                 if table in SKIP_TABLES:
                     continue

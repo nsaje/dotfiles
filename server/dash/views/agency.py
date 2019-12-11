@@ -36,7 +36,6 @@ from dash.views import helpers
 from prodops import hacks
 from utils import api_common
 from utils import dates_helper
-from utils import db_router
 from utils import email_helper
 from utils import exc
 from utils import slack
@@ -1587,7 +1586,6 @@ class AccountUserAction(api_common.BaseApiView):
 
 
 class CampaignContentInsights(api_common.BaseApiView):
-    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def get(self, request, campaign_id):
         if not request.user.has_perm("zemauth.can_view_campaign_content_insights_side_tab"):

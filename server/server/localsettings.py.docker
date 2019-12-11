@@ -11,11 +11,15 @@ DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l"
 
-STATS_DB_NAME = "stats"
-STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres"]
-STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres"]
+# Entities databases
+DATABASE_READ_REPLICAS = []
+
+# Stats databases
+STATS_DB_POSTGRES_MAX_DAYS = 62
+STATS_DB_POSTGRES = ["stats-postgres"]
+STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
+STATS_DB_HOT_CLUSTER = "stats"
+STATS_DB_COLD_CLUSTERS = [STATS_DB_HOT_CLUSTER]
 
 _REDSHIFT_PASSWORD = ""
 _PG01_PASSWORD = ""
@@ -53,7 +57,7 @@ _DOCKER_POSTGRES = {
 DATABASES = {
     "default": _DOCKER_POSTGRES,
     "testing_default": _DOCKER_POSTGRES,
-    STATS_DB_NAME: {
+    STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "dev",
         "USER": "developer",
@@ -80,8 +84,6 @@ if os.environ.get("DB") == "pg01":
         "HOST": "pg01.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
         "PORT": 5432,
     }
-
-DATABASE_READ_REPLICAS = []
 
 ALLOWED_HOSTS = ["eins", "server", "localhost"]
 

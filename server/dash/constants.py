@@ -2758,3 +2758,11 @@ class DayHour(ConstantBase):
         SUNDAY_22: "Sunday 22:00 - 23:00",
         SUNDAY_23: "Sunday 23:00 - 24:00",
     }
+
+
+class StatsDatabaseType(ConstantBase):
+    POSTGRES = "POSTGRES"
+    HOT_CLUSTER = "HOT_CLUSTER"
+    COLD_CLUSTER = "COLD_CLUSTER"
+
+    _VALUES = {POSTGRES: "POSTGRES", HOT_CLUSTER: "HOT_CLUSTER", COLD_CLUSTER: "COLD CLUSTER,"}

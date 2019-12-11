@@ -85,24 +85,24 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
         stats_meta_conn = None
 
         if self.redshift_tests:
-            stats_conn = connections.databases.pop(settings.STATS_DB_NAME, None)
+            stats_conn = connections.databases.pop(settings.STATS_DB_HOT_CLUSTER, None)
             stats_meta_conn = connections.databases.pop(settings.STATS_TEST_DB_NAME, None)
 
         old_configs = super(SplitTestsRunner, self).setup_databases(**kwargs)
 
         # put the connections back as they will be needed
         if stats_conn is not None:
-            connections.databases[settings.STATS_DB_NAME] = stats_conn
+            connections.databases[settings.STATS_DB_HOT_CLUSTER] = stats_conn
 
         if stats_meta_conn is not None:
             connections.databases[settings.STATS_TEST_DB_NAME] = stats_meta_conn
 
         if self.redshift_tests:
             print("Running tests including Redshift database")
-            db_name = settings.DATABASES[settings.STATS_DB_NAME]["NAME"]
+            db_name = settings.DATABASES[settings.STATS_DB_HOT_CLUSTER]["NAME"]
             test_db_name = "test_" + db_name
-            settings.DATABASES[settings.STATS_DB_NAME]["NAME"] = test_db_name
-            call_command("redshift_createdb", settings.STATS_DB_NAME, settings.STATS_TEST_DB_NAME, verbosity=0)
+            settings.DATABASES[settings.STATS_DB_HOT_CLUSTER]["NAME"] = test_db_name
+            call_command("redshift_createdb", settings.STATS_DB_HOT_CLUSTER, settings.STATS_TEST_DB_NAME, verbosity=0)
             call_command("redshift_migrate", verbosity=0)
             print('Using "{}" Redshift database'.format(test_db_name))
 
@@ -113,7 +113,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
 
         # drop redshift database
         if not self.keepdb and self.redshift_tests:
-            call_command("redshift_dropdb", settings.STATS_DB_NAME, settings.STATS_TEST_DB_NAME, verbosity=0)
+            call_command("redshift_dropdb", settings.STATS_DB_HOT_CLUSTER, settings.STATS_TEST_DB_NAME, verbosity=0)
 
     def teardown_test_environment(self, **kwargs):
         super(SplitTestsRunner, self).teardown_test_environment(**kwargs)

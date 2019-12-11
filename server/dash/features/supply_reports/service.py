@@ -64,7 +64,7 @@ def _get_source_stats(date):
     sources = dash.models.Source.objects.all()
     sources_by_slug = {x.bidder_slug: x for x in sources}
 
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
 
         for media_source, impressions, spend in c:
@@ -87,7 +87,7 @@ def _get_publisher_stats(recipient, date):
 
     params = [recipient.source.pk, date.date().isoformat()]
 
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query, params)
         for date, domain, impressions, clicks, cost_nano in c:
             cost_formatted = Decimal(cost_nano if cost_nano else 0) / converters.CURRENCY_TO_NANO

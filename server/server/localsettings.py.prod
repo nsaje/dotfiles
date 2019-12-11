@@ -20,11 +20,15 @@ SECRET_KEY = (
     .decode("utf-8")
 )
 
-STATS_DB_NAME = "stats"
-STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
-STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+# Entities databases
+DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
+
+# Stats databases
+STATS_DB_POSTGRES_MAX_DAYS = 62
+STATS_DB_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
+STATS_DB_HOT_CLUSTER = "stats-hot-1"
+STATS_DB_COLD_CLUSTERS = ["stats-cold-1"]
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -66,7 +70,7 @@ DATABASES = {
         "HOST": "z1db-replica-2",
         "PORT": 5432,
     },
-    STATS_DB_NAME: {
+    STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
         "USER": "eins2",
@@ -76,6 +80,18 @@ DATABASES = {
         .get()
         .decode("utf-8"),
         "HOST": "zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
+        "PORT": 5439,
+    },
+    "stats-cold-1": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "k1",
+        "USER": "eins2",
+        "PASSWORD": Secret(
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy"  # noqa
+        )
+        .get()
+        .decode("utf-8"),
+        "HOST": "zemantaone-cold.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
         "PORT": 5439,
     },
     "stats-postgres-1": {
@@ -103,7 +119,6 @@ DATABASES = {
         "PORT": 5432,
     },
 }
-DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
 
 if distutils.util.strtobool(os.environ.get("USE_PG_POOLING", "False")):
     print("Requested use of PG pooling, modifying some settings. Check localsettings.py.prod for details.")

@@ -28,7 +28,7 @@ class Command(Z1Command):
         date_from = datetime.date(2000, 1, 1)
         date_to = datetime.date.today()
 
-        for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+        for db_name in settings.STATS_DB_POSTGRES:
             if settings.DATABASES[db_name]["NAME"] != "one-dev":
                 raise Exception("This script should only run in dev environment")
 

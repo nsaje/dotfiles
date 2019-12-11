@@ -18,12 +18,10 @@ def consistency_check(date_from, date_to):
         if not view.IS_TEMPORARY_TABLE and view.SOURCE_VIEW == mv_master.TABLE_NAME
     ]
 
-    master_counts = get_counts(mv_master, date_from, date_to, db_name=settings.STATS_DB_NAME)
+    master_counts = get_counts(mv_master, date_from, date_to, db_name=settings.STATS_DB_HOT_CLUSTER)
 
     for view in derived_views:
-        for db_name in (
-            [settings.STATS_DB_NAME] + settings.STATS_DB_WRITE_REPLICAS + settings.STATS_DB_WRITE_REPLICAS_POSTGRES
-        ):
+        for db_name in [settings.STATS_DB_HOT_CLUSTER] + settings.STATS_DB_COLD_CLUSTERS + settings.STATS_DB_POSTGRES:
             check_counts(master_counts, view, date_from, date_to, db_name)
 
     logger.info("Consistency check finished")

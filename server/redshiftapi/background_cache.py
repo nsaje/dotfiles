@@ -6,7 +6,6 @@ from django.core.cache import caches
 from etl import materialization_run
 from server import celery
 from utils import dates_helper
-from utils import db_router
 from utils import metrics_compat
 
 from . import api_breakdowns
@@ -58,7 +57,6 @@ def _set(key, rows, pickled_args):
 
 
 @celery.app.task(acks_late=True, name="redshift_background_cache", soft_time_limit=5 * 60)
-@db_router.use_stats_read_replica()
 def update(key):
     cached_data, is_latest = _get(key)
     if is_latest:

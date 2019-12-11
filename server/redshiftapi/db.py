@@ -17,7 +17,7 @@ logger = zlogging.getLogger(__name__)
 CACHE_MISS_FLAG = None
 
 
-stats_db_router = utils.db_router.UseStatsReadReplicaRouter()
+stats_db_router = utils.db_router.UseStatsDatabaseRouter()
 
 
 def get_stats_cursor(db_alias=None):

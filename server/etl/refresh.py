@@ -127,14 +127,14 @@ def mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, accou
         return
     s3_path = redshift.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
     update_threads = []
-    for db_name in settings.STATS_DB_WRITE_REPLICAS:
+    for db_name in settings.STATS_DB_COLD_CLUSTERS:
         async_func = partial(update_table, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id)
         async_thread = threads.AsyncFunction(async_func)
         async_thread.start()
         update_threads.append(async_thread)
     if mv_class not in (materialize.MasterView, materialize.MasterPublishersView):
         # do not copy mv_master and mv_master_pubs into postgres, too large
-        for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+        for db_name in settings.STATS_DB_POSTGRES:
             async_func = partial(
                 update_table_postgres, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id
             )

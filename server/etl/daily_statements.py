@@ -272,7 +272,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
 
     logger.info("Running redshift query", query=query)
 
-    with connections[settings.STATS_DB_NAME].cursor() as c:
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
 
         for ad_group_id, media_spend, data_spend in c:

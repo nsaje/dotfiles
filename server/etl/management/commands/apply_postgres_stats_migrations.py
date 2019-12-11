@@ -14,7 +14,7 @@ logger = zlogging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+        for db_name in settings.STATS_DB_POSTGRES:
             for mv_class in self._required_views():
                 logger.info(
                     "Inserting (if not exists) table definition, indexes & statistics", table=mv_class.TABLE_NAME

@@ -11,11 +11,15 @@ DEBUG = False
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l"
 
-STATS_DB_NAME = "k1"
-STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = []
-STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres"]
+# Entities databases
+DATABASE_READ_REPLICAS = []
+
+# Stats databases
+STATS_DB_POSTGRES_MAX_DAYS = 62
+STATS_DB_POSTGRES = ["stats-postgres"]
+STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
+STATS_DB_HOT_CLUSTER = "stats"
+STATS_DB_COLD_CLUSTERS = [STATS_DB_HOT_CLUSTER]
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -28,7 +32,7 @@ DATABASES = {
         "HOST": os.environ.get("DB_PORT_5432_TCP_ADDR", "db"),
         "PORT": int(os.environ.get("DB_PORT_5432_TCP_PORT", 5432)),
     },
-    STATS_DB_NAME: {
+    STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
         "USER": "demo",
@@ -53,7 +57,6 @@ DATABASES = {
         "PORT": 5432,
     },
 }
-DATABASE_READ_REPLICAS = []
 
 ALLOWED_HOSTS = ["{INSTANCE_NAME}.demo.zemanta.com".format(INSTANCE_NAME=os.environ.get("INSTANCE_NAME", "demo123"))]
 

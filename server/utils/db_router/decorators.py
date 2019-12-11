@@ -1,5 +1,6 @@
 import functools
 
+import dash.constants
 import utils.request_context
 
 
@@ -21,20 +22,12 @@ class use_read_replica(_database_router_base):
         utils.request_context.set("USE_READ_REPLICA", None)
 
 
-class use_stats_read_replica(_database_router_base):
-    def __enter__(self):
-        utils.request_context.set("USE_STATS_READ_REPLICA", True)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        utils.request_context.set("USE_STATS_READ_REPLICA", None)
-
-
-class use_stats_read_replica_postgres(_database_router_base):
-    def __init__(self, should_use_postgres=True):
-        self.should_use_postgres = should_use_postgres
+class use_stats_database(_database_router_base):
+    def __init__(self, stats_database_type=dash.constants.StatsDatabaseType.POSTGRES):
+        self.stats_database_type = stats_database_type
 
     def __enter__(self):
-        utils.request_context.set("USE_STATS_READ_REPLICA_POSTGRES", self.should_use_postgres)
+        utils.request_context.set("STATS_DATABASE_TYPE", self.stats_database_type)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        utils.request_context.set("USE_STATS_READ_REPLICA_POSTGRES", None)
+        utils.request_context.set("STATS_DATABASE_TYPE", None)

@@ -340,8 +340,8 @@ if TESTING:
 
     if len(sys.argv) > 1 and "--redshift" not in sys.argv:
         # if not redshift testing
-        DATABASES.pop(STATS_DB_NAME, None)
-        STATS_DB_NAME = "default"
+        DATABASES.pop(STATS_DB_HOT_CLUSTER, None)
+        STATS_DB_HOT_CLUSTER = "default"
 
 # App specific
 LAST_N_DAY_REPORTS = 3

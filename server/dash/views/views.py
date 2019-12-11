@@ -39,7 +39,6 @@ from dash import retargeting_helper
 from dash.views import helpers
 from prodops import hacks
 from utils import api_common
-from utils import db_router
 from utils import email_helper
 from utils import exc
 from utils import lc_helper
@@ -222,7 +221,6 @@ class CampaignRestore(api_common.BaseApiView):
 
 class AdGroupOverview(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
-    @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         view_filter = forms.ViewFilterForm(request.GET)
@@ -391,7 +389,6 @@ class CampaignAdGroups(api_common.BaseApiView):
 
 class CampaignOverview(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
-    @db_router.use_stats_read_replica()
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
@@ -555,7 +552,6 @@ class CampaignOverview(api_common.BaseApiView):
 
 class AccountOverview(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
-    @db_router.use_stats_read_replica()
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id, select_related_users=True)
 
@@ -969,7 +965,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
 class AllAccountsOverview(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
-    @db_router.use_stats_read_replica()
     def get(self, request):
         # infobox only filters by agency and account type
         view_filter = forms.ViewFilterForm(request.GET)

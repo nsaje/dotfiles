@@ -1,5 +1,8 @@
 from functools import partial
 
+from django.conf import settings
+
+import dash.constants
 import stats.constants
 from utils import cache_helper
 from utils import dates_helper
@@ -15,9 +18,10 @@ from . import postprocess
 from . import queries
 from . import view_selector
 
-POSTGRES_MAX_DAYS = 62
+POSTGRES_MAX_DAYS = settings.STATS_DB_POSTGRES_MAX_DAYS
 POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_master_pubs")
 POSTGRES_REPORTS_EXCLUDE_VIEWS = ("mv_account_pubs", "mv_campaign_pubs", "mv_adgroup_pubs", "mv_contentad_pubs")
+HOT_CLUSTER_MAX_DAYS = settings.STATS_DB_HOT_CLUSTER_MAX_DAYS
 
 
 def should_query_all(breakdown, is_reports=False):
@@ -59,18 +63,26 @@ def query_with_background_cache(*args, **kwargs):
     return rows
 
 
-def _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports):
+def _get_stats_database_type(
+    breakdown, constraints, parents, use_publishers_view, is_reports
+) -> dash.constants.StatsDatabaseType:
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
     date_constraint = constraints.get("date__gte") or constraints.get("date__gt") or constraints.get("date")
     date_in_postgres = dates_helper.days_before(dates_helper.local_today(), POSTGRES_MAX_DAYS)
+    date_in_hot_clusters = dates_helper.days_before(dates_helper.local_today(), HOT_CLUSTER_MAX_DAYS)
 
     if is_reports and view in POSTGRES_REPORTS_EXCLUDE_VIEWS:
-        return False
+        if date_in_hot_clusters and date_constraint > date_in_hot_clusters:
+            return dash.constants.StatsDatabaseType.HOT_CLUSTER
+        return dash.constants.StatsDatabaseType.COLD_CLUSTER
 
     if date_constraint and date_constraint > date_in_postgres and view not in POSTGRES_EXCLUDE_VIEWS:
-        return True
-    return False
+        return dash.constants.StatsDatabaseType.POSTGRES
+
+    if date_in_hot_clusters and date_constraint > date_in_hot_clusters:
+        return dash.constants.StatsDatabaseType.HOT_CLUSTER
+    return dash.constants.StatsDatabaseType.COLD_CLUSTER
 
 
 def query(
@@ -88,9 +100,9 @@ def query(
     extra_name="",
     metrics=None,
 ):
-    should_use_postgres = _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports)
+    stats_database_type = _get_stats_database_type(breakdown, constraints, parents, use_publishers_view, is_reports)
 
-    with db_router.use_stats_read_replica_postgres(should_use_postgres):
+    with db_router.use_stats_database(stats_database_type):
         orders = ["-media_cost"] + breakdown
         if order is not None:
             orders = [order] + orders
