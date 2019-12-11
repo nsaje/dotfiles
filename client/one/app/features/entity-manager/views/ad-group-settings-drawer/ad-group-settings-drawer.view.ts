@@ -76,9 +76,13 @@ export class AdGroupSettingsDrawerView
         this.isOpen = false;
         setTimeout(() => {
             this.ajs$location
-                .search(ENTITY_MANAGER_CONFIG.settingsQueryParam, null)
+                .search({
+                    [ENTITY_MANAGER_CONFIG.settingsQueryParam]: null,
+                    [ENTITY_MANAGER_CONFIG.levelQueryParam]: null,
+                    [ENTITY_MANAGER_CONFIG.idQueryParam]: null,
+                })
                 .replace();
-        }, 250);
+        });
     }
 
     cancel() {

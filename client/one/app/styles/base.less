@@ -1155,6 +1155,24 @@ h4 {
     }
 }
 
+.settings-icon {
+    &::before {
+        background-image: url('@{images-folder}/settings-sec.svg');
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/settings-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/settings-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/settings-white.svg');
+    }
+}
+
 ////////////////////////////
 // Buttons holder //
 ////////////////////////////

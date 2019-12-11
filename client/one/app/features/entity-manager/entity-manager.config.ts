@@ -22,6 +22,8 @@ export const ENTITY_MANAGER_CONFIG = {
     settingsQueryParam: 'settings',
     idStateParam: 'id',
     levelStateParam: 'level',
+    idQueryParam: 'settingsEntityId',
+    levelQueryParam: 'settingsEntiyLevel',
     levelToEntityTypeMap: {
         account: EntityType.ACCOUNT,
         campaign: EntityType.CAMPAIGN,

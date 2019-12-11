@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnInit, NgZone} from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {EntityType} from '../../../../app.constants';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
@@ -15,19 +15,23 @@ export class EntitySettingsRouterOutlet implements OnInit {
     entityType: EntityType = null;
 
     constructor(
+        private zone: NgZone,
         @Inject('ajs$rootScope') private ajs$rootScope: any,
         @Inject('ajs$location') private ajs$location: any,
-        @Inject('ajs$state') private ajs$state: any,
-        @Inject('zemPermissions') private zemPermissions: any
+        @Inject('ajs$state') private ajs$state: any
     ) {}
 
     ngOnInit() {
         this.updateActiveSettingsEntity();
         this.ajs$rootScope.$on('$zemStateChangeSuccess', () => {
-            this.updateActiveSettingsEntity();
+            this.zone.run(() => {
+                this.updateActiveSettingsEntity();
+            });
         });
         this.ajs$rootScope.$on('$locationChangeSuccess', () => {
-            this.updateActiveSettingsEntity();
+            this.zone.run(() => {
+                this.updateActiveSettingsEntity();
+            });
         });
     }
 
@@ -40,15 +44,11 @@ export class EntitySettingsRouterOutlet implements OnInit {
             this.ajs$state.includes('v2.analytics') &&
             this.isSettingsQueryParamSet()
         ) {
-            this.entityId = this.ajs$state.params[
-                ENTITY_MANAGER_CONFIG.idStateParam
-            ];
-            this.entityType = this.getEntityTypeFromStateParams();
+            this.entityId = this.getEntityIdFromUrlParams();
+            this.entityType = this.getEntityTypeFromUrlParams();
         } else if (this.ajs$state.includes('v2.createEntity')) {
-            this.newEntityParentId = this.ajs$state.params[
-                ENTITY_MANAGER_CONFIG.idStateParam
-            ];
-            this.entityType = this.getEntityTypeFromStateParams();
+            this.newEntityParentId = this.getEntityIdFromUrlParams();
+            this.entityType = this.getEntityTypeFromUrlParams();
         }
     }
 
@@ -58,10 +58,20 @@ export class EntitySettingsRouterOutlet implements OnInit {
         ];
     }
 
-    private getEntityTypeFromStateParams(): EntityType {
-        return ENTITY_MANAGER_CONFIG.levelToEntityTypeMap[
-            this.ajs$state.params[ENTITY_MANAGER_CONFIG.levelStateParam]
-        ];
+    private getEntityIdFromUrlParams(): number {
+        return (
+            this.ajs$location.search()[ENTITY_MANAGER_CONFIG.idQueryParam] ||
+            this.ajs$state.params[ENTITY_MANAGER_CONFIG.idStateParam]
+        );
+    }
+
+    private getEntityTypeFromUrlParams(): EntityType {
+        return (
+            this.ajs$location.search()[ENTITY_MANAGER_CONFIG.levelQueryParam] ||
+            ENTITY_MANAGER_CONFIG.levelToEntityTypeMap[
+                this.ajs$state.params[ENTITY_MANAGER_CONFIG.levelStateParam]
+            ]
+        );
     }
 }
 
@@ -70,5 +80,6 @@ angular.module('one.downgraded').directive(
     'zemEntitySettingsRouterOutlet',
     downgradeComponent({
         component: EntitySettingsRouterOutlet,
+        propagateDigest: false,
     })
 );

@@ -26,7 +26,7 @@ angular
             this.getGrid = getGrid;
             this.setGridApi = setGridApi;
 
-            function initialize(entity) {
+            function initialize() {
                 initializeGrid();
 
                 var onDateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
@@ -38,21 +38,18 @@ angular
                 $scope.$on('$destroy', onDateRangeUpdateHandler);
                 $scope.$on('$destroy', onDataFilterUpdateHandler);
 
-                if (entity) {
-                    var entitiesUpdates$ = zemEntitiesUpdatesService
-                        .getUpdatesOfEntity$(entity.id, entity.type)
-                        .subscribe(function(entityUpdate) {
-                            if (
-                                entityUpdate.action ===
-                                constants.entityAction.EDIT
-                            ) {
-                                reload();
-                            }
-                        });
-                    $scope.$on('$destroy', function() {
-                        entitiesUpdates$.unsubscribe();
+                var entitiesUpdates$ = zemEntitiesUpdatesService
+                    .getAllUpdates$()
+                    .subscribe(function(entityUpdate) {
+                        if (
+                            entityUpdate.action === constants.entityAction.EDIT
+                        ) {
+                            reload();
+                        }
                     });
-                }
+                $scope.$on('$destroy', function() {
+                    entitiesUpdates$.unsubscribe();
+                });
             }
 
             function configureDataSource(_entity, _breakdown) {

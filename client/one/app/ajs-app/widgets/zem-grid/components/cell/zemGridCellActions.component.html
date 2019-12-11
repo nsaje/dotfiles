@@ -34,6 +34,7 @@
             'archive-icon': ctrl.mainButton.type === 'archive',
             'restore-icon': ctrl.mainButton.type === 'restore',
             'copy-icon': ctrl.mainButton.type === 'clone',
+            'settings-icon': ctrl.mainButton.type === 'settings',
         }"
         ng-show="!ctrl.showLoader && !ctrl.isToggleStateInProgress"
         title="{{ ctrl.mainButton.name }}"

@@ -1,4 +1,6 @@
 var commonHelpers = require('../../../../shared/helpers/common.helpers');
+var ENTITY_MANAGER_CONFIG = require('../../../../features/entity-manager/entity-manager.config')
+    .ENTITY_MANAGER_CONFIG;
 
 angular
     .module('one.widgets')
@@ -13,7 +15,8 @@ angular
         $window,
         zemGridBulkPublishersActionsService,
         zemModalsService,
-        zemUtils
+        zemUtils,
+        $location
     ) {
         // eslint-disable-line max-len
 
@@ -42,6 +45,11 @@ angular
                 name: 'Download',
                 type: 'download',
                 action: downloadRow,
+            },
+            settings: {
+                name: 'Settings',
+                type: 'settings',
+                action: openSettingsRow,
             },
         };
 
@@ -92,16 +100,19 @@ angular
                 level === constants.level.ALL_ACCOUNTS &&
                 breakdown === constants.breakdown.ACCOUNT
             ) {
+                buttons.push(BUTTONS.settings);
                 addArchiveUnarchive();
             } else if (
-                level === constants.level.ACCOUNTS &&
+                (level === constants.level.ALL_ACCOUNTS || level === constants.level.ACCOUNTS) &&
                 breakdown === constants.breakdown.CAMPAIGN
             ) {
+                buttons.push(BUTTONS.settings);
                 addArchiveUnarchive();
             } else if (
-                level === constants.level.CAMPAIGNS &&
+                (level === constants.level.ACCOUNTS || level === constants.level.CAMPAIGNS) &&
                 breakdown === constants.breakdown.AD_GROUP
             ) {
+                buttons.push(BUTTONS.settings);
                 buttons.push(BUTTONS.clone);
                 addArchiveUnarchive();
             } else if (
@@ -356,6 +367,19 @@ angular
                 );
 
             $window.open(url, '_blank');
+            // calling component hides loader on promise resolve
+            return $q.resolve();
+        }
+
+        function openSettingsRow(row) {
+            var searchParams = {};
+            searchParams[ENTITY_MANAGER_CONFIG.settingsQueryParam] = true;
+            searchParams[ENTITY_MANAGER_CONFIG.levelQueryParam] =
+                row.entity.type;
+            searchParams[ENTITY_MANAGER_CONFIG.idQueryParam] = row.entity.id;
+
+            $location.search(searchParams).replace();
+
             // calling component hides loader on promise resolve
             return $q.resolve();
         }

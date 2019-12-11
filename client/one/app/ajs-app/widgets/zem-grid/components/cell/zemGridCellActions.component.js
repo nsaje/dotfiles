@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .directive('zemGridCellActions', function($timeout) {
@@ -90,7 +92,10 @@ angular
                             vm.grid.meta.data.ext
                                 .enablingAutopilotSourcesAllowed;
 
-                        vm.isFieldVisible = isFieldVisible(vm.row.level);
+                        vm.isFieldVisible = isFieldVisible(
+                            vm.row.level,
+                            vm.row.entity
+                        );
                         vm.isRowArchived = vm.row.data.archived;
                         vm.showStateSwitch = zemGridActionsService.isStateSwitchVisible(
                             vm.grid.meta.data.level,
@@ -98,9 +103,10 @@ angular
                             vm.row
                         );
 
+                        var breakdown = getBreakdown(vm.grid, vm.row);
                         var buttons = zemGridActionsService.getButtons(
                             vm.grid.meta.data.level,
-                            vm.grid.meta.data.breakdown,
+                            breakdown,
                             vm.row
                         );
                         if (
@@ -180,8 +186,16 @@ angular
                     return state === vm.stateValues.enabled;
                 }
 
-                function isFieldVisible(rowLevel) {
-                    return rowLevel === zemGridConstants.gridRowLevel.BASE;
+                function isFieldVisible(rowLevel, rowEntity) {
+                    return (
+                        rowLevel === zemGridConstants.gridRowLevel.BASE ||
+                        (rowLevel === zemGridConstants.gridRowLevel.LEVEL_2 &&
+                            commonHelpers.isDefined(rowEntity) &&
+                            (vm.row.entity.type ===
+                                constants.entityType.CAMPAIGN ||
+                                vm.row.entity.type ===
+                                    constants.entityType.AD_GROUP))
+                    );
                 }
 
                 function getErrorMessage(error) {
@@ -208,6 +222,23 @@ angular
                     }
 
                     return errorMessage;
+                }
+
+                function getBreakdown(grid, row) {
+                    var breakdown = grid.meta.data.breakdown;
+                    if (
+                        row.level === zemGridConstants.gridRowLevel.LEVEL_2 &&
+                        commonHelpers.isDefined(row.entity)
+                    ) {
+                        if (row.entity.type === constants.entityType.CAMPAIGN) {
+                            breakdown = constants.breakdown.CAMPAIGN;
+                        } else if (
+                            row.entity.type === constants.entityType.AD_GROUP
+                        ) {
+                            breakdown = constants.breakdown.AD_GROUP;
+                        }
+                    }
+                    return breakdown;
                 }
             },
         };
