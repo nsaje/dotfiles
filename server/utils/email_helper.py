@@ -379,9 +379,25 @@ def _generate_password_reset_url(user, request):
     return url.replace("http://", "https://")
 
 
-def send_supply_report_email(email, date, impressions, cost, custom_subject=None, publisher_report=None):
+def send_supply_report_email(
+    email,
+    date,
+    impressions,
+    cost,
+    custom_subject=None,
+    publisher_report=None,
+    mtd_impressions=None,
+    mtd_cost=None,
+    daily_breakdown_report=None,
+):
     date = dates_helper.format_date_mmddyyyy(date)
-    args = {"date": date, "impressions": impressions, "cost": cost}
+    args = {
+        "date": date,
+        "impressions": impressions,
+        "cost": cost,
+        "mtd_impressions": mtd_impressions,
+        "mtd_cost": mtd_cost,
+    }
     params = params_from_template(dash.constants.EmailTemplateType.SUPPLY_REPORT, **args)
     if custom_subject:
         params["subject"] = custom_subject.format(date=date)
@@ -392,6 +408,9 @@ def send_supply_report_email(email, date, impressions, cost, custom_subject=None
         )
         if publisher_report:
             email.attach("publisher_report.csv", publisher_report, "text/csv")
+
+        if daily_breakdown_report is not None:
+            email.attach("month_to_date_report.csv", daily_breakdown_report, "text/csv")
 
         _send_email(email)
     except Exception:

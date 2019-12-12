@@ -8,16 +8,15 @@ from utils import dates_helper
 
 def get_local_date_query(date):
     context = get_local_date_context(date)
-
     # query only date first so redshift can use sort key
     query = """
-    date >= '{tzdate_from}' and date <= '{tzdate_to}' and (
-        (date = '{date}' and hour is null) or
-        (hour is not null and (
-            (date = '{tzdate_from}' and hour >= {tzhour_from}) or
-            (date = '{tzdate_to}' and hour < {tzhour_to})
-        ))
-    )
+        date >= '{tzdate_from}' and date <= '{tzdate_to}' and (
+            (date = '{date}' and hour is null) or
+            (hour is not null and (
+                (date = '{tzdate_from}' and hour >= {tzhour_from}) or
+                (date = '{tzdate_to}' and hour < {tzhour_to})
+            ))
+        )
     """.format(
         **context
     )
@@ -40,6 +39,22 @@ def get_local_date_context(date):
         "tzdate_to": hour_to.date().isoformat(),
         "tzhour_to": hour_to.hour,
     }
+
+
+def get_local_multiday_date_query(date_from, date_to):
+    context = get_local_multiday_date_context(date_from, date_to)
+    query = """
+        date >= '{tzdate_from}' and date <= '{tzdate_to}' and (
+            (date >= '{date_from} and date <= '{date_to}' and hour is null) or
+            (hour is not null and (
+                (date >= '{tzdate_from}' and hour >= {tzhour_from}) or
+                (date <= '{tzdate_to}' and hour < {tzhour_to})
+            ))
+        )
+    """.format(
+        **context
+    )
+    return query
 
 
 def get_local_multiday_date_context(date_from, date_to):

@@ -8,5 +8,7 @@ class SupplyReportRecipient(models.Model):
     source = models.ForeignKey("dash.Source", on_delete=models.PROTECT)
     custom_subject = models.CharField(max_length=100, blank=True)
     publishers_report = models.BooleanField(default=False)
+    mtd_report = models.BooleanField(default=False, verbose_name="Month-to-date report")
+    daily_breakdown_report = models.BooleanField(default=False, verbose_name="Month-to-date daily breakdown report")
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
