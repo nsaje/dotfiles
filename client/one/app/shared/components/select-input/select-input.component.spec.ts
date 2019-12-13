@@ -82,11 +82,15 @@ describe('SelectInputComponent', () => {
         spyOn(component.valueChange, 'emit').and.stub();
 
         component.onChange([
-            {name: 'Anej', value: 2},
-            {name: 'Jure', value: 3},
-            {name: 'Nejc', value: 1},
+            {name: 'Anej', value: '2'},
+            {name: 'Jure', value: '3'},
+            {name: 'Nejc', value: '1'},
         ]);
-        expect(component.valueChange.emit).toHaveBeenCalledWith([2, 3, 1]);
+        expect(component.valueChange.emit).toHaveBeenCalledWith([
+            '2',
+            '3',
+            '1',
+        ]);
         (<any>component.valueChange.emit).calls.reset();
 
         component.onChange(undefined);

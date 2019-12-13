@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, NgZone} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {EntityType} from '../../../../app.constants';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
@@ -15,7 +15,6 @@ export class EntitySettingsRouterOutlet implements OnInit {
     entityType: EntityType = null;
 
     constructor(
-        private zone: NgZone,
         @Inject('ajs$rootScope') private ajs$rootScope: any,
         @Inject('ajs$location') private ajs$location: any,
         @Inject('ajs$state') private ajs$state: any
@@ -24,14 +23,10 @@ export class EntitySettingsRouterOutlet implements OnInit {
     ngOnInit() {
         this.updateActiveSettingsEntity();
         this.ajs$rootScope.$on('$zemStateChangeSuccess', () => {
-            this.zone.run(() => {
-                this.updateActiveSettingsEntity();
-            });
+            this.updateActiveSettingsEntity();
         });
         this.ajs$rootScope.$on('$locationChangeSuccess', () => {
-            this.zone.run(() => {
-                this.updateActiveSettingsEntity();
-            });
+            this.updateActiveSettingsEntity();
         });
     }
 
