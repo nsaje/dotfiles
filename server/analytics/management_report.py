@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from decimal import Decimal
 
+from django.conf import settings
 from django.template.loader import render_to_string
 
 import backtosql
@@ -10,7 +11,7 @@ from utils import csv_utils
 
 def get_query_results():
     sql = backtosql.generate_sql("sql/management_report.sql", {})
-    with db.get_stats_cursor() as c:
+    with db.get_stats_cursor(settings.STATS_DB_HOT_CLUSTER) as c:
         c.execute(sql)
         return db.dictfetchall(c)
 

@@ -17,12 +17,13 @@ class Command(Z1Command):
         set_logger_verbosity(logger, options)
 
         data = analytics.management_report.get_query_results()
-        if data:
-            yesterday = datetime.date.today() - datetime.timedelta(1)
-            html = analytics.management_report.get_daily_report_html(data)
-            attachment = {
-                "filename": "report-{}.csv".format(yesterday),
-                "mimetype": "text/csv",
-                "content": analytics.management_report.prepare_report_as_csv(data),
-            }
-            utils.email_helper.send_daily_management_report_email(html, attachment)
+        if not data:
+            raise Exception("No DMR data.")
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        html = analytics.management_report.get_daily_report_html(data)
+        attachment = {
+            "filename": "report-{}.csv".format(yesterday),
+            "mimetype": "text/csv",
+            "content": analytics.management_report.prepare_report_as_csv(data),
+        }
+        utils.email_helper.send_daily_management_report_email(html, attachment)
