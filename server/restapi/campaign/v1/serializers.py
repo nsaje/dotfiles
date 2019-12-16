@@ -90,4 +90,4 @@ class CampaignSerializer(
 
 
 class CampaignIdsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    id = restapi.serializers.fields.IdField(read_only=True, source="campaign.id")
+    id = restapi.serializers.fields.IdField(read_only=True)
