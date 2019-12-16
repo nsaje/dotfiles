@@ -13,8 +13,18 @@ class ContentAdCandidateInstanceTest(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         campaign.settings.update_unsafe(None, iab_category=dash.constants.IABCategory.IAB10_7)
         candidate = magic_mixer.blend(
-            core.models.ContentAdCandidate, ad_group__campaign=campaign, icon_id=None, original_content_ad=None
+            core.models.ContentAdCandidate,
+            ad_group__campaign=campaign,
+            icon_url="http://icon.url.com",
+            icon_id=None,
+            original_content_ad=None,
         )
+
+        icon_url = candidate.get_hosted_icon_url()
+        self.assertIsNone(icon_url)
+
+        candidate.icon_url = None
+
         icon_url = candidate.get_hosted_icon_url()
         self.assertEqual("http://test.com/d/icons/IAB10.jpg", icon_url)
         icon_url = candidate.get_hosted_icon_url(700)

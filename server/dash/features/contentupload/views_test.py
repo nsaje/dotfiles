@@ -55,7 +55,6 @@ class UploadCsvTestCase(TestCase):
         candidate = batch.contentadcandidate_set.get()
 
         expected_candidate = candidate.to_dict()
-        expected_candidate["hosted_icon_url"] = "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center"
         expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
 
         self.assertEqual(response.status_code, 200)
@@ -438,36 +437,42 @@ class UploadStatusTestCase(TestCase):
         ad_group_id = 2
 
         candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
-        expected_candidate = candidate.to_dict()
+        expected_candidate = candidate.to_dict(can_use_icon=True)
         expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
 
         response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
+        response_json = json.loads(response.content)
         self.assertEqual(
-            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}},
-            json.loads(response.content),
+            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}}, response_json
         )
+        self.assertIsNone(response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"])
 
     def test_ok(self):
         batch_id = 8
         ad_group_id = 7
 
         candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
-        expected_candidate = candidate.to_dict()
+        expected_candidate = candidate.to_dict(can_use_icon=True)
+
         expected_candidate["errors"] = {}
 
-        response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
+        response = _get_client(True).get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
+        response_json = json.loads(response.content)
         self.assertEqual(
-            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}},
-            json.loads(response.content),
+            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}}, response_json
+        )
+        self.assertEqual(
+            "/abc23456.jpg?w=300&h=300&fit=crop&crop=center",
+            response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"],
         )
 
     def test_failed(self):
         batch_id = 3
         ad_group_id = 4
         candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id, batch_id=batch_id)
-        expected_candidate = candidate.to_dict()
+        expected_candidate = candidate.to_dict(can_use_icon=True)
         expected_candidate["errors"] = {
             "image_url": ["Image could not be processed"],
             "icon_url": ["Image could not be processed"],
@@ -478,10 +483,11 @@ class UploadStatusTestCase(TestCase):
 
         response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
+        response_json = json.loads(response.content)
         self.assertEqual(
-            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}},
-            json.loads(response.content),
+            {"success": True, "data": {"candidates": {str(candidate.id): expected_candidate}}}, response_json
         )
+        self.assertIsNone(response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"])
 
 
 class UploadSaveTestCase(TestCase):
@@ -963,7 +969,7 @@ class CandidateTest(TestCase):
                             "icon_hash": None,
                             "icon_file_size": None,
                             "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
-                            "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
+                            "hosted_icon_url": None,
                             "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                             "primary_tracker_url": None,
                             "secondary_tracker_url": None,

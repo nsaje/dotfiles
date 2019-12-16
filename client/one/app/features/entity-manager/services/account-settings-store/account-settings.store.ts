@@ -328,7 +328,28 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         if (!arrayHelpers.isEmpty(files)) {
             defaultIconBase64 = await fileHelpers.encodeBase64(files[0]);
         }
-        this.patchState(defaultIconBase64, 'entity', 'defaultIconBase64');
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                defaultIconBase64: defaultIconBase64,
+            },
+            fieldsErrors: {
+                ...this.state.fieldsErrors,
+                defaultIconUrl: [],
+            },
+            requests: {
+                ...this.state.requests,
+                create: {
+                    ...this.state.requests.create,
+                    error: false,
+                },
+                edit: {
+                    ...this.state.requests.edit,
+                    error: false,
+                },
+            },
+        });
     }
 
     setPublisherGroupsTargeting(publisherGroupsTargeting: {

@@ -100,7 +100,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
     @staticmethod
     def _validate_default_icon(account):
-        if not account.is_archived() and not account.settings.default_icon_id:
+        if not account.is_archived() and not account.settings.default_icon:
             raise utils.exc.ValidationError("Default icon must be set before updating or creating a new account.")
 
     @staticmethod

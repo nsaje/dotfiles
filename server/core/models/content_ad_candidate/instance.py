@@ -67,6 +67,9 @@ class ContentAdCandidateMixin:
         return dash.image_helper.get_image_url(self.icon_id, width, height, dash.constants.ImageCrop.CENTER)
 
     def get_hosted_icon_url(self, size=None):
+        if self.icon_url and not self.icon_id:
+            return None
+
         icon_url = self.get_icon_url(size, size) or self.ad_group.campaign.account.settings.get_default_icon_url(size)
         if icon_url:
             return icon_url

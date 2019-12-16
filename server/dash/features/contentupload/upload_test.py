@@ -754,7 +754,7 @@ class AddCandidateTestCase(TestCase):
                 "icon_id": None,
                 "icon_file_size": None,
                 "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
-                "hosted_icon_url": None,
+                "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
                 "landscape_hosted_image_url": None,
@@ -766,7 +766,7 @@ class AddCandidateTestCase(TestCase):
                 "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "can_append_tracking_codes": False,
             },
-            candidate.to_dict(),
+            candidate.to_dict(True),
         )
 
     def test_with_defaults(self):
@@ -810,7 +810,7 @@ class AddCandidateTestCase(TestCase):
                 "icon_id": None,
                 "icon_file_size": None,
                 "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
-                "hosted_icon_url": None,
+                "hosted_icon_url": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
                 "landscape_hosted_image_url": None,
@@ -822,7 +822,7 @@ class AddCandidateTestCase(TestCase):
                 "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "can_append_tracking_codes": False,
             },
-            candidate.to_dict(),
+            candidate.to_dict(True),
         )
 
 

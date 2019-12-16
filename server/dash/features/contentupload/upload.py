@@ -264,10 +264,8 @@ def get_candidates_with_errors(request, candidates):
 
     result = []
     for candidate in candidates:
-        candidate_dict = candidate.to_dict()
-
-        if has_icon_permission and candidate.type not in DISPLAY_AD_TYPES:
-            candidate_dict["hosted_icon_url"] = candidate.get_hosted_icon_url(300)
+        can_use_icon = has_icon_permission and candidate.type not in DISPLAY_AD_TYPES
+        candidate_dict = candidate.to_dict(can_use_icon)
 
         candidate_dict["errors"] = {}
         if candidate.id in errors:

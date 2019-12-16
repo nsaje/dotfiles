@@ -232,47 +232,51 @@
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_use_creative_icon'
-                            ) && isDefaultIconPreviewVisible
+                            )
                         "
-                        helpMessage="Icon preview placeholder text"
+                        helpMessage="Brand logo will be placed in all creatives and served with ads where this is required by the publisher. In case you wish to change the brand logo for a specific creative you can do that on the ad creative level."
                         [label]="'Brand logo'"
                     >
-                        <img
-                            class="zem-account-settings-drawer__icon-preview"
-                            src="{{ state.entity.defaultIconUrl }}"
-                        />
-                    </zem-content-form-group>
-                    <zem-content-form-group
-                        class="zem-content-form-group zem-settings-section__item"
-                        [hidden]="
-                            !zemPermissions.hasPermission(
-                                'zemauth.can_use_creative_icon'
-                            ) || isDefaultIconPreviewVisible
-                        "
-                        helpMessage="Icon info placeholder text"
-                        [label]="'Brand logo'"
-                    >
-                        <zem-file-selector
-                            class="zem-file-selector zem-account-settings-drawer__icon-file-selector"
-                            [ngClass]="{
-                                'zem-file-selector--error':
-                                    state.fieldsErrors.defaultIconUrl &&
-                                    state.fieldsErrors.defaultIconUrl.length > 0
-                            }"
-                            [dropZoneLabel]="'Drop your file here or'"
-                            [accept]="'image/*'"
-                            [isMultiple]="false"
-                            [showBrowseButton]="true"
-                            [browseButtonLabel]="'Choose file'"
-                            (filesChange)="store.setDefaultIcon($event)"
-                        ></zem-file-selector>
                         <div
-                            class="zem-form-group__content-item zem-message zem-message--error"
-                            *ngFor="
-                                let error of state.fieldsErrors.defaultIconUrl
+                            *ngIf="
+                                !state.requests.defaults.inProgress &&
+                                !state.requests.get.inProgress
                             "
                         >
-                            {{ error }}
+                            <img
+                                class="zem-account-settings-drawer__icon-preview"
+                                [ngClass]="{
+                                    'zem-account-settings-drawer__icon-preview--error':
+                                        state.fieldsErrors?.defaultIconUrl
+                                            ?.length > 0
+                                }"
+                                [hidden]="!isDefaultIconPreviewVisible"
+                                src="{{ state.entity.defaultIconUrl }}"
+                            />
+                            <zem-file-selector
+                                class="zem-file-selector zem-account-settings-drawer__icon-file-selector"
+                                [ngClass]="{
+                                    'zem-account-settings-drawer__icon-preview--error':
+                                        state.fieldsErrors?.defaultIconUrl
+                                            ?.length > 0
+                                }"
+                                [hidden]="isDefaultIconPreviewVisible"
+                                [dropZoneLabel]="'Drop your file here or'"
+                                [accept]="'image/*'"
+                                [isMultiple]="false"
+                                [showBrowseButton]="true"
+                                [browseButtonLabel]="'Choose file'"
+                                (filesChange)="store.setDefaultIcon($event)"
+                            ></zem-file-selector>
+                            <div
+                                class="zem-form-group__content-item zem-message zem-message--error"
+                                *ngFor="
+                                    let error of state.fieldsErrors
+                                        .defaultIconUrl
+                                "
+                            >
+                                {{ error }}
+                            </div>
                         </div>
                     </zem-content-form-group>
                     <div
@@ -280,7 +284,9 @@
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_use_creative_icon'
-                            )
+                            ) &&
+                            (!state.requests.defaults.inProgress &&
+                                !state.requests.get.inProgress)
                         "
                     >
                         <div
@@ -295,7 +301,10 @@
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_use_creative_icon'
-                            ) && isDefaultIconPreviewVisible
+                            ) &&
+                            (!state.requests.defaults.inProgress &&
+                                !state.requests.get.inProgress) &&
+                            isDefaultIconPreviewVisible
                         "
                     >
                         <button
@@ -313,6 +322,8 @@
                                 'zemauth.can_use_creative_icon'
                             ) &&
                             !isDefaultIconPreviewVisible &&
+                            (!state.requests.defaults.inProgress &&
+                                !state.requests.get.inProgress) &&
                             state.entity.defaultIconUrl
                         "
                     >

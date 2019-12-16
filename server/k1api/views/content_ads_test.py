@@ -153,9 +153,7 @@ class ContentAdsTest(K1APIBaseTest):
             dash.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=200, height=200
         )
         account = magic_mixer.blend(dash.models.Account)
-        content_ad = magic_mixer.blend(
-            dash.models.ContentAd, ad_group__campaign__account=account, icon_id=None, icon_size=None, icon_hash=None
-        )
+        content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group__campaign__account=account, icon=None)
 
         response = self.client.get(reverse("k1api.content_ads"), {"content_ad_ids": content_ad.id})
         data = json.loads(response.content)
