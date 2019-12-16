@@ -30,6 +30,7 @@ class CampaignViewSet(RESTAPIBaseViewSet):
 
     def list(self, request):
         account_id = request.query_params.get("accountId", None)
+        only_ids = request.query_params.get("onlyIds", False)
         if account_id:
             account = restapi.access.get_account(request.user, account_id)
             campaigns = core.models.Campaign.objects.filter(account=account)
@@ -39,8 +40,14 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             campaigns = campaigns.exclude_archived()
 
-        campaigns = campaigns.select_related("settings").order_by("pk")
         paginator = StandardPagination()
+        if only_ids:
+            campaigns_paginated = paginator.paginate_queryset(campaigns, request)
+            return paginator.get_paginated_response(
+                serializers.CampaignIdsSerializer(campaigns_paginated, many=True, context={"request": request}).data
+            )
+
+        campaigns = campaigns.select_related("settings").order_by("pk")
         campaigns_paginated = paginator.paginate_queryset(campaigns, request)
         paginated_settings = [c.settings for c in campaigns_paginated]
         return paginator.get_paginated_response(

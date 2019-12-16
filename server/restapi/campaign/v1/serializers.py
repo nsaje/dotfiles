@@ -87,3 +87,7 @@ class CampaignSerializer(
                 "Tier 1 IAB categories not allowed, please use Tier 2 IAB categories."
             )
         return value
+
+
+class CampaignIdsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True, source="campaign.id")
