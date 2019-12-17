@@ -10,17 +10,15 @@ class RuleInstanceMixin:
                 self.created_by = request.user
             else:
                 self.modified_by = request.user
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @transaction.atomic
     def update(self, request, **updates):
-        self.clean(updates)
-
         cleaned_updates = self._clean_updates(updates)
         self._apply_updates(cleaned_updates)
-        self.save(request)
-
         self._apply_related_updates(updates)
+        self.save(request)
 
     def _clean_updates(self, updates):
         new_updates = {}

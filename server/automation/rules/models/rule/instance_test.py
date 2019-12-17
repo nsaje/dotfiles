@@ -1,3 +1,5 @@
+import decimal
+
 from django.test import TestCase
 
 import core.models
@@ -14,13 +16,14 @@ class RuleInstanceTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
 
         rule = magic_mixer.blend(model.Rule, agency=agency)
+
         rule.update(
             request,
             name="Test rule",
             target_type=constants.TargetType.PUBLISHER,
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
-            change_step=0.01,
-            change_limit=2.50,
+            change_step=decimal.Decimal("0.01"),
+            change_limit=decimal.Decimal("2.50"),
             cooldown=24,
             window=constants.MetricWindow.LAST_30_DAYS,
             notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
@@ -29,10 +32,10 @@ class RuleInstanceTest(TestCase):
             conditions=[
                 {
                     "left_operand_window": constants.MetricWindow.LAST_30_DAYS,
-                    "left_operand_type": constants.MetricType.TOTAL_SPEND,
-                    "left_operand_modifier": 1.0,
+                    "left_operand_type": constants.MetricType.AVG_COST_PER_MINUTE,
+                    "left_operand_modifier": "1.0",
                     "operator": constants.Operator.GREATER_THAN,
-                    "right_operand_window": None,
+                    "right_operand_window": constants.MetricWindow.NOT_APPLICABLE,
                     "right_operand_type": constants.ValueType.ABSOLUTE,
                     "right_operand_value": "100",
                 }
@@ -57,9 +60,9 @@ class RuleInstanceTest(TestCase):
 
         condition = conditions[0]
         self.assertEqual(constants.MetricWindow.LAST_30_DAYS, condition.left_operand_window)
-        self.assertEqual(constants.MetricType.TOTAL_SPEND, condition.left_operand_type)
+        self.assertEqual(constants.MetricType.AVG_COST_PER_MINUTE, condition.left_operand_type)
         self.assertEqual(1.0, condition.left_operand_modifier)
         self.assertEqual(constants.Operator.GREATER_THAN, condition.operator)
-        self.assertEqual(None, condition.right_operand_window)
+        self.assertEqual(constants.MetricWindow.NOT_APPLICABLE, condition.right_operand_window)
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)
         self.assertEqual("100", condition.right_operand_value)
