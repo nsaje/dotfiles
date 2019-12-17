@@ -12,7 +12,7 @@ export class RuleEditFormStoreState {
     agencyId: string = null;
     availableActions: RuleActionConfig[] = [];
     availableConditions: RuleConditionConfig[] = [];
-    fieldsErrors: RulesEditFormStoreFieldsErrorsState = null;
+    fieldErrors: RulesEditFormStoreFieldsErrorsState = null;
     requests = {
         save: {} as RequestState,
     };

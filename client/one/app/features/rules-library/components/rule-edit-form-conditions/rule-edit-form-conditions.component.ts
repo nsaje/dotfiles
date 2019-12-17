@@ -4,30 +4,25 @@ import {
     Component,
     ChangeDetectionStrategy,
     Input,
-    OnChanges,
     Output,
     EventEmitter,
-    SimpleChanges,
 } from '@angular/core';
 import {RuleCondition} from '../../../../core/rules/types/rule-condition';
 import * as ruleFormHelpers from '../rule-edit-form/helpers/rule-edit-form.helpers';
 import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-config';
+import {TimeRange} from '../../../../core/rules/rules.constants';
 import {ChangeEvent} from '../../../../shared/types/change-event';
-import {FieldErrors} from '../../../../shared/types/field-errors';
-import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 
 @Component({
     selector: 'zem-rule-edit-form-conditions',
     templateUrl: './rule-edit-form-conditions.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RuleEditFormConditionsComponent implements OnChanges {
+export class RuleEditFormConditionsComponent {
     @Input()
     ruleConditions: RuleCondition[];
     @Input()
     availableConditions: RuleConditionConfig[];
-    @Input()
-    ruleConditionsErrors: FieldErrors[];
     @Output()
     ruleConditionAdd = new EventEmitter<RuleCondition>();
     @Output()
@@ -35,26 +30,8 @@ export class RuleEditFormConditionsComponent implements OnChanges {
     @Output()
     ruleConditionRemove = new EventEmitter<RuleCondition>();
 
-    generalConditionsError: string;
-    perConditionErrors: FieldErrors[] = [];
-
     addCondition() {
         this.ruleConditionAdd.emit(this.generateNewCondition());
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (
-            changes.ruleConditionsErrors &&
-            !arrayHelpers.isEmpty(this.ruleConditionsErrors)
-        ) {
-            this.perConditionErrors = [];
-            this.generalConditionsError = '';
-            if (typeof this.ruleConditionsErrors[0] === 'object') {
-                this.perConditionErrors = this.ruleConditionsErrors;
-            } else if (typeof this.ruleConditionsErrors[0] === 'string') {
-                this.generalConditionsError = this.ruleConditionsErrors[0];
-            }
-        }
     }
 
     onConditionChange(changedConditionEvent: ChangeEvent<RuleCondition>) {
@@ -76,12 +53,12 @@ export class RuleEditFormConditionsComponent implements OnChanges {
             operator: null,
             metric: {
                 type: null,
-                window: null,
+                window: TimeRange.Lifetime,
                 modifier: null,
             },
             value: {
                 type: null,
-                window: null,
+                window: TimeRange.Lifetime,
                 value: null,
             },
         };

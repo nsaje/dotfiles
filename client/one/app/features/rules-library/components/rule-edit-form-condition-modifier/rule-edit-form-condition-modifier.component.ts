@@ -13,7 +13,6 @@ import {TimeRange} from '../../../../core/rules/rules.constants';
 import {DataType, Unit} from '../../../../app.constants';
 import {TIME_RANGES} from '../../rules-library.config';
 import {RuleConditionOperandValueModifier} from '../../../../core/rules/types/rule-condition-operand-value-modifier';
-import {FieldErrors} from 'one/app/shared/types/field-errors';
 
 @Component({
     selector: 'zem-rule-edit-form-condition-modifier',
@@ -31,8 +30,6 @@ export class RuleEditFormConditionModifierComponent implements OnChanges {
     hasTimeRangeModifier: boolean;
     @Input()
     valueModifier: RuleConditionOperandValueModifier;
-    @Input()
-    modifierErrors: FieldErrors[];
     @Output()
     valueChange = new EventEmitter<string>();
     @Output()

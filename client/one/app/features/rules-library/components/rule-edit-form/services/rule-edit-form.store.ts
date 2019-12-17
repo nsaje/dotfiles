@@ -22,8 +22,6 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {ChangeEvent} from '../../../../../shared/types/change-event';
-import {HttpErrorResponse} from '@angular/common/http';
-import {RulesEditFormStoreFieldsErrorsState} from './rule-edit-form.fields-errors-state';
 
 @Injectable()
 export class RuleEditFormStore extends Store<RuleEditFormStoreState>
@@ -68,12 +66,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     () => {
                         resolve();
                     },
-                    (error: HttpErrorResponse) => {
-                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new RulesEditFormStoreFieldsErrorsState(),
-                            error
-                        );
-                        this.patchState(fieldsErrors, 'fieldsErrors');
+                    error => {
                         reject();
                     }
                 );
@@ -173,26 +166,15 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     }
 
     setRuleNotificationType(notificationType: RuleNotificationType) {
-        let notificationRecipients = this.state.rule.notificationRecipients;
-        if (notificationType === RuleNotificationType.None) {
-            notificationRecipients = [];
-        }
-        this.setState({
-            ...this.state,
-            rule: {
-                ...this.state.rule,
-                notificationType: notificationType,
-                notificationRecipients: notificationRecipients,
-            },
-        });
+        this.patchState(notificationType, 'rule', 'notificationType');
     }
 
-    setRuleNotificationRecipients(recipients: string) {
-        let recipientsList: string[] = [];
-        if (recipients.length > 0) {
-            recipientsList = recipients.split(',');
-        }
-        this.patchState(recipientsList, 'rule', 'notificationRecipients');
+    setRuleNotificationRecipients(notificationRecipients: string[]) {
+        this.patchState(
+            notificationRecipients,
+            'rule',
+            'notificationRecipients'
+        );
     }
 
     private getActionsForTarget(target: RuleTargetType): RuleActionConfig[] {

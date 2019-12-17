@@ -6,7 +6,6 @@
         bindValue="type"
         [items]="availableMetrics"
         [isSearchable]="false"
-        [hasError]="conditionErrors?.metric?.type"
         groupByValue="group"
         [isClearable]="false"
         (valueChange)="selectMetricType($event)"
@@ -19,7 +18,6 @@
             [timeRange]="ruleCondition.metric.window"
             [hasTimeRangeModifier]="selectedMetricConfig.hasTimeRangeModifier"
             [valueModifier]="selectedMetricConfig.valueModifier"
-            [modifierErrors]="conditionErrors?.metric?.type"
             (valueChange)="updateMetricModifier($event)"
             (timeRangeChange)="updateMetricWindow($event)"
         >
@@ -43,7 +41,6 @@
     [isDisabled]="availableOperators.length === 0"
     [isSearchable]="false"
     [isClearable]="false"
-    [hasError]="conditionErrors?.operator"
     (valueChange)="selectOperator($event)"
 ></zem-select-input>
 <div class="zem-rule-edit-form-condition__operand-container">
@@ -56,7 +53,6 @@
             selectedValueConfig.dataType === DataType.Integer
         "
         [value]="ruleCondition.value.value"
-        [hasError]="conditionErrors?.value?.value"
         (inputBlur)="updateValueValue($event)"
     ></zem-integer-input>
     <zem-decimal-input
@@ -68,7 +64,6 @@
             selectedValueConfig.dataType === DataType.Decimal
         "
         [value]="ruleCondition.value.value"
-        [hasError]="conditionErrors?.value?.value"
         [fractionSize]="selectedValueConfig.fractionSize"
         (inputBlur)="updateValueValue($event)"
     ></zem-decimal-input>
@@ -94,7 +89,6 @@
             selectedValueConfig.dataType === DataType.Decimal
         "
         [prefix]="getUnitText(selectedValueConfig.unit)"
-        [hasError]="conditionErrors?.value?.value"
     >
         <zem-decimal-input
             class="zem-decimal-input"
@@ -113,7 +107,6 @@
         [value]="ruleCondition.value.value"
         [fractionSize]="selectedValueConfig.fractionSize"
         [currencySymbol]="getUnitText(selectedValueConfig.unit)"
-        [hasError]="conditionErrors?.value?.value"
         (inputBlur)="updateValueValue($event)"
     ></zem-currency-input>
     <zem-date-input
@@ -124,7 +117,6 @@
             selectedValueConfig.dataType === DataType.Date
         "
         [value]="ruleCondition.value.value"
-        [hasError]="conditionErrors?.value?.value"
         (valueChange)="updateValueValue($event)"
     ></zem-date-input>
     <zem-select-input
@@ -137,7 +129,6 @@
         [isSearchable]="false"
         groupByValue="group"
         [isClearable]="false"
-        [hasError]="conditionErrors?.value?.type"
         (valueChange)="selectValueType($event)"
     ></zem-select-input>
     <ng-template #valuePopoverTemplate>
@@ -148,7 +139,6 @@
             [timeRange]="ruleCondition.value.window"
             [hasTimeRangeModifier]="selectedValueConfig.hasTimeRangeModifier"
             [valueModifier]="selectedValueConfig.valueModifier"
-            [modifierErrors]="conditionErrors?.value?.value"
             (valueChange)="updateValueValue($event)"
             (timeRangeChange)="updateValueWindow($event)"
         >

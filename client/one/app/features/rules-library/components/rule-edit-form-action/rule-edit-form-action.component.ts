@@ -15,7 +15,6 @@ import {
 } from '../../../../core/rules/rules.constants';
 import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
-import {FieldErrors} from '../../../../shared/types/field-errors';
 
 @Component({
     selector: 'zem-rule-edit-form-action',
@@ -33,14 +32,6 @@ export class RuleEditFormActionComponent implements OnChanges {
     changeLimit: number;
     @Input()
     availableActions: RuleActionConfig[];
-    @Input()
-    actionTypeErrors: FieldErrors;
-    @Input()
-    actionFrequencyErrors: FieldErrors;
-    @Input()
-    changeStepErrors: FieldErrors;
-    @Input()
-    changeLimitErrors: FieldErrors;
     @Output()
     actionTypeChange = new EventEmitter<RuleActionType>();
     @Output()

@@ -42,15 +42,10 @@ export class RuleActionsComponent {
 
     save(): void {
         this.isSaveInProgress = true;
-        this.ruleEditFormApi
-            .executeSave()
-            .then(() => {
-                this.isSaveInProgress = false;
-                this.ruleModal.close();
-            })
-            .catch(() => {
-                this.isSaveInProgress = false;
-            });
+        this.ruleEditFormApi.executeSave().then(() => {
+            this.isSaveInProgress = false;
+            this.ruleModal.close();
+        });
     }
 
     cancel(): void {

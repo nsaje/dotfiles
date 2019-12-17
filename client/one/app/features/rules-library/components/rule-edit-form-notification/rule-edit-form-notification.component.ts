@@ -8,7 +8,6 @@ import {
     EventEmitter,
 } from '@angular/core';
 import {RuleNotificationType} from '../../../../core/rules/rules.constants';
-import {FieldErrors} from '../../../../shared/types/field-errors';
 
 @Component({
     selector: 'zem-rule-edit-form-notification',
@@ -20,14 +19,10 @@ export class RuleEditFormNotificationComponent {
     notificationType: RuleNotificationType;
     @Input()
     notificationRecipients: string;
-    @Input()
-    notificationTypeErrors: FieldErrors;
-    @Input()
-    notificationRecipientsErrors: FieldErrors;
     @Output()
     notificationTypeChange = new EventEmitter<RuleNotificationType>();
     @Output()
-    notificationRecipientsChange = new EventEmitter<string>();
+    notificationRecipientsChange = new EventEmitter<string[]>();
 
     RuleNotificationType = RuleNotificationType;
 
@@ -36,6 +31,10 @@ export class RuleEditFormNotificationComponent {
     }
 
     updateRecipients(recipients: string) {
-        this.notificationRecipientsChange.emit(recipients);
+        let recipientsList: string[] = [];
+        if (recipients.length > 0) {
+            recipientsList = recipients.split(',');
+        }
+        this.notificationRecipientsChange.emit(recipientsList);
     }
 }
