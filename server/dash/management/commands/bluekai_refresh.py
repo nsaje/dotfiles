@@ -45,6 +45,6 @@ class Command(Z1Command):
             raise BluekaiMonitoringException("Bluekai campaign is not running")
 
     def handle(self, *args, **options):
-        # maintenance.refresh_bluekai_categories()
+        maintenance.refresh_bluekai_categories()
         self._cross_check_audience_categories(options)
         self._check_campaign_status(options)
