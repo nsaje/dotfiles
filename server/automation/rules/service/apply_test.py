@@ -133,7 +133,7 @@ class ApplyTest(TestCase):
             left_operand_type=constants.MetricType.CLICKS,
             left_operand_modifier=2.0,
             operator=constants.Operator.GREATER_THAN,
-            right_operand_window=constants.MetricWindow.NOT_APPLICABLE,
+            right_operand_window=None,
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_value="10",
         )

@@ -3,6 +3,7 @@ import rest_framework.serializers
 
 import automation.rules
 import restapi.access
+import utils.exc
 from restapi.common.pagination import StandardPagination
 
 from . import serializers
@@ -28,7 +29,7 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        rule = automation.rules.Rule.objects.create(request, agency, **data)
+        rule = self._wrap_validation_exceptions(automation.rules.Rule.objects.create, request, agency, **data)
         serializer = serializers.RuleSerializer(rule)
         return self.response_ok(serializer.data, status=201)
 
@@ -45,5 +46,28 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         rule = agency.rule_set.get(id=rule_id)
-        rule.update(request, **data)
+        self._wrap_validation_exceptions(rule.update, request, **data)
         return self.response_ok(serializers.RuleSerializer(rule).data)
+
+    def _wrap_validation_exceptions(self, fn, *args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except utils.exc.MultipleValidationError as err:
+            errors = {}
+            for e in err.errors:
+                if isinstance(e, automation.rules.InvalidTargetType):
+                    errors.setdefault("target_type", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidActionType):
+                    errors.setdefault("action_type", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidChangeLimit):
+                    errors.setdefault("change_limit", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidChangeStep):
+                    errors.setdefault("change_step", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidNotificationRecipients):
+                    errors.setdefault("notification_recipients", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidRuleConditions):
+                    if e.conditions_errors:
+                        errors["conditions"] = e.conditions_errors
+                    else:
+                        errors.setdefault("conditions", []).append(str(e))
+            raise utils.exc.ValidationError(errors=errors)

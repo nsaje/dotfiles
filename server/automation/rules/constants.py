@@ -96,7 +96,6 @@ class NotificationType(ConstantBase):
 
 
 class MetricWindow(ConstantBase):
-    NOT_APPLICABLE = 1
     LAST_DAY = 2
     LAST_3_DAYS = 3
     LAST_7_DAYS = 4
@@ -104,7 +103,6 @@ class MetricWindow(ConstantBase):
     LIFETIME = 6
 
     _VALUES = {
-        NOT_APPLICABLE: "N/A",
         LAST_DAY: "Last day",
         LAST_3_DAYS: "Last 3 days",
         LAST_7_DAYS: "Last week",
@@ -233,7 +231,7 @@ METRIC_MV_COLUMNS_MAPPING = {
 class ValueType(ConstantBase):
     ABSOLUTE = 1
     CONSTANT = 2
-    CURRENT_TIME = 3
+    CURRENT_DATE = 3
     ACCOUNT_MANAGER = 4
     CAMPAIGN_GOAL = 5
     CAMPAIGN_BUDGET = 6
@@ -247,7 +245,7 @@ class ValueType(ConstantBase):
     _VALUES = {
         ABSOLUTE: "Absolute value",
         CONSTANT: "Constant",
-        CURRENT_TIME: "Current time",
+        CURRENT_DATE: "Current date",
         ACCOUNT_MANAGER: "Account manager",
         CAMPAIGN_GOAL: "Campaign goal",
         CAMPAIGN_BUDGET: "Campaign budget",

@@ -8,15 +8,21 @@ import restapi.serializers.fields
 
 class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     type = restapi.serializers.fields.DashConstantField(automation.rules.MetricType, source="left_operand_type")
-    window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, source="left_operand_window")
+    window = restapi.serializers.fields.DashConstantField(
+        automation.rules.MetricWindow, source="left_operand_window", allow_null=True
+    )
     modifier = rest_framework.serializers.FloatField(source="left_operand_modifier", allow_null=True)
 
 
 class RuleConditionValueSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     type = restapi.serializers.fields.DashConstantField(automation.rules.ValueType, source="right_operand_type")
-    window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, source="right_operand_window")
+    window = restapi.serializers.fields.DashConstantField(
+        automation.rules.MetricWindow, source="right_operand_window", required=False, initial=None, allow_null=True
+    )
     value = restapi.serializers.fields.PlainCharField(
-        max_length=127, error_messages={"required": "Please specify right operand value."}, source="right_operand_value"
+        max_length=127,
+        error_messages={"required": "Please specify a right operand value."},
+        source="right_operand_value",
     )
 
 
@@ -47,17 +53,30 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(read_only=True)
     name = restapi.serializers.fields.PlainCharField(
-        max_length=127, error_messages={"required": "Please specify rule name."}
+        max_length=127,
+        error_messages={"required": "Please specify a rule name.", "null": "Please specify a rule name."},
     )
 
     entities = RuleEntitiesSerializer(source="*")
 
-    target_type = restapi.serializers.fields.DashConstantField(automation.rules.TargetType)
+    target_type = restapi.serializers.fields.DashConstantField(
+        automation.rules.TargetType,
+        error_messages={"required": "Please specify a target type.", "null": "Please specify a target type."},
+    )
 
-    action_type = restapi.serializers.fields.DashConstantField(automation.rules.ActionType)
-    change_step = rest_framework.serializers.FloatField()
-    change_limit = rest_framework.serializers.FloatField()
-    action_frequency = rest_framework.serializers.IntegerField(source="cooldown")
+    action_type = restapi.serializers.fields.DashConstantField(
+        automation.rules.ActionType,
+        error_messages={"required": "Please specify an action type.", "null": "Please specify an action type."},
+    )
+    change_step = rest_framework.serializers.FloatField(required=False, allow_null=True)
+    change_limit = rest_framework.serializers.FloatField(required=False, allow_null=True)
+    action_frequency = rest_framework.serializers.IntegerField(
+        source="cooldown",
+        error_messages={
+            "required": "Please specify an action frequency.",
+            "null": "Please specify an action frequency.",
+        },
+    )
 
     notification_type = restapi.serializers.fields.DashConstantField(automation.rules.NotificationType)
     notification_recipients = rest_framework.serializers.ListSerializer(

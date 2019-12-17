@@ -7,9 +7,10 @@ import core.models
 from ... import constants
 from . import instance
 from . import manager
+from . import validation
 
 
-class Rule(instance.RuleInstanceMixin, models.Model):
+class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Model):
 
     objects = manager.RuleManager()
 
@@ -37,8 +38,8 @@ class Rule(instance.RuleInstanceMixin, models.Model):
     target_type = models.IntegerField(choices=constants.TargetType.get_choices())
 
     action_type = models.IntegerField(choices=constants.ActionType.get_choices())
-    change_step = models.FloatField()
-    change_limit = models.FloatField()
+    change_step = models.FloatField(null=True, blank=True)
+    change_limit = models.FloatField(null=True, blank=True)
     cooldown = models.IntegerField()
     window = models.IntegerField(choices=constants.MetricWindow.get_choices(), default=constants.MetricWindow.LIFETIME)
 
