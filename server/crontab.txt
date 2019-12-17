@@ -37,6 +37,7 @@
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 #0 8 * * *       /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
 #0 8 * * *       /home/ubuntu/docker-manage-py.sh oen_daily_statements
+0 8 * * *        /home/ubuntu/docker-manage-py.sh pd_slack_summary
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 0 8 * * *        /home/ubuntu/docker-manage-py.sh demo_cleanup
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails

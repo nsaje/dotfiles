@@ -241,6 +241,16 @@ CREDENTIALS_ENCRYPTION_KEY = Secret(
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = True
+PAGER_DUTY_REST_API_URL = "https://api.pagerduty.com"
+PAGER_DUTY_REST_API_KEY = (
+    Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHIwcAYJKoZIhvcNAQcGoGMwYQIBADBcBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDHdZpPh0KFpSsBkMbAIBEIAvwufQQdqz6SIU1MGCuDF2Y8AEvspMm/UQF5fx7evcdBnSfm3T3LDl2Jz74eaEeOA="
+    )
+    .get()
+    .decode("utf-8")
+)
+PAGER_DUTY_Z1_TEAM_ID = "PDMB8ZZ"
+PAGER_DUTY_Z1_TEAM_SCHEDULE_ID = "P6Q61HP"
 PAGER_DUTY_URL = "https://events.pagerduty.com/v2/enqueue"
 PAGER_DUTY_ADOPS_SERVICE_KEY = (
     Secret(

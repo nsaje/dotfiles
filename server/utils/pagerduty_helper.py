@@ -1,13 +1,34 @@
+import datetime
 import traceback
+from dataclasses import dataclass
 from functools import wraps
 
 import requests
 from django.conf import settings
 
+from utils import dates_helper
 from utils import zlogging
 from utils.constant_base import ConstantBase
 
 logger = zlogging.getLogger(__name__)
+
+
+REST_API_URL = settings.PAGER_DUTY_REST_API_URL
+REST_API_KEY = settings.PAGER_DUTY_REST_API_KEY
+Z1_TEAM_ID = settings.PAGER_DUTY_Z1_TEAM_ID
+Z1_TEAM_SCHEDULE_ID = settings.PAGER_DUTY_Z1_TEAM_SCHEDULE_ID
+
+
+@dataclass
+class PagerDutyIncident:
+    title: str
+    url: str
+
+
+@dataclass
+class PagerDutyUser:
+    name: str
+    email: str
 
 
 class PagerDutyEventType(ConstantBase):
@@ -101,3 +122,31 @@ def _post_event(command, event_type, incident_key, description, event_severity=N
 
     except requests.exceptions.Timeout:
         logger.error("PagerDuty event failed due to timeout", command=command)
+
+
+def list_active_incidents():
+    incidents = _call_api(
+        "GET", REST_API_URL + "/incidents", {"statuses[]": ["triggered", "acknowledged"], "team_ids[]": [Z1_TEAM_ID]}
+    )
+    return [PagerDutyIncident(title=incident["title"], url=incident["html_url"]) for incident in incidents["incidents"]]
+
+
+def get_on_call_user():
+    today = dates_helper.utc_today()
+    users = _call_api(
+        "GET",
+        REST_API_URL + f"/schedules/{Z1_TEAM_SCHEDULE_ID}/users",
+        {"since": today.isoformat(), "until": (today + datetime.timedelta(days=1)).isoformat()},
+    )
+    if not users.get("users"):
+        return None
+    return PagerDutyUser(name=users["users"][0]["name"], email=users["users"][0]["email"])
+
+
+def _call_api(method, url, params):
+    pagerduty_session = requests.Session()
+    pagerduty_session.headers.update(
+        {"Authorization": "Token token=" + REST_API_KEY, "Accept": "application/vnd.pagerduty+json;version=2"}
+    )
+    r = pagerduty_session.request(method, url, params)
+    return r.json()

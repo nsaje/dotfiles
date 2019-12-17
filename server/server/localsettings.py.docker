@@ -163,6 +163,10 @@ CREDENTIALS_ENCRYPTION_KEY = Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").g
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
+PAGER_DUTY_REST_API_URL = ""
+PAGER_DUTY_REST_API_KEY = Secret("").get().decode("utf-8")
+PAGER_DUTY_Z1_TEAM_ID = ""
+PAGER_DUTY_Z1_TEAM_SCHEDULE_ID = ""
 PAGER_DUTY_URL = ""
 PAGER_DUTY_ADOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
