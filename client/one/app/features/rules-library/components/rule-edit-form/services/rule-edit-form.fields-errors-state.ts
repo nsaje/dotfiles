@@ -1,5 +1,5 @@
 import {FieldErrors} from '../../../../../shared/types/field-errors';
-import {RuleConditionsError} from '../types/rule-conditions-error';
+import {RuleConditionError} from '../types/rule-condition-error';
 
 export class RulesEditFormStoreFieldsErrorsState {
     id: FieldErrors = [];
@@ -9,7 +9,7 @@ export class RulesEditFormStoreFieldsErrorsState {
     actionFrequency: FieldErrors = [];
     changeStep: FieldErrors = [];
     changeLimit: FieldErrors = [];
-    conditions: RuleConditionsError[] | string[];
+    conditions: RuleConditionError[] | string[];
     notificationType: FieldErrors = [];
     notificationRecipients: FieldErrors = [];
 }

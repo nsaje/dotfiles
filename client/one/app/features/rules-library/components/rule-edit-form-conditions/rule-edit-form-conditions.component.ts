@@ -14,7 +14,7 @@ import * as ruleFormHelpers from '../rule-edit-form/helpers/rule-edit-form.helpe
 import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-config';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
-import {RuleConditionsError} from '../rule-edit-form/types/rule-conditions-error';
+import {RuleConditionError} from '../rule-edit-form/types/rule-condition-error';
 
 @Component({
     selector: 'zem-rule-edit-form-conditions',
@@ -27,7 +27,7 @@ export class RuleEditFormConditionsComponent implements OnChanges {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Input()
-    ruleConditionsErrors: RuleConditionsError[] | string[];
+    ruleConditionsErrors: RuleConditionError[] | string[];
     @Output()
     ruleConditionAdd = new EventEmitter<RuleCondition>();
     @Output()
@@ -36,7 +36,7 @@ export class RuleEditFormConditionsComponent implements OnChanges {
     ruleConditionRemove = new EventEmitter<RuleCondition>();
 
     generalConditionsError: string;
-    perConditionErrors: RuleConditionsError[] = [];
+    perConditionErrors: RuleConditionError[] = [];
 
     addCondition() {
         this.ruleConditionAdd.emit(this.generateNewCondition());
@@ -51,7 +51,7 @@ export class RuleEditFormConditionsComponent implements OnChanges {
             this.generalConditionsError = '';
             if (typeof this.ruleConditionsErrors[0] === 'object') {
                 this.perConditionErrors = this
-                    .ruleConditionsErrors as RuleConditionsError[];
+                    .ruleConditionsErrors as RuleConditionError[];
             } else if (typeof this.ruleConditionsErrors[0] === 'string') {
                 this.generalConditionsError = this
                     .ruleConditionsErrors[0] as string;
