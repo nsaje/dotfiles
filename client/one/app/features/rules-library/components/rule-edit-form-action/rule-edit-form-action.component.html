@@ -17,6 +17,8 @@
     label="Increase/decrease by"
     [value]="formatChangeStep(changeStep, actionType)"
     [currencySymbol]="getUnitText(selectedActionConfig.unit)"
+    [fractionSize]="0"
+    [errors]="changeStepErrors"
     (valueChange)="updateChangeStep($event, actionType)"
 ></zem-currency-form-group>
 
@@ -28,6 +30,8 @@
     [value]="formatChangeLimit(changeLimit, actionType)"
     [helpMessage]="selectedActionConfig.limitDescription"
     [currencySymbol]="getUnitText(selectedActionConfig.unit)"
+    [fractionSize]="0"
+    [errors]="changeLimitErrors"
     (valueChange)="updateChangeLimit($event, actionType)"
 ></zem-currency-form-group>
 

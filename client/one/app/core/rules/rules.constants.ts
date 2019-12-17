@@ -51,7 +51,7 @@ export enum RuleConditionOperandType {
     NonBouncedVisits = 'NON_BOUNCED_VISITS',
     BounceRate = 'BOUNCE_RATE',
     TotalSeconds = 'TOTAL_SECONDS',
-    TimeOnSite = 'TIME_ON_SITE',
+    TimeOnSite = 'AVG_TIME_ON_SITE',
     CampaignBudget = 'CAMPAIGN_BUDGET',
     RemainingCampaignBudget = 'REMAINING_CAMPAIGN_BUDGET',
     CampaignBudgetMargin = 'CAMPAIGN_BUDGET_MARGIN',

@@ -34,10 +34,10 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             conditions=[
                 {
                     "left_operand_window": automation.rules.MetricWindow.LAST_30_DAYS,
-                    "left_operand_type": automation.rules.MetricType.AVG_COST_PER_MINUTE,
+                    "left_operand_type": automation.rules.MetricType.TOTAL_SPEND,
                     "left_operand_modifier": 1.0,
                     "operator": automation.rules.Operator.GREATER_THAN,
-                    "right_operand_window": automation.rules.MetricWindow.NOT_APPLICABLE,
+                    "right_operand_window": None,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
                     "right_operand_value": "100",
                 }
@@ -95,12 +95,14 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             "operator": automation.rules.Operator.get_name(operator),
             "metric": {
                 "type": automation.rules.MetricType.get_name(left_operand_type),
-                "window": automation.rules.MetricWindow.get_name(left_operand_window),
+                "window": automation.rules.MetricWindow.get_name(left_operand_window) if left_operand_window else None,
                 "modifier": left_operand_modifier,
             },
             "value": {
                 "type": automation.rules.ValueType.get_name(right_operand_type),
-                "window": automation.rules.MetricWindow.get_name(right_operand_window),
+                "window": automation.rules.MetricWindow.get_name(right_operand_window)
+                if right_operand_window
+                else None,
                 "value": str(right_operand_value),
             },
         }
@@ -158,7 +160,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         rule_data = self.rule_repr(
             name="New test campaign",
             ad_groups_included=[new_ad_group.id],
-            target_type=automation.rules.TargetType.COUNTRY,
+            target_type=automation.rules.TargetType.PUBLISHER,
             action_type=automation.rules.ActionType.DECREASE_BID_MODIFIER,
             change_step=0.11,
             change_limit=0.05,
@@ -172,7 +174,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
                     "left_operand_modifier": 1.0,
                     "operator": automation.rules.Operator.GREATER_THAN,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
-                    "right_operand_window": automation.rules.MetricWindow.LAST_7_DAYS,
+                    "right_operand_window": None,
                     "right_operand_value": "2.22",
                 }
             ],
