@@ -8,6 +8,7 @@
     [isDisabled]="availableActions.length === 0"
     [isSearchable]="false"
     [isClearable]="false"
+    [errors]="actionTypeErrors"
     (valueChange)="selectActionType($event)"
 ></zem-select-form-group>
 
@@ -46,5 +47,6 @@
     [items]="availableActionFrequencies"
     [isSearchable]="false"
     [isClearable]="false"
+    [errors]="actionFrequencyErrors"
     (valueChange)="selectActionFrequency($event)"
 ></zem-select-form-group>

@@ -13,7 +13,7 @@ import {
 import {RuleEditFormStore} from './services/rule-edit-form.store';
 import {EntityType} from '../../../../app.constants';
 import {RuleActionType} from '../../../../core/rules/rules.constants';
-import {RULE_DIMENSIONS, TIME_RANGES} from '../../rules-library.config';
+import {RULE_TARGET_TYPES, TIME_RANGES} from '../../rules-library.config';
 import {RuleEditFormApi} from './types/rule-edit-form-api';
 
 @Component({
@@ -34,7 +34,7 @@ export class RuleEditFormComponent implements OnInit, AfterViewInit {
 
     title: string = '';
     RuleActionType = RuleActionType;
-    availableDimensions = RULE_DIMENSIONS;
+    availableTargetTypes = RULE_TARGET_TYPES;
     availableTimeRanges = TIME_RANGES;
 
     constructor(
@@ -58,6 +58,14 @@ export class RuleEditFormComponent implements OnInit, AfterViewInit {
 
     saveEntity(): Promise<void> {
         return this.store.saveEntity();
+    }
+
+    hasConditionsErrors() {
+        return (
+            this.store.state.fieldsErrors &&
+            this.store.state.fieldsErrors.conditions &&
+            this.store.state.fieldsErrors.conditions.length > 0
+        );
     }
 
     private getTitle(entityId: string, entityType: EntityType): string {

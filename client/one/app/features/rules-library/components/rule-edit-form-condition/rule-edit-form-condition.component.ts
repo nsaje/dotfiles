@@ -22,6 +22,7 @@ import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-c
 import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-condition-operand-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {ChangeEvent} from '../../../../shared/types/change-event';
+import {FieldErrors} from '../../../../shared/types/field-errors';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -33,6 +34,8 @@ export class RuleEditFormConditionComponent implements OnChanges {
     ruleCondition: RuleCondition;
     @Input()
     availableConditions: RuleConditionConfig[];
+    @Input()
+    conditionErrors: FieldErrors[];
     @Output()
     conditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()
@@ -105,12 +108,12 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 metric: {
                     type: metricType,
                     modifier: null,
-                    window: TimeRange.Lifetime,
+                    window: null,
                 },
                 value: {
                     type: null,
                     value: null,
-                    window: TimeRange.Lifetime,
+                    window: null,
                 },
             },
         });
@@ -157,7 +160,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
                     ...this.ruleCondition.value,
                     type: operand,
                     value: null,
-                    window: TimeRange.Lifetime,
+                    window: null,
                 },
             },
         });
