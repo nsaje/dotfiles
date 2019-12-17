@@ -9,7 +9,7 @@ import {
 } from '../../core/rules/rules.constants';
 import {DataType, Unit} from '../../app.constants';
 
-export const RULE_DIMENSIONS = [
+export const RULE_TARGET_TYPES = [
     // {label: 'Ad', value: RuleTargetType.Ad},
     // {label: 'Ad group', value: RuleTargetType.AdGroup},
     {

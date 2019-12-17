@@ -1,16 +1,26 @@
 <zem-rule-edit-form-condition
     class="zem-rule-edit-form__section-item zem-rule-edit-form-condition"
-    *ngFor="let ruleCondition of ruleConditions; trackBy: trackById"
+    *ngFor="
+        let ruleCondition of ruleConditions;
+        let i = index;
+        trackBy: trackById
+    "
     [ruleCondition]="ruleCondition"
     [availableConditions]="availableConditions"
+    [conditionErrors]="perConditionErrors[i]"
     (conditionChange)="onConditionChange($event)"
     (conditionRemove)="onConditionRemove($event)"
 >
 </zem-rule-edit-form-condition>
-<button
-    class="zem-rule-edit-form__section-item button button--highlight button--with-icon add-icon"
-    [disabled]="availableConditions.length === 0"
-    (click)="addCondition()"
->
-    Add condition
-</button>
+<div class="zem-rule-edit-form__section-item">
+    <button
+        class=" button button--highlight button--with-icon add-icon zem-rule-edit-form__conditions-button"
+        [disabled]="availableConditions.length === 0"
+        (click)="addCondition()"
+    >
+        Add condition
+    </button>
+    <span class="zem-message zem-message--error" *ngIf="generalConditionsError">
+        {{ generalConditionsError }}
+    </span>
+</div>

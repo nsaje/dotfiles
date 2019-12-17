@@ -25,18 +25,20 @@
             class="zem-rule-edit-form__section-item zem-text-form-group zem-rule-edit-form__text-setting"
             label="Rule name"
             [value]="state.rule.name"
+            [errors]="state.fieldsErrors?.name"
             (valueChange)="store.setRuleName($event)"
         >
         </zem-text-form-group>
         <zem-select-form-group
             class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
             label="Apply rule action on"
-            [value]="state.rule.dimension"
+            [value]="state.rule.targetType"
             bindLabel="label"
             bindValue="value"
-            [items]="availableDimensions"
+            [items]="availableTargetTypes"
             [isSearchable]="false"
             [isClearable]="false"
+            [errors]="state.fieldsErrors?.targetType"
             (valueChange)="store.selectRuleTarget($event)"
         ></zem-select-form-group>
         <div
@@ -57,6 +59,10 @@
             [changeStep]="state.rule.changeStep"
             [changeLimit]="state.rule.changeLimit"
             [availableActions]="state.availableActions"
+            [actionTypeErrors]="state.fieldsErrors?.actionType"
+            [actionFrequencyErrors]="state.fieldsErrors?.actionFrequency"
+            [changeStepErrors]="state.fieldsErrors?.changeStep"
+            [changeLimitErrors]="state.fieldsErrors?.changeLimit"
             (actionTypeChange)="store.setRuleActionType($event)"
             (actionFrequencyChange)="store.setRuleActionFrequency($event)"
             (changeStepChange)="store.setRuleChangeStep($event)"
@@ -64,7 +70,14 @@
         ></zem-rule-edit-form-action>
     </div>
     <div class="zem-rule-edit-form__section">
-        <div class="zem-rule-edit-form__section-title">Conditions:</div>
+        <div
+            class="zem-rule-edit-form__section-title"
+            [class.zem-rule-edit-form__section-title--error]="
+                hasConditionsErrors()
+            "
+        >
+            Conditions:
+        </div>
         <div class="zem-rule-edit-form__section-description">
             All of the following conditions must match.
         </div>
@@ -72,6 +85,7 @@
             class="zem-rule-edit-form__section-item zem-rule-edit-form-conditions"
             [ruleConditions]="state.rule.conditions"
             [availableConditions]="state.availableConditions"
+            [ruleConditionsErrors]="state.fieldsErrors?.conditions"
             (ruleConditionAdd)="store.addCondition($event)"
             (ruleConditionChange)="store.updateCondition($event)"
             (ruleConditionRemove)="store.removeCondition($event)"
@@ -99,6 +113,10 @@
             class="zem-rule-edit-form__section-item zem-rule-edit-form-notification"
             [notificationType]="state.rule.notificationType"
             [notificationRecipients]="state.rule.notificationRecipients"
+            [notificationTypeErrors]="state.fieldsErrors?.notificationType"
+            [notificationRecipientsErrors]="
+                state.fieldsErrors?.notificationRecipients
+            "
             (notificationTypeChange)="store.setRuleNotificationType($event)"
             (notificationRecipientsChange)="
                 store.setRuleNotificationRecipients($event)
