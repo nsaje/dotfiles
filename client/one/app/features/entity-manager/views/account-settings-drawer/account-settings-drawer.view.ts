@@ -143,6 +143,7 @@ export class AccountSettingsDrawerView
         level: LevelStateParam,
         entityId: string
     ) {
+        this.isOpen = false;
         const url = this.ajs$state.href('v2.analytics', {
             level: level,
             id: entityId,
