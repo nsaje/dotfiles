@@ -52,6 +52,7 @@ export class RuleEditFormConditionsComponent implements OnChanges {
             if (typeof this.ruleConditionsErrors[0] === 'object') {
                 this.perConditionErrors = this.ruleConditionsErrors;
             } else if (typeof this.ruleConditionsErrors[0] === 'string') {
+                // typescript-disable-next-line TS2322
                 this.generalConditionsError = this.ruleConditionsErrors[0];
             }
         }
