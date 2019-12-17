@@ -36,7 +36,9 @@ UPDATABLE_FIELDS = ("start_date", "end_date", "amount", "comment")
 class BudgetLineItemManager(core.common.QuerySetManager):
     @transaction.atomic
     def create(self, request, campaign, credit, start_date, end_date, amount, margin=None, comment=None):
-        core.common.entity_limits.enforce(BudgetLineItem.objects.filter(campaign=campaign), campaign.account_id)
+        core.common.entity_limits.enforce(
+            BudgetLineItem.objects.filter(campaign=campaign).filter_present_and_future(), campaign.account_id
+        )
         item = BudgetLineItem(campaign=campaign, credit=credit, start_date=start_date, end_date=end_date, amount=amount)
         if margin is not None:
             item.margin = margin
@@ -64,7 +66,9 @@ class BudgetLineItemManager(core.common.QuerySetManager):
         return item
 
     def clone(self, request, source_budget, campaign):
-        core.common.entity_limits.enforce(BudgetLineItem.objects.filter(campaign=campaign), campaign.account_id)
+        core.common.entity_limits.enforce(
+            BudgetLineItem.objects.filter(campaign=campaign).filter_present_and_future(), campaign.account_id
+        )
 
         today = dates_helper.local_today()
         start_date = today if source_budget.start_date < today else source_budget.start_date
@@ -587,6 +591,11 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         def filter_today(self):
             current_date = utils.dates_helper.local_today()
             return self.filter_overlapping(current_date, current_date)
+
+        def filter_present_and_future(self):
+            current_date = utils.dates_helper.local_today()
+            future_date = datetime.date(2222, 1, 1)
+            return self.filter_overlapping(current_date, future_date)
 
         def annotate_spend_data(self):
             return self.annotate(

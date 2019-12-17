@@ -233,3 +233,36 @@ class TestBudgetLineItemManager(TestCase):
             error = err
 
         self.assertEqual("Budget exceeds the total credit amount by $2.00.", str(error.errors[0]))
+
+    def test_filter_present_and_future(self):
+        t0 = datetime.date(2017, 1, 1)
+        BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0,
+            end_date=t0 + datetime.timedelta(days=1),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        item2 = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 + datetime.timedelta(days=1),
+            end_date=t0 + datetime.timedelta(days=3),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        item3 = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 + datetime.timedelta(days=3),
+            end_date=t0 + datetime.timedelta(days=5),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        with patch("utils.dates_helper.local_today") as mock_now:
+            mock_now.return_value = t0 + datetime.timedelta(days=2)
+            self.assertEqual(list(BudgetLineItem.objects.all().filter_present_and_future()), [item2, item3])
