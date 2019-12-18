@@ -32,7 +32,7 @@ class RDSModelization(object):
         self.s3_path = os.path.join(self.FOLDER, self.file_name)
 
     @staticmethod
-    def get_constant_value(field, constant, output_field=CharField):
+    def _get_constant_value(field, constant, output_field=CharField):
         return Case(
             *[When(**{field: i, "then": Value(constant.get_text(i))}) for i in constant._VALUES],
             output_field=output_field()
@@ -50,25 +50,22 @@ class RDSModelization(object):
             qs = qs.distinct(*self.DISTINCT)
         return qs
 
-    def put_csv_to_s3(self):
-        return s3.upload_csv_without_job(self.TABLE, self.data_generator, self.s3_path, self.BUCKET_NAME)
+    def _put_csv_to_s3(self):
+        return s3.upload_csv_without_job(self.TABLE, self._data_generator, self.s3_path, self.BUCKET_NAME)
 
-    def data_generator(self):
+    def _data_generator(self):
         if not self.rds_data:
             self.rds_data = self._get_rds_queryset()
         columns = [self.PK] + list(self.FIELDS.keys())
         for l in self.rds_data:
             yield [l.get(col) for col in columns]
 
-    def empty_table(self):
-        redshift.delete_from_table(self.TABLE)
-
-    def load_csv_from_s3(self):
+    def _load_csv_from_s3(self):
         redshift.refresh_materialized_rds_table(self.s3_path, self.TABLE, bucket_name=self.BUCKET_NAME)
 
     def extract_load_data(self):
-        self.put_csv_to_s3()
-        self.load_csv_from_s3()
+        self._put_csv_to_s3()
+        self._load_csv_from_s3()
 
 
 class RDSAgency(RDSModelization):
@@ -77,7 +74,7 @@ class RDSAgency(RDSModelization):
     FIELDS = OrderedDict(
         name="name",
         whitelabel="white_label__theme",
-        default_account_type=RDSModelization.get_constant_value("default_account_type", dash.constants.AccountType),
+        default_account_type=RDSModelization._get_constant_value("default_account_type", dash.constants.AccountType),
         sales_representative="sales_representative__email",
         cs_representative="cs_representative__email",
         ob_representative="ob_representative__email",
@@ -96,10 +93,10 @@ class RDSSource(RDSModelization):
         released="released",
         supports_retargeting="supports_retargeting",
         impression_trackers_count="impression_trackers_count",
-        content_ad_submission_policy=RDSModelization.get_constant_value(
+        content_ad_submission_policy=RDSModelization._get_constant_value(
             "content_ad_submission_policy", dash.constants.SourceSubmissionPolicy
         ),
-        content_ad_submission_type=RDSModelization.get_constant_value(
+        content_ad_submission_type=RDSModelization._get_constant_value(
             "content_ad_submission_type", dash.constants.SourceSubmissionType
         ),
         source_type="source_type__type",
@@ -120,7 +117,7 @@ class RDSAccount(RDSModelization):
         account_cs_representative="settings__default_cs_representative__email",
         account_ob_representative="settings__ob_representative__email",
         archived="settings__archived",
-        account_type=RDSModelization.get_constant_value("settings__account_type", dash.constants.AccountType),
+        account_type=RDSModelization._get_constant_value("settings__account_type", dash.constants.AccountType),
         whitelist_publisher_groups="settings__whitelist_publisher_groups",
         blacklist_publisher_groups="settings__blacklist_publisher_groups",
     )
@@ -131,16 +128,16 @@ class RDSCampaign(RDSModelization):
     TABLE = "mv_rds_campaign"
     FIELDS = OrderedDict(
         name="name",
-        type=RDSModelization.get_constant_value("type", dash.constants.CampaignType),
+        type=RDSModelization._get_constant_value("type", dash.constants.CampaignType),
         account_id="account__id",
         real_time_campaign_stop="real_time_campaign_stop",
         campaign_manager="settings__campaign_manager__email",
-        language=RDSModelization.get_constant_value("settings__language", dash.constants.Language),
-        iab_category=RDSModelization.get_constant_value("settings__iab_category", dash.constants.IABCategory),
-        campaign_promotion_goal=RDSModelization.get_constant_value(
+        language=RDSModelization._get_constant_value("settings__language", dash.constants.Language),
+        iab_category=RDSModelization._get_constant_value("settings__iab_category", dash.constants.IABCategory),
+        campaign_promotion_goal=RDSModelization._get_constant_value(
             "settings__promotion_goal", dash.constants.PromotionGoal
         ),
-        campaign_goal=RDSModelization.get_constant_value("settings__campaign_goal", dash.constants.CampaignGoal),
+        campaign_goal=RDSModelization._get_constant_value("settings__campaign_goal", dash.constants.CampaignGoal),
         goal_quantity="settings__goal_quantity",
         target_devices="settings__target_devices",
         target_placements="settings__target_placements",
@@ -153,7 +150,7 @@ class RDSCampaign(RDSModelization):
         landing_mode="settings__landing_mode",
         autopilot="settings__autopilot",
         enable_ga_tracking="settings__enable_ga_tracking",
-        ga_tracking_type=RDSModelization.get_constant_value(
+        ga_tracking_type=RDSModelization._get_constant_value(
             "settings__ga_tracking_type", dash.constants.GATrackingType
         ),
         enable_adobe_tracking="settings__enable_adobe_tracking",
@@ -167,7 +164,7 @@ class RDSCampaignGoal(RDSModelization):
     PK = "campaign_goal_id"
     FIELDS = OrderedDict(
         campaign_id="campaign_goal__campaign_id",
-        campaign_goal_type=RDSModelization.get_constant_value("campaign_goal__type", dash.constants.CampaignGoalKPI),
+        campaign_goal_type=RDSModelization._get_constant_value("campaign_goal__type", dash.constants.CampaignGoalKPI),
         campaign_goal_primary="campaign_goal__primary",
         conversion_goal_id="campaign_goal__conversion_goal__id",
         conversion_goal_pixel_slug="campaign_goal__conversion_goal__pixel__slug",
@@ -202,13 +199,13 @@ class RDSContentAd(RDSModelization):
         tracker_urls="tracker_urls",
         additional_data="additional_data",
         video_asset_id="video_asset__id",
-        video_status=RDSModelization.get_constant_value(
+        video_status=RDSModelization._get_constant_value(
             "video_asset__status", core.features.videoassets.constants.VideoAssetStatus
         ),
         video_name="video_asset__name",
         video_duration="video_asset__duration",
         video_formats="video_asset__formats",
-        video_type=RDSModelization.get_constant_value(
+        video_type=RDSModelization._get_constant_value(
             "video_asset__type", core.features.videoassets.constants.VideoAssetType
         ),
         video_vast_url="video_asset__vast_url",
@@ -269,7 +266,7 @@ class RDSGeolocation(RDSModelization):
     TABLE = "mv_rds_geolocation"
     PK = "key"
     FIELDS = OrderedDict(
-        type=RDSModelization.get_constant_value("type", dash.constants.LocationType),
+        type=RDSModelization._get_constant_value("type", dash.constants.LocationType),
         name="name",
         woeid="woeid",
         outbrain_id="outbrain_id",
@@ -282,7 +279,7 @@ class RDSPublisherClassification(RDSModelization):
     TABLE = "mv_rds_publisher_classification"
     FIELDS = OrderedDict(
         publisher="publisher",
-        category=RDSModelization.get_constant_value("category", dash.constants.InterestCategory),
+        category=RDSModelization._get_constant_value("category", dash.constants.InterestCategory),
         ignored="ignored",
     )
 

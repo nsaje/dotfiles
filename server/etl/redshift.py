@@ -200,7 +200,7 @@ def prepare_date_range_delete_query(table_name, date_from, date_to, account_id):
 
 def delete_from_table(table_name):
     sql = backtosql.generate_sql("etl_delete_table_mv_rds.sql", {"table": table_name})
-    with db.get_stats_cursor() as c:
+    with db.get_write_stats_cursor() as c:
         logger.info("Will truncate table", table=table_name)
         c.execute(sql)
         logger.info("Table truncated", table=table_name)
