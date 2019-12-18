@@ -449,33 +449,43 @@ def make_csv_example_file(modifier_type):
     target_column_name = helpers.output_modifier_type(modifier_type)
     csv_columns = helpers.make_csv_file_columns(modifier_type)
 
-    entry = {"Bid Modifier": "1.0"}
-
     modifier_type_map = {
-        constants.BidModifierType.PUBLISHER: {target_column_name: "example.com", "Source Slug": "some_slug"},
-        constants.BidModifierType.SOURCE: {target_column_name: "b1_outbrain"},
-        constants.BidModifierType.DEVICE: {
-            target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE)
-        },
-        constants.BidModifierType.OPERATING_SYSTEM: {
-            target_column_name: dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID)
-        },
-        constants.BidModifierType.PLACEMENT: {
-            target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE)
-        },
-        constants.BidModifierType.COUNTRY: {target_column_name: "US"},
-        constants.BidModifierType.STATE: {target_column_name: "US-TX"},
-        constants.BidModifierType.DMA: {target_column_name: "765"},
-        constants.BidModifierType.AD: {target_column_name: "1"},
-        constants.BidModifierType.DAY_HOUR: {target_column_name: "MONDAY_12"},
+        constants.BidModifierType.PUBLISHER: [{target_column_name: "example.com", "Source Slug": "some_slug"}],
+        constants.BidModifierType.SOURCE: [{target_column_name: "b1_outbrain"}],
+        constants.BidModifierType.DEVICE: [
+            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.DESKTOP)},
+            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE)},
+            {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.TABLET)},
+        ],
+        constants.BidModifierType.OPERATING_SYSTEM: [
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.ANDROID)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.IOS)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINPHONE)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINRT)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.WINDOWS)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.MACOSX)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.LINUX)},
+            {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.CHROMEOS)},
+        ],
+        constants.BidModifierType.PLACEMENT: [
+            {target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP)},
+            {target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE)},
+        ],
+        constants.BidModifierType.COUNTRY: [{target_column_name: "US"}],
+        constants.BidModifierType.STATE: [{target_column_name: "US-TX"}],
+        constants.BidModifierType.DMA: [{target_column_name: "765"}],
+        constants.BidModifierType.AD: [{target_column_name: "1"}],
+        constants.BidModifierType.DAY_HOUR: [{target_column_name: "MONDAY_0"}, {target_column_name: "SUNDAY_23"}],
     }
 
-    entry.update(modifier_type_map[modifier_type])
+    entries = modifier_type_map[modifier_type]
+    for entry in entries:
+        entry.update({"Bid Modifier": "1.0"})
 
     csv_example_file = StringIO.StringIO()
     writer = csv.DictWriter(csv_example_file, csv_columns, extrasaction="ignore")
     writer.writeheader()
-    writer.writerows([entry])
+    writer.writerows(entries)
     csv_example_file.seek(0)
     return csv_example_file
 

@@ -106,10 +106,10 @@ class TargetConverter:
 
     @classmethod
     def _to_operating_system_target(cls, value):
-        if value == dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.UNKNOWN):
+        if value == dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN):
             raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Traget")
 
-        operating_system = dash_constants.OperatingSystem.get_value(value)
+        operating_system = dash_constants.OperatingSystem.get_constant_value(value)
         if operating_system is None:
             raise exceptions.BidModifierTargetInvalid("Invalid Operating System")
 
@@ -117,11 +117,7 @@ class TargetConverter:
 
     @classmethod
     def _from_operating_system_target(cls, target):
-        value = dash_constants.OperatingSystem.get_text(target)
-        if not value:
-            raise ValueError("Invalid Operating System target")
-
-        return value
+        return dash_constants.OperatingSystem.get_name(target)
 
     @classmethod
     def _to_placement_medium_target(cls, value):
@@ -209,22 +205,18 @@ class FileConverter(TargetConverter):
     def _from_source_target(cls, target):
         return models.Source.objects.filter(id=int(target)).only("bidder_slug").first().bidder_slug
 
-
-class ApiConverter(TargetConverter):
     @classmethod
     def _to_operating_system_target(cls, value):
-        if value == dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Traget")
+        # map legacy file operating system values
+        converted_legacy_value = dash_constants.OperatingSystem.get_value(value)
+        if converted_legacy_value is not None:
+            value = dash_constants.OperatingSystem.get_name(converted_legacy_value)
 
-        operating_system = dash_constants.OperatingSystem.get_constant_value(value)
-        if operating_system is None:
-            raise exceptions.BidModifierTargetInvalid("Invalid Operating System")
+        return super()._to_operating_system_target(value)
 
-        return operating_system
 
-    @classmethod
-    def _from_operating_system_target(cls, target):
-        return dash_constants.OperatingSystem.get_name(target)
+class ApiConverter(TargetConverter):
+    pass
 
 
 class DashboardConverter(TargetConverter):

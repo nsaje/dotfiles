@@ -87,7 +87,7 @@ class TestTargetConverter(TestCase):
         output_value = self.converter.from_target(
             constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.MACOSX
         )
-        self.assertEqual(output_value, dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.MACOSX))
+        self.assertEqual(output_value, dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.MACOSX))
 
         target_value = self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, output_value)
         self.assertEqual(target_value, dash_constants.OperatingSystem.MACOSX)
@@ -96,14 +96,14 @@ class TestTargetConverter(TestCase):
         with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
             self.converter.to_target(
                 constants.BidModifierType.OPERATING_SYSTEM,
-                dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.UNKNOWN),
+                dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN),
             )
 
         # illegal target value tests
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.OPERATING_SYSTEM, 1234)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             self.converter.from_target(constants.BidModifierType.OPERATING_SYSTEM, "invalid")
 
         # illegal input target value tests
@@ -241,11 +241,6 @@ class TestFileConverter(TestCase):
             self.converter.to_target(constants.BidModifierType.SOURCE, "invalid")
         self.assertEqual(str(ctx.exception), "Invalid Source")
 
-
-class TestApiConverter(TestCase):
-    def setUp(self):
-        self.converter = converters.ApiConverter
-
     def test_operating_system(self):
         # full circle test
         output_value = self.converter.from_target(
@@ -278,6 +273,13 @@ class TestApiConverter(TestCase):
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, 1234)
         self.assertEqual(str(ctx.exception), "Invalid Operating System")
+
+        # legacy full circle test
+        target_value = self.converter.to_target(
+            constants.BidModifierType.OPERATING_SYSTEM,
+            dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.MACOSX),
+        )
+        self.assertEqual(target_value, dash_constants.OperatingSystem.MACOSX)
 
 
 class TestDashboardConverter(TestCase):

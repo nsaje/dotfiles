@@ -196,7 +196,7 @@ def split_bulk_csv_file(bulk_csv_file):
     sub_file = StringIO.StringIO()
     sub_files = []
     for line in bulk_csv_file:
-        if not line.strip():
+        if not [e.strip() for e in line.split(",") if e.strip()]:
             sub_file.seek(0)
             sub_files.append(sub_file)
             sub_file = StringIO.StringIO()

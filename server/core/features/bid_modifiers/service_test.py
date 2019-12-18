@@ -540,6 +540,42 @@ class TestBidModifierService(TestCase):
             input_csv_file.seek(0)
             self.assertEqual(output_csv_file.read(), input_csv_file.read())
 
+    def test_bulk_import_with_extra_commas(self):
+        """
+        Due to non-standard format we have chosen editing in a spreadsheet application may result in extra commas which should not make the file invalid.
+        """
+        csv_file = StringIO(
+            (
+                "Publisher,Source Slug,Bid Modifier\n"
+                "example.com,some_slug,1.1\n"
+                ",,\n"
+                "Device,Bid Modifier,\n"
+                "DESKTOP,1.2,\n"
+            )
+        )
+
+        _, instances, error = service.process_bulk_csv_file_upload(self.ad_group, csv_file)
+        self.assertIsNone(error)
+        self.assertEqual(len(instances), 2)
+        self.assertEqual(instances[0].modifier, 1.1)
+        self.assertEqual(instances[1].modifier, 1.2)
+
+        csv_file = StringIO(
+            (
+                "Publisher,Source Slug,Bid Modifier,\n"
+                "example.com,some_slug,1.1,\n"
+                ",,,\n"
+                "Device,Bid Modifier,,\n"
+                "DESKTOP,1.2,,\n"
+            )
+        )
+
+        _, instances, error = service.process_bulk_csv_file_upload(self.ad_group, csv_file)
+        self.assertIsNone(error)
+        self.assertEqual(len(instances), 2)
+        self.assertEqual(instances[0].modifier, 1.1)
+        self.assertEqual(instances[1].modifier, 1.2)
+
     def test_parse_csv_file_entries_wrong_type(self):
         input_csv_file = service.make_csv_example_file(constants.BidModifierType.PUBLISHER)
 

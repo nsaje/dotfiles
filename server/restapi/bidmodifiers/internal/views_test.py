@@ -530,7 +530,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM
-                ): constants.OperatingSystem.get_text(constants.OperatingSystem.ANDROID),
+                ): constants.OperatingSystem.get_name(constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "1.4",
             },
             {
