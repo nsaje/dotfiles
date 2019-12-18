@@ -395,6 +395,11 @@ class InstanceTest(TestCase):
         mock_update_ad_group.reset_mock()
 
         ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.6"))
+        mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=False)
+        mock_update_ad_group.reset_mock()
+
+        ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
+        ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.5"))
         mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
 
     @patch("utils.k1_helper.update_ad_group")

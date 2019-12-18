@@ -344,6 +344,10 @@ class AdGroupSettingsMixin(object):
 
     def _save_and_propagate(self, request, new_settings, system_user, write_history=True, skip_notification=False):
         changes = self.get_setting_changes(new_settings)
+        k1_priority = self.state == constants.AdGroupSettingsState.ACTIVE and any(
+            field in changes for field in PRIORITY_UPDATE_FIELDS
+        )
+
         new_settings.save(request, system_user=system_user, write_history=write_history)
 
         core.signals.settings_change.send_robust(
@@ -353,8 +357,7 @@ class AdGroupSettingsMixin(object):
         if any(field in changes for field in REDIRECTOR_UPDATE_FIELDS):
             redirector_helper.insert_adgroup(self.ad_group)
 
-        priority = any(field in changes for field in PRIORITY_UPDATE_FIELDS)
-        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=priority)
+        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=k1_priority)
 
         if not skip_notification:
             self._send_notification_email(request, new_settings)
