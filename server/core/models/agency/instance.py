@@ -91,10 +91,6 @@ class AgencyInstanceMixin:
                 self.allowed_sources.clear()
                 if value:
                     self.allowed_sources.add(*value)
-            elif field == "available_sources":
-                self.available_sources.clear()
-                if value:
-                    self.available_sources.add(*value)
             elif field == "users":
                 self.users.clear()
                 if value:
