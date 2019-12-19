@@ -31,24 +31,19 @@ class AccountManager(core.common.BaseManager):
 
         settings_updates = {}
         settings_updates["default_account_manager"] = user
-        # TODO: Seamless source release: set auto adding to true only when agency not a NAS
         if agency is not None:
             settings_updates["default_sales_representative"] = agency.sales_representative
             settings_updates["default_cs_representative"] = agency.cs_representative
             settings_updates["ob_representative"] = agency.ob_representative
             settings_updates["account_type"] = constants.AccountType.ACTIVATED
             settings_updates["auto_add_new_sources"] = True
+        self._set_sources(account)
 
         account.settings = core.models.settings.AccountSettings(account=account, name=name)
         account.settings.update(request, **settings_updates)
-
         account.settings_id = account.settings.id
         account.save(request)
         hacks.apply_account_create_hack(request, account)
-        if account.agency and account.agency.allowed_sources.count() > 0:  # FIXME(nsaje): rethink this
-            account.allowed_sources.add(*agency.allowed_sources.all())
-        else:
-            account.allowed_sources.add(*core.models.Source.objects.filter(released=True, deprecated=False))
 
         self._log_new_account_to_slack(account)
         return account
@@ -97,3 +92,13 @@ class AccountManager(core.common.BaseManager):
                 slack.publish(text=slack_msg, channel=slack.CHANNEL_ZEM_FEED_NEW_ACCOUNTS)
             except Exception:
                 logger.exception("Connection error with Slack.")
+
+    def _set_sources(self, account):
+        if (
+            not account.agency
+            or not account.agency.available_sources.exists()
+            and not account.agency.allowed_sources.exists()
+        ):
+            account.allowed_sources.add(*core.models.Source.objects.filter(released=True, deprecated=False))
+        elif account.agency.available_sources.exists() and account.agency.allowed_sources.exists():
+            account.allowed_sources.add(*account.agency.allowed_sources.all())

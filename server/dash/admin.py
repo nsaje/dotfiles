@@ -407,7 +407,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
     search_fields = ("name", "id")
-    autocomplete_fields = ("allowed_sources", "ob_representative")
+    autocomplete_fields = ("available_sources", "allowed_sources", "ob_representative")
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
