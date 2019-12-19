@@ -56,7 +56,7 @@ def _update_mvh_ad_groups_cpc(ad_groups_cpc_micro):
     redshift.delete_from_table("mvh_ad_groups_cpc")
     context = {"values": ",".join([str(i) for i in ad_groups_cpc_micro])}
     query = backtosql.generate_sql("insert_mvh_ad_groups_cpc.sql", context)
-    with redshiftapi.db.get_write_stats_cursor() as cur:
+    with redshiftapi.db.get_stats_cursor() as cur:
         logger.info("Will insert data into table mvh_ad_groups_cpc.")
         cur.execute(query)
         logger.info("Data inserted into table mvh_ad_groups_cpc.")
@@ -66,7 +66,7 @@ def _insert_stats_diff(from_date, to_date):
     context = helpers.get_local_multiday_date_context(from_date, to_date)
     delete_query = backtosql.generate_sql("delete_stats_diff_with_tz.sql", context)
     insert_query = backtosql.generate_sql("insert_cpc_billing_stats_diff.sql", context)
-    with redshiftapi.db.get_write_stats_cursor() as cur:
+    with redshiftapi.db.get_stats_cursor() as cur:
         logger.info("Will remove data in stats_diff between dates.", from_date=from_date, to_date=to_date)
         cur.execute(delete_query)
         logger.info("Done with removal.")
