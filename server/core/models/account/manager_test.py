@@ -69,3 +69,33 @@ class AccountManagerTestCase(TestCase):
         self.request.user.email = "outbrain-salesforce@service.zemanta.com"
         Account.objects.create(self.request, name="Account 1", agency=agency)
         self.assertIsNotNone(core.models.Account.objects.filter(name="Account 1").first())
+
+    def test_create_account_sources(self):
+        source1 = magic_mixer.blend(core.models.Source, id=1, name="source1", released=True)
+        source2 = magic_mixer.blend(core.models.Source, id=2, name="source2", released=True)
+        source3 = magic_mixer.blend(core.models.Source, id=3, name="source3", released=False)
+        source4 = magic_mixer.blend(core.models.Source, id=4, name="source4", released=False)
+
+        agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", allowed_sources=[], available_sources=[])
+        account = Account.objects.create(self.request, name="Account 1", agency=agency)
+        self.assertIsNotNone(account.allowed_sources.all())
+
+        agency = magic_mixer.blend(
+            core.models.Agency,
+            id=1,
+            name="Agency2",
+            allowed_sources=[source1, source2],
+            available_sources=[source1, source2, source3, source4],
+        )
+        account = Account.objects.create(self.request, name="Account 2", agency=agency)
+        self.assertEqual(list(account.allowed_sources.all()), [source1, source2])
+
+        agency = magic_mixer.blend(
+            core.models.Agency,
+            id=1,
+            name="Agency3",
+            available_sources=[source1, source2, source3, source4],
+            allowed_sources=[],
+        )
+        account = Account.objects.create(self.request, name="Account 3", agency=agency)
+        self.assertEqual(list(account.allowed_sources.all()), [])

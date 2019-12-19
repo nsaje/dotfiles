@@ -15,6 +15,8 @@ class ValidationTestCase(TestCase):
         self.agency = magic_mixer.blend(core.models.Agency, name="agency 1", id=1)
         self.source1 = magic_mixer.blend(core.models.Source, name="source1")
         self.source2 = magic_mixer.blend(core.models.Source, name="source2")
+        self.source3 = magic_mixer.blend(core.models.Source, name="source3")
+        self.source4 = magic_mixer.blend(core.models.Source, name="source4")
         self.request = magic_mixer.blend_request_user()
         self.cs = magic_mixer.blend(zemauth.models.User, email="cs@test.com")
         self.sales = magic_mixer.blend(zemauth.models.User, email="sales@test.com")
@@ -40,6 +42,9 @@ class ValidationTestCase(TestCase):
         self.assertTrue(core.models.Account.objects.get(id=1).is_disabled)
 
     def test_update_many_to_many(self):
+
+        self.agency.update(self.request, available_sources=[self.source1, self.source2])
+        self.assertEqual(self.agency.available_sources.count(), 2)
 
         self.agency.update(self.request, allowed_sources=[self.source1], entity_tags=["tag1"])
         self.assertEqual(self.agency.allowed_sources.count(), 1)
@@ -88,3 +93,81 @@ class ValidationTestCase(TestCase):
                 settings__account_type=dash.constants.AccountType.ACTIVATED,
             )
         )
+
+    def test_update_allowed_sources(self):
+        # case set allowed source present in available
+        self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[])
+        self.agency.update(None, allowed_sources=[self.source1])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source1])
+
+        # case set an allowed source not present in available
+        self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[])
+        with self.assertRaises(exceptions.EditingSourcesNotAllowed):
+            self.agency.update(None, allowed_sources=[self.source3])
+
+        # case unset an allowed source
+        self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1])
+        self.agency.update(None, allowed_sources=[])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [])
+
+        # case both have the same, then remove an available source and add it in allowed
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        with self.assertRaises(exceptions.EditingSourcesNotAllowed):
+            self.agency.update(None, available_sources=[self.source1], allowed_sources=[self.source2])
+        # case we update both at the same time
+        self.agency.update(
+            None,
+            available_sources=[self.source1, self.source2, self.source3],
+            allowed_sources=[self.source1, self.source2, self.source3],
+        )
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2, self.source3])
+        self.assertEqual(list(self.agency.available_sources.all()), [self.source1, self.source2, self.source3])
+
+    def test_update_available_sources(self):
+        # Case set available sources and allowed sources at the same time
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        self.assertEqual(list(self.agency.available_sources.all()), [self.source1, self.source2])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2])
+
+        # Case remove a source only from available
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        with self.assertRaises(exceptions.EditingSourcesNotAllowed):
+            self.agency.update(None, available_sources=[self.source2])
+
+        # Case remove source1 from available and allowed
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        self.agency.update(None, available_sources=[self.source2], allowed_sources=[self.source2])
+        self.assertEqual(list(self.agency.available_sources.all()), [self.source2])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source2])
+
+        # Case add a new source to available and remove one from allowed
+        self.agency.update(None, available_sources=[self.source2, self.source3], allowed_sources=[self.source2])
+        self.assertEqual(list(self.agency.available_sources.all()), [self.source2, self.source3])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source2])
+
+        # Case remove an available source source3 and add a new source one, which is also added to allowed sources.
+        self.agency.update(
+            None,
+            available_sources=[self.source1, self.source2, self.source3],
+            allowed_sources=[self.source1, self.source2],
+        )
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        self.assertEqual(list(self.agency.available_sources.all()), [self.source1, self.source2])
+        self.assertEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2])
+
+        # case remove all available sources while there is still allowed sources
+        self.agency.update(
+            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+        )
+        with self.assertRaises(exceptions.EditingSourcesNotAllowed):
+            self.agency.update(None, available_sources=[])
