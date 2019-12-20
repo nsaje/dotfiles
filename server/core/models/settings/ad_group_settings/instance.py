@@ -50,13 +50,15 @@ class AdGroupSettingsMixin(object):
             )
             changes = self.get_setting_changes(new_settings)
             if changes:
-                self._save_and_propagate(
+                applied_changes = self._save_and_propagate(
                     request, new_settings, system_user, write_history=write_history, skip_notification=skip_notification
                 )
                 self._update_ad_group(request, changes)
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
+                return applied_changes
+        return None
 
     @transaction.atomic()
     def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
@@ -205,7 +207,7 @@ class AdGroupSettingsMixin(object):
 
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             # Changing adgroup max cpm
-            if changes.get("max_cpm") and new_settings.b1_sources_group_enabled:
+            if changes.get("local_max_cpm") and new_settings.b1_sources_group_enabled:
                 new_settings.b1_sources_group_cpm = changes.get("max_cpm")  # reset to max, as implemented in #3353
 
             if self.b1_sources_group_cpm != new_settings.b1_sources_group_cpm:
@@ -218,8 +220,10 @@ class AdGroupSettingsMixin(object):
                     new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
         else:
             # Changing adgroup max cpc
-            if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
-                new_settings.b1_sources_group_cpc_cc = changes.get("cpc_cc")  # reset to max, as implemented in #3353
+            if changes.get("local_cpc_cc") and new_settings.b1_sources_group_enabled:
+                new_settings.local_b1_sources_group_cpc_cc = changes.get(
+                    "local_cpc_cc"
+                )  # reset to max, as implemented in #3353
 
             if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
                 adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
@@ -361,6 +365,8 @@ class AdGroupSettingsMixin(object):
 
         if not skip_notification:
             self._send_notification_email(request, new_settings)
+
+        return changes
 
     def _send_notification_email(self, request, new_settings):
         if not request:

@@ -41,8 +41,16 @@ class AdGroupSourceUpdate(TestCase):
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
-
-        self.assertIn("autopilot_changed_sources_text", response)
+        self.assertEqual(
+            response,
+            dict(
+                cpc_cc=decimal.Decimal("1.3"),
+                local_cpc_cc=decimal.Decimal("1.3"),
+                daily_budget_cc=decimal.Decimal("8.2"),
+                local_daily_budget_cc=decimal.Decimal("8.2"),
+                state=constants.AdGroupSourceSettingsState.ACTIVE,
+            ),
+        )
 
         settings = self.ad_group_source.get_current_settings()
         self.assertEqual(self.request.user, settings.created_by)
@@ -55,11 +63,9 @@ class AdGroupSourceUpdate(TestCase):
 
     def test_update_cpm(self):
         self.ad_group.bidding_type = constants.BiddingType.CPM
-        response = self.ad_group_source.settings.update(
+        self.ad_group_source.settings.update(
             self.request, cpm=decimal.Decimal("2.3"), state=constants.AdGroupSourceSettingsState.ACTIVE
         )
-
-        self.assertIn("autopilot_changed_sources_text", response)
 
         settings = self.ad_group_source.get_current_settings()
         self.assertEqual(decimal.Decimal("2.3"), settings.cpm)
@@ -119,9 +125,7 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
 
     def test_update_no_changes(self):
-        response = self.ad_group_source.settings.update()
-
-        self.assertIn("autopilot_changed_sources_text", response)
+        self.ad_group_source.settings.update()
 
         self.assertFalse(self.recalculate_autopilot_mock.called)
         self.k1_update_mock.assert_not_called()

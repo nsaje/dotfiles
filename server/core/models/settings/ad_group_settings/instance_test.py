@@ -17,6 +17,19 @@ class InstanceTest(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
 
+    def test_update(self):
+        initial = {"cpc_cc": Decimal("0.4")}
+        self.ad_group.settings.update(None, **initial)
+        user_changes = {"cpc_cc": Decimal("0.5")}
+        applied_changes = self.ad_group.settings.update(None, **user_changes)
+        expected_changes = {
+            "cpc_cc": Decimal("0.5"),
+            "local_cpc_cc": Decimal("0.5"),
+            "b1_sources_group_cpc_cc": Decimal("0.5"),
+            "local_b1_sources_group_cpc_cc": Decimal("0.5"),
+        }
+        self.assertEqual(applied_changes, expected_changes)
+
     def test_b1_sources_group_adjustments_sets_default_cpc_and_daily_budget(self):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -346,6 +359,7 @@ class InstanceTest(TestCase):
     def test_max_cpc_change_changes_source_cpcs(self, mock_get_exchange_rate, mock_autopilot):
         # setup
         ad_group = magic_mixer.blend(core.models.AdGroup, b1_sources_group=True, b1_sources_group_cpc_cc=Decimal("0.1"))
+        ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         magic_mixer.cycle(3).blend(core.models.AdGroupSource, ad_group=ad_group)
         mock_get_exchange_rate.return_value = Decimal("2.0")
         ad_group.settings.update(None, cpc_cc=Decimal("0.20"))
@@ -367,14 +381,64 @@ class InstanceTest(TestCase):
             self.assertEqual(source.settings.local_cpc_cc, Decimal("1.2"))
 
         # updating just exchange rate shouldn't reset source cpcs
+        # set cpcs manually
         for source in ad_group.adgroupsource_set.all():
             source.settings.update(cpc_cc=Decimal("0.1"))
+        ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.1"))
         mock_get_exchange_rate.return_value = Decimal("3.0")
         self.assertEqual(ad_group.settings.cpc_cc, Decimal("0.6"))
+        # call again with same local cpc, but usd will change due to exchange rate change
         ad_group.settings.update(None, local_cpc_cc=Decimal("1.20"))
         self.assertEqual(ad_group.settings.cpc_cc, Decimal("0.4"))
+        # assert source bids haven't changed
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.1"))
+
+    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_max_cpm_change_changes_source_cpms(self, mock_get_exchange_rate, mock_autopilot):
+        # setup
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup,
+            b1_sources_group=True,
+            b1_sources_group_max_cpm=Decimal("0.1"),
+            bidding_type=constants.BiddingType.CPM,
+        )
+        ad_group.settings.update(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        magic_mixer.cycle(3).blend(core.models.AdGroupSource, ad_group=ad_group)
+        mock_get_exchange_rate.return_value = Decimal("2.0")
+        ad_group.settings.update(None, max_cpm=Decimal("0.20"))
+        for source in ad_group.adgroupsource_set.all():
+            source.settings.update(cpm=Decimal("0.1"), state=1)
+
+        # updating usd value
+        ad_group.settings.update(None, max_cpm=Decimal("0.50"))
+        self.assertEqual(ad_group.settings.b1_sources_group_cpm, Decimal("0.5"))
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpm, Decimal("0.5"))
+            self.assertEqual(source.settings.local_cpm, Decimal("1.0"))
+
+        # updating local value
+        ad_group.settings.update(None, local_max_cpm=Decimal("1.20"))
+        self.assertEqual(ad_group.settings.local_b1_sources_group_cpm, Decimal("1.2"))
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpm, Decimal("0.6"))
+            self.assertEqual(source.settings.local_cpm, Decimal("1.2"))
+
+        # updating just exchange rate shouldn't reset source cpcs
+        # set cpcs manually
+        for source in ad_group.adgroupsource_set.all():
+            source.settings.update(cpm=Decimal("0.1"))
+        ad_group.settings.update(None, b1_sources_group_cpm=Decimal("0.1"))
+        mock_get_exchange_rate.return_value = Decimal("3.0")
+        self.assertEqual(ad_group.settings.max_cpm, Decimal("0.6"))
+        # call again with same local cpc, but usd will change due to exchange rate change
+        ad_group.settings.update(None, local_max_cpm=Decimal("1.20"))
+        self.assertEqual(ad_group.settings.max_cpm, Decimal("0.4"))
+        # assert source bids haven't changed
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpm, Decimal("0.1"))
+        self.assertEqual(ad_group.settings.b1_sources_group_cpm, Decimal("0.1"))
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_redirector_update(self, mock_insert_adgroup):

@@ -2,11 +2,21 @@ from django.test import TestCase
 from mock import patch
 
 import core.models
+import dash.constants
 import utils.exc
 from utils.magic_mixer import magic_mixer
 
 
 class InstanceTestCase(TestCase):
+    def test_update(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        initial = {"iab_category": dash.constants.IABCategory.IAB1}
+        campaign.settings.update(None, **initial)
+        user_changes = {"iab_category": dash.constants.IABCategory.IAB2}
+        applied_changes = campaign.settings.update(None, **user_changes)
+        expected_changes = {"iab_category": dash.constants.IABCategory.IAB2}
+        self.assertEqual(applied_changes, expected_changes)
+
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_groups")
     def test_r1_k1_propagation(self, mock_ping_adgroups, mock_insert_adgroup):

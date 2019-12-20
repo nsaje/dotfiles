@@ -803,6 +803,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
         ad_group_settings = ad_group.get_current_settings()
 
+        autopilot_changed_sources = response.get("autopilot_changed_sources", []) if response else []
         return self.create_api_response(
             {
                 "editable_fields": helpers.get_editable_fields(
@@ -814,7 +815,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     campaign_settings,
                     allowed_sources,
                 ),
-                "autopilot_changed_sources": response["autopilot_changed_sources_text"],
+                "autopilot_changed_sources": autopilot_changed_sources,
                 "enabling_autopilot_sources_allowed": helpers.enabling_autopilot_single_source_allowed(ad_group),
             }
         )

@@ -19,10 +19,9 @@ class AdGroupSourceSettingsMixin(object):
         write_history=True,
         **updates,
     ):
-        result = {"autopilot_changed_sources_text": ""}
 
         if not updates:
-            return result
+            return None
 
         updates = self._filter_and_remap_input(updates)
 
@@ -34,7 +33,7 @@ class AdGroupSourceSettingsMixin(object):
 
         changes = self.get_setting_changes(new_settings)
         if not changes:
-            return result
+            return None
 
         is_pause = len(changes) == 1 and changes.get("state") == dash.constants.AdGroupSourceSettingsState.INACTIVE
         if not skip_validation and not is_pause:
@@ -50,15 +49,16 @@ class AdGroupSourceSettingsMixin(object):
         if not skip_automation:
             # autopilot reloads settings so changes have to be saved when it is called
             autopilot_changed_sources = self._handle_budget_autopilot(changes)
-            result["autopilot_changed_sources_text"] = ", ".join(autopilot_changed_sources)
+            if autopilot_changed_sources:
+                changes["autopilot_changed_sources"] = autopilot_changed_sources
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group_source.ad_group, "AdGroupSource.update")
 
         if not skip_notification:
-            self._notify_ad_group_source_settings_changed(request, changes, old_settings, new_settings)
+            self._notify_ad_group_source_settings_changed(request, old_settings, new_settings)
 
-        return result
+        return changes
 
     @transaction.atomic()
     def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
@@ -96,7 +96,7 @@ class AdGroupSourceSettingsMixin(object):
             return [s.source.name for s in changed_sources]
         return []
 
-    def _notify_ad_group_source_settings_changed(self, request, changes, old_settings, new_settings):
+    def _notify_ad_group_source_settings_changed(self, request, old_settings, new_settings):
         if not request:
             return
 

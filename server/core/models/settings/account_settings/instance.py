@@ -20,6 +20,7 @@ class AccountSettingsMixin(object):
 
         self._handle_archived(request, changes)
         self._update_account(request, changes)
+        return changes
 
     def _validate_update(self, changes):
         if self.archived:

@@ -30,6 +30,7 @@ class CampaignSettingsMixin(object):
             self._propagate_settings(changes)
 
         self._update_campaign(kwargs)
+        return changes
 
     @classmethod
     def _clean_updates(cls, kwargs):

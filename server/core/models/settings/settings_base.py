@@ -45,7 +45,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
     # Real settings model should override this
     # and implement validation and notification of other systems
     def update(self, request, **kwargs):
-        self.update_unsafe(request, **kwargs)
+        return self.update_unsafe(request, **kwargs)
 
     # Unsafe update without validation and notification of other systems
     @transaction.atomic()
@@ -84,6 +84,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
         super(SettingsBase, self).save(update_fields=update_fields)
         self._update_source_settings_reference()
         core.signals.settings_change.send_robust(sender=self.__class__, request=request, instance=self, changes=kwargs)
+        return changes
 
     def copy_settings(self):
         return UpdateObject(self)

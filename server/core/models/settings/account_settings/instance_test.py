@@ -12,6 +12,14 @@ class AccountSettingsInstanceTestCase(test.TestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
 
+    def test_update(self):
+        initial = {"name": "abc"}
+        self.account.settings.update(None, **initial)
+        user_changes = {"name": "abc2"}
+        applied_changes = self.account.settings.update(None, **user_changes)
+        expected_changes = {"name": "abc2"}
+        self.assertEqual(applied_changes, expected_changes)
+
     def test_update_fields(self):
         self.account.settings.update(None, salesforce_url="test-url")
         self.assertEqual("test-url", self.account.settings.salesforce_url)

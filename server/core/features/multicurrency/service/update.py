@@ -15,6 +15,10 @@ class MissingExchangeRateMappingException(Exception):
     pass
 
 
+class ProgrammingError(Exception):
+    pass
+
+
 def update_exchange_rates(currencies=None):
     if not currencies:
         currencies = dash.constants.Currency.get_all()
@@ -74,7 +78,10 @@ def _recalculate_ad_group_settings_amounts(ad_group):
     updates = {
         field: getattr(ad_group.settings, field) for field in fields if getattr(ad_group.settings, field) is not None
     }
-    ad_group.settings.update(None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates)
+    changes = ad_group.settings.update(
+        None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates
+    )
+    _sanity_check(changes, ad_group.settings.multicurrency_fields)
 
 
 def _recalculate_ad_group_sources_amounts(ad_group):
@@ -89,4 +96,13 @@ def _recalculate_ad_group_source_settings_amounts(ad_group_source):
         for field in fields
         if getattr(ad_group_source.settings, field) is not None
     }
-    ad_group_source.settings.update(None, skip_automation=True, skip_validation=True, skip_notification=True, **updates)
+    changes = ad_group_source.settings.update(
+        None, skip_automation=True, skip_validation=True, skip_notification=True, **updates
+    )
+    _sanity_check(changes, ad_group_source.settings.multicurrency_fields)
+
+
+def _sanity_check(changes, multicurrency_fields):
+    if any(field not in multicurrency_fields for field in changes):
+        logger.error("Attempted to change non-multicurrency fields!", fields=set(changes) - set(multicurrency_fields))
+        raise ProgrammingError("Attempted to change non-multicurrency fields! %s")
