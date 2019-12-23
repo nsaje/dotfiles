@@ -18,7 +18,11 @@ def _get_account_default_icon_alert(alerts, request, account):
     alerts.append(
         {
             "type": "danger",
-            "message": "Please add a brand logo to this account. The logo will be added to your ads if required by media source. Logo can be added on account-level settings.",
+            "message": "Please add a brand logo to this account. "
+            + "The logo will be added to your ads if required by media source. "
+            + "Logo can be added on account-level settings. "
+            + "Read more about brand logo "
+            + "<a href='https://help.zemanta.com/article/show/100808-adding-brand-logo-to-content-ads'>here</a>.",
         }
     )
     return alerts
