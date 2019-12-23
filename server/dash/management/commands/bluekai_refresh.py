@@ -46,5 +46,5 @@ class Command(Z1Command):
 
     def handle(self, *args, **options):
         maintenance.refresh_bluekai_categories()
-        self._cross_check_audience_categories(options)
         self._check_campaign_status(options)
+        self._cross_check_audience_categories(options)
