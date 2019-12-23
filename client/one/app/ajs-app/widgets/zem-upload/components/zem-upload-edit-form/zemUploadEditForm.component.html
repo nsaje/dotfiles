@@ -1687,185 +1687,33 @@
         </div>
         <div class="ad-preview__container custom-scroller">
             <!-- NATIVE CREATIVES -->
-            <div ng-if="!ctrl.showDisplayUpload">
-                <div class="ad-preview__item ad-preview__item--desktop">
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__image-link ad-preview__image-link--max-size"
-                        ><img
-                            ng-src="{{
-                                ctrl.selectedCandidate
-                                    .landscapeHostedImageUrl ||
-                                    ctrl.config.staticUrl +
-                                        '/one/images/empty-pixel.png'
-                            }}"
-                            class="ad-preview__image"
-                    /></a>
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__title"
-                    >
-                        <span ng-if="ctrl.selectedCandidate.title.length > 0">{{
-                            ctrl.selectedCandidate.title
-                        }}</span>
-                        <span ng-if="ctrl.selectedCandidate.title.length == 0"
-                            >Ad Title</span
-                        >
-                    </a>
-                    <div class="ad-preview__brand-name">
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length > 0"
-                            >{{ ctrl.selectedCandidate.brandName }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length == 0"
-                            >Brand name</span
-                        >
-                    </div>
-                    <div class="ad-preview__description">
-                        <span
-                            ng-if="ctrl.selectedCandidate.description.length > 0"
-                            >{{ ctrl.selectedCandidate.description }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.description.length == 0"
-                            >Description</span
-                        >
-                    </div>
-                    <div class="ad-preview__url">
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length > 0"
-                            >{{ ctrl.selectedCandidate.displayUrl }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length == 0"
-                            >www.example.com</span
-                        >
-                    </div>
-                </div>
-                <div class="ad-preview__item ad-preview__item--mobile">
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__image-link"
-                        ><img
-                            ng-src="{{
-                                ctrl.selectedCandidate.hostedImageUrl ||
-                                    ctrl.config.staticUrl +
-                                        '/one/images/empty-pixel.png'
-                            }}"
-                            class="ad-preview__image"
-                    /></a>
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__title"
-                    >
-                        <span ng-if="ctrl.selectedCandidate.title.length > 0">{{
-                            ctrl.selectedCandidate.title
-                        }}</span>
-                        <span ng-if="ctrl.selectedCandidate.title.length == 0"
-                            >Ad Title</span
-                        >
-                    </a>
-                    <div class="ad-preview__brand-name">
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length > 0"
-                            >{{ ctrl.selectedCandidate.brandName }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length == 0"
-                            >Brand name</span
-                        >
-                    </div>
-                    <div class="ad-preview__url">
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length > 0"
-                            >{{ ctrl.selectedCandidate.displayUrl }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length == 0"
-                            >www.example.com</span
-                        >
-                    </div>
-                </div>
-                <div
-                    ng-if="ctrl.selectedCandidate.hostedIconUrl && ctrl.hasPermission('zemauth.can_use_creative_icon')"
-                    class="ad-preview__item ad-preview__item--icon"
-                >
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__icon-link"
-                        ><img
-                            ng-src="{{ ctrl.selectedCandidate.hostedIconUrl }}"
-                            class="ad-preview__icon"
-                    /></a>
-                    <a
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__title"
-                    >
-                        <span ng-if="ctrl.selectedCandidate.title.length > 0">{{
-                            ctrl.selectedCandidate.title
-                        }}</span>
-                        <span ng-if="ctrl.selectedCandidate.title.length == 0"
-                            >Ad Title</span
-                        >
-                    </a>
-                    <div class="ad-preview__brand-name">
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length > 0"
-                            >{{ ctrl.selectedCandidate.brandName }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.brandName.length == 0"
-                            >Brand name</span
-                        >
-                    </div>
-                    <div class="ad-preview__url">
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length > 0"
-                            >{{ ctrl.selectedCandidate.displayUrl }}</span
-                        >
-                        <span
-                            ng-if="ctrl.selectedCandidate.displayUrl.length == 0"
-                            >www.example.com</span
-                        >
-                    </div>
-                </div>
-            </div>
+            <zem-native-ad-preview
+                ng-if="!ctrl.showDisplayUpload"
+                class="zem-native-ad-preview"
+                [url]="ctrl.selectedCandidate.url"
+                [landscape-hosted-image-url]="
+                    ctrl.selectedCandidate.landscapeHostedImageUrl
+                "
+                [hosted-image-url]="ctrl.selectedCandidate.hostedImageUrl"
+                [hosted-icon-url]="ctrl.selectedCandidate.hostedIconUrl"
+                [title]="ctrl.selectedCandidate.title"
+                [brand-name]="ctrl.selectedCandidate.brandName"
+                [description]="ctrl.selectedCandidate.description"
+                [display-url]="ctrl.selectedCandidate.displayUrl"
+            ></zem-native-ad-preview>
             <!-- DISPLAY CREATIVES -->
-            <div ng-if="ctrl.showDisplayUpload">
-                <div class="ad-preview__item ad-preview__item--display">
-                    <a
-                        ng-if="ctrl.selectedCandidate.adType === ctrl.adType.IMAGE"
-                        href="{{ ctrl.selectedCandidate.url }}"
-                        class="ad-preview__image-link"
-                        ng-style="{'width': ctrl.selectedCandidate.imageWidth || 300, 'height': ctrl.selectedCandidate.imageHeight || 250}"
-                    >
-                        <img
-                            ng-src="{{
-                                ctrl.selectedCandidate.displayHostedImageUrl ||
-                                    ctrl.config.staticUrl +
-                                        '/one/images/empty-pixel.png'
-                            }}"
-                            class="ad-preview__image"
-                            width="{{
-                                ctrl.selectedCandidate.imageWidth || 300
-                            }}"
-                            height="{{
-                                ctrl.selectedCandidate.imageHeight || 250
-                            }}"
-                        />
-                    </a>
-                    <iframe
-                        ng-if="ctrl.selectedCandidate.adType === ctrl.adType.AD_TAG"
-                        id="ad-preview__iframe"
-                        class="ad-preview__iframe"
-                        width="{{ ctrl.selectedCandidate.imageWidth || 300 }}"
-                        height="{{ ctrl.selectedCandidate.imageHeight || 250 }}"
-                        ng-init="ctrl.renderAdTagInIframe(ctrl.selectedCandidate.adTag)"
-                    >
-                    </iframe>
-                </div>
-            </div>
+            <zem-display-ad-preview
+                ng-if="ctrl.showDisplayUpload"
+                class="zem-display-ad-preview"
+                [url]="ctrl.selectedCandidate.url"
+                [ad-type]="ctrl.selectedCandidate.adType"
+                [display-hosted-image-url]="
+                    ctrl.selectedCandidate.displayHostedImageUrl
+                "
+                [ad-tag]="ctrl.selectedCandidate.adTag"
+                [image-width]="ctrl.selectedCandidate.imageWidth || 300"
+                [image-height]="ctrl.selectedCandidate.imageHeight || 250"
+            ></zem-display-ad-preview>
         </div>
     </div>
     <button

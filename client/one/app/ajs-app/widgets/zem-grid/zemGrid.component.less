@@ -805,90 +805,9 @@ zem-grid {
     }
 }
 
-.zem-grid-ad-preview {
-    .ad-preview__container {
-        padding: 0;
-    }
-
-    .ad-preview__item--mobile {
-        min-height: 100px;
-
-        .ad-preview__image {
-            width: 100px;
-            height: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
-
-        .ad-preview__title,
-        .ad-preview__brand-name,
-        .ad-preview__url {
-            padding-left: 110px;
-        }
-    }
-
-    .ad-preview__item--icon {
-        min-height: 100px;
-        display: flex;
-
-        .ad-preview__icon-container {
-            flex: 0 0 100px;
-            height: 100px;
-        }
-
-        .ad-preview__icon {
-            width: 100px;
-            height: 100px;
-            left: 0;
-            top: 0;
-        }
-
-        .ad-preview__title,
-        .ad-preview__brand-name,
-        .ad-preview__url {
-            padding-left: 10px;
-        }
-    }
-
-    .ad-preview__image {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .ad-preview__icon {
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    .ad-preview__iframe {
-        display: block;
-        margin-bottom: 5px;
-        background-color: tint(@color--secondary, 90%);
-        border: 1px solid tint(@color--secondary, 80%);
-    }
-
-    .ad-preview__title {
-        font-size: 14px;
-        line-height: 18px;
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .ad-preview__brand-name,
-    .ad-preview__description,
-    .ad-preview__url {
-        font-size: 12px;
-        line-height: 16px;
-    }
-
-    .ad-preview__brand-name {
-        margin-bottom: 2px;
-    }
-
-    .ad-preview__description {
-        margin-bottom: 2px;
-    }
+.zem-grid__native-ad-preview {
+    max-width: 300px;
+    max-height: 580px;
 }
 
 // Modal

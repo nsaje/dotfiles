@@ -1,4 +1,4 @@
-var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
 
 angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
     return {
@@ -36,6 +36,14 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
                 return adType && adType.value === constants.adType.AD_TAG;
             };
 
+            vm.getAdType = function() {
+                if (!vm.row.data.stats.creative_type.value) return null;
+                var adType = options.adTypes.find(function(item) {
+                    return item.name === vm.row.data.stats.creative_type.value;
+                });
+                return commonHelpers.isDefined(adType) ? adType.value : null;
+            };
+
             vm.getCreativeWidth = function() {
                 if (vm.row.data.stats.creative_size) {
                     var sizes = parseSize(
@@ -54,11 +62,6 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
                     return parseInt(sizes[1]);
                 }
                 return 250;
-            };
-
-            vm.renderAdTagInIframe = function(adTag) {
-                var iframe = document.getElementById('ad-preview__iframe');
-                iframeHelpers.renderContentInIframe(iframe, adTag);
             };
 
             function parseSize(value) {

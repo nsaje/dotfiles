@@ -1,0 +1,27 @@
+<a
+    *ngIf="adType === AdType.IMAGE"
+    class="zem-display-ad-preview__image-link"
+    [ngStyle]="{
+        'width.px': imageWidth || 300,
+        'height.px': imageHeight || 250
+    }"
+    href="{{ url }}"
+>
+    <img
+        src="{{
+            displayHostedImageUrl ||
+                APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+        }}"
+        class="zem-display-ad-preview__image"
+        width="{{ imageWidth || 300 }}"
+        height="{{ imageHeight || 250 }}"
+    />
+</a>
+<iframe
+    *ngIf="adType === AdType.AD_TAG"
+    id="zem-display-ad-preview__iframe"
+    class="zem-display-ad-preview__iframe"
+    width="{{ imageWidth || 300 }}"
+    height="{{ imageHeight || 250 }}"
+>
+</iframe>

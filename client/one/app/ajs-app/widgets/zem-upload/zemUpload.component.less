@@ -1,14 +1,14 @@
 @import 'variables';
 @import '../../styles/utilities.less';
 
-@modal-content-width: 90%;
-@content-upload-ad-editing-width: 70%;
+@modal-content-width: 95%;
+@content-upload-ad-editing-width: 75%;
 @content-upload-ad-editing-width-above-breakpoint: 65%;
 @content-upload-ad-editing-width-common-breakpoint: 60%;
 @content-upload-ad-editing-width-desktop-breakpoint: 100%;
-@form-input-width-content-upload: 68%;
-@form-additional-info-width-content-upload: 14%;
-@preview-width: 40%;
+@form-input-width-content-upload: 62%;
+@form-additional-info-width-content-upload: 20%;
+@preview-width: 55%;
 @form-textarea-height-content-upload: 300px;
 
 .content-upload .modal-dialog {
@@ -392,8 +392,9 @@
     }
 
     .ad-preview__container {
-        right: 15px;
         overflow-x: auto;
+        padding: @spacing--default;
+        left: 0;
     }
 
     .form__indented-group {
@@ -445,16 +446,17 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    right: 0;
+    left: 0;
     width: 100 - @preview-width;
     height: 100%;
 }
 
 .content-upload__edit-form-container--ad-preview {
     width: @preview-width;
-    left: 0;
-    right: auto;
+    left: auto;
+    right: 0;
     transition: all @duration-and-timing-fn--default;
+    border-left: 1px solid #d2d2d2;
 }
 
 .content-upload__tabs {
@@ -528,10 +530,6 @@
     }
 }
 
-.content-upload__edit-form-container--form {
-    box-shadow: 0 0 10px 0 fade(@color--secondary, 25%);
-}
-
 .content-upload__edit-form-hide {
     position: absolute;
     top: 0;
@@ -568,10 +566,9 @@
 
 .content-upload__edit-form-title-container {
     border-bottom: 1px solid #d2d2d2;
-    padding: 15px 120px 11px @spacing--default;
-    margin: 0 0 20px 0;
+    padding: 8px 60px 8px @spacing--default;
     font-size: 18px;
-    line-height: 22px;
+    line-height: 30px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -737,6 +734,7 @@
 @media only screen and (max-width: 1400px) {
     .content-upload__edit-form-container {
         left: 0;
+        right: 0;
         width: auto;
 
         .content-upload__edit-form-title-container {

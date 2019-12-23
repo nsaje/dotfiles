@@ -1,0 +1,196 @@
+@import 'variables';
+
+.zem-native-ad-preview {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: -5px;
+}
+
+.zem-native-ad-preview__item {
+    flex: 1 1 300px;
+    min-width: 250px;
+    margin: 5px;
+}
+
+.zem-native-ad-preview__item--full-size {
+    flex: 1 1 100%;
+}
+
+.zem-native-ad-preview__label {
+    display: block;
+    background-color: tint(@color--secondary, 90%);
+    padding: 1px 10px 1px 10px;
+    border-radius: 12px;
+    color: @text-color--lighter;
+    margin-bottom: 5px;
+}
+
+.zem-native-ad-preview__card {
+    display: flex;
+    flex-direction: column;
+}
+
+.zem-native-ad-preview__card--row {
+    flex-direction: row;
+}
+
+.zem-native-ad-preview__card--mobile {
+    background-color: #ffffff;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
+    border: 1px solid @color--lighter-neutral;
+}
+
+.zem-native-ad-preview__card-item {
+    margin-bottom: 5px;
+}
+
+.zem-native-ad-preview__card-item:last-child {
+    margin-bottom: 0;
+}
+
+.zem-native-ad-preview__card-item--extend {
+    flex: 1 1 auto;
+}
+
+.zem-native-ad-preview__card--row > .zem-native-ad-preview__card-item {
+    margin-bottom: 0;
+    margin-right: 5px;
+}
+
+.zem-native-ad-preview__card--row
+    > .zem-native-ad-preview__card-item:last-child {
+    margin-right: 0;
+}
+
+.zem-native-ad-preview__card--mobile
+    > .zem-native-ad-preview__card-item:last-child {
+    margin-bottom: 5px;
+}
+
+.zem-native-ad-preview__image-link {
+    display: block;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
+    width: 100%;
+    height: 100%;
+
+    &::before,
+    &::after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        height: 100%;
+        width: 1px;
+        left: 50%;
+        top: 0;
+        transform: rotate(45deg);
+        background-color: tint(@color--secondary, 80%);
+        z-index: 1;
+    }
+
+    &::after {
+        transform: rotate(-45deg);
+    }
+}
+
+.zem-native-ad-preview__image {
+    display: block;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+}
+
+.zem-native-ad-preview__title {
+    color: @color--secondary;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 500;
+    display: block;
+}
+
+.zem-native-ad-preview__description {
+    display: block;
+    color: @text-color--lighter;
+}
+
+.zem-native-ad-preview__brand-name {
+    display: block;
+    color: @text-color--lighter;
+    font-weight: 500;
+}
+
+.zem-native-ad-preview__header {
+    display: flex;
+    flex-direction: row;
+}
+
+.zem-native-ad-preview__header-item {
+    margin-right: 5px;
+}
+
+.zem-native-ad-preview__header-item:last-child {
+    margin-right: 0;
+}
+
+.zem-native-ad-preview__icon-link {
+    display: block;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
+    width: 100px;
+    height: 100%;
+
+    &::before,
+    &::after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        height: 100%;
+        width: 1px;
+        left: 50%;
+        top: 0;
+        transform: rotate(45deg);
+        background-color: tint(@color--secondary, 80%);
+        z-index: 1;
+    }
+
+    &::after {
+        transform: rotate(-45deg);
+    }
+}
+
+.zem-native-ad-preview__icon {
+    display: block;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+}
+
+.zem-native-ad-preview__header > .zem-native-ad-preview__brand-name {
+    color: @color--secondary;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 500;
+    padding-top: 5px;
+}
+
+.zem-native-ad-preview__card--row > .zem-native-ad-preview__image-link {
+    flex: 0 0 30%;
+}
+
+.zem-native-ad-preview__header > .zem-native-ad-preview__icon-link {
+    width: 30px;
+    height: 30px;
+}
+
+.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__title,
+.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__description,
+.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__brand-name {
+    padding-left: 5px;
+}
+
+.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__header {
+    margin-top: 5px;
+    margin-left: 5px;
+}

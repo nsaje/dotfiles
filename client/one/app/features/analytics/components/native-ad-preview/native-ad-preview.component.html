@@ -1,0 +1,235 @@
+<div
+    class="zem-native-ad-preview__item"
+    *ngIf="nativeAdPreviewConfig.showSquareAd"
+>
+    <div class="zem-native-ad-preview__label">Square ad</div>
+    <div class="zem-native-ad-preview__card">
+        <a
+            class="zem-native-ad-preview__image-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img
+                class="zem-native-ad-preview__image"
+                src="{{
+                    landscapeHostedImageUrl ||
+                        APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+                }}"
+        /></a>
+        <a
+            href="{{ url }}"
+            class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+        >
+            {{ title || 'Ad Title' }}
+        </a>
+        <div
+            class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+        >
+            {{ description || 'Description' }}
+        </div>
+        <div
+            class="zem-native-ad-preview__brand-name zem-native-ad-preview__card-item"
+        >
+            {{ brandName || 'Brand name' }}
+        </div>
+    </div>
+</div>
+<div
+    class="zem-native-ad-preview__item"
+    *ngIf="nativeAdPreviewConfig.showSquareAdWithIcon"
+>
+    <div class="zem-native-ad-preview__label">Square ad with logo</div>
+    <div class="zem-native-ad-preview__card">
+        <div
+            class="zem-native-ad-preview__header zem-native-ad-preview__card-item"
+        >
+            <a
+                class="zem-native-ad-preview__icon-link zem-native-ad-preview__header-item"
+                href="{{ url }}"
+                ><img
+                    class="zem-native-ad-preview__icon"
+                    src="{{ hostedIconUrl }}"
+            /></a>
+            <div
+                class="zem-native-ad-preview__brand-name zem-native-ad-preview__header-item"
+            >
+                {{ brandName || 'Brand name' }}
+            </div>
+        </div>
+        <a
+            class="zem-native-ad-preview__image-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img
+                class="zem-native-ad-preview__image"
+                src="{{
+                    landscapeHostedImageUrl ||
+                        APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+                }}"
+        /></a>
+        <a
+            href="{{ url }}"
+            class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+        >
+            {{ title || 'Ad Title' }}
+        </a>
+        <div
+            class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+        >
+            {{ description || 'Description' }}
+        </div>
+    </div>
+</div>
+<div
+    class="zem-native-ad-preview__item zem-native-ad-preview__item--full-size"
+    *ngIf="nativeAdPreviewConfig.showHorizontalAd"
+>
+    <div class="zem-native-ad-preview__label">Horizontal ad</div>
+    <div class="zem-native-ad-preview__card zem-native-ad-preview__card--row">
+        <a
+            class="zem-native-ad-preview__image-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img
+                class="zem-native-ad-preview__image"
+                src="{{
+                    landscapeHostedImageUrl ||
+                        APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+                }}"
+        /></a>
+        <div
+            class="zem-native-ad-preview__card-item zem-native-ad-preview__card-item--extended"
+        >
+            <a
+                href="{{ url }}"
+                class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+            >
+                {{ title || 'Ad Title' }}
+            </a>
+            <div
+                class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+            >
+                {{ description || 'Description' }}
+            </div>
+            <div
+                class="zem-native-ad-preview__brand-name zem-native-ad-preview__card-item"
+            >
+                {{ brandName || 'Brand name' }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div
+    class="zem-native-ad-preview__item"
+    *ngIf="nativeAdPreviewConfig.showMobileSquareAd"
+>
+    <div class="zem-native-ad-preview__label">Mobile square ad</div>
+    <div
+        class="zem-native-ad-preview__card zem-native-ad-preview__card--mobile"
+    >
+        <a
+            class="zem-native-ad-preview__image-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img
+                class="zem-native-ad-preview__image"
+                src="{{
+                    hostedImageUrl ||
+                        APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+                }}"
+        /></a>
+        <a
+            href="{{ url }}"
+            class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+        >
+            {{ title || 'Ad Title' }}
+        </a>
+        <div
+            class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+        >
+            {{ description || 'Description' }}
+        </div>
+        <div
+            class="zem-native-ad-preview__brand-name zem-native-ad-preview__card-item"
+        >
+            {{ brandName || 'Brand name' }}
+        </div>
+    </div>
+</div>
+<div
+    class="zem-native-ad-preview__item"
+    *ngIf="nativeAdPreviewConfig.showMobileSquareAdWithIcon"
+>
+    <div class="zem-native-ad-preview__label">Mobile square ad with logo</div>
+    <div
+        class="zem-native-ad-preview__card zem-native-ad-preview__card--mobile"
+    >
+        <div
+            class="zem-native-ad-preview__header zem-native-ad-preview__card-item"
+        >
+            <a
+                class="zem-native-ad-preview__icon-link zem-native-ad-preview__header-item"
+                href="{{ url }}"
+                ><img
+                    class="zem-native-ad-preview__icon"
+                    src="{{ hostedIconUrl }}"
+            /></a>
+            <div
+                class="zem-native-ad-preview__brand-name zem-native-ad-preview__header-item"
+            >
+                {{ brandName || 'Brand name' }}
+            </div>
+        </div>
+        <a
+            class="zem-native-ad-preview__image-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img
+                class="zem-native-ad-preview__image"
+                src="{{
+                    hostedImageUrl ||
+                        APP_CONFIG.staticUrl + '/one/images/empty-pixel.png'
+                }}"
+        /></a>
+        <a
+            href="{{ url }}"
+            class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+        >
+            {{ title || 'Ad Title' }}
+        </a>
+        <div
+            class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+        >
+            {{ description || 'Description' }}
+        </div>
+    </div>
+</div>
+
+<div
+    class="zem-native-ad-preview__item zem-native-ad-preview__item--full-size"
+    *ngIf="nativeAdPreviewConfig.showHorizontalAdWithIcon"
+>
+    <div class="zem-native-ad-preview__label">Horizontal ad with logo</div>
+    <div class="zem-native-ad-preview__card zem-native-ad-preview__card--row">
+        <a
+            class="zem-native-ad-preview__icon-link zem-native-ad-preview__card-item"
+            href="{{ url }}"
+            ><img class="zem-native-ad-preview__icon" src="{{ hostedIconUrl }}"
+        /></a>
+        <div
+            class="zem-native-ad-preview__card-item zem-native-ad-preview__card-item--extend"
+        >
+            <a
+                href="{{ url }}"
+                class="zem-native-ad-preview__title zem-native-ad-preview__card-item"
+            >
+                {{ title || 'Ad Title' }}
+            </a>
+            <div
+                class="zem-native-ad-preview__description zem-native-ad-preview__card-item"
+            >
+                {{ description || 'Description' }}
+            </div>
+            <div
+                class="zem-native-ad-preview__brand-name zem-native-ad-preview__card-item"
+            >
+                {{ brandName || 'Brand name' }}
+            </div>
+        </div>
+    </div>
+</div>

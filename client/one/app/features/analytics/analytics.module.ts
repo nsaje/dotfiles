@@ -8,6 +8,8 @@ import {BidModifierImportFormComponent} from './components/bid-modifier-import-f
 import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
 import {AttributionColumnPickerComponent} from './components/attribution-column-picker/attribution-column-picker.component';
 import {AttributionLoockbackWindowPickerComponent} from './components/attribution-lookback-window-picker/attribution-lookback-window-picker.component';
+import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
+import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
 
 @NgModule({
     declarations: [
@@ -18,6 +20,8 @@ import {AttributionLoockbackWindowPickerComponent} from './components/attributio
         RuleActionsComponent,
         AttributionColumnPickerComponent,
         AttributionLoockbackWindowPickerComponent,
+        NativeAdPreviewComponent,
+        DisplayAdPreviewComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [
@@ -25,6 +29,8 @@ import {AttributionLoockbackWindowPickerComponent} from './components/attributio
         BidModifierActionsComponent,
         RuleActionsComponent,
         AttributionColumnPickerComponent,
+        NativeAdPreviewComponent,
+        DisplayAdPreviewComponent,
     ],
 })
 export class AnalyticsModule {}

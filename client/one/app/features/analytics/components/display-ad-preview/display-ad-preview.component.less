@@ -1,0 +1,43 @@
+@import 'variables';
+
+.zem-display-ad-preview {
+    display: block;
+}
+
+.zem-display-ad-preview__image-link {
+    display: block;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
+
+    &::before,
+    &::after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        height: 100%;
+        width: 1px;
+        left: 50%;
+        top: 0;
+        transform: rotate(45deg);
+        background-color: tint(@color--secondary, 80%);
+        z-index: 1;
+    }
+
+    &::after {
+        transform: rotate(-45deg);
+    }
+}
+
+.zem-display-ad-preview__image {
+    display: block;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+}
+
+.zem-display-ad-preview__iframe {
+    display: block;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
+    position: relative;
+}

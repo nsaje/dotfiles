@@ -1,5 +1,4 @@
 var callToAction = require('../../zemUpload.config').callToAction;
-var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
 
 angular.module('one.widgets').directive('zemUploadEditForm', function() {
     // eslint-disable-line max-len
@@ -255,9 +254,6 @@ angular
                         );
                         vm.fieldsSaved[field] = true;
                         vm.fieldsLoading[field] = false;
-                        if (field === 'adTag') {
-                            vm.renderAdTagInIframe(vm.selectedCandidate[field]);
-                        }
                     })
                     .catch(function() {
                         if (++retries === vm.NUM_PARTIAL_UPDATE_RETRIES) {
@@ -332,11 +328,6 @@ angular
             vm.fieldsSaved.icon = false;
             vm.fieldsSaved.iconUrl = false;
             vm.showIconUpload = !vm.showIconUpload;
-        };
-
-        vm.renderAdTagInIframe = function(adTag) {
-            var iframe = document.getElementById('ad-preview__iframe');
-            iframeHelpers.renderContentInIframe(iframe, adTag);
         };
 
         vm.callToActionSelect2Config = {

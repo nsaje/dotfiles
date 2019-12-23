@@ -57,51 +57,30 @@
     </ul>
 </script>
 <script id="zemGridThumbnailPreviewPopover.html" type="text/ng-template">
-    <div class="zem-grid-ad-preview">
-        <div class="ad-preview__container" ng-if="ctrl.isNative()">
-            <div class="ad-preview__item ad-preview__item--desktop">
-                <img ng-src="{{ctrl.data.landscape}}" class="ad-preview__image"/>
-                <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
-                <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
-                <div class="ad-preview__description">{{ctrl.row.data.stats.description.value}}</div>
-                <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
-            </div>
-            <div class="ad-preview__item ad-preview__item--mobile">
-                <img ng-src="{{ctrl.data.square}}" class="ad-preview__image"/>
-                <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
-                <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
-                <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
-            </div>
-            <div ng-if="ctrl.data.icon" class="ad-preview__item ad-preview__item--icon">
-                <div class="ad-preview__icon-container">
-                    <img ng-src="{{ctrl.data.icon}}" class="ad-preview__icon"/>
-                </div>
-                <div class="ad-preview__details">
-                    <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
-                    <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
-                    <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="ad-preview__container" ng-if="ctrl.isImage()">
-            <div class="ad-preview__item ad-preview__item--display">
-                <img ng-src="{{ctrl.data.image}}"
-                     class="ad-preview__image"
-                     width="{{ctrl.getCreativeWidth()}}"
-                     height="{{ctrl.getCreativeHeight()}}"/>
-            </div>
-        </div>
-        <div class="ad-preview__container" ng-if="ctrl.isAdTag()">
-            <div class="ad-preview__item ad-preview__item--display">
-                <iframe id="ad-preview__iframe"
-                        class="ad-preview__iframe"
-                        width="{{ctrl.getCreativeWidth()}}"
-                        height="{{ctrl.getCreativeHeight()}}"
-                        ng-init="ctrl.renderAdTagInIframe(ctrl.data.ad_tag)">
-                </iframe>
-            </div>
-        </div>
-    </div>
+    <!-- NATIVE CREATIVES -->
+    <zem-native-ad-preview
+        ng-if="ctrl.isNative()"
+        class="zem-native-ad-preview zem-grid__native-ad-preview"
+        [url]="ctrl.row.data.stats.display_url.value"
+        [landscape-hosted-image-url]="ctrl.data.landscape"
+        [hosted-image-url]="ctrl.data.square"
+        [hosted-icon-url]="ctrl.data.icon"
+        [title]="ctrl.row.data.stats.breakdown_name.text"
+        [brand-name]="ctrl.row.data.stats.brand_name.value"
+        [description]="ctrl.row.data.stats.description.value"
+        [display-url]="ctrl.row.data.stats.display_url.value"
+    ></zem-native-ad-preview>
+    <!-- DISPLAY CREATIVES -->
+    <zem-display-ad-preview
+        ng-if="ctrl.isImage() || ctrl.isAdTag()"
+        class="zem-display-ad-preview"
+        [url]="ctrl.row.data.stats.display_url.value"
+        [ad-type]="ctrl.getAdType()"
+        [display-hosted-image-url]="ctrl.data.image"
+        [ad-tag]="ctrl.data.ad_tag"
+        [image-width]="ctrl.getCreativeWidth()"
+        [image-height]="ctrl.getCreativeHeight()"
+    ></zem-display-ad-preview>
 </script>
 <script id="zemGridSubmissionStatusPopover.html" type="text/ng-template">
     <div class="submission-status-popover-table">
