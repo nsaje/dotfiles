@@ -182,7 +182,7 @@ def _get_signed_params(method, url, params, data):
 
 @retrying.retry(stop_max_attempt_number=10, wait_exponential_multiplier=4000, wait_exponential_max=120000)
 def _perform_request_with_retry(method, url, params=None, data=""):
-    _perform_request(method, url, params=params, data=data)
+    return _perform_request(method, url, params=params, data=data)
 
 
 def _perform_request(method, url, params=None, data=""):
