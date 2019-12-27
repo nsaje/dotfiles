@@ -47,7 +47,7 @@ class ProductFeedInstanceMixin:
             all_parsed_items = []
             skipped_items = []
             batches = []
-            items_to_upload = []
+            all_items_to_upload = []
 
             for item in all_items:
                 if item.is_empty_element:
@@ -76,12 +76,15 @@ class ProductFeedInstanceMixin:
                 ad_groups = ad_groups.filter_active()
 
             for ad_group in ad_groups:
+                items_to_upload = []
                 if self._is_max_daily_uploads_reached(ad_group):
                     continue
                 is_brand_ad_group = bool(
                     ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND)
                 )
                 for item in all_parsed_items:
+                    if self.max_daily_uploads > 0 and len(items_to_upload) >= self.max_daily_uploads:
+                        break
                     if is_brand_ad_group:
                         if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
                             continue
@@ -101,26 +104,25 @@ class ProductFeedInstanceMixin:
                                 }
                             )
                             continue
-                    if self.max_daily_uploads > 0 and len(items_to_upload) >= self.max_daily_uploads:
-                        break
                     items_to_upload.append(item)
-                    if not dry_run:
-                        batch, candidates = contentupload.upload.insert_candidates(
-                            None,
-                            ad_group.campaign.account,
-                            [item],
-                            ad_group,
-                            batch_name,
-                            filename="no-verify",
-                            auto_save=True,
-                        )
-                        batches.append(batch)
+                if not dry_run:
+                    batch, candidates = contentupload.upload.insert_candidates(
+                        None,
+                        ad_group.campaign.account,
+                        items_to_upload,
+                        ad_group,
+                        batch_name,
+                        filename="no-verify",
+                        auto_save=True,
+                    )
+                    batches.append(batch)
+                all_items_to_upload.extend(items_to_upload)
             self._write_log(
                 dry_run=dry_run,
                 batches=batches,
                 ads_skipped=skipped_items[:100],
                 exception="No active ad_groups" if not ad_groups else "",
-                items_to_upload="{}".format("".join([str(i) for i in items_to_upload[:100]])),
+                items_to_upload="{}".format("".join([str(i) for i in all_items_to_upload[:100]])),
             )
         except (Exception, EntityLimitExceeded) as e:
             self._write_log(dry_run=dry_run, exception="{}".format(e))
