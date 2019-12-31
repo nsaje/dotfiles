@@ -104,5 +104,6 @@ def _recalculate_ad_group_source_settings_amounts(ad_group_source):
 
 def _sanity_check(changes, multicurrency_fields):
     if any(field not in multicurrency_fields for field in changes):
-        logger.error("Attempted to change non-multicurrency fields!", fields=set(changes) - set(multicurrency_fields))
-        raise ProgrammingError("Attempted to change non-multicurrency fields! %s")
+        invalid_field_set = set(changes) - set(multicurrency_fields)
+        logger.error("Attempted to change non-multicurrency fields!", fields=invalid_field_set)
+        raise ProgrammingError("Attempted to change non-multicurrency fields: %s" % invalid_field_set)
