@@ -4,8 +4,11 @@ from django.conf import settings
 
 import dash.models
 from utils import converters
+from utils import zlogging
 from utils.command_helpers import Z1Command
 from utils.command_helpers import parse_id_list
+
+logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):
@@ -40,3 +43,7 @@ class Command(Z1Command):
             except AssertionError:
                 if is_verbose:
                     self.stdout.write("Assertion error: Budget status is {}.\n".format(budget.state_text()))
+            except Exception:
+                logger.exception(
+                    "Failed freeing inactive allocated assets", budget_id=budget.id, campaign_id=budget.campaign.id
+                )
