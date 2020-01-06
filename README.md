@@ -36,3 +36,5 @@ git-completion.bash
 
 Thinkpad touchpad:
 `xinput --set-prop 11 "Synaptics Finger" 5 20 0`
+
+for i3 and gnome session: https://github.com/deuill/i3-gnome-flashback
