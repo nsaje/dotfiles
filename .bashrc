@@ -24,7 +24,7 @@ PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 
 # pip should only run if there is a virtualenv currently activated
-export PIP_REQUIRE_VIRTUALENV=true
+export PIP_REQUIRE_VIRTUALENV=false
 # cache pip-installed packages to avoid re-downloading
 export PIP_DOWNLOAD_CACHE=$HOME/.pip/cache
 syspip(){
@@ -101,3 +101,5 @@ if [ -f '/home/nsaje/.go/src/r1/google-cloud-sdk/path.bash.inc' ]; then . '/home
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/home/nsaje/.go/src/r1/google-cloud-sdk/completion.bash.inc' ]; then . '/home/nsaje/.go/src/r1/google-cloud-sdk/completion.bash.inc'; fi
+
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python
