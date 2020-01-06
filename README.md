@@ -2,6 +2,7 @@ Manually install:
 
 ```
 dunst
+fasd
 x11-xkb-utils
 xautolock
 feh
