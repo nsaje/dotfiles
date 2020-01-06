@@ -35,7 +35,7 @@ class UploadBatch(instance.UploadBatchInstanceMixin, models.Model):
     default_brand_name = models.TextField(null=True, blank=True, default="")
     default_description = models.TextField(null=True, blank=True, default="")
     default_call_to_action = models.TextField(null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
-    default_state = models.IntegerField(
+    state_override = models.IntegerField(
         null=True, default=constants.ContentAdSourceState.ACTIVE, choices=constants.ContentAdSourceState.get_choices()
     )
 

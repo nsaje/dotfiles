@@ -83,6 +83,7 @@ class AdGroupClone(TestCase):
         self.assertEqual(ad_group.campaign, campaign)
         self.assertEqual(ad_group.name, ad_group_name)
         self.assertEqual(ad_group.bidding_type, source_ad_group.bidding_type)
+        self.assertEqual(ad_group.settings.state, source_ad_group.settings.state)
 
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)
@@ -92,6 +93,23 @@ class AdGroupClone(TestCase):
         history = dash.history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
+
+    def test_clone_state_override(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.models.Campaign)
+        source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
+        ad_group_name = "Ad Group (Clone)"
+        self.assertEqual(source_ad_group.settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+        ad_group = core.models.AdGroup.objects.clone(
+            request,
+            source_ad_group,
+            source_campaign,
+            ad_group_name,
+            state_override=dash.constants.AdGroupSettingsState.ACTIVE,
+        )
+        self.assertEqual(ad_group.settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
 
     def test_clone_video(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()

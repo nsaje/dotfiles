@@ -9,12 +9,11 @@ from utils import sspd_client
 
 @transaction.atomic
 def clone(
-    request, source_ad_group, content_ads, destination_ad_group, destination_batch_name=None, overridden_state=None
+    request, source_ad_group, content_ads, destination_ad_group, destination_batch_name=None, state_override=None
 ):
     _validate_same_account(source_ad_group, destination_ad_group)
-
     destination_batch = core.models.UploadBatch.objects.clone(
-        request.user, source_ad_group, destination_ad_group, destination_batch_name, default_state=overridden_state
+        request.user, source_ad_group, destination_ad_group, destination_batch_name, state_override=state_override
     )
 
     core.models.ContentAd.objects.bulk_clone(request, content_ads, destination_ad_group, destination_batch)
@@ -27,14 +26,14 @@ def clone(
 
 @transaction.atomic
 def clone_edit(
-    request, source_ad_group, content_ads, destination_ad_group, destination_batch_name=None, overridden_state=None
+    request, source_ad_group, content_ads, destination_ad_group, destination_batch_name=None, state_override=None
 ):
     _validate_same_account(source_ad_group, destination_ad_group)
 
     new_batch_name = destination_batch_name or core.models.UploadBatch.generate_cloned_name(source_ad_group)
 
     destination_edit_batch, candidates = dash.features.contentupload.upload.insert_clone_edit_candidates(
-        request.user, content_ads, destination_ad_group, new_batch_name, overridden_state
+        request.user, content_ads, destination_ad_group, new_batch_name, state_override
     )
 
     return destination_edit_batch, dash.features.contentupload.upload.get_candidates_with_errors(request, candidates)

@@ -25,12 +25,14 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.update_unsafe(None)
         return new_settings
 
-    def clone(self, request, ad_group, source_ad_group_settings, state=constants.AdGroupSettingsState.INACTIVE):
+    def clone(self, request, ad_group, source_ad_group_settings, state_override=None):
         new_settings = self._create_default_obj(ad_group)
         for field in set(self.model._settings_fields) - {"ad_group_name"}:
             setattr(new_settings, field, getattr(source_ad_group_settings, field))
 
-        new_settings.state = state
+        new_settings.state = source_ad_group_settings.state
+        if state_override:
+            new_settings.state = state_override
         new_settings.archived = False
         if (
             source_ad_group_settings.end_date is not None

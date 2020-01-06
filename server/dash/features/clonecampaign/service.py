@@ -4,7 +4,15 @@ import core.models
 import dash.features.cloneadgroup.service
 
 
-def clone(request, source_campaign, destination_campaign_name, clone_ad_groups, clone_ads):
+def clone(
+    request,
+    source_campaign,
+    destination_campaign_name,
+    clone_ad_groups,
+    clone_ads,
+    ad_group_state_override=None,
+    ad_state_override=None,
+):
 
     with transaction.atomic():
         cloned_campaign = core.models.Campaign.objects.clone(request, source_campaign, destination_campaign_name)
@@ -14,7 +22,13 @@ def clone(request, source_campaign, destination_campaign_name, clone_ad_groups, 
 
             for source_ad_group in source_ad_groups:
                 dash.features.cloneadgroup.service.clone(
-                    request, source_ad_group, cloned_campaign, source_ad_group.name, clone_ads
+                    request,
+                    source_ad_group,
+                    cloned_campaign,
+                    source_ad_group.name,
+                    clone_ads,
+                    ad_group_state_override,
+                    ad_state_override,
                 )
 
     return cloned_campaign

@@ -14,7 +14,7 @@ class UploadBatchManager(models.Manager):
         name,
         ad_group=None,
         batch_type=dash.constants.UploadBatchType.INSERT,
-        default_state=dash.constants.ContentAdSourceState.ACTIVE,
+        state_override=dash.constants.ContentAdSourceState.ACTIVE,
     ):
         if ad_group is not None:
             core.common.entity_limits.enforce(
@@ -22,7 +22,7 @@ class UploadBatchManager(models.Manager):
             )
 
         batch = model.UploadBatch(
-            account=account, name=name, ad_group=ad_group, type=batch_type, default_state=default_state
+            account=account, name=name, ad_group=ad_group, type=batch_type, state_override=state_override
         )
 
         batch.save(user=user)
@@ -34,7 +34,7 @@ class UploadBatchManager(models.Manager):
         source_ad_group,
         ad_group,
         new_batch_name=None,
-        default_state=dash.constants.ContentAdSourceState.ACTIVE,
+        state_override=dash.constants.ContentAdSourceState.ACTIVE,
     ):
         account = ad_group.campaign.account
         return self.create(
@@ -43,7 +43,7 @@ class UploadBatchManager(models.Manager):
             new_batch_name or model.UploadBatch.generate_cloned_name(source_ad_group),
             ad_group,
             batch_type=dash.constants.UploadBatchType.CLONE,
-            default_state=default_state,
+            state_override=state_override,
         )
 
     def create_for_file(
@@ -55,7 +55,7 @@ class UploadBatchManager(models.Manager):
         original_filename,
         auto_save,
         batch_type=dash.constants.UploadBatchType.INSERT,
-        default_state=dash.constants.ContentAdSourceState.ACTIVE,
+        state_override=dash.constants.ContentAdSourceState.ACTIVE,
     ):
         core.common.entity_limits.enforce(
             core.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(), account.id
@@ -67,7 +67,7 @@ class UploadBatchManager(models.Manager):
             original_filename=original_filename,
             auto_save=auto_save,
             type=batch_type,
-            default_state=default_state,
+            state_override=state_override,
         )
 
         batch.save(user=user)

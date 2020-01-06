@@ -38,10 +38,10 @@ class ContentAdManager(models.Manager):
                 continue
             setattr(content_ad, field, updates[field])
 
-        if batch.default_state == constants.ContentAdSourceState.ACTIVE:
+        if batch.state_override == constants.ContentAdSourceState.ACTIVE:
             content_ad.state = constants.ContentAdSourceState.ACTIVE
 
-        elif batch.default_state == constants.ContentAdSourceState.INACTIVE:
+        elif batch.state_override == constants.ContentAdSourceState.INACTIVE:
             content_ad.state = constants.ContentAdSourceState.INACTIVE
 
         content_ad.save()
@@ -97,14 +97,14 @@ class ContentAdManager(models.Manager):
         candidates = []
         for sca in source_content_ads:
             c = sca.to_cloned_candidate_dict()
-            if batch.default_state is None:
+            if batch.state_override is None:
                 c["state"] = sca.state
             candidates.append(c)
 
         # no need to resolve url in r1, because it was done before it was uploaded
         content_ads = self.bulk_create_from_candidates(candidates, batch, r1_resolve=False)
         ad_group.write_history_content_ads_cloned(
-            request, content_ads, batch, source_content_ads[0].ad_group, batch.default_state
+            request, content_ads, batch, source_content_ads[0].ad_group, batch.state_override
         )
 
         return content_ads

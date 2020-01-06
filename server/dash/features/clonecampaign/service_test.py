@@ -85,6 +85,14 @@ class CloneServiceTest(TestCase):
         self.assertTrue(cloned_campaign.conversiongoal_set.exists())
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
+        self.assertEqual(
+            self.campaign.adgroup_set.get().settings.state, cloned_campaign.adgroup_set.get().settings.state
+        )
+        self.assertEqual(
+            [content_ad.state for content_ad in self.campaign.adgroup_set.get().contentad_set.all()],
+            [cloned_content_ad.state for cloned_content_ad in cloned_campaign.adgroup_set.get().contentad_set.all()],
+        )
+
     def test_clone_no_ad_group(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
         self.ad_group.archive(None)
 
@@ -160,3 +168,34 @@ class CloneServiceTest(TestCase):
 
         self.assertTrue(cloned_campaign.conversiongoal_set.exists())
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
+
+    def test_clone_set_adgroup_state_override(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+        self.assertEqual(self.campaign.adgroup_set.get().settings.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+        cloned_campaign = service.clone(
+            self.request,
+            self.campaign,
+            "Cloned Campaign",
+            clone_ad_groups=True,
+            clone_ads=False,
+            ad_group_state_override=dash.constants.AdGroupSettingsState.ACTIVE,
+        )
+
+        self.assertEqual(cloned_campaign.adgroup_set.get().settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
+
+    def test_clone_set_ads_state_override(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
+        for contend_ad in self.campaign.adgroup_set.get().contentad_set.all():
+            self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.ACTIVE)
+
+        cloned_campaign = service.clone(
+            self.request,
+            self.campaign,
+            "Cloned Campaign",
+            clone_ad_groups=True,
+            clone_ads=True,
+            ad_group_state_override=None,
+            ad_state_override=dash.constants.AdGroupSettingsState.INACTIVE,
+        )
+
+        for contend_ad in cloned_campaign.adgroup_set.get().contentad_set.all():
+            self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.INACTIVE)

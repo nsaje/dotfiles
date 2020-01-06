@@ -48,7 +48,7 @@ def insert_candidates(
     filename,
     auto_save=False,
     batch_type=constants.UploadBatchType.INSERT,
-    overridden_state=None,
+    state_override=None,
 ):
     with transaction.atomic():
         batch = models.UploadBatch.objects.create_for_file(
@@ -59,7 +59,7 @@ def insert_candidates(
             filename,
             auto_save,
             batch_type=batch_type,
-            default_state=overridden_state,
+            state_override=state_override,
         )
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
@@ -81,7 +81,7 @@ def insert_edit_candidates(user, content_ads, ad_group):
     )
 
 
-def insert_clone_edit_candidates(user, content_ads, ad_group, batch_name, overridden_state):
+def insert_clone_edit_candidates(user, content_ads, ad_group, batch_name, state_override):
     content_ads_data = []
     for content_ad in content_ads:
         content_ad_dict = content_ad.to_cloned_candidate_dict()
@@ -98,7 +98,7 @@ def insert_clone_edit_candidates(user, content_ads, ad_group, batch_name, overri
         batch_name,
         "",
         batch_type=constants.UploadBatchType.CLONE,
-        overridden_state=overridden_state,
+        state_override=state_override,
     )
 
 

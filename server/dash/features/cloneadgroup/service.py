@@ -5,17 +5,21 @@ from core.models.account.exceptions import AccountDoesNotMatch
 from dash.features.bulkactions import clonecontent
 
 
-def clone(request, source_ad_group, campaign, ad_group_name, clone_ads):
+def clone(request, source_ad_group, campaign, ad_group_name, clone_ads, state_override=None, ad_state_override=None):
 
     _validate_same_account(source_ad_group, campaign)
 
     with transaction.atomic():
-        ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, ad_group_name)
+        ad_group = core.models.AdGroup.objects.clone(
+            request, source_ad_group, campaign, ad_group_name, state_override=state_override
+        )
         if clone_ads:
             content_ads = source_ad_group.contentad_set.all().exclude_archived()
 
             if content_ads.exists():
-                clonecontent.service.clone(request, source_ad_group, content_ads, ad_group)
+                clonecontent.service.clone(
+                    request, source_ad_group, content_ads, ad_group, state_override=ad_state_override
+                )
 
     return ad_group
 

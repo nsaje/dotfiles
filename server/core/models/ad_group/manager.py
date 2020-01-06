@@ -41,7 +41,7 @@ class AdGroupManager(core.common.BaseManager):
         ad_group.write_history_created(request)
         return ad_group
 
-    def clone(self, request, source_ad_group, campaign, new_name):
+    def clone(self, request, source_ad_group, campaign, new_name, state_override=None):
         if (
             source_ad_group.campaign.type == dash.constants.CampaignType.VIDEO
             or campaign.type == dash.constants.CampaignType.VIDEO
@@ -61,7 +61,7 @@ class AdGroupManager(core.common.BaseManager):
             ad_group.save(request)
 
             ad_group.settings = core.models.settings.AdGroupSettings.objects.clone(
-                request, ad_group, source_ad_group.get_current_settings()
+                request, ad_group, source_ad_group.get_current_settings(), state_override=state_override
             )
             ad_group.save(request)
 

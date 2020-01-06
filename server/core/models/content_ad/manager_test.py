@@ -195,7 +195,7 @@ class CreateContentAd(TestCase):
     def test_bulk_clone(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
-        batch.default_state = None
+        batch.state_override = None
         batch.save()
         icon = magic_mixer.blend(
             core.models.ImageAsset,
@@ -235,7 +235,7 @@ class CreateContentAd(TestCase):
     def test_bulk_clone_override_state(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
-        batch.default_state = constants.ContentAdSourceState.ACTIVE
+        batch.state_override = constants.ContentAdSourceState.ACTIVE
         batch.save()
         icon = magic_mixer.blend(
             core.models.ImageAsset,

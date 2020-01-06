@@ -54,6 +54,29 @@ class Clone(TestCase):
         mock_update_ad_group.assert_called_with(batch.ad_group, msg="clonecontent.clone")
         mock_sspd_sync.assert_called_with(batch)
 
+        self.assertEqual(
+            [content_ad.state for content_ad in self.source_content_ads],
+            [cloned_content_ad.state for cloned_content_ad in cloned_ads],
+        )
+
+    def test_clone_state_override(self, _):
+
+        for content_ad in self.source_content_ads:
+            self.assertEqual(content_ad.state, dash.constants.ContentAdSourceState.ACTIVE)
+
+        batch = service.clone(
+            self.request,
+            self.source_ad_group,
+            self.source_content_ads,
+            self.ad_group,
+            state_override=dash.constants.ContentAdSourceState.INACTIVE,
+        )
+
+        cloned_ads = core.models.ContentAd.objects.filter(batch=batch)
+
+        for content_ad in cloned_ads:
+            self.assertEqual(content_ad.state, dash.constants.ContentAdSourceState.INACTIVE)
+
     def test_clone_type_mismatch(self, _):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         self.ad_group.campaign.save(None)
