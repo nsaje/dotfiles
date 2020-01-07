@@ -27,7 +27,13 @@
     >
         <ng-container *ngIf="editDealModal.isOpen">
             <div class="zem-modal__header">
-                <div class="zem-modal__title">Edit deal</div>
+                <div class="zem-modal__title">
+                    {{
+                        !state.activeEntity.entity.id
+                            ? 'Add new deal'
+                            : 'Edit deal'
+                    }}
+                </div>
             </div>
             <div class="zem-modal__body">
                 <zem-deal-edit-form
