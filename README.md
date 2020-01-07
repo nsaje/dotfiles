@@ -1,6 +1,6 @@
 # Zemanta Eins
 
-Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.)
+Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.) A
 
 
 ## Architecture Overview
@@ -133,7 +133,7 @@ We have [flake8](http://flake8.pycqa.org/en/latest/), [black](https://github.com
 
 It's a good idea to set up flake8, black, eslint, tslint and prettier inside your editor. For convenience there's a pre-commit hook in the repo that automatically formats Python code with *black*, performs lint checks on Javascript (*eslint*) and Typescript (*tslint*) files and formats client code-base with *Prettier*.
 
-To setup the pre-commit hook you'll first need [pre-commit](https://pre-commit.com/) package manager installed. Run `pip install pre-commit`. 
+To setup the pre-commit hook you'll first need [pre-commit](https://pre-commit.com/) package manager installed. Run `pip install pre-commit`.
 
 Then install the pre-commit hook by running `pre-commit install` in project's root.
 
