@@ -52,12 +52,17 @@ class RuleValidationMixin:
             action_type_name = constants.ActionType.get_name(action_type)
             raise exceptions.InvalidChangeStep(f"Change step shouldn't be set for action type: {action_type_name}.")
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
+            action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
             if change_step is None:
                 raise exceptions.InvalidChangeStep("Please provide change step")
-            elif change_step < config.ADJUSTEMENT_ACTION_TYPES[action_type].min_step:
-                raise exceptions.InvalidChangeStep("Change step is too small")
-            elif change_step > config.ADJUSTEMENT_ACTION_TYPES[action_type].max_step:
-                raise exceptions.InvalidChangeStep("Change step is too big")
+            elif change_step < action_type_config.min_step:
+                raise exceptions.InvalidChangeStep(
+                    f"Change step is too small. Please provide a value greater or equal to {action_type_config.min_step:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                )
+            elif change_step > action_type_config.max_step:
+                raise exceptions.InvalidChangeStep(
+                    f"Change step is too big. Please provide a value lower than {action_type_config.max_step:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                )
 
     def _validate_change_limit(self, changes, change_limit):
         action_type = changes.get("action_type", self.action_type)
@@ -65,12 +70,17 @@ class RuleValidationMixin:
             action_type_name = constants.ActionType.get_name(action_type)
             raise exceptions.InvalidChangeLimit(f"Change limit shouldn't be set for action type: {action_type_name}.")
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
+            action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
             if change_limit is None:
                 raise exceptions.InvalidChangeLimit("Please provide change limit")
-            elif change_limit < config.ADJUSTEMENT_ACTION_TYPES[action_type].min_limit:
-                raise exceptions.InvalidChangeLimit("Change limit is too small")
-            elif change_limit > config.ADJUSTEMENT_ACTION_TYPES[action_type].max_limit:
-                raise exceptions.InvalidChangeLimit("Change limit is too big")
+            elif change_limit < action_type_config.min_limit:
+                raise exceptions.InvalidChangeLimit(
+                    f"Change limit is too small. Please provide a value greater or equal to {action_type_config.min_limit:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                )
+            elif change_limit > action_type_config.max_limit:
+                raise exceptions.InvalidChangeLimit(
+                    f"Change limit is too big. Please provide a value lower than {action_type_config.max_limit:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                )
 
     def _validate_notification_recipients(self, changes, notification_recipients):
         notification_type = changes.get("notification_type", self.notification_type)
@@ -79,7 +89,7 @@ class RuleValidationMixin:
                 "Notification recipients should be left empty when notification is not to be sent."
             )
         elif notification_type != constants.NotificationType.NONE and not notification_recipients:
-            raise exceptions.InvalidNotificationRecipients("Notification recipients should be set.")
+            raise exceptions.InvalidNotificationRecipients("Please provide at least one email recipient.")
         for email in notification_recipients:
             try:
                 validate_email(email)

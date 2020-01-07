@@ -12,6 +12,7 @@ class AdjustmentTypeConfiguration:
     max_step: float
     min_limit: float
     max_limit: float
+    sign: str
 
 
 VALID_TARGET_TYPES = [constants.TargetType.PUBLISHER]
@@ -63,10 +64,10 @@ VALID_ACTION_TYPES_FOR_TARGET = {
 
 ADJUSTEMENT_ACTION_TYPES = {
     constants.ActionType.INCREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
-        min_limit=float(MODIFIER_MIN), max_limit=float(MODIFIER_MAX), min_step=0.01, max_step=1
+        min_limit=float(MODIFIER_MIN), max_limit=float(MODIFIER_MAX), min_step=0.01, max_step=1, sign="percentage"
     ),
     constants.ActionType.DECREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
-        min_limit=float(MODIFIER_MIN), max_limit=float(MODIFIER_MAX), min_step=0.01, max_step=1
+        min_limit=float(MODIFIER_MIN), max_limit=float(MODIFIER_MAX), min_step=0.01, max_step=1, sign="percentage"
     ),
     # constants.ActionType.INCREASE_BID: AdjustmentTypeConfiguration(),
     # constants.ActionType.DECREASE_BID: AdjustmentTypeConfiguration(),
