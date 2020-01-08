@@ -1,6 +1,6 @@
 # Zemanta Eins
 
-Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.) A
+Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.)
 
 
 ## Architecture Overview
