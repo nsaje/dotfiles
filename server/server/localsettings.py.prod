@@ -682,7 +682,7 @@ RECAPTCHA_SECRET_KEY = (
     .decode("utf-8")
 )  # noqa
 
-METRICS_PUSH_GATEWAY = "pushgateway:8000"
+METRICS_PUSH_GATEWAY = "http://pushgateway:8000"
 
 LOGGING_FORMATTER = "json"
 
