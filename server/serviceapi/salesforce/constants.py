@@ -342,4 +342,9 @@ SALES_REP_AGENCY_MAPPING = {
     "espeace@outbrain.com": 518,
     "mulrich@outbrain.com": 518,
     "jgoldstein@outbrain.com": 518,
+    "vshobhani@outbrain.com": 514,
+    "ipatil@outbrain.com": 516,
+    "ilasky@outbrain.com": 510,
+    "gloulai@outbrain.com": 390,
+    "jberkhemer@outbrain.com": 513,
 }
