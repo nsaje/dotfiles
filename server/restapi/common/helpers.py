@@ -65,15 +65,10 @@ def _get_deal_dto(direct_deal):
     }
 
 
-def get_available_sources(user, agency, account=None):
-    show_all_sources = user.has_perm("zemauth.can_see_all_available_sources")
-    available_sources_queryset = core.models.Source.objects.filter(deprecated=False)
-    if show_all_sources:
-        return list(available_sources_queryset)
-    available_sources_queryset = available_sources_queryset.filter(released=True)
-    if agency is not None and agency.available_sources.exists():
-        available_sources_queryset = agency.available_sources.all()
-    if account and account.id is not None:
-        account_sources = account.allowed_sources.filter(released=True)
-        return list({*available_sources_queryset, *account_sources})
+def get_available_sources(user, agency):
+    available_sources_queryset = core.models.Source.objects.all()
+    if agency is not None and agency.allowed_sources.count() > 0:
+        available_sources_queryset = agency.allowed_sources.all()
+    if not user.has_perm("zemauth.can_see_all_available_sources"):
+        available_sources_queryset = available_sources_queryset.filter(released=True, deprecated=False)
     return list(available_sources_queryset)

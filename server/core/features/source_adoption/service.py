@@ -13,7 +13,6 @@ from . import exceptions
 logger = zlogging.getLogger(__name__)
 LOGGER_UPDATE_BATCH_SIZE = 512
 PAUSE_INTERVAL = 30
-NAS_TAG = "biz/NES"
 
 
 def deprecate_shell(source_ids):
@@ -45,16 +44,15 @@ def deprecate_shell(source_ids):
 
                 if total_ags_paused % LOGGER_UPDATE_BATCH_SIZE == 0:
                     logger.info(
-                        "Ad group source pausing of source done.",
-                        source=source.name,
-                        source_id=source.id,
-                        total=(total_ags_paused / total_ags_count) * 100,
+                        "Ad group source pausing of source {} (id={}) {}%% done.".format(
+                            source.name, source.id, (total_ags_paused / total_ags_count) * 100
+                        )
                     )
 
                 if total_ags_paused % PAUSE_INTERVAL == 0:
                     time.sleep(1)
 
-        logger.info("Source deprecated successfully", source=source.name)
+        logger.info("{} deprecated successfully".format(source.name))
 
     logger.info(
         "Sources deprecated", num_sources_deprecated=len(sources_deprecated), sources_deprecated=sources_deprecated
@@ -133,10 +131,9 @@ def auto_add_new_ad_group_sources(source):
 
         if total_done % LOGGER_UPDATE_BATCH_SIZE == 0:
             logger.info(
-                "Auto adding of source to ad groups done.",
-                source=source.name,
-                source_id=source.id,
-                total=(total_done / total_count) * 100,
+                "Auto adding of source {} (id={}) to ad groups {}%% done.".format(
+                    source.name, source.id, (total_done / total_count) * 100
+                )
             )
 
     count_not_available = (
@@ -144,21 +141,20 @@ def auto_add_new_ad_group_sources(source):
     )
 
     logger.info(
-        "Source not added to ad groups due to not being allowed "
-        "retargeting not supported video not supported  display not supported",
-        source=source.name,
-        source_id=source.id,
-        count_not_allowed=count_not_allowed,
-        count_retargeting_not_supported=count_retargeting_not_supported,
-        count_video_not_supported=count_video_not_supported,
-        count_display_not_supported=count_display_not_supported,
+        "Source {} (id={}) not added to ad groups due to not being allowed ({}),"
+        "retargeting not supported ({}), video not supported ({}), display not supported ({})".format(
+            source.name,
+            source.id,
+            count_not_allowed,
+            count_retargeting_not_supported,
+            count_video_not_supported,
+            count_display_not_supported,
+        )
     )
     logger.info(
-        "Auto adding of source to ad groups DONE. It is available on ad groups",
-        source=source.name,
-        source_id=source.id,
-        count_available=count_available,
-        count_not_available=count_not_available,
+        "Auto adding of source {} (id={}) to ad groups DONE. It is available on {} ad groups and not available on {}".format(
+            source.name, source.id, count_available, count_not_available
+        )
     )
 
     return count_available, count_not_available
@@ -175,12 +171,7 @@ def release_source(request, source, account_list=None, skip_validation=False):
     n_allowed_on = 0
 
     for account in accounts:
-        if (
-            not account.agency
-            or not account.agency.available_sources.exists()
-            and not account.agency.allowed_sources.exists()
-            and not account.agency.entity_tags.filter(name__icontains=NAS_TAG)
-        ):
+        if not account.agency or not account.agency.allowed_sources.all():
             account.allowed_sources.add(source)
             changes_text = "{} added to allowed media sources".format(source.name)
             account.write_history(
@@ -189,42 +180,17 @@ def release_source(request, source, account_list=None, skip_validation=False):
                 user=getattr(request, "user", None),
             )
             logger.info(
-                "Source allowed on account.",
-                source=source.name,
-                source_id=source.id,
-                account=account.name,
-                account_id=account.id,
+                "Source {} (id={}) allowed on account {} (id={}).".format(
+                    source.name, source.id, account.name, account.id
+                )
             )
             n_allowed_on += 1
-    logger.info("Source allowed on accounts.", source=source.name, source_id=source.id, n_allowed_on=n_allowed_on)
-
-    agencies = core.models.Agency.objects.filter(available_sources__isnull=False, is_disabled=False).exclude(
-        entity_tags__name__icontains=NAS_TAG
-    )
-    n_available_on = 0
-    for agency in agencies:
-        agency.available_sources.add(source)
-        changes_text = "{} added to available media sources".format(source.name)
-        agency.write_history(
-            changes_text,
-            action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE,
-            user=getattr(request, "user", None),
-        )
-        logger.info(
-            "Source available on agency.",
-            source=source.name,
-            source_id=source.id,
-            agency_name=agency.name,
-            agency_id=agency.id,
-        )
-        n_available_on += 1
-
-    logger.info("Source available on agencies.", source=source.name, source_id=source.id, n_allowed_on=n_available_on)
 
     source.released = True
     source.save()
 
-    return n_allowed_on, n_available_on
+    logger.info("Source allowed on accounts.", source=source.name, source_id=source.id, n_allowed_on=n_allowed_on)
+    return n_allowed_on
 
 
 def unrelease_source(request, source):
