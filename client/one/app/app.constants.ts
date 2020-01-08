@@ -217,6 +217,7 @@ export enum BidModifierType {
     STATE = 'STATE',
     DMA = 'DMA',
     AD = 'AD',
+    DAY_HOUR = 'DAY_HOUR',
 }
 
 export enum HackLevel {

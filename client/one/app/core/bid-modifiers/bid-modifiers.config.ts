@@ -31,4 +31,5 @@ export const BID_MODIFIER_TYPE_NAME_MAP = {
     [BidModifierType.STATE]: 'State / Region',
     [BidModifierType.DMA]: 'DMA',
     [BidModifierType.AD]: 'Content Ad',
+    [BidModifierType.DAY_HOUR]: 'Day - Hour',
 };
