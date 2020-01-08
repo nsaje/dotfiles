@@ -8,9 +8,10 @@ from utils.magic_mixer import magic_mixer
 
 class SourceViewSetTest(RESTAPITest):
     def test_list(self):
+        self.user.user_permissions.clear()
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
-        agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+        agency.update(None, available_sources=[sources[0], sources[1], sources[2]])
 
         r = self.client.get(reverse("restapi.source.internal:source_list", kwargs={"agency_id": agency.id}))
         resp_json = self.assertResponseValid(r, data_type=list)

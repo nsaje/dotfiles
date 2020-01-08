@@ -45,6 +45,7 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "custom_attributes",
         "users",
         "allowed_sources",
+        "available_sources",
         "default_account_type",
         "amplify_review",
     )
@@ -83,6 +84,7 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         ),
     )
     allowed_sources = models.ManyToManyField("Source", blank=True)
+    available_sources = models.ManyToManyField("Source", blank=True, related_name="available_agencies")
     custom_flags = JSONField(null=True, blank=True)
 
     default_whitelist = models.OneToOneField(

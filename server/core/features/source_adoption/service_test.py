@@ -103,9 +103,10 @@ class SourceAdoptionTest(django.test.TestCase):
         self.account.settings.update_unsafe(self.request, auto_add_new_sources=True)
 
     def test_release_and_unrelease_source(self):
-        n_allowed_on = release_source(self.request, self.source)
+        n_allowed_on, n_available_on = release_source(self.request, self.source)
         self.assertTrue(self.source.released)
         self.assertEqual(1, n_allowed_on)
+        self.assertEqual(0, n_available_on)
         self.assertTrue(self.source in self.account.allowed_sources.all())
 
         n_allowed_on = unrelease_source(self.request, self.source)
@@ -125,26 +126,63 @@ class SourceAdoptionTest(django.test.TestCase):
 
     def test_auto_add_new_sources_false(self):
         self.account.settings.update_unsafe(self.request, auto_add_new_sources=False)
-        n_allowed_on = release_source(self.request, self.source)
+        n_allowed_on, n_available_on = release_source(self.request, self.source)
+
         self.assertTrue(self.source.released)
         self.assertEquals(0, n_allowed_on)
+        self.assertEquals(0, n_available_on)
         self.assertFalse(self.source in self.account.allowed_sources.all())
 
     def test_auto_add_new_sources_agency_no_allowed_sources(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, available_sources=[], allowed_sources=[])
         self.account.agency = agency
         self.account.save(None)
-        n_allowed_on = release_source(self.request, self.source)
+
+        n_allowed_on, n_available_on = release_source(self.request, self.source)
         self.assertTrue(self.source.released)
         self.assertEquals(1, n_allowed_on)
+        self.assertEqual(0, n_available_on)
         self.assertTrue(self.source in self.account.allowed_sources.all())
+        self.assertFalse(self.source in agency.available_sources.all())
 
-    def test_auto_add_new_sources_agency_allowed_sources(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        agency.allowed_sources.add(self.source)
-        self.account.agency = agency
-        self.account.save(None)
-        n_allowed_on = release_source(self.request, self.source)
+        agency.update(None, available_sources=[self.source], allowed_sources=[])
+        source2 = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        n_allowed_on, n_available_on = release_source(self.request, source2)
+
         self.assertTrue(self.source.released)
         self.assertEquals(0, n_allowed_on)
-        self.assertFalse(self.source in self.account.allowed_sources.all())
+        self.assertEqual(1, n_available_on)
+        self.assertFalse(source2 in self.account.allowed_sources.all())
+        self.assertTrue(source2, agency.available_sources.all())
+        self.assertFalse(source2 in agency.allowed_sources.all())
+
+    def test_auto_add_new_sources_agency_allowed_sources(self):
+        agency = magic_mixer.blend(core.models.Agency, available_sources=[self.source], allowed_sources=[self.source])
+        source2 = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        self.account.agency = agency
+        self.account.save(None)
+
+        n_allowed_on, n_available_on = release_source(self.request, source2)
+        self.assertTrue(source2.released)
+        self.assertEquals(0, n_allowed_on)
+        self.assertEquals(1, n_available_on)
+        self.assertFalse(source2 in self.account.allowed_sources.all())
+        self.assertTrue(source2 in self.account.agency.available_sources.all())
+
+    def test_auto_add_new_sources_NAS_agency(self):
+        agency = magic_mixer.blend(core.models.Agency, available_sources=[], allowed_sources=[])
+        agency.update(None, entity_tags=["biz/NES"])
+        self.account.agency = agency
+        self.account.save(None)
+
+        n_allowed_on, n_available_on = release_source(self.request, self.source)
+        self.assertTrue(self.source.released)
+        self.assertEquals(0, n_allowed_on)
+        self.assertEqual(0, n_available_on)
+
+        agency.update(None, available_sources=[self.source], allowed_sources=[self.source])
+        source2 = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        n_allowed_on, n_available_on = release_source(self.request, source2)
+        self.assertTrue(self.source.released)
+        self.assertEquals(0, n_allowed_on)
+        self.assertEqual(0, n_available_on)
