@@ -30,6 +30,12 @@ export class NativeAdPreviewComponent implements OnInit {
     displayUrl: string;
     @Input()
     hostedIconUrl: string;
+    @Input()
+    callToAction: string;
+    @Input()
+    showDesktopView: boolean = true;
+    @Input()
+    showMobileView: boolean = false;
 
     APP_CONFIG = APP_CONFIG;
     nativeAdPreviewConfig: NativeAdPreviewConfig;
@@ -39,6 +45,10 @@ export class NativeAdPreviewComponent implements OnInit {
             ...DEFAULT_NATIVE_AD_PREVIEW_CONFIG,
             ...commonHelpers.getValueOrDefault(this.config, {}),
         };
+    }
+
+    openUrl() {
+        window.open(this.url, '_blank');
     }
 }
 

@@ -1,25 +1,20 @@
 @import 'variables';
 
 .zem-native-ad-preview {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin: -5px;
+    display: block;
 }
 
 .zem-native-ad-preview__item {
-    flex: 1 1 300px;
-    min-width: 250px;
-    margin: 5px;
+    display: block;
+    margin-bottom: @spacing--default;
 }
 
-.zem-native-ad-preview__item--full-size {
-    flex: 1 1 100%;
+.zem-native-ad-preview__item:last-child {
+    margin-bottom: 0;
 }
 
 .zem-native-ad-preview__label {
-    display: block;
+    display: inline-block;
     background-color: tint(@color--secondary, 90%);
     padding: 1px 10px 1px 10px;
     border-radius: 12px;
@@ -28,18 +23,30 @@
 }
 
 .zem-native-ad-preview__card {
-    display: flex;
-    flex-direction: column;
+    display: block;
+    width: 350px;
+    padding: 5px;
+    background-color: #ffffff;
+    border: 1px solid @border-color--default;
+    border-radius: @border-radius--default;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.05);
+}
+
+.zem-native-ad-preview__link:hover {
+    cursor: pointer;
 }
 
 .zem-native-ad-preview__card--row {
+    display: flex;
     flex-direction: row;
 }
 
-.zem-native-ad-preview__card--mobile {
-    background-color: #ffffff;
-    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
-    border: 1px solid @color--lighter-neutral;
+.zem-native-ad-preview__card--horizontal {
+    width: 520px;
+}
+
+.zem-native-ad-preview__card--icon {
+    width: 485px;
 }
 
 .zem-native-ad-preview__card-item {
@@ -48,10 +55,6 @@
 
 .zem-native-ad-preview__card-item:last-child {
     margin-bottom: 0;
-}
-
-.zem-native-ad-preview__card-item--extend {
-    flex: 1 1 auto;
 }
 
 .zem-native-ad-preview__card--row > .zem-native-ad-preview__card-item {
@@ -64,13 +67,13 @@
     margin-right: 0;
 }
 
-.zem-native-ad-preview__card--mobile
-    > .zem-native-ad-preview__card-item:last-child {
-    margin-bottom: 5px;
+.zem-native-ad-preview__card-item--extended {
+    flex: 1 1 auto;
 }
 
-.zem-native-ad-preview__image-link {
+.zem-native-ad-preview__image-placeholder {
     display: block;
+    position: relative;
     background-color: tint(@color--secondary, 90%);
     border: 1px solid tint(@color--secondary, 80%);
     width: 100%;
@@ -95,6 +98,11 @@
     }
 }
 
+.zem-native-ad-preview__card--row > .zem-native-ad-preview__image-placeholder {
+    flex: 0 0 195px;
+    max-width: 195px;
+}
+
 .zem-native-ad-preview__image {
     display: block;
     width: 100%;
@@ -103,22 +111,38 @@
 }
 
 .zem-native-ad-preview__title {
-    color: @color--secondary;
-    font-size: 18px;
-    line-height: 22px;
-    font-weight: 500;
     display: block;
+    color: @color--secondary;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 500;
+    max-height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .zem-native-ad-preview__description {
     display: block;
     color: @text-color--lighter;
+    max-height: 55px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .zem-native-ad-preview__brand-name {
     display: block;
     color: @text-color--lighter;
     font-weight: 500;
+    max-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zem-native-ad-preview__call-to-action {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .zem-native-ad-preview__header {
@@ -134,11 +158,12 @@
     margin-right: 0;
 }
 
-.zem-native-ad-preview__icon-link {
+.zem-native-ad-preview__icon-placeholder {
     display: block;
+    position: relative;
     background-color: tint(@color--secondary, 90%);
     border: 1px solid tint(@color--secondary, 80%);
-    width: 100px;
+    width: 100%;
     height: 100%;
 
     &::before,
@@ -160,6 +185,16 @@
     }
 }
 
+.zem-native-ad-preview__card--row > .zem-native-ad-preview__icon-placeholder {
+    flex: 0 0 60px;
+    max-width: 60px;
+}
+
+.zem-native-ad-preview__header > .zem-native-ad-preview__icon-placeholder {
+    flex: 0 0 30px;
+    max-width: 30px;
+}
+
 .zem-native-ad-preview__icon {
     display: block;
     width: 100%;
@@ -173,24 +208,69 @@
     line-height: 22px;
     font-weight: 500;
     padding-top: 5px;
+    max-height: 26px;
 }
 
-.zem-native-ad-preview__card--row > .zem-native-ad-preview__image-link {
-    flex: 0 0 30%;
+.zem-native-ad-preview__mobile {
+    position: relative;
+    width: 300px;
+    height: 600px;
+    border: 16px @color--light-neutral solid;
+    border-top-width: 60px;
+    border-bottom-width: 60px;
+    border-radius: 36px;
 }
 
-.zem-native-ad-preview__header > .zem-native-ad-preview__icon-link {
-    width: 30px;
-    height: 30px;
+.zem-native-ad-preview__mobile:before {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 5px;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: @color--lightest-neutral;
+    border-radius: 10px;
 }
 
-.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__title,
-.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__description,
-.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__brand-name {
-    padding-left: 5px;
+.zem-native-ad-preview__mobile:after {
+    content: '';
+    display: block;
+    width: 35px;
+    height: 35px;
+    position: absolute;
+    left: 50%;
+    bottom: -65px;
+    transform: translate(-50%, -50%);
+    background: @color--lightest-neutral;
+    border-radius: 50%;
 }
 
-.zem-native-ad-preview__card--mobile > .zem-native-ad-preview__header {
-    margin-top: 5px;
-    margin-left: 5px;
+.zem-native-ad-preview__mobile-content {
+    width: 100%;
+    height: 100%;
+    background: @color--lighter-neutral;
+    padding-top: @spacing--default;
+    padding-bottom: @spacing--default;
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.zem-native-ad-preview__mobile-content::-webkit-scrollbar {
+    display: none;
+}
+
+.zem-native-ad-preview__mobile-content > .zem-native-ad-preview__card {
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: @spacing--default;
+}
+
+.zem-native-ad-preview__mobile-content
+    > .zem-native-ad-preview__card:last-child {
+    margin-bottom: 0;
 }

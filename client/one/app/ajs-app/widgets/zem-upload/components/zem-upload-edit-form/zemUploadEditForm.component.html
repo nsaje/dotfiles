@@ -89,16 +89,16 @@
                         <label class="form__label" for="title-input"
                             >Ad Title</label
                         >
-                        <input
-                            type="text"
-                            class="input-text"
+                        <textarea
                             id="title-input"
+                            type="text"
+                            class="textarea content-upload__title-textarea"
                             ng-model="ctrl.selectedCandidate.title"
                             ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
                             ng-change="ctrl.updateField(ctrl.selectedCandidate, 'title')"
                             ng-disabled="ctrl.isEdit"
                             ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.title || ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
-                        />
+                        ></textarea>
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
@@ -1008,16 +1008,16 @@
                         <label class="form__label" for="title-input"
                             >Ad Name</label
                         >
-                        <input
-                            type="text"
-                            class="input-text"
+                        <textarea
                             id="title-input"
+                            type="text"
+                            class="textarea content-upload__title-textarea"
                             ng-model="ctrl.selectedCandidate.title"
                             ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
                             ng-change="ctrl.updateField(ctrl.selectedCandidate, 'title')"
                             ng-disabled="ctrl.isEdit"
                             ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.title || ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
-                        />
+                        ></textarea>
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
                             ng-class="{
@@ -1684,8 +1684,46 @@
     >
         <div class="content-upload__edit-form-title-container">
             <span class="content-upload__edit-form-name">Preview ad:</span>
+            <div
+                class="content-upload__edit-form-buttons"
+                ng-if="!ctrl.showDisplayUpload"
+            >
+                <button
+                    class="zem-button"
+                    ng-class="{'zem-button--outlined': !ctrl.showDesktop, 'zem-button--highlighted': ctrl.showDesktop}"
+                    ng-click="ctrl.showDesktop = true"
+                >
+                    Desktop
+                </button>
+                <button
+                    class="zem-button"
+                    ng-class="{'zem-button--outlined': ctrl.showDesktop, 'zem-button--highlighted': !ctrl.showDesktop}"
+                    ng-click="ctrl.showDesktop = false"
+                >
+                    Mobile
+                </button>
+            </div>
         </div>
         <div class="ad-preview__container custom-scroller">
+            <div
+                class="ad-preview__container-buttons"
+                ng-if="!ctrl.showDisplayUpload"
+            >
+                <button
+                    class="zem-button"
+                    ng-class="{'zem-button--outlined': !ctrl.showDesktop, 'zem-button--highlighted': ctrl.showDesktop}"
+                    ng-click="ctrl.showDesktop = true"
+                >
+                    Desktop
+                </button>
+                <button
+                    class="zem-button"
+                    ng-class="{'zem-button--outlined': ctrl.showDesktop, 'zem-button--highlighted': !ctrl.showDesktop}"
+                    ng-click="ctrl.showDesktop = false"
+                >
+                    Mobile
+                </button>
+            </div>
             <!-- NATIVE CREATIVES -->
             <zem-native-ad-preview
                 ng-if="!ctrl.showDisplayUpload"
@@ -1700,6 +1738,9 @@
                 [brand-name]="ctrl.selectedCandidate.brandName"
                 [description]="ctrl.selectedCandidate.description"
                 [display-url]="ctrl.selectedCandidate.displayUrl"
+                [call-to-action]="ctrl.selectedCandidate.callToAction"
+                [show-desktop-view]="ctrl.showDesktop"
+                [show-mobile-view]="!ctrl.showDesktop"
             ></zem-native-ad-preview>
             <!-- DISPLAY CREATIVES -->
             <zem-display-ad-preview

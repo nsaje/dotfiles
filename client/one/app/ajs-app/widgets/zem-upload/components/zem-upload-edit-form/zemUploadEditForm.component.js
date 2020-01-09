@@ -76,6 +76,8 @@ angular
         vm.api.open = open;
         vm.api.close = refreshAndClose;
 
+        vm.showDesktop = true;
+
         function open(candidate) {
             vm.requestFailed = false;
             vm.selectedCandidate = candidate;

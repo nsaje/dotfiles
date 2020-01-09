@@ -60,7 +60,7 @@
     <!-- NATIVE CREATIVES -->
     <zem-native-ad-preview
         ng-if="ctrl.isNative()"
-        class="zem-native-ad-preview zem-grid__native-ad-preview"
+        class="zem-native-ad-preview"
         [url]="ctrl.row.data.stats.display_url.value"
         [landscape-hosted-image-url]="ctrl.data.landscape"
         [hosted-image-url]="ctrl.data.square"
@@ -69,6 +69,7 @@
         [brand-name]="ctrl.row.data.stats.brand_name.value"
         [description]="ctrl.row.data.stats.description.value"
         [display-url]="ctrl.row.data.stats.display_url.value"
+        [call-to-action]="ctrl.row.data.stats.call_to_action.value"
     ></zem-native-ad-preview>
     <!-- DISPLAY CREATIVES -->
     <zem-display-ad-preview

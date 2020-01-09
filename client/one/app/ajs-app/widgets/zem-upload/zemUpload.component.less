@@ -2,13 +2,13 @@
 @import '../../styles/utilities.less';
 
 @modal-content-width: 95%;
-@content-upload-ad-editing-width: 75%;
+@content-upload-ad-editing-width: 70%;
 @content-upload-ad-editing-width-above-breakpoint: 65%;
 @content-upload-ad-editing-width-common-breakpoint: 60%;
 @content-upload-ad-editing-width-desktop-breakpoint: 100%;
 @form-input-width-content-upload: 62%;
 @form-additional-info-width-content-upload: 20%;
-@preview-width: 55%;
+@preview-width: 50%;
 @form-textarea-height-content-upload: 300px;
 
 .content-upload .modal-dialog {
@@ -565,8 +565,9 @@
 }
 
 .content-upload__edit-form-title-container {
+    display: flex;
     border-bottom: 1px solid #d2d2d2;
-    padding: 8px 60px 8px @spacing--default;
+    padding: 8px 122px 8px @spacing--default;
     font-size: 18px;
     line-height: 30px;
     white-space: nowrap;
@@ -590,6 +591,37 @@
 .content-upload__edit-form-name {
     color: @text-color--default;
     font-weight: 300;
+}
+
+.content-upload__edit-form-buttons,
+.ad-preview__container-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.ad-preview__container-buttons {
+    margin-bottom: @spacing--default;
+}
+
+.content-upload__edit-form-buttons > button,
+.ad-preview__container-buttons > button {
+    border-radius: 0;
+    flex: 0 0 85px;
+    max-width: 85px;
+}
+
+.content-upload__edit-form-buttons > button:first-child,
+.ad-preview__container-buttons > button:first-child {
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+}
+
+.content-upload__edit-form-buttons > button:last-child,
+.ad-preview__container-buttons > button:last-child {
+    border-top-right-radius: @border-radius--default;
+    border-bottom-right-radius: @border-radius--default;
 }
 
 .content-upload__edit-form-title {
@@ -647,6 +679,11 @@
 
 .content-upload__change-status--successful::before {
     background-image: url('images/check-green.svg');
+}
+
+.content-upload__title-textarea {
+    min-height: 50px !important;
+    height: 50px !important;
 }
 
 .content-upload__image-input {
@@ -728,6 +765,18 @@
         top: 0;
         bottom: 0;
         right: -@content-upload-ad-editing-width-above-breakpoint - 1;
+    }
+}
+
+@media only screen and (max-width: 1400px) {
+    .content-upload__edit-form-buttons {
+        display: none;
+    }
+}
+
+@media only screen and (min-width: 1400px) {
+    .ad-preview__container-buttons {
+        display: none;
     }
 }
 
