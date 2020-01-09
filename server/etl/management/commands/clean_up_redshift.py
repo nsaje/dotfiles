@@ -1,8 +1,11 @@
 import datetime
 
+from django.conf import settings
+
 import utils.dates_helper
 from etl import maintenance
 from etl import redshift
+from etl import refresh
 from redshiftapi import db
 from utils import metrics_compat
 from utils import zlogging
@@ -10,19 +13,24 @@ from utils.command_helpers import Z1Command
 
 logger = zlogging.getLogger(__name__)
 
-
-CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]
+HOT_CLUSTER_MAX_DAYS = settings.STATS_DB_HOT_CLUSTER_MAX_DAYS
+RAW_TABLES_CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]
 
 
 class Command(Z1Command):
     @metrics_compat.timer("etl.clean_up_redshift")
     def handle(self, *args, **options):
-        for config in CONFIG:
+        for table_name in refresh.get_all_views_table_names():
+            self._clean_up_table(table_name, HOT_CLUSTER_MAX_DAYS)
+        for config in RAW_TABLES_CONFIG:
             table_name = config["table_name"]
             keep_days = config["keep_days"]
-            self._delete_old_data(table_name, keep_days)
-            maintenance.vacuum(table_name, delete_only=True)
-            maintenance.analyze(table_name)
+            self._clean_up_table(table_name, keep_days)
+
+    def _clean_up_table(self, table_name, keep_days):
+        self._delete_old_data(table_name, keep_days)
+        maintenance.vacuum(table_name, delete_only=True)
+        maintenance.analyze(table_name)
 
     @staticmethod
     def _delete_old_data(table, keep_days):
