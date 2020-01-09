@@ -10,8 +10,11 @@ import {
 import {DataType, Unit} from '../../app.constants';
 
 export const RULE_TARGET_TYPES = [
-    // {label: 'Ad', value: RuleTargetType.Ad},
-    // {label: 'Ad group', value: RuleTargetType.AdGroup},
+    {label: 'Ad', value: RuleTargetType.Ad},
+    {
+        label: 'Ad group',
+        value: RuleTargetType.AdGroup,
+    },
     {
         label: 'Ad group / publishers',
         value: RuleTargetType.AdGroupPublisher,
@@ -40,10 +43,10 @@ export const RULE_TARGET_TYPES = [
     //     label: 'Ad group / placements',
     //     value: RuleTargetType.AdGroupPlacement,
     // },
-    // {
-    //     label: 'Ad group / sources',
-    //     value: RuleTargetType.AdGroupSource,
-    // },
+    {
+        label: 'Ad group / sources',
+        value: RuleTargetType.AdGroupSource,
+    },
 ];
 
 export const RULE_ACTIONS_OPTIONS = {

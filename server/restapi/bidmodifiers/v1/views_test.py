@@ -549,7 +549,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         result = self.assertResponseError(response, "ValidationError")
         self.assertEqual(
             result,
-            {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Unsupported Operating System Traget"]}},
+            {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Unsupported Operating System Target"]}},
         )
 
     def test_create_invalid_operating_system(self):

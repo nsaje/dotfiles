@@ -26,7 +26,10 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = True
         conditions_mock.return_value = True
 
-        apply.apply_rule(rule, ad_group, stats)
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertFalse(changes)
+        self.assertFalse(errors)
+
         self.assertEqual(3, cooldown_mock.call_count)
         conditions_mock.assert_not_called()
         apply_mock.assert_not_called()
@@ -43,7 +46,10 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = False
 
-        apply.apply_rule(rule, ad_group, stats)
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertFalse(changes)
+        self.assertFalse(errors)
+
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         apply_mock.assert_not_called()
@@ -51,18 +57,47 @@ class ApplyTest(TestCase):
 
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_invalid_action(self, cooldown_mock, conditions_mock):
+    def test_apply_rule_ad_archived(self, cooldown_mock, conditions_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        # FIXME: works only because NOTIFY wasn't handled at the time of adding this
-        rule = magic_mixer.blend(Rule, action_type=constants.ActionType.NOTIFY)
-        stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
+        ad1 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
+        ad2 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
+        ad3 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
+        stats = {str(ad1.id): {}, str(ad2.id): {}, str(ad3.id): {}}
 
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        with self.assertRaises(KeyError):
-            apply.apply_rule(rule, ad_group, stats)
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertFalse(changes)
+        self.assertFalse(errors)
+
+        self.assertEqual(3, cooldown_mock.call_count)
+        self.assertEqual(3, conditions_mock.call_count)
         self.assertFalse(RuleTriggerHistory.objects.exists())
+
+    @mock.patch("automation.rules.service.apply._meets_all_conditions")
+    @mock.patch("automation.rules.service.apply._is_on_cooldown")
+    def test_apply_rule_invalid_target_error(self, cooldown_mock, conditions_mock):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
+        stats = {"1": {}, "2": {}, str(ad.id): {}}
+
+        cooldown_mock.return_value = False
+        conditions_mock.return_value = True
+
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertEqual(1, len(changes))
+        self.assertEqual(2, len(errors))
+        for error in errors:
+            self.assertIn(error.target, ["1", "2"])
+            self.assertEqual("Invalid ad turn off target", error.message)
+            self.assertIn("Invalid ad turn off target", error.stack_trace)
+
+        self.assertEqual(3, cooldown_mock.call_count)
+        self.assertEqual(3, conditions_mock.call_count)
+        self.assertEqual(1, RuleTriggerHistory.objects.count())
 
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
@@ -76,7 +111,10 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=1.0)
 
-        apply.apply_rule(rule, ad_group, stats)
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertFalse(changes)
+        self.assertFalse(errors)
+
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertEqual(3, apply_mock.call_count)
@@ -94,7 +132,10 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=2.0)
 
-        apply.apply_rule(rule, ad_group, stats)
+        changes, errors = apply.apply_rule(rule, ad_group, stats)
+        self.assertEqual(3, len(changes))
+        self.assertFalse(errors)
+
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertEqual(3, apply_mock.call_count)

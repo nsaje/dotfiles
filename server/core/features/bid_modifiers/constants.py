@@ -1,5 +1,7 @@
 from utils.constant_base import ConstantBase
 
+UNSUPPORTED_TARGETS = [None, "Other"]
+
 
 class BidModifierType(ConstantBase):
     PUBLISHER = 1

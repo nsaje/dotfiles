@@ -1,3 +1,4 @@
+import mock
 from django.test import TestCase
 
 import core.models
@@ -312,11 +313,11 @@ class TestDashboardConverter(TestCase):
         # illegal input target value tests
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.DEVICE, "invalid")
-            self.assertEqual(str(ctx.exception), "Invalid Device TYpe")
+            self.assertEqual(str(ctx.exception), "Invalid Device Type")
 
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.DEVICE, 1234)
-            self.assertEqual(str(ctx.exception), "Invalid Device TYpe")
+            self.assertEqual(str(ctx.exception), "Invalid Device Type")
 
     def test_operating_system(self):
         # full circle test
@@ -337,11 +338,11 @@ class TestDashboardConverter(TestCase):
 
         with self.assertRaises(exceptions.BidModifierUnsupportedTarget) as ctx:
             self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, None)
-        self.assertEqual(str(ctx.exception), "Unsupported Operating System Traget")
+        self.assertEqual(str(ctx.exception), "Unsupported Operating System Target")
 
         with self.assertRaises(exceptions.BidModifierUnsupportedTarget) as ctx:
             self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, "Other")
-        self.assertEqual(str(ctx.exception), "Unsupported Operating System Traget")
+        self.assertEqual(str(ctx.exception), "Unsupported Operating System Target")
 
         # special case full circle test
         output_value = self.converter.from_target(
@@ -436,3 +437,47 @@ class TestDashboardConverter(TestCase):
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.SOURCE, test_source_name)
         self.assertEqual(str(ctx.exception), "Invalid Source")
+
+
+class TestStatsConverter(TestCase):
+    def setUp(self):
+        self.converter = converters.StatsConverter
+
+    def test_target(self):
+        target_converter = core.features.bid_modifiers.converters.TargetConverter
+        test_cases = [
+            {"type": constants.BidModifierType.AD, "to": "_to_content_ad_target", "from": "_from_content_ad_target"},
+            {
+                "type": constants.BidModifierType.PUBLISHER,
+                "to": "_to_publisher_target",
+                "from": "_from_publisher_target",
+            },
+            {"type": constants.BidModifierType.COUNTRY, "to": "_to_country_target", "from": "_from_country_target"},
+            {"type": constants.BidModifierType.STATE, "to": "_to_state_target", "from": "_from_state_target"},
+            {"type": constants.BidModifierType.DMA, "to": "_to_dma_target", "from": "_from_dma_target"},
+            {"type": constants.BidModifierType.SOURCE, "to": "_to_source_target", "from": "_from_source_target"},
+        ]
+        for test_case in test_cases:
+            with mock.patch.object(target_converter, test_case["to"]) as mock_to_target:
+                self.converter.to_target(test_case["type"], 1)
+                mock_to_target.assert_called_once_with(1)
+
+            with mock.patch.object(target_converter, test_case["from"]) as mock_from_target:
+                self.converter.from_target(test_case["type"], 1)
+                mock_from_target.assert_called_once_with(1)
+
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_device_type_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_device_type_target")
+    def test_device(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.DEVICE, 1)
+        self.converter.from_target(constants.BidModifierType.DEVICE, 1)
+        mock_to_target.assert_called_once_with(1)
+        mock_from_target.assert_called_once_with(1)
+
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_operating_system_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_operating_system_target")
+    def test_operating_system(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, 1)
+        self.converter.from_target(constants.BidModifierType.OPERATING_SYSTEM, 1)
+        mock_to_target.assert_called_once_with(1)
+        mock_from_target.assert_called_once_with(1)

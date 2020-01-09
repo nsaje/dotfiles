@@ -1,8 +1,11 @@
+import dataclasses
 import datetime
+import traceback
 from typing import DefaultDict
 from typing import Dict
 from typing import Optional
 from typing import Sequence
+from typing import Tuple
 from typing import Union
 
 from django.db import transaction
@@ -10,6 +13,7 @@ from django.db import transaction
 import core.features.bid_modifiers
 import core.models
 import utils.dates_helper
+import utils.exc
 
 from .. import Rule
 from .. import RuleTriggerHistory
@@ -18,17 +22,32 @@ from . import actions
 from .actions import ValueChangeData
 
 ACTION_TYPE_APPLY_FN_MAPPING = {
+    constants.ActionType.INCREASE_BID: actions.adjust_bid,
+    constants.ActionType.DECREASE_BID: actions.adjust_bid,
+    constants.ActionType.INCREASE_BUDGET: actions.adjust_autopilot_daily_budget,
+    constants.ActionType.DECREASE_BUDGET: actions.adjust_autopilot_daily_budget,
     constants.ActionType.INCREASE_BID_MODIFIER: actions.adjust_bid_modifier,
     constants.ActionType.DECREASE_BID_MODIFIER: actions.adjust_bid_modifier,
+    constants.ActionType.TURN_OFF: actions.turn_off,
 }
+
+
+@dataclasses.dataclass
+class ErrorData:
+    target: str
+    message: str
+    stack_trace: str
+
+    def to_dict(self) -> Dict[str, Dict[str, Optional[str]]]:
+        return {self.target: {"message": self.message, "stack_trace": self.stack_trace}}
 
 
 def apply_rule(
     rule: Rule,
     ad_group: core.models.AdGroup,
     ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
-) -> Sequence[ValueChangeData]:
-    changes = []
+) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
+    changes, errors = [], []
 
     for target, target_stats in ad_group_stats.items():
         if _is_on_cooldown(target, rule, ad_group):
@@ -36,18 +55,26 @@ def apply_rule(
 
         if _meets_all_conditions(rule, target_stats):
             with transaction.atomic():
-                update = _apply_action(target, rule, ad_group)
-                if update.has_changes():
-                    _write_trigger_history(target, rule, ad_group)
-                    changes.append(update)
+                try:
+                    update = _apply_action(target, rule, ad_group)
+                    if update.has_changes():
+                        _write_trigger_history(target, rule, ad_group)
+                        changes.append(update)
 
-    return changes
+                except utils.exc.ForbiddenError:
+                    continue
+
+                except Exception as e:
+                    error_data = ErrorData(target=target, message=str(e), stack_trace=traceback.format_exc())
+                    errors.append(error_data)
+
+    return changes, errors
 
 
 def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> bool:
-    cooldown_period_start = utils.dates_helper.local_now() - datetime.timedelta(hours=rule.cooldown)
+    cooldown_window_start = utils.dates_helper.local_now() - datetime.timedelta(hours=rule.cooldown)
     return RuleTriggerHistory.objects.filter(
-        target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=cooldown_period_start
+        target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=cooldown_window_start
     ).exists()
 
 

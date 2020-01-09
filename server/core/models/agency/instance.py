@@ -26,7 +26,7 @@ class AgencyInstanceMixin:
 
     def get_current_settings(self):
         if not self.pk:
-            raise exc.BaseError("Account settings can't be fetched because acount hasn't been saved yet.")
+            raise exc.BaseError("Agency settings can't be fetched because agency hasn't been saved yet.")
 
         # FIXME:circular dependency
         import core.models.settings

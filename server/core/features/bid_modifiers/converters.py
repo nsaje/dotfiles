@@ -107,7 +107,7 @@ class TargetConverter:
     @classmethod
     def _to_operating_system_target(cls, value):
         if value == dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Traget")
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Target")
 
         operating_system = dash_constants.OperatingSystem.get_constant_value(value)
         if operating_system is None:
@@ -240,12 +240,10 @@ class DashboardConverter(TargetConverter):
     def _to_operating_system_target(cls, value):
         if value == "WinPhone":
             value = "Windows Phone"
-        elif (
-            value == dash_constants.OperatingSystem.UNKNOWN
-            or value == dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.UNKNOWN)
-            or value == "Other"
+        elif value in constants.UNSUPPORTED_TARGETS or value == dash_constants.OperatingSystem.get_text(
+            dash_constants.OperatingSystem.UNKNOWN
         ):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Traget")
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Operating System Target")
 
         operating_system = dash_constants.OperatingSystem.get_value(value)
         if operating_system is None:
@@ -300,3 +298,21 @@ class DashboardConverter(TargetConverter):
     @classmethod
     def _from_source_target(cls, target):
         return models.Source.objects.filter(id=int(target)).only("name").get().name
+
+
+class StatsConverter(TargetConverter):
+    @classmethod
+    def _to_device_type_target(cls, value):
+        return DashboardConverter._to_device_type_target(value)
+
+    @classmethod
+    def _from_device_type_target(cls, target):
+        return DashboardConverter._from_device_type_target(target)
+
+    @classmethod
+    def _to_operating_system_target(cls, value):
+        return DashboardConverter._to_operating_system_target(value)
+
+    @classmethod
+    def _from_operating_system_target(cls, target):
+        return DashboardConverter._from_operating_system_target(target)

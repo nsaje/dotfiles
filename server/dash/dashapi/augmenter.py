@@ -563,7 +563,7 @@ def augment_delivery(row, loader, is_base_level=True):
     delivery_dimension = loader.delivery_dimension
     delivery_value = row.get(loader.delivery_dimension)
 
-    if delivery_value and delivery_value != "Other":
+    if delivery_value not in core.features.bid_modifiers.constants.UNSUPPORTED_TARGETS:
         bid_modifier = loader.objs_map.get(delivery_value)
         min_factor, max_factor = loader.min_max_modifiers
         row.update(

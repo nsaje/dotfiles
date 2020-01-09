@@ -15,25 +15,30 @@ class AdjustmentTypeConfiguration:
     sign: str
 
 
-VALID_TARGET_TYPES = [constants.TargetType.PUBLISHER]
+VALID_TARGET_TYPES = [
+    constants.TargetType.PUBLISHER,
+    constants.TargetType.AD_GROUP,
+    constants.TargetType.AD,
+    constants.TargetType.SOURCE,
+]
 
 VALID_ACTION_TYPES_FOR_TARGET = {
     constants.TargetType.AD_GROUP: [
-        # constants.ActionType.INCREASE_BID,
-        # constants.ActionType.DECREASE_BID,
-        # constants.ActionType.INCREASE_BUDGET,
-        # constants.ActionType.DECREASE_BUDGET,
-        # constants.ActionType.TURN_OFF
+        constants.ActionType.INCREASE_BID,
+        constants.ActionType.DECREASE_BID,
+        constants.ActionType.INCREASE_BUDGET,
+        constants.ActionType.DECREASE_BUDGET,
+        constants.ActionType.TURN_OFF,
     ],
     constants.TargetType.AD: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
-        # constants.ActionType.TURN_OFF,
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.TURN_OFF,
     ],
     constants.TargetType.SOURCE: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
-        # constants.ActionType.TURN_OFF,
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.TURN_OFF,
     ],
     constants.TargetType.PUBLISHER: [
         constants.ActionType.INCREASE_BID_MODIFIER,
@@ -69,10 +74,19 @@ ADJUSTEMENT_ACTION_TYPES = {
     constants.ActionType.DECREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
         min_limit=float(MODIFIER_MIN), max_limit=float(MODIFIER_MAX), min_step=0.01, max_step=1, sign="percentage"
     ),
-    # constants.ActionType.INCREASE_BID: AdjustmentTypeConfiguration(),
-    # constants.ActionType.DECREASE_BID: AdjustmentTypeConfiguration(),
-    # constants.ActionType.INCREASE_BUDGET: AdjustmentTypeConfiguration(),
-    # constants.ActionType.DECREASE_BUDGET: AdjustmentTypeConfiguration(),
+    # TODO: Separate limits for CPC and CPM
+    constants.ActionType.INCREASE_BID: AdjustmentTypeConfiguration(
+        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, sign="currency"
+    ),
+    constants.ActionType.DECREASE_BID: AdjustmentTypeConfiguration(
+        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, sign="currency"
+    ),
+    constants.ActionType.INCREASE_BUDGET: AdjustmentTypeConfiguration(
+        min_limit=20, max_limit=100000, min_step=1, max_step=10000, sign="currency"
+    ),
+    constants.ActionType.DECREASE_BUDGET: AdjustmentTypeConfiguration(
+        min_limit=20, max_limit=100000, min_step=1, max_step=10000, sign="currency"
+    ),
 }
 
 VALID_LEFT_OPERAND_TYPES = {
