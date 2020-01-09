@@ -68,8 +68,10 @@ class RESTAPIHelpersTest(TestCase):
         )
         available_sources = helpers.get_available_sources(user_with_permissions, agency)
         self.assertEqual(set(unreleased_sources + released_sources).difference(available_sources), set())
-        available_sources = helpers.get_available_sources(user_without_permissions, agency)
-        self.assertTrue([released_sources[0], unreleased_sources[0], deprecated_sources[0]] == available_sources)
+        available_sources = set(helpers.get_available_sources(user_without_permissions, agency))
+        self.assertEqual(
+            {released_sources[0], unreleased_sources[0], deprecated_sources[0]}.difference(available_sources), set()
+        )
 
         # case account and its agency have sources set
         agency = magic_mixer.blend(
