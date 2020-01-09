@@ -190,8 +190,9 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
             # The job has been running for too long.
             return AlertId(constants.Alert.DURATION)
 
-        # To clear execution alert.
-        return AlertId(constants.Alert.OK)
+        if dcron_job.alert == constants.Alert.OK:
+            # To clear execution alert.
+            return AlertId(constants.Alert.OK)
 
     previous_date_time, next_date_time = _calculate_scheduled_datetimes(
         dcron_job.dcronjobsettings.schedule, date_time=current_date_time

@@ -310,12 +310,13 @@ class CheckAlertsTestCase(TestCase):
         _create_job("command_15", job_kwargs_dict, settings_kwargs_dict)
 
         dcron_job_alerts = self._get_dcron_job_alerts()
-        self.assertEqual(len(dcron_job_alerts), 5)
+        self.assertEqual(len(dcron_job_alerts), 6)
         self._assert_dcronjobalert(dcron_job_alerts[0], "command_02", constants.Alert.EXECUTION)
         self._assert_dcronjobalert(dcron_job_alerts[1], "command_03", constants.Alert.EXECUTION)
         self._assert_dcronjobalert(dcron_job_alerts[2], "command_06", constants.Alert.EXECUTION)
         self._assert_dcronjobalert(dcron_job_alerts[3], "command_08", constants.Alert.DURATION)
         self._assert_dcronjobalert(dcron_job_alerts[4], "command_09", constants.Alert.DURATION)
+        self._assert_dcronjobalert(dcron_job_alerts[5], "command_14", constants.Alert.EXECUTION)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
     def test_failure_normal_execution(self, mock_now):
@@ -398,7 +399,8 @@ class CheckAlertsTestCase(TestCase):
         _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
 
         dcron_job_alerts = self._get_dcron_job_alerts()
-        self.assertEqual(len(dcron_job_alerts), 0)
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.EXECUTION)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=0, second=5))
     def test_execution_missed_execution_at_schedule(self, mock_now):

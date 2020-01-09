@@ -337,3 +337,159 @@ class DCronCommandTestCase(TransactionTestCase):
             )
         finally:
             event_2.set()
+
+    @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
+    @mock.patch("utils.pagerduty_helper._post_event")
+    @mock.patch("utils.slack.publish")
+    def test_recover_from_duration(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
+        event_1 = threading.Event()
+        event_2 = threading.Event()
+        event_3 = threading.Event()
+
+        class DummyCommand(commands.DCronCommand):
+            def handle(self, *args, **options):
+                super().handle(*args, **options)
+                event_3.set()
+
+            def _handle(self, *args, **options):
+                event_1.set()
+                # Wait for failure alert check
+                event_2.wait()
+
+        dummy_command = DummyCommand()
+
+        def run_command():
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        now_dt = timezone.now()
+        executed_dt = now_dt - datetime.timedelta(seconds=45)
+        completed_dt = now_dt - datetime.timedelta(seconds=42)
+        dcron_job = models.DCronJob.objects.create(
+            command_name=DUMMY_COMMAND,
+            executed_dt=executed_dt,
+            completed_dt=completed_dt,
+            alert=constants.Alert.DURATION,
+        )
+        models.DCronJobSettings.objects.create(job=dcron_job, schedule="0 * * * *", full_command="")
+
+        command_thread = threading.Thread(target=run_command)
+
+        try:
+            command_thread.start()
+
+            # Wait for job _handle to start (completed_dt set to None)
+            event_1.wait()
+
+            dcron_job.refresh_from_db()
+
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.DURATION)
+
+            event_2.set()
+
+            # Wait for job handle to complete (alert set to OK)
+            event_3.wait()
+
+            dcron_job.refresh_from_db()
+
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.OK)
+
+            mock_post_event.assert_has_calls(
+                [
+                    mock.call(
+                        "resolve",
+                        pagerduty_helper.PagerDutyEventType.Z1,
+                        DUMMY_COMMAND,
+                        alerts._alert_message(DUMMY_COMMAND, constants.Alert.OK),
+                        event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
+                        details=None,
+                    )
+                ]
+            )
+
+            mock_slack_publish.assert_has_calls(
+                [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.OK))]
+            )
+        finally:
+            event_2.set()
+
+    @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
+    @mock.patch("utils.pagerduty_helper._post_event")
+    @mock.patch("utils.slack.publish")
+    def test_recover_from_execution(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
+        event_1 = threading.Event()
+        event_2 = threading.Event()
+        event_3 = threading.Event()
+
+        class DummyCommand(commands.DCronCommand):
+            def handle(self, *args, **options):
+                super().handle(*args, **options)
+                event_3.set()
+
+            def _handle(self, *args, **options):
+                event_1.set()
+                # Wait for failure alert check
+                event_2.wait()
+
+        dummy_command = DummyCommand()
+
+        def run_command():
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        now_dt = timezone.now()
+        executed_dt = now_dt - datetime.timedelta(seconds=45)
+        completed_dt = now_dt - datetime.timedelta(seconds=42)
+        dcron_job = models.DCronJob.objects.create(
+            command_name=DUMMY_COMMAND,
+            executed_dt=executed_dt,
+            completed_dt=completed_dt,
+            alert=constants.Alert.EXECUTION,
+        )
+        models.DCronJobSettings.objects.create(job=dcron_job, schedule="0 * * * *", full_command="")
+
+        command_thread = threading.Thread(target=run_command)
+
+        try:
+            command_thread.start()
+
+            # Wait for job _handle to start (completed_dt set to None)
+            event_1.wait()
+
+            dcron_job.refresh_from_db()
+
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.EXECUTION)
+
+            event_2.set()
+
+            # Wait for job handle to complete (alert set to OK)
+            event_3.wait()
+
+            dcron_job.refresh_from_db()
+
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.OK)
+
+            mock_post_event.assert_has_calls(
+                [
+                    mock.call(
+                        "resolve",
+                        pagerduty_helper.PagerDutyEventType.Z1,
+                        DUMMY_COMMAND,
+                        alerts._alert_message(DUMMY_COMMAND, constants.Alert.OK),
+                        event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
+                        details=None,
+                    )
+                ]
+            )
+
+            mock_slack_publish.assert_has_calls(
+                [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.OK))]
+            )
+        finally:
+            event_2.set()
