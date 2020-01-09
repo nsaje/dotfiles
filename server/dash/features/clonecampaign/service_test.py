@@ -10,6 +10,7 @@ import core.models
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from . import service
 
 
@@ -134,22 +135,16 @@ class CloneServiceTest(TestCase):
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
     def test_clone_skip_ad_group(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
-        cloned_campaign = service.clone(
-            self.request, self.campaign, "Cloned Campaign", clone_ad_groups=False, clone_ads=True
+
+        self.assertRaises(
+            exceptions.CanNotCloneAds,
+            service.clone,
+            self.request,
+            self.campaign,
+            "Cloned Campaign",
+            clone_ad_groups=False,
+            clone_ads=True,
         )
-
-        self.assertNotEqual(self.campaign, cloned_campaign)
-        self.assertFalse(cloned_campaign.adgroup_set.exists())
-        self.assertFalse(core.models.ContentAd.objects.filter(ad_group__campaign=cloned_campaign).exists())
-
-        self.assertEqual(0, cloned_campaign.budgets.count())
-        self.assertNotEqual(self.budgets, cloned_campaign.budgets.all())
-
-        self.assertTrue(cloned_campaign.campaigngoal_set.exists())
-        self.assertNotEqual(self.campaign_goal, cloned_campaign.campaigngoal_set.get())
-
-        self.assertTrue(cloned_campaign.conversiongoal_set.exists())
-        self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
     def test_clone_skip_content(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
         cloned_campaign = service.clone(

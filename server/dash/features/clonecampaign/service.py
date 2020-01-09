@@ -3,6 +3,8 @@ from django.db import transaction
 import core.models
 import dash.features.cloneadgroup.service
 
+from . import exceptions
+
 
 def clone(
     request,
@@ -15,6 +17,9 @@ def clone(
 ):
 
     with transaction.atomic():
+        if clone_ads and not clone_ad_groups:
+            raise exceptions.CanNotCloneAds("Can't clone ads if ad group is not cloned.")
+
         cloned_campaign = core.models.Campaign.objects.clone(request, source_campaign, destination_campaign_name)
 
         if clone_ad_groups:

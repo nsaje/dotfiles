@@ -40,6 +40,7 @@
             - ['can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'zemauth', 'user']
             - ['can_be_ob_representative', 'zemauth', 'user']
             - ['can_breakdown_reports_by_ads_and_publishers', 'zemauth', 'user']
+            - ['can_clone_campaigns', 'zemauth', 'user']
             - ['can_clone_adgroups', 'zemauth', 'user']
             - ['can_clone_contentads', 'zemauth', 'user']
             - ['can_control_ad_group_state_in_table', 'zemauth', 'user']

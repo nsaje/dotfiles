@@ -6,6 +6,8 @@ from django.urls import reverse
 
 import core.models
 import dash.constants
+import dash.features.clonecampaign.exceptions
+import dash.features.clonecampaign.service
 import dash.models
 import restapi.serializers.targeting
 from restapi.common.views_base_test import RESTAPITest
@@ -738,3 +740,103 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 1)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
+
+    @mock.patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
+    def test_clone(self, mock_clone):
+        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        cloned_campaign = magic_mixer.blend(core.models.Campaign)
+        mock_clone.return_value = cloned_campaign
+
+        data = self.normalize(
+            {
+                "destinationCampaignName": "New campaign clone",
+                "cloneAdGroups": True,
+                "cloneAds": True,
+                "adGroupStateOverride": "ACTIVE",
+                "adStateOverride": "ACTIVE",
+            }
+        )
+
+        self.client.force_authenticate(user=user)
+        r = self.client.post(
+            reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
+            data=data,
+            format="json",
+        )
+        r = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.assertDictContainsSubset({"id": str(cloned_campaign.pk)}, r["data"])
+        mock_clone.assert_called_with(
+            mock.ANY,
+            campaign,
+            destination_campaign_name=data["destinationCampaignName"],
+            clone_ad_groups=data["cloneAdGroups"],
+            clone_ads=data["cloneAds"],
+            ad_group_state_override=dash.constants.ContentAdSourceState.get_constant_value(
+                data["adGroupStateOverride"]
+            ),
+            ad_state_override=dash.constants.ContentAdSourceState.get_constant_value(data["adStateOverride"]),
+        )
+
+    @mock.patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
+    def test_clone_with_empty_values(self, mock_clone):
+        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        cloned_campaign = magic_mixer.blend(core.models.Campaign)
+        mock_clone.return_value = cloned_campaign
+
+        data = self.normalize(
+            {
+                "destinationCampaignName": "New campaign clone",
+                "cloneAdGroups": True,
+                "cloneAds": True,
+                "adGroupStateOverride": None,
+            }
+        )
+
+        self.client.force_authenticate(user=user)
+        r = self.client.post(
+            reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
+            data=data,
+            format="json",
+        )
+        r = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.assertDictContainsSubset({"id": str(cloned_campaign.pk)}, r["data"])
+        mock_clone.assert_called_with(
+            mock.ANY,
+            campaign,
+            destination_campaign_name=data["destinationCampaignName"],
+            clone_ad_groups=data["cloneAdGroups"],
+            clone_ads=data["cloneAds"],
+            ad_group_state_override=dash.constants.ContentAdSourceState.get_constant_value(
+                data["adGroupStateOverride"]
+            ),
+        )
+
+    def test_clone_with_exception(self):
+        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        data = self.normalize(
+            {
+                "destinationCampaignName": "New campaign clone",
+                "cloneAdGroups": False,
+                "cloneAds": True,
+                "adGroupStateOverride": "ACTIVE",
+                "adStateOverride": "ACTIVE",
+            }
+        )
+
+        self.client.force_authenticate(user=user)
+        r = self.client.post(
+            reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
+            data=data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")

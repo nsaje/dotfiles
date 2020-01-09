@@ -106,3 +106,21 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
         if data is None:
             return data
         return zemauth.models.User.objects.get(pk=data)
+
+
+class CloneCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    destination_campaign_name = restapi.serializers.fields.PlainCharField(
+        error_messages={
+            "required": "Please provide a name for destination campaign",
+            "blank": "Please provide a name for destination campaign",
+        },
+        max_length=127,
+    )
+    clone_ad_groups = rest_framework.serializers.BooleanField()
+    clone_ads = rest_framework.serializers.BooleanField()
+    ad_group_state_override = restapi.serializers.fields.DashConstantField(
+        dash.constants.AdGroupSettingsState, required=False, allow_null=True
+    )
+    ad_state_override = restapi.serializers.fields.DashConstantField(
+        dash.constants.ContentAdSourceState, required=False, allow_null=True
+    )

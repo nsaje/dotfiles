@@ -9,6 +9,9 @@ import core.features.goals
 import core.models
 import dash.campaign_goals
 import dash.constants
+import dash.features.clonecampaign.exceptions
+import dash.features.clonecampaign.service
+import dash.views.navigation_helpers
 import prodops.hacks
 import restapi.access
 import restapi.campaign.v1.views
@@ -86,6 +89,22 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         self._augment_campaign(request, new_campaign)
         return self.response_ok(self.serializer(new_campaign.settings, context={"request": request}).data, status=201)
+
+    def clone(self, request, campaign_id):
+        if not request.user.has_perm("zemauth.can_clone_campaigns"):
+            raise utils.exc.AuthorizationError()
+
+        serializer = serializers.CloneCampaignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            campaign = dash.features.clonecampaign.service.clone(
+                request, restapi.access.get_campaign(request.user, campaign_id), **data
+            )
+        except dash.features.clonecampaign.exceptions.CanNotCloneAds as error:
+            raise utils.exc.ValidationError(error)
+
+        return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data, status=201)
 
     @property
     def serializer(self):

@@ -24,6 +24,7 @@ class CloneForm(TestCase):
                 "ad_group_id": self.ad_group.pk,
                 "destination_campaign_id": self.dest_campaign.pk,
                 "destination_ad_group_name": "Test",
+                "clone_ads": True,
             }
         )
         self.assertTrue(form.is_valid())
@@ -34,6 +35,7 @@ class CloneForm(TestCase):
                 "ad_group_id": self.ad_group.pk,
                 "destination_campaign_id": self.dest_campaign.pk,
                 "destination_ad_group_name": 128 * "x",
+                "clone_ads": True,
             }
         )
         self.assertFalse(form.is_valid())

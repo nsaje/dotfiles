@@ -18,7 +18,7 @@ class CloneAdGroupSerializer(serializers.Serializer):
         },
         max_length=127,
     )
-    clone_ads = serializers.BooleanField(required=False)
+    clone_ads = serializers.BooleanField()
 
 
 class AdGroupSerializer(serializers.Serializer):
