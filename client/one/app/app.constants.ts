@@ -104,6 +104,11 @@ export enum AdGroupState {
     INACTIVE = 'INACTIVE',
 }
 
+export enum AdState {
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+}
+
 export enum KeyCode {
     BACKSPACE = 8,
     TAB = 9,

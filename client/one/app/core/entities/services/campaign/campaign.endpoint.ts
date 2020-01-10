@@ -8,6 +8,7 @@ import {ApiResponse} from '../../../../shared/types/api-response';
 import {Campaign} from '../../types/campaign/campaign';
 import {CampaignExtras} from '../../types/campaign/campaign-extras';
 import {map, catchError} from 'rxjs/operators';
+import {CampaignCloneSettings} from '../../types/campaign/campaign-clone-settings';
 
 @Injectable()
 export class CampaignEndpoint {
@@ -149,6 +150,39 @@ export class CampaignEndpoint {
             .put<ApiResponse<Campaign>>(
                 `${request.url}${campaign.id}`,
                 campaign
+            )
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    clone(
+        campaignId: string,
+        requestData: CampaignCloneSettings,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Campaign> {
+        const request = ENTITY_CONFIG.requests.campaign.clone;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .put<ApiResponse<Campaign>>(
+                `${request.url}${campaignId}`,
+                requestData
             )
             .pipe(
                 map(response => {

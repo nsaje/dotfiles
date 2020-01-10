@@ -1,7 +1,12 @@
 import {asapScheduler, of} from 'rxjs';
 import * as clone from 'clone';
 import {EntitiesUpdatesService} from '../entities-updates.service';
-import {EntityType, EntityUpdateAction} from '../../../../app.constants';
+import {
+    EntityType,
+    EntityUpdateAction,
+    AdGroupState,
+    AdState,
+} from '../../../../app.constants';
 import {tick, fakeAsync} from '@angular/core/testing';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as mockHelpers from '../../../../testing/mock.helpers';
@@ -27,6 +32,7 @@ describe('CampaignService', () => {
             'validate',
             'create',
             'edit',
+            'clone',
         ]);
 
         entitiesUpdatesServiceStub = jasmine.createSpyObj(
@@ -177,5 +183,41 @@ describe('CampaignService', () => {
             type: EntityType.CAMPAIGN,
             action: EntityUpdateAction.ARCHIVE,
         });
+    }));
+
+    it('should clone campaign via endpoint', fakeAsync(() => {
+        campaignEndpointStub.clone.and
+            .returnValue(of(mockedCampaign, asapScheduler))
+            .calls.reset();
+
+        service
+            .clone(
+                mockedCampaign.id,
+                {
+                    destinationCampaignName: 'Test campaign clone',
+                    cloneAdGroups: true,
+                    cloneAds: true,
+                    adGroupStateOverride: AdGroupState.ACTIVE,
+                    adStateOverride: AdState.ACTIVE,
+                },
+                requestStateUpdater
+            )
+            .subscribe(campaign => {
+                expect(campaign).toEqual(mockedCampaign);
+            });
+        tick();
+
+        expect(campaignEndpointStub.clone).toHaveBeenCalledTimes(1);
+        expect(campaignEndpointStub.clone).toHaveBeenCalledWith(
+            mockedCampaign.id,
+            {
+                destinationCampaignName: 'Test campaign clone',
+                cloneAdGroups: true,
+                cloneAds: true,
+                adGroupStateOverride: AdGroupState.ACTIVE,
+                adStateOverride: AdState.ACTIVE,
+            },
+            requestStateUpdater
+        );
     }));
 });

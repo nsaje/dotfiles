@@ -49,6 +49,10 @@ export const ENTITY_CONFIG = {
                 name: 'defaults',
                 url: `${campaignApiUrl}/defaults/`,
             },
+            clone: {
+                name: 'clone',
+                url: `${campaignApiUrl}/clone/`,
+            },
         },
         account: {
             get: {

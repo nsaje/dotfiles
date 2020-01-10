@@ -8,6 +8,7 @@ import {Campaign} from '../../types/campaign/campaign';
 import {tap} from 'rxjs/operators';
 import {EntityType, EntityUpdateAction} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {CampaignCloneSettings} from '../../types/campaign/campaign-clone-settings';
 
 @Injectable()
 export class CampaignService {
@@ -62,6 +63,18 @@ export class CampaignService {
                     });
                 })
             );
+    }
+
+    clone(
+        campaignId: string,
+        requestData: CampaignCloneSettings,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Campaign> {
+        return this.endpoint.clone(
+            campaignId,
+            requestData,
+            requestStateUpdater
+        );
     }
 
     private create(
