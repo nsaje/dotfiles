@@ -10,6 +10,8 @@ Custom performance reports are also available as part of the API.
 
 In order to use Zemanta REST API, please contact your sales representative.
 
+If you want to be notified of new features and maintenance windows, please join the [Zemanta API Announcements Mailing List](https://groups.google.com/forum/#!forum/zemanta-api-announcements/join).
+
 ## Who should read this document?
 
 This document is inteded for programmers who are developing an integration with the Zemanta One system.
