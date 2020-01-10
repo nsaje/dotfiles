@@ -24,8 +24,8 @@
 
 .zem-native-ad-preview__card {
     display: block;
-    width: 350px;
-    padding: 5px;
+    width: 345px;
+    padding: 10px;
     background-color: #ffffff;
     border: 1px solid @border-color--default;
     border-radius: @border-radius--default;
@@ -42,11 +42,11 @@
 }
 
 .zem-native-ad-preview__card--horizontal {
-    width: 520px;
+    width: 545px;
 }
 
 .zem-native-ad-preview__card--icon {
-    width: 485px;
+    width: 510px;
 }
 
 .zem-native-ad-preview__card-item {
@@ -111,29 +111,32 @@
 }
 
 .zem-native-ad-preview__title {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     color: @color--secondary;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 20px;
     font-weight: 500;
-    max-height: 40px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .zem-native-ad-preview__description {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     color: @text-color--lighter;
-    max-height: 55px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .zem-native-ad-preview__brand-name {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
     color: @text-color--lighter;
     font-weight: 500;
-    max-height: 16px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -191,8 +194,8 @@
 }
 
 .zem-native-ad-preview__header > .zem-native-ad-preview__icon-placeholder {
-    flex: 0 0 30px;
-    max-width: 30px;
+    flex: 0 0 25px;
+    max-width: 25px;
 }
 
 .zem-native-ad-preview__icon {
@@ -204,11 +207,10 @@
 
 .zem-native-ad-preview__header > .zem-native-ad-preview__brand-name {
     color: @color--secondary;
-    font-size: 18px;
+    font-size: 14px;
     line-height: 22px;
     font-weight: 500;
-    padding-top: 5px;
-    max-height: 26px;
+    padding-top: 2px;
 }
 
 .zem-native-ad-preview__mobile {

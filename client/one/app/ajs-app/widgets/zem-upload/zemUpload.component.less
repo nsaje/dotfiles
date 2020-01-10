@@ -2,9 +2,9 @@
 @import '../../styles/utilities.less';
 
 @modal-content-width: 95%;
-@content-upload-ad-editing-width: 70%;
-@content-upload-ad-editing-width-above-breakpoint: 65%;
-@content-upload-ad-editing-width-common-breakpoint: 60%;
+@content-upload-ad-editing-width: 78%;
+@content-upload-ad-editing-width-above-breakpoint: 73%;
+@content-upload-ad-editing-width-common-breakpoint: 68%;
 @content-upload-ad-editing-width-desktop-breakpoint: 100%;
 @form-input-width-content-upload: 62%;
 @form-additional-info-width-content-upload: 20%;
@@ -366,6 +366,17 @@
     }
 }
 
+.content-upload__buttons-panel {
+    display: flex;
+    align-items: center;
+}
+
+.content-upload__buttons-panel > button {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .content-upload__edit-form {
     width: @content-upload-ad-editing-width;
     position: absolute;
@@ -449,6 +460,7 @@
     left: 0;
     width: 100 - @preview-width;
     height: 100%;
+    border-left: 1px solid #d2d2d2;
 }
 
 .content-upload__edit-form-container--ad-preview {
@@ -567,7 +579,7 @@
 .content-upload__edit-form-title-container {
     display: flex;
     border-bottom: 1px solid #d2d2d2;
-    padding: 8px 122px 8px @spacing--default;
+    padding: 8px 8px 8px @spacing--default;
     font-size: 18px;
     line-height: 30px;
     white-space: nowrap;
@@ -591,6 +603,7 @@
 .content-upload__edit-form-name {
     color: @text-color--default;
     font-weight: 300;
+    margin-right: 5px;
 }
 
 .content-upload__edit-form-buttons,
@@ -599,6 +612,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
+    padding-right: 122px;
 }
 
 .ad-preview__container-buttons {
@@ -627,6 +641,9 @@
 .content-upload__edit-form-title {
     color: @color--secondary;
     font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .content-upload__field-additional-info {
