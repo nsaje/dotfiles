@@ -58,18 +58,18 @@ DATABASES = {
         "HOST": "z1db-replica",
         "PORT": 5432,
     },
-    "read-replica-2": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "one",
-        "USER": "eins23",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "HOST": "z1db-replica-2",
-        "PORT": 5432,
-    },
+    # "read-replica-2": {
+    #     "ENGINE": "django.db.backends.postgresql_psycopg2",
+    #     "NAME": "one",
+    #     "USER": "eins23",
+    #     "PASSWORD": Secret(
+    #         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+    #     )
+    #     .get()
+    #     .decode("utf-8"),
+    #     "HOST": "z1db-replica-2",
+    #     "PORT": 5432,
+    # },
     STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
