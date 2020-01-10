@@ -49,6 +49,33 @@
     width: 510px;
 }
 
+.zem-native-ad-preview__empty-content {
+    display: block;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    width: 100%;
+}
+
+.zem-native-ad-preview__empty-content--album {
+    background-image: url('images/empty-content-album.png');
+    height: 160px;
+}
+
+.zem-native-ad-preview__empty-content--blog {
+    background-image: url('images/empty-content-blog.png');
+    height: 135px;
+}
+
+.zem-native-ad-preview__empty-content--wall {
+    background-image: url('images/empty-content-wall.png');
+    height: 160px;
+}
+
+.zem-native-ad-preview__empty-content--news {
+    background-image: url('images/empty-content-news.png');
+    height: 125px;
+}
+
 .zem-native-ad-preview__card-item {
     margin-bottom: 5px;
 }
@@ -253,8 +280,8 @@
     width: 100%;
     height: 100%;
     background: @color--lighter-neutral;
-    padding-top: @spacing--default;
-    padding-bottom: @spacing--default;
+    padding-top: 10px;
+    padding-bottom: 10px;
     overflow: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -269,10 +296,12 @@
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    margin-bottom: @spacing--default;
 }
 
-.zem-native-ad-preview__mobile-content
-    > .zem-native-ad-preview__card:last-child {
+.zem-native-ad-preview__mobile-content-item {
+    margin-bottom: 10px;
+}
+
+.zem-native-ad-preview__mobile-content-item:last-child {
     margin-bottom: 0;
 }

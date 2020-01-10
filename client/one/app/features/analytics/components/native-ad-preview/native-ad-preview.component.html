@@ -186,7 +186,10 @@
         <div class="zem-native-ad-preview__mobile">
             <div class="zem-native-ad-preview__mobile-content">
                 <div
-                    class="zem-native-ad-preview__card"
+                    class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--news zem-native-ad-preview__mobile-content-item"
+                ></div>
+                <div
+                    class="zem-native-ad-preview__card zem-native-ad-preview__mobile-content-item"
                     *ngIf="nativeAdPreviewConfig.showSquareAd"
                 >
                     <div
@@ -216,7 +219,10 @@
                     </div>
                 </div>
                 <div
-                    class="zem-native-ad-preview__card"
+                    class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--blog zem-native-ad-preview__mobile-content-item"
+                ></div>
+                <div
+                    class="zem-native-ad-preview__card zem-native-ad-preview__mobile-content-item"
                     *ngIf="nativeAdPreviewConfig.showSquareAdWithIcon"
                 >
                     <div
@@ -271,7 +277,10 @@
                     </div>
                 </div>
                 <div
-                    class="zem-native-ad-preview__card zem-native-ad-preview__card--row zem-native-ad-preview__card--icon"
+                    class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--wall zem-native-ad-preview__mobile-content-item"
+                ></div>
+                <div
+                    class="zem-native-ad-preview__card zem-native-ad-preview__card--row zem-native-ad-preview__card--icon zem-native-ad-preview__mobile-content-item"
                     *ngIf="nativeAdPreviewConfig.showHorizontalAdWithIcon"
                 >
                     <div
@@ -310,6 +319,9 @@
                         </button>
                     </div>
                 </div>
+                <div
+                    class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--album zem-native-ad-preview__mobile-content-item"
+                ></div>
             </div>
         </div>
     </div>
