@@ -802,18 +802,27 @@ class ProductFeedTestCase(TestCase):
         mock_today.return_value = datetime.datetime(2019, 10, 23)
 
         self.product_feed.max_daily_uploads = 2
-        self.assertEqual(core.models.ContentAd.objects.filter(ad_group__in=[self.ad_group_1]).count(), 3)
-        self.assertTrue(self.product_feed._is_max_daily_uploads_reached(self.ad_group_1))
+        self.assertEqual(
+            core.models.ContentAd.objects.filter(ad_group__in=[self.ad_group_1]).exclude_archived().count(), 2
+        )
+        self.assertEqual(self.product_feed._get_content_ad_count(self.ad_group_1), 2)
         self.product_feed.ingest_and_create_ads()
         self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 0)
 
         self.product_feed.max_daily_uploads = 4
+        self.assertEqual(
+            core.models.ContentAd.objects.filter(ad_group__in=[self.ad_group_1]).exclude_archived().count(), 2
+        )
+        self.assertEqual(self.product_feed._get_content_ad_count(self.ad_group_1), 2)
         self.product_feed.ingest_and_create_ads()
-        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 4)
+        self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 2)
 
         self.product_feed.max_daily_uploads = 0
         core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).delete()
         self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 0)
+        self.assertEqual(
+            core.models.ContentAd.objects.filter(ad_group__in=[self.ad_group_1]).exclude_archived().count(), 2
+        )
         self.product_feed.ingest_and_create_ads()
         self.assertEqual(core.models.ContentAdCandidate.objects.filter(ad_group__in=[self.ad_group_1]).count(), 5)
 

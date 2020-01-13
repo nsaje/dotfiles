@@ -26,7 +26,6 @@ class ProductFeedInstanceMixin:
     def pause_and_archive_ads(self, dry_run=False, active_ad_groups_only=True):
         if self.content_ads_ttl <= 0:
             return
-
         ads_to_pause_and_archive = core.models.ContentAd.objects.filter(
             ad_group__in=self.ad_groups.exclude_archived(),
             created_dt__lte=dates_helper.local_today() - datetime.timedelta(self.content_ads_ttl),
@@ -42,69 +41,19 @@ class ProductFeedInstanceMixin:
 
     def ingest_and_create_ads(self, dry_run=False, active_ad_groups_only=True):
         try:
-            all_items = self._get_all_feed_items()
             batch_name = "{}_{}".format(self.name, dates_helper.local_now().strftime("%Y-%m-%d-%H%M"))
-            all_parsed_items = []
-            skipped_items = []
+            all_feed_items = self._get_all_feed_items()
+            feed_valid_items, invalid_items = self._parse_and_validate_items(all_feed_items)
             batches = []
             all_items_to_upload = []
-
-            for item in all_items:
-                if item.is_empty_element:
-                    continue
-                parsed_item = self._get_parsed_item(item)
-                if self.truncate_title:
-                    parsed_item["title"] = self._truncate(parsed_item["title"], constants.MAX_TITLE_LENGTH)
-                if self.truncate_description:
-                    parsed_item["description"] = self._truncate(
-                        parsed_item["description"], constants.MAX_DESCRIPTION_LENGTH
-                    )
-                try:
-                    self._validate_item(parsed_item)
-                    parsed_item["label"] = (
-                        parsed_item["id"]
-                        if parsed_item.get("id")
-                        else self._hash_label(parsed_item["title"], parsed_item["url"], parsed_item["image_url"])
-                    )
-                    all_parsed_items.append(parsed_item)
-                except exceptions.ValidationError as e:
-                    skipped_items.append({"item": "{}".format(item), "reason": "{}".format(e)})
-                    continue
 
             ad_groups = self.ad_groups.exclude_archived()
             if active_ad_groups_only:
                 ad_groups = ad_groups.filter_active()
 
             for ad_group in ad_groups:
-                items_to_upload = []
-                if self._is_max_daily_uploads_reached(ad_group):
-                    continue
-                is_brand_ad_group = bool(
-                    ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND)
-                )
-                for item in all_parsed_items:
-                    if self.max_daily_uploads > 0 and len(items_to_upload) >= self.max_daily_uploads:
-                        break
-                    if is_brand_ad_group:
-                        if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
-                            continue
-                        item["brand_name"] = item["dealer_name"]
-                    ad_already_uploaded = self._get_existing_content_ad(item, ad_group)
-                    if ad_already_uploaded:
-                        if is_brand_ad_group and not self._all_fields_are_matching(ad_already_uploaded, item):
-                            ad_already_uploaded.update(
-                                None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True
-                            )
-                        else:
-                            skipped_items.append(
-                                {
-                                    "item": "{}".format(item),
-                                    "ad_group": "{}".format(ad_group),
-                                    "reason": "Item already uploaded.",
-                                }
-                            )
-                            continue
-                    items_to_upload.append(item)
+                items_to_upload, skipped_items = self._filter_items_to_upload(ad_group, feed_valid_items)
+                invalid_items.extend(skipped_items)
                 if not dry_run:
                     batch, candidates = contentupload.upload.insert_candidates(
                         None,
@@ -120,7 +69,7 @@ class ProductFeedInstanceMixin:
             self._write_log(
                 dry_run=dry_run,
                 batches=batches,
-                ads_skipped=skipped_items[:100],
+                ads_skipped=invalid_items[:100],
                 exception="No active ad_groups" if not ad_groups else "",
                 items_to_upload="{}".format("".join([str(i) for i in all_items_to_upload[:100]])),
             )
@@ -220,14 +169,63 @@ class ProductFeedInstanceMixin:
             cleaned_strings[k] = html.unescape(re.compile(r"\s").sub(" ", strip_tags(v).strip())) if v else None
         return cleaned_strings
 
-    def _is_max_daily_uploads_reached(self, ad_group):
-        if self.max_daily_uploads > 0:
-            ads_already_uploaded_count = (
-                ad_group.contentad_set.filter(created_dt__date=dates_helper.local_today()).exclude_archived().count()
-            )
-            if ads_already_uploaded_count >= self.max_daily_uploads:
-                return True
-        return False
+    def _get_content_ad_count(self, ad_group):
+        return ad_group.contentad_set.filter(created_dt__date=dates_helper.local_today()).exclude_archived().count()
+
+    def _parse_and_validate_items(self, all_feed_items):
+        invalid_items = []
+        valid_items = []
+        for item in all_feed_items:
+            if item.is_empty_element:
+                continue
+            parsed_item = self._get_parsed_item(item)
+            if self.truncate_title:
+                parsed_item["title"] = self._truncate(parsed_item["title"], constants.MAX_TITLE_LENGTH)
+            if self.truncate_description:
+                parsed_item["description"] = self._truncate(
+                    parsed_item["description"], constants.MAX_DESCRIPTION_LENGTH
+                )
+            try:
+                self._validate_item(parsed_item)
+                if parsed_item.get("id"):
+                    parsed_item["label"] = parsed_item["id"]
+                else:
+                    parsed_item["label"] = self._hash_label(
+                        parsed_item["title"], parsed_item["url"], parsed_item["image_url"]
+                    )
+                valid_items.append(parsed_item)
+            except exceptions.ValidationError as e:
+                invalid_items.append({"item": "{}".format(item), "reason": "{}".format(e)})
+        return valid_items, invalid_items
+
+    def _filter_items_to_upload(self, ad_group, feed_valid_items):
+        items_to_upload = []
+        skipped_items = []
+        content_ads_count = self._get_content_ad_count(ad_group) if self.max_daily_uploads else 0
+        is_brand_ad_group = bool(ad_group.custom_flags and ad_group.custom_flags.get(constants.CUSTOM_FLAG_BRAND))
+        for item in feed_valid_items:
+            if self.max_daily_uploads > 0 and content_ads_count >= self.max_daily_uploads:
+                break
+            if is_brand_ad_group:
+                if not self._map_ads_to_ad_group_brand(ad_group, item["brand_name"]):
+                    continue
+                item["brand_name"] = item["dealer_name"]
+            ad_already_uploaded = self._get_existing_content_ad(item, ad_group)
+            if ad_already_uploaded:
+                if is_brand_ad_group and not self._all_fields_are_matching(ad_already_uploaded, item):
+                    ad_already_uploaded.update(None, state=dash.constants.ContentAdSourceState.INACTIVE, archived=True)
+                else:
+                    skipped_items.append(
+                        {
+                            "item": "{}".format(item),
+                            "ad_group": "{}".format(ad_group),
+                            "reason": "Item already uploaded.",
+                        }
+                    )
+                    continue
+            content_ads_count += 1
+            items_to_upload.append(item)
+        return items_to_upload, skipped_items
 
     @staticmethod
     def _get_image_link(tag):
