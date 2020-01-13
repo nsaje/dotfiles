@@ -70,7 +70,12 @@ def account_url(account, tab="campaigns"):
 
 
 def publish(
-    text, channel=CHANNEL_ALERTS_RND_PRODOPS, msg_type=MESSAGE_TYPE_INFO, username=USER_DEFAULT, attachments=None, **kwargs
+    text,
+    channel=CHANNEL_ALERTS_RND_PRODOPS,
+    msg_type=MESSAGE_TYPE_INFO,
+    username=USER_DEFAULT,
+    attachments=None,
+    **kwargs
 ):
     data = {}
     data.update(kwargs)
