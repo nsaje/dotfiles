@@ -26,6 +26,7 @@ class Command(Z1Command):
                 channel=slack.CHANNEL_RND_Z1_ALERTS,
                 msg_type=slack.MESSAGE_TYPE_INFO,
                 username=SLACK_USER,
+                link_names=True,
             )
         if active_incidents:
             msg_type = slack.MESSAGE_TYPE_WARNING if len(active_incidents) < 3 else slack.MESSAGE_TYPE_CRITICAL

@@ -70,9 +70,11 @@ def account_url(account, tab="campaigns"):
 
 
 def publish(
-    text, channel=CHANNEL_ALERTS_RND_PRODOPS, msg_type=MESSAGE_TYPE_INFO, username=USER_DEFAULT, attachments=None
+    text, channel=CHANNEL_ALERTS_RND_PRODOPS, msg_type=MESSAGE_TYPE_INFO, username=USER_DEFAULT, attachments=None, **kwargs
 ):
-    data = {"text": text, "username": username}
+    data = {}
+    data.update(kwargs)
+    data.update({"text": text, "username": username})
     if msg_type:
         data["icon_emoji"] = msg_type
     if channel:
