@@ -78,7 +78,7 @@ def _get_api_token():
     credentials = _base64_encode_credentials(settings.OUTBRAIN_INTERNAL_USERNAME, settings.OUTBRAIN_INTERNAL_PASSWORD)
     headers = {"Authorization": "Basic {}".format(credentials.decode("utf-8"))}
     headers.update(COMMON_HEADERS)
-    r = requests.request(method="GET", url=settings.AMELIA_BASE_URL + URL_LOGIN, headers=headers)
+    r = requests.request(method="GET", url=settings.AMELIA_BASE_URL + URL_LOGIN, headers=headers, timeout=TIMEOUT)
 
     if r.status_code != 200:
         raise OutbrainInternalAPIException(u"Unable to obtain API token. Response: {}".format(r.text))
