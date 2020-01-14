@@ -405,8 +405,12 @@
         ad_group_name: 'My ad group'
         start_date: '2015-03-02'
         end_date: '2015-03-03'
+        cpc: '0.11'
+        cpm: '1.12'
         local_cpc_cc: '0.4500'
         local_max_cpm: '1.2000'
+        local_cpc: '0.4500'
+        local_cpm: '1.2000'
         autopilot_state: 2
         autopilot_daily_budget: '50.0000'
         local_autopilot_daily_budget: '50.0000'
@@ -415,10 +419,8 @@
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
-        cpc: '0.11'
         b1_sources_group_cpc_cc: '0.01'
         local_b1_sources_group_cpc_cc: '0.01'
-        cpm: '1.12'
         b1_sources_group_cpm: '1.01'
         local_b1_sources_group_cpm: '1.01'
         b1_sources_group_daily_budget: 0
@@ -692,6 +694,10 @@
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.01'
+        cpc: '0.4500'
+        cpm: '1.2000'
+        local_cpc: '0.4500'
+        local_cpm: '1.2000'
     model: dash.adgroupsettings
     pk: 2
 
@@ -721,6 +727,10 @@
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.01'
+        cpc: '0.4500'
+        cpm: '1.2000'
+        local_cpc: '0.4500'
+        local_cpm: '1.2000'
     model: dash.adgroupsettings
     pk: 3
 
@@ -861,3 +871,39 @@
         modified_dt: 2019-03-04 15:36:35.437905
     model: dash.bidmodifier
     pk: 1236
+
+-   fields:
+        type: 2
+        ad_group: 2040
+        source: null
+        source_slug: ""
+        target: "1"
+        modifier: 1.00
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1237
+
+-   fields:
+        type: 2
+        ad_group: 2040
+        source: null
+        source_slug: ""
+        target: "2"
+        modifier: 1.00
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1238
+
+-   fields:
+        type: 2
+        ad_group: 2040
+        source: null
+        source_slug: ""
+        target: "3"
+        modifier: 1.00
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1239

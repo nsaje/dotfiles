@@ -353,3 +353,25 @@
     comment: 'Test budget 1'
   model: dash.budgetlineitem
   pk: 1
+
+# Bid modifiers
+
+- fields:
+    type: 2
+    ad_group_id: 1
+    target: '1'
+    modifier: 1.0
+    created_dt: '2019-08-01T00:00:00'
+    modified_dt: '2019-08-01T00:00:00'
+  model: dash.bidmodifier
+  pk: 1
+
+- fields:
+    type: 2
+    ad_group_id: 1
+    target: '3'
+    modifier: 1.0
+    created_dt: '2019-08-01T00:00:00'
+    modified_dt: '2019-08-01T00:00:00'
+  model: dash.bidmodifier
+  pk: 2

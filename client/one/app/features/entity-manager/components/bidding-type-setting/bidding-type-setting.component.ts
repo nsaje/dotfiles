@@ -7,6 +7,7 @@ import {
     Output,
     Input,
 } from '@angular/core';
+import {AdGroupAutopilotState} from '../../../../app.constants';
 import {BiddingType} from '../../../../app.constants';
 
 @Component({
@@ -18,23 +19,25 @@ export class BiddingTypeSettingComponent {
     @Input()
     biddingType: BiddingType;
     @Input()
-    maxCpc: string;
+    bid: string;
     @Input()
-    maxCpm: string;
+    maxBid: string;
     @Input()
     currencySymbol: string;
     @Input()
+    autopilotState: AdGroupAutopilotState;
+    @Input()
     biddingTypeErrors: string[];
     @Input()
-    maxCpcErrors: string[];
+    bidErrors: string[];
     @Input()
-    maxCpmErrors: string[];
+    maxBidErrors: string[];
     @Output()
     biddingTypeChange = new EventEmitter<BiddingType>();
     @Output()
-    maxCpcChange = new EventEmitter<string>();
+    bidChange = new EventEmitter<string>();
     @Output()
-    maxCpmChange = new EventEmitter<string>();
+    maxBidChange = new EventEmitter<string>();
 
     BiddingType = BiddingType;
 
@@ -42,21 +45,15 @@ export class BiddingTypeSettingComponent {
         this.biddingTypeChange.emit($event);
     }
 
-    hasCpcBiddingTypeErrors(): boolean {
+    hasBidErrors(): boolean {
         return (
-            (this.biddingType === BiddingType.CPC &&
-                this.biddingTypeErrors &&
-                this.biddingTypeErrors.length > 0) ||
-            (this.maxCpcErrors && this.maxCpcErrors.length > 0)
+            (this.biddingTypeErrors && this.biddingTypeErrors.length > 0) ||
+            (this.bidErrors && this.bidErrors.length > 0) ||
+            (this.maxBidErrors && this.maxBidErrors.length > 0)
         );
     }
 
-    hasCpmBiddingTypeErrors(): boolean {
-        return (
-            (this.biddingType === BiddingType.CPM &&
-                this.biddingTypeErrors &&
-                this.biddingTypeErrors.length > 0) ||
-            (this.maxCpmErrors && this.maxCpmErrors.length > 0)
-        );
+    isAutopilotActive(): boolean {
+        return this.autopilotState !== AdGroupAutopilotState.INACTIVE;
     }
 }

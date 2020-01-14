@@ -90,15 +90,15 @@ class AutopilotHelpersTestCase(test.TestCase):
         )
 
     @patch("utils.k1_helper.update_ad_group")
-    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_cpcs")
-    def test_update_ad_group_b1_sources_group_cpc_values(self, mock_set_ad_group_sources_cpcs, mock_k1_update_ad_group):
+    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_bids")
+    def test_update_ad_group_b1_sources_group_cpc_values(self, mock_set_ad_group_sources_bids, mock_k1_update_ad_group):
         ag = models.AdGroup.objects.get(id=1)
 
         changes = {"cpc_cc": Decimal("0.123"), "daily_budget_cc": Decimal("123")}
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
-        mock_set_ad_group_sources_cpcs.assert_called()
+        mock_set_ad_group_sources_bids.assert_called()
         mock_k1_update_ad_group.assert_called()
 
         self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal("0.123"))
@@ -106,8 +106,8 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertEqual(ag.settings.system_user, ap)
 
     @patch("utils.k1_helper.update_ad_group")
-    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_cpms")
-    def test_update_ad_group_b1_sources_group_cpm_values(self, mock_set_ad_group_sources_cpms, mock_k1_update_ad_group):
+    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_bids")
+    def test_update_ad_group_b1_sources_group_cpm_values(self, mock_set_ad_group_sources_bids, mock_k1_update_ad_group):
         ag = models.AdGroup.objects.get(id=1)
         ag.bidding_type = constants.BiddingType.CPM
         ag.save(None)
@@ -116,7 +116,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
-        mock_set_ad_group_sources_cpms.assert_called()
+        mock_set_ad_group_sources_bids.assert_called()
         mock_k1_update_ad_group.assert_called()
 
         self.assertEqual(ag.settings.b1_sources_group_cpm, Decimal("0.123"))

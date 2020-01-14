@@ -26,6 +26,7 @@ import {
     EditableCellPlacement,
 } from './editable-cell.constants';
 import {KeyCode} from '../../../../../app.constants';
+import {EditableCellApi} from './types/editable-cell-api';
 
 @Component({
     selector: 'zem-editable-cell',
@@ -46,6 +47,8 @@ export class EditableCellComponent
     modeChange = new EventEmitter<EditableCellMode>();
     @Output()
     placementChange = new EventEmitter<EditableCellPlacement>();
+    @Output()
+    componentReady = new EventEmitter<EditableCellApi>();
 
     @ViewChild(CdkPortal, {static: false})
     portal: CdkPortal;
@@ -107,6 +110,16 @@ export class EditableCellComponent
             this.applicationRef,
             this.injector
         );
+        this.componentReady.emit({
+            expandAsModal: this.expandAsModal.bind(this),
+        });
+    }
+
+    expandAsModal(): void {
+        this.shouldRenderAsModal = true;
+        this.placementChange.emit(EditableCellPlacement.MODAL);
+        this.renderer.addClass(this.document.body, 'modal-open');
+        this.changeDetectorRef.detectChanges();
     }
 
     ngOnDestroy(): void {

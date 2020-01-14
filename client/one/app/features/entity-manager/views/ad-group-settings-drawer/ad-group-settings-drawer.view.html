@@ -140,15 +140,16 @@
                             )
                         "
                         [biddingType]="state.entity.biddingType"
-                        [maxCpc]="state.entity.maxCpc"
-                        [maxCpm]="state.entity.maxCpm"
+                        [bid]="state.entity.bid"
+                        [maxBid]="state.entity.autopilot.maxBid"
                         [currencySymbol]="currencySymbol"
+                        [autopilotState]="state.entity.autopilot.state"
                         [biddingTypeErrors]="state.fieldsErrors.biddingType"
-                        [maxCpcErrors]="state.fieldsErrors.maxCpc"
-                        [maxCpmErrors]="state.fieldsErrors.maxCpm"
+                        [bidErrors]="state.fieldsErrors.bid"
+                        [maxBidErrors]="state.fieldsErrors.autopilot.maxBid"
                         (biddingTypeChange)="store.setBiddingType($event)"
-                        (maxCpcChange)="store.setMaxCpc($event)"
-                        (maxCpmChange)="store.setMaxCpm($event)"
+                        (bidChange)="store.setBid($event)"
+                        (maxBidChange)="store.setMaxBid($event)"
                     ></zem-bidding-type-setting>
                     <zem-currency-form-group
                         class="zem-currency-form-group zem-settings-section__item"

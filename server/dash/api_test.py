@@ -20,8 +20,8 @@ class AdGroupSettingsOrderTest(TestCase):
             state=1,
             start_date=datetime.date.today(),
             end_date=datetime.date.today(),
-            cpc_cc=decimal.Decimal("0.1"),
-            max_cpm=decimal.Decimal("1.1"),
+            cpc=decimal.Decimal("0.1"),
+            cpm=decimal.Decimal("1.1"),
             daily_budget_cc=decimal.Decimal("50."),
         )
 
@@ -30,14 +30,13 @@ class AdGroupSettingsOrderTest(TestCase):
             state=2,
             start_date=datetime.date.today(),
             end_date=datetime.date.today(),
-            cpc_cc=decimal.Decimal("0.2"),
-            max_cpm=decimal.Decimal("2.1"),
+            cpc=decimal.Decimal("0.2"),
+            cpm=decimal.Decimal("2.1"),
             daily_budget_cc=decimal.Decimal("50."),
         )
 
         self.assertEqual(set1.get_setting_changes(set1), {})
 
         self.assertEqual(
-            set1.get_setting_changes(set2),
-            {"state": 2, "cpc_cc": decimal.Decimal("0.2"), "max_cpm": decimal.Decimal("2.1")},
+            set1.get_setting_changes(set2), {"state": 2, "cpc": decimal.Decimal("0.2"), "cpm": decimal.Decimal("2.1")}
         )

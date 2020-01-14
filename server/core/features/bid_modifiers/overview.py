@@ -1,4 +1,5 @@
 import dataclasses
+import decimal
 import functools
 import operator
 from typing import List
@@ -10,7 +11,9 @@ from django.db.models import Count
 from django.db.models import Max
 from django.db.models import Min
 
-from . import constants
+import core.models
+import dash.constants
+
 from . import models
 
 
@@ -22,16 +25,28 @@ class BidModifierTypeSummary:
     max: float
 
 
+def get_min_max_local_bids(
+    ad_group: core.models.AdGroup,
+    included_types: Union[None, Sequence[int]] = None,
+    excluded_types: Union[None, Sequence[int]] = None,
+) -> Tuple[decimal.Decimal, decimal.Decimal]:
+    min_factor, max_factor = get_min_max_factors(
+        ad_group.id, included_types=included_types, excluded_types=excluded_types
+    )
+    bid = (
+        ad_group.settings.local_cpc
+        if ad_group.bidding_type == dash.constants.BiddingType.CPC
+        else ad_group.settings.local_cpm
+    )
+    return decimal.Decimal(min_factor) * bid, decimal.Decimal(max_factor) * bid
+
+
 def get_min_max_factors(
     ad_group_id: int,
     included_types: Union[None, Sequence[int]] = None,
     excluded_types: Union[None, Sequence[int]] = None,
 ) -> Tuple[float, float]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
-
-    # TEMP(tkusterle) temporarily disable source bid modifiers
-    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
-    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
 
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)
@@ -59,10 +74,6 @@ def get_type_summaries(
     include_ones: bool = True,
 ) -> List[BidModifierTypeSummary]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
-
-    # TEMP(tkusterle) temporarily disable source bid modifiers
-    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
-    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
 
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)

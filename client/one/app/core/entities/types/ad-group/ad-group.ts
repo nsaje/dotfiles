@@ -20,8 +20,7 @@ export interface AdGroup {
     redirectPixelUrls: string[];
     redirectJavascript: string;
     trackingCode: string;
-    maxCpc: string;
-    maxCpm: string;
+    bid: string;
     deliveryType: DeliveryType;
     clickCappingDailyAdGroupMaxClicks: number;
     dayparting: AdGroupDayparting;

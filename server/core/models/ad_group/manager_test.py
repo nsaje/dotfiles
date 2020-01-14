@@ -1,3 +1,5 @@
+import decimal
+
 from django.test import TestCase
 from mock import patch
 
@@ -6,6 +8,8 @@ import core.models.settings
 import dash.constants
 import dash.history_helpers
 import utils.exc
+from utils import dates_helper
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
@@ -59,6 +63,55 @@ class AdGroupCreate(TestCase):
             skip_notification=True,
             state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
         )
+
+    def test_set_bidding_type(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+        ad_group = core.models.AdGroup.objects.create(
+            self.request, self.campaign, bidding_type=dash.constants.BiddingType.CPM
+        )
+        self.assertEqual(dash.constants.BiddingType.CPC, ad_group.bidding_type)
+
+        request_with_permission = magic_mixer.blend_request_user(["fea_can_use_cpm_buying"])
+        ad_group = core.models.AdGroup.objects.create(
+            request_with_permission, self.campaign, bidding_type=dash.constants.BiddingType.CPM
+        )
+        self.assertEqual(dash.constants.BiddingType.CPM, ad_group.bidding_type)
+
+    def test_set_initial_bids(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+        test_helper.add_permissions(self.request.user, ["fea_can_use_cpm_buying"])
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=dash.constants.Currency.ILS,
+            date=dates_helper.local_today(),
+            exchange_rate=decimal.Decimal("3.4930"),
+        )
+        account = magic_mixer.blend(core.models.Account, currency=dash.constants.Currency.ILS)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        ad_group = core.models.AdGroup.objects.create(self.request, campaign)
+        self.assertEqual(decimal.Decimal("0.45"), ad_group.settings.cpc)
+        self.assertEqual(1, ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.57185"), ad_group.settings.local_cpc)
+        self.assertEqual(decimal.Decimal("3.4930"), ad_group.settings.local_cpm)
+
+        ad_group = core.models.AdGroup.objects.create(
+            self.request,
+            campaign,
+            initial_settings={"autopilot": dash.constants.AdGroupSettingsAutopilotState.INACTIVE},
+        )
+        self.assertEqual(decimal.Decimal("0.45"), ad_group.settings.cpc)
+        self.assertEqual(1, ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.5718"), ad_group.settings.local_cpc)
+        self.assertEqual(decimal.Decimal("3.4930"), ad_group.settings.local_cpm)
+
+        ad_group = core.models.AdGroup.objects.create(
+            self.request,
+            campaign,
+            initial_settings={"autopilot": dash.constants.AdGroupSettingsAutopilotState.INACTIVE},
+            bidding_type=dash.constants.BiddingType.CPM,
+        )
+        self.assertEqual(decimal.Decimal("0.45"), ad_group.settings.cpc)
+        self.assertEqual(1, ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.57185"), ad_group.settings.local_cpc)
+        self.assertEqual(decimal.Decimal("3.4930"), ad_group.settings.local_cpm)
 
 
 @patch("core.models.AdGroupSource.objects.bulk_clone_on_allowed_sources")

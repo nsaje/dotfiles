@@ -14,6 +14,7 @@ import dash.features.custom_flags.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+from core.models.settings.ad_group_source_settings.validation import AdGroupSourceSettingsValidatorMixin
 from dash.features import custom_flags
 from utils import dates_helper
 from utils import zlogging
@@ -110,7 +111,8 @@ class AdGroupsSourcesTest(K1APIBaseTest):
 
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, data[0]["state"])
 
-    def test_get_ad_groups_source_bcm_v2(self):
+    @mock.patch.object(AdGroupSourceSettingsValidatorMixin, "clean")
+    def test_get_ad_groups_source_bcm_v2(self, mock_validator):
         today = dates_helper.local_today()
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)
@@ -157,7 +159,8 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             },
         )
 
-    def test_get_ad_groups_source_adlookup(self):
+    @mock.patch.object(AdGroupSourceSettingsValidatorMixin, "clean")
+    def test_get_ad_groups_source_adlookup(self, mock_validator):
         today = dates_helper.local_today()
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)

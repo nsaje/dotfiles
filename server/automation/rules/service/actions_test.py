@@ -19,6 +19,7 @@ class ActionsTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         ad = magic_mixer.blend(core.models.ContentAd)
         source = magic_mixer.blend(core.models.Source)
+        _ = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=source)
         magic_mixer.blend(dash.features.geolocation.Geolocation, key="USA", type="co")
         magic_mixer.blend(dash.features.geolocation.Geolocation, key="US-01", type="re")
         magic_mixer.blend(dash.features.geolocation.Geolocation, key="123", type="dma")
@@ -68,7 +69,7 @@ class ActionsTest(TestCase):
             },
             {
                 "target_type": constants.TargetType.SOURCE,
-                "target": str(source.id),
+                "target": source.bidder_slug,
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,
                 "bid_modifier_target": str(source.id),
             },
@@ -240,7 +241,7 @@ class ActionsTest(TestCase):
 
     def test_adjust_ad_group_bid_cpc_increase(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPC)
-        ad_group.settings.update(None, local_cpc_cc=Decimal("0.5"))
+        ad_group.settings.update(None, local_cpc=Decimal("0.5"))
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.AD_GROUP,
@@ -251,26 +252,24 @@ class ActionsTest(TestCase):
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.7"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.7"), ad_group.settings.local_cpc)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.8"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.8"), ad_group.settings.local_cpc)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.8"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.8"), ad_group.settings.local_cpc)
         self.assertFalse(update.has_changes())
 
-        self.assertEqual(Decimal("0.8"), ad_group.settings.cpc_cc)
-        self.assertIsNone(ad_group.settings.max_cpm)
-        self.assertIsNone(ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("0.8"), ad_group.settings.cpc)
 
     def test_adjust_ad_group_bid_cpc_decrease(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPC)
-        ad_group.settings.update(None, local_cpc_cc=Decimal("0.5"))
+        ad_group.settings.update(None, local_cpc=Decimal("0.5"))
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.AD_GROUP,
@@ -281,26 +280,24 @@ class ActionsTest(TestCase):
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.3"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.3"), ad_group.settings.local_cpc)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.2"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.2"), ad_group.settings.local_cpc)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("0.2"), ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("0.2"), ad_group.settings.local_cpc)
         self.assertFalse(update.has_changes())
 
-        self.assertEqual(Decimal("0.2"), ad_group.settings.cpc_cc)
-        self.assertIsNone(ad_group.settings.max_cpm)
-        self.assertIsNone(ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("0.2"), ad_group.settings.cpc)
 
     def test_adjust_ad_group_bid_cpm_increase(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
-        ad_group.settings.update(None, local_max_cpm=Decimal("1.5"))
+        ad_group.settings.update(None, local_cpm=Decimal("1.5"))
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.AD_GROUP,
@@ -311,26 +308,24 @@ class ActionsTest(TestCase):
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.7"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.7"), ad_group.settings.local_cpm)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.8"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.8"), ad_group.settings.local_cpm)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.8"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.8"), ad_group.settings.local_cpm)
         self.assertFalse(update.has_changes())
 
-        self.assertEqual(Decimal("1.8"), ad_group.settings.max_cpm)
-        self.assertIsNone(ad_group.settings.cpc_cc)
-        self.assertIsNone(ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("1.8"), ad_group.settings.cpm)
 
     def test_adjust_ad_group_bid_cpm_decrease(self):
         ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=dash.constants.BiddingType.CPM)
-        ad_group.settings.update(None, local_max_cpm=Decimal("1.5"))
+        ad_group.settings.update(None, local_cpm=Decimal("1.5"))
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.AD_GROUP,
@@ -341,22 +336,20 @@ class ActionsTest(TestCase):
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.3"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.3"), ad_group.settings.local_cpm)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.2"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.2"), ad_group.settings.local_cpm)
         self.assertTrue(update.has_changes())
 
         update = actions.adjust_bid(str(ad_group.id), rule, ad_group)
         ad_group.refresh_from_db()
-        self.assertEqual(Decimal("1.2"), ad_group.settings.local_max_cpm)
+        self.assertEqual(Decimal("1.2"), ad_group.settings.local_cpm)
         self.assertFalse(update.has_changes())
 
-        self.assertEqual(Decimal("1.2"), ad_group.settings.max_cpm)
-        self.assertIsNone(ad_group.settings.cpc_cc)
-        self.assertIsNone(ad_group.settings.local_cpc_cc)
+        self.assertEqual(Decimal("1.2"), ad_group.settings.cpm)
 
     def test_adjust_ad_group_bid_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)

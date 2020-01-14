@@ -1159,8 +1159,9 @@ startDate    | string                    | start date of the ad group           
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                      | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
 biddingType  | `CPC` / `CPM`             | Bidding type. Set to `CPC` (use maxCpc) to focus on the clicks that your ad receives or `CPM` (use maxCpm) to focus on impressions.| optional | optional
-maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                      | optional | optional
-maxCpm       | [money](#money)           | maximum CPM for this ad group (currently beta only, please contact us for access)                                                  | optional | optional
+bid          | [money](#money)           | Bid value for this ad group | required | required
+maxCpc (deprecated) | [money](#money)    | Maximum CPC for this ad group if autopilot is enabled and ad group's bid CPC value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
+maxCpm (deprecated) | [money](#money)    | Maximum CPM for this ad group if autopilot is enabled and ad group's bid CPM value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
 targeting    | [targeting](#targeting)   | targeting settings                                                                                                                 | optional | optional
 dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                                | optional | optional
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros))   | optional | optional
@@ -1287,10 +1288,11 @@ Get more information about Zemanta Autopilot in our [knowledge base](http://help
 In order to set Autopilot state to `ACTIVE_CPC_BUDGET` [all real-time bidding sources](#all-rtb-as-one)
  `groupEnabled` setting has to be set to `true`.
 
-Property    | Type                                | Description
-------------|-------------------------------------|------------------------|
-state       | [autopilot state](#autopilot-state) | autopilot state
-dailyBudget | dailyBudget                         | autopilot daily budget
+Property          | Type                                | Description
+------------------|-------------------------------------|---------------------
+state             | [autopilot state](#autopilot-state) | autopilot state
+dailyBudget       | dailyBudget                         | autopilot daily budget
+maxBid            | [money][#money]                     | the maximum allowed bid for autopilot
 
 
 ### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
@@ -1549,7 +1551,7 @@ The following bid modifier types are supported:
 | Type             | Description                                                               | Allowed Values                        |
 |-----------------|--------------------------------------------------------------------------|--------------------------------------|
 | PUBLISHER        | Modifies the bidding price for a specific source at a specific publisher. | the domain name of the publisher      |
-| SOURCE           | Modifies the bidding price for a specific source.                         | the ID of the source as a string      |
+| SOURCE           | Modifies the bidding price for a specific source.                         | the source slug      |
 | DEVICE           | Modifies the bidding price for a specific device type.                    | see [Device targeting](#device)       |
 | OPERATING_SYSTEM | Modifies the bidding price for a specific operating system.               | see [Operating system targeting](#os) |
 | PLACEMENT        | Modifies the bidding price for a specific add placement.                  | see [Placement targeting](#placement) |
@@ -1557,8 +1559,6 @@ The following bid modifier types are supported:
 | STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
 | DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
 | AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
-
-**A note on `SOURCE` bid modifiers**: API already supports `SOURCE` bid modifiers, but setting them currently has no effect in the system. Full support for `SOURCE` bid modifiers will be added shortly.
 
 ### Get bid modifiers for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{?type}]
 
@@ -3394,6 +3394,7 @@ Examples:
 
 - `state`: `ACTIVE_CPC` (string)
 - `dailyBudget`: `100.0001` (string)
+- `maxBid`: `20.0000` (string, optional, nullable)
 
 ## `dayparting` (object)
 

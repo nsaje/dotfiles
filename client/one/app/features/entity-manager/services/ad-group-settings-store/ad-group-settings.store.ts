@@ -343,17 +343,30 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setBiddingType(biddingType: BiddingType) {
-        this.patchState(biddingType, 'entity', 'biddingType');
+        let bid = null;
+        if (biddingType === BiddingType.CPC) {
+            bid = this.state.extras.currentBids.cpc;
+        } else {
+            bid = this.state.extras.currentBids.cpm;
+        }
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                biddingType: biddingType,
+                bid: bid,
+            },
+        });
         this.validateEntity();
     }
 
-    setMaxCpc(maxCpc: string) {
-        this.patchState(maxCpc, 'entity', 'maxCpc');
+    setBid(bid: string) {
+        this.patchState(bid, 'entity', 'bid');
         this.validateEntity();
     }
 
-    setMaxCpm(maxCpm: string) {
-        this.patchState(maxCpm, 'entity', 'maxCpm');
+    setMaxBid(maxBid: string) {
+        this.patchState(maxBid, 'entity', 'autopilot', 'maxBid');
         this.validateEntity();
     }
 

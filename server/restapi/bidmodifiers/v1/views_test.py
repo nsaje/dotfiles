@@ -18,6 +18,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
         self.content_ad = magic_mixer.blend(core.models.ContentAd)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
         self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
         self.foreign_ad_group = magic_mixer.blend(core.models.AdGroup)
 
@@ -158,7 +159,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             result,
             {
-                "count": len(self.bid_modifiers_list) - 1,  # TEMP(tkusterle) temporarily disable source bid modifiers
+                "count": len(self.bid_modifiers_list),
                 "next": None,
                 "data": [
                     {
@@ -168,9 +169,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                         "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                         "modifier": bm.modifier,
                     }
-                    # TEMP(tkusterle) temporarily disable source bid modifiers
                     for bm in self.bid_modifiers_list
-                    if bm.type != bid_modifiers.BidModifierType.SOURCE
                 ],
             },
         )
@@ -184,7 +183,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             result,
             {
-                "count": len(self.bid_modifiers_list) - 1,  # TEMP(tkusterle) temporarily disable source bid modifiers
+                "count": len(self.bid_modifiers_list),
                 "next": "http://testserver%s?limit=2&marker=%s"
                 % (
                     reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}),
@@ -738,9 +737,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 },
                 {
                     "type": bid_modifiers.BidModifierType.get_name(bm2.type),
-                    "target": bm2.target,
+                    "target": self.source.bidder_slug,
                     "modifier": 1.6,
-                    "sourceSlug": bm2.source_slug,
+                    "sourceSlug": "",
                 },
                 {
                     "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.AD),
@@ -768,8 +767,8 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                     {
                         "id": str(bm2.id),
                         "type": bid_modifiers.BidModifierType.get_name(bm2.type),
-                        "sourceSlug": bm2.source_slug,
-                        "target": bm2.target,
+                        "sourceSlug": "",
+                        "target": self.source.bidder_slug,
                         "modifier": 1.6,
                     },
                     {
@@ -886,7 +885,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
         response = self.client.get(reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}))
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
-        self.assertEqual(8, result["count"])
+        self.assertEqual(9, result["count"])
 
     def test_destroy_multiple_foreign_ad_group(self):
         response = self.client.delete(

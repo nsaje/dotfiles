@@ -10,6 +10,7 @@ import {AttributionColumnPickerComponent} from './components/attribution-column-
 import {AttributionLoockbackWindowPickerComponent} from './components/attribution-lookback-window-picker/attribution-lookback-window-picker.component';
 import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
 import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
+import {BidRangeInfoComponent} from './components/stats-table/bid-range-info/bid-range-info.component';
 
 @NgModule({
     declarations: [
@@ -22,6 +23,7 @@ import {DisplayAdPreviewComponent} from './components/display-ad-preview/display
         AttributionLoockbackWindowPickerComponent,
         NativeAdPreviewComponent,
         DisplayAdPreviewComponent,
+        BidRangeInfoComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [

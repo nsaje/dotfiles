@@ -643,15 +643,6 @@ class ContentAdsOnAdGroupLevelLoader(ContentAdsLoader):
         )
         return {int(x.target): x for x in bid_modifiers_qs}
 
-    @cached_property
-    def min_max_modifiers(self):
-        if not self.ad_group:
-            return None, None
-        min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.AD]
-        )
-        return min_factor, max_factor
-
 
 class PublisherBlacklistLoader(Loader):
     def __init__(
@@ -902,13 +893,6 @@ class AdGroupSourcesLoader(Loader):
         return {int(bid_modifier.target): bid_modifier for bid_modifier in bid_modifiers_qs}
 
     @cached_property
-    def min_max_modifiers(self):
-        min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.SOURCE]
-        )
-        return min_factor, max_factor
-
-    @cached_property
     def totals(self):
         daily_budget = sum(
             [
@@ -982,13 +966,6 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
         return {(x.source_id, x.target): x for x in modifiers}
 
-    @cached_property
-    def min_max_modifiers(self):
-        min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.PUBLISHER]
-        )
-        return min_factor, max_factor
-
 
 class DeliveryLoader(Loader):
     def __init__(self, ad_group, user, **kwargs):
@@ -1020,9 +997,3 @@ class DeliveryLoader(Loader):
             end_date=constraints.get("date__lte"),
             **kwargs,
         )
-
-    @cached_property
-    def min_max_modifiers(self):
-        modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(self.delivery_dimension)
-        min_factor, max_factor = bid_modifiers.get_min_max_factors(self.ad_group.id, excluded_types=[modifier_type])
-        return min_factor, max_factor

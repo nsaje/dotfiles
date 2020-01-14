@@ -5,6 +5,7 @@ from mock import patch
 
 import core.models
 import utils.exc
+from core.features import bid_modifiers
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
@@ -18,8 +19,12 @@ class AdGroupSourceUpdate(TestCase):
         self.source_type = magic_mixer.blend(core.models.SourceType)
         self.source = magic_mixer.blend(core.models.Source, source_type=self.source_type)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, source=self.source, ad_group=self.ad_group)
-        self.ad_group_source.settings.update_unsafe(
-            None, cpc_cc=core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
+        self.source_bid_modifier = magic_mixer.blend(
+            bid_modifiers.BidModifier,
+            ad_group=self.ad_group,
+            type=bid_modifiers.constants.BidModifierType.SOURCE,
+            target=str(self.source.id),
+            modifier=1.0,
         )
 
         autopilot_patcher = patch("automation.autopilot.recalculate_budgets_ad_group")
@@ -264,14 +269,21 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("-2.3"))
 
-    def test_update_validate_cpc_ad_group_max_cpc(self):
-        self.ad_group.settings.update(None, cpc_cc=decimal.Decimal("1.1"))
+    def test_update_validate_cpc_ad_group_cpc(self):
+        self.ad_group.settings.update(None, cpc=decimal.Decimal("1.1"))
 
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))
+        self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))
 
-    def test_update_validate_cpm_ad_group_max_cpm(self):
-        self.ad_group.settings.update_unsafe(None, max_cpm=decimal.Decimal("2.3"))
+        self.assertAlmostEqual(
+            bid_modifiers.BidModifier.objects.get(
+                ad_group=self.ad_group, target=str(self.ad_group_source.source.id)
+            ).modifier,
+            float(decimal.Decimal("1.2") / decimal.Decimal("1.1")),
+            places=4,
+        )
+
+    def test_update_validate_cpm_ad_group_cpm(self):
+        self.ad_group.settings.update_unsafe(None, cpm=decimal.Decimal("2.3"))
 
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("2.4"))
@@ -299,11 +311,6 @@ class AdGroupSourceUpdate(TestCase):
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("2.2"))
-
-    def test_update_validate_cpc_constraints(self):
-        magic_mixer.blend(core.models.settings.CpcConstraint, ad_group=self.ad_group, source=self.source, min_cpc=1.1)
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.0"))
 
     def test_update_validate_daily_budget_not_decimal(self):
         with self.assertRaises(AssertionError):

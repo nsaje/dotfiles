@@ -126,8 +126,8 @@ class AdGroupSourceStateTest(TestCase):
         ad_group_settings.exclusion_retargeting_ad_groups = False
         ad_group_settings.audience_targeting = False
         ad_group_settings.exclusion_audience_targeting = False
-        ad_group_settings.cpc_cc = 0.7792
-        ad_group_settings.max_cpm = 0.7792
+        ad_group_settings.cpc = 0.7792
+        ad_group_settings.cpm = 0.7792
         ad_group_settings.save(None)
 
         ad_group_sources = ad_group.adgroupsource_set.all()
@@ -141,16 +141,6 @@ class AdGroupSourceStateTest(TestCase):
         json_data = json.loads(response.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("0.13" in json_data["message"])
-
-        # max cpc - would return 0.78 without rounding floor
-        for ags in ad_group_sources:
-            ags_settings = ags.settings.copy_settings()
-            ags_settings.cpc_cc = 0.78
-            ags_settings.save(None)
-        response = self._post_source_state(ad_group_id, data)
-        json_data = json.loads(response.content)["data"]
-        self.assertEqual(json_data["error_code"], "ValidationError")
-        self.assertTrue("0.77" in json_data["message"])
 
         # min daily budget - would return 7 without rounding ceiling
         for ags in ad_group_sources:
@@ -186,16 +176,6 @@ class AdGroupSourceStateTest(TestCase):
         json_data = json.loads(response.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("0.13" in json_data["message"])
-
-        # max cpm - would return 0.78 without rounding floor
-        for ags in ad_group_sources:
-            ags_settings = ags.settings.copy_settings()
-            ags_settings.cpm = 0.78
-            ags_settings.save(None)
-        response = self._post_source_state(ad_group_id, data)
-        json_data = json.loads(response.content)["data"]
-        self.assertEqual(json_data["error_code"], "ValidationError")
-        self.assertTrue("0.77" in json_data["message"])
 
 
 class AdGroupContentAdArchiveTest(TestCase):

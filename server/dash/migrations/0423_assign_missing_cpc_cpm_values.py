@@ -5,8 +5,7 @@ import decimal
 from django.db import migrations
 from django.db import models
 
-from core.models.settings.ad_group_settings.model import DEFAULT_CPC_VALUE
-from core.models.settings.ad_group_settings.model import DEFAULT_CPM_VALUE
+from core.models.settings.ad_group_settings.model import AdGroupSettings
 from dash import constants
 from utils import zlogging
 from utils.queryset_helper import chunk_iterator
@@ -170,7 +169,9 @@ def _compute_mappings(meta_map, goal_map, currency_exchange_map, max_values_chun
         candidates = sorted([e for e in candidates if e is not None], reverse=True)
         if not candidates:
             max_value_mapping[settings_id] = (
-                DEFAULT_CPC_VALUE if bidding_type == constants.BiddingType.CPC else DEFAULT_CPM_VALUE
+                AdGroupSettings.DEFAULT_CPC_VALUE
+                if bidding_type == constants.BiddingType.CPC
+                else AdGroupSettings.DEFAULT_CPM_VALUE
             )
             defaults_ad_group_ids.add(ad_group_id)
         else:

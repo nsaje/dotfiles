@@ -36,17 +36,17 @@ class AdGroupBCMMixin(object):
             self.settings.b1_sources_group_cpc_cc, fee, margin
         )
         new_b1_sources_group_cpm = self._transform_fractional_value(self.settings.b1_sources_group_cpm, fee, margin)
-        new_cpc_cc = self._transform_fractional_value(self.settings.cpc_cc, fee, margin)
-        new_max_cpm = self._transform_fractional_value(self.settings.max_cpm, fee, margin)
+        new_cpc = self._transform_fractional_value(self.settings.cpc, fee, margin)
+        new_cpm = self._transform_fractional_value(self.settings.cpm, fee, margin)
         new_autopilot_daily_budget = self._transform_whole_value(self.settings.autopilot_daily_budget, fee, margin)
 
         self.settings.update(
             request,
             skip_validation=True,
             b1_sources_group_daily_budget=new_b1_sources_group_daily_budget,
-            max_cpm=new_max_cpm,
+            cpm=new_cpm,
             autopilot_daily_budget=new_autopilot_daily_budget,
-            cpc_cc=new_cpc_cc,
+            cpc=new_cpc,
         )
 
         # NOTE: this is done separately so that cpc_cc is already set,

@@ -2,7 +2,6 @@ from django.db import transaction
 
 import core.models
 import core.models.ad_group.exceptions
-import prodops.hacks
 import restapi.access
 import utils.converters
 import utils.exc
@@ -24,9 +23,10 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
+        settings = serializer.validated_data
 
         with transaction.atomic():
-            self._update_settings(request, ad_group, serializer.validated_data)
+            self._handle_update_create_exceptions(settings, self._update_settings, request, ad_group, settings)
 
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
@@ -56,26 +56,46 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
 
         with transaction.atomic():
-            try:
-                new_ad_group = core.models.AdGroup.objects.create(
-                    request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
-                )
-
-            except core.models.ad_group.exceptions.CampaignIsArchived as err:
-                raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
-
-            self._update_settings(request, new_ad_group, settings)
-            prodops.hacks.apply_ad_group_create_hacks(request, new_ad_group)
+            new_ad_group = self._handle_update_create_exceptions(
+                settings,
+                core.models.AdGroup.objects.create,
+                request,
+                campaign=campaign,
+                name=settings.get("ad_group_name", None),
+                bidding_type=settings.get("ad_group", {}).get("bidding_type"),
+                is_restapi=True,
+                initial_settings=settings,
+            )
 
         return self.response_ok(self.serializer(new_ad_group.settings, context={"request": request}).data, status=201)
 
     @staticmethod
     def _update_settings(request, ad_group, settings):
-        try:
-            settings = prodops.hacks.override_ad_group_settings(ad_group, settings)
-            ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
-            ad_group.settings.update(request, **settings)
+        ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
+        ad_group.settings.update(request, **settings)
 
+    @staticmethod
+    def _handle_update_create_exceptions(settings, update_function, *args, **kwargs):
+        try:
+            return AdGroupViewSet._execute_and_handle_exceptions(update_function, *args, **kwargs)
+        except utils.exc.ValidationError as e:
+            AdGroupViewSet._remap_error_fields_if_needed(settings, e)
+            raise
+
+    @staticmethod
+    def _remap_error_fields_if_needed(settings, exception):
+        if "bid" in settings or "local_bid" in settings:
+            max_cpm_error = exception.errors.pop("max_cpm", None)
+            if max_cpm_error:
+                exception.errors["bid"] = max_cpm_error
+            max_cpc_error = exception.errors.pop("max_cpc", None)
+            if max_cpc_error:
+                exception.errors["bid"] = max_cpc_error
+
+    @staticmethod
+    def _execute_and_handle_exceptions(update_function, *args, **kwargs):
+        try:
+            return update_function(*args, **kwargs)
         except core.models.ad_group.exceptions.CannotChangeBiddingType as err:
             raise utils.exc.ValidationError(errors={"bidding_type": [str(err)]})
 
@@ -88,16 +108,16 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
                 elif isinstance(e, exceptions.CannotSetCPM):
                     errors.setdefault("max_cpm", []).append(str(e))
 
-                if isinstance(e, exceptions.MaxCPCTooLow):
+                if isinstance(e, exceptions.CPCTooLow):
                     errors.setdefault("max_cpc", []).append(str(e))
 
-                elif isinstance(e, exceptions.MaxCPCTooHigh):
+                elif isinstance(e, exceptions.CPCTooHigh):
                     errors.setdefault("max_cpc", []).append(str(e))
 
-                elif isinstance(e, exceptions.MaxCPMTooLow):
+                elif isinstance(e, exceptions.CPMTooLow):
                     errors.setdefault("max_cpm", []).append(str(e))
 
-                elif isinstance(e, exceptions.MaxCPMTooHigh):
+                elif isinstance(e, exceptions.CPMTooHigh):
                     errors.setdefault("max_cpm", []).append(str(e))
 
                 elif isinstance(e, exceptions.EndDateBeforeStartDate):
@@ -137,3 +157,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except exceptions.ExclusionAudienceTargetingInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"customAudiences": {"excluded": [str(err)]}}})
+
+        except core.models.ad_group.exceptions.CampaignIsArchived as err:
+            raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})

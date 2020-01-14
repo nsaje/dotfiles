@@ -97,11 +97,11 @@ class AdGroupSettings(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        self._remap_old_bid_values(form.cleaned_data)
         for field in ad_group.settings.multicurrency_fields:
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
-        form_data = hacks.override_ad_group_settings_form_data(ad_group, form.cleaned_data)
 
-        self._update_adgroup(request, ad_group, form_data)
+        self._update_adgroup(request, ad_group, form.cleaned_data)
 
         response = {
             "settings": self.get_dict(request, ad_group.settings, ad_group),
@@ -111,6 +111,14 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def _remap_old_bid_values(self, form_data):
+        if "cpc_cc" in form_data:
+            form_data["cpc"] = form_data["cpc_cc"]
+            del form_data["cpc_cc"]
+        if "max_cpm" in form_data:
+            form_data["cpm"] = form_data["max_cpm"]
+            del form_data["max_cpm"]
 
     def _update_adgroup(self, request, ad_group, data):
         try:
@@ -297,16 +305,16 @@ class AdGroupSettings(api_common.BaseApiView):
             if isinstance(e, core.models.settings.ad_group_settings.exceptions.CannotSetCPM):
                 errors.setdefault("max_cpm", []).append(str(e))
 
-            if isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPCTooLow):
+            if isinstance(e, core.models.settings.ad_group_settings.exceptions.CPCTooLow):
                 errors.setdefault("cpc_cc", []).append(str(e))
 
-            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPCTooHigh):
                 errors.setdefault("cpc_cc", []).append(str(e))
 
-            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPMTooLow):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPMTooLow):
                 errors.setdefault("max_cpm", []).append(str(e))
 
-            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.CPMTooHigh):
                 errors.setdefault("max_cpm", []).append(str(e))
 
             elif isinstance(e, core.models.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
@@ -343,10 +351,8 @@ class AdGroupSettings(api_common.BaseApiView):
             "bidding_type": ad_group.bidding_type,
             "start_date": settings.start_date,
             "end_date": settings.end_date,
-            "cpc_cc": "{:.3f}".format(settings.local_cpc_cc) if settings.local_cpc_cc is not None else "",
-            "max_cpm": "{:.3f}".format(settings.local_max_cpm) if settings.local_max_cpm is not None else "",
-            "cpc": "{:.3f}".format(settings.local_cpc) if settings.local_cpc is not None else "",
-            "cpm": "{:.3f}".format(settings.local_cpm) if settings.local_cpm is not None else "",
+            "cpc_cc": "{:.3f}".format(settings.local_cpc) if settings.local_cpc is not None else "",
+            "max_cpm": "{:.3f}".format(settings.local_cpm) if settings.local_cpm is not None else "",
             "daily_budget_cc": "{:.2f}".format(settings.daily_budget_cc)
             if settings.daily_budget_cc is not None
             else "",

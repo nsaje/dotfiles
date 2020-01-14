@@ -274,10 +274,7 @@ class AdGroupInstanceMixin:
             self.bidding_type = bidding_type
             self.save(request)
 
-            # circular dependency
-            import core.features.bid_modifiers.source
-
-            core.features.bid_modifiers.source.handle_bidding_type_change(self, user=request.user if request else None)
+            self.settings.apply_bids_to_sources()
 
     def ensure_amplify_review_source(self, request):
         source_types_added = set(self.adgroupsource_set.all().values_list("source__source_type__type", flat=True))

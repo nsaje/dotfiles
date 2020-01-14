@@ -5,7 +5,5 @@ export interface BidModifier {
     type: BidModifierType;
     sourceSlug?: string;
     target: string;
-    bidMin: string;
-    bidMax: string;
     modifier: number;
 }

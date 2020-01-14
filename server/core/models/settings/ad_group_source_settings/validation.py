@@ -1,9 +1,6 @@
 import decimal
 
-import django.forms
-
 from dash import constants
-from dash import cpc_constraints
 
 from . import exceptions
 from . import validation_helpers
@@ -25,15 +22,6 @@ class AdGroupSourceSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.cpc_cc, decimal.Decimal)
         validation_helpers.validate_ad_group_source_cpc_cc(new_settings.cpc_cc, self.ad_group_source, bcm_modifiers)
-        try:
-            cpc_constraints.validate_cpc(
-                new_settings.cpc_cc,
-                bcm_modifiers,
-                ad_group=self.ad_group_source.ad_group,
-                source=self.ad_group_source.source,
-            )
-        except django.forms.ValidationError as e:
-            raise exceptions.CPCInvalid(e.message)
 
     def _validate_ad_group_source_cpm(self, new_settings, bcm_modifiers):
         is_cpm_buying = self.ad_group_source.ad_group.bidding_type == constants.BiddingType.CPM

@@ -42,6 +42,25 @@ class ExtraDataWarningSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
     retargeting = ExtraDataRetargetingSerializer(required=False, allow_null=True)
 
 
+class ExtraDataCurrentBidsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    cpc = restapi.serializers.fields.TwoWayBlankDecimalField(
+        max_digits=10,
+        decimal_places=4,
+        output_precision=3,
+        allow_null=False,
+        required=True,
+        rounding=decimal.ROUND_HALF_DOWN,
+    )
+    cpm = restapi.serializers.fields.TwoWayBlankDecimalField(
+        max_digits=10,
+        decimal_places=4,
+        output_precision=3,
+        allow_null=False,
+        required=True,
+        rounding=decimal.ROUND_HALF_DOWN,
+    )
+
+
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     action_is_waiting = rest_framework.serializers.BooleanField(default=False, required=False)
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
@@ -70,6 +89,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     bid_modifier_type_summaries = rest_framework.serializers.ListField(
         child=restapi.serializers.bid_modifiers.BidModifierTypeSummary(), required=False
     )
+    current_bids = ExtraDataCurrentBidsSerializer(read_only=True)
 
 
 class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilotSerializer):
@@ -93,6 +113,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "campaign_id",
             "name",
             "bidding_type",
+            "bid",
             "state",
             "archived",
             "start_date",
@@ -100,8 +121,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "redirect_pixel_urls",
             "redirect_javascript",
             "tracking_code",
-            "max_cpc",
-            "max_cpm",
             "delivery_type",
             "click_capping_daily_ad_group_max_clicks",
             "dayparting",

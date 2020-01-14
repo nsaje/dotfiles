@@ -57,7 +57,9 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         settings = serializer.validated_data
 
         with transaction.atomic():
-            self._update_settings(request, ad_group, settings)
+            self._handle_update_create_exceptions(
+                settings, self._update_settings, request, ad_group, serializer.validated_data
+            )
             if "deals" in settings.keys():
                 self._handle_deals(request, ad_group, settings.get("deals", []))
 
@@ -79,7 +81,8 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             except core.models.ad_group.exceptions.CampaignIsArchived as err:
                 raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
 
-            self._update_settings(request, new_ad_group, settings)
+            self._handle_update_create_exceptions(settings, self._update_settings, request, new_ad_group, settings)
+
             self._handle_deals(request, new_ad_group, settings.get("deals", []))
             prodops.hacks.apply_ad_group_create_hacks(request, new_ad_group)
 

@@ -11,7 +11,14 @@ import {
     OnDestroy,
     Renderer2,
 } from '@angular/core';
-import {DetailGridInfo, GridApi, GridOptions, ColDef} from 'ag-grid-community';
+import {
+    DetailGridInfo,
+    GridApi,
+    GridOptions,
+    ColDef,
+    RowSelectedEvent,
+    SelectionChangedEvent,
+} from 'ag-grid-community';
 import {
     DEFAULT_GRID_OPTIONS,
     DEFAULT_PAGE_SIZE_OPTIONS,
@@ -42,6 +49,10 @@ export class SmartGridComponent implements OnInit, OnDestroy {
     paginationCount: number;
     @Input()
     context: any;
+    @Output()
+    rowSelected = new EventEmitter<any>();
+    @Output()
+    selectionChanged = new EventEmitter<any[]>();
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
@@ -95,6 +106,17 @@ export class SmartGridComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.removeEventListener(this.windowResizeListener);
+    }
+
+    onRowSelected(event: RowSelectedEvent) {
+        this.rowSelected.emit(event.data);
+    }
+
+    onSelectionChanged(event: SelectionChangedEvent) {
+        const selectedRows = event.api.getSelectedNodes().map(rowNode => {
+            return rowNode.data;
+        });
+        this.selectionChanged.emit(selectedRows);
     }
 
     onGridReady(params: DetailGridInfo) {

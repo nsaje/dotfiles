@@ -6,6 +6,14 @@ class BidModifierValueInvalid(BidModifierInvalid):
     pass
 
 
+class BidModifierValueTooHigh(BidModifierValueInvalid):
+    pass
+
+
+class BidModifierValueTooLow(BidModifierValueInvalid):
+    pass
+
+
 class BidModifierTargetInvalid(BidModifierInvalid):
     pass
 
