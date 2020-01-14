@@ -4,15 +4,16 @@ from io import StringIO
 import mock
 from django.test import TestCase
 
-import dash.constants
-import dash.models
+from dash import constants as dash_constants
 from dash import history_helpers
+from dash import models as dash_models
 from dash.features import geolocation
 from utils.magic_mixer import magic_mixer
 
 from . import constants
 from . import exceptions
 from . import helpers
+from . import models
 from . import service
 
 
@@ -39,30 +40,29 @@ def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
     if "source" in blend_kwargs:
         blend_kwargs["source_slug"] = blend_kwargs["source"].bidder_slug
 
-    magic_mixer.cycle(len(included_types)).blend(dash.models.BidModifier, **blend_kwargs)
+    magic_mixer.cycle(len(included_types)).blend(models.BidModifier, **blend_kwargs)
 
 
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
 class TestBidModifierService(TestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
-        self.ad_group = magic_mixer.blend(dash.models.AdGroup)
-        self.source = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug")
-        self.ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        self.ad_group = magic_mixer.blend(dash_models.AdGroup)
+        self.source = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug")
 
     def test_get(self):
         service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)
         service.set(self.ad_group, constants.BidModifierType.SOURCE, self.source.id, None, 4.6)
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.3)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 1.3)
         service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
         service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
-        service.set(self.ad_group, constants.BidModifierType.DAY_HOUR, dash.constants.DayHour.FRIDAY_10, None, 1.2)
+        service.set(self.ad_group, constants.BidModifierType.DAY_HOUR, dash_constants.DayHour.FRIDAY_10, None, 1.2)
         self.assertEqual(
             service.get(self.ad_group),
             [
@@ -80,19 +80,19 @@ class TestBidModifierService(TestCase):
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.3,
                 },
                 {
                     "type": constants.BidModifierType.OPERATING_SYSTEM,
-                    "target": dash.constants.OperatingSystem.ANDROID,
+                    "target": dash_constants.OperatingSystem.ANDROID,
                     "source": None,
                     "modifier": 1.7,
                 },
                 {
                     "type": constants.BidModifierType.PLACEMENT,
-                    "target": dash.constants.PlacementMedium.SITE,
+                    "target": dash_constants.PlacementMedium.SITE,
                     "source": None,
                     "modifier": 3.6,
                 },
@@ -102,7 +102,7 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
                 {
                     "type": constants.BidModifierType.DAY_HOUR,
-                    "target": str(dash.constants.DayHour.FRIDAY_10),
+                    "target": str(dash_constants.DayHour.FRIDAY_10),
                     "source": None,
                     "modifier": 1.2,
                 },
@@ -112,11 +112,11 @@ class TestBidModifierService(TestCase):
     def test_get_include_types(self):
         service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)
         service.set(self.ad_group, constants.BidModifierType.SOURCE, self.source.id, None, 4.6)
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.3)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 1.3)
         service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
@@ -126,7 +126,7 @@ class TestBidModifierService(TestCase):
             [
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.3,
                 },
@@ -137,11 +137,11 @@ class TestBidModifierService(TestCase):
     def test_get_exclude_types(self):
         service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)
         service.set(self.ad_group, constants.BidModifierType.SOURCE, self.source.id, None, 4.6)
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.3)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 1.3)
         service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
@@ -164,7 +164,7 @@ class TestBidModifierService(TestCase):
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.3,
                 },
@@ -176,18 +176,18 @@ class TestBidModifierService(TestCase):
         )
 
     def test_set_nonexisting(self):
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 0)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 0)
 
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.2)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 1.2)
 
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
 
         self.assertEqual(
             service.get(self.ad_group),
             [
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.2,
                 }
@@ -195,20 +195,20 @@ class TestBidModifierService(TestCase):
         )
 
     def test_set_existing(self):
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.5)
 
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
 
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 1.2)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 1.2)
 
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
 
         self.assertEqual(
             service.get(self.ad_group),
             [
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.2,
                 }
@@ -216,27 +216,27 @@ class TestBidModifierService(TestCase):
         )
 
     def test_set_none(self):
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.5)
 
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
 
-        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, None)
+        service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, None)
 
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 0)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 0)
 
     def test_set_invalid_type(self):
         with self.assertRaises(exceptions.BidModifierValueInvalid):
             service.set(
-                self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, "invalid"
+                self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, "invalid"
             )
 
     def test_set_invalid_too_big(self):
-        with self.assertRaises(exceptions.BidModifierValueTooHigh):
-            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 35)
+        with self.assertRaises(exceptions.BidModifierValueInvalid):
+            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 35)
 
     def test_set_invalid_too_small(self):
-        with self.assertRaises(exceptions.BidModifierValueTooLow):
-            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, -2.0)
+        with self.assertRaises(exceptions.BidModifierValueInvalid):
+            service.set(self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, -2.0)
 
     def test_set_invalid_publisher_type(self):
         with self.assertRaises(exceptions.BidModifierSourceInvalid):
@@ -245,48 +245,48 @@ class TestBidModifierService(TestCase):
     def test_set_invalid_non_publisher_type(self):
         with self.assertRaises(exceptions.BidModifierSourceInvalid):
             service.set(
-                self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, self.source, 0.5
+                self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, self.source, 0.5
             )
 
     def test_set_bulk(self):
         bms_to_set = [
-            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5),
-            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.MOBILE, None, 0.6),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.5),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.MOBILE, None, 0.6),
         ]
         service.set_bulk(self.ad_group, bms_to_set)
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
 
         bms_to_set = [
-            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.7),
-            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.MOBILE, None, 0.8),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.7),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.MOBILE, None, 0.8),
         ]
         service.set_bulk(self.ad_group, bms_to_set)
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
 
         bms_to_set = [
-            service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.TABLET, None, 0.9)
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.TABLET, None, 0.9)
         ]
         service.set_bulk(self.ad_group, bms_to_set)
-        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 3)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 3)
 
         self.assertEqual(
             service.get(self.ad_group),
             [
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 0.7,
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.MOBILE),
+                    "target": str(dash_constants.DeviceType.MOBILE),
                     "source": None,
                     "modifier": 0.8,
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.TABLET),
+                    "target": str(dash_constants.DeviceType.TABLET),
                     "source": None,
                     "modifier": 0.9,
                 },
@@ -313,7 +313,7 @@ class TestBidModifierService(TestCase):
             {
                 constants.BidModifierType.get_text(
                     constants.BidModifierType.DEVICE
-                ): dash.constants.DeviceType.get_name(dash.constants.DeviceType.MOBILE),
+                ): dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE),
                 "Source Slug": "",
                 "Bid Modifier": 1.6,
             },
@@ -338,7 +338,7 @@ class TestBidModifierService(TestCase):
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.MOBILE),
+                    "target": str(dash_constants.DeviceType.MOBILE),
                     "modifier": 1.6,
                     "source": None,
                 },
@@ -389,19 +389,19 @@ class TestBidModifierService(TestCase):
             {"type": constants.BidModifierType.SOURCE, "target": str(self.source.id), "source": None, "modifier": 4.6},
             {
                 "type": constants.BidModifierType.DEVICE,
-                "target": str(dash.constants.DeviceType.DESKTOP),
+                "target": str(dash_constants.DeviceType.DESKTOP),
                 "source": None,
                 "modifier": 1.3,
             },
             {
                 "type": constants.BidModifierType.OPERATING_SYSTEM,
-                "target": dash.constants.OperatingSystem.ANDROID,
+                "target": dash_constants.OperatingSystem.ANDROID,
                 "source": None,
                 "modifier": 1.7,
             },
             {
                 "type": constants.BidModifierType.PLACEMENT,
-                "target": dash.constants.PlacementMedium.SITE,
+                "target": dash_constants.PlacementMedium.SITE,
                 "source": None,
                 "modifier": 3.6,
             },
@@ -428,19 +428,19 @@ class TestBidModifierService(TestCase):
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash.constants.DeviceType.DESKTOP),
+                    "target": str(dash_constants.DeviceType.DESKTOP),
                     "source": None,
                     "modifier": 1.3,
                 },
                 {
                     "type": constants.BidModifierType.OPERATING_SYSTEM,
-                    "target": dash.constants.OperatingSystem.ANDROID,
+                    "target": dash_constants.OperatingSystem.ANDROID,
                     "source": None,
                     "modifier": 1.7,
                 },
                 {
                     "type": constants.BidModifierType.PLACEMENT,
-                    "target": dash.constants.PlacementMedium.SITE,
+                    "target": dash_constants.PlacementMedium.SITE,
                     "source": None,
                     "modifier": 3.6,
                 },
@@ -456,7 +456,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -466,14 +466,14 @@ class TestBidModifierService(TestCase):
 
         history = history_helpers.get_ad_group_history(self.ad_group).first()
         self.assertEqual(history.created_by, None)
-        self.assertEqual(history.action_type, dash.constants.HistoryActionType.BID_MODIFIER_DELETE)
+        self.assertEqual(history.action_type, dash_constants.HistoryActionType.BID_MODIFIER_DELETE)
         self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
 
     def test_delete_user_no_access(self):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -485,7 +485,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -495,7 +495,7 @@ class TestBidModifierService(TestCase):
 
         history = history_helpers.get_ad_group_history(self.ad_group).first()
         self.assertEqual(history.created_by, self.user)
-        self.assertEqual(history.action_type, dash.constants.HistoryActionType.BID_MODIFIER_DELETE)
+        self.assertEqual(history.action_type, dash_constants.HistoryActionType.BID_MODIFIER_DELETE)
         self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
 
     def test_delete_invalid_ids(self):
@@ -503,7 +503,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -512,17 +512,17 @@ class TestBidModifierService(TestCase):
             service.delete(self.ad_group, [bm_id + 5555 for bm_id in bid_modifiers_ids])
 
     def test_make_and_parse_example_csv_file(self):
-        magic_mixer.blend(dash.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
+        magic_mixer.blend(dash_models.Source, name="Outbrain", bidder_slug="b1_outbrain")
         magic_mixer.blend(
-            geolocation.Geolocation, key="US", type=dash.constants.LocationType.COUNTRY, name="United States"
+            geolocation.Geolocation, key="US", type=dash_constants.LocationType.COUNTRY, name="United States"
         )
         magic_mixer.blend(
-            geolocation.Geolocation, key="US-TX", type=dash.constants.LocationType.REGION, name="Texas, United States"
+            geolocation.Geolocation, key="US-TX", type=dash_constants.LocationType.REGION, name="Texas, United States"
         )
         magic_mixer.blend(
-            geolocation.Geolocation, key="765", type=dash.constants.LocationType.DMA, name="765 El Paso, TX"
+            geolocation.Geolocation, key="765", type=dash_constants.LocationType.DMA, name="765 El Paso, TX"
         )
-        magic_mixer.blend(dash.models.ContentAd, id="1")
+        magic_mixer.blend(dash_models.ContentAd, id="1")
 
         for modifier_type in constants.BidModifierType.get_all():
             input_csv_file = service.make_csv_example_file(modifier_type)
@@ -594,19 +594,19 @@ class TestBidModifierService(TestCase):
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.OPERATING_SYSTEM
-                ): dash.constants.OperatingSystem.get_text(dash.constants.OperatingSystem.ANDROID),
+                ): dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "30.0",
             },
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.SITE),
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE),
                 "Bid Modifier": "-0.1",
             },
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.APP),
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP),
                 "Bid Modifier": "0.5",
             },
             {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "XY", "Bid Modifier": "1.6"},
@@ -627,21 +627,21 @@ class TestBidModifierService(TestCase):
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.OPERATING_SYSTEM
-                ): dash.constants.OperatingSystem.get_text(dash.constants.OperatingSystem.ANDROID),
+                ): dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "30.0",
-                "Errors": helpers._get_modifier_bounds_error_message(30.0),
+                "Errors": helpers._get_modifier_bounds_error_message(30),
             },
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.SITE),
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE),
                 "Bid Modifier": "-0.1",
                 "Errors": helpers._get_modifier_bounds_error_message(-0.1),
             },
             {
                 helpers.output_modifier_type(
                     constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.APP),
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP),
                 "Bid Modifier": "0.5",
                 "Errors": "",
             },

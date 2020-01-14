@@ -276,8 +276,6 @@
         state: 1
         whitelist_publisher_groups: [2]
         blacklist_publisher_groups: [3]
-        cpc: "0.45"
-        local_cpc: "0.45"
     model: dash.adgroupsettings
     pk: 4
 

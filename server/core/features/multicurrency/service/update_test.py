@@ -39,11 +39,13 @@ class UpdateExchangeRatesTestCase(TestCase):
             request,
             skip_automation=True,
             skip_validation=True,
-            local_cpc="0.8",
+            local_cpc_cc="0.8",
             local_autopilot_daily_budget=100,
             local_b1_sources_group_daily_budget=72,
-            local_b1_sources_group_cpc_cc="0.35",
-            local_cpm="1.3",
+            local_max_cpm="1.3",
+        )
+        self.ad_group.settings.update(
+            request, skip_automation=True, skip_validation=True, local_b1_sources_group_cpc_cc="0.35"
         )
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
         self.ad_group_source.settings.update(
@@ -61,11 +63,11 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.ad_group_source.settings.refresh_from_db()
 
         self._test_initial_local_settings()
-        self.assertEqual(decimal.Decimal("1"), self.ad_group.settings.cpc)
+        self.assertEqual(decimal.Decimal("1"), self.ad_group.settings.cpc_cc)
         self.assertEqual(decimal.Decimal("125"), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("90"), self.ad_group.settings.b1_sources_group_daily_budget)
         self.assertEqual(decimal.Decimal("0.4375"), self.ad_group.settings.b1_sources_group_cpc_cc)
-        self.assertEqual(decimal.Decimal("1.625"), self.ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.625"), self.ad_group.settings.max_cpm)
         self.assertEqual(decimal.Decimal("35"), self.ad_group_source.settings.daily_budget_cc)
         self.assertEqual(decimal.Decimal("0.775"), self.ad_group_source.settings.cpc_cc)
         self.assertEqual(decimal.Decimal("0.1875"), self.goal1.get_current_value().value)
@@ -79,28 +81,28 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.ad_group_source.settings.refresh_from_db()
 
         self._test_initial_local_settings()
-        self.assertEqual(decimal.Decimal("1.0667"), self.ad_group.settings.cpc)
+        self.assertEqual(decimal.Decimal("1.0667"), self.ad_group.settings.cpc_cc)
         self.assertEqual(decimal.Decimal("133.3333"), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("96"), self.ad_group.settings.b1_sources_group_daily_budget)
         self.assertEqual(decimal.Decimal("0.4667"), self.ad_group.settings.b1_sources_group_cpc_cc)
-        self.assertEqual(decimal.Decimal("1.7333"), self.ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.7333"), self.ad_group.settings.max_cpm)
         self.assertEqual(decimal.Decimal("37.3333"), self.ad_group_source.settings.daily_budget_cc)
         self.assertEqual(decimal.Decimal("0.8267"), self.ad_group_source.settings.cpc_cc)
         self.assertEqual(decimal.Decimal("0.2"), self.goal1.get_current_value().value)
         self.assertEqual(20, self.goal2.get_current_value().value)
 
     def _test_initial_local_settings(self):
-        self.assertEqual(decimal.Decimal("0.8"), self.ad_group.settings.local_cpc)
+        self.assertEqual(decimal.Decimal("0.8"), self.ad_group.settings.local_cpc_cc)
         self.assertEqual(decimal.Decimal("100"), self.ad_group.settings.local_autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("72"), self.ad_group.settings.local_b1_sources_group_daily_budget)
         self.assertEqual(decimal.Decimal("0.35"), self.ad_group.settings.local_b1_sources_group_cpc_cc)
-        self.assertEqual(decimal.Decimal("1.3"), self.ad_group.settings.local_cpm)
+        self.assertEqual(decimal.Decimal("1.3"), self.ad_group.settings.local_max_cpm)
         self.assertEqual(decimal.Decimal("28"), self.ad_group_source.settings.local_daily_budget_cc)
         self.assertEqual(decimal.Decimal("0.62"), self.ad_group_source.settings.local_cpc_cc)
         self.assertEqual(decimal.Decimal("0.15"), self.goal1.get_current_value().local_value)
         self.assertEqual(20, self.goal2.get_current_value().local_value)
 
     def test_sanity_check(self):
-        update._sanity_check({"cpc": 0.12}, ["cpc"])
+        update._sanity_check({"cpc_cc": 0.12}, ["cpc_cc"])
         with self.assertRaises(update.ProgrammingError):
-            update._sanity_check({"cpc": 0.12, "local_cpc": 1.23}, ["cpc"])
+            update._sanity_check({"cpc_cc": 0.12, "local_cpc_cc": 1.23}, ["cpc_cc"])

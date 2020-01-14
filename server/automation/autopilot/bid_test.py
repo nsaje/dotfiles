@@ -421,6 +421,64 @@ class AutopilotBidTestCase(test.TestCase):
                 (Decimal(test_case[1]), Decimal(test_case[2])),
             )
 
+    def test_threshold_bid_constraints(self):
+        s1 = dash.models.Source.objects.get(pk=1)
+        s2 = dash.models.Source.objects.get(pk=2)
+        b1 = dash.models.SourceType.objects.get(pk=3)
+        s1.source_type = b1
+        s1.save()
+        s2.source_type = b1
+        s2.save()
+        rtb = dash.models.AllRTBSource
+        dash.models.CpcConstraint.objects.create(ad_group_id=3, max_cpc=Decimal("1.5"))
+        dash.models.CpcConstraint.objects.create(ad_group_id=2, source=s1, min_cpc=Decimal("0.65"))
+        dash.models.CpcConstraint.objects.create(ad_group_id=3, source=s2, min_cpc=Decimal("0.5"))
+        dash.models.CpcConstraint.objects.create(
+            account_id=1, source=s1, min_cpc=Decimal("0.65"), max_cpc=Decimal("1.65")
+        )
+        test_cases = (
+            (1, s2, "0.01", "1.5", "1.5", [], []),
+            (1, s2, "0.01", "0.01", "0.01", [], []),
+            (1, s1, "0.01", "0.01", "0.65", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (1, s1, "0.01", "2.00", "1.65", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (2, s1, "0.01", "0.1", "0.65", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (2, s2, "0.01", "0.1", "0.1", [], []),
+            (3, s1, "0.01", "0.5", "0.5", [], []),
+            (3, s1, "0.01", "2.5", "1.5", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (3, s1, "0.01", "0.1", "0.1", [], []),
+            (3, s2, "0.01", "1.6", "1.5", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (3, s2, "0.01", "0.1", "0.5", [BidChangeComment.BID_CONSTRAINT_APPLIED], []),
+            (1, rtb, "0.65", "1.0", "1.0", [], [rtb, s1, s2]),
+            (1, rtb, "0.65", "2.0", "1.65", [BidChangeComment.BID_CONSTRAINT_APPLIED], [rtb, s1, s2]),
+            (1, rtb, "0.75", "0.1", "0.65", [BidChangeComment.BID_CONSTRAINT_APPLIED], [rtb, s1, s2]),
+            (3, rtb, "0.75", "3.1", "1.5", [BidChangeComment.BID_CONSTRAINT_APPLIED], [rtb, s1, s2]),
+        )
+        for ad_group_id, source, old_cpc, proposed_cpc, expected_cpc, expected_comment, sources in test_cases:
+            comments = []
+            adjusted_cpc = bid._threshold_bid_constraints(
+                dash.models.AdGroup.objects.get(pk=ad_group_id),
+                source,
+                Decimal(old_cpc),
+                Decimal(proposed_cpc),
+                comments,
+                sources,
+                bcm_modifiers=None,
+            )
+
+            self.assertEqual(adjusted_cpc, Decimal(expected_cpc))
+            self.assertEqual(comments, expected_comment)
+
+        for ad_group_id, source, old_cpm, proposed_cpm, _, _, sources in test_cases:
+            ad_group = dash.models.AdGroup.objects.get(pk=ad_group_id)
+            ad_group.bidding_type = dash.constants.BiddingType.CPM
+            comments = []
+            adjusted_cpm = bid._threshold_bid_constraints(
+                ad_group, source, Decimal(old_cpm), Decimal(proposed_cpm), comments, sources, bcm_modifiers=None
+            )
+
+            self.assertEqual(adjusted_cpm, Decimal(proposed_cpm))
+            self.assertEqual(comments, [])
+
     def test_round_bid(self):
         test_cases = (
             # bid, rounded_bid
@@ -455,9 +513,8 @@ class AutopilotBidTestCase(test.TestCase):
         test_cases = (
             # proposed_bid, returned_bid, returned_comments
             ("0.1", "0.1", []),
-            ("0.150", "0.150", []),
-            ("0.160", "0.160", []),
-            ("10000.00", "0.180", [BidChangeComment.OVER_AD_GROUP_MAX_AUTOPILOT_BID]),
+            ("100.00", "100.00", []),
+            ("10000.00", "100.00", [BidChangeComment.OVER_AD_GROUP_MAX_BID]),
         )
 
         for test_case in test_cases:
@@ -466,14 +523,6 @@ class AutopilotBidTestCase(test.TestCase):
                 bid._threshold_ad_group_constraints(Decimal(test_case[0]), adgroup, comments, 3), Decimal(test_case[1])
             )
             self.assertEqual(comments, test_case[2])
-
-        test_cases = (
-            # proposed_bid, returned_bid, returned_comments
-            ("0.1", "0.1", []),
-            ("0.160", "0.160", []),
-            ("0.170", "0.170", []),
-            ("10000.00", "0.180", [BidChangeComment.OVER_AD_GROUP_MAX_AUTOPILOT_BID]),
-        )
 
         adgroup.bidding_type = dash.constants.BiddingType.CPM
         adgroup.save(None)

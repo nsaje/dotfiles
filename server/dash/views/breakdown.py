@@ -8,14 +8,12 @@ import stats.api_breakdowns
 import stats.constants
 import stats.constraints_helper
 import stats.helpers
-from core.features import bid_modifiers
 from core.features.publisher_groups import publisher_group_helpers
 from dash import campaign_goals
 from dash import constants
 from dash import forms
 from dash.views import breakdown_helpers
 from dash.views import helpers
-from restapi.serializers.bid_modifiers import BidModifierTypeSummary
 from utils import api_common
 from utils import exc
 from utils import threads
@@ -454,21 +452,6 @@ class AdGroupBreakdown(api_common.BaseApiView):
             extras["ob_blacklisted_count"] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
                 ad_group.campaign.account
             )
-
-        bid_modifier_type = stats.constants.TargetDimensionToBidModifierTypeMap.get(target_dim)
-        if bid_modifier_type is not None:
-            extras["autopilot_state"] = constants.AdGroupSettingsAutopilotState.get_name(
-                ad_group.settings.autopilot_state
-            )
-            extras["bidding_type"] = constants.BiddingType.get_name(ad_group.bidding_type)
-            extras["bid"] = (
-                ad_group.settings.local_cpc
-                if ad_group.bidding_type == constants.BiddingType.CPC
-                else ad_group.settings.local_cpm
-            )
-            extras["type_summaries"] = BidModifierTypeSummary(
-                bid_modifiers.get_type_summaries(ad_group.id), many=True
-            ).data
 
         extras["currency"] = currency
         stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)

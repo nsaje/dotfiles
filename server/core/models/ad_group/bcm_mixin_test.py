@@ -6,7 +6,6 @@ from mock import patch
 
 import core.features.bcm
 import core.models
-from core.features import bid_modifiers
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
@@ -25,7 +24,7 @@ class MigrateToBcmV2Test(TestCase):
             b1_sources_group_cpc_cc=decimal.Decimal("0.3"),
             b1_sources_group_cpm=decimal.Decimal("0.3"),
             autopilot_daily_budget=decimal.Decimal("100"),
-            cpm=decimal.Decimal("1.22"),
+            max_cpm=decimal.Decimal("1.22"),
         )
         campaign_goal = magic_mixer.blend(
             core.features.goals.CampaignGoal, campaign=campaign, primary=True, value="0.1"
@@ -44,14 +43,9 @@ class MigrateToBcmV2Test(TestCase):
     @patch("utils.k1_helper.update_ad_group", MagicMock())
     @patch.object(core.models.AdGroupSource, "migrate_to_bcm_v2")
     def test_migrate_to_bcm_v2(self, mock_ad_group_source_migrate):
-        source = magic_mixer.blend(core.models.Source)
-        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=source)
-        magic_mixer.blend(
-            bid_modifiers.BidModifier,
-            ad_group=self.ad_group,
-            type=bid_modifiers.constants.BidModifierType.SOURCE,
-            target=str(source.id),
-            modifier=1.0,
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
+        ad_group_source.settings.update_unsafe(
+            None, cpc_cc=core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
         )
 
         self._test_migrate_to_bcm_v2()
@@ -63,13 +57,6 @@ class MigrateToBcmV2Test(TestCase):
         source_type = magic_mixer.blend(core.models.SourceType, type=constants.SourceType.B1)
         source = magic_mixer.blend(core.models.Source, source_type=source_type)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=source)
-        magic_mixer.blend(
-            bid_modifiers.BidModifier,
-            ad_group=self.ad_group,
-            type=bid_modifiers.constants.BidModifierType.SOURCE,
-            target=str(source.id),
-            modifier=1.0,
-        )
 
         self._test_migrate_to_bcm_v2()
         self.assertFalse(ad_group_source.migrate_to_bcm_v2.called)
@@ -80,13 +67,6 @@ class MigrateToBcmV2Test(TestCase):
         source_type = magic_mixer.blend(core.models.SourceType, type=constants.SourceType.B1)
         source = magic_mixer.blend(core.models.Source, source_type=source_type)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=source)
-        magic_mixer.blend(
-            bid_modifiers.BidModifier,
-            ad_group=self.ad_group,
-            type=bid_modifiers.constants.BidModifierType.SOURCE,
-            target=str(source.id),
-            modifier=1.0,
-        )
 
         self.ad_group.settings.update(
             self.request, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
@@ -102,4 +82,4 @@ class MigrateToBcmV2Test(TestCase):
         self.assertEqual(139, self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("0.417"), self.ad_group.settings.b1_sources_group_cpc_cc)
         self.assertEqual(decimal.Decimal("0.417"), self.ad_group.settings.b1_sources_group_cpm)
-        self.assertEqual(decimal.Decimal("1.694"), self.ad_group.settings.cpm)
+        self.assertEqual(decimal.Decimal("1.694"), self.ad_group.settings.max_cpm)

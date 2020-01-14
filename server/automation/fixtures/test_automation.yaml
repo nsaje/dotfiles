@@ -184,7 +184,6 @@
     cpc: 0.15
     cpm: 0.16
     autopilot_daily_budget: 10
-    max_autopilot_bid: 0.18
   model: dash.adgroupsettings
   pk: 1
 
@@ -217,8 +216,6 @@
     created_by: 1
     state: 1
     autopilot_state: 1
-    cpc: 1.0
-    cpm: 1.0
     autopilot_daily_budget: 40
   model: dash.adgroupsettings
   pk: 4
@@ -569,55 +566,3 @@
     local_margin_nano: 0
   model: dash.budgetdailystatement
   pk: 4
-
-# Bid modifiers
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '1'
-    modifier: 0.8
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 1
-
-- fields:
-    type: 2
-    ad_group_id: 4
-    target: '1'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 2
-
-- fields:
-    type: 2
-    ad_group_id: 4
-    target: '2'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 3
-
-- fields:
-    type: 2
-    ad_group_id: 4
-    target: '3'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 4
-
-- fields:
-    type: 2
-    ad_group_id: 4
-    target: '4'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 5

@@ -20,15 +20,7 @@ import {BidModifierCellStore} from './services/bid-modifier-cell.store';
 import {BidModifier} from '../../../../../core/bid-modifiers/types/bid-modifier';
 import {BidModifiersService} from '../../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BID_MODIFIER_CELL_CONFIG} from './bid-modifier-cell.config';
-import {
-    KeyCode,
-    Currency,
-    BiddingType,
-    AdGroupAutopilotState,
-} from '../../../../../app.constants';
-import {BidModifierTypeSummary} from '../../../../../core/bid-modifiers/types/bid-modifier-type-summary';
-import {EditableCellApi} from '../editable-cell/types/editable-cell-api';
-import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
+import {KeyCode, Currency} from '../../../../../app.constants';
 
 @Component({
     selector: 'zem-bid-modifier-cell',
@@ -40,12 +32,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     @Input()
     bidModifier: BidModifier;
     @Input()
-    biddingType: BiddingType;
-    @Input()
-    bid: string;
-    @Input()
-    bidModifierTypeSummaries: BidModifierTypeSummary[];
-    @Input()
     entityId: number;
     @Input()
     currency: Currency;
@@ -55,8 +41,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     editMessage: string;
     @Input()
     showAutopilotIcon: boolean;
-    @Input()
-    adGroupAutopilotState: AdGroupAutopilotState;
     @Input()
     containerElement: HTMLElement;
     @Output()
@@ -69,8 +53,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     EditableCellPlacement = EditableCellPlacement;
 
     fractionSize: number;
-
-    editableCellApi: EditableCellApi;
 
     constructor(public store: BidModifierCellStore) {}
 
@@ -92,10 +74,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
 
     onValueChange($event: string) {
         this.store.updateBidModifier($event);
-    }
-
-    onEditableCellReady($event: EditableCellApi) {
-        this.editableCellApi = $event;
     }
 
     save(): void {
@@ -129,12 +107,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     onInputKeydown($event: KeyboardEvent) {
         if ($event.keyCode === KeyCode.ENTER) {
             this.save();
-        }
-    }
-
-    showDetails() {
-        if (commonHelpers.isDefined(this.editableCellApi)) {
-            this.editableCellApi.expandAsModal();
         }
     }
 }

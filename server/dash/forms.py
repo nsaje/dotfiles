@@ -194,6 +194,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(decimal_places=4, required=False)
     max_cpm = forms.DecimalField(decimal_places=4, required=False)
+    cpc = forms.DecimalField(decimal_places=4, required=False)
+    cpm = forms.DecimalField(decimal_places=4, required=False)
     daily_budget_cc = forms.DecimalField(
         min_value=10,
         decimal_places=4,
@@ -300,22 +302,6 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
 
     def clean(self):
         cleaned_data = super(AdGroupSettingsForm, self).clean()
-
-        if self.ad_group.bidding_type == constants.BiddingType.CPC:
-            if "bidding_type" in cleaned_data and cleaned_data["bidding_type"] == constants.BiddingType.CPM:
-                if "max_cpm" in cleaned_data and cleaned_data["max_cpm"] is None:
-                    raise forms.ValidationError("CPM value is required for CPM bidding type")
-            else:
-                if "cpc_cc" in cleaned_data and cleaned_data["cpc_cc"] is None:
-                    raise forms.ValidationError("CPC value is required for CPC bidding type")
-        else:
-            if "bidding_type" in cleaned_data and cleaned_data["bidding_type"] == constants.BiddingType.CPC:
-                if "cpc_cc" in cleaned_data and cleaned_data["cpc_cc"] is None:
-                    raise forms.ValidationError("CPC value is required for CPC bidding type")
-            else:
-                if "max_cpm" in cleaned_data and cleaned_data["max_cpm"] is None:
-                    raise forms.ValidationError("CPM value is required for CPM bidding type")
-
         return cleaned_data
 
     def clean_cpc_cc(self):

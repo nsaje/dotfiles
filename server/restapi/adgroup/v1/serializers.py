@@ -129,15 +129,6 @@ class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
     )
-    max_bid = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="local_max_autopilot_bid",
-        max_digits=10,
-        decimal_places=4,
-        output_precision=3,
-        allow_null=True,
-        required=False,
-        rounding=decimal.ROUND_HALF_DOWN,
-    )
 
 
 class AdGroupSerializer(
@@ -152,7 +143,6 @@ class AdGroupSerializer(
             "campaign_id",
             "name",
             "bidding_type",
-            "bid",
             "state",
             "archived",
             "start_date",
@@ -202,7 +192,7 @@ class AdGroupSerializer(
     end_date = restapi.serializers.fields.BlankDateField(required=False, allow_null=True)
     tracking_code = restapi.serializers.fields.NullPlainCharField(required=False, allow_blank=True)
     max_cpc = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="max_cpc_legacy",
+        source="local_cpc_cc",
         max_digits=10,
         decimal_places=4,
         output_precision=3,
@@ -211,7 +201,7 @@ class AdGroupSerializer(
         rounding=decimal.ROUND_HALF_DOWN,
     )
     max_cpm = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="max_cpm_legacy",
+        source="local_max_cpm",
         max_digits=10,
         decimal_places=4,
         output_precision=3,
@@ -240,12 +230,3 @@ class AdGroupSerializer(
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
     frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)
     additional_data = rest_framework.fields.JSONField(allow_null=True, required=False)
-    bid = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="local_bid",
-        max_digits=10,
-        decimal_places=4,
-        output_precision=3,
-        allow_null=False,
-        required=False,
-        rounding=decimal.ROUND_HALF_DOWN,
-    )

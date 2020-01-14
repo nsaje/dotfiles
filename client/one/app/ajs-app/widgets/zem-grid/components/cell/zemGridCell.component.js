@@ -99,7 +99,7 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                     return false;
                 }
                 if (ctrl.grid.meta.data.campaignAutopilot) {
-                    return isRowActive() && isAutopilotDimension();
+                    return isRowActive();
                 }
                 if (
                     ctrl.grid.meta.data.adGroupAutopilotState ===
@@ -115,14 +115,7 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 ) {
                     return false;
                 }
-                return isRowActive() && isAutopilotDimension();
-            }
-
-            function isAutopilotDimension() {
-                return (
-                    ctrl.grid.meta.data.breakdown ===
-                    constants.breakdown.MEDIA_SOURCE
-                );
+                return isRowActive();
             }
 
             function isRowActive() {

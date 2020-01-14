@@ -25,19 +25,19 @@ class ValidationTest(TestCase):
         current_settings = self.ad_group.settings
         new_settings = current_settings.copy_settings()
 
-        current_settings.local_cpc = Decimal("1.1")
-        new_settings.local_cpc = Decimal("1.2")
-        current_settings.local_cpm = Decimal("1.1")
-        new_settings.local_cpm = Decimal("1.2")
+        current_settings.local_cpc_cc = Decimal("1.1")
+        new_settings.local_cpc_cc = Decimal("1.2")
+        current_settings.local_max_cpm = Decimal("1.1")
+        new_settings.local_max_cpm = Decimal("1.2")
 
         changes = current_settings.get_setting_changes(new_settings)
 
         with self.assertRaises(exceptions.CannotSetCPM):
-            current_settings._validate_cpm(changes)
+            current_settings._validate_max_cpm(changes)
 
         current_settings.ad_group.bidding_type = constants.BiddingType.CPM
         with self.assertRaises(exceptions.CannotSetCPC):
-            current_settings._validate_cpc(changes)
+            current_settings._validate_cpc_cc(changes)
 
     def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self):
         current_settings = self.ad_group.settings
@@ -110,7 +110,7 @@ class ValidationTest(TestCase):
             currency=constants.Currency.AUD, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("1.38")
         )
         self.ad_group.campaign.account.currency = constants.Currency.AUD
-        self.ad_group.settings.update(None, local_cpc=decimal.Decimal("2.00"))
+        self.ad_group.settings.update(None, local_cpc_cc=decimal.Decimal("2.00"))
 
         current_settings = self.ad_group.settings
         new_settings = current_settings.copy_settings()
@@ -122,8 +122,10 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        self.ad_group.settings.update(None, local_b1_sources_group_cpc_cc=decimal.Decimal("2.01"))
-        self.assertEqual(self.ad_group.settings.local_b1_sources_group_cpc_cc, decimal.Decimal("2.01"))
+        self.ad_group.settings.update(None, local_b1_sources_group_cpc_cc=decimal.Decimal("2.00"))
+
+        with self.assertRaises(core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh):
+            self.ad_group.settings.update(None, local_b1_sources_group_cpc_cc=decimal.Decimal("2.01"))
 
     def test_validate_autopilot_settings_all_rtb_cpm_multicurrency(self):
         core.features.multicurrency.CurrencyExchangeRate.objects.create(
@@ -131,7 +133,7 @@ class ValidationTest(TestCase):
         )
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.campaign.account.currency = constants.Currency.AUD
-        self.ad_group.settings.update(None, local_cpm=decimal.Decimal("2.00"))
+        self.ad_group.settings.update(None, local_max_cpm=decimal.Decimal("2.00"))
 
         current_settings = self.ad_group.settings
         new_settings = current_settings.copy_settings()
@@ -143,8 +145,10 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        self.ad_group.settings.update(None, local_b1_sources_group_cpm=decimal.Decimal("2.01"))
-        self.assertEqual(self.ad_group.settings.local_b1_sources_group_cpm, decimal.Decimal("2.01"))
+        self.ad_group.settings.update(None, local_b1_sources_group_cpm=decimal.Decimal("2.00"))
+
+        with self.assertRaises(core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh):
+            self.ad_group.settings.update(None, local_b1_sources_group_cpm=decimal.Decimal("2.01"))
 
     def test_validate_autopilot_settings_all_rtb_daily_budget_multicurrency(self):
         exchange_rate = decimal.Decimal("2.00")

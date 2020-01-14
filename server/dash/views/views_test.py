@@ -349,6 +349,42 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(kwargs.get("local_cpm"), decimal.Decimal("0.5"))
 
     @patch("utils.k1_helper.update_ad_group")
+    def test_cpc_bigger_than_max(self, mock_k1_ping):
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = decimal.Decimal("1.0")
+        new_settings.max_cpm = decimal.Decimal("2.0")
+        new_settings.save(None)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "2.0"}),
+        )
+        self.assertEqual(response.status_code, 400)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpm": "3.0"}),
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch("utils.k1_helper.update_ad_group")
+    def test_cpc_smaller_than_constraint(self, mock_k1_ping):
+        models.CpcConstraint.objects.create(ad_group_id=1, source_id=1, min_cpc=decimal.Decimal("0.65"))
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = decimal.Decimal("0.70")
+        new_settings.save(None)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "0.5"}),
+        )
+        response_content = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response_content["data"]["errors"]["cpc_cc"],
+            ["Bid CPC is violating some constraints: " "CPC constraint on source AdBlade with min. CPC $0.65"],
+        )
+
+    @patch("utils.k1_helper.update_ad_group")
     def test_put_cpc_bidding_type(self, mock_k1_ping):
         self.ad_group.bidding_type = constants.BiddingType.CPC
         self.ad_group.save(None)
@@ -380,12 +416,16 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         mock_k1_ping.assert_called_with(models.AdGroup.objects.get(pk=1), "AdGroupSource.update")
 
-        hist = (
-            history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1))
-            .exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
-            .first()
-        )
+        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
+
+    def test_source_cpc_over_ad_group_maximum(self):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "1.10"}),
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_source_cpc_equal_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
@@ -441,7 +481,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_adgroups_sources_cpc_daily_budget_rounding(
         self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock
     ):
-        self.ad_group.settings.update_unsafe(None, cpc=0.7792)
+        self.ad_group.settings.update_unsafe(None, cpc_cc=0.7792)
 
         # min cpc - would return 0.12 without rounding ceiling
         r = self.client.put(
@@ -451,6 +491,15 @@ class AdGroupSourceSettingsTest(TestCase):
         json_data = json.loads(r.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("0.13" in json_data["errors"]["cpc_cc"][0])
+
+        # max cpc - would return 0.78 without rounding floor
+        r = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "0.78"}),
+        )
+        json_data = json.loads(r.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.77" in json_data["errors"]["cpc_cc"][0])
 
         # min daily budget - would return 7 without rounding ceiling
         r = self.client.put(
@@ -474,7 +523,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_adgroups_sources_rounding(self, min_cpm_mock):
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(None)
-        self.ad_group.settings.update_unsafe(None, cpm=0.7792)
+        self.ad_group.settings.update_unsafe(None, max_cpm=0.7792)
 
         # min cpm - would return 0.12 without rounding ceiling
         r = self.client.put(
@@ -484,6 +533,15 @@ class AdGroupSourceSettingsTest(TestCase):
         json_data = json.loads(r.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("0.13" in json_data["errors"]["cpm"][0])
+
+        # max cpm - would return 0.78 without rounding floor
+        r = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpm": "0.78"}),
+        )
+        json_data = json.loads(r.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.77" in json_data["errors"]["cpm"][0])
 
 
 class CampaignAdGroups(TestCase):
@@ -756,7 +814,7 @@ class AdGroupSourcesTest(TestCase):
     def test_put_overwrite_cpc(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         new_settings = ad_group.get_current_settings().copy_settings()
-        new_settings.cpc = decimal.Decimal("0.1")
+        new_settings.cpc_cc = decimal.Decimal("0.1")
         new_settings.save(None)
 
         response = self.client.put(
@@ -854,10 +912,6 @@ class AdGroupOverviewTest(TestCase):
         ]
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_settings = ad_group.get_current_settings()
-        new_ad_group_settings = ad_group_settings.copy_settings()
-        new_ad_group_settings.local_cpc = new_ad_group_settings.cpc
-        new_ad_group_settings.save(None)
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -927,7 +981,6 @@ class AdGroupOverviewTest(TestCase):
         new_ad_group_settings.start_date = start_date
         new_ad_group_settings.end_date = end_date
         new_ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
-        new_ad_group_settings.local_cpc = new_ad_group_settings.cpc
         new_ad_group_settings.save(None)
 
         new_settings = ad_group.adgroupsource_set.filter(id=1)[0].get_current_settings().copy_settings()

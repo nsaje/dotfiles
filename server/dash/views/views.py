@@ -281,7 +281,6 @@ class AdGroupOverview(api_common.BaseApiView):
             tooltip="Ad group's flight time is calculated from campaign budgets' and ad group's flight times.",
         )
         settings.append(flight_time_setting.as_dict())
-        settings.extend([s.as_dict() for s in infobox_helpers.create_bid_value_overview_settings(ad_group)])
 
         return settings
 
@@ -358,6 +357,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         except core.models.ad_group.exceptions.CampaignIsArchived as err:
             raise exc.ValidationError(str(err))
 
+        hacks.apply_ad_group_create_hacks(request, ad_group)
         return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
 
     @staticmethod

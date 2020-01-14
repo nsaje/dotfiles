@@ -63,7 +63,10 @@ class TargetConverter:
 
     @classmethod
     def _to_source_target(cls, value):
-        source = models.Source.objects.filter(bidder_slug=value).only("id").first()
+        try:
+            source = models.Source.objects.filter(id=value).only("id").first()
+        except ValueError:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
 
         if source is None:
             raise exceptions.BidModifierTargetInvalid("Invalid Source")
@@ -72,7 +75,7 @@ class TargetConverter:
 
     @classmethod
     def _from_source_target(cls, target):
-        return models.Source.objects.filter(id=int(target)).only("bidder_slug").first().bidder_slug
+        return target
 
     @classmethod
     def _to_device_type_target(cls, value):
@@ -186,7 +189,21 @@ class TargetConverter:
 
 
 class FileConverter(TargetConverter):
-    pass
+    @classmethod
+    def _to_source_target(cls, value):
+        try:
+            source = models.Source.objects.filter(bidder_slug=value).only("id").first()
+        except ValueError:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+
+        if source is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+
+        return str(source.id)
+
+    @classmethod
+    def _from_source_target(cls, target):
+        return models.Source.objects.filter(id=int(target)).only("bidder_slug").first().bidder_slug
 
     @classmethod
     def _to_operating_system_target(cls, value):

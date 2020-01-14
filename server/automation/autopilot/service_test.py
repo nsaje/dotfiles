@@ -639,7 +639,7 @@ class AutopilotPlusTestCase(test.TestCase):
         service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes, ad_group=ad_group)
 
         self.assertEqual(
-            dash.models.History.objects.filter(ad_group=ad_group).count(), initial_history_records_count + 4
+            dash.models.History.objects.filter(ad_group=ad_group).count(), initial_history_records_count + 2
         )
 
         history_records = dash.models.History.objects.filter(ad_group=ad_group).order_by("created_dt")[
@@ -647,11 +647,7 @@ class AutopilotPlusTestCase(test.TestCase):
         ]
 
         self.assertCountEqual(
-            [
-                (h.system_user, h.changes)
-                for h in history_records
-                if h.action_type != dash.constants.HistoryActionType.BID_MODIFIER_UPDATE
-            ],
+            [(h.system_user, h.changes) for h in history_records],
             [
                 (
                     dash.constants.SystemUserType.AUTOPILOT,

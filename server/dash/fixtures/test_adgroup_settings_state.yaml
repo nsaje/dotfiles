@@ -34,7 +34,6 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '1.00'
-        cpc: '1.00'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
@@ -51,7 +50,6 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '0.12'
-        cpc: '0.12'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
@@ -104,25 +102,3 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 22
-
-# Bid modifiers
-
-- fields:
-    type: 2
-    ad_group_id: 2
-    target: '1'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 4
-
-- fields:
-    type: 2
-    ad_group_id: 2
-    target: '2'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 5

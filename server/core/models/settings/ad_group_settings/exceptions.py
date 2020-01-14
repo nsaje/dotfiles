@@ -61,19 +61,19 @@ class CannotSetCPM(ValidationError):
     pass
 
 
-class CPCTooLow(ValidationError):
+class MaxCPCTooLow(ValidationError):
     pass
 
 
-class CPCTooHigh(ValidationError):
+class MaxCPCTooHigh(ValidationError):
     pass
 
 
-class CPMTooLow(ValidationError):
+class MaxCPMTooLow(ValidationError):
     pass
 
 
-class CPMTooHigh(ValidationError):
+class MaxCPMTooHigh(ValidationError):
     pass
 
 

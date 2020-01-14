@@ -65,18 +65,15 @@ def check_modifier_value(modifier):
 
     error_message = _get_modifier_bounds_error_message(modifier)
     if error_message:
-        if modifier < MODIFIER_MIN:
-            raise exceptions.BidModifierValueTooLow(error_message)
-        else:
-            raise exceptions.BidModifierValueTooHigh(error_message)
+        raise exceptions.BidModifierValueInvalid(error_message)
 
 
 def _get_modifier_bounds_error_message(modifier):
     if modifier < MODIFIER_MIN:
-        return "Bid modifier too low: %s (< %s)" % (modifier, MODIFIER_MIN)
+        return "Bid modifier too low (< %s)" % MODIFIER_MIN
 
     if modifier > MODIFIER_MAX:
-        return "Bid modifier too high: %s (> %s)" % (modifier, MODIFIER_MAX)
+        return "Bid modifier too high (> %s)" % MODIFIER_MAX
 
     return None
 

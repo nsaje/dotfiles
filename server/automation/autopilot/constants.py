@@ -14,7 +14,7 @@ class BidChangeComment(ConstantBase):
     CURRENT_BID_TOO_LOW = 9
     OVER_SOURCE_MAX_BID = 10
     UNDER_SOURCE_MIN_BID = 11
-    OVER_AD_GROUP_MAX_BID = 12  # deprecated
+    OVER_AD_GROUP_MAX_BID = 12
     OVER_AUTOPILOT_MAX_BID = 13
     UNDER_AUTOPILOT_MIN_BID = 14
     OVER_ACCOUNT_SOURCE_MIN_BID = 15  # deprecated
@@ -23,7 +23,6 @@ class BidChangeComment(ConstantBase):
     UNDER_AD_GROUP_SOURCE_MIN_BID = 18  # deprecated
     BID_CONSTRAINT_APPLIED = 19
     UNDER_GOAL_BID = 20
-    OVER_AD_GROUP_MAX_AUTOPILOT_BID = 21
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: "budget was manually changed recently",
@@ -46,7 +45,6 @@ class BidChangeComment(ConstantBase):
         UNDER_AD_GROUP_SOURCE_MIN_BID: "lower bid {bid} would not meet Ad Group-Source specific {bid} constraint",
         BID_CONSTRAINT_APPLIED: "bid {bid} had to be adjusted to meet applied {bid} constraints",
         UNDER_GOAL_BID: "bid {bid} would be lowered under the goal set on campaign (adjusted for threshold)",
-        OVER_AD_GROUP_MAX_AUTOPILOT_BID: "higher bid {bid} would exceed ad group's maximum autopilot {bid} constraint",
     }
 
     @classmethod

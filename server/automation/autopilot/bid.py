@@ -2,6 +2,7 @@ import decimal
 
 import dash.constants
 import dash.models
+from dash import cpc_constraints
 from utils import zlogging
 
 from . import settings
@@ -55,6 +56,15 @@ def get_autopilot_bid_recommendations(
         max_decimal_places = _get_bid_max_decimal_places(ag_source.source.source_type.cpc_decimal_places)
         proposed_bid = _round_bid(proposed_bid, decimal_places=max_decimal_places)
         proposed_bid = _threshold_ad_group_constraints(proposed_bid, ad_group, bid_change_comments, max_decimal_places)
+        proposed_bid = _threshold_bid_constraints(
+            ad_group,
+            ag_source.source,
+            old_bid,
+            proposed_bid,
+            bid_change_comments,
+            [s.source for s in ag_sources],
+            bcm_modifiers,
+        )
         proposed_bid = _threshold_source_constraints(
             proposed_bid, source_type, ad_group.settings, bid_change_comments, bcm_modifiers
         )
@@ -168,6 +178,28 @@ def _get_calculate_bid_comments(current_bid, current_daily_budget, yesterdays_sp
     return current_bid, bid_change_comments
 
 
+def _threshold_bid_constraints(ad_group, source, old_bid, proposed_bid, bid_change_comments, sources, bcm_modifiers):
+    # users set min/max CPM on their own
+    if ad_group.bidding_type == dash.constants.BiddingType.CPM:
+        return proposed_bid
+
+    new_bid = proposed_bid
+    if source == dash.models.AllRTBSource:
+        constrained_bids = set()
+        for s in sources:
+            if s != dash.models.AllRTBSource and s.source_type.type == dash.constants.SourceType.B1:
+                constrained_bids.add(
+                    cpc_constraints.adjust_cpc(proposed_bid, bcm_modifiers, ad_group=ad_group, source=s)
+                )
+        new_bid = min(constrained_bids) if old_bid < proposed_bid else max(constrained_bids)
+    else:
+        new_bid = cpc_constraints.adjust_cpc(proposed_bid, bcm_modifiers, ad_group=ad_group, source=source)
+
+    if new_bid != proposed_bid:
+        bid_change_comments += [BidChangeComment.BID_CONSTRAINT_APPLIED]
+    return new_bid
+
+
 def _threshold_source_constraints(proposed_bid, source_type, adgroup_settings, bid_change_comments, bcm_modifiers):
     min_bid, max_bid = _get_source_type_min_max_bid(source_type, adgroup_settings, bcm_modifiers)
     if proposed_bid > max_bid:
@@ -199,12 +231,11 @@ def _get_source_type_min_max_bid(source_type, adgroup_settings, bcm_modifiers):
 
 def _threshold_ad_group_constraints(proposed_bid, ad_group, bid_change_comments, max_bid_decimal_places):
     ag_settings = ad_group.get_current_settings()
+    ag_max_bid = ag_settings.max_cpm if ad_group.bidding_type == dash.constants.BiddingType.CPM else ag_settings.cpc_cc
 
-    if ag_settings.max_autopilot_bid and proposed_bid > ag_settings.max_autopilot_bid:
-        bid_change_comments += [BidChangeComment.OVER_AD_GROUP_MAX_AUTOPILOT_BID]
-        return _round_bid(
-            ag_settings.max_autopilot_bid, decimal_places=max_bid_decimal_places, rounding=decimal.ROUND_DOWN
-        )
+    if ag_max_bid and proposed_bid > ag_max_bid:
+        bid_change_comments += [BidChangeComment.OVER_AD_GROUP_MAX_BID]
+        return _round_bid(ag_max_bid, decimal_places=max_bid_decimal_places, rounding=decimal.ROUND_DOWN)
     return proposed_bid
 
 

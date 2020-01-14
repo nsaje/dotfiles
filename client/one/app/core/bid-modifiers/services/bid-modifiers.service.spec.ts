@@ -1,9 +1,8 @@
 import {BidModifiersService} from './bid-modifiers.service';
 import {BidModifiersEndpoint} from './bid-modifiers.endpoint';
 import {of} from 'rxjs';
-import {BiddingType, BidModifierType, Breakdown} from '../../../app.constants';
+import {BidModifierType, Breakdown} from '../../../app.constants';
 import {BidModifier} from '../types/bid-modifier';
-import {BidModifierTypeSummary} from '../types/bid-modifier-type-summary';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as clone from 'clone';
 
@@ -30,6 +29,8 @@ describe('BidModifiersService', () => {
             type: BidModifierType.DEVICE,
             sourceSlug: 'Slug 1',
             target: 'http://www.target.com',
+            bidMin: '0.20',
+            bidMax: '0.21',
             modifier: 1,
         };
         mockedBreakdown = Breakdown.DEVICE;

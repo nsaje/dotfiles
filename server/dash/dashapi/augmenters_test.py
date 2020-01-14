@@ -47,6 +47,9 @@ class PublisherAugmenterTest(TestCase):
     def test_augmenter_bid_modifiers(self):
         row = {"publisher_id": "pub1.com__1", "source_id": 1}
         self.augmenter([row], self.bid_modifier_loader)
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.bid_modifier.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.PUBLISHER]
+        )
         self.assertDictEqual(
             row["bid_modifier"],
             {
@@ -55,6 +58,8 @@ class PublisherAugmenterTest(TestCase):
                 "modifier": self.bid_modifier.modifier,
                 "target": self.bid_modifier.target,
                 "source_slug": self.bid_modifier.source_slug,
+                "bid_max": max_factor,
+                "bid_min": min_factor,
             },
         )
 
@@ -67,7 +72,7 @@ class PublisherAugmenterTest(TestCase):
 class DeliveryAugmenterTest(TestCase):
     def setUp(self):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
-        ad_group.settings.update_unsafe(None, cpc=Decimal("3.0"))
+        ad_group.settings.update_unsafe(None, cpc_cc=Decimal("3.0"))
         source = magic_mixer.blend(models.Source, id=1)
         add_non_publisher_bid_modifiers(
             omit_types={bid_modifiers.BidModifierType.SOURCE}, ad_group=ad_group, source=source
@@ -92,6 +97,17 @@ class DeliveryAugmenterTest(TestCase):
         self.augmenter = augmenter.get_augmenter_for_dimension("device_type")
         self.report_augmenter = augmenter.get_report_augmenter_for_dimension("device_type", None)
 
+        self.expected_min = pow(
+            0.5,
+            bid_modifiers.BidModifier.objects.filter(ad_group=ad_group)
+            .exclude(type=bid_modifiers.BidModifierType.DEVICE)
+            .exclude(
+                type=bid_modifiers.BidModifierType.SOURCE
+            )  # TEMP(tkusterle) temporarily disable source bid modifiers
+            .count(),
+        )
+        self.expected_max = 1.0
+
     def test_augmenter_bid_modifiers(self):
         row = {"device_type": dash.constants.DeviceType.DESKTOP}
         self.augmenter([row], self.delivery_loader)
@@ -105,6 +121,8 @@ class DeliveryAugmenterTest(TestCase):
                     "source_slug": self.bid_modifier.source_slug,
                     "target": "DESKTOP",
                     "modifier": self.bid_modifier.modifier,
+                    "bid_min": self.expected_min,
+                    "bid_max": self.expected_max,
                 },
                 "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
             },
@@ -123,6 +141,8 @@ class DeliveryAugmenterTest(TestCase):
                     "source_slug": None,
                     "target": "MOBILE",
                     "modifier": None,
+                    "bid_min": self.expected_min,
+                    "bid_max": self.expected_max,
                 },
                 "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
             },

@@ -284,6 +284,7 @@ def augment_content_ad(row, loader, is_base_level=False):
 
         if hasattr(loader, "bid_modifiers_by_ad"):
             bid_modifier = loader.bid_modifiers_by_ad.get(content_ad_id)
+            min_factor, max_factor = loader.min_max_modifiers
             row.update(
                 {
                     "bid_modifier": _create_bid_modifier_dict(
@@ -292,6 +293,8 @@ def augment_content_ad(row, loader, is_base_level=False):
                             core.features.bid_modifiers.BidModifierType.AD
                         ),
                         target=str(content_ad_id),
+                        bid_min=min_factor,
+                        bid_max=max_factor,
                     )
                 }
             )
@@ -414,6 +417,7 @@ def augment_source(row, loader, is_base_level=False):
 
     if hasattr(loader, "bid_modifiers_by_source"):
         bid_modifier = loader.bid_modifiers_by_source.get(source_id)
+        min_factor, max_factor = loader.min_max_modifiers
         row["bid_modifier"] = _create_bid_modifier_dict(
             bid_modifier,
             modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
@@ -421,9 +425,9 @@ def augment_source(row, loader, is_base_level=False):
             ),
             target=core.features.bid_modifiers.ApiConverter.from_target(
                 core.features.bid_modifiers.BidModifierType.SOURCE, source_id
-            )
-            if source_id is not None
-            else None,
+            ),
+            bid_min=min_factor,
+            bid_max=max_factor,
         )
 
 
@@ -487,6 +491,7 @@ def augment_publisher(row, loader, is_base_level=False):
     if loader.has_bid_modifiers:
         modifier_map = loader.modifier_map
         modifier = modifier_map.get((source_id, domain))
+        min_factor, max_factor = loader.min_max_modifiers
 
         if modifier is not None:
             row.update(
@@ -496,6 +501,8 @@ def augment_publisher(row, loader, is_base_level=False):
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(modifier.type),
                         target=core.features.bid_modifiers.ApiConverter.from_target(modifier.type, modifier.target),
                         source_slug=modifier.source_slug,
+                        bid_min=min_factor,
+                        bid_max=max_factor,
                     )
                 }
             )
@@ -511,6 +518,8 @@ def augment_publisher(row, loader, is_base_level=False):
                             core.features.bid_modifiers.BidModifierType.PUBLISHER, domain
                         ),
                         source_slug=source.bidder_slug,
+                        bid_min=min_factor,
+                        bid_max=max_factor,
                     )
                 }
             )
@@ -556,6 +565,7 @@ def augment_delivery(row, loader, is_base_level=True):
 
     if delivery_value not in core.features.bid_modifiers.constants.UNSUPPORTED_TARGETS:
         bid_modifier = loader.objs_map.get(delivery_value)
+        min_factor, max_factor = loader.min_max_modifiers
         row.update(
             {
                 "bid_modifier": _create_bid_modifier_dict(
@@ -567,6 +577,8 @@ def augment_delivery(row, loader, is_base_level=True):
                         core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(delivery_dimension),
                         delivery_value,
                     ),
+                    bid_min=min_factor,
+                    bid_max=max_factor,
                 )
             }
         )
@@ -574,11 +586,15 @@ def augment_delivery(row, loader, is_base_level=True):
     row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
 
 
-def _create_bid_modifier_dict(bid_modifier_or_none, modifier_type=None, target=None, source_slug=None):
+def _create_bid_modifier_dict(
+    bid_modifier_or_none, modifier_type=None, target=None, source_slug=None, bid_min=None, bid_max=None
+):
     bid_modifier_dict = {
         "id": None,
         "type": modifier_type,
         "target": target,
+        "bid_min": bid_min,
+        "bid_max": bid_max,
         "source_slug": source_slug,
         "modifier": None,
     }

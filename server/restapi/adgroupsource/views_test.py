@@ -256,6 +256,14 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpc"][0])
 
+        # max cpc - would return 0.78 without rounding floor
+        test_ags = [self.adgroupsource_repr(source=ad_group_sources.source.bidder_slug, cpc="0.78")]
+        r = self.client.put(
+            reverse("adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}), test_ags, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("0.77" in json.loads(r.content)["details"]["cpc"][0])
+
         # min daily budget - would return 7 without rounding ceiling
         test_ags = [self.adgroupsource_repr(source=ad_group_sources.source.bidder_slug, daily_budget="7")]
         r = self.client.put(
@@ -287,3 +295,11 @@ class AdGroupSourcesTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
+
+        # max cpm - would return 0.78 without rounding floor
+        test_ags = [self.adgroupsource_repr(source=ad_group_sources.source.bidder_slug, cpm="0.78")]
+        r = self.client.put(
+            reverse("adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}), test_ags, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("0.77" in json.loads(r.content)["details"]["cpm"][0])

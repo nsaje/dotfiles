@@ -41,7 +41,7 @@ class TestTargetConverter(TestCase):
         source = magic_mixer.blend(core.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
 
         output_value = self.converter.from_target(constants.BidModifierType.SOURCE, str(source.id))
-        self.assertEqual(output_value, source.bidder_slug)
+        self.assertEqual(output_value, str(source.id))
 
         target_value = self.converter.to_target(constants.BidModifierType.SOURCE, output_value)
         self.assertEqual(target_value, str(source.id))
@@ -204,7 +204,7 @@ class TestTargetConverter(TestCase):
         # full circle test
         content_ad = magic_mixer.blend(core.models.ContentAd)
 
-        output_value = self.converter.from_target(constants.BidModifierType.AD, str(content_ad.id))
+        output_value = self.converter.from_target(constants.BidModifierType.SOURCE, str(content_ad.id))
         self.assertEqual(output_value, str(content_ad.id))
 
         target_value = self.converter.to_target(constants.BidModifierType.AD, output_value)

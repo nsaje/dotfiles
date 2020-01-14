@@ -1,6 +1,5 @@
 import decimal
 
-import mock
 from django.test import TestCase
 
 import core.models
@@ -119,7 +118,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         ad_group = magic_mixer.blend(
             core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPC
         )
-        ad_group.settings.update_unsafe(None, cpm=1.0, local_cpm=1.0)
+        ad_group.settings.update_unsafe(None, max_cpm=1.0, local_max_cpm=1.0)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
         ad_group_source.settings.update_unsafe(
             None,
@@ -136,7 +135,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         ad_group = magic_mixer.blend(
             core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPM
         )
-        ad_group.settings.update_unsafe(None, cpc=1.0, local_cpc=1.0)
+        ad_group.settings.update_unsafe(None, cpc_cc=1.0, local_cpc_cc=1.0)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
         ad_group_source.settings.update_unsafe(
             None,
@@ -237,8 +236,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
             ad_group_source.settings.update(None, **updates)
         self.assertEqual(ad_group_source.settings.state, dash.constants.AdGroupSettingsState.ACTIVE)
 
-        with mock.patch("core.features.bid_modifiers.source.handle_ad_group_source_settings_change"):
-            ad_group_source.settings.update_unsafe(None, cpc_cc=decimal.Decimal("0.05"))
+        ad_group_source.settings.update_unsafe(None, cpc_cc=decimal.Decimal("0.05"))
 
         updates = {}
         updates["state"] = dash.constants.AdGroupSourceSettingsState.INACTIVE

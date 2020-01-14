@@ -56,7 +56,6 @@ import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.
 import {SelectListComponent} from './components/select-list/select-list.component';
 import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
 import {ContentFormGroupComponent} from './components/content-form-group/content-form-group.component';
-import {BidModifierTypesGridComponent} from './components/bid-modifier-types-grid/bid-modifier-types-grid.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -106,7 +105,6 @@ const EXPORTED_DECLARATIONS = [
     HelpPopoverHeaderComponent,
     DealEditFormComponent,
     SelectListComponent,
-    BidModifierTypesGridComponent,
 ];
 
 @NgModule({

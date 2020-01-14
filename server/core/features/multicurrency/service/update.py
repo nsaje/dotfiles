@@ -103,10 +103,6 @@ def _recalculate_ad_group_source_settings_amounts(ad_group_source):
 
 
 def _sanity_check(changes, multicurrency_fields):
-    changes.pop("cpc_cc", None)
-    changes.pop("local_cpc_cc", None)
-    changes.pop("max_cpm", None)
-    changes.pop("local_max_cpm", None)
     if any(field not in multicurrency_fields for field in changes):
         invalid_field_set = set(changes) - set(multicurrency_fields)
         logger.error("Attempted to change non-multicurrency fields!", fields=invalid_field_set)

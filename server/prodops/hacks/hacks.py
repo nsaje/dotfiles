@@ -32,6 +32,12 @@ def apply_ad_group_create_hacks(request, ad_group):
         ad_group.settings.update(request, skip_validation=True, **data)
 
 
+def override_ad_group_settings_form_data(ad_group, form_data):
+    if ad_group.campaign.account.agency_id in constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY:
+        form_data.update(constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY[ad_group.campaign.account.agency_id])
+    return form_data
+
+
 def override_ad_group_settings(ad_group, updates):
     if ad_group.campaign.account.agency_id in constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY:
         updates.update(constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY[ad_group.campaign.account.agency_id])

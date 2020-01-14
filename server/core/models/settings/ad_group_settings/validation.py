@@ -23,8 +23,8 @@ ARBITRARY_BLUEKAI_CATEGORIES_AGENCIES = {33}  # inPowered
 class AdGroupSettingsValidatorMixin(object):
     def clean(self, new_settings):
         utils.validation_helper.validate_multiple(
-            self._validate_cpc,
-            self._validate_cpm,
+            self._validate_cpc_cc,
+            self._validate_max_cpm,
             self._validate_end_date,
             self._validate_tracking_code,
             changes=self.get_setting_changes(new_settings),
@@ -47,45 +47,45 @@ class AdGroupSettingsValidatorMixin(object):
         currency = self.ad_group.campaign.account.currency
         return core.features.multicurrency.get_current_exchange_rate(currency)
 
-    def _validate_cpc(self, changes):
+    def _validate_cpc_cc(self, changes):
         is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
-        if is_cpm_buying and "local_cpc" in changes:
-            raise exceptions.CannotSetCPC("Cannot set ad group CPC when ad group bidding type is CPM")
+        if is_cpm_buying and "local_cpc_cc" in changes:
+            raise exceptions.CannotSetCPC("Cannot set ad group max CPC when ad group bidding type is CPM")
 
-        if "local_cpc" not in changes:
-            return
+        cpc_cc = changes.get("local_cpc_cc", None)
+        if cpc_cc is not None:
+            currency_symbol = self._get_currency_symbol()
+            min_cpc_cc = decimal.Decimal("0.05") * self._get_exchange_rate()
+            max_cpc_cc = decimal.Decimal("10") * self._get_exchange_rate()
 
-        cpc = changes["local_cpc"]
-        assert cpc is not None
+            if cpc_cc < min_cpc_cc:
+                raise exceptions.MaxCPCTooLow(
+                    "Maximum CPC can't be lower than {}{:.2f}.".format(currency_symbol, min_cpc_cc)
+                )
+            elif cpc_cc > max_cpc_cc:
+                raise exceptions.MaxCPCTooHigh(
+                    "Maximum CPC can't be higher than {}{:.2f}.".format(currency_symbol, max_cpc_cc)
+                )
 
-        currency_symbol = self._get_currency_symbol()
-        min_cpc = self.MIN_CPC_VALUE * self._get_exchange_rate()
-        max_cpc = self.MAX_CPC_VALUE * self._get_exchange_rate()
-
-        if cpc < min_cpc:
-            raise exceptions.CPCTooLow("CPC can't be lower than {}{:.2f}.".format(currency_symbol, min_cpc))
-        elif cpc > max_cpc:
-            raise exceptions.CPCTooHigh("CPC can't be higher than {}{:.2f}.".format(currency_symbol, max_cpc))
-
-    def _validate_cpm(self, changes):
+    def _validate_max_cpm(self, changes):
         is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
-        if not is_cpm_buying and "local_cpm" in changes:
-            raise exceptions.CannotSetCPM("Cannot set ad group CPM when ad group bidding type is CPC")
+        if not is_cpm_buying and "local_max_cpm" in changes:
+            raise exceptions.CannotSetCPM("Cannot set ad group max CPM when ad group bidding type is CPC")
 
-        if "local_cpm" not in changes:
-            return
+        max_cpm = changes.get("local_max_cpm")
+        if max_cpm is not None:
+            currency_symbol = self._get_currency_symbol()
+            min_max_cpm = decimal.Decimal("0.05") * self._get_exchange_rate()
+            max_max_cpm = decimal.Decimal("25") * self._get_exchange_rate()
 
-        cpm = changes["local_cpm"]
-        assert cpm is not None
-
-        currency_symbol = self._get_currency_symbol()
-        min_cpm = self.MIN_CPM_VALUE * self._get_exchange_rate()
-        max_cpm = self.MAX_CPM_VALUE * self._get_exchange_rate()
-
-        if cpm < min_cpm:
-            raise exceptions.CPMTooLow("CPM can't be lower than {}{:.2f}.".format(currency_symbol, min_cpm))
-        elif cpm > max_cpm:
-            raise exceptions.CPMTooHigh("CPM can't be higher than {}{:.2f}.".format(currency_symbol, max_cpm))
+            if max_cpm < min_max_cpm:
+                raise exceptions.MaxCPMTooLow(
+                    "Maximum CPM can't be lower than {}{:.2f}.".format(currency_symbol, min_max_cpm)
+                )
+            elif max_cpm > max_max_cpm:
+                raise exceptions.MaxCPMTooHigh(
+                    "Maximum CPM can't be higher than {}{:.2f}.".format(currency_symbol, max_max_cpm)
+                )
 
     def _validate_end_date(self, changes):
         end_date = changes.get("end_date")

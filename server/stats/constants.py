@@ -1,5 +1,4 @@
 import dash.constants
-from core.features import bid_modifiers
 
 
 class StructureDimension:
@@ -200,16 +199,3 @@ def get_child_breakdown_of_dimension(breakdown, dimension):
     except ValueError:
         pass
     return breakdown
-
-
-TargetDimensionToBidModifierTypeMap = {
-    StructureDimension.PUBLISHER: bid_modifiers.BidModifierType.PUBLISHER,
-    StructureDimension.SOURCE: bid_modifiers.BidModifierType.SOURCE,
-    DeliveryDimension.DEVICE: bid_modifiers.BidModifierType.DEVICE,
-    DeliveryDimension.DEVICE_OS: bid_modifiers.BidModifierType.OPERATING_SYSTEM,
-    DeliveryDimension.PLACEMENT_MEDIUM: bid_modifiers.BidModifierType.PLACEMENT,
-    DeliveryDimension.COUNTRY: bid_modifiers.BidModifierType.COUNTRY,
-    DeliveryDimension.REGION: bid_modifiers.BidModifierType.STATE,
-    DeliveryDimension.DMA: bid_modifiers.BidModifierType.DMA,
-    StructureDimension.CONTENT_AD: bid_modifiers.BidModifierType.AD,
-}

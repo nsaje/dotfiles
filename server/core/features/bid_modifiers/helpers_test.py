@@ -9,7 +9,7 @@ from . import exceptions
 from . import helpers
 
 
-class TestBidModifierHelpers(TestCase):
+class TestPublisherBidModifierService(TestCase):
     def test_get_source_slug(self):
         source = magic_mixer.blend(core.models.Source, bidder_slug="some_slug")
 
@@ -37,10 +37,10 @@ class TestBidModifierHelpers(TestCase):
         with self.assertRaises(exceptions.BidModifierValueInvalid):
             helpers.check_modifier_value("")
 
-        with self.assertRaises(exceptions.BidModifierValueTooLow):
+        with self.assertRaises(exceptions.BidModifierValueInvalid):
             helpers.check_modifier_value(helpers.MODIFIER_MIN - 1)
 
-        with self.assertRaises(exceptions.BidModifierValueTooHigh):
+        with self.assertRaises(exceptions.BidModifierValueInvalid):
             helpers.check_modifier_value(helpers.MODIFIER_MAX + 1)
 
     def test_clean_bid_modifier_type_input(self):

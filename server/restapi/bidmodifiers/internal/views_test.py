@@ -21,9 +21,6 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="source_slug")
 
         self.outbrain = magic_mixer.blend(core.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
-        self.outbrain_source = magic_mixer.blend(
-            core.models.AdGroupSource, ad_group=self.ad_group, source=self.outbrain
-        )
         self.us = magic_mixer.blend(
             geolocation.Geolocation, key="US", type=constants.LocationType.COUNTRY, name="United States"
         )
@@ -517,12 +514,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "Source Slug": self.source.bidder_slug,
                 "Bid Modifier": "1.1",
             },
-            {
-                bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.SOURCE
-                ): self.outbrain.bidder_slug,
-                "Bid Modifier": "1.2",
-            },
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            # {
+            #     bid_modifiers.helpers.output_modifier_type(
+            #         bid_modifiers.constants.BidModifierType.SOURCE
+            #     ): self.outbrain.bidder_slug,
+            #     "Bid Modifier": "1.2",
+            # },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.DEVICE
@@ -583,11 +581,10 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             {
                 "data": {
                     "deleted": {
-                        "count": 9,
-                        "dimensions": 9,
+                        "count": 8,
+                        "dimensions": 8,
                         "summary": [
                             {"type": "PUBLISHER", "count": 1},
-                            {"type": "SOURCE", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
                             {"type": "PLACEMENT", "count": 1},
@@ -598,11 +595,10 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                         ],
                     },
                     "created": {
-                        "count": 9,
-                        "dimensions": 9,
+                        "count": 8,
+                        "dimensions": 8,
                         "summary": [
                             {"type": "PUBLISHER", "count": 1},
-                            {"type": "SOURCE", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
                             {"type": "PLACEMENT", "count": 1},
@@ -625,12 +621,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                     "source": self.source,
                     "modifier": 1.1,
                 },
-                {
-                    "type": bid_modifiers.constants.BidModifierType.SOURCE,
-                    "target": str(self.outbrain.id),
-                    "source": None,
-                    "modifier": 1.2,
-                },
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                # {
+                #     "type": bid_modifiers.constants.BidModifierType.SOURCE,
+                #     "target": str(self.outbrain.id),
+                #     "source": None,
+                #     "modifier": 1.2,
+                # },
                 {
                     "type": bid_modifiers.constants.BidModifierType.DEVICE,
                     "target": str(constants.DeviceType.MOBILE),
@@ -962,10 +959,10 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "{},{},1.2\r\n".format(self.outbrain.bidder_slug, self.source.bidder_slug),
                 "\r\n",
                 "Device,Bid Modifier,Errors\r\n",
-                "MOBILE,11.3,Bid modifier too high: 11.3 (> 11.0)\r\n",
+                "MOBILE,11.3,Bid modifier too high (> 11.0)\r\n",
                 "\r\n",
                 "Operating System,Bid Modifier,Errors\r\n",
-                "Android,-0.1,Bid modifier too low: -0.1 (< 0.01)\r\n",
+                "Android,-0.1,Bid modifier too low (< 0.01)\r\n",
                 "\r\n",
                 "Placement,Bid Modifier,Errors\r\n",
                 "illegal,1.5,Invalid Placement Medium\r\n",

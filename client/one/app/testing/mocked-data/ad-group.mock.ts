@@ -12,7 +12,8 @@ export const adGroupMock: AdGroup = {
     redirectPixelUrls: [],
     redirectJavascript: null,
     trackingCode: null,
-    bid: null,
+    maxCpc: null,
+    maxCpm: null,
     deliveryType: null,
     clickCappingDailyAdGroupMaxClicks: null,
     dayparting: null,
@@ -62,7 +63,6 @@ export const adGroupMock: AdGroup = {
     autopilot: {
         state: null,
         dailyBudget: null,
-        maxBid: null,
     },
     manageRtbSourcesAsOne: false,
     frequencyCapping: null,

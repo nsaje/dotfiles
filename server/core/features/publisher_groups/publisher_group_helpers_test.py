@@ -258,6 +258,39 @@ class PublisherGroupHelpersTest(TestCase):
         mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
+    def test_blacklist_publisher_account_enforce_cpc_above_limit(self, mock_email):
+        obj = models.Account.objects.get(pk=1000)
+        outbrain = models.Source.objects.get(pk=3)
+        for i in range(publisher_group_helpers.OUTBRAIN_CPC_CONSTRAINT_LIMIT + 1):
+            models.PublisherGroupEntry.objects.create(
+                publisher_group=obj.default_blacklist, source=outbrain, publisher="cnn{}.com".format(i)
+            )
+        non_relevant_entries = [
+            {"publisher": "cnn{}.com".format(x), "source": None, "include_subdomains": False} for x in range(10)
+        ]
+
+        publisher_group_helpers.blacklist_publishers(self.request, non_relevant_entries, obj, enforce_cpc=True)
+        self.assertEqual(models.CpcConstraint.objects.all().count(), 1)
+
+    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
+    def test_blacklist_publisher_account_enforce_cpc_below_limit(self, mock_email):
+        obj = models.Account.objects.get(pk=1)
+        outbrain = models.Source.objects.get(pk=3)
+        non_relevant_entries = [
+            {"publisher": "cnn{}.com".format(x), "source": None, "include_subdomains": False} for x in range(10)
+        ]
+        ob_entries = [
+            {"publisher": "cnn{}.com".format(x), "source": outbrain, "include_subdomains": False}
+            for x in range(publisher_group_helpers.OUTBRAIN_CPC_CONSTRAINT_LIMIT - 1)
+        ]
+
+        publisher_group_helpers.blacklist_publishers(
+            self.request, ob_entries + non_relevant_entries, obj, enforce_cpc=True
+        )
+
+        self.assertEqual(models.CpcConstraint.objects.all().count(), 0)
+
+    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_limit_outbrain_blacklist(self, mock_email):
         obj = models.Account.objects.get(pk=1000)
         outbrain = models.Source.objects.get(pk=3)
@@ -458,6 +491,8 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(
             form_data, {"name": publisher_group.name, "include_subdomains": publisher_group.default_include_subdomains}
         )
+
+        self.assertEqual(models.History.objects.last().changes_text, 'Publisher group "Bla bla bla [1012]" created')
 
 
 class PublisherGroupCSVHelpersTest(TestCase):

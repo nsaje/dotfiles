@@ -53,7 +53,6 @@ class ExtraDataSerializerTest(TestCase):
                 {"type": bid_modifiers.constants.BidModifierType.DEVICE, "count": 7, "min": 0.85, "max": 1.2},
                 {"type": bid_modifiers.constants.BidModifierType.STATE, "count": 3, "min": 0.9, "max": 1.1},
             ],
-            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
         self.serialized = {
             "action_is_waiting": False,
@@ -120,7 +119,6 @@ class ExtraDataSerializerTest(TestCase):
                     "max": 1.1,
                 },
             ],
-            "current_bids": {"cpc": "0.450", "cpm": "1.000"},
         }
 
     def test_serialization(self):

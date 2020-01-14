@@ -1,7 +1,6 @@
 import rest_framework.serializers
 
 import restapi.serializers.base
-import restapi.serializers.fields
 from core.features.bid_modifiers import constants
 
 

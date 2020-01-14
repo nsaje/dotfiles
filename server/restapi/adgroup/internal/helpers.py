@@ -37,7 +37,6 @@ def get_extra_data(user, ad_group):
         "retargetable_ad_groups": retargetable_ad_groups,
         "audiences": audiences,
         "warnings": warnings,
-        "current_bids": {"cpc": ad_group.settings.local_cpc, "cpm": ad_group.settings.local_cpm},
     }
 
     if user.has_perm("zemauth.can_see_backend_hacks"):

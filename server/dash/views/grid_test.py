@@ -65,9 +65,9 @@ class RTBSourceSettingsTest(TestCase):
         self.assertNotEqual("0.15", next_ad_group_settings.b1_sources_group_cpc_cc)
         self.assertEqual(Decimal("0.15"), next_ad_group_settings.b1_sources_group_cpc_cc)
 
-    def test_validate_max_source_cpc(self):
+    def test_validate_max_cpc(self):
         updated_ad_group_settings = self.ad_group.get_current_settings().copy_settings()
-        updated_ad_group_settings.cpc = Decimal("0.10")
+        updated_ad_group_settings.cpc_cc = Decimal("0.10")
         updated_ad_group_settings.save(None)
 
         response = self.client.post(
@@ -75,7 +75,7 @@ class RTBSourceSettingsTest(TestCase):
                 "grid_ad_group_source_settings",
                 kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
-            json.dumps({"settings": {"cpc_cc": "30.00"}}),
+            json.dumps({"settings": {"cpc_cc": "0.15"}}),
             content_type="application/json",
             follow=True,
         )
@@ -84,7 +84,7 @@ class RTBSourceSettingsTest(TestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("Maximum CPC on RTB Sources is" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
+        self.assertTrue("0.10" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_post_cpm(self, mock_redirector_insert_adgroup):
@@ -109,11 +109,11 @@ class RTBSourceSettingsTest(TestCase):
         self.assertNotEqual(prev_ad_group_settings.b1_sources_group_cpm, next_ad_group_settings.b1_sources_group_cpm)
         self.assertEqual(Decimal("0.35"), next_ad_group_settings.b1_sources_group_cpm)
 
-    def test_validate_max_source_cpm(self):
+    def test_validate_max_cpm(self):
         self.ad_group.bidding_type = constants.BiddingType.CPM
         self.ad_group.save(None)
         updated_ad_group_settings = self.ad_group.get_current_settings().copy_settings()
-        updated_ad_group_settings.cpm = Decimal("0.40")
+        updated_ad_group_settings.max_cpm = Decimal("0.40")
         updated_ad_group_settings.save(None)
 
         response = self.client.post(
@@ -121,7 +121,7 @@ class RTBSourceSettingsTest(TestCase):
                 "grid_ad_group_source_settings",
                 kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
-            json.dumps({"settings": {"cpm": "26.00"}}),
+            json.dumps({"settings": {"cpm": "0.45"}}),
             content_type="application/json",
             follow=True,
         )
@@ -130,4 +130,4 @@ class RTBSourceSettingsTest(TestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("Maximum CPM on RTB Sources is" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])
+        self.assertTrue("0.40" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])

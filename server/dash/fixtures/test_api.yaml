@@ -407,8 +407,8 @@
         start_date: '2015-03-02'
         end_date: '2015-04-02'
         cpc: 1.00
-        local_cpc: 1.00
         cpm: 1.00
+        local_cpc: 1.00
         local_cpm: 1.00
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
@@ -462,9 +462,9 @@
         target_devices: ['desktop', 'mobile']
         start_date: '2015-03-02'
         cpc: 1.00
-        cpc: 1.00
-        local_cpm: 1.00
+        cpm: 1.00
         local_cpc: 1.00
+        local_cpm: 1.00
         b1_sources_group_cpc_cc: '0.0100'
         local_b1_sources_group_cpc_cc: '0.0100'
         b1_sources_group_cpm: '1.0100'
@@ -512,7 +512,6 @@
 
 -   fields:
         ad_group: 9
-        cpc: 1.00
         created_dt: '2014-06-04T09:58:21'
     model: dash.adgroupsettings
     pk: 9
@@ -1448,118 +1447,6 @@
     model: dash.bluekaicategory
     pk: 600
 
-# Bid modifiers
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '1'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 1
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '2'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 2
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '3'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 3
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '4'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 4
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '5'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 5
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '6'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 6
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '7'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 7
-
-- fields:
-    type: 2
-    ad_group_id: 1
-    target: '8'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 8
-
-- fields:
-    type: 2
-    ad_group_id: 2
-    target: '1'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 9
-
-- fields:
-    type: 2
-    ad_group_id: 2
-    target: '4'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 10
-
-- fields:
-    type: 2
-    ad_group_id: 9
-    target: '2'
-    modifier: 1.0
-    created_dt: '2019-08-01T00:00:00'
-    modified_dt: '2019-08-01T00:00:00'
-  model: dash.bidmodifier
-  pk: 11
-
 # test supply reports
 
 -   fields:
@@ -1597,4 +1484,3 @@
       modified_dt: '2015-09-23T10:57:22'
     model: dash.supplyreportrecipient
     pk: 3
-

@@ -2,7 +2,6 @@ import csv
 import dataclasses
 import io as StringIO
 from collections import defaultdict
-from decimal import Decimal
 from typing import Sequence
 
 from django.conf import settings
@@ -11,7 +10,6 @@ from django.db.models import Count
 
 from core.models.source import model as source_model
 from dash import constants as dash_constants
-from utils import decimal_helpers
 from utils import k1_helper
 from utils import s3helpers
 
@@ -43,27 +41,8 @@ def get(ad_group, include_types=None, exclude_types=None):
 
 
 @transaction.atomic
-def set(
-    ad_group,
-    modifier_type,
-    target,
-    source,
-    modifier,
-    user=None,
-    write_history=True,
-    propagate_to_k1=True,
-    skip_source_settings_update=False,
-):
-    instance, created = _set(
-        ad_group,
-        modifier_type,
-        target,
-        source,
-        modifier,
-        user,
-        write_history,
-        skip_source_settings_update=skip_source_settings_update,
-    )
+def set(ad_group, modifier_type, target, source, modifier, user=None, write_history=True, propagate_to_k1=True):
+    instance, created = _set(ad_group, modifier_type, target, source, modifier, user, write_history)
     if propagate_to_k1:
         k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
     return instance, created
@@ -91,9 +70,7 @@ def set_bulk(
     return instances
 
 
-def _set(
-    ad_group, modifier_type, target, source, modifier, user, write_history=True, skip_source_settings_update=False
-):
+def _set(ad_group, modifier_type, target, source, modifier, user, write_history=True):
     if not modifier:
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
         return None, None
@@ -101,14 +78,7 @@ def _set(
     if modifier_type != constants.BidModifierType.SOURCE:
         helpers.check_modifier_value(modifier)
 
-    instance, created = _update_or_create(
-        ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history
-    )
-
-    if modifier_type == constants.BidModifierType.SOURCE and not skip_source_settings_update:
-        _update_ad_group_source_settings(ad_group, target, modifier, user)
-
-    return instance, created
+    return _update_or_create(ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history)
 
 
 def _delete(ad_group, modifier_type, target, source, user=None, write_history=True):
@@ -130,7 +100,7 @@ def _delete(ad_group, modifier_type, target, source, user=None, write_history=Tr
 def _update_or_create(ad_group, modifier_type, target, source, modifier, user=None, write_history=True):
     source_slug = helpers.get_source_slug(modifier_type, source)
 
-    instance, created = models.BidModifier.objects.get_or_create(
+    instance, created = models.BidModifier.objects.update_or_create(
         defaults={"modifier": modifier, "source": source},
         type=modifier_type,
         ad_group=ad_group,
@@ -138,14 +108,7 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
         target=target,
     )
 
-    change = created
-    if not change:
-        change = not decimal_helpers.equal_decimals(modifier, instance.modifier, precision=Decimal("1.00000000"))
-        if change:
-            instance.modifier = modifier
-            instance.save()
-
-    if write_history and change:
+    if write_history:
         percentage = "{:.2%}".format(modifier - 1.0)
         ad_group.write_history(
             "Bid modifier %s set to %s." % (helpers.describe_bid_modifier(modifier_type, target, source), percentage),
@@ -154,18 +117,6 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
         )
 
     return instance, created
-
-
-def _update_ad_group_source_settings(ad_group, target, modifier, user, write_history=True, propagate_to_k1=False):
-    ad_group_source = ad_group.adgroupsource_set.select_related("settings").get(source__id=int(target))
-
-    updates = {}
-    if ad_group.bidding_type == dash_constants.BiddingType.CPC:
-        updates["cpc_cc"] = decimal_helpers.multiply_as_decimals(ad_group.settings.cpc, modifier)
-    else:
-        updates["cpm"] = decimal_helpers.multiply_as_decimals(ad_group.settings.cpm, modifier)
-
-    ad_group_source.settings.update(k1_sync=propagate_to_k1, write_history=write_history, **updates)
 
 
 @transaction.atomic
@@ -411,11 +362,20 @@ def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
         return 0, [], csv_error_key
 
     with transaction.atomic():
-        number_of_deleted = delete_types(
-            ad_group, constants.BidModifierType.get_all(), user=user, write_history=False, propagate_to_k1=False
-        )
+        # TEMP(tkusterle) temporarily disable source bid modifiers
+        all_types = set_built_in(constants.BidModifierType.get_all()) - {constants.BidModifierType.SOURCE}
+        number_of_deleted = delete_types(ad_group, all_types, user=user, write_history=False, propagate_to_k1=False)
         created_instances = set_from_cleaned_entries(
-            ad_group, cleaned_entries, user=user, write_history=False, propagate_to_k1=False
+            ad_group,
+            [
+                e
+                for e in cleaned_entries
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                if e["type"] != constants.BidModifierType.SOURCE
+            ],
+            user=user,
+            write_history=False,
+            propagate_to_k1=False,
         )
         _write_upload_history(ad_group, number_of_deleted, len(created_instances), user=user)
         k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
@@ -533,6 +493,10 @@ def make_csv_example_file(modifier_type):
 def make_bulk_csv_example_file():
     def sub_file_generator():
         for modifier_type in constants.BidModifierType.get_all():
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            if modifier_type == constants.BidModifierType.SOURCE:
+                continue
+
             yield make_csv_example_file(modifier_type)
 
     return helpers.create_bulk_csv_file(sub_file_generator())

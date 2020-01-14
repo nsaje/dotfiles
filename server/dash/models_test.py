@@ -103,8 +103,6 @@ class AdGroupSettingsTest(TestCase):
             "local_max_cpm": None,
             "frequency_capping": 20,
             "additional_data": None,
-            "max_autopilot_bid": None,
-            "local_max_autopilot_bid": None,
         }
         self.assertEqual(models.AdGroupSettings.objects.get(id=1).get_settings_dict(), settings_dict)
 
@@ -1095,54 +1093,54 @@ class HistoryTest(TestCase):
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        ad_group.settings.update_unsafe(None, local_cpc=4.999)
+        ad_group.settings.update_unsafe(None, local_cpc_cc=4.999)
         adgss = ad_group.settings
 
         hist = ad_group.write_history("", changes=model_to_dict(adgss))
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4.999, hist.changes["local_cpc"])
+        self.assertEqual(4.999, hist.changes["local_cpc_cc"])
 
         adgss = adgss.copy_settings()
-        adgss.local_cpc = Decimal("5.103")
+        adgss.local_cpc_cc = Decimal("5.103")
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
-        self.assertDictEqual({"local_cpc": "5.103"}, adg_hist.changes)
-        self.assertEqual('Bid CPC set from "$4.999" to "$5.103"', adg_hist.changes_text)
+        self.assertDictEqual({"local_cpc_cc": "5.103"}, adg_hist.changes)
+        self.assertEqual('Max CPC bid set from "$4.999" to "$5.103"', adg_hist.changes_text)
 
-        hist = ad_group.write_history("", changes={"local_cpc": 5.101})
+        hist = ad_group.write_history("", changes={"local_cpc_cc": 5.101})
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({"local_cpc": 5.101}, hist.changes)
+        self.assertEqual({"local_cpc_cc": 5.101}, hist.changes)
 
     def test_create_ad_group_history_cpm(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        ad_group.settings.update_unsafe(None, local_cpm=4.999)
+        ad_group.settings.update_unsafe(None, local_max_cpm=4.999)
         adgss = ad_group.settings
 
         hist = ad_group.write_history("", changes=model_to_dict(adgss))
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4.999, hist.changes["local_cpm"])
+        self.assertEqual(4.999, hist.changes["local_max_cpm"])
 
         adgss = adgss.copy_settings()
-        adgss.local_cpm = Decimal("5.103")
+        adgss.local_max_cpm = Decimal("5.103")
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
-        self.assertDictEqual({"local_cpm": "5.103"}, adg_hist.changes)
-        self.assertEqual('Bid CPM set from "$4.999" to "$5.103"', adg_hist.changes_text)
+        self.assertDictEqual({"local_max_cpm": "5.103"}, adg_hist.changes)
+        self.assertEqual('Max CPM bid set from "$4.999" to "$5.103"', adg_hist.changes_text)
 
-        hist = ad_group.write_history("", changes={"local_cpm": 5.101})
+        hist = ad_group.write_history("", changes={"local_max_cpm": 5.101})
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({"local_cpm": 5.101}, hist.changes)
+        self.assertEqual({"local_max_cpm": 5.101}, hist.changes)
 
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -1348,11 +1346,7 @@ class HistoryTest(TestCase):
         ad_group.campaign.account.allowed_sources.add(s)
         models.AdGroupSource.objects.create(req, source=s, ad_group=ad_group)
 
-        hist = (
-            models.History.objects.exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
-            .all()
-            .order_by("-created_dt")[1]
-        )
+        hist = models.History.objects.all().order_by("-created_dt")[1]
         self.assertIn("Created settings. Source: b1.", hist.changes_text)
 
 

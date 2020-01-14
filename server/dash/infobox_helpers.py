@@ -1,6 +1,5 @@
 import copy
 import datetime
-from decimal import ROUND_HALF_DOWN
 from decimal import Decimal
 
 from django.core.cache import caches
@@ -8,7 +7,6 @@ from django.db import models
 from django.db.models import Sum
 
 import automation.campaignstop
-import core.features.bid_modifiers
 import core.features.multicurrency
 import dash.campaign_goals
 import dash.constants
@@ -85,69 +83,6 @@ def format_flight_time(start_date, end_date, no_ad_groups_or_budgets):
     else:
         flight_time_left_days = (end_date - today).days + 1
     return flight_time, flight_time_left_days
-
-
-def create_bid_value_overview_settings(ad_group):
-    overview_settings = []
-
-    bidding_type = "CPC" if ad_group.bidding_type == dash.constants.BiddingType.CPC else "CPM"
-
-    if ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
-        tooltip_text = (
-            "<p>Bid {bidding_type} is set in the ad group settings.</p>"
-            + "<p>Bidder will try to optimize traffic buying towards this {bidding_type}.</p>"
-            + "<p>You can use bid modifiers to change the bid {bidding_type} for subset of traffic based on traffic characteristics like publisher, device and others.</p>"
-        ).format(bidding_type=bidding_type)
-
-        formatted_bid_value = _format_ad_group_bid_value(
-            ad_group.settings.cpc if ad_group.bidding_type == dash.constants.BiddingType.CPC else ad_group.settings.cpm,
-            ad_group.campaign.account.currency,
-        )
-        overview_settings.append(
-            OverviewSetting(name="Bid {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
-        )
-    else:
-        tooltip_text = (
-            "<p>You can set the maximum autopilot bid {bidding_type} in the ad group settings.</p>"
-            + "<p>Autopilot will never buy with {bidding_type} higher than <strong>maximum {bidding_type}</strong>.</p>"
-        ).format(bidding_type=bidding_type)
-
-        formatted_bid_value = (
-            _format_ad_group_bid_value(ad_group.settings.max_autopilot_bid, ad_group.campaign.account.currency)
-            if ad_group.settings.max_autopilot_bid is not None
-            else "No limit"
-        )
-        overview_settings.append(
-            OverviewSetting(name="Maximum {}:".format(bidding_type), value=formatted_bid_value, tooltip=tooltip_text)
-        )
-
-        tooltip_text = (
-            "<p>Your ad group is running in autopilot mode. Autopilot controls the media source {bidding_type} and sets it based on media source performance."
-            + "The <strong>autopilot {bidding_type} range</strong> shows maximum and minimum {bidding_type} set by the autopilot on the media source.</p>"
-            + "<p>You control maximum {bidding_type} and bid modifiers on other dimensions. Autopilot's {bidding_type} range will never be higher than maximum {bidding_type}.</p>"
-        ).format(bidding_type=bidding_type)
-
-        min_bid, max_bid = core.features.bid_modifiers.get_min_max_local_bids(
-            ad_group, included_types=[core.features.bid_modifiers.BidModifierType.SOURCE]
-        )
-        formatted_min_bid_value = _format_ad_group_bid_value(min_bid, ad_group.campaign.account.currency)
-        formatted_max_bid_value = _format_ad_group_bid_value(max_bid, ad_group.campaign.account.currency)
-
-        overview_settings.append(
-            OverviewSetting(
-                name="Autopilot {} range:".format(bidding_type),
-                value="{} - {}".format(formatted_min_bid_value, formatted_max_bid_value),
-                tooltip=tooltip_text,
-            )
-        )
-
-    return overview_settings
-
-
-def _format_ad_group_bid_value(bid_value, currency):
-    return utils.lc_helper.format_currency(
-        bid_value, places=2, rounding=ROUND_HALF_DOWN, curr=core.features.multicurrency.get_currency_symbol(currency)
-    )
 
 
 def create_region_setting(regions):
