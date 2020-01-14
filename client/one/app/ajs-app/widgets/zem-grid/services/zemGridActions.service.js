@@ -16,7 +16,8 @@ angular
         zemGridBulkPublishersActionsService,
         zemModalsService,
         zemUtils,
-        $location
+        $location,
+        zemGridConstants
     ) {
         // eslint-disable-line max-len
 
@@ -219,7 +220,10 @@ angular
         }
 
         function cloneRow(row, grid) {
-            var parentId = parseInt(row.parent.id);
+            var parentId =
+                row.level === zemGridConstants.gridRowLevel.BASE
+                    ? parseInt(grid.meta.data.id)
+                    : parseInt(row.parent.id);
             if (row.entity.type === constants.entityType.AD_GROUP) {
                 zemCloneAdGroupService
                     .openCloneModal(parentId, row.entity.id)
