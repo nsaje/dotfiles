@@ -289,6 +289,8 @@ archived  | bool                  | Is the account archived? Set to `true` to ar
 targeting | [targeting](#account-targeting) | account targeting settings       | optional | optional
 currency  | [Currency](#currency) | the account's currency (default is USD)    | optional | N\A
 frequencyCapping | number | The maximum number of times ads from the account can be shown to a unique user in one day. | optional | optional
+defaultIconUrl | string           | URL of a brand logo which will be placed in all creatives and served with ads where this is required by the publisher. Setting the brand logo for a specific creative can be done on the ad creative level. The minimum required size is 128x128 pixels and the required format is square (1:1). | required | optional
+                        
 
 <a name="account-targeting"></a>
 #### Account Targeting Settings
@@ -1762,6 +1764,7 @@ url          | string                    | landing url                          
 title        | string                    | title of the Content Ad                                                                                                       | required | read only
 imageUrl     | string                    | URL of the Content Ad's image                                                                                                 | required | read only
 imageCrop    | [image crop](#image-crop) | what strategy to use when cropping (most commonly `center` or `faces`, [more info](http://docs.imgix.com/apis/url/size/crop)) | required | read only
+iconUrl      | string                    | URL of a brand logo which will be served where this is required by the publisher. The minimum required size is 128x128 pixels and the required format is square (1:1). | required | read only
 displayUrl   | string                    | the URL displayed with the Ad                                                                                                 | required | read only
 brandName    | string                    | the brand name of the Content Ad                                                                                              | required | read only
 description  | string                    | the description of the Content Ad                                                                                             | required | read only
