@@ -32,7 +32,7 @@ class AdGroupManager(core.common.BaseManager):
         with transaction.atomic():
             if name is None:
                 name = self._create_default_name(campaign)
-            if bidding_type is None or not request.user.has_perm("zemauth.fea_can_use_cpm_buying"):
+            if not request.user.has_perm("zemauth.fea_can_use_cpm_buying"):
                 bidding_type = dash.constants.BiddingType.CPC
             ad_group = self._prepare(campaign, name=name, bidding_type=bidding_type)
             ad_group.save(request)
