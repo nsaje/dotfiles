@@ -219,21 +219,22 @@ angular
         }
 
         function cloneRow(row, grid) {
+            var parentId = parseInt(row.parent.id);
             if (row.entity.type === constants.entityType.AD_GROUP) {
                 zemCloneAdGroupService
-                    .openCloneModal(grid.meta.data.id, row.entity.id)
+                    .openCloneModal(parentId, row.entity.id)
                     .then(function() {
                         grid.meta.api.loadData();
                     });
             } else if (row.entity.type === constants.entityType.CONTENT_AD) {
                 zemCloneContentService
-                    .openCloneModal(grid.meta.data.id, {
+                    .openCloneModal(parentId, {
                         selectedIds: [row.entity.id],
                     })
                     .then(function(batchData) {
                         zemUploadService
                             .openCloneEditModal(
-                                grid.meta.data.id,
+                                parentId,
                                 batchData.destinationBatch.id,
                                 batchData.destinationBatch.name,
                                 zemUploadApiConverter.convertCandidatesFromApi(
@@ -254,7 +255,7 @@ angular
                                         parseInt(
                                             batchData.destinationBatch.adGroup
                                                 .id
-                                        ) === parseInt(grid.meta.data.id)
+                                        ) === parseInt(parentId)
                                     ) {
                                         grid.meta.api.loadData();
                                     }

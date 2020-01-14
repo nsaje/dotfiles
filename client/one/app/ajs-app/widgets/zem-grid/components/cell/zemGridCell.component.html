@@ -92,7 +92,7 @@
     ></zem-grid-cell-thumbnail>
 
     <zem-grid-cell-checkbox
-        ng-if="ctrl.type === ctrl.gridColumnTypes.CHECKBOX"
+        ng-if="ctrl.type === ctrl.gridColumnTypes.CHECKBOX && (ctrl.row.level === ctrl.gridRowLevel.BASE || ctrl.row.level === ctrl.gridRowLevel.FOOTER)"
         row="ctrl.row"
         col="ctrl.col"
         grid="ctrl.grid"
