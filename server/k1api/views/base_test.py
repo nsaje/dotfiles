@@ -65,7 +65,11 @@ class K1APITest(K1APIBaseTest):
         self.mock_verify_oauth.return_value.verify_request.return_value = (False, None)
         test_paths = [up.name for up in urls.urlpatterns]
         for path in test_paths:
-            arg = 1 if path == "k1api.content_ads_details" else None
+            arg = (
+                1
+                if path in ["k1api.content_ads_details", "k1api.r1_pixel_mapping", "k1api.r1_ad_group_mapping"]
+                else None
+            )
             self._test_signature(path, arg)
 
     def _test_signature(self, path, arg=None):

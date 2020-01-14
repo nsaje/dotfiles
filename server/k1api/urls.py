@@ -41,10 +41,22 @@ urlpatterns = [
     ),
     url(r"^content_ads/sources$", content_ads.ContentAdSourcesView.as_view(), name="k1api.content_ads.sources"),
     url(r"^accounts$", accounts.AccountsView.as_view(), name="k1api.accounts"),
+    url(
+        r"^accounts/(?P<account_id>\d+)/r1_pixel_mapping$",
+        r1_mapping.R1PixelMappingView.as_view(),
+        name="k1api.r1_pixel_mapping",
+    ),
+    url(
+        r"^accounts/(?P<account_id>\d+)/r1_ad_group_mapping$",
+        r1_mapping.R1AdGroupMappingView.as_view(),
+        name="k1api.r1_ad_group_mapping",
+    ),
     url(r"^sources$", sources.SourcesView.as_view(), name="k1api.sources"),
     url(r"source_pixels$", sources.SourcePixelsView.as_view(), name="k1api.source_pixels"),
     url(r"^ga_accounts$", ga_accounts.GAAccountsView.as_view(), name="k1api.ga_accounts"),
-    url(r"^r1_mapping$", r1_mapping.R1MappingView.as_view(), name="k1api.r1_mapping"),
+    url(
+        r"^r1_mapping$", r1_mapping.R1MappingView.as_view(), name="k1api.r1_mapping"
+    ),  # TODO: R1MAPPING: remove after k1 merge
     url(
         r"^outbrain/publishers_blacklist$",
         outbrain.OutbrainPublishersBlacklistView.as_view(),
