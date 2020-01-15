@@ -98,6 +98,7 @@
                             ng-change="ctrl.updateField(ctrl.selectedCandidate, 'title')"
                             ng-disabled="ctrl.isEdit"
                             ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.title || ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
+                            zem-filter-key-down="13"
                         ></textarea>
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
@@ -1017,6 +1018,7 @@
                             ng-change="ctrl.updateField(ctrl.selectedCandidate, 'title')"
                             ng-disabled="ctrl.isEdit"
                             ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.title || ctrl.fieldsSaved.title && !ctrl.fieldsHaveErrors('title')}"
+                            zem-filter-key-down="13"
                         ></textarea>
                         <div
                             class="content-upload__field-additional-info content-upload__change-status"
