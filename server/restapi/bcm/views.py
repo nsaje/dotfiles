@@ -266,9 +266,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                         "id": b.pk,
                         "total": b.allocated_amount(),
                         "spend": (
-                            b.get_local_spend_data()["etfm_total"]
-                            if account.uses_bcm_v2
-                            else b.get_local_spend_data()["etf_total"]
+                            b.get_spend_data()["etfm_total"] if account.uses_bcm_v2 else b.get_spend_data()["etf_total"]
                         ),
                         "start_date": b.start_date,
                         "end_date": b.end_date,
