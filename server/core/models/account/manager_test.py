@@ -88,7 +88,7 @@ class AccountManagerTestCase(TestCase):
             available_sources=[source1, source2, source3, source4],
         )
         account = Account.objects.create(self.request, name="Account 2", agency=agency)
-        self.assertEqual(list(account.allowed_sources.all()), [source1, source2])
+        self.assertListEqual(list(account.allowed_sources.all()), [source1, source2])
 
         agency = magic_mixer.blend(
             core.models.Agency,
@@ -98,9 +98,9 @@ class AccountManagerTestCase(TestCase):
             allowed_sources=[],
         )
         account = Account.objects.create(self.request, name="Account 3", agency=agency)
-        self.assertEqual(list(account.allowed_sources.all()), [])
+        self.assertListEqual(list(account.allowed_sources.all()), [])
 
         account = Account.objects.create(
             self.request, name="Account 4", agency=agency, allowed_sources=[source1, source4]
         )
-        self.assertEqual(list(account.allowed_sources.all()), [source1, source4])
+        self.assertListEqual(list(account.allowed_sources.all()), [source1, source4])
