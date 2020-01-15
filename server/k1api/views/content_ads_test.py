@@ -14,7 +14,6 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-from utils import sspd_client
 from utils import test_helper
 from utils import zlogging
 from utils.magic_mixer import magic_mixer
@@ -26,7 +25,6 @@ logger = zlogging.getLogger(__name__)
 logger.setLevel(zlogging.INFO)
 
 
-@mock.patch("utils.sspd_client.get_approval_status", mock.MagicMock())
 class ContentAdsTest(K1APIBaseTest):
     def test_get_content_ad_source_mapping(self):
         test_source_filters = [["adblade"], ["adblade", "outbrain", "yahoo"]]
@@ -345,63 +343,6 @@ class ContentAdsTest(K1APIBaseTest):
 
         self.assertEqual(data, expected)
 
-    def test_get_content_ads_sources_sspd_rejected(self):
-        content_ad_source = dash.models.ContentAdSource.objects.get(source_id=1, content_ad_id=1)
-        sspd_client.get_approval_status.return_value = {
-            content_ad_source.id: dash.constants.ContentAdSspdStatus.BLOCKED
-        }
-
-        response = self.client.get(
-            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
-        )
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        expected = [
-            {
-                "id": 1,
-                "content_ad_id": 1,
-                "ad_group_id": 1,
-                "source_id": 1,
-                "submission_status": 1,
-                "source_content_ad_id": "987654321",
-                "tracking_slug": "adblade",
-                "state": 2,
-                "source_slug": "adblade",
-            }
-        ]
-
-        self.assertEqual(data, expected)
-
-    # def test_get_content_ads_sources_sspd_rejected_status_none(self):
-    #     sspd_client.get_approval_status.return_value = {}
-
-    #     response = self.client.get(
-    #         reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
-    #     )
-
-    #     data = json.loads(response.content)
-    #     self.assert_response_ok(response, data)
-    #     data = data["response"]
-
-    #     expected = [
-    #         {
-    #             "id": 1,
-    #             "content_ad_id": 1,
-    #             "ad_group_id": 1,
-    #             "source_id": 1,
-    #             "submission_status": 1,
-    #             "source_content_ad_id": "987654321",
-    #             "tracking_slug": "adblade",
-    #             "state": 2,
-    #             "source_slug": "adblade",
-    #         }
-    #     ]
-
-    #     self.assertEqual(data, expected)
-
     def test_get_content_ads_sources_with_modified_dt(self):
         with test_helper.disable_auto_now_add(dash.models.ContentAdSource, "created_dt"):
             with test_helper.disable_auto_now(dash.models.ContentAdSource, "modified_dt"):
@@ -475,11 +416,6 @@ class ContentAdsTest(K1APIBaseTest):
             state=dash.constants.ContentAdSourceState.ACTIVE,
             submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
         )
-        sspd_client.get_approval_status.return_value = {
-            content_ad_sources[0].id: dash.constants.ContentAdSspdStatus.APPROVED,
-            content_ad_sources[1].id: dash.constants.ContentAdSspdStatus.APPROVED,
-            content_ad_sources[2].id: dash.constants.ContentAdSspdStatus.APPROVED,
-        }
 
         with self.assertNumQueries(3):
             response = self.client.get(
@@ -573,9 +509,8 @@ class ContentAdsTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         self.assertEqual(set(source_ids), set([ca["source_id"] for ca in data["response"]]))
 
-    @mock.patch.object(content_ads.ContentAdSourcesView, "_is_blocked_by_sspd")
     @mock.patch.object(content_ads.ContentAdSourcesView, "_is_blocked_by_amplify")
-    def test_get_content_ads_non_blocked(self, mock_sspd, mock_amplify):
+    def test_get_content_ads_non_blocked(self, mock_amplify):
         cad = magic_mixer.blend(dash.models.ContentAd)
         cadss = magic_mixer.cycle(4).blend(dash.models.ContentAdSource, content_ad=cad)
 
@@ -588,7 +523,6 @@ class ContentAdsTest(K1APIBaseTest):
             mock_obj.side_effect = side_effect
 
         # include blocked - all blocked, all returned
-        set_blocked(mock_sspd, cadss)
         set_blocked(mock_amplify, cadss)
         response = self.client.get(
             reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "true"}
@@ -598,7 +532,6 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
 
         # do not include blocked - all blocked, none returned
-        set_blocked(mock_sspd, cadss)
         set_blocked(mock_amplify, cadss)
         response = self.client.get(
             reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
@@ -608,7 +541,6 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(set(), set([ca["id"] for ca in data["response"]]))
 
         # do not include blocked - none blocked, all returned
-        set_blocked(mock_sspd, [])
         set_blocked(mock_amplify, [])
         response = self.client.get(
             reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
@@ -618,8 +550,7 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
 
         # do not include blocked - some blocked, some returned
-        set_blocked(mock_sspd, cadss[0:2])
-        set_blocked(mock_amplify, cadss[1:3])
+        set_blocked(mock_amplify, cadss[0:3])
         response = self.client.get(
             reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
         )
