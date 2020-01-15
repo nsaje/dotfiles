@@ -1,5 +1,8 @@
 from django.contrib import admin
 
+from core import models
+from utils import k1_helper
+
 from . import forms
 
 
@@ -43,3 +46,26 @@ class SubmissionFilterAdmin(admin.ModelAdmin):
 
     def _agency(self, obj):
         return obj.agency and "{}: {}".format(obj.agency_id, obj.agency.name) or ""
+
+    def save_model(self, request, submission_filter, form, change):
+        data = form.cleaned_data
+        if data.get("agency"):
+            k1_helper.update_ad_groups(
+                list(models.AdGroup.objects.filter(campaign__account__agency=data["agency"])),
+                msg="update submission_filter",
+            )
+        elif data.get("account"):
+            k1_helper.update_ad_groups(
+                list(models.AdGroup.objects.filter(campaign__account=data["account"])), msg="update submission_filter"
+            )
+        elif data.get("campaign"):
+            k1_helper.update_ad_groups(
+                list(models.AdGroup.objects.filter(campaign=data["campaign"])), msg="update submission_filter"
+            )
+        elif data.get("ad_group"):
+            k1_helper.update_ad_group(data["ad_group"], msg="update submission_filter")
+        elif data.get("content_ad"):
+            k1_helper.update_ad_group(
+                models.AdGroup.objects.get(contentad__in=[data["content_ad"]]), msg="update submission_filter"
+            )
+        submission_filter.save()
