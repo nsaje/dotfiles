@@ -1,0 +1,54 @@
+<ng-container *ngIf="(store.state$ | async) as state">
+    <div class="zem-campaign-cloning-form__item">
+        Clone campaign <strong>{{ campaingName }}</strong> to the destination
+        account.
+    </div>
+    <zem-text-form-group
+        class="zem-text-form-group zem-campaign-cloning-form__item"
+        [label]="'Campaign name'"
+        [value]="state.campaignCloneSettings.destinationCampaignName"
+        (valueChange)="store.setDestinationCampaignName($event)"
+    ></zem-text-form-group>
+    <zem-content-form-group
+        class="zem-content-form-group zem-campaign-cloning-form__item"
+        [label]="'Cloning rule'"
+    >
+        <zem-radio-input
+            *ngFor="let rule of CLONE_RULES_OPTIONS"
+            class="zem-radio-input"
+            [value]="rule.value"
+            [groupModel]="state.cloneRule"
+            (select)="store.setCloneRule($event)"
+        >
+            {{ rule.description }}
+        </zem-radio-input>
+    </zem-content-form-group>
+    <zem-content-form-group
+        class="zem-content-form-group zem-campaign-cloning-form__item"
+        [label]="'State of cloned ad groups'"
+    >
+        <zem-radio-input
+            *ngFor="let adGroupState of AD_GROUP_STATE_OVERRIDES_OPTIONS"
+            class="zem-radio-input"
+            [value]="adGroupState.value"
+            [groupModel]="state.campaignCloneSettings.adGroupStateOverride"
+            (select)="store.setAdGroupStateOverride($event)"
+        >
+            {{ adGroupState.description }}
+        </zem-radio-input>
+    </zem-content-form-group>
+    <zem-content-form-group
+        class="zem-content-form-group zem-campaign-cloning-form__item"
+        [label]="'State of cloned ads'"
+    >
+        <zem-radio-input
+            *ngFor="let adState of AD_STATE_OVERRIDES_OPTIONS"
+            class="zem-radio-input"
+            [value]="adState.value"
+            [groupModel]="state.campaignCloneSettings.adStateOverride"
+            (select)="store.setAdStateOverride($event)"
+        >
+            {{ adState.description }}
+        </zem-radio-input>
+    </zem-content-form-group>
+</ng-container>

@@ -3,8 +3,6 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
 import {AttributionColumnPickerComponent} from './attribution-column-picker.component';
 import {AttributionLoockbackWindowPickerComponent} from '../attribution-lookback-window-picker/attribution-lookback-window-picker.component';
-import {PixelColumn} from '../../types/pixel-column';
-import {ConversionWindow} from '../../../../app.constants';
 
 describe('AttributionColumnPickerComponent', () => {
     let component: AttributionColumnPickerComponent;

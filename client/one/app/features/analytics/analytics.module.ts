@@ -10,6 +10,7 @@ import {AttributionColumnPickerComponent} from './components/attribution-column-
 import {AttributionLoockbackWindowPickerComponent} from './components/attribution-lookback-window-picker/attribution-lookback-window-picker.component';
 import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
 import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
+import {CampaignCloningFormComponent} from './components/campaign-cloning-form/campaign-cloning-form.component';
 
 @NgModule({
     declarations: [
@@ -22,6 +23,7 @@ import {DisplayAdPreviewComponent} from './components/display-ad-preview/display
         AttributionLoockbackWindowPickerComponent,
         NativeAdPreviewComponent,
         DisplayAdPreviewComponent,
+        CampaignCloningFormComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [
@@ -31,6 +33,7 @@ import {DisplayAdPreviewComponent} from './components/display-ad-preview/display
         AttributionColumnPickerComponent,
         NativeAdPreviewComponent,
         DisplayAdPreviewComponent,
+        CampaignCloningFormComponent,
     ],
 })
 export class AnalyticsModule {}
