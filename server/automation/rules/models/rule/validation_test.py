@@ -83,6 +83,64 @@ class RuleValidationTest(test.TestCase):
                 }
             )
 
+    def test_validate_send_email_subject_fixed_window_macros(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        self.rule.clean(
+            {
+                "send_email_body": "test",
+                "send_email_subject": "This is a macro test {ACCOUNT_NAME} ({ACCOUNT_ID})",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": "This is a macro test {INVALID_MACRO}",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": "This is a macro test {ACCOUNT_NAME ({ACCOUNT_ID}})",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": "This is a macro test {ACCOUNT_NAME_LAST_30_DAYS}",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
+    def test_validate_send_email_subject_adjustable_window_macros(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        self.rule.clean(
+            {
+                "send_email_body": "test",
+                "send_email_subject": "This is a macro test {TOTAL_SPEND_LAST_30_DAYS}",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": "This is a macro test {TOTAL_SPEND}",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
     def test_validate_send_email_body(self):
         self.rule.target_type = constants.TargetType.AD_GROUP
         # TODO: uncomment when send email isn't the only action type on ad group anymore
@@ -101,6 +159,64 @@ class RuleValidationTest(test.TestCase):
             self.rule.clean(
                 {
                     "send_email_body": "",
+                    "send_email_subject": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
+    def test_validate_send_email_body_fixed_window_macros(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        self.rule.clean(
+            {
+                "send_email_body": "This is a macro test {ACCOUNT_NAME} ({ACCOUNT_ID})",
+                "send_email_subject": "test",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+            self.rule.clean(
+                {
+                    "send_email_body": "This is a macro test {INVALID_MACRO}",
+                    "send_email_subject": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+            self.rule.clean(
+                {
+                    "send_email_body": "This is a macro test {ACCOUNT_NAME ({ACCOUNT_ID}})",
+                    "send_email_subject": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+            self.rule.clean(
+                {
+                    "send_email_body": "This is a macro test {ACCOUNT_NAME_LAST_30_DAYS}",
+                    "send_email_subject": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
+    def test_validate_send_email_body_adjustable_window_macros(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        self.rule.clean(
+            {
+                "send_email_body": "This is a macro test {TOTAL_SPEND_LAST_30_DAYS}",
+                "send_email_subject": "test",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+            self.rule.clean(
+                {
+                    "send_email_body": "This is a macro test {TOTAL_SPEND}",
                     "send_email_subject": "test",
                     "send_email_recipients": ["user@test.com"],
                     "action_type": constants.ActionType.SEND_EMAIL,

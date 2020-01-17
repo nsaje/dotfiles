@@ -29,6 +29,10 @@ class InvalidSendEmailRecipients(ValidationError):
     pass
 
 
+class InvalidSendEmailMacros(ValidationError):
+    pass
+
+
 class InvalidNotificationRecipients(ValidationError):
     pass
 

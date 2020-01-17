@@ -12,10 +12,12 @@ import {
 import {
     RuleActionType,
     RuleActionFrequency,
+    Macro,
 } from '../../../../core/rules/rules.constants';
 import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {FieldErrors} from '../../../../shared/types/field-errors';
+import {EMAIL_MACROS} from '../../rules-library.config';
 
 @Component({
     selector: 'zem-rule-edit-form-action',
@@ -69,8 +71,11 @@ export class RuleEditFormActionComponent implements OnChanges {
     sendEmailBodyChange = new EventEmitter<string>();
 
     selectedActionConfig: RuleActionConfig;
+    selectedMacro: Macro;
+    shouldAppendMacroToSubject = true;
     availableActionFrequencies: {label: string; value: number}[];
     RuleActionType = RuleActionType;
+    EMAIL_MACROS = EMAIL_MACROS;
 
     // TODO (automation-rules): Return correct currency symbol
     getUnitText = unitsHelpers.getUnitText;
@@ -115,16 +120,34 @@ export class RuleEditFormActionComponent implements OnChanges {
         this.changeLimitChange.emit(changeLimit);
     }
 
-    updateSendEmailRecipients(sendEmailRecipients: string) {
-        this.sendEmailRecipientsChange.emit(sendEmailRecipients);
-    }
-
     updateSendEmailSubject(sendEmailSubject: string) {
+        this.shouldAppendMacroToSubject = true;
         this.sendEmailSubjectChange.emit(sendEmailSubject);
     }
 
     updateSendEmailBody(sendEmailBody: string) {
+        this.shouldAppendMacroToSubject = false;
         this.sendEmailBodyChange.emit(sendEmailBody);
+    }
+
+    updateSendEmailRecipients(sendEmailRecipients: string) {
+        this.sendEmailRecipientsChange.emit(sendEmailRecipients);
+    }
+
+    selectMacro(macro: Macro) {
+        this.selectedMacro = macro;
+    }
+
+    appendSelectedMacro() {
+        if (this.shouldAppendMacroToSubject) {
+            this.updateSendEmailSubject(
+                `${this.sendEmailSubject || ''}{${this.selectedMacro}}`
+            );
+        } else {
+            this.updateSendEmailBody(
+                `${this.sendEmailBody || ''}{${this.selectedMacro}}`
+            );
+        }
     }
 
     formatChangeStep(changeStep: number, actionType: RuleActionType) {

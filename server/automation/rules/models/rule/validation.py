@@ -1,3 +1,4 @@
+import re
 from functools import partial
 
 from django.core.validators import ValidationError
@@ -9,6 +10,10 @@ from ... import config
 from ... import constants
 from ... import exceptions
 from ..rule_condition import RuleCondition
+
+EMAIL_CONTAINS_NESTED_MACRO_REGEX = re.compile(r"{[^}]*{")
+EMAIL_EXTRACT_MACROS_REGEX = re.compile(r"{([^}]*)}")
+EMAIL_MACRO_WITHOUT_WINDOW_REGEX = re.compile(r"(.*)_LAST_(?:\d+_)?DAYS?$")
 
 
 class RuleValidationMixin:
@@ -97,22 +102,46 @@ class RuleValidationMixin:
             raise exceptions.InvalidSendEmailSubject(
                 f"Email subject not expected to be set for action type {action_type_name}."
             )
+        elif send_email_subject:
+            try:
+                self._validate_email_macros(send_email_subject)
+            except exceptions.InvalidSendEmailMacros as e:
+                raise exceptions.InvalidSendEmailSubject(str(e))
 
     def _validate_send_email_body(self, changes, send_email_body):
         action_type = changes.get("action_type", self.action_type)
-        if action_type == constants.ActionType.SEND_EMAIL:
-            if not send_email_body:
-                raise exceptions.InvalidSendEmailBody("Please provide email body.")
-            self._validate_email_macros(send_email_body)
+        if action_type == constants.ActionType.SEND_EMAIL and not send_email_body:
+            raise exceptions.InvalidSendEmailBody("Please provide email body.")
         elif action_type != constants.ActionType.SEND_EMAIL and send_email_body:
             action_type_name = constants.ActionType.get_name(action_type)
             raise exceptions.InvalidSendEmailBody(
                 f"Email body not expected to be set for action type {action_type_name}."
             )
+        elif send_email_body:
+            try:
+                self._validate_email_macros(send_email_body)
+            except exceptions.InvalidSendEmailMacros as e:
+                raise exceptions.InvalidSendEmailBody(str(e))
 
-    def _validate_email_macros(self, body):
-        if any(c in body for c in "{}"):
-            raise exceptions.InvalidSendEmailBody(f"Unknown email macro.")
+    def _validate_email_macros(self, content):
+        if EMAIL_CONTAINS_NESTED_MACRO_REGEX.search(content):
+            raise exceptions.InvalidSendEmailMacros(f"Nested macros not supported.")
+        unknown_macros = []
+        for macro in EMAIL_EXTRACT_MACROS_REGEX.findall(content):
+            if not self._is_valid_email_macro(macro):
+                unknown_macros.append(macro)
+        if unknown_macros:
+            raise exceptions.InvalidSendEmailMacros(
+                "Unknown macro{}: {}.".format("s" if len(unknown_macros) > 1 else "", ", ".join(unknown_macros))
+            )
+
+    def _is_valid_email_macro(self, macro):
+        if macro in config.EMAIL_ACTION_MACROS_FIXED_WINDOW:
+            return True
+        postfix_window_match = EMAIL_MACRO_WITHOUT_WINDOW_REGEX.match(macro)
+        if postfix_window_match and postfix_window_match.group(1) in config.EMAIL_ACTION_MACROS_ADJUSTABLE_WINDOW:
+            return True
+        return False
 
     def _validate_send_email_recipients(self, changes, send_email_recipients):
         action_type = changes.get("action_type", self.action_type)

@@ -79,9 +79,31 @@
                 (valueChange)="updateSendEmailRecipients($event)"
                 [errors]="sendEmailRecipientsErrors"
             ></zem-text-form-group>
-            <div class="zem-rule-edit-form__section-description">
+            <div
+                class="zem-rule-edit-form__section-description zem-rule-edit-form__section-item"
+            >
                 Comma separated list of recipient's emails.
             </div>
+        </div>
+        <div class="zem-rule-edit-form-action__macro">
+            <zem-select-form-group
+                class="zem-rule-edit-form__section-item zem-select-form-group"
+                placeholder="Add a macro"
+                [value]="selectedMacro"
+                bindLabel="label"
+                bindValue="value"
+                [items]="EMAIL_MACROS"
+                [isSearchable]="false"
+                [isClearable]="true"
+                (valueChange)="selectMacro($event)"
+            ></zem-select-form-group>
+            <button
+                class="zem-rule-edit-form__section-item button button--highlight button--with-icon add-icon"
+                [disabled]="!selectedMacro"
+                (click)="appendSelectedMacro()"
+            >
+                Add
+            </button>
         </div>
     </div>
 </ng-container>

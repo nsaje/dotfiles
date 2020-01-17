@@ -6,6 +6,7 @@ import {
     RuleConditionOperandType,
     RuleConditionOperandGroup,
     TimeRange,
+    Macro,
 } from '../../core/rules/rules.constants';
 import {DataType, Unit} from '../../app.constants';
 
@@ -1352,3 +1353,255 @@ export const RULE_CONDITIONS_OPTIONS = {
         ],
     },
 };
+
+export const EMAIL_MACROS = [
+    {label: 'Agency ID', value: Macro.AgencyId},
+    {label: 'Agency name', value: Macro.AgencyName},
+    {label: 'Account ID', value: Macro.AccountId},
+    {label: 'Account Name', value: Macro.AccountName},
+    {label: 'Campaign ID', value: Macro.CampaignId},
+    {label: 'Campaign name', value: Macro.CampaignName},
+    {label: 'Ad group ID', value: Macro.AdGroupId},
+    {label: 'Ad group name', value: Macro.AdGroupName},
+    {label: 'Ad group daily cap', value: Macro.AdGroupDailyCap},
+    {label: 'Campaign budget', value: Macro.CampaignBudget},
+    {label: 'Total spend (last day)', value: Macro.TotalSpendLastDay},
+    {label: 'Total spend (last 3 days)', value: Macro.TotalSpendLastThreeDays},
+    {label: 'Total spend (last 7 days)', value: Macro.TotalSpendLastSevenDays},
+    {label: 'Total spend (last 30 days)', value: Macro.TotalSpendThirtyDays},
+    {label: 'Clicks (last day)', value: Macro.ClicksLastDay},
+    {label: 'Clicks (last 3 days)', value: Macro.ClicksLastThreeDays},
+    {label: 'Clicks (last 7 days)', value: Macro.ClicksLastSevenDays},
+    {label: 'Clicks (last 30 days)', value: Macro.ClicksThirtyDays},
+    {label: 'Impressions (last day)', value: Macro.ImpressionsLastDay},
+    {label: 'Impressions (last 3 days)', value: Macro.ImpressionsLastThreeDays},
+    {label: 'Impressions (last 7 days)', value: Macro.ImpressionsLastSevenDays},
+    {label: 'Impressions (last 30 days)', value: Macro.ImpressionsThirtyDays},
+    {label: 'Avg. CPC (last day)', value: Macro.AvgCpcLastDay},
+    {label: 'Avg. CPC (last 3 days)', value: Macro.AvgCpcLastThreeDays},
+    {label: 'Avg. CPC (last 7 days)', value: Macro.AvgCpcLastSevenDays},
+    {label: 'Avg. CPC (last 30 days)', value: Macro.AvgCpcThirtyDays},
+    {label: 'Avg. CPM (last day)', value: Macro.AvgCpmLastDay},
+    {label: 'Avg. CPM (last 3 days)', value: Macro.AvgCpmLastThreeDays},
+    {label: 'Avg. CPM (last 7 days)', value: Macro.AvgCpmLastSevenDays},
+    {label: 'Avg. CPM (last 30 days)', value: Macro.AvgCpmThirtyDays},
+    {label: 'Visits (last day)', value: Macro.VisitsLastDay},
+    {label: 'Visits (last 3 days)', value: Macro.VisitsLastThreeDays},
+    {label: 'Visits (last 7 days)', value: Macro.VisitsLastSevenDays},
+    {label: 'Visits (last 30 days)', value: Macro.VisitsThirtyDays},
+    {label: 'Unique users (last day)', value: Macro.UniqueUsersLastDay},
+    {
+        label: 'Unique users (last 3 days)',
+        value: Macro.UniqueUsersLastThreeDays,
+    },
+    {
+        label: 'Unique users (last 7 days)',
+        value: Macro.UniqueUsersLastSevenDays,
+    },
+    {label: 'Unique users (last 30 days)', value: Macro.UniqueUsersThirtyDays},
+    {label: 'New users (last day)', value: Macro.NewUsersLastDay},
+    {label: 'New users (last 3 days)', value: Macro.NewUsersLastThreeDays},
+    {label: 'New users (last 7 days)', value: Macro.NewUsersLastSevenDays},
+    {label: 'New users (last 30 days)', value: Macro.NewUsersThirtyDays},
+    {label: 'Returning users (last day)', value: Macro.ReturningUsersLastDay},
+    {
+        label: 'Returning users (last 3 days)',
+        value: Macro.ReturningUsersLastThreeDays,
+    },
+    {
+        label: 'Returning users (last 7 days)',
+        value: Macro.ReturningUsersLastSevenDays,
+    },
+    {
+        label: 'Returning users (last 30 days)',
+        value: Macro.ReturningUsersThirtyDays,
+    },
+    {label: '% new users (last day)', value: Macro.PercentNewUsersLastDay},
+    {
+        label: '% new users (last 3 days)',
+        value: Macro.PercentNewUsersLastThreeDays,
+    },
+    {
+        label: '% new users (last 7 days)',
+        value: Macro.PercentNewUsersLastSevenDays,
+    },
+    {
+        label: '% new users (last 30 days)',
+        value: Macro.PercentNewUsersThirtyDays,
+    },
+    {
+        label: 'Click discrepancy (last day)',
+        value: Macro.ClickDiscrepancyLastDay,
+    },
+    {
+        label: 'Click discrepancy (last 3 days)',
+        value: Macro.ClickDiscrepancyLastThreeDays,
+    },
+    {
+        label: 'Click discrepancy (last 7 days)',
+        value: Macro.ClickDiscrepancyLastSevenDays,
+    },
+    {
+        label: 'Click discrepancy (last 30 days)',
+        value: Macro.ClickDiscrepancyThirtyDays,
+    },
+    {label: 'Pageviews (last day)', value: Macro.PageviewsLastDay},
+    {label: 'Pageviews (last 3 days)', value: Macro.PageviewsLastThreeDays},
+    {label: 'Pageviews (last 7 days)', value: Macro.PageviewsLastSevenDays},
+    {label: 'Pageviews (last 30 days)', value: Macro.PageviewsThirtyDays},
+    {
+        label: 'Pageviews per visit (last day)',
+        value: Macro.PageviewsPerVisitLastDay,
+    },
+    {
+        label: 'Pageviews per visit (last 3 days)',
+        value: Macro.PageviewsPerVisitLastThreeDays,
+    },
+    {
+        label: 'Pageviews per visit (last 7 days)',
+        value: Macro.PageviewsPerVisitLastSevenDays,
+    },
+    {
+        label: 'Pageviews per visit (last 30 days)',
+        value: Macro.PageviewsPerVisitThirtyDays,
+    },
+    {label: 'Bounced visits (last day)', value: Macro.BouncedVisitsLastDay},
+    {
+        label: 'Bounced visits (last 3 days)',
+        value: Macro.BouncedVisitsLastThreeDays,
+    },
+    {
+        label: 'Bounced visits (last 7 days)',
+        value: Macro.BouncedVisitsLastSevenDays,
+    },
+    {
+        label: 'Bounced visits (last 30 days)',
+        value: Macro.BouncedVisitsThirtyDays,
+    },
+    {
+        label: 'Non-bounced visits (last day)',
+        value: Macro.NonBouncedVisitsLastDay,
+    },
+    {
+        label: 'Non-bounced visits (last 3 days)',
+        value: Macro.NonBouncedVisitsLastThreeDays,
+    },
+    {
+        label: 'Non-bounced visits (last 7 days)',
+        value: Macro.NonBouncedVisitsLastSevenDays,
+    },
+    {
+        label: 'Non-bounced visits (last 30 days)',
+        value: Macro.NonBouncedVisitsThirtyDays,
+    },
+    {label: 'Bounce rate (last day)', value: Macro.BounceRateLastDay},
+    {label: 'Bounce rate (last 3 days)', value: Macro.BounceRateLastThreeDays},
+    {label: 'Bounce rate (last 7 days)', value: Macro.BounceRateLastSevenDays},
+    {label: 'Bounce rate (last 30 days)', value: Macro.BounceRateThirtyDays},
+    {label: 'Total seconds (last day)', value: Macro.TotalSecondsLastDay},
+    {
+        label: 'Total seconds (last 3 days)',
+        value: Macro.TotalSecondsLastThreeDays,
+    },
+    {
+        label: 'Total seconds (last 7 days)',
+        value: Macro.TotalSecondsLastSevenDays,
+    },
+    {
+        label: 'Total seconds (last 30 days)',
+        value: Macro.TotalSecondsThirtyDays,
+    },
+    {label: 'Time on site (last day)', value: Macro.AvgTimeOnSiteLastDay},
+    {
+        label: 'Time on site (last 3 days)',
+        value: Macro.AvgTimeOnSiteLastThreeDays,
+    },
+    {
+        label: 'Time on site (last 7 days)',
+        value: Macro.AvgTimeOnSiteLastSevenDays,
+    },
+    {
+        label: 'Time on site (last 30 days)',
+        value: Macro.AvgTimeOnSiteThirtyDays,
+    },
+    {
+        label: 'Avg. cost per visit (last day)',
+        value: Macro.AvgCostPerVisitLastDay,
+    },
+    {
+        label: 'Avg. cost per visit (last 3 days)',
+        value: Macro.AvgCostPerVisitLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per visit (last 7 days)',
+        value: Macro.AvgCostPerVisitLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per visit (last 30 days)',
+        value: Macro.AvgCostPerVisitThirtyDays,
+    },
+    {
+        label: 'Avg. cost per new visitor (last day)',
+        value: Macro.AvgCostPerNewVisitorLastDay,
+    },
+    {
+        label: 'Avg. cost per new visitor (last 3 days)',
+        value: Macro.AvgCostPerNewVisitorLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per new visitor (last 7 days)',
+        value: Macro.AvgCostPerNewVisitorLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per new visitor (last 30 days)',
+        value: Macro.AvgCostPerNewVisitorThirtyDays,
+    },
+    {
+        label: 'Avg. cost per pageview (last day)',
+        value: Macro.AvgCostPerPageviewLastDay,
+    },
+    {
+        label: 'Avg. cost per pageview (last 3 days)',
+        value: Macro.AvgCostPerPageviewLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per pageview (last 7 days)',
+        value: Macro.AvgCostPerPageviewLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per pageview (last 30 days)',
+        value: Macro.AvgCostPerPageviewThirtyDays,
+    },
+    {
+        label: 'Avg. cost per non-bounced visit (last day)',
+        value: Macro.AvgCostPerNonBouncedVisitLastDay,
+    },
+    {
+        label: 'Avg. cost per non-bounced visit (last 3 days)',
+        value: Macro.AvgCostPerNonBouncedVisitLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per non-bounced visit (last 7 days)',
+        value: Macro.AvgCostPerNonBouncedVisitLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per non-bounced visit (last 30 days)',
+        value: Macro.AvgCostPerNonBouncedVisitThirtyDays,
+    },
+    {
+        label: 'Avg. cost per minute (last day)',
+        value: Macro.AvgCostPerMinuteLastDay,
+    },
+    {
+        label: 'Avg. cost per minute (last 3 days)',
+        value: Macro.AvgCostPerMinuteLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per minute (last 7 days)',
+        value: Macro.AvgCostPerMinuteLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per minute (last 30 days)',
+        value: Macro.AvgCostPerMinuteThirtyDays,
+    },
+];

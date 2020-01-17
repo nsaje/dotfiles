@@ -112,8 +112,8 @@ class MetricWindow(ConstantBase):
 
 
 class MetricType(ConstantBase):
-    DAILY_CAP = 1
-    DAILY_CAP_SPENT_RATIO = 2
+    AD_GROUP_DAILY_CAP = 1
+    AD_GROUP_DAILY_CAP_SPENT_RATIO = 2
     BID = 3
     BID_MODIFIER = 4
     TOTAL_SPEND = 5
@@ -134,7 +134,7 @@ class MetricType(ConstantBase):
     PAGEVIEWS_PER_VISIT = 20
     BOUNCED_VISITS = 21
     NON_BOUNCED_VISITS = 22
-    BOUNCED_RATE = 23
+    BOUNCE_RATE = 23
     TOTAL_SECONDS = 24
     AVG_TIME_ON_SITE = 25
     AVG_COST_PER_VISIT = 26
@@ -151,8 +151,8 @@ class MetricType(ConstantBase):
     AVG_CPCV = 37
 
     _VALUES = {
-        DAILY_CAP: "Daily cap",
-        DAILY_CAP_SPENT_RATIO: "Daily cap spent percentage",
+        AD_GROUP_DAILY_CAP: "Daily cap",
+        AD_GROUP_DAILY_CAP_SPENT_RATIO: "Daily cap spent percentage",
         BID: "Bid",
         BID_MODIFIER: "Bid modifier",
         TOTAL_SPEND: "Total spend",
@@ -173,7 +173,7 @@ class MetricType(ConstantBase):
         PAGEVIEWS_PER_VISIT: "Pageviews per visit",
         BOUNCED_VISITS: "Bounced visits",
         NON_BOUNCED_VISITS: "Non-bounced visits",
-        BOUNCED_RATE: "Bounced rate",
+        BOUNCE_RATE: "Bounce rate",
         TOTAL_SECONDS: "Total seconds",
         AVG_TIME_ON_SITE: "Average time on site",
         AVG_COST_PER_VISIT: "Average cost per visit",
@@ -203,7 +203,7 @@ METRIC_MV_COLUMNS_MAPPING = {
     MetricType.CLICK_DISCREPANCY: "click_discrepancy",
     MetricType.NEW_VISITS: "new_visits",
     MetricType.NEW_USERS_RATIO: "percent_new_users",
-    MetricType.BOUNCED_RATE: "bounce_rate",
+    MetricType.BOUNCE_RATE: "bounce_rate",
     MetricType.PAGEVIEWS_PER_VISIT: "pv_per_visit",
     MetricType.AVG_TIME_ON_SITE: "avg_tos",
     MetricType.RETURNING_USERS: "returning_users",
@@ -238,7 +238,7 @@ class ValueType(ConstantBase):
     REMAINING_CAMPAIGN_BUDGET = 7
     AD_GROUP_BID = 8
     AD_GROUP_CLICK_DAILY_CAP = 9
-    DAILY_CAP = 10
+    AD_GROUP_DAILY_CAP = 10
     TOTAL_SPEND = 11
     TOTAL_SPEND_DAILY_AVG = 12
 
@@ -252,7 +252,7 @@ class ValueType(ConstantBase):
         REMAINING_CAMPAIGN_BUDGET: "Remaining campaign budget",
         AD_GROUP_BID: "Ad group bid",
         AD_GROUP_CLICK_DAILY_CAP: "Ad group click daily cap",
-        DAILY_CAP: "Daily cap",
+        AD_GROUP_DAILY_CAP: "Daily cap",
         TOTAL_SPEND: "Total spend",
         TOTAL_SPEND_DAILY_AVG: "Total spend (daily average)",  # TODO: AUTOCAMP
     }
@@ -284,3 +284,75 @@ class ApplyStatus(ConstantBase):
     FAILURE = 2
 
     _VALUES = {SUCCESS: "Rule application successful", FAILURE: "Rule application failed"}
+
+
+class EmailActionMacro(ConstantBase):
+    AGENCY_ID = "AGENCY_ID"
+    AGENCY_NAME = "AGENCY_NAME"
+    ACCOUNT_ID = "ACCOUNT_ID"
+    ACCOUNT_NAME = "ACCOUNT_NAME"
+    CAMPAIGN_ID = "CAMPAIGN_ID"
+    CAMPAIGN_NAME = "CAMPAIGN_NAME"
+    AD_GROUP_ID = "AD_GROUP_ID"
+    AD_GROUP_NAME = "AD_GROUP_NAME"
+    AD_GROUP_DAILY_CAP = "AD_GROUP_DAILY_CAP"  # FIXME: name discrepancy with metrics
+    CAMPAIGN_BUDGET = "CAMPAIGN_BUDGET"
+    TOTAL_SPEND = "TOTAL_SPEND"
+    CLICKS = "CLICKS"
+    IMPRESSIONS = "IMPRESSIONS"
+    AVG_CPC = "AVG_CPC"
+    AVG_CPM = "AVG_CPM"
+    VISITS = "VISITS"
+    UNIQUE_USERS = "UNIQUE_USERS"
+    NEW_USERS = "NEW_USERS"
+    RETURNING_USERS = "RETURNING_USERS"
+    PERCENT_NEW_USERS = "PERCENT_NEW_USERS"  # FIXME: name discrepancy with metrics
+    CLICK_DISCREPANCY = "CLICK_DISCREPANCY"
+    PAGEVIEWS = "PAGEVIEWS"
+    PAGEVIEWS_PER_VISIT = "PAGEVIEWS_PER_VISIT"
+    BOUNCED_VISITS = "BOUNCED_VISITS"
+    NON_BOUNCED_VISITS = "NON_BOUNCED_VISITS"
+    BOUNCE_RATE = "BOUNCE_RATE"
+    TOTAL_SECONDS = "TOTAL_SECONDS"
+    AVG_TIME_ON_SITE = "AVG_TIME_ON_SITE"
+    AVG_COST_PER_VISIT = "AVG_COST_PER_VISIT"
+    AVG_COST_PER_NEW_VISITOR = "AVG_COT_PER_NEW_VISITOR"
+    AVG_COST_PER_PAGEVIEW = "AVG_COST_PER_PAGEVIEW"
+    AVG_COST_PER_NON_BOUNCED_VISIT = "AVG_COST_PER_NON_BOUNCED_VISIT"
+    AVG_COST_PER_MINUTE = "AVG_COST_PER_MINUTE"
+
+    _VALUES = {
+        AGENCY_ID: "Agency ID",
+        AGENCY_NAME: "Agency name",
+        ACCOUNT_ID: "Account ID",
+        ACCOUNT_NAME: "Account name",
+        CAMPAIGN_ID: "Campaign ID",
+        CAMPAIGN_NAME: "Campaign name",
+        AD_GROUP_ID: "Ad group ID",
+        AD_GROUP_NAME: "Ad group name",
+        AD_GROUP_DAILY_CAP: "Ad group daily cap",
+        CAMPAIGN_BUDGET: "Campaign budget",
+        TOTAL_SPEND: "Total spend",
+        CLICKS: "Clicks",
+        IMPRESSIONS: "Impressions",
+        AVG_CPC: "Average CPC",
+        AVG_CPM: "Average CPM",
+        VISITS: "Visits",
+        UNIQUE_USERS: "Unique users",
+        NEW_USERS: "New users",
+        RETURNING_USERS: "Returning users",
+        PERCENT_NEW_USERS: "% new users",
+        CLICK_DISCREPANCY: "Click discrepancy",
+        PAGEVIEWS: "Pageviews",
+        PAGEVIEWS_PER_VISIT: "Pageviews per visit",
+        BOUNCED_VISITS: "Bounced visits",
+        NON_BOUNCED_VISITS: "Non-bounced visits",
+        BOUNCE_RATE: "Bounce rate",
+        TOTAL_SECONDS: "Total seconds",
+        AVG_TIME_ON_SITE: "Average time on site",
+        AVG_COST_PER_VISIT: "Average cost per visit",
+        AVG_COST_PER_NEW_VISITOR: "Average cost per new visitor",
+        AVG_COST_PER_PAGEVIEW: "Average cost per pageview",
+        AVG_COST_PER_NON_BOUNCED_VISIT: "Average cost per non-bounced visit",
+        AVG_COST_PER_MINUTE: "Average cost per minute",
+    }

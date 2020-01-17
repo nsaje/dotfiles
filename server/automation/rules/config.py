@@ -107,7 +107,7 @@ VALID_LEFT_OPERAND_TYPES = {
     constants.MetricType.PAGEVIEWS_PER_VISIT,
     constants.MetricType.BOUNCED_VISITS,
     constants.MetricType.NON_BOUNCED_VISITS,
-    constants.MetricType.BOUNCED_RATE,
+    constants.MetricType.BOUNCE_RATE,
     constants.MetricType.TOTAL_SECONDS,
     constants.MetricType.AVG_TIME_ON_SITE,
 }
@@ -142,16 +142,16 @@ PERCENT_MODIFIER_LEFT_OPERAND_TYPES = {
     constants.MetricType.PAGEVIEWS_PER_VISIT,
     constants.MetricType.BOUNCED_VISITS,
     constants.MetricType.NON_BOUNCED_VISITS,
-    constants.MetricType.BOUNCED_RATE,
+    constants.MetricType.BOUNCE_RATE,
     constants.MetricType.TOTAL_SECONDS,
     constants.MetricType.PRIMARY_GOAL,
-    constants.MetricType.DAILY_CAP,
+    constants.MetricType.AD_GROUP_DAILY_CAP,
 }
 
 PERCENT_MODIFIER_RIGHT_OPERAND_TYPES = {
     constants.ValueType.CAMPAIGN_BUDGET,
     constants.ValueType.REMAINING_CAMPAIGN_BUDGET,
-    constants.ValueType.DAILY_CAP,
+    constants.ValueType.AD_GROUP_DAILY_CAP,
     constants.ValueType.AD_GROUP_CLICK_DAILY_CAP,
 }
 
@@ -162,3 +162,49 @@ DAY_MODIFIER_LEFT_OPERAND_TYPES = set(
 )
 
 DAY_MODIFIER_RIGHT_OPERAND_TYPES = {constants.ValueType.CURRENT_DATE}
+
+EMAIL_ACTION_MACROS_FIXED_WINDOW = {
+    constants.EmailActionMacro.AGENCY_ID,
+    constants.EmailActionMacro.AGENCY_NAME,
+    constants.EmailActionMacro.ACCOUNT_ID,
+    constants.EmailActionMacro.ACCOUNT_NAME,
+    constants.EmailActionMacro.CAMPAIGN_ID,
+    constants.EmailActionMacro.CAMPAIGN_NAME,
+    constants.EmailActionMacro.AD_GROUP_ID,
+    constants.EmailActionMacro.AD_GROUP_NAME,
+    constants.EmailActionMacro.AD_GROUP_DAILY_CAP,
+    constants.EmailActionMacro.CAMPAIGN_BUDGET,
+}
+
+EMAIL_ACTION_MACROS_ADJUSTABLE_WINDOW = {
+    constants.EmailActionMacro.TOTAL_SPEND,
+    constants.EmailActionMacro.CLICKS,
+    constants.EmailActionMacro.IMPRESSIONS,
+    constants.EmailActionMacro.AVG_CPC,
+    constants.EmailActionMacro.AVG_CPM,
+    constants.EmailActionMacro.VISITS,
+    constants.EmailActionMacro.UNIQUE_USERS,
+    constants.EmailActionMacro.NEW_USERS,
+    constants.EmailActionMacro.RETURNING_USERS,
+    constants.EmailActionMacro.PERCENT_NEW_USERS,
+    constants.EmailActionMacro.CLICK_DISCREPANCY,
+    constants.EmailActionMacro.PAGEVIEWS,
+    constants.EmailActionMacro.PAGEVIEWS_PER_VISIT,
+    constants.EmailActionMacro.BOUNCED_VISITS,
+    constants.EmailActionMacro.NON_BOUNCED_VISITS,
+    constants.EmailActionMacro.BOUNCE_RATE,
+    constants.EmailActionMacro.TOTAL_SECONDS,
+    constants.EmailActionMacro.AVG_TIME_ON_SITE,
+    constants.EmailActionMacro.AVG_COST_PER_VISIT,
+    constants.EmailActionMacro.AVG_COST_PER_NEW_VISITOR,
+    constants.EmailActionMacro.AVG_COST_PER_PAGEVIEW,
+    constants.EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT,
+    constants.EmailActionMacro.AVG_COST_PER_MINUTE,
+}
+
+EMAIL_ACTION_MACROS_VALID_WINDOWS = {
+    constants.MetricWindow.LAST_DAY,
+    constants.MetricWindow.LAST_3_DAYS,
+    constants.MetricWindow.LAST_7_DAYS,
+    constants.MetricWindow.LAST_30_DAYS,
+}
