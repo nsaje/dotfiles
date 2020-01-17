@@ -63,6 +63,12 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
                     errors.setdefault("change_limit", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidChangeStep):
                     errors.setdefault("change_step", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidSendEmailSubject):
+                    errors.setdefault("send_email_subject", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidSendEmailBody):
+                    errors.setdefault("send_email_body", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidSendEmailRecipients):
+                    errors.setdefault("send_email_recipients", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidNotificationRecipients):
                     errors.setdefault("notification_recipients", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidRuleConditions):

@@ -32,6 +32,12 @@ export class RuleEditFormActionComponent implements OnChanges {
     @Input()
     changeLimit: number;
     @Input()
+    sendEmailRecipients: string;
+    @Input()
+    sendEmailSubject: string;
+    @Input()
+    sendEmailBody: string;
+    @Input()
     availableActions: RuleActionConfig[];
     @Input()
     actionTypeErrors: FieldErrors;
@@ -41,6 +47,12 @@ export class RuleEditFormActionComponent implements OnChanges {
     changeStepErrors: FieldErrors;
     @Input()
     changeLimitErrors: FieldErrors;
+    @Input()
+    sendEmailRecipientsErrors: FieldErrors;
+    @Input()
+    sendEmailSubjectErrors: FieldErrors;
+    @Input()
+    sendEmailBodyErrors: FieldErrors;
     @Output()
     actionTypeChange = new EventEmitter<RuleActionType>();
     @Output()
@@ -49,6 +61,12 @@ export class RuleEditFormActionComponent implements OnChanges {
     changeStepChange = new EventEmitter<number>();
     @Output()
     changeLimitChange = new EventEmitter<number>();
+    @Output()
+    sendEmailRecipientsChange = new EventEmitter<string>();
+    @Output()
+    sendEmailSubjectChange = new EventEmitter<string>();
+    @Output()
+    sendEmailBodyChange = new EventEmitter<string>();
 
     selectedActionConfig: RuleActionConfig;
     availableActionFrequencies: {label: string; value: number}[];
@@ -95,6 +113,18 @@ export class RuleEditFormActionComponent implements OnChanges {
             changeLimit = changeLimit / 100.0 + 1;
         }
         this.changeLimitChange.emit(changeLimit);
+    }
+
+    updateSendEmailRecipients(sendEmailRecipients: string) {
+        this.sendEmailRecipientsChange.emit(sendEmailRecipients);
+    }
+
+    updateSendEmailSubject(sendEmailSubject: string) {
+        this.sendEmailSubjectChange.emit(sendEmailSubject);
+    }
+
+    updateSendEmailBody(sendEmailBody: string) {
+        this.sendEmailBodyChange.emit(sendEmailBody);
     }
 
     formatChangeStep(changeStep: number, actionType: RuleActionType) {

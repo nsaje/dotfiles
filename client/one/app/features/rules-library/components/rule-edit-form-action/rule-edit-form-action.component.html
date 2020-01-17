@@ -50,3 +50,38 @@
     [errors]="actionFrequencyErrors"
     (valueChange)="selectActionFrequency($event)"
 ></zem-select-form-group>
+
+<ng-container *ngIf="actionType === RuleActionType.SendEmail">
+    <div
+        class="zem-rule-edit-form__section-item zem-rule-edit-form-action__email-container"
+    >
+        <div class="zem-rule-edit-form-action__email">
+            <zem-textarea-form-group
+                class="zem-rule-edit-form__section-item zem-textarea-form-group"
+                label="Email subject"
+                [value]="sendEmailSubject"
+                rows="1"
+                (valueChange)="updateSendEmailSubject($event)"
+                [errors]="sendEmailSubjectErrors"
+            ></zem-textarea-form-group>
+            <zem-textarea-form-group
+                class="zem-rule-edit-form__section-item zem-textarea-form-group"
+                label="Email body"
+                [value]="sendEmailBody"
+                rows="5"
+                (valueChange)="updateSendEmailBody($event)"
+                [errors]="sendEmailBodyErrors"
+            ></zem-textarea-form-group>
+            <zem-text-form-group
+                class="zem-rule-edit-form__section-item zem-textarea-form-group"
+                label="Email recipients"
+                [value]="sendEmailRecipients"
+                (valueChange)="updateSendEmailRecipients($event)"
+                [errors]="sendEmailRecipientsErrors"
+            ></zem-text-form-group>
+            <div class="zem-rule-edit-form__section-description">
+                Comma separated list of recipient's emails.
+            </div>
+        </div>
+    </div>
+</ng-container>

@@ -58,15 +58,26 @@
             [actionFrequency]="state.rule.actionFrequency"
             [changeStep]="state.rule.changeStep"
             [changeLimit]="state.rule.changeLimit"
+            [sendEmailRecipients]="state.rule.sendEmailRecipients"
+            [sendEmailSubject]="state.rule.sendEmailSubject"
+            [sendEmailBody]="state.rule.sendEmailBody"
             [availableActions]="state.availableActions"
             [actionTypeErrors]="state.fieldsErrors?.actionType"
             [actionFrequencyErrors]="state.fieldsErrors?.actionFrequency"
             [changeStepErrors]="state.fieldsErrors?.changeStep"
             [changeLimitErrors]="state.fieldsErrors?.changeLimit"
+            [sendEmailRecipientsErrors]="
+                state.fieldsErrors?.sendEmailRecipients
+            "
+            [sendEmailSubjectErrors]="state.fieldsErrors?.sendEmailSubject"
+            [sendEmailBodyErrors]="state.fieldsErrors?.sendEmailBody"
             (actionTypeChange)="store.setRuleActionType($event)"
             (actionFrequencyChange)="store.setRuleActionFrequency($event)"
             (changeStepChange)="store.setRuleChangeStep($event)"
             (changeLimitChange)="store.setRuleChangeLimit($event)"
+            (sendEmailRecipientsChange)="store.setSendEmailRecipients($event)"
+            (sendEmailSubjectChange)="store.setSendEmailSubject($event)"
+            (sendEmailBodyChange)="store.setSendEmailBody($event)"
         ></zem-rule-edit-form-action>
     </div>
     <div class="zem-rule-edit-form__section">

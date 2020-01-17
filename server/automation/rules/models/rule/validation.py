@@ -17,6 +17,9 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "state"),
             partial(self._validate_if_present, "target_type"),
             partial(self._validate_if_present, "action_type"),
+            partial(self._validate_if_present, "send_email_subject"),
+            partial(self._validate_if_present, "send_email_body"),
+            partial(self._validate_if_present, "send_email_recipients"),
             partial(self._validate_if_present, "change_step"),
             partial(self._validate_if_present, "change_limit"),
             partial(self._validate_if_present, "conditions"),
@@ -32,8 +35,7 @@ class RuleValidationMixin:
             raise exceptions.InvalidRuleState("Invalid state")
 
     def _validate_target_type(self, changes, target_type):
-        if target_type not in config.VALID_TARGET_TYPES:
-            # TODO(luka): for v1, remove when all target types are supported
+        if len(config.VALID_ACTION_TYPES_FOR_TARGET.get(target_type, [])) == 0:
             raise exceptions.InvalidTargetType("Invalid target type")
         if target_type not in constants.TargetType.get_all():
             raise exceptions.InvalidTargetType("Invalid target type")
@@ -50,7 +52,9 @@ class RuleValidationMixin:
         action_type = changes.get("action_type", self.action_type)
         if action_type not in config.ADJUSTEMENT_ACTION_TYPES and change_step is not None:
             action_type_name = constants.ActionType.get_name(action_type)
-            raise exceptions.InvalidChangeStep(f"Change step shouldn't be set for action type: {action_type_name}.")
+            raise exceptions.InvalidChangeStep(
+                f"Change step not expected to be set for action type: {action_type_name}."
+            )
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
             action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
             if change_step is None:
@@ -68,7 +72,9 @@ class RuleValidationMixin:
         action_type = changes.get("action_type", self.action_type)
         if action_type not in config.ADJUSTEMENT_ACTION_TYPES and change_limit is not None:
             action_type_name = constants.ActionType.get_name(action_type)
-            raise exceptions.InvalidChangeLimit(f"Change limit shouldn't be set for action type: {action_type_name}.")
+            raise exceptions.InvalidChangeLimit(
+                f"Change limit not expected to be set for action type: {action_type_name}."
+            )
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
             action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
             if change_limit is None:
@@ -82,6 +88,47 @@ class RuleValidationMixin:
                     f"Change limit is too big. Please provide a value lower than {action_type_config.max_limit:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
                 )
 
+    def _validate_send_email_subject(self, changes, send_email_subject):
+        action_type = changes.get("action_type", self.action_type)
+        if action_type == constants.ActionType.SEND_EMAIL and not send_email_subject:
+            raise exceptions.InvalidSendEmailSubject("Please provide email subject.")
+        elif action_type != constants.ActionType.SEND_EMAIL and send_email_subject:
+            action_type_name = constants.ActionType.get_name(action_type)
+            raise exceptions.InvalidSendEmailSubject(
+                f"Email subject not expected to be set for action type {action_type_name}."
+            )
+
+    def _validate_send_email_body(self, changes, send_email_body):
+        action_type = changes.get("action_type", self.action_type)
+        if action_type == constants.ActionType.SEND_EMAIL:
+            if not send_email_body:
+                raise exceptions.InvalidSendEmailBody("Please provide email body.")
+            self._validate_email_macros(send_email_body)
+        elif action_type != constants.ActionType.SEND_EMAIL and send_email_body:
+            action_type_name = constants.ActionType.get_name(action_type)
+            raise exceptions.InvalidSendEmailBody(
+                f"Email body not expected to be set for action type {action_type_name}."
+            )
+
+    def _validate_email_macros(self, body):
+        if any(c in body for c in "{}"):
+            raise exceptions.InvalidSendEmailBody(f"Unknown email macro.")
+
+    def _validate_send_email_recipients(self, changes, send_email_recipients):
+        action_type = changes.get("action_type", self.action_type)
+        if action_type == constants.ActionType.SEND_EMAIL and not send_email_recipients:
+            raise exceptions.InvalidSendEmailRecipients("Please provide email recipients.")
+        elif action_type != constants.ActionType.SEND_EMAIL and send_email_recipients:
+            action_type_name = constants.ActionType.get_name(action_type)
+            raise exceptions.InvalidSendEmailRecipients(
+                f"Email recipients not expected to be set for action type {action_type_name}."
+            )
+
+        try:
+            self._validate_email_list(send_email_recipients)
+        except ValidationError:
+            raise exceptions.InvalidSendEmailRecipients("Invalid format.")
+
     def _validate_notification_recipients(self, changes, notification_recipients):
         notification_type = changes.get("notification_type", self.notification_type)
         if notification_type == constants.NotificationType.NONE and notification_recipients:
@@ -90,11 +137,15 @@ class RuleValidationMixin:
             )
         elif notification_type != constants.NotificationType.NONE and not notification_recipients:
             raise exceptions.InvalidNotificationRecipients("Please provide at least one email recipient.")
-        for email in notification_recipients:
-            try:
-                validate_email(email)
-            except ValidationError:
-                raise exceptions.InvalidNotificationRecipients("Invalid format.")
+
+        try:
+            self._validate_email_list(notification_recipients)
+        except ValidationError:
+            raise exceptions.InvalidNotificationRecipients("Invalid format.")
+
+    def _validate_email_list(self, email_list):
+        for email in email_list:
+            validate_email(email)
 
     def _validate_conditions(self, changes, conditions):
         if len(conditions) < 1:

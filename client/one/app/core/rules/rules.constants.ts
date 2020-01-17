@@ -20,7 +20,7 @@ export enum RuleActionType {
     DecreaseDailyBudget = 'DECREASE_BUDGET',
     TurnOff = 'TURN_OFF',
     Blacklist = 'BLACKLIST',
-    Notify = 'SEND_EMAIL',
+    SendEmail = 'SEND_EMAIL',
 }
 
 export enum RuleActionFrequency {

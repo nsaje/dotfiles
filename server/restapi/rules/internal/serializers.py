@@ -63,13 +63,20 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         automation.rules.TargetType,
         error_messages={"required": "Please specify a target type.", "null": "Please specify a target type."},
     )
-
     action_type = restapi.serializers.fields.DashConstantField(
         automation.rules.ActionType,
         error_messages={"required": "Please specify an action type.", "null": "Please specify an action type."},
     )
+
     change_step = rest_framework.serializers.FloatField(required=False, allow_null=True)
     change_limit = rest_framework.serializers.FloatField(required=False, allow_null=True)
+
+    send_email_subject = restapi.serializers.fields.PlainCharField(required=False, allow_null=True, initial=None)
+    send_email_body = restapi.serializers.fields.PlainCharField(required=False, allow_null=True, initial=None)
+    send_email_recipients = rest_framework.serializers.ListSerializer(
+        child=rest_framework.serializers.EmailField(), default=[], allow_empty=True, required=False, initial=None
+    )
+
     action_frequency = rest_framework.serializers.IntegerField(
         source="cooldown",
         error_messages={

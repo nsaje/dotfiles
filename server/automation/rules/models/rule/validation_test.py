@@ -59,6 +59,85 @@ class RuleValidationTest(test.TestCase):
             with self._assert_multiple_validation_error([exceptions.InvalidChangeLimit]):
                 self.rule.clean({"action_type": action_type, "change_limit": -0.01, "change_step": 0.01})
 
+    def test_validate_send_email_subject(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        # TODO: uncomment when send email isn't the only action type on ad group anymore
+        # self.rule.clean({"send_email_subject": "", "action_type": constants.ActionType.TURN_OFF})
+        # with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+        #     self.rule.clean({"send_email_subject": "test", "action_type": constants.ActionType.TURN_OFF})
+        self.rule.clean(
+            {
+                "send_email_subject": "test",
+                "send_email_body": "test",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_subject": "",
+                    "send_email_body": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
+    def test_validate_send_email_body(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        # TODO: uncomment when send email isn't the only action type on ad group anymore
+        # self.rule.clean({"send_email_body": "", "action_type": constants.ActionType.TURN_OFF})
+        # with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+        #     self.rule.clean({"send_email_body": "test", "action_type": constants.ActionType.TURN_OFF})
+        self.rule.clean(
+            {
+                "send_email_body": "test",
+                "send_email_subject": "test",
+                "send_email_recipients": ["user@test.com"],
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailBody]):
+            self.rule.clean(
+                {
+                    "send_email_body": "",
+                    "send_email_subject": "test",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
+    def test_validate_send_email_recipients(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        # TODO: uncomment when send email isn't the only action type on ad group anymore
+        # self.rule.clean({"send_email_recipients": [], "action_type": constants.ActionType.TURN_OFF})
+        self.rule.clean(
+            {
+                "send_email_recipients": ["user@test.com"],
+                "send_email_subject": "test",
+                "send_email_body": "test",
+                "action_type": constants.ActionType.SEND_EMAIL,
+            }
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailRecipients]):
+            self.rule.clean(
+                {
+                    "send_email_recipients": [],
+                    "send_email_subject": "test",
+                    "send_email_body": "test",
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailRecipients]):
+            self.rule.clean(
+                {
+                    "send_email_recipients": ["usertest.com"],
+                    "send_email_subject": "test",
+                    "send_email_body": "test",
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+
     def test_validate_notification_recipients(self):
         self.rule.clean({"notification_recipients": [], "notification_type": constants.NotificationType.NONE})
         self.rule.clean(

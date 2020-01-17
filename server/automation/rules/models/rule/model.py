@@ -19,6 +19,9 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
         "state",
         "target_type",
         "action_type",
+        "send_email_subject",
+        "send_email_body",
+        "send_email_recipients",
         "change_step",
         "change_limit",
         "cooldown",
@@ -38,10 +41,15 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
     target_type = models.IntegerField(choices=constants.TargetType.get_choices())
 
     action_type = models.IntegerField(choices=constants.ActionType.get_choices())
-    change_step = models.FloatField(null=True, blank=True)
-    change_limit = models.FloatField(null=True, blank=True)
     cooldown = models.IntegerField()
     window = models.IntegerField(choices=constants.MetricWindow.get_choices(), default=constants.MetricWindow.LIFETIME)
+
+    change_step = models.FloatField(null=True, blank=True)
+    change_limit = models.FloatField(null=True, blank=True)
+
+    send_email_subject = models.TextField(null=True, blank=True)
+    send_email_body = models.TextField(null=True, blank=True)
+    send_email_recipients = ArrayField(models.TextField(), null=True, blank=True)
 
     notification_type = models.IntegerField(choices=constants.NotificationType.get_choices())
     notification_recipients = ArrayField(models.TextField(), null=True, blank=True)

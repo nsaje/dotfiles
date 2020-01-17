@@ -17,6 +17,9 @@ export interface Rule {
     actionFrequency: RuleActionFrequency;
     changeStep: number;
     changeLimit: number;
+    sendEmailRecipients: string[];
+    sendEmailSubject: string;
+    sendEmailBody: string;
     conditions: RuleCondition[];
     window: TimeRange;
     notificationType: RuleNotificationType;

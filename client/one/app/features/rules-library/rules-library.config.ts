@@ -11,10 +11,7 @@ import {DataType, Unit} from '../../app.constants';
 
 export const RULE_TARGET_TYPES = [
     {label: 'Ad', value: RuleTargetType.Ad},
-    {
-        label: 'Ad group',
-        value: RuleTargetType.AdGroup,
-    },
+    {label: 'Ad group', value: RuleTargetType.AdGroup},
     {
         label: 'Ad group / publishers',
         value: RuleTargetType.AdGroupPublisher,
@@ -146,6 +143,15 @@ export const RULE_ACTIONS_OPTIONS = {
     [RuleActionType.Blacklist]: {
         label: 'Blacklist',
         type: RuleActionType.Blacklist,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+    },
+    [RuleActionType.SendEmail]: {
+        label: 'Send email',
+        type: RuleActionType.SendEmail,
         frequencies: [
             RuleActionFrequency.Day1,
             RuleActionFrequency.Days3,

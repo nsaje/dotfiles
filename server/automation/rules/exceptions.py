@@ -17,6 +17,18 @@ class InvalidChangeLimit(ValidationError):
     pass
 
 
+class InvalidSendEmailSubject(ValidationError):
+    pass
+
+
+class InvalidSendEmailBody(ValidationError):
+    pass
+
+
+class InvalidSendEmailRecipients(ValidationError):
+    pass
+
+
 class InvalidNotificationRecipients(ValidationError):
     pass
 

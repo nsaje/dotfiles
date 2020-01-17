@@ -68,7 +68,7 @@ class ActionType(ConstantBase):
     DECREASE_BUDGET = 6
     TURN_OFF = 7
     BLACKLIST = 8
-    NOTIFY = 9
+    SEND_EMAIL = 9
 
     _VALUES = {
         INCREASE_BID: "Increase bid",
@@ -79,7 +79,7 @@ class ActionType(ConstantBase):
         DECREASE_BUDGET: "Decrease budget",
         TURN_OFF: "Turn off",
         BLACKLIST: "Blacklist",
-        NOTIFY: "Send an e-mail",
+        SEND_EMAIL: "Send an e-mail",
     }
 
 

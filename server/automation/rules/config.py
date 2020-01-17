@@ -29,6 +29,7 @@ VALID_ACTION_TYPES_FOR_TARGET = {
         constants.ActionType.INCREASE_BUDGET,
         constants.ActionType.DECREASE_BUDGET,
         constants.ActionType.TURN_OFF,
+        constants.ActionType.SEND_EMAIL,
     ],
     constants.TargetType.AD: [
         constants.ActionType.INCREASE_BID_MODIFIER,

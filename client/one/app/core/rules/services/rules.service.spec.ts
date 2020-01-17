@@ -41,6 +41,9 @@ describe('RulesService', () => {
                 actionFrequency: RuleActionFrequency.Day1,
                 changeStep: null,
                 changeLimit: null,
+                sendEmailRecipients: [],
+                sendEmailSubject: null,
+                sendEmailBody: null,
                 window: TimeRange.Lifetime,
                 notificationType: RuleNotificationType.OnRuleRun,
                 notificationRecipients: ['test@test.com'],
@@ -50,7 +53,7 @@ describe('RulesService', () => {
         mockedRule = clone(mockedRules[0]);
     });
 
-    it('should create a new deal', fakeAsync(() => {
+    it('should create a new rule', fakeAsync(() => {
         rulesEndpointStub.create.and
             .returnValue(of(mockedRule, asapScheduler))
             .calls.reset();
