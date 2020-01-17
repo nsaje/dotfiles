@@ -104,8 +104,10 @@ class RuleValidationMixin:
             )
         elif send_email_subject:
             try:
-                self._validate_email_macros(send_email_subject)
-            except exceptions.InvalidSendEmailMacros as e:
+                from ...service import macros
+
+                macros.validate(send_email_subject)
+            except exceptions.InvalidMacros as e:
                 raise exceptions.InvalidSendEmailSubject(str(e))
 
     def _validate_send_email_body(self, changes, send_email_body):
@@ -119,29 +121,11 @@ class RuleValidationMixin:
             )
         elif send_email_body:
             try:
-                self._validate_email_macros(send_email_body)
-            except exceptions.InvalidSendEmailMacros as e:
+                from ...service import macros
+
+                macros.validate(send_email_body)
+            except exceptions.InvalidMacros as e:
                 raise exceptions.InvalidSendEmailBody(str(e))
-
-    def _validate_email_macros(self, content):
-        if EMAIL_CONTAINS_NESTED_MACRO_REGEX.search(content):
-            raise exceptions.InvalidSendEmailMacros(f"Nested macros not supported.")
-        unknown_macros = []
-        for macro in EMAIL_EXTRACT_MACROS_REGEX.findall(content):
-            if not self._is_valid_email_macro(macro):
-                unknown_macros.append(macro)
-        if unknown_macros:
-            raise exceptions.InvalidSendEmailMacros(
-                "Unknown macro{}: {}.".format("s" if len(unknown_macros) > 1 else "", ", ".join(unknown_macros))
-            )
-
-    def _is_valid_email_macro(self, macro):
-        if macro in config.EMAIL_ACTION_MACROS_FIXED_WINDOW:
-            return True
-        postfix_window_match = EMAIL_MACRO_WITHOUT_WINDOW_REGEX.match(macro)
-        if postfix_window_match and postfix_window_match.group(1) in config.EMAIL_ACTION_MACROS_ADJUSTABLE_WINDOW:
-            return True
-        return False
 
     def _validate_send_email_recipients(self, changes, send_email_recipients):
         action_type = changes.get("action_type", self.action_type)

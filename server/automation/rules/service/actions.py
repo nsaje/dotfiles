@@ -1,5 +1,6 @@
 import dataclasses
 from decimal import Decimal
+from typing import DefaultDict
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -7,9 +8,11 @@ from typing import Union
 import core.features.bid_modifiers
 import core.models
 import dash.constants
+import utils.email_helper
 
 from .. import Rule
 from .. import constants
+from . import macros
 
 
 @dataclasses.dataclass
@@ -25,7 +28,7 @@ class ValueChangeData:
         return {self.target: {"old_value": self.old_value, "new_value": self.new_value}}
 
 
-def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
+def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group bid adjustment target")
 
@@ -46,7 +49,7 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueC
 
 
 # TODO: autocamp: local_autopilot_daily_budget VS local_b1_sources_group_daily_budget
-def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
+def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group autopilot budget adjustment target")
 
@@ -68,7 +71,7 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     return ValueChangeData(target=target, old_value=float(base_budget), new_value=float(budget))
 
 
-def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
+def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
     if rule.action_type == constants.ActionType.INCREASE_BID_MODIFIER:
         limiter, change = min, rule.change_step
     elif rule.action_type == constants.ActionType.DECREASE_BID_MODIFIER:
@@ -105,7 +108,7 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup) 
     return ValueChangeData(target=target, old_value=base_modifier, new_value=modifier)
 
 
-def turn_off(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
+def turn_off(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
     if rule.action_type != constants.ActionType.TURN_OFF:
         raise Exception("Invalid action type for turning off")
 
@@ -137,3 +140,25 @@ def turn_off(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueCha
     settings.update(None, state=off_state)
 
     return ValueChangeData(target=target, old_value=state, new_value=off_state)
+
+
+def send_email(
+    target: str,
+    rule: Rule,
+    ad_group: core.models.AdGroup,
+    *,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    **kwargs
+):
+    if rule.action_type != constants.ActionType.SEND_EMAIL:
+        raise Exception("Invalid action type")
+
+    if int(target) != ad_group.id:
+        raise Exception("Invalid target")
+
+    recipients = rule.send_email_recipients
+    subject = macros.expand(rule.send_email_subject, ad_group, target_stats)
+    body = macros.expand(rule.send_email_body, ad_group, target_stats)
+
+    utils.email_helper.send_official_email(rule.agency, recipient_list=recipients, subject=subject, body=body)
+    return ValueChangeData(target=target, old_value=None, new_value="Email sent.")

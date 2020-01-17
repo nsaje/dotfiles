@@ -554,40 +554,7 @@ def _retrieve_active_creditlineitems(account):
 
 
 def _compute_daily_cap(**filters):
-    ad_groups = dash.models.AdGroup.objects.filter(**filters).filter_current_and_active().select_related("settings")
-
-    adgroup_sources = dash.models.AdGroupSource.objects.filter(
-        settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group__in=ad_groups
-    ).values("settings__daily_budget_cc", "settings__local_daily_budget_cc", "ad_group_id", "source__source_type__type")
-
-    adgroup_map = {ad_group.id: ad_group for ad_group in ad_groups}
-    ret = 0
-
-    ad_groups_with_active_b1_sources = set()
-    for adgroup_source in adgroup_sources:
-        adgroup_settings = adgroup_map[adgroup_source["ad_group_id"]].settings
-
-        if (
-            adgroup_settings.b1_sources_group_enabled
-            and adgroup_source["source__source_type__type"] == dash.constants.SourceType.B1
-        ):
-            ad_groups_with_active_b1_sources.add(adgroup_source["ad_group_id"])
-            continue
-
-        ret += adgroup_source["settings__local_daily_budget_cc"] or 0
-
-    for ad_group_id in ad_groups_with_active_b1_sources:
-        ags = adgroup_map[ad_group_id].settings
-
-        if not ags.b1_sources_group_enabled:
-            continue
-
-        if ags.b1_sources_group_state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            continue
-
-        ret += ags.local_b1_sources_group_daily_budget or 0
-
-    return ret
+    return dash.models.AdGroup.objects.filter(**filters).compute_total_local_daily_cap()
 
 
 def get_primary_campaign_goal(user, campaign, start_date, end_date, currency=dash.constants.Currency.USD):

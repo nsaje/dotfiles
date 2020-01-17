@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 
 import mock
@@ -561,3 +562,79 @@ class ActionsTest(TestCase):
 
         with self.assertRaisesRegexp(Exception, "Invalid action type for turning off"):
             actions.turn_off(str(ad_group.id), rule, ad_group)
+
+
+@mock.patch("utils.email_helper.send_official_email")
+class SendEmailTestCase(TestCase):
+    def setUp(self):
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
+        self.send_email_recipients = ["user@test.com"]
+        self.send_email_subject = "This is test email subject"
+        self.send_email_body = "This is test email body"
+
+    def test_send_email(self, mock_send_official_email):
+
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.SEND_EMAIL,
+            send_email_recipients=self.send_email_recipients,
+            send_email_subject=self.send_email_subject,
+            send_email_body=self.send_email_body,
+        )
+
+        actions.send_email(str(self.ad_group.id), rule, self.ad_group, target_stats=defaultdict(dict))
+
+        mock_send_official_email.assert_called_once_with(
+            self.ad_group.campaign.account.agency,
+            recipient_list=self.send_email_recipients,
+            subject=self.send_email_subject,
+            body=self.send_email_body,
+        )
+
+    def test_send_email_simple_macro_expansion(self, mock_send_official_email):
+        send_email_subject_macro = "Account id: {ACCOUNT_ID}"
+        send_email_body_macro = "Clicks: {CLICKS_LAST_30_DAYS}"
+
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.SEND_EMAIL,
+            send_email_recipients=self.send_email_recipients,
+            send_email_subject=send_email_subject_macro,
+            send_email_body=send_email_body_macro,
+        )
+
+        actions.send_email(
+            str(self.ad_group.id),
+            rule,
+            self.ad_group,
+            target_stats={"clicks": {constants.MetricWindow.LAST_30_DAYS: 2000}},
+        )
+
+        mock_send_official_email.assert_called_once_with(
+            self.ad_group.campaign.account.agency,
+            recipient_list=self.send_email_recipients,
+            subject=send_email_subject_macro.format(ACCOUNT_ID=self.ad_group.campaign.account_id),
+            body=send_email_body_macro.format(CLICKS_LAST_30_DAYS=2000),
+        )
+
+    def test_send_email_invalid_target(self, mock_send_official_email):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.SEND_EMAIL,
+            send_email_recipients=self.send_email_recipients,
+            send_email_subject=self.send_email_subject,
+            send_email_body=self.send_email_body,
+        )
+
+        with self.assertRaisesRegexp(Exception, "Invalid target"):
+            actions.send_email(str(self.ad_group.id + 1), rule, self.ad_group, target_stats={})
+
+    def test_send_email_invalid_action(self, mock_send_official_email):
+        rule = magic_mixer.blend(Rule, agency=self.agency, action_type=constants.ActionType.BLACKLIST)
+
+        with self.assertRaisesRegexp(Exception, "Invalid action"):
+            actions.send_email(str(self.ad_group.id + 1), rule, self.ad_group, target_stats={})

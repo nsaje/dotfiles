@@ -29,7 +29,7 @@ class InvalidSendEmailRecipients(ValidationError):
     pass
 
 
-class InvalidSendEmailMacros(ValidationError):
+class InvalidMacros(ValidationError):
     pass
 
 

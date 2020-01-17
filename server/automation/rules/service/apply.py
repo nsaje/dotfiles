@@ -28,6 +28,7 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
     constants.ActionType.DECREASE_BUDGET: actions.adjust_autopilot_daily_budget,
     constants.ActionType.INCREASE_BID_MODIFIER: actions.adjust_bid_modifier,
     constants.ActionType.DECREASE_BID_MODIFIER: actions.adjust_bid_modifier,
+    constants.ActionType.SEND_EMAIL: actions.send_email,
     constants.ActionType.TURN_OFF: actions.turn_off,
 }
 
@@ -56,7 +57,7 @@ def apply_rule(
         if _meets_all_conditions(rule, target_stats):
             with transaction.atomic():
                 try:
-                    update = _apply_action(target, rule, ad_group)
+                    update = _apply_action(target, rule, ad_group, target_stats)
                     if update.has_changes():
                         _write_trigger_history(target, rule, ad_group)
                         changes.append(update)
@@ -126,9 +127,9 @@ def _meets_condition(operator: int, left_value, right_value) -> bool:
     raise ValueError("Invalid operator type")
 
 
-def _apply_action(target: str, rule: Rule, ad_group: core.models.AdGroup) -> ValueChangeData:
+def _apply_action(target, rule, ad_group, target_stats):
     apply_fn = ACTION_TYPE_APPLY_FN_MAPPING[rule.action_type]
-    return apply_fn(target, rule, ad_group)
+    return apply_fn(target, rule, ad_group, target_stats=target_stats)
 
 
 def _write_trigger_history(target: str, rule: Rule, ad_group: core.models.AdGroup) -> None:

@@ -163,7 +163,7 @@ DAY_MODIFIER_LEFT_OPERAND_TYPES = set(
 
 DAY_MODIFIER_RIGHT_OPERAND_TYPES = {constants.ValueType.CURRENT_DATE}
 
-EMAIL_ACTION_MACROS_FIXED_WINDOW = {
+EMAIL_ACTION_SETTINGS_MACROS = {
     constants.EmailActionMacro.AGENCY_ID,
     constants.EmailActionMacro.AGENCY_NAME,
     constants.EmailActionMacro.ACCOUNT_ID,
@@ -176,7 +176,7 @@ EMAIL_ACTION_MACROS_FIXED_WINDOW = {
     constants.EmailActionMacro.CAMPAIGN_BUDGET,
 }
 
-EMAIL_ACTION_MACROS_ADJUSTABLE_WINDOW = {
+EMAIL_ACTION_STATS_MACROS = {
     constants.EmailActionMacro.TOTAL_SPEND,
     constants.EmailActionMacro.CLICKS,
     constants.EmailActionMacro.IMPRESSIONS,

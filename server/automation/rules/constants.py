@@ -356,3 +356,30 @@ class EmailActionMacro(ConstantBase):
         AVG_COST_PER_NON_BOUNCED_VISIT: "Average cost per non-bounced visit",
         AVG_COST_PER_MINUTE: "Average cost per minute",
     }
+
+
+EMAIL_MACRO_MV_COLUMNS_MAPPING = {
+    EmailActionMacro.TOTAL_SPEND: "local_etfm_cost",
+    EmailActionMacro.CLICKS: "clicks",
+    EmailActionMacro.IMPRESSIONS: "impressions",
+    EmailActionMacro.AVG_CPC: "local_etfm_cpc",
+    EmailActionMacro.AVG_CPM: "local_etfm_cpm",
+    EmailActionMacro.VISITS: "visits",
+    EmailActionMacro.UNIQUE_USERS: "unique_users",
+    EmailActionMacro.NEW_USERS: "new_users",
+    EmailActionMacro.RETURNING_USERS: "returning_users",
+    EmailActionMacro.PERCENT_NEW_USERS: "percent_new_users",
+    EmailActionMacro.CLICK_DISCREPANCY: "click_discrepancy",
+    EmailActionMacro.PAGEVIEWS: "pageviews",
+    EmailActionMacro.PAGEVIEWS_PER_VISIT: "pv_per_visit",
+    EmailActionMacro.BOUNCED_VISITS: "bounced_visits",
+    EmailActionMacro.NON_BOUNCED_VISITS: "non_bounced_visits",
+    EmailActionMacro.BOUNCE_RATE: "bounce_rate",
+    EmailActionMacro.TOTAL_SECONDS: "total_seconds",
+    EmailActionMacro.AVG_TIME_ON_SITE: "avg_tos",
+    EmailActionMacro.AVG_COST_PER_VISIT: "local_avg_etfm_cost_per_visit",
+    EmailActionMacro.AVG_COST_PER_NEW_VISITOR: "local_avg_etfm_cost_for_new_visitor",
+    EmailActionMacro.AVG_COST_PER_PAGEVIEW: "local_avg_etfm_cost_per_pageview",
+    EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
+    EmailActionMacro.AVG_COST_PER_MINUTE: "local_avg_etfm_cost_per_minute",
+}

@@ -294,3 +294,6 @@ class AdGroupInstanceMixin:
                 skip_notification=True,
                 state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
             )
+
+    def compute_local_daily_cap(self):
+        return type(self).objects.filter(id=self.id).compute_total_local_daily_cap()
