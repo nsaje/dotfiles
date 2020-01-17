@@ -221,11 +221,11 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         }
         if (RuleTargetType.AdGroup === target) {
             return [
-                // RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBid],
-                // RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBid],
-                // RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseDailyBudget],
-                // RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseDailyBudget],
-                // RULE_ACTIONS_OPTIONS[RuleActionType.TurnOff],
+                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBid],
+                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBid],
+                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseDailyBudget],
+                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseDailyBudget],
+                RULE_ACTIONS_OPTIONS[RuleActionType.TurnOff],
                 RULE_ACTIONS_OPTIONS[RuleActionType.SendEmail],
             ];
         }
