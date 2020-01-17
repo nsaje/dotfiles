@@ -22,7 +22,6 @@ from import_export.admin import ExportMixin
 import core.features.source_adoption
 import utils.email_helper
 import utils.k1_helper
-import utils.pagerduty_helper as pgdh
 import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
@@ -449,7 +448,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     _users.short_description = "Agency Managers"
     _accounts.short_description = "Accounts"
 
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Agency.objects.get(id=obj.id)
         fields_to_update = {
@@ -587,7 +585,6 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         else:
             formset.save()
 
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Account.objects.get(id=obj.id)
         fields_to_update = {
@@ -662,7 +659,6 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
         form.request = request
         return form
 
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Campaign.objects.get(id=obj.id)
         obj.save()
@@ -969,7 +965,6 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     is_archived_.short_description = "Is archived"
     is_archived_.boolean = True
 
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, ad_group, form, change):
         old_obj = models.AdGroup.objects.get(id=ad_group.id)
         current_settings = ad_group.get_current_settings()
@@ -2102,7 +2097,6 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
 
     is_global.boolean = True
 
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         obj.save(request)
 
