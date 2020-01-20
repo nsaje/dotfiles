@@ -1,0 +1,29 @@
+<div class="modal__header"><div class="modal__title">Clone campaign</div></div>
+<div class="modal__body">
+    <zem-campaign-cloning-form
+        class="zem-campaign-cloning-form"
+        [campaign-id]="$ctrl.resolve.campaign.id"
+        [campaign-name]="$ctrl.resolve.campaign.name"
+        (component-ready)="$ctrl.childComponentReady($event)"
+    ></zem-campaign-cloning-form>
+</div>
+<div class="modal__footer buttons-panel">
+    <button
+        class="zem-button zem-button--highlighted zem-button--with-icon zem-button--copy-icon"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.submit()"
+    >
+        Clone
+    </button>
+    <button
+        class="zem-button zem-button--outlined"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Cancel
+    </button>
+    <div class="loader" ng-show="$ctrl.requestInProgress"></div>
+    <span ng-show="$ctrl.errors.message" class="message message--error">{{
+        $ctrl.errors.message
+    }}</span>
+</div>
