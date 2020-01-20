@@ -98,7 +98,7 @@ class ValidationTestCase(TestCase):
         # case set allowed source present in available
         self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[])
         self.agency.update(None, allowed_sources=[self.source1])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source1])
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source1})
 
         # case set an allowed source not present in available
         self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[])
@@ -108,7 +108,7 @@ class ValidationTestCase(TestCase):
         # case unset an allowed source
         self.agency.update(None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1])
         self.agency.update(None, allowed_sources=[])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [])
+        self.assertEqual(set(self.agency.allowed_sources.all()), set())
 
         # case both have the same, then remove an available source and add it in allowed
         self.agency.update(
@@ -122,36 +122,36 @@ class ValidationTestCase(TestCase):
             available_sources=[self.source1, self.source2, self.source3],
             allowed_sources=[self.source1, self.source2, self.source3],
         )
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2, self.source3])
-        self.assertListEqual(list(self.agency.available_sources.all()), [self.source1, self.source2, self.source3])
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source1, self.source2, self.source3})
+        self.assertEqual(set(self.agency.available_sources.all()), {self.source1, self.source2, self.source3})
 
     def test_update_available_sources(self):
         # Case set available sources and allowed sources at the same time
         self.agency.update(
             None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
         )
-        self.assertListEqual(list(self.agency.available_sources.all()), [self.source1, self.source2])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2])
+        self.assertEqual(set(self.agency.available_sources.all()), {self.source1, self.source2})
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source1, self.source2})
 
         # Case remove a source only from available
         self.agency.update(
-            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+            None, available_sources=[self.source1, self.source2], allowed_sources={self.source1, self.source2}
         )
         with self.assertRaises(exceptions.EditingSourcesNotAllowed):
             self.agency.update(None, available_sources=[self.source2])
 
         # Case remove source1 from available and allowed
         self.agency.update(
-            None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
+            None, available_sources=[self.source1, self.source2], allowed_sources={self.source1, self.source2}
         )
         self.agency.update(None, available_sources=[self.source2], allowed_sources=[self.source2])
-        self.assertListEqual(list(self.agency.available_sources.all()), [self.source2])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source2])
+        self.assertEqual(set(self.agency.available_sources.all()), {self.source2})
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source2})
 
         # Case add a new source to available and remove one from allowed
         self.agency.update(None, available_sources=[self.source2, self.source3], allowed_sources=[self.source2])
-        self.assertListEqual(list(self.agency.available_sources.all()), [self.source2, self.source3])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source2])
+        self.assertEqual(set(self.agency.available_sources.all()), {self.source2, self.source3})
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source2})
 
         # Case remove an available source source3 and add a new source one, which is also added to allowed sources.
         self.agency.update(
@@ -162,8 +162,8 @@ class ValidationTestCase(TestCase):
         self.agency.update(
             None, available_sources=[self.source1, self.source2], allowed_sources=[self.source1, self.source2]
         )
-        self.assertListEqual(list(self.agency.available_sources.all()), [self.source1, self.source2])
-        self.assertListEqual(list(self.agency.allowed_sources.all()), [self.source1, self.source2])
+        self.assertEqual(set(self.agency.available_sources.all()), {self.source1, self.source2})
+        self.assertEqual(set(self.agency.allowed_sources.all()), {self.source1, self.source2})
 
         # case remove all available sources while there is still allowed sources
         self.agency.update(
