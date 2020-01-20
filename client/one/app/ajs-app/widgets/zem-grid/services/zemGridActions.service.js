@@ -11,15 +11,13 @@ angular
         zemEntityService,
         zemToastsService,
         zemCloneAdGroupService,
-        zemCloneCampaignService,
         zemCloneContentService,
         $window,
         zemGridBulkPublishersActionsService,
         zemModalsService,
         zemUtils,
         $location,
-        zemGridConstants,
-        zemPermissions
+        zemGridConstants
     ) {
         // eslint-disable-line max-len
 
@@ -110,9 +108,6 @@ angular
                 breakdown === constants.breakdown.CAMPAIGN
             ) {
                 buttons.push(BUTTONS.settings);
-                if (zemPermissions.hasPermission('zemauth.can_clone_campaigns')) {
-                    buttons.push(BUTTONS.clone);
-                }
                 addArchiveUnarchive();
             } else if (
                 (level === constants.level.ACCOUNTS || level === constants.level.CAMPAIGNS) &&
@@ -229,16 +224,7 @@ angular
                 row.level === zemGridConstants.gridRowLevel.BASE
                     ? parseInt(grid.meta.data.id)
                     : parseInt(row.parent.id);
-            if (row.entity.type === constants.entityType.CAMPAIGN) {
-                zemCloneCampaignService
-                    .openCloneModal(
-                        row.entity.id,
-                        row.data.stats.breakdown_name.value
-                    )
-                    .then(function() {
-                        grid.meta.api.loadData();
-                    });
-            } else if (row.entity.type === constants.entityType.AD_GROUP) {
+            if (row.entity.type === constants.entityType.AD_GROUP) {
                 zemCloneAdGroupService
                     .openCloneModal(parentId, row.entity.id)
                     .then(function() {

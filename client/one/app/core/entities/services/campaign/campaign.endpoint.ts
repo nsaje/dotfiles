@@ -178,9 +178,10 @@ export class CampaignEndpoint {
         requestStateUpdater(request.name, {
             inProgress: true,
         });
+
         return this.http
-            .post<ApiResponse<Campaign>>(
-                `${request.url}${campaignId}/clone/`,
+            .put<ApiResponse<Campaign>>(
+                `${request.url}${campaignId}`,
                 requestData
             )
             .pipe(

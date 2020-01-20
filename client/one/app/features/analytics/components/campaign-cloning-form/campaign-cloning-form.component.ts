@@ -20,7 +20,6 @@ import {
     AD_STATE_OVERRIDES_OPTIONS,
 } from './campaign-cloning-config';
 import {CampaignCloningFormStore} from './services/campaign-cloning-form.store';
-import {Campaign} from '../../../../core/entities/types/campaign/campaign';
 
 @Component({
     selector: 'zem-campaign-cloning-form',
@@ -52,14 +51,14 @@ export class CampaignCloningFormComponent implements OnInit, AfterViewInit {
         });
     }
 
-    executeClone(): Promise<Campaign> {
+    executeClone(): Promise<boolean> {
         return this.store.clone(this.campaignId);
     }
 }
 
 declare var angular: angular.IAngularStatic;
 angular.module('one.downgraded').directive(
-    'zemCampaignCloningForm',
+    'zemCampaignCloningFormComponent',
     downgradeComponent({
         component: CampaignCloningFormComponent,
         propagateDigest: false,
