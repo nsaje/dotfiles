@@ -1,0 +1,26 @@
+<div class="modal__header">
+    <div class="modal__title">Cloning successful</div>
+</div>
+<div class="modal__body">
+    <div ng-if="!!$ctrl.resolve.campaign">
+        Campaign <strong>{{ $ctrl.resolve.campaign.name }}</strong> was
+        successfully cloned.
+    </div>
+
+    <div class="m-t">
+        <button
+            class="zem-button zem-button--highlighted"
+            ng-click="$ctrl.navigateTo($event)"
+        >
+            Visit newly created campaign
+        </button>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button
+        class="zem-button zem-button--outlined"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Close
+    </button>
+</div>

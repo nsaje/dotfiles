@@ -51,7 +51,7 @@ export const ENTITY_CONFIG = {
             },
             clone: {
                 name: 'clone',
-                url: `${campaignApiUrl}/clone/`,
+                url: `${campaignApiUrl}/`,
             },
         },
         account: {
