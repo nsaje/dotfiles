@@ -6,7 +6,6 @@ SELECT (CASE
             WHEN tags LIKE '%biz/OEN%' THEN 'OEN'
             WHEN tags LIKE '%biz/PaaS%' THEN 'PaaS'
             WHEN tags LIKE '%biz/internal%' THEN 'Internal'
-            WHEN tags LIKE '%biz/zms%' THEN 'ZMS'
             ELSE 'Untagged'
         END) AS customer_type,
        (CASE
