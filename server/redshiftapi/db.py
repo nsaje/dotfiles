@@ -85,7 +85,9 @@ def create_temp_tables(cursor, temp_tables):
     cursor.execute(sql, params)
 
 
-def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_cache=False, temp_tables=None):
+def execute_query(
+    sql, params, query_name, cache_name="breakdowns_rs", refresh_cache=False, temp_tables=None, db_cluster=None
+):
     cache_key = cache_helper.get_cache_key(sql, params)
     cache = caches[cache_name]
 
@@ -95,7 +97,7 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
         metrics_compat.incr("redshiftapi.cache", 1, outcome="miss")
         logger.debug("Cache miss", cache_key=cache_key, query_name=query_name)
 
-        with get_stats_cursor() as cursor:
+        with get_stats_cursor(db_cluster) as cursor:
             with metrics_compat.block_timer(
                 "redshiftapi.api_breakdowns.query", breakdown=query_name, db_alias=cursor.db.alias
             ):

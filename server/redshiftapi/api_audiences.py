@@ -1,5 +1,7 @@
 import datetime
 
+from django.conf import settings
+
 import backtosql
 from dash import constants
 
@@ -33,5 +35,6 @@ def get_audience_sample_size(account_id, slug, ttl, rules, refresh_cache=False):
         "audience_sample_size",
         cache_name="audience_sample_size",
         refresh_cache=refresh_cache,
+        db_cluster=settings.STATS_DB_HOT_CLUSTER,
     )
     return result[0]["count"]
