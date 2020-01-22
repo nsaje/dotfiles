@@ -5,7 +5,7 @@ HOST: https://oneapi.zemanta.com
 
 This document describes the Zemanta One REST Campaign Management API.
 
-The API enables [Zemanta](https://www.zemanta.com) clients to programatically create and manage campaigns, ad groups and content ads using RESTful objects.
+The API enables [Zemanta](https://www.zemanta.com) clients to programmatically create and manage campaigns, ad groups and content ads using RESTful objects.
 Custom performance reports are also available as part of the API.
 
 In order to use Zemanta REST API, please contact your sales representative.
@@ -14,7 +14,7 @@ If you want to be notified of new features and maintenance windows, please join 
 
 ## Who should read this document?
 
-This document is inteded for programmers who are developing an integration with the Zemanta One system.
+This document is intended for programmers who are developing an integration with the Zemanta One system.
 A prerequisite for working with Zemanta REST API is an understanding of HTTP and JSON.
 
 # Group Technical Overview
@@ -57,7 +57,7 @@ Requests that include a JSON formatted body must include the following header in
 Status Code | Meaning      | Description
 ------------|--------------|------------------------------------------------|
 200         | OK           | The request was successful
-201         | Created      | Entity successfuly created
+201         | Created      | Entity successfully created
 400         | Bad Request  | Invalid or missing required parameters
 401         | Unauthorized | Authentication failed, check your access token
 403         | Forbidden    | Not enough permissions for desired action
@@ -829,7 +829,7 @@ More info available [here](http://help.zemanta.com/article/show/36733-budget-man
 
 Property  | Type            | Description                                      | Create   | Update
 ----------|-----------------|--------------------------------------------------|----------|-----------|
-id        | string          | the budget'id                                    | N/A      | read only
+id        | string          | the budget's id                                    | N/A      | read only
 creditId  | string          | id of the credit this budget is part of          | required | read only
 amount    | [money](#money) | total amount allocated by the budget             | required | optional
 margin    | string (decimal)| margin percentage fraction (e.g. 0.1)            | optional | optional
@@ -2371,15 +2371,29 @@ Time breakdown:
 - Avg. Cost per Minute
 
 #### Conversion Fields
-To get conversion data in the report, simply specify the same column names as you see them in the Zemanta Dashboard.
+To get conversion data in the report, generate the column name by combining KPI, conversion goal, conversion window name and attribution type values in this order, separated by a space.
 
-For example, if your conversion goal name is "MyGoal", the valid column names would be
+To get the data for KPI other than conversion, the rest of the field needs to be in brackets (example below). It is also important to note, that the only possible conversion window value for 
+view attribution is 7 days.
 
-- MyGoal 1 day
-- MyGoal 7 days
-- MyGoal 30 days
-- MyGoal 90 days
+For example, if your conversion goal name is "MyGoal", the valid column names would be:
 
+- to get conversion for 7 days click attribution: `My pixel 7 days - Click attr.`
+- to get CPA for 1 day view attribution: `CPA (My pixel 1 day - View attr.)`
+
+Possible values:
+- KPI: 
+    - omitted value - conversion
+    - `CPA` - CPA
+    - `ROAS` - ROAS
+- Conversion goal name
+- Conversion window:
+    - `1 day` - 1 day
+    - `7 days` - 7 days
+    - `30 days` - 30 days
+- Attribution type:
+    - `- Click attr.` - click attribution
+    - `- View attr.` - view attribution
 
 ## Report jobs [/rest/v1/reports/]
 
