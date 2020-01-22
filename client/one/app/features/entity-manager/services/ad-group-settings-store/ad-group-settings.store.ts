@@ -102,8 +102,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     validateEntity() {
+        const entity = storeHelpers.getNewStateWithoutNull(this.state.entity);
         this.adGroupService
-            .validate(this.state.entity, this.requestStateUpdater)
+            .validate(entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {

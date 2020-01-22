@@ -86,8 +86,9 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     validateEntity() {
+        const entity = storeHelpers.getNewStateWithoutNull(this.state.entity);
         this.accountService
-            .validate(this.state.entity, this.requestStateUpdater)
+            .validate(entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {

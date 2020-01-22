@@ -38,6 +38,8 @@
     "highcharts": "8.0.0",
     "highcharts-angular": "2.4.0",
     "highcharts-ng": "1.2.1",
+    "lodash.isplainobject": "4.0.6",
+    "lodash.transform": "4.6.0",
     "ngx-file-drop": "8.0.8",
     "promise-queue": "2.2.5",
     "raven-js": "3.27.2",

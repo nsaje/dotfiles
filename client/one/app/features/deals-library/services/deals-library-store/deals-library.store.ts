@@ -114,12 +114,11 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     }
 
     validateActiveEntity(): void {
+        const entity = storeHelpers.getNewStateWithoutNull(
+            this.state.activeEntity.entity
+        );
         this.dealsService
-            .validate(
-                this.state.agencyId,
-                this.state.activeEntity.entity,
-                this.requestStateUpdater
-            )
+            .validate(this.state.agencyId, entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {

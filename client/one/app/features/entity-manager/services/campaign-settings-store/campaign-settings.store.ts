@@ -103,8 +103,9 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     validateEntity() {
+        const entity = storeHelpers.getNewStateWithoutNull(this.state.entity);
         this.campaignService
-            .validate(this.state.entity, this.requestStateUpdater)
+            .validate(entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
