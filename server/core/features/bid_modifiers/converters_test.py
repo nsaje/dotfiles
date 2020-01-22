@@ -481,3 +481,11 @@ class TestStatsConverter(TestCase):
         self.converter.from_target(constants.BidModifierType.OPERATING_SYSTEM, 1)
         mock_to_target.assert_called_once_with(1)
         mock_from_target.assert_called_once_with(1)
+
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_placement_medium_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_placement_medium_target")
+    def test_placement_medium(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.PLACEMENT, 1)
+        self.converter.from_target(constants.BidModifierType.PLACEMENT, 1)
+        mock_to_target.assert_called_once_with(1)
+        mock_from_target.assert_called_once_with(1)

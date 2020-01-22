@@ -316,3 +316,11 @@ class StatsConverter(TargetConverter):
     @classmethod
     def _from_operating_system_target(cls, target):
         return DashboardConverter._from_operating_system_target(target)
+
+    @classmethod
+    def _to_placement_medium_target(cls, value):
+        return DashboardConverter._to_placement_medium_target(value)
+
+    @classmethod
+    def _from_placement_medium_target(cls, target):
+        return DashboardConverter._from_placement_medium_target(target)

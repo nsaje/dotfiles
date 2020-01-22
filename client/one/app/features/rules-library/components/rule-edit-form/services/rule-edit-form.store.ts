@@ -229,7 +229,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 RULE_ACTIONS_OPTIONS[RuleActionType.SendEmail],
             ];
         }
-        if (RuleTargetType.AdGroupPublisher === target) {
+        if (
+            RuleTargetType.AdGroupPublisher === target ||
+            RuleTargetType.AdGroupPlacement === target
+        ) {
             return [
                 RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
                 RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
@@ -248,8 +251,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RuleTargetType.AdGroupCountry === target ||
             RuleTargetType.AdGroupRegion === target ||
             RuleTargetType.AdGroupDma === target ||
-            RuleTargetType.AdGroupOs === target ||
-            RuleTargetType.AdGroupPlacement === target
+            RuleTargetType.AdGroupOs === target
         ) {
             return [
                 RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],

@@ -15,13 +15,6 @@ class AdjustmentTypeConfiguration:
     sign: str
 
 
-VALID_TARGET_TYPES = [
-    constants.TargetType.PUBLISHER,
-    constants.TargetType.AD_GROUP,
-    constants.TargetType.AD,
-    constants.TargetType.SOURCE,
-]
-
 VALID_ACTION_TYPES_FOR_TARGET = {
     constants.TargetType.AD_GROUP: [
         constants.ActionType.INCREASE_BID,
@@ -36,35 +29,34 @@ VALID_ACTION_TYPES_FOR_TARGET = {
         constants.ActionType.DECREASE_BID_MODIFIER,
         constants.ActionType.TURN_OFF,
     ],
-    constants.TargetType.SOURCE: [
-        constants.ActionType.INCREASE_BID_MODIFIER,
-        constants.ActionType.DECREASE_BID_MODIFIER,
-        constants.ActionType.TURN_OFF,
-    ],
     constants.TargetType.PUBLISHER: [
         constants.ActionType.INCREASE_BID_MODIFIER,
         constants.ActionType.DECREASE_BID_MODIFIER,
         # constants.ActionType.BLACKLIST,
     ],
     constants.TargetType.DEVICE: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
     ],
     constants.TargetType.COUNTRY: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
     ],
     constants.TargetType.STATE: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
     ],
-    constants.TargetType.DMA: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
+    constants.TargetType.DMA: [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER],
+    constants.TargetType.OS: [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER],
+    constants.TargetType.PLACEMENT: [
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+        # constants.ActionType.BLACKLIST,
     ],
-    constants.TargetType.OS: [
-        # constants.ActionType.INCREASE_BID_MODIFIER,
-        # constants.ActionType.DECREASE_BID_MODIFIER,
+    constants.TargetType.SOURCE: [
+        constants.ActionType.INCREASE_BID_MODIFIER,
+        constants.ActionType.DECREASE_BID_MODIFIER,
+        constants.ActionType.TURN_OFF,
     ],
 }
 

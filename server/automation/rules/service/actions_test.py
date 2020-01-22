@@ -68,6 +68,12 @@ class ActionsTest(TestCase):
                 "bid_modifier_target": "winphone",
             },
             {
+                "target_type": constants.TargetType.PLACEMENT,
+                "target": "site",
+                "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
+                "bid_modifier_target": "site",
+            },
+            {
                 "target_type": constants.TargetType.SOURCE,
                 "target": str(source.id),
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,

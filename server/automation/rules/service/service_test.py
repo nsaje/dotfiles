@@ -24,7 +24,7 @@ class ServiceTest(TestCase):
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rules(self, mock_stats, mock_format, mock_apply, mock_from_target, mock_time):
-        ad_groups = magic_mixer.cycle(9).blend(core.models.AdGroup, archived=False)
+        ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
             ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         mock_stats.return_value = [123]
@@ -42,19 +42,22 @@ class ServiceTest(TestCase):
         mock_from_target.return_value = "readable target"
 
         ad_group_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:9]
+            Rule, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:10]
         )
-        ad_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:8])
+        ad_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:9])
         publisher_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:7]
+            Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:8]
         )
-        device_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:6])
+        device_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:7])
         country_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:5]
+            Rule, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:6]
         )
-        state_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:4])
-        dma_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:3])
-        os_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:2])
+        state_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:5])
+        dma_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:4])
+        os_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:3])
+        placement_rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PLACEMENT, ad_groups_included=ad_groups[:2]
+        )
         source_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:1])
 
         magic_mixer.blend(
@@ -74,13 +77,13 @@ class ServiceTest(TestCase):
         # query stats
         self.assertEqual(
             [
-                mock.call(target_type, [mock.ANY] * (9 - i))
+                mock.call(target_type, [mock.ANY] * (10 - i))
                 for i, target_type in enumerate(constants.TargetType.get_all())
             ],
             mock_stats.call_args_list,
         )
-        for i in range(9):
-            self.assertCountEqual(ad_groups[: 9 - i], mock_stats.call_args_list[i][0][1])
+        for i in range(10):
+            self.assertCountEqual(ad_groups[: 10 - i], mock_stats.call_args_list[i][0][1])
 
         # format stats
         self.assertEqual(
@@ -89,10 +92,10 @@ class ServiceTest(TestCase):
         )
 
         # apply
-        self.assertEqual(9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1, mock_apply.call_count)
+        self.assertEqual(sum(range(1, 11)), mock_apply.call_count)
 
         # history
-        self.assertEqual((9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1) * 2, RuleHistory.objects.all().count())
+        self.assertEqual(sum(range(1, 11)) * 2, RuleHistory.objects.all().count())
         self._test_history(ad_group_rule)
         self._test_history(ad_rule)
         self._test_history(publisher_rule)
@@ -101,6 +104,7 @@ class ServiceTest(TestCase):
         self._test_history(state_rule)
         self._test_history(dma_rule)
         self._test_history(os_rule)
+        self._test_history(placement_rule)
         self._test_history(source_rule)
 
     def _test_history(self, rule):
@@ -189,9 +193,9 @@ class ServiceTest(TestCase):
         service.execute_rules()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
-        self.assertEqual(9, mock_stats.call_count)
-        self.assertEqual(9, mock_format.call_count)
-        self.assertEqual(9, mock_apply.call_count)
+        self.assertEqual(10, mock_stats.call_count)
+        self.assertEqual(10, mock_format.call_count)
+        self.assertEqual(10, mock_apply.call_count)
         self.assertFalse(RuleHistory.objects.exists())
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
@@ -226,7 +230,7 @@ class ServiceTest(TestCase):
         etl_run.save()
 
         service.execute_rules()
-        self.assertEqual(9, mock_stats.call_count)
+        self.assertEqual(10, mock_stats.call_count)
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
     def test_get_rules_by_ad_group_map(self):
@@ -424,6 +428,7 @@ class ServiceTest(TestCase):
                 constants.TargetType.STATE,
                 constants.TargetType.DMA,
                 constants.TargetType.OS,
+                constants.TargetType.PLACEMENT,
                 constants.TargetType.SOURCE,
             ]
         }

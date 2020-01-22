@@ -19,7 +19,8 @@ class TargetType(ConstantBase):
     STATE = 6
     DMA = 7
     OS = 8
-    SOURCE = 9
+    PLACEMENT = 9  # TODO: AUTOCAMP: may need to rename to ENVIRONMENT
+    SOURCE = 10
 
     _VALUES = {
         AD_GROUP: "Ad group",
@@ -30,6 +31,7 @@ class TargetType(ConstantBase):
         STATE: "State",
         DMA: "DMA",
         OS: "Operating system",
+        PLACEMENT: "Placement",
         SOURCE: "Source",
     }
 
@@ -40,9 +42,10 @@ TARGET_TYPE_MV_COLUMNS_MAPPING = {
     TargetType.PUBLISHER: ["publisher", "source_id"],
     TargetType.DEVICE: ["device_type"],
     TargetType.COUNTRY: ["country"],
-    TargetType.STATE: ["state"],
+    TargetType.STATE: ["region"],
     TargetType.DMA: ["dma"],
     TargetType.OS: ["device_os"],
+    TargetType.PLACEMENT: ["placement_medium"],
     TargetType.SOURCE: ["source_id"],
 }
 
@@ -55,6 +58,7 @@ TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING = {
     TargetType.STATE: core.features.bid_modifiers.constants.BidModifierType.STATE,
     TargetType.DMA: core.features.bid_modifiers.constants.BidModifierType.DMA,
     TargetType.OS: core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
+    TargetType.PLACEMENT: core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
     TargetType.SOURCE: core.features.bid_modifiers.constants.BidModifierType.SOURCE,
 }
 

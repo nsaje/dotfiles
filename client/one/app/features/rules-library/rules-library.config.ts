@@ -17,30 +17,30 @@ export const RULE_TARGET_TYPES = [
         label: 'Ad group / publishers',
         value: RuleTargetType.AdGroupPublisher,
     },
-    // {
-    //     label: 'Ad group / devices',
-    //     value: RuleTargetType.AdGroupDevice,
-    // },
-    // {
-    //     label: 'Ad group / countries',
-    //     value: RuleTargetType.AdGroupCountry,
-    // },
-    // {
-    //     label: 'Ad group / regions',
-    //     value: RuleTargetType.AdGroupRegion,
-    // },
-    // {
-    //     label: 'Ad group / DMAs',
-    //     value: RuleTargetType.AdGroupDma,
-    // },
-    // {
-    //     label: 'Ad group / OS',
-    //     value: RuleTargetType.AdGroupOs,
-    // },
-    // {
-    //     label: 'Ad group / placements',
-    //     value: RuleTargetType.AdGroupPlacement,
-    // },
+    {
+        label: 'Ad group / devices',
+        value: RuleTargetType.AdGroupDevice,
+    },
+    {
+        label: 'Ad group / countries',
+        value: RuleTargetType.AdGroupCountry,
+    },
+    {
+        label: 'Ad group / regions',
+        value: RuleTargetType.AdGroupRegion,
+    },
+    {
+        label: 'Ad group / DMAs',
+        value: RuleTargetType.AdGroupDma,
+    },
+    {
+        label: 'Ad group / operating systems',
+        value: RuleTargetType.AdGroupOs,
+    },
+    {
+        label: 'Ad group / placements',
+        value: RuleTargetType.AdGroupPlacement,
+    },
     {
         label: 'Ad group / sources',
         value: RuleTargetType.AdGroupSource,

@@ -12,15 +12,70 @@ from . import api_rules
 
 @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 7, 7))
 class ApiRulesTest(TestCase):
-    def test_get_publisher_sql(self, mock_today):
+    def test_get_target_type_sql(self, mock_today):
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
         ad_group_ids = [ag.id for ag in ad_groups]
 
-        self.assertEqual(
-            """(
+        test_cases = [
+            {
+                "target_type": automation.rules.constants.TargetType.AD_GROUP,
+                "table": "mv_adgroup",
+                "fields": "ad_group_id AS ad_group_id",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.AD,
+                "table": "mv_contentad",
+                "fields": "content_ad_id AS content_ad_id",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.PUBLISHER,
+                "table": "mv_adgroup_pubs",
+                "fields": "publisher AS publisher, source_id AS source_id",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.DEVICE,
+                "table": "mv_adgroup_device",
+                "fields": "device_type AS device_type",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.COUNTRY,
+                "table": "mv_adgroup_geo",
+                "fields": "country AS country",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.STATE,
+                "table": "mv_adgroup_geo",
+                "fields": "state AS region",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.DMA,
+                "table": "mv_adgroup_geo",
+                "fields": "dma AS dma",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.OS,
+                "table": "mv_adgroup_device",
+                "fields": "device_os AS device_os",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.PLACEMENT,
+                "table": "mv_adgroup_placement",
+                "fields": "placement_medium AS placement_medium",
+            },
+            {
+                "target_type": automation.rules.constants.TargetType.SOURCE,
+                "table": "mv_adgroup",
+                "fields": "source_id AS source_id",
+            },
+        ]
+
+        for test_case in test_cases:
+            target_type_sql = api_rules._get_target_type_sql(test_case["target_type"], ad_groups)
+            self.assertEqual(
+                """(
     SELECT
         2 as window_key,
-        publisher AS publisher, source_id AS source_id, ad_group_id AS ad_group_id,
+        {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
@@ -99,17 +154,17 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        mv_adgroup_pubs
+        {table}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-06'
     GROUP BY
         ad_group_id,
-        publisher, source_id
+        {group_by}
 ) UNION ALL (
     SELECT
         3 as window_key,
-        publisher AS publisher, source_id AS source_id, ad_group_id AS ad_group_id,
+        {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
@@ -188,17 +243,17 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        mv_adgroup_pubs
+        {table}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-04'
     GROUP BY
         ad_group_id,
-        publisher, source_id
+        {group_by}
 ) UNION ALL (
     SELECT
         4 as window_key,
-        publisher AS publisher, source_id AS source_id, ad_group_id AS ad_group_id,
+        {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
@@ -277,17 +332,17 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        mv_adgroup_pubs
+        {table}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-30'
     GROUP BY
         ad_group_id,
-        publisher, source_id
+        {group_by}
 ) UNION ALL (
     SELECT
         5 as window_key,
-        publisher AS publisher, source_id AS source_id, ad_group_id AS ad_group_id,
+        {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
@@ -366,17 +421,17 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        mv_adgroup_pubs
+        {table}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-07'
     GROUP BY
         ad_group_id,
-        publisher, source_id
+        {group_by}
 ) UNION ALL (
     SELECT
         6 as window_key,
-        publisher AS publisher, source_id AS source_id, ad_group_id AS ad_group_id,
+        {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
@@ -455,25 +510,49 @@ local_video_etfm_cpv, (
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
 local_video_etfm_cpcv
     FROM
-        mv_adgroup_pubs
+        {table}
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-05-08'
     GROUP BY
         ad_group_id,
-        publisher, source_id
+        {group_by}
 )""".format(
-                ad_group_ids=tuple(ad_group_ids)
-            ),
-            api_rules._get_target_type_sql(automation.rules.constants.TargetType.PUBLISHER, ad_groups),
-        )
+                    table=test_case["table"],
+                    fields=test_case["fields"],
+                    ad_group_ids=tuple(ad_group_ids),
+                    group_by=", ".join(
+                        [
+                            field
+                            for field in automation.rules.constants.TARGET_TYPE_MV_COLUMNS_MAPPING[
+                                test_case["target_type"]
+                            ]
+                        ]
+                    ),
+                ),
+                target_type_sql,
+            )
 
     @mock.patch("redshiftapi.db.execute_query")
-    def test_query_publisher(self, mock_redshift, mock_today):
+    def test_query_for_target_type(self, mock_redshift, mock_today):
         mock_redshift.return_value = [123]
-
         ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup)
-        rows = api_rules.query(automation.rules.constants.TargetType.PUBLISHER, ad_groups)
 
-        self.assertEqual([123], rows)
-        mock_redshift.assert_called_once_with(mock.ANY, [], "rule_stats__publisher")
+        test_cases = [
+            {"target_type": automation.rules.constants.TargetType.AD_GROUP, "name": "ad_group"},
+            {"target_type": automation.rules.constants.TargetType.AD, "name": "ad"},
+            {"target_type": automation.rules.constants.TargetType.PUBLISHER, "name": "publisher"},
+            {"target_type": automation.rules.constants.TargetType.DEVICE, "name": "device"},
+            {"target_type": automation.rules.constants.TargetType.COUNTRY, "name": "country"},
+            {"target_type": automation.rules.constants.TargetType.STATE, "name": "state"},
+            {"target_type": automation.rules.constants.TargetType.DMA, "name": "dma"},
+            {"target_type": automation.rules.constants.TargetType.OS, "name": "os"},
+            {"target_type": automation.rules.constants.TargetType.PLACEMENT, "name": "placement"},
+            {"target_type": automation.rules.constants.TargetType.SOURCE, "name": "source"},
+        ]
+
+        for test_case in test_cases:
+            rows = api_rules.query(test_case["target_type"], ad_groups)
+            self.assertEqual([123], rows)
+            mock_redshift.assert_called_once_with(mock.ANY, [], f'rule_stats__{test_case["name"]}')
+            mock_redshift.reset_mock()
