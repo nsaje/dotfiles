@@ -10,11 +10,13 @@ from django.urls import reverse
 from mock import patch
 
 import automation.campaignstop
+import core.models
 from dash import constants
 from dash import history_helpers
 from dash import models
 from utils import converters
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 from utils.test_helper import fake_request
 from zemauth.models import User
 
@@ -578,6 +580,50 @@ class AccountCreditItemViewTest(BCMViewTestCase):
         self.assertEqual(self.user, hist.created_by)
         self.assertEqual(item.agency, hist.agency)
         self.assertEqual(constants.HistoryActionType.CREDIT_CHANGE, hist.action_type)
+
+    def test_local_budget_spent_currency(self):
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account__currency=constants.Currency.EUR, account__users=[self.user]
+        )
+        credit = magic_mixer.blend(
+            models.CreditLineItem,
+            account=campaign.account,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=100000,
+            currency=constants.Currency.EUR,
+            status=constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+        budget = magic_mixer.blend(
+            core.features.bcm.BudgetLineItem,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=100,
+            credit=credit,
+            campaign=campaign,
+        )
+
+        exchange_rate = Decimal("0.8187")
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            date=datetime.date.today(), currency=constants.Currency.EUR, exchange_rate=exchange_rate
+        )
+
+        models.BudgetDailyStatement.objects.create(
+            date=datetime.date.today(),
+            budget=budget,
+            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
+        )
+        test_helper.add_permissions(self.user, ["account_credit_view"])
+
+        url = reverse("accounts_credit_item", kwargs={"account_id": campaign.account.id, "credit_id": credit.id})
+
+        response = self.client.get(url)
+        response_spend_budget = response.json()["data"]["budgets"][0]["spend"]
+        self.assertEqual(response_spend_budget, "81.8700")
 
 
 class CampaignBudgetViewTest(BCMViewTestCase):
