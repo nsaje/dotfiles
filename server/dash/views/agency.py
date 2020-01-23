@@ -114,7 +114,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def _update_adgroup(self, request, ad_group, data):
         try:
-            ad_group.update(request, bidding_type=data.get("bidding_type"))
+            ad_group.update_bidding_type(request, data.get("bidding_type"))
             ad_group.settings.update(request, **data)
 
         except core.models.ad_group.exceptions.CannotChangeBiddingType as err:

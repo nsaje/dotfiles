@@ -1,9 +1,5 @@
-import decimal
-
-import mock
 from django.test import TestCase
 
-import core.features.publisher_groups.publisher_group
 import core.models
 import dash.constants
 import dash.history_helpers
@@ -40,83 +36,3 @@ class AdGroupInstanceTest(TestCase):
         self.assertFalse(ad_group.archived)
         self.assertFalse(ad_group.settings.archived)
         self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ad_group.settings.state)
-
-    @mock.patch("utils.k1_helper.update_ad_group")
-    def test_update(self, mock_k1_ping):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
-        campaign = magic_mixer.blend(core.models.Campaign)
-        ad_group = magic_mixer.blend(
-            core.models.AdGroup,
-            name="old_name",
-            bidding_type=dash.constants.BiddingType.CPC,
-            campaign=campaign,
-            amplify_review=False,
-        )
-        ad_group.settings.update(None, cpm=12, cpc_cc=decimal.Decimal("0.06"))
-        blacklist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
-        whitelist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
-        tags = magic_mixer.cycle(2).blend(core.models.EntityTag)
-
-        ad_group.update(
-            request,
-            name="new_name",
-            bidding_type=dash.constants.BiddingType.CPM,
-            archived=True,
-            default_whitelist=whitelist,
-            default_blacklist=blacklist,
-            custom_flags={"cf1": True},
-            entity_tags=tags,
-        )
-        self.assertEqual(ad_group.name, "new_name")
-        self.assertEqual(ad_group.bidding_type, dash.constants.BiddingType.CPM)
-        self.assertTrue(ad_group.archived)
-        self.assertEqual(ad_group.default_whitelist, whitelist)
-        self.assertEqual(ad_group.default_blacklist, blacklist)
-        self.assertEqual(set(ad_group.entity_tags.all()), set(tags))
-        mock_k1_ping.assert_has_calls(
-            [mock.call(ad_group, msg="AdGroupSettings.put", priority=False), mock.call(ad_group, "Adgroup.update")]
-        )
-
-        ad_group.update(
-            request,
-            bidding_type=dash.constants.BiddingType.CPC,
-            archived=False,
-            default_whitelist=None,
-            default_blacklist=None,
-            custom_flags={},
-            amplify_review=False,
-            entity_tags=[],
-        )
-        self.assertEqual(ad_group.bidding_type, dash.constants.BiddingType.CPC)
-        self.assertFalse(ad_group.archived)
-        self.assertIsNone(ad_group.default_whitelist)
-        self.assertIsNone(ad_group.default_blacklist)
-        self.assertEqual(list(ad_group.entity_tags.all()), [])
-        self.assertFalse(ad_group.amplify_review)
-        mock_k1_ping.assert_has_calls(
-            [mock.call(ad_group, msg="AdGroupSettings.put", priority=False), mock.call(ad_group, "Adgroup.update")]
-        )
-
-    @mock.patch("utils.k1_helper.update_ad_group")
-    def test_amplify_review_update(self, mock_k1_ping):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
-        campaign = magic_mixer.blend(core.models.Campaign)
-        source_type_outbrain = core.models.SourceType.objects.create(type=dash.constants.SourceType.OUTBRAIN)
-        outbrain_source = magic_mixer.blend(core.models.Source, source_type=source_type_outbrain)
-        source_credentials = magic_mixer.blend(core.models.SourceCredentials)
-        magic_mixer.blend(
-            core.models.default_source_settings.DefaultSourceSettings,
-            source=outbrain_source,
-            credentials=source_credentials,
-        )
-        ad_group = magic_mixer.blend(core.models.AdGroup, name="name", campaign=campaign, amplify_review=None)
-
-        ad_group.update(request, amplify_review=False)
-        self.assertFalse(ad_group.amplify_review)
-        mock_k1_ping.assert_called_once_with(ad_group, "Adgroup.update")
-        self.assertFalse(core.models.AdGroupSource.objects.filter(ad_group=ad_group).exists())
-
-        ad_group.update(request, amplify_review=True)
-        self.assertTrue(ad_group.amplify_review)
-        mock_k1_ping.assert_called_with(ad_group, "Adgroup.update")
-        self.assertTrue(core.models.AdGroupSource.objects.filter(ad_group=ad_group, source=outbrain_source).exists())

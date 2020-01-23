@@ -292,7 +292,7 @@ class SwitchBiddingTypeTestCase(TestCase):
 
         self._add_sources_with_modifiers(self.input_bid_modifiers_list, cpm_factor=cpm_factor)
 
-        self.ad_group.update(None, bidding_type=constants.BiddingType.CPM)
+        self.ad_group.update_bidding_type(None, bidding_type=constants.BiddingType.CPM)
 
         self._assert_bid_modifiers([e * cpm_factor for e in self.input_bid_modifiers_list])
 
@@ -305,7 +305,8 @@ class SwitchBiddingTypeTestCase(TestCase):
         self.ad_group.save(None)
 
         self._add_sources_with_modifiers(self.input_bid_modifiers_list, cpm_factor=cpm_factor)
-        self.ad_group.update(None, bidding_type=constants.BiddingType.CPC)
+
+        self.ad_group.update_bidding_type(None, bidding_type=constants.BiddingType.CPC)
 
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
 

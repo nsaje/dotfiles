@@ -1,5 +1,7 @@
 from django.db import models
 
+import core.models
+
 from . import constants
 
 
@@ -25,8 +27,8 @@ class BidModifier(models.Model):
 
     id = models.AutoField(primary_key=True)
     type = models.IntegerField(choices=constants.BidModifierType.get_choices(), db_index=True)
-    ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)
-    source = models.ForeignKey("Source", on_delete=models.PROTECT, null=True, blank=True)
+    ad_group = models.ForeignKey(core.models.AdGroup, on_delete=models.PROTECT)
+    source = models.ForeignKey(core.models.Source, on_delete=models.PROTECT, null=True, blank=True)
     source_slug = models.CharField(max_length=50, default="", blank=True)
     target = models.CharField(max_length=127, blank=False, null=False, verbose_name="Bid modifier target")
     modifier = models.FloatField(verbose_name="Bid modifier")

@@ -420,9 +420,7 @@ class AdGroupSettingsTest(TestCase):
                 json.dumps(self.settings_dict),
                 follow=True,
             )
-            mock_k1_ping.assert_has_calls(
-                [call(ad_group, "Adgroup.update"), call(ad_group, msg="AdGroupSettings.put", priority=False)]
-            )
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
 
             self.assertEqual(
                 json.loads(response.content),
@@ -506,7 +504,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.call_to_action, "Call to action")
             self.assertEqual(new_settings.delivery_type, 2)
 
-            mock_redirector_insert_adgroup.assert_has_calls([call(ad_group)])
+            mock_redirector_insert_adgroup.assert_called_once_with(ad_group)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
@@ -568,7 +566,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=False)])
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["cpc_cc"], "0.050")
@@ -579,7 +577,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpc <= Decimal("0.05"))
 
-                    mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=False)])
+            mock_insert_adgroup.assert_called_once_with(ad_group)
 
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_group")
@@ -605,7 +603,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.has_calls([call(ad_group, msg="AdGroupSettings.put", priority=ANY)])
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["max_cpm"], "0.050")
@@ -616,7 +614,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpm <= Decimal("0.05"))
 
-            mock_insert_adgroup.assert_called_with(ad_group)
+            mock_insert_adgroup.assert_called_once_with(ad_group)
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_put_without_non_propagated_settings(self, mock_redirector_insert_adgroup):
@@ -806,7 +804,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=ANY)])
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["b1_sources_group_cpc_cc"], "0.1")
@@ -847,7 +845,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=ANY)])
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["b1_sources_group_cpm"], "0.1")
@@ -858,7 +856,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertTrue(cpm == Decimal("0.1"))
 
-            mock_insert_adgroup.assert_called_with(ad_group)
+            mock_insert_adgroup.assert_called_once_with(ad_group)
 
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_group")
@@ -992,7 +990,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=ANY)])
+            mock_k1_ping.assert_called_once_with(ad_group, msg="AdGroupSettings.put", priority=ANY)
             self.maxDiff = None
 
             resp_json = json.loads(response.content)
@@ -1006,7 +1004,7 @@ class AdGroupSettingsTest(TestCase):
                 if ags.source.source_type.type == constants.SourceType.B1:
                     self.assertEqual(Decimal("0.2150"), agss.cpm)
 
-            mock_insert_adgroup.assert_has_calls([call(ad_group)])
+            mock_insert_adgroup.assert_called_once_with(ad_group)
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_put_tracking_codes_with_permission(self, mock_redirector_insert_adgroup):
@@ -1315,9 +1313,9 @@ class AdGroupSettingsTest(TestCase):
         )
         json_data = json.loads(response.content)["data"]
         ad_group.refresh_from_db()
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
-        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertEqual(constants.BiddingType.CPC, json_data["settings"]["bidding_type"])
 
     def test_put_bidding_type_activated_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)
