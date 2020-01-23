@@ -10,6 +10,8 @@ import {AdGroupState, AdState} from '../../../../../app.constants';
 import {CampaignCloningRule} from '../campaign-cloning.constants';
 import {CloneRulesConfig} from '../types/clone-rules-config';
 import {CLONE_RULES_OPTIONS} from '../campaign-cloning-config';
+import {Campaign} from '../../../../../core/entities/types/campaign/campaign';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Injectable()
 export class CampaignCloningFormStore
@@ -85,8 +87,8 @@ export class CampaignCloningFormStore
         );
     }
 
-    clone(campaignId: string): Promise<boolean> {
-        return new Promise<boolean>(resolve => {
+    clone(campaignId: string): Promise<Campaign> {
+        return new Promise<Campaign>((resolve, reject) => {
             this.campaignService
                 .clone(
                     campaignId,
@@ -95,11 +97,11 @@ export class CampaignCloningFormStore
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
-                    () => {
-                        resolve(true);
+                    (campaign: Campaign) => {
+                        resolve(campaign);
                     },
-                    () => {
-                        resolve(false);
+                    (error: HttpErrorResponse) => {
+                        reject(error);
                     }
                 );
         });
