@@ -21,9 +21,7 @@ class Command(Z1Command):
 
         self.stdout.write("Initializing Amplify review for ad group {}.\n".format(ad_group.id))
         with transaction.atomic():
-            ad_group.amplify_review = True
-            ad_group.save(None)
+            ad_group.update(amplify_review=True)
             ad_group.contentad_set.update(amplify_review=True)
-            ad_group.ensure_amplify_review_source(None)
 
         self.stdout.write("Done.")
