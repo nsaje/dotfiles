@@ -3,6 +3,7 @@ from functools import reduce
 
 from django.conf import settings
 from django.contrib.auth import models as auth_models
+from django.contrib.postgres.fields import JSONField
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -110,6 +111,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     )
 
     sspd_sources = models.ManyToManyField(Source, blank=True)
+
+    sspd_sources_markets = JSONField(null=True, blank=True)
 
     objects = UserManager()
 
@@ -496,6 +499,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             result.append(str(source.id))
 
         return result
+
+    def get_sspd_sources_markets(self):
+        if self.has_perm("zemauth.sspd_can_see_all_sources"):
+            return {"*": ["*"]}
+        else:
+            return self.sspd_sources_markets
 
 
 class InternalGroup(models.Model):

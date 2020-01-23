@@ -33,6 +33,7 @@ class UserAdmin(authadmin.UserAdmin):
             {"fields": ("is_active", "is_staff", "is_superuser", "is_test_user", "groups", "user_permissions")},
         ),
         (_("SSPD sources"), {"fields": ["sspd_sources"]}),
+        (_("SSPD sources and markets"), {"fields": ["sspd_sources_markets"]}),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
