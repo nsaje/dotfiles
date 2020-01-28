@@ -73,7 +73,8 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
     def _update_settings(request, ad_group, settings):
         try:
             settings = prodops.hacks.override_ad_group_settings(ad_group, settings)
-            ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
+            if settings.get("ad_group", {}).get("bidding_type"):
+                ad_group.update(request, bidding_type=settings.get("ad_group", {}).get("bidding_type"))
             ad_group.settings.update(request, **settings)
 
         except core.models.ad_group.exceptions.CannotChangeBiddingType as err:

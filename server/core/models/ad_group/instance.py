@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.template.defaultfilters import pluralize
 from django.utils.safestring import mark_safe
 
+import core.features.bid_modifiers.source
 import core.features.deals
 import core.features.history
 import core.models.helpers
@@ -12,6 +13,7 @@ import dash.constants
 import dash.features.custom_flags
 import utils.dates_helper
 import utils.json_helper
+from utils import k1_helper
 
 
 class AdGroupInstanceMixin:
@@ -265,19 +267,8 @@ class AdGroupInstanceMixin:
         self.modified_by = request.user if request else None
         super().save(*args, **kwargs)
 
-    def update_bidding_type(self, request, bidding_type=None, skip_permission_check=False):
-        if not skip_permission_check and request and not request.user.has_perm("zemauth.fea_can_use_cpm_buying"):
-            return
-
-        if bidding_type and self.bidding_type != bidding_type:
-            self._validate_bidding_type(bidding_type)
-            self.bidding_type = bidding_type
-            self.save(request)
-
-            # circular dependency
-            import core.features.bid_modifiers.source
-
-            core.features.bid_modifiers.source.handle_bidding_type_change(self, user=request.user if request else None)
+    def compute_local_daily_cap(self):
+        return type(self).objects.filter(id=self.id).compute_total_local_daily_cap()
 
     def ensure_amplify_review_source(self, request):
         source_types_added = set(self.adgroupsource_set.all().values_list("source__source_type__type", flat=True))
@@ -295,5 +286,40 @@ class AdGroupInstanceMixin:
                 state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
             )
 
-    def compute_local_daily_cap(self):
-        return type(self).objects.filter(id=self.id).compute_total_local_daily_cap()
+    def update(self, request, **kwargs):
+        with transaction.atomic():
+            updates = self._clean_updates(kwargs)
+            if not updates:
+                return
+            self.validate(updates, request)
+            self._apply_updates_and_save(request, updates)
+        k1_helper.update_ad_group(self, "Adgroup.update")
+
+    def _clean_updates(self, updates):
+        new_updates = {}
+
+        for field, value in updates.items():
+            if field in set(self._update_fields) and value != getattr(self, field):
+                new_updates[field] = value
+        return new_updates
+
+    def _apply_updates_and_save(self, request, updates):
+        for field, value in updates.items():
+            if field == "entity_tags":
+                self.entity_tags.clear()
+                if value:
+                    self.entity_tags.add(*value)
+            elif field == "bidding_type":
+                if value:
+                    self._update_bidding_type(request, value)
+            elif field == "amplify_review":
+                if value:
+                    self.amplify_review = value
+                    self.ensure_amplify_review_source(request)
+            else:
+                setattr(self, field, value)
+        self.save(request)
+
+    def _update_bidding_type(self, request, new_value):
+        self.bidding_type = new_value
+        core.features.bid_modifiers.source.handle_bidding_type_change(self, user=request.user if request else None)
