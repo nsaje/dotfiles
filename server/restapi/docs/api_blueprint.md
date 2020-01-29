@@ -2313,9 +2313,16 @@ Entity breakdown:
 - Campaign, Campaign Id
 - Ad Group, Ad Group Id
 - Content Ad, Content Ad Id
+
+Delivery breakdown:
 - Media Source, Media Source Id
 - Publisher
-
+- Country
+- State / Region
+- DMA
+- Device
+- Operating System
+<!-- - Placement: add when renamed to Environment -->
 Time breakdown:
 - Day (e.g. 2017-03-30)
 - Week (e.g. Week 2017-03-27 - 2017-04-02)
@@ -2373,8 +2380,7 @@ Time breakdown:
 #### Conversion Fields
 To get conversion data in the report, generate the column name by combining KPI, conversion goal, conversion window name and attribution type values in this order, separated by a space.
 
-To get the data for KPI other than conversion, the rest of the field needs to be in brackets (example below). It is also important to note, that the only possible conversion window value for 
-view attribution is 7 days.
+To get the data for KPI other than conversion, the rest of the field needs to be in brackets (example below). It is also important to note that the only possible conversion window value for view attribution is 1 day.
 
 For example, if your conversion goal name is "MyGoal", the valid column names would be:
 
