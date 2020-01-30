@@ -21,6 +21,7 @@ export const APP_OPTIONS = {
         {name: 'OEN', value: APP_CONSTANTS.businesses.OEN},
         {name: 'ZMS', value: APP_CONSTANTS.businesses.ZMS},
         {name: 'NAS', value: APP_CONSTANTS.businesses.NAS},
+        {name: 'INTERNAL', value: APP_CONSTANTS.businesses.INTERNAL},
     ],
     adGroupSettingsStates: [
         {name: 'Paused', value: APP_CONSTANTS.settingsState.INACTIVE},

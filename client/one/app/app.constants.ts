@@ -740,6 +740,7 @@ export const APP_CONSTANTS = {
         OEN: 'oen',
         ZMS: 'zms',
         NAS: 'nas',
+        INTERNAL: 'internal',
     },
     specialAccount: SpecialAccount,
     campaignTypes: {

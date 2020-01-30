@@ -2439,12 +2439,14 @@ class Business(ConstantBase):
     OEN = "oen"
     ZMS = "zms"
     NAS = "nas"
+    INTERNAL = "internal"
 
     _VALUES = {
         Z1: "Zemanta One",
         OEN: "Outbrain Extended Network",
         ZMS: "Zemanta Managed Service",
         NAS: "Native Ad Server",
+        INTERNAL: "Internal businesses",
     }
 
 
