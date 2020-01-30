@@ -13,13 +13,11 @@
 
 .zem-filter-selector {
     display: block;
+    position: relative;
     height: 0px;
-    background-color: @color--darker-neutral;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    z-index: 997;
     width: 100%;
+    background-color: @color--darker-neutral;
+    z-index: 997;
     overflow: hidden;
     transition: all @duration-and-timing-fn--default;
 
@@ -319,7 +317,6 @@
     }
 }
 
-// FIXME: Refactor when tabset is moved from header section
 .filter-selector-expanded {
     .zem-filter-selector {
         height: @filter-sections_border-width + @filter-sections_padding-top +
@@ -329,46 +326,11 @@
             @filter-sections__section-options-container_max-height +
             @spacing--default;
     }
-
-    .zem-container {
-        padding-top: @filter-sections_border-width +
-            @filter-sections_padding-top +
-            @filter-sections__section_vertical-padding*2 +
-            @filter-sections__section-title_margin-bottom +
-            @filter-sections__section-title_font-size +
-            @filter-sections__section-options-container_max-height +
-            @spacing--default + @header-height + @tabset-height +
-            @spacing--default*1.5;
-    }
-}
-
-.filter-selector-expanded .no-tabset {
-    &.zem-container {
-        padding-top: @filter-sections_border-width +
-            @filter-sections_padding-top +
-            @filter-sections__section_vertical-padding*2 +
-            @filter-sections__section-title_margin-bottom +
-            @filter-sections__section-title_font-size +
-            @filter-sections__section-options-container_max-height +
-            @spacing--default + @header-height + @spacing--default*1.5;
-    }
 }
 
 .data-filter-enabled {
     .zem-filter-selector {
         height: @applied-conditions_height;
-    }
-
-    .zem-container {
-        padding-top: @applied-conditions_height + @header-height +
-            @tabset-height + @spacing--default*1.5;
-    }
-}
-
-.data-filter-enabled .no-tabset {
-    &.zem-container {
-        padding-top: @applied-conditions_height + @header-height +
-            @spacing--default*1.5;
     }
 }
 
@@ -385,57 +347,6 @@
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
             @spacing--default + @applied-conditions_height;
-    }
-
-    .zem-container {
-        padding-top: @filter-sections_border-width +
-            @filter-sections_padding-top +
-            @filter-sections__section_vertical-padding*2 +
-            @filter-sections__section-title_margin-bottom +
-            @filter-sections__section-title_font-size +
-            @filter-sections__section-options-container_max-height +
-            @spacing--default + @applied-conditions_height + @header-height +
-            @tabset-height + @spacing--default*1.5;
-    }
-}
-
-.data-filter-enabled.filter-selector-expanded .no-tabset {
-    &.zem-container {
-        padding-top: @filter-sections_border-width +
-            @filter-sections_padding-top +
-            @filter-sections__section_vertical-padding*2 +
-            @filter-sections__section-title_margin-bottom +
-            @filter-sections__section-title_font-size +
-            @filter-sections__section-options-container_max-height +
-            @spacing--default + @applied-conditions_height + @header-height +
-            @spacing--default*1.5;
-    }
-}
-
-.fixed-header {
-    .zem-filter-selector {
-        top: @header-height-minimized;
-    }
-
-    &.data-filter-enabled,
-    &.data-filter-enabled .no-tabset {
-        &.zem-container {
-            padding-top: @header-height + @applied-conditions_height +
-                @spacing--default*1.5;
-        }
-    }
-
-    &.filter-selector-expanded {
-        .zem-container.no-tabset {
-            padding-top: @header-height + @spacing--default*1.5;
-        }
-    }
-
-    &.data-filter-enabled.filter-selector-expanded {
-        .zem-container.no-tabset {
-            padding-top: @header-height + @applied-conditions_height +
-                @spacing--default*1.5;
-        }
     }
 }
 
@@ -455,9 +366,6 @@
 
 @media only screen and (max-width: @desktop-breakpoint) {
     .zem-filter-selector {
-        position: relative;
-        top: 0px;
-
         .filter-sections {
             height: 264px;
             overflow: auto;
@@ -536,21 +444,8 @@
         }
     }
 
-    .fixed-header .zem-filter-selector {
-        top: 0px;
-    }
-
-    .filter-selector-expanded,
-    .data-filter-enabled,
-    .data-filter-enabled.filter-selector-expanded {
-        .no-tabset.zem-container,
-        .zem-container {
-            padding-top: 0;
-        }
-    }
-
     .filter-selector-expanded .zem-header-breadcrumb {
-        top: @header-height-small-screen + @spacing--default +
+        top: @zem-header__height--small-screen + @spacing--default +
             @filter-sections_border-width + @filter-sections_padding-top +
             @filter-sections__section_vertical-padding*2 +
             @filter-sections__section-title_margin-bottom +
@@ -559,11 +454,11 @@
     }
 
     .data-filter-enabled .zem-header-breadcrumb {
-        top: @applied-conditions_height + @header-height-small-screen;
+        top: @applied-conditions_height + @zem-header__height--small-screen;
     }
 
     .data-filter-enabled.filter-selector-expanded .zem-header-breadcrumb {
-        top: @header-height-small-screen + @applied-conditions_height +
+        top: @zem-header__height--small-screen + @applied-conditions_height +
             @spacing--default + @filter-sections_border-width +
             @filter-sections_padding-top +
             @filter-sections__section_vertical-padding*2 +

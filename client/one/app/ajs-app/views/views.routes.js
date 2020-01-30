@@ -1,8 +1,10 @@
+var UiRouterStateName = require('../../app.constants').UiRouterStateName;
+
 angular.module('one.views').config(function($stateProvider) {
-    $stateProvider.state('v2', {
+    $stateProvider.state(UiRouterStateName.APP_BASE, {
         url: '/v2',
-        template: require('./main/zemMainView.partial.html'),
-        controller: 'zemMainView as $ctrl',
+        template: require('./app/zemAppView.partial.html'),
+        controller: 'zemAppView as $ctrl',
         resolve: {
             // Don't resolve until app is initialized
             initSequence: function(zemInitializationService) {
@@ -11,7 +13,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.analytics', {
+    $stateProvider.state(UiRouterStateName.ANALYTICS, {
         url:
             '/analytics/{level:accounts|account|campaign|adgroup}/{id:int}/{breakdown}',
         template: require('./analytics/zemAnalyticsView.partial.html'),
@@ -31,7 +33,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.createEntity', {
+    $stateProvider.state(UiRouterStateName.CREATE_ENTITY, {
         url: '/create/{level:account|campaign|adgroup}/{id:int}',
         template:
             '<zem-new-entity-analytics-mock-view></zem-new-entity-analytics-mock-view>',
@@ -43,7 +45,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.reports', {
+    $stateProvider.state(UiRouterStateName.REPORTS, {
         url: '/reports/{level:accounts|account}/{id:int}',
         template: require('./scheduled-reports/zemScheduledReports.partial.html'),
         controller: 'zemScheduledReportsView as $ctrl',
@@ -55,7 +57,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.accountCredit', {
+    $stateProvider.state(UiRouterStateName.CREDIT, {
         url: '/credit/account/{id:int}',
         template: require('./account-credit/zemAccountCreditView.partial.html'),
         controller: 'zemAccountCreditView as $ctrl',
@@ -64,7 +66,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.publisherGroups', {
+    $stateProvider.state(UiRouterStateName.PUBLISHER_GROUPS, {
         url: '/publishergroups/account/{id:int}',
         template: require('./publisher-groups/zemPublisherGroupsView.partial.html'),
         controller: 'zemPublisherGroupsView as $ctrl',
@@ -73,7 +75,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.users', {
+    $stateProvider.state(UiRouterStateName.USERS, {
         url: '/users/account/{id:int}',
         template: require('./users/zemUsersView.partial.html'),
         controller: 'zemUsersView as $ctrl',
@@ -82,7 +84,7 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.pixels', {
+    $stateProvider.state(UiRouterStateName.PIXELS, {
         url: '/pixels/account/{id:int}',
         template: require('./pixels/zemPixelsView.partial.html'),
         controller: 'zemPixelsView as $ctrl',
@@ -91,18 +93,18 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.inventoryPlanning', {
+    $stateProvider.state(UiRouterStateName.INVENTORY_PLANNING, {
         url: '/inventory-planning/',
         template: '<zem-inventory-planning-view></zem-inventory-planning-view>',
     });
 
-    $stateProvider.state('v2.archived', {
+    $stateProvider.state(UiRouterStateName.ARCHIVED, {
         url: '/archived/{level:account|campaign|adgroup}/{id:int}',
         template: require('./archived/zemArchivedView.partial.html'),
         controller: 'zemArchivedView as $ctrl',
     });
 
-    $stateProvider.state('v2.dealsLibrary', {
+    $stateProvider.state(UiRouterStateName.DEALS_LIBRARY, {
         url: '/dealslibrary/account/{id:int}',
         template: require('./deals/zemDealsLibraryView.partial.html'),
         controller: 'zemDealsLibraryView as $ctrl',
@@ -111,13 +113,13 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('error', {
+    $stateProvider.state(UiRouterStateName.ERROR_BASE, {
         url: '/error',
         template: '<ui-view/>',
         abstract: true,
     });
 
-    $stateProvider.state('error.forbidden', {
+    $stateProvider.state(UiRouterStateName.ERROR_FORBIDDEN, {
         url: '/forbidden',
         template: require('./common/403.partial.html'),
         controller: function() {

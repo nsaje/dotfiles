@@ -7,6 +7,9 @@ import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
+import {SidebarComponent} from './components/sidebar/sidebar.component';
+import {SidebarContainerComponent} from './components/sidebar-container/sidebar-container.component';
+import {MainContainerComponent} from './components/main-container/main-container.component';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
@@ -27,7 +30,12 @@ if (APP_CONFIG.env.prod) {
 }
 
 @NgModule({
-    declarations: [NewEntityAnalyticsMockView],
+    declarations: [
+        NewEntityAnalyticsMockView,
+        SidebarComponent,
+        SidebarContainerComponent,
+        MainContainerComponent,
+    ],
     imports: [
         // Angular modules
         BrowserModule,
@@ -46,7 +54,7 @@ if (APP_CONFIG.env.prod) {
         RulesLibraryModule,
         DealsLibraryModule,
     ],
-    entryComponents: [NewEntityAnalyticsMockView],
+    entryComponents: [NewEntityAnalyticsMockView, MainContainerComponent],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         upgradeProvider('$rootScope', 'ajs$rootScope'),

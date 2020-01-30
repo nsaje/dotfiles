@@ -1,0 +1,10 @@
+<ng-content select="zem-sidebar,[zem-sidebar]"></ng-content>
+<div
+    id="zem-sidebar-container__content"
+    class="zem-sidebar-container__content"
+    [class.zem-sidebar-container__content--animate]="animate"
+    [ngClass]="contentClass"
+    [ngStyle]="_getContentStyle()"
+>
+    <ng-content select="[zem-sidebar-content]"></ng-content>
+</div>

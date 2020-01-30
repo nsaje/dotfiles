@@ -1,11 +1,11 @@
 angular
     .module('one.views')
-    .controller('zemMainView', function(
+    .controller('zemAppView', function(
         $scope,
-        $location,
         $q,
         $state,
-        zemNavigationService
+        zemNavigationService,
+        zemDesignHelpersService
     ) {
         var $ctrl = this;
 
@@ -20,7 +20,7 @@ angular
         function checkStateChange() {
             if (checksPromise) return;
 
-            $ctrl.mainStateAllowed = false;
+            $ctrl.appStateAllowed = false;
             checksPromise = $q
                 .all([
                     canActivateMainState(),
@@ -29,7 +29,8 @@ angular
                 ])
                 .then(function() {
                     checksPromise = null;
-                    $ctrl.mainStateAllowed = true;
+                    $ctrl.appStateAllowed = true;
+                    zemDesignHelpersService.init();
                 })
                 .catch(function(redirect) {
                     checksPromise = null;

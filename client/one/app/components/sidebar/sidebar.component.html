@@ -1,0 +1,13 @@
+<aside
+    #sidebar
+    class="zem-sidebar__aside zem-sidebar__aside--{{
+        position
+    }} zem-sidebar__aside--{{ mode }}"
+    [class.zem-sidebar__aside--opened]="opened"
+    [class.zem-sidebar__aside--closed]="!opened"
+    [class.zem-sidebar__aside--docked]="_isDocked"
+    [ngClass]="sidebarClass"
+    [ngStyle]="_getStyle()"
+>
+    <ng-content></ng-content>
+</aside>

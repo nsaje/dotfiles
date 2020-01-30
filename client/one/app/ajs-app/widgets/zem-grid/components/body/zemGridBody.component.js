@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .directive('zemGridBody', function(zemGridConstants, NgZone) {
@@ -13,6 +15,9 @@ angular
             link: function(scope, element) {
                 var grid = scope.ctrl.grid;
                 var pubsub = grid.meta.pubsub;
+                var sidebarContainerContentElement = document.getElementById(
+                    'zem-sidebar-container__content'
+                );
 
                 grid.body.visibleRows = [];
                 grid.body.ui.numOfRows = calculateNumOfRows();
@@ -55,7 +60,7 @@ angular
                 }
 
                 var isScrolling;
-                function scrollWindowListener() {
+                function sidebarContainerContentElementScrollListener() {
                     NgZone.runOutsideAngular(function() {
                         var scrollTop = Math.max(
                             0,
@@ -157,10 +162,24 @@ angular
 
                 NgZone.runOutsideAngular(function() {
                     element.on('scroll', scrollListener);
-                    window.addEventListener('scroll', scrollWindowListener);
+                    if (
+                        commonHelpers.isDefined(sidebarContainerContentElement)
+                    ) {
+                        sidebarContainerContentElement.addEventListener(
+                            'scroll',
+                            sidebarContainerContentElementScrollListener
+                        );
+                    }
                 });
                 scope.$on('$destroy', function() {
-                    window.removeEventListener('scroll', scrollWindowListener);
+                    if (
+                        commonHelpers.isDefined(sidebarContainerContentElement)
+                    ) {
+                        sidebarContainerContentElement.removeEventListener(
+                            'scroll',
+                            sidebarContainerContentElementScrollListener
+                        );
+                    }
                 });
             },
             controller: function() {},

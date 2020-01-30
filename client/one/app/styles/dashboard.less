@@ -21,35 +21,19 @@
 // Layout //
 ///////////////////////////
 
-.zem-container {
+.zem-app-view {
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
-    padding: @spacing--default*1.5+ @header-height @spacing--default 77px
-        @spacing--default;
-    position: relative;
-    transition: padding-top @duration-and-timing-fn--default;
 }
 
-.no-tabset.zem-container {
-    padding-top: @spacing--default*1.5+ @header-height;
-}
-
-.content-container {
-    display: block;
-}
-
-.content-container__title {
-    margin: -10px 0 -10px 0;
+.zem-app-view__main-container {
+    flex: 1 1 auto;
 }
 
 ///////////////////////////
 // RESPONSIVE //
 ///////////////////////////
-
-@media only screen and (max-width: @desktop-breakpoint) {
-    .content-container__title {
-        margin-top: -5px;
-    }
-}
 
 ///////////////////////////
 // Chart & Infobox //
@@ -121,22 +105,7 @@
 // RESPONSIVE //
 ///////////////////////////
 
-@media only screen and (min-width: ((@desktop-breakpoint)+1)) {
-    .fixed-header .zem-container {
-        padding-top: @spacing--default*1.5+ @header-height;
-    }
-}
-
 @media only screen and (max-width: @desktop-breakpoint) {
-    .zem-container,
-    .no-tabset.zem-container {
-        padding: 0 0 110px 0;
-    }
-
-    .content-container {
-        padding: 40px @spacing--default 0 @spacing--default;
-    }
-
     @supports not (display: flex) {
         .chart-infobox__infobox {
             width: 300px;
@@ -156,11 +125,6 @@
 }
 
 @media only screen and (max-width: @tablet-breakpoint) {
-    .zem-container,
-    .no-tabset.zem-container {
-        padding-bottom: 0;
-    }
-
     @supports not (display: flex) {
         .chart-infobox__container {
             display: block;

@@ -9,7 +9,8 @@ import {
     Input,
     OnInit,
     OnDestroy,
-    Renderer2,
+    AfterViewInit,
+    Inject,
 } from '@angular/core';
 import {DetailGridInfo, GridApi, GridOptions, ColDef} from 'ag-grid-community';
 import {
@@ -23,13 +24,15 @@ import * as arrayHelpers from '../../helpers/array.helpers';
 import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
 import {PaginationChangeEvent} from './types/pagination-change-event';
+import {DOCUMENT} from '@angular/common';
+import {ResizeObserverHelper} from '../../helpers/resize-observer.helper';
 
 @Component({
     selector: 'zem-smart-grid',
     templateUrl: './smart-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SmartGridComponent implements OnInit, OnDestroy {
+export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input('gridOptions')
     options: GridOptions;
     @Input()
@@ -55,9 +58,16 @@ export class SmartGridComponent implements OnInit, OnDestroy {
     paginationPageSize: number;
     paginationPageSizeOptions: PageSizeConfig[];
 
-    private windowResizeListener: Function;
+    private resizeObserverHelper: ResizeObserverHelper;
+    private sidebarContainerContentElement: Element;
 
-    constructor(private renderer: Renderer2) {}
+    constructor(@Inject(DOCUMENT) private document: Document) {
+        this.resizeObserverHelper = new ResizeObserverHelper(() => {
+            if (this.isGridReady) {
+                this.gridApi.sizeColumnsToFit();
+            }
+        });
+    }
 
     ngOnInit(): void {
         this.gridOptions = {
@@ -82,19 +92,25 @@ export class SmartGridComponent implements OnInit, OnDestroy {
                 DEFAULT_PAGE_SIZE_OPTIONS
             );
         }
-        this.windowResizeListener = this.renderer.listen(
-            window,
-            'resize',
-            () => {
-                if (this.isGridReady) {
-                    this.gridApi.sizeColumnsToFit();
-                }
-            }
+    }
+
+    ngAfterViewInit(): void {
+        this.sidebarContainerContentElement = this.document.getElementById(
+            'zem-sidebar-container__content'
         );
+        if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
+            this.resizeObserverHelper.observe(
+                this.sidebarContainerContentElement
+            );
+        }
     }
 
     ngOnDestroy(): void {
-        this.removeEventListener(this.windowResizeListener);
+        if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
+            this.resizeObserverHelper.unobserve(
+                this.sidebarContainerContentElement
+            );
+        }
     }
 
     onGridReady(params: DetailGridInfo) {
@@ -167,12 +183,6 @@ export class SmartGridComponent implements OnInit, OnDestroy {
                 return this.rowData.length;
             case 'server':
                 return this.paginationCount;
-        }
-    }
-
-    private removeEventListener(eventListener: Function): void {
-        if (commonHelpers.isDefined(eventListener)) {
-            eventListener();
         }
     }
 }

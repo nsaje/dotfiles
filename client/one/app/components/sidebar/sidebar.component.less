@@ -1,0 +1,48 @@
+@import 'variables';
+
+.zem-sidebar {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.zem-sidebar__aside {
+    display: block;
+    position: absolute;
+    background-color: @color--lightest-neutral;
+    z-index: @z-index--sidebar !important;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+    pointer-events: auto;
+    touch-action: auto;
+    will-change: initial;
+}
+
+.zem-sidebar__aside--left {
+    bottom: 0;
+    left: 0;
+    top: 0;
+}
+
+.zem-sidebar__aside--right {
+    bottom: 0;
+    right: 0;
+    top: 0;
+}
+
+.zem-sidebar__aside--top {
+    left: 0;
+    right: 0;
+    top: 0;
+}
+
+.zem-sidebar__aside--bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.zem-sidebar__aside--opened {
+    width: 250px;
+}

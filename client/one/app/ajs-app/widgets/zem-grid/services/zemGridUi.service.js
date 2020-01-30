@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .factory('zemGridUIService', function(
@@ -20,6 +22,14 @@ angular
                 }
             );
         })();
+
+        var headerElement = document.getElementById('zem-header');
+        var filterSelectorElement = document.getElementById(
+            'zem-filter-selector'
+        );
+        var headerBreadcrumbElement = document.getElementById(
+            'zem-header-breadcrumb'
+        );
 
         function calculateColumnWidths(grid) {
             // Calculate rendered column widths, based on grid contents,
@@ -545,21 +555,21 @@ angular
             }
 
             function getContentTopOffset() {
-                var fixedHeaderHeight = 30; // MINIMIZED HEADER
-                if (!$state.includes('v2')) {
-                    fixedHeaderHeight += 28; // OLD MINIMIZED HEADER WITH NAV TABS
-                }
-                var fixedDataFilterHeight = 48;
-
                 var offset = 0;
-                if (
-                    $('body').hasClass('fixed-header') &&
-                    window.matchMedia('(min-width: 1024px)').matches
-                ) {
-                    offset += fixedHeaderHeight;
-                    if ($('body').hasClass('data-filter-enabled'))
-                        offset += fixedDataFilterHeight;
+
+                offset += commonHelpers.isDefined(headerElement)
+                    ? headerElement.offsetHeight
+                    : 0;
+                offset += commonHelpers.isDefined(filterSelectorElement)
+                    ? filterSelectorElement.offsetHeight
+                    : 0;
+
+                if (window.matchMedia('(max-width: 1024px)').matches) {
+                    offset += commonHelpers.isDefined(headerBreadcrumbElement)
+                        ? headerBreadcrumbElement.offsetHeight
+                        : 0;
                 }
+
                 return offset;
             }
 

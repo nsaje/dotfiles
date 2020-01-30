@@ -1,7 +1,14 @@
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+
 angular.module('one.services').service('zemDesignHelpersService', function() {
     this.init = init;
 
+    var initialized = false;
     function init() {
+        if (initialized) {
+            return;
+        }
+
         $('body').append(
             '<div class="ee-zemanta-dots"></div><a href="javascript:void(0)" class="scroll-to-top"></a>'
         );
@@ -9,20 +16,26 @@ angular.module('one.services').service('zemDesignHelpersService', function() {
             initScrollToTop();
             initZemantaSecret();
         });
+
+        initialized = true;
     }
 
     function initScrollToTop() {
-        $(window).scroll(function() {
-            if ($(this).scrollTop() >= 600) {
-                $('.scroll-to-top').addClass('scroll-to-top--visible');
-            } else {
-                $('.scroll-to-top').removeClass('scroll-to-top--visible');
-            }
-        });
-
-        $('.scroll-to-top').click(function() {
-            $('html, body').animate({scrollTop: 0}, 500);
-        });
+        var sidebarContainerContentElement = document.getElementById(
+            'zem-sidebar-container__content'
+        );
+        if (commonHelpers.isDefined(sidebarContainerContentElement)) {
+            $(sidebarContainerContentElement).scroll(function() {
+                if ($(this).scrollTop() >= 600) {
+                    $('.scroll-to-top').addClass('scroll-to-top--visible');
+                } else {
+                    $('.scroll-to-top').removeClass('scroll-to-top--visible');
+                }
+            });
+            $('.scroll-to-top').click(function() {
+                $(sidebarContainerContentElement).animate({scrollTop: 0}, 500);
+            });
+        }
     }
 
     function initZemantaSecret() {

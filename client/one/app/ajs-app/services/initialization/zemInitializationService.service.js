@@ -9,7 +9,6 @@ angular
         zemDataFilterService,
         zemIntercomService,
         zemSupportHeroService,
-        zemDesignHelpersService,
         zemGoogleAnalyticsService,
         zemMixpanelService
     ) {
@@ -26,7 +25,6 @@ angular
 
             zemGoogleAnalyticsService.init();
             zemMixpanelService.init();
-            zemDesignHelpersService.init();
 
             // Service initializers that need to resolve before user can use the app
             sequence = $q.all([initZemUserServiceAndDependantServices()]);

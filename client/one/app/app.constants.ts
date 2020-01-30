@@ -704,6 +704,22 @@ export enum AccountType {
     PAAS = 'PAAS',
 }
 
+export enum UiRouterStateName {
+    APP_BASE = 'v2',
+    ANALYTICS = 'v2.analytics',
+    CREATE_ENTITY = 'v2.createEntity',
+    REPORTS = 'v2.reports',
+    CREDIT = 'v2.accountCredit',
+    PUBLISHER_GROUPS = 'v2.publisherGroups',
+    USERS = 'v2.users',
+    PIXELS = 'v2.pixels',
+    INVENTORY_PLANNING = 'v2.inventoryPlanning',
+    ARCHIVED = 'v2.archived',
+    DEALS_LIBRARY = 'v2.dealsLibrary',
+    ERROR_BASE = 'error',
+    ERROR_FORBIDDEN = 'error.forbidden',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

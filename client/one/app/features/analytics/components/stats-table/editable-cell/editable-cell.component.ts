@@ -26,6 +26,8 @@ import {
     EditableCellPlacement,
 } from './editable-cell.constants';
 import {KeyCode} from '../../../../../app.constants';
+import {ResizeObserverHelper} from '../../../../../shared/helpers/resize-observer.helper';
+import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-editable-cell',
@@ -58,10 +60,13 @@ export class EditableCellComponent
 
     private portalHost: DomPortalHost;
 
-    private onWindowScrollCallback: any;
     private onKeydownCallback: any;
-    private onWindowResizeCallback: any;
     private onContainerElementScrollCallback: any;
+
+    private resizeObserverHelper: ResizeObserverHelper;
+
+    private sidebarContainerContentElement: Element;
+    private onSidebarContainerContentElementScrollCallback: any;
 
     constructor(
         @Inject(DOCUMENT) private document: Document,
@@ -73,12 +78,18 @@ export class EditableCellComponent
         private changeDetectorRef: ChangeDetectorRef,
         @Inject('ajs$rootScope') private ajs$rootScope: any
     ) {
-        this.onWindowScrollCallback = this.switchToReadMode.bind(this);
+        this.onSidebarContainerContentElementScrollCallback = this.switchToReadMode.bind(
+            this
+        );
         this.onKeydownCallback = this.onKeydown.bind(this);
-        this.onWindowResizeCallback = this.switchToReadMode.bind(this);
         this.onContainerElementScrollCallback = this.switchToReadMode.bind(
             this
         );
+        this.resizeObserverHelper = new ResizeObserverHelper(() => {
+            if (this.portalHost.hasAttached() && !this.shouldRenderAsModal) {
+                this.switchToReadMode();
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -106,6 +117,9 @@ export class EditableCellComponent
             this.componentFactoryResolver,
             this.applicationRef,
             this.injector
+        );
+        this.sidebarContainerContentElement = this.document.getElementById(
+            'zem-sidebar-container__content'
         );
     }
 
@@ -136,13 +150,18 @@ export class EditableCellComponent
         this.hostElementOffsetLeft = hostElementOffset.leftOffset;
         this.portalHost.attach(this.portal);
 
-        window.addEventListener('scroll', this.onWindowScrollCallback);
+        if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
+            this.sidebarContainerContentElement.addEventListener(
+                'scroll',
+                this.onSidebarContainerContentElementScrollCallback
+            );
+        }
         window.addEventListener('keydown', this.onKeydownCallback);
-        window.addEventListener('resize', this.onWindowResizeCallback);
         this.containerElement.addEventListener(
             'scroll',
             this.onContainerElementScrollCallback
         );
+        this.resizeObserverHelper.observe(this.containerElement);
 
         setTimeout(() => {
             this.shouldRenderAsModal = this.isPortalContentOverflowingContainer(
@@ -162,13 +181,18 @@ export class EditableCellComponent
         if (this.portalHost.hasAttached()) {
             this.portalHost.detach();
 
-            window.removeEventListener('scroll', this.onWindowScrollCallback);
+            if (commonHelpers.isDefined(this.sidebarContainerContentElement)) {
+                this.sidebarContainerContentElement.removeEventListener(
+                    'scroll',
+                    this.onSidebarContainerContentElementScrollCallback
+                );
+            }
             window.removeEventListener('keydown', this.onKeydownCallback);
-            window.removeEventListener('resize', this.onWindowResizeCallback);
             this.containerElement.removeEventListener(
                 'scroll',
                 this.onContainerElementScrollCallback
             );
+            this.resizeObserverHelper.unobserve(this.containerElement);
             this.renderer.removeClass(this.document.body, 'modal-open');
         }
     }

@@ -2,11 +2,8 @@
 
 .zem-footer {
     display: table;
-    position: absolute;
-    left: 0;
-    bottom: 0;
     width: 100%;
-    padding: 0 @spacing--default @spacing--default @spacing--default;
+    padding: @spacing--default;
 }
 
 .zem-footer__logo,
@@ -52,16 +49,6 @@
 ///////////////////////////
 // RESPONSIVE //
 ///////////////////////////
-
-@media only screen and (max-width: @tablet-breakpoint) {
-    .zem-footer {
-        position: relative;
-        bottom: auto;
-        left: auto;
-        right: auto;
-        padding-top: @spacing--default;
-    }
-}
 
 @media only screen and (max-width: 650px) {
     .zem-footer {

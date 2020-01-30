@@ -1,0 +1,79 @@
+@import 'variables';
+
+.zem-main-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: padding-top @duration-and-timing-fn--default;
+}
+
+.zem-main-container__sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.zem-main-container__sidebar-content {
+    display: block;
+    flex: 1 1 auto;
+}
+
+.zem-main-container__sidebar-footer {
+    display: flex;
+    flex-direction: row-reverse;
+    height: 45px;
+}
+
+.zem-main-container__icon {
+    display: flex;
+    flex: 0 0 45px;
+    height: 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color: darken(@color--lighter-neutral, 4%);
+}
+
+.zem-main-container__icon:hover {
+    background-color: #ffffff;
+}
+
+.zem-main-container__arrow {
+    width: 15px;
+    height: 15px;
+    background: url('@{images-folder}/arrow-sec.svg') no-repeat center;
+}
+
+.zem-main-container__arrow--left {
+    transform: rotate(180deg);
+}
+
+.zem-main-container__content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.zem-main-container__view {
+    display: block;
+    flex: 1 1 auto;
+    padding: @spacing--default;
+}
+
+.zem-main-container__view-title {
+    margin-bottom: -10px;
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+@media only screen and (max-width: @desktop-breakpoint) {
+    .zem-main-container {
+        margin-top: @zem-header-breadcrumb__height--small-screen;
+    }
+}

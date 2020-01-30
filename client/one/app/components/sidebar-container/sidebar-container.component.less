@@ -1,0 +1,26 @@
+.zem-sidebar-container {
+    display: block;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+}
+
+.zem-sidebar-container__content {
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.zem-sidebar-container__content--animate {
+    -webkit-transition: -webkit-transform 0.3s cubic-bezier(0, 0, 0.3, 1),
+        padding 0.3s cubic-bezier(0, 0, 0.3, 1);
+    transition: transform 0.3s cubic-bezier(0, 0, 0.3, 1),
+        padding 0.3s cubic-bezier(0, 0, 0.3, 1);
+}

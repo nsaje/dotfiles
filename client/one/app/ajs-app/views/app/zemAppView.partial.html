@@ -1,0 +1,19 @@
+<div class="zem-app-view" ng-if="$ctrl.appStateAllowed">
+    <zem-header id="zem-header" class="zem-header"></zem-header>
+    <zem-filter-selector
+        id="zem-filter-selector"
+        class="zem-filter-selector"
+    ></zem-filter-selector>
+
+    <zem-main-container class="zem-main-container zem-app-view__main-container">
+        <div class="zem-main-container__content">
+            <ui-view class="zem-main-container__view"></ui-view>
+            <zem-footer class="zem-footer"></zem-footer>
+        </div>
+    </zem-main-container>
+
+    <!-- Widgets used in drawer -->
+    <zem-entity-settings-router-outlet></zem-entity-settings-router-outlet>
+    <zem-history class="zem-history"></zem-history>
+    <zem-toasts class="zem-toasts"></zem-toasts>
+</div>

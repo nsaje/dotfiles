@@ -1,3 +1,7 @@
+var ResizeObserverHelper = require('../../../../../shared/helpers/resize-observer.helper')
+    .ResizeObserverHelper;
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .directive('zemGridHeader', function($timeout, zemGridUIService, NgZone) {
@@ -42,16 +46,45 @@ angular
                         handleHorizontalScrollPivotColumns
                     );
 
+                    var sidebarContainerContentElement = document.getElementById(
+                        'zem-sidebar-container__content'
+                    );
+
+                    var resizeObserverHelper = new ResizeObserverHelper(
+                        function() {
+                            resizeColumns();
+                        }
+                    );
+
                     NgZone.runOutsideAngular(function() {
-                        window.addEventListener('resize', resizeColumns);
-                        window.addEventListener('scroll', updateStickyElements);
+                        if (
+                            commonHelpers.isDefined(
+                                sidebarContainerContentElement
+                            )
+                        ) {
+                            resizeObserverHelper.observe(
+                                sidebarContainerContentElement
+                            );
+                            sidebarContainerContentElement.addEventListener(
+                                'scroll',
+                                updateStickyElements
+                            );
+                        }
                     });
                     scope.$on('$destroy', function() {
-                        window.removeEventListener(
-                            'scroll',
-                            updateStickyElements
-                        );
-                        window.removeEventListener('resize', resizeColumns);
+                        if (
+                            commonHelpers.isDefined(
+                                sidebarContainerContentElement
+                            )
+                        ) {
+                            resizeObserverHelper.unobserve(
+                                sidebarContainerContentElement
+                            );
+                            sidebarContainerContentElement.removeEventListener(
+                                'scroll',
+                                updateStickyElements
+                            );
+                        }
                     });
                 }
 
