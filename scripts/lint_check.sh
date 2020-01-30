@@ -14,12 +14,12 @@ if [ "$DIFF" != "" ]; then
 fi
 
 
-# Isort ------------------------------------------------------------------------
-blue "Isort lint in progress ..."
-docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=isort py3-tools --check-only -sp /src/setup.cfg\
+# # Isort ------------------------------------------------------------------------
+# blue "Isort lint in progress ..."
+# docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=isort py3-tools --check-only -sp /src/setup.cfg\
 
-EXITCODE=$?
-report_check_result $EXITCODE "Isort"
+# EXITCODE=$?
+# report_check_result $EXITCODE "Isort"
 
 # Black ------------------------------------------------------------------------
 blue "Black lint in progress ..."
