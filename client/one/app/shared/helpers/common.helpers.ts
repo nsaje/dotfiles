@@ -38,3 +38,7 @@ export function isEqualToAnyItem(value: any, items: any[]): boolean {
 
     return items.some(item => deepEqual(value, item));
 }
+
+export function isPrimitive(value: any) {
+    return value !== Object(value);
+}

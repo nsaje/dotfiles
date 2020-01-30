@@ -56,4 +56,18 @@ describe('commonHelpers', () => {
             ])
         ).toEqual(true);
     });
+
+    it('should correctly check if a variable is of a primitive type', () => {
+        expect(commonHelpers.isPrimitive(null)).toBeTrue();
+        expect(commonHelpers.isPrimitive(undefined)).toBeTrue();
+        expect(commonHelpers.isPrimitive(true)).toBeTrue();
+        expect(commonHelpers.isPrimitive(1)).toBeTrue();
+        expect(commonHelpers.isPrimitive('test')).toBeTrue();
+        expect(
+            commonHelpers.isPrimitive({
+                this: 'is',
+                a: {very: ['complex', 'object']},
+            })
+        ).toBeFalse();
+    });
 });
