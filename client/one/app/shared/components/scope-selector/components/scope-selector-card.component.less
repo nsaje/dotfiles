@@ -1,0 +1,33 @@
+@import 'variables';
+
+.zem-scope-selector-card {
+    display: block;
+    border: 1px solid @border-color--default;
+    border-radius: @border-radius--default;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.05);
+}
+
+.zem-scope-selector-card__header {
+    display: block;
+    border-radius: @border-radius--default;
+    padding: @spacing--default;
+    background-color: #ffffff;
+}
+
+.zem-scope-selector-card__header--selected {
+    background-color: @color--lightest-neutral;
+}
+
+.zem-scope-selector-card__header--extended {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.zem-scope-selector-card__content {
+    display: block;
+    border-top: 1px solid @border-color--default;
+    border-bottom-left-radius: @border-radius--default;
+    border-bottom-right-radius: @border-radius--default;
+    padding: @spacing--default;
+    background-color: #ffffff;
+}

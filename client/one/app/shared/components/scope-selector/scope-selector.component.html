@@ -1,0 +1,44 @@
+<zem-scope-selector-card
+    class="zem-scope-selector-card zem-scope-selector__item"
+    [scopeState]="scopeState"
+    [value]="ScopeSelectorState.AGENCY_SCOPE"
+    [isDisabled]="isAgencyScopeDisabled"
+    (valueChange)="scopeStateChange.emit($event)"
+>
+    <ng-container *ngIf="agencyScopeHeaderTemplate">
+        <ng-template #scopeHeaderTemplate>
+            <ng-container
+                *ngTemplateOutlet="agencyScopeHeaderTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+    <ng-container *ngIf="agencyScopeContentTemplate">
+        <ng-template #scopeContentTemplate>
+            <ng-container
+                *ngTemplateOutlet="agencyScopeContentTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+</zem-scope-selector-card>
+<zem-scope-selector-card
+    class="zem-scope-selector-card zem-scope-selector__item"
+    [scopeState]="scopeState"
+    [value]="ScopeSelectorState.ACCOUNT_SCOPE"
+    [isDisabled]="isAccountScopeDisabled"
+    (valueChange)="scopeStateChange.emit($event)"
+>
+    <ng-container *ngIf="accountScopeHeaderTemplate">
+        <ng-template #scopeHeaderTemplate>
+            <ng-container
+                *ngTemplateOutlet="accountScopeHeaderTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+    <ng-container *ngIf="accountScopeContentTemplate">
+        <ng-template #scopeContentTemplate>
+            <ng-container
+                *ngTemplateOutlet="accountScopeContentTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+</zem-scope-selector-card>

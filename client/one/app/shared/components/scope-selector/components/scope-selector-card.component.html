@@ -1,0 +1,23 @@
+<div
+    class="zem-scope-selector-card__header"
+    [class.zem-scope-selector-card__header--selected]="value === scopeState"
+    [class.zem-scope-selector-card__header--extended]="
+        scopeContentTemplate && value === scopeState
+    "
+>
+    <zem-radio-input
+        class="zem-radio-input"
+        [groupModel]="scopeState"
+        [value]="value"
+        [isDisabled]="isDisabled"
+        (select)="valueChange.emit($event)"
+    >
+        <ng-container *ngTemplateOutlet="scopeHeaderTemplate"></ng-container>
+    </zem-radio-input>
+</div>
+<div
+    class="zem-scope-selector-card__content"
+    *ngIf="scopeContentTemplate && value === scopeState"
+>
+    <ng-container *ngTemplateOutlet="scopeContentTemplate"></ng-container>
+</div>

@@ -56,6 +56,8 @@ import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.
 import {SelectListComponent} from './components/select-list/select-list.component';
 import {TextHighlightDirective} from './directives/text-highlight/text-highlight.directive';
 import {ContentFormGroupComponent} from './components/content-form-group/content-form-group.component';
+import {ScopeSelectorCardComponent} from './components/scope-selector/components/scope-selector-card.component';
+import {ScopeSelectorComponent} from './components/scope-selector/scope-selector.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -105,6 +107,8 @@ const EXPORTED_DECLARATIONS = [
     HelpPopoverHeaderComponent,
     DealEditFormComponent,
     SelectListComponent,
+    ScopeSelectorCardComponent,
+    ScopeSelectorComponent,
 ];
 
 @NgModule({
