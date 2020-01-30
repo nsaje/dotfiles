@@ -7,7 +7,7 @@ logger = zlogging.getLogger(__name__)
 
 
 # only contains names that need to be overriden, most match with email
-EMAIL_TO_SLACK_OVERRIDE = {"lsilovinac": "luka"}
+EMAIL_TO_SLACK_OVERRIDE = {}
 SLACK_USER = "PagerDuty Assistant"
 
 
