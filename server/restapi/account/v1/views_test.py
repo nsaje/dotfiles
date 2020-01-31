@@ -57,6 +57,16 @@ class AccountViewSetTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_accounts_list_filter_agency(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency2 = magic_mixer.blend(core.models.Agency)
+        magic_mixer.cycle(3).blend(core.models.Account, users=[self.user], agency=agency)
+        magic_mixer.cycle(5).blend(core.models.Account, users=[self.user], agency=agency2)
+
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 3)
+
     def test_accounts_list_exclude_archived(self):
         self.user = magic_mixer.blend_request_user(permissions=["can_use_restapi", "can_set_frequency_capping"]).user
         self.client.force_authenticate(user=self.user)

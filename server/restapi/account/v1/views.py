@@ -41,6 +41,9 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
     def list(self, request):
         accounts = core.models.Account.objects.all().filter_by_user(request.user)
+        agency_id = request.GET.get("agencyId")
+        if agency_id:
+            accounts = accounts.filter(agency_id=agency_id)
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             accounts = accounts.exclude_archived()
         return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
