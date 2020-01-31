@@ -7,6 +7,7 @@ from django.db import transaction
 
 import dash.constants
 import dash.models
+import prodops.hacks.constants as hack_constants
 import redshiftapi.api_breakdowns
 from automation import models
 from etl import models as etl_models
@@ -26,7 +27,7 @@ from .campaign import calculate_campaigns_daily_budget
 
 logger = zlogging.getLogger(__name__)
 
-SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (220,)
+SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (hack_constants.AGENCY_RCS_ID, hack_constants.AGENCY_ZMS_VIDEO_ID)
 
 
 @metrics_compat.timer("automation.autopilot_plus.run_autopilot")
