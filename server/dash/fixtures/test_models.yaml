@@ -56,7 +56,8 @@
         modified_by: 1
         name: 'test agency 1'
         cs_representative: 2
-        ob_representative: 3
+        ob_sales_representative: 3
+        ob_account_manager: 3
         sales_representative: 1
         white_label: 1
 

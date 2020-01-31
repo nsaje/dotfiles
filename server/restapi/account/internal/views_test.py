@@ -22,7 +22,8 @@ class AccountViewSetTest(RESTAPITest):
         default_account_manager=None,
         default_sales_representative=None,
         default_cs_representative=None,
-        ob_representative=None,
+        ob_sales_representative=None,
+        ob_account_manager=None,
         auto_add_new_sources=None,
         salesforce_url=None,
         allowed_media_sources=[],
@@ -46,7 +47,8 @@ class AccountViewSetTest(RESTAPITest):
             "defaultCsRepresentative": str(default_cs_representative)
             if default_cs_representative is not None
             else None,
-            "obRepresentative": str(ob_representative) if ob_representative is not None else None,
+            "obSalesRepresentative": str(ob_sales_representative) if ob_sales_representative is not None else None,
+            "obAccountManager": str(ob_account_manager) if ob_account_manager is not None else None,
             "autoAddNewSources": auto_add_new_sources,
             "salesforceUrl": salesforce_url,
             "allowedMediaSources": allowed_media_sources,
@@ -88,7 +90,8 @@ class AccountViewSetTest(RESTAPITest):
                     "name": "agency",
                     "sales_representative": 1,
                     "cs_representative": 2,
-                    "ob_representative": 3,
+                    "ob_sales_representative": 3,
+                    "ob_account_manager": 4,
                     "default_account_type": dash.constants.AccountType.UNKNOWN,
                 }
             ],
@@ -101,7 +104,12 @@ class AccountViewSetTest(RESTAPITest):
                 {"id": 111, "name": "sales2@outbrain.com"},
             ],
             "cs_representatives": [{"id": 200, "name": "cs1@outbrain.com"}, {"id": 201, "name": "cs2@outbrain.com"}],
-            "ob_representatives": [{"id": 220, "name": "ob1@outbrain.com"}, {"id": 222, "name": "ob2@outbrain.com"}],
+            "ob_representatives": [
+                {"id": 220, "name": "ob1@outbrain.com"},
+                {"id": 222, "name": "ob2@outbrain.com"},
+                {"id": 221, "name": "ob2@outbrain.com"},
+                {"id": 223, "name": "ob3@outbrain.com"},
+            ],
             "hacks": [],
             "deals": [],
             "available_media_sources": [
@@ -145,8 +153,12 @@ class AccountViewSetTest(RESTAPITest):
             str(agency.cs_representative.id) if agency.cs_representative is not None else None,
         )
         self.assertEqual(
-            resp_json["data"]["obRepresentative"],
-            str(agency.ob_representative.id) if agency.ob_representative is not None else None,
+            resp_json["data"]["obSalesRepresentative"],
+            str(agency.ob_sales_representative.id) if agency.ob_sales_representative is not None else None,
+        )
+        self.assertEqual(
+            resp_json["data"]["obAccountManager"],
+            str(agency.ob_account_manager.id) if agency.ob_account_manager is not None else None,
         )
         self.assertEqual(resp_json["data"]["autoAddNewSources"], True)
         self.assertEqual(resp_json["data"]["salesforceUrl"], "")
@@ -171,7 +183,8 @@ class AccountViewSetTest(RESTAPITest):
                         "name": "agency",
                         "salesRepresentative": "1",
                         "csRepresentative": "2",
-                        "obRepresentative": "3",
+                        "obSalesRepresentative": "3",
+                        "obAccountManager": "4",
                         "defaultAccountType": dash.constants.AccountType.get_name(dash.constants.AccountType.UNKNOWN),
                     }
                 ],
@@ -190,6 +203,8 @@ class AccountViewSetTest(RESTAPITest):
                 "obRepresentatives": [
                     {"id": "220", "name": "ob1@outbrain.com"},
                     {"id": "222", "name": "ob2@outbrain.com"},
+                    {"id": "221", "name": "ob2@outbrain.com"},
+                    {"id": "223", "name": "ob3@outbrain.com"},
                 ],
                 "hacks": [],
                 "deals": [],
@@ -230,7 +245,8 @@ class AccountViewSetTest(RESTAPITest):
             default_account_manager=self.user,
             default_sales_representative=None,
             default_cs_representative=None,
-            ob_representative=None,
+            ob_sales_representative=None,
+            ob_account_manager=None,
             auto_add_new_sources=True,
             salesforce_url="Generic URL",
             default_icon=default_icon,
@@ -254,7 +270,8 @@ class AccountViewSetTest(RESTAPITest):
                     "name": "agency",
                     "sales_representative": 1,
                     "cs_representative": 2,
-                    "ob_representative": 3,
+                    "ob_sales_representative": 3,
+                    "ob_account_manager": 4,
                     "default_account_type": dash.constants.AccountType.UNKNOWN,
                 }
             ],
@@ -267,7 +284,12 @@ class AccountViewSetTest(RESTAPITest):
                 {"id": 111, "name": "sales2@outbrain.com"},
             ],
             "cs_representatives": [{"id": 200, "name": "cs1@outbrain.com"}, {"id": 201, "name": "cs2@outbrain.com"}],
-            "ob_representatives": [{"id": 220, "name": "ob1@outbrain.com"}, {"id": 222, "name": "ob2@outbrain.com"}],
+            "ob_representatives": [
+                {"id": 220, "name": "ob1@outbrain.com"},
+                {"id": 222, "name": "ob2@outbrain.com"},
+                {"id": 220, "name": "ob1@outbrain.com"},
+                {"id": 222, "name": "ob2@outbrain.com"},
+            ],
             "hacks": [],
             "deals": [],
             "available_media_sources": [
@@ -332,8 +354,14 @@ class AccountViewSetTest(RESTAPITest):
             else None,
         )
         self.assertEqual(
-            resp_json["data"]["obRepresentative"],
-            str(account.settings.ob_representative.id) if account.settings.ob_representative is not None else None,
+            resp_json["data"]["obSalesRepresentative"],
+            str(account.settings.ob_sales_representative.id)
+            if account.settings.ob_sales_representative is not None
+            else None,
+        )
+        self.assertEqual(
+            resp_json["data"]["obAccountManager"],
+            str(account.settings.ob_account_manager.id) if account.settings.ob_account_manager is not None else None,
         )
         self.assertEqual(resp_json["data"]["autoAddNewSources"], account.settings.auto_add_new_sources)
         self.assertEqual(resp_json["data"]["salesforceUrl"], account.settings.salesforce_url)
@@ -380,7 +408,8 @@ class AccountViewSetTest(RESTAPITest):
                         "name": "agency",
                         "salesRepresentative": "1",
                         "csRepresentative": "2",
-                        "obRepresentative": "3",
+                        "obSalesRepresentative": "3",
+                        "obAccountManager": "4",
                         "defaultAccountType": dash.constants.AccountType.get_name(dash.constants.AccountType.UNKNOWN),
                     }
                 ],
@@ -397,6 +426,8 @@ class AccountViewSetTest(RESTAPITest):
                     {"id": "201", "name": "cs2@outbrain.com"},
                 ],
                 "obRepresentatives": [
+                    {"id": "220", "name": "ob1@outbrain.com"},
+                    {"id": "222", "name": "ob2@outbrain.com"},
                     {"id": "220", "name": "ob1@outbrain.com"},
                     {"id": "222", "name": "ob2@outbrain.com"},
                 ],
@@ -448,7 +479,8 @@ class AccountViewSetTest(RESTAPITest):
             default_account_manager=self.user,
             default_sales_representative=None,
             default_cs_representative=None,
-            ob_representative=None,
+            ob_sales_representative=None,
+            ob_account_manager=None,
             auto_add_new_sources=True,
             salesforce_url="http://salesforce.com",
         )
@@ -773,7 +805,7 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["defaultAccountManager"], new_account["defaultAccountManager"])
         self.assertIsNone(resp_json["data"]["defaultSalesRepresentative"])
         self.assertIsNone(resp_json["data"]["defaultCsRepresentative"])
-        self.assertIsNone(resp_json["data"]["obRepresentative"])
+        self.assertIsNone(resp_json["data"]["obSalesRepresentative"])
         self.assertEqual(resp_json["data"]["autoAddNewSources"], new_account["autoAddNewSources"])
         self.assertEqual(resp_json["data"]["salesforceUrl"], new_account["salesforceUrl"])
 
@@ -981,7 +1013,8 @@ class AccountViewSetTest(RESTAPITest):
             default_account_manager=self.user,
             default_sales_representative=None,
             default_cs_representative=None,
-            ob_representative=None,
+            ob_sales_representative=None,
+            ob_account_manager=None,
             auto_add_new_sources=True,
             salesforce_url="http://salesforce.com",
         )
@@ -1035,7 +1068,8 @@ class AccountViewSetTest(RESTAPITest):
             default_account_manager=self.user,
             default_sales_representative=None,
             default_cs_representative=None,
-            ob_representative=None,
+            ob_sales_representative=None,
+            ob_account_manager=None,
             auto_add_new_sources=True,
             salesforce_url="http://salesforce.com",
         )

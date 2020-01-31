@@ -34,7 +34,8 @@ class AccountManager(core.common.BaseManager):
         if agency is not None:
             settings_updates["default_sales_representative"] = agency.sales_representative
             settings_updates["default_cs_representative"] = agency.cs_representative
-            settings_updates["ob_representative"] = agency.ob_representative
+            settings_updates["ob_sales_representative"] = agency.ob_sales_representative
+            settings_updates["ob_account_manager"] = agency.ob_account_manager
             settings_updates["account_type"] = constants.AccountType.ACTIVATED
             settings_updates["auto_add_new_sources"] = True
         self._set_sources(account, kwargs.get("allowed_sources"))

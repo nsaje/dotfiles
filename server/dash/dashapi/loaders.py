@@ -132,7 +132,8 @@ class AccountsLoader(Loader):
         user_ids = set(x.default_account_manager_id for x in settings_qs)
         user_ids |= set(x.default_sales_representative_id for x in settings_qs)
         user_ids |= set(x.default_cs_representative_id for x in settings_qs)
-        user_ids |= set(x.ob_representative_id for x in settings_qs)
+        user_ids |= set(x.ob_sales_representative_id for x in settings_qs)
+        user_ids |= set(x.ob_account_manager_id for x in settings_qs)
         user_map = {x.id: x for x in ZemUser.objects.filter(pk__in=user_ids)}
 
         settings_obj_map = {x.account_id: x for x in settings_qs}
@@ -148,7 +149,8 @@ class AccountsLoader(Loader):
                 "default_account_manager": None,
                 "default_sales_representative": None,
                 "default_cs_representative": None,
-                "ob_representative": None,
+                "ob_sales_representative": None,
+                "ob_account_manager": None,
                 "account_type": constants.AccountType.get_text(constants.AccountType.UNKNOWN),
                 "settings_id": None,  # for debugging purposes, isn't used in production code
                 "salesforce_url": "",
@@ -168,8 +170,11 @@ class AccountsLoader(Loader):
                         "default_cs_representative": view_helpers.get_user_full_name_or_email(
                             user_map.get(settings.default_cs_representative_id), default_value=None
                         ),
-                        "ob_representative": view_helpers.get_user_full_name_or_email(
-                            user_map.get(settings.ob_representative_id), default_value=None
+                        "ob_sales_representative": view_helpers.get_user_full_name_or_email(
+                            user_map.get(settings.ob_sales_representative_id), default_value=None
+                        ),
+                        "ob_account_manager": view_helpers.get_user_full_name_or_email(
+                            user_map.get(settings.ob_account_manager), default_value=None
                         ),
                         "salesforce_url": settings.salesforce_url or "",
                     }

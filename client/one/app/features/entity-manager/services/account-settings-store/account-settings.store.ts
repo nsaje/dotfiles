@@ -290,8 +290,17 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         this.validateEntity();
     }
 
-    setOutbrainRepresentative(obRepresentative: string) {
-        this.patchState(obRepresentative, 'entity', 'obRepresentative');
+    setOutbrainSalesRepresentative(obSalesRepresentative: string) {
+        this.patchState(
+            obSalesRepresentative,
+            'entity',
+            'obSalesRepresentative'
+        );
+        this.validateEntity();
+    }
+
+    setOutbrainAccountManager(obAccountManager: string) {
+        this.patchState(obAccountManager, 'entity', 'obAccountManager');
         this.validateEntity();
     }
 

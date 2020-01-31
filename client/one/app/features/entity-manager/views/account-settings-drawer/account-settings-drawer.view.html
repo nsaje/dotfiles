@@ -116,11 +116,11 @@
                                 'zemauth.can_set_account_ob_representative'
                             )
                         "
-                        [label]="'OB Representative'"
+                        [label]="'OB Sales Representative'"
                         [helpMessage]="
-                            'Outbrain Manager responsible for the account and the communication with the client.'
+                            'Outbrain Representative responsible for the account and the communication with the client.'
                         "
-                        [value]="state.entity.obRepresentative"
+                        [value]="state.entity.obSalesRepresentative"
                         [bindLabel]="'name'"
                         [bindValue]="'id'"
                         [items]="state.extras.obRepresentatives"
@@ -128,8 +128,37 @@
                         [isSearchable]="true"
                         [isClearable]="true"
                         [orderByValue]="'name'"
-                        [errors]="state.fieldsErrors.obRepresentative"
-                        (valueChange)="store.setOutbrainRepresentative($event)"
+                        [errors]="state.fieldsErrors.obSalesRepresentative"
+                        (valueChange)="
+                            store.setOutbrainSalesRepresentative($event)
+                        "
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_account_ob_representative'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_account_ob_representative'
+                            )
+                        "
+                        [label]="'OB Account Manager'"
+                        [helpMessage]="
+                            'Outbrain Account Manager responsible for the account and the communication with the client.'
+                        "
+                        [value]="state.entity.obAccountManager"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.obRepresentatives"
+                        [placeholder]="'Choose OB Account Manager'"
+                        [isSearchable]="true"
+                        [isClearable]="true"
+                        [orderByValue]="'name'"
+                        [errors]="state.fieldsErrors.obAccountManager"
+                        (valueChange)="store.setOutbrainAccountManager($event)"
                     ></zem-select-form-group>
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"

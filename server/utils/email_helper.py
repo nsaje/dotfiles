@@ -721,8 +721,10 @@ def send_campaign_created_email(request, campaign):
         emails.append(campaign.account.settings.default_sales_representative.email)
     if campaign.account.settings.default_cs_representative:
         emails.append(campaign.account.settings.default_cs_representative.email)
-    if campaign.account.settings.ob_representative:
-        emails.append(campaign.account.settings.ob_representative.email)
+    if campaign.account.settings.ob_sales_representative:
+        emails.append(campaign.account.settings.ob_sales_representative.email)
+    if campaign.account.settings.ob_account_manager:
+        emails.append(campaign.account.settings.ob_account_manager.email)
     try:
         emails.remove(request.user.email)
     except ValueError:

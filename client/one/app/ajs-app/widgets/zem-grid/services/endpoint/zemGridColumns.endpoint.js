@@ -238,9 +238,21 @@ angular
                 internal: 'zemauth.can_see_managers_in_accounts_table',
                 shown: 'zemauth.can_see_managers_in_accounts_table',
             },
-            obRepresentative: {
-                name: 'OB Representative',
-                field: 'ob_representative',
+            obSalesRepresentative: {
+                name: 'OB sales Representative',
+                field: 'ob_sales_representative',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                totalRow: false,
+                help:
+                    'Outbrain representative responsible for the account and the communication with the client.',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                internal: 'zemauth.can_see_managers_in_accounts_table',
+                shown: 'zemauth.can_see_managers_in_accounts_table',
+            },
+            obAccountManager: {
+                name: 'OB Account manager',
+                field: 'ob_account_manager',
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 totalRow: false,
                 help:
@@ -1829,7 +1841,8 @@ angular
             COLUMNS.accountType,
             COLUMNS.defaultSalesRepresentative,
             COLUMNS.defaultCsRepresentative,
-            COLUMNS.obRepresentative,
+            COLUMNS.obSalesRepresentative,
+            COLUMNS.obAccountManager,
             COLUMNS.defaultAccountManager,
             COLUMNS.salesforceUrl,
         ];

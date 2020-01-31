@@ -20,7 +20,8 @@ class ValidationTestCase(TestCase):
         self.request = magic_mixer.blend_request_user()
         self.cs = magic_mixer.blend(zemauth.models.User, email="cs@test.com")
         self.sales = magic_mixer.blend(zemauth.models.User, email="sales@test.com")
-        self.ob = magic_mixer.blend(zemauth.models.User, email="ob@test.com")
+        self.ob_sales_representative = magic_mixer.blend(zemauth.models.User, email="ob_sales_representative@test.com")
+        self.ob_account_manager = magic_mixer.blend(zemauth.models.User, email="ob_account_manager@test.com")
         self.yahoo_account = magic_mixer.blend(core.features.yahoo_accounts.YahooAccount, advertiser_id=1234)
 
     def test_update_externally_managed_field(self):
@@ -66,7 +67,8 @@ class ValidationTestCase(TestCase):
             is_externally_managed=True,
             is_disabled=True,
             cs_representative=self.cs,
-            ob_representative=self.ob,
+            ob_sales_representative=self.ob_sales_representative,
+            ob_account_manager=self.ob_account_manager,
             sales_representative=self.sales,
             yahoo_account=self.yahoo_account,
             default_account_type=dash.constants.AccountType.ACTIVATED,
@@ -77,7 +79,8 @@ class ValidationTestCase(TestCase):
                 is_externally_managed=True,
                 is_disabled=True,
                 cs_representative=self.cs,
-                ob_representative=self.ob,
+                ob_sales_representative=self.ob_sales_representative,
+                ob_account_manager=self.ob_account_manager,
                 sales_representative=self.sales,
                 yahoo_account=self.yahoo_account,
                 default_account_type=dash.constants.AccountType.ACTIVATED,
@@ -87,7 +90,8 @@ class ValidationTestCase(TestCase):
             core.models.Account.objects.filter(
                 is_disabled=True,
                 settings__default_cs_representative=self.cs,
-                settings__ob_representative=self.ob,
+                settings__ob_sales_representative=self.ob_sales_representative,
+                settings__ob_account_manager=self.ob_account_manager,
                 settings__default_sales_representative=self.sales,
                 yahoo_account=self.yahoo_account,
                 settings__account_type=dash.constants.AccountType.ACTIVATED,

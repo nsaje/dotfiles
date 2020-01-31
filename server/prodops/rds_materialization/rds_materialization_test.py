@@ -23,7 +23,8 @@ class RDSAgencyTest(TestCase):
                 "default_account_type": "Unknown",
                 "id": 1,
                 "name": "test agency 1",
-                "ob_representative": "supertestuser@test.com",
+                "ob_sales_representative": "supertestuser@test.com",
+                "ob_account_manager": "supertestuser@test.com",
                 "sales_representative": "luka.silovinac@zemanta.com",
                 "whitelabel": "greenpark",
             },
@@ -46,7 +47,7 @@ class RDSAgencyTest(TestCase):
         csv_open = os.open(local_path, os.O_RDONLY)
         self.assertEqual(
             os.read(csv_open, 500),
-            "1\ttest agency 1\tgreenpark\tUnknown\tluka.silovinac@zemanta.com\tmad.max@zemanta.com\tsupertestuser@test.com\r\n".encode(),  # noqa
+            "1\ttest agency 1\tgreenpark\tUnknown\tluka.silovinac@zemanta.com\tmad.max@zemanta.com\tsupertestuser@test.com\tsupertestuser@test.com\r\n".encode(),  # noqa
         )
 
     @patch("etl.redshift.prepare_copy_query")

@@ -13,7 +13,8 @@ export interface Account {
     defaultAccountManager: string;
     defaultSalesRepresentative: string;
     defaultCsRepresentative: string;
-    obRepresentative: string;
+    obSalesRepresentative: string;
+    obAccountManager: string;
     autoAddNewSources: boolean;
     salesforceUrl: string;
     archived: boolean;

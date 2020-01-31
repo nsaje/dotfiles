@@ -572,7 +572,8 @@ class FilterTestCase(TestCase):
                 "default_sales_representative",
                 "campaign_manager",
                 "default_cs_representative",
-                "ob_representative",
+                "ob_sales_representative",
+                "ob_account_manager",
             ],
         )
 

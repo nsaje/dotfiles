@@ -3289,7 +3289,8 @@ class AccountSettingsTest(TestCase):
                 "default_account_manager": None,
                 "default_sales_representative": None,
                 "default_cs_representative": None,
-                "ob_representative": None,
+                "ob_sales_representative": None,
+                "ob_account_manager": None,
                 "allowed_sources": {
                     "2": {"name": "Source 2", "released": True, "deprecated": False},
                     "100": {"name": "AdsNative", "released": True, "deprecated": False},
@@ -3335,7 +3336,8 @@ class AccountSettingsTest(TestCase):
                 "default_account_type": 1,
                 "sales_representative": None,
                 "cs_representative": None,
-                "ob_representative": None,
+                "ob_sales_representative": None,
+                "ob_account_manager": None,
             }
         ]
         self.assertEqual(agencies, response["data"]["agencies"])
@@ -3411,16 +3413,20 @@ class AccountSettingsTest(TestCase):
             "id": 1000,
             "name": "changed name",
             "default_account_manager": "3",
-            "ob_representative": "3",
+            "ob_sales_representative": "3",
             "currency": "USD",
         }
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
-        self.assertEqual(response.status_code, 400, msg="Designated ob rep doesn" "t have permission")
+        self.assertEqual(
+            response.status_code, 400, msg="Designated ob_sales_representative rep doesn" "t have permission"
+        )
 
         add_permissions(User.objects.get(pk=3), ["can_be_ob_representative"])
         response, _ = self._put_account_agency(client, basic_settings, 1000)
-        self.assertEqual(response.status_code, 401, "agency manager cannot set ob rep. without permission")
+        self.assertEqual(
+            response.status_code, 401, "agency manager cannot set ob_sales_representative rep. without permission"
+        )
 
         add_permissions(user, ["can_set_account_ob_representative"])
         response, _ = self._put_account_agency(client, basic_settings, 1000)
@@ -3614,7 +3620,8 @@ class AccountSettingsTest(TestCase):
                         "default_sales_representative": "1",
                         "default_cs_representative": "2",
                         "default_account_manager": "3",
-                        "ob_representative": "2",
+                        "ob_sales_representative": "2",
+                        "ob_account_manager": "2",
                         "account_type": "4",
                         "salesforce_url": "",
                         "id": "1",
@@ -3641,7 +3648,8 @@ class AccountSettingsTest(TestCase):
                 "default_sales_representative": User.objects.get(pk=1),
                 "default_cs_representative": User.objects.get(pk=2),
                 "default_account_manager": User.objects.get(pk=3),
-                "ob_representative": User.objects.get(pk=2),
+                "ob_sales_representative": User.objects.get(pk=2),
+                "ob_account_manager": User.objects.get(pk=2),
                 "account_type": 4,
                 "name": "changed name",
                 "salesforce_url": None,

@@ -108,9 +108,12 @@ class AgencyInstanceMixin:
             elif field == "sales_representative":
                 self.sales_representative = value
                 sub_accounts_updates["default_sales_representative"] = value
-            elif field == "ob_representative":
-                self.ob_representative = value
-                sub_accounts_updates["ob_representative"] = value
+            elif field == "ob_sales_representative":
+                self.ob_sales_representative = value
+                sub_accounts_updates["ob_sales_representative"] = value
+            elif field == "ob_account_manager":
+                self.ob_account_manager = value
+                sub_accounts_updates["ob_account_manager"] = value
             elif field == "default_account_type":
                 self.default_account_type = value
                 sub_accounts_updates["account_type"] = value

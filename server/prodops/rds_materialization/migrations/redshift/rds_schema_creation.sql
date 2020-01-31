@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AGENCY (
   default_account_type varchar(100),
   sales_representative varchar(100) NULL,
   cs_representative    varchar(100) NULL,
-  ob_representative    varchar(100) NULL
+  ob_sales_representative   varchar(100) NULL,
+  ob_account_manager    varchar(100) NULL
 );
 
 
@@ -36,7 +37,8 @@ CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
   account_sales_representative varchar(100) NULL,
   account_account_manager      varchar(100) NULL,
   account_cs_representative    varchar(100) NULL,
-  account_ob_representative    varchar(100) NULL,
+  account_ob_sales_representative    varchar(100) NULL,
+  account_ob_account_manager   varchar(100) NULL,
   archived                     BOOLEAN,
   account_type                 varchar(50),
   whitelist_publisher_groups   varchar(4000),

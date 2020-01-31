@@ -970,7 +970,12 @@ class AccountSettings(api_common.BaseApiView):
                 agencies = models.Agency.objects.all()
             response["agencies"] = list(
                 agencies.values(
-                    "name", "sales_representative", "cs_representative", "ob_representative", "default_account_type"
+                    "name",
+                    "sales_representative",
+                    "cs_representative",
+                    "ob_sales_representative",
+                    "ob_account_manager",
+                    "default_account_type",
                 )
             )
 
@@ -1074,8 +1079,15 @@ class AccountSettings(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         if (
-            "ob_representative" in form.cleaned_data
-            and form.cleaned_data["ob_representative"] is not None
+            "ob_sales_representative" in form.cleaned_data
+            and form.cleaned_data["ob_sales_representative"] is not None
+            and not user.has_perm("zemauth.can_set_account_ob_representative")
+        ):
+            raise exc.AuthorizationError()
+
+        if (
+            "ob_account_manager" in form.cleaned_data
+            and form.cleaned_data["ob_account_manager"] is not None
             and not user.has_perm("zemauth.can_set_account_ob_representative")
         ):
             raise exc.AuthorizationError()
@@ -1128,7 +1140,8 @@ class AccountSettings(api_common.BaseApiView):
                     name=resource["agency"],
                     sales_representative=resource["default_sales_representative"],
                     cs_representative=resource["default_cs_representative"],
-                    ob_representative=resource["ob_representative"],
+                    ob_sales_representative=resource["ob_sales_representative"],
+                    ob_account_manager=resource["ob_account_manager"],
                 )
                 account.agency = agency
 
@@ -1233,8 +1246,10 @@ class AccountSettings(api_common.BaseApiView):
             settings.default_sales_representative = resource["default_sales_representative"]
         if resource["default_cs_representative"]:
             settings.default_cs_representative = resource["default_cs_representative"]
-        if resource["ob_representative"]:
-            settings.ob_representative = resource["ob_representative"]
+        if resource["ob_sales_representative"]:
+            settings.ob_sales_representative = resource["ob_sales_representative"]
+        if resource["ob_account_manager"]:
+            settings.ob_account_manager = resource["ob_account_manager"]
 
     def get_allowed_sources(self, account, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
@@ -1291,7 +1306,13 @@ class AccountSettings(api_common.BaseApiView):
                 str(settings.default_cs_representative.id) if settings.default_cs_representative is not None else None
             )
         if request.user.has_perm("zemauth.can_set_account_ob_representative"):
-            result["ob_representative"] = str(settings.ob_representative_id) if settings.ob_representative_id else None
+            result["ob_sales_representative"] = (
+                str(settings.ob_sales_representative_id) if settings.ob_sales_representative_id else None
+            )
+        if request.user.has_perm("zemauth.can_set_account_ob_representative"):
+            result["ob_account_manager"] = (
+                str(settings.ob_account_manager_id) if settings.ob_account_manager_id else None
+            )
         if request.user.has_perm("zemauth.can_modify_account_type"):
             result["account_type"] = settings.account_type
         if request.user.has_perm("zemauth.can_modify_allowed_sources"):

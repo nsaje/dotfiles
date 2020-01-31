@@ -41,20 +41,25 @@ class AccountManagerTestCase(TestCase):
 
     def test_set_user_defaults_from_agency(self):
         sales_representative = magic_mixer.blend(zemauth.models.User)
-        ob_representative = magic_mixer.blend(zemauth.models.User)
+        ob_sales_representative = magic_mixer.blend(zemauth.models.User)
+        ob_account_manager = magic_mixer.blend(zemauth.models.User)
         cs_representative = magic_mixer.blend(zemauth.models.User)
         agency = magic_mixer.blend(
             core.models.Agency,
             sales_representative=sales_representative,
-            ob_representative=ob_representative,
+            ob_sales_representative=ob_sales_representative,
+            ob_account_manager=ob_account_manager,
             cs_representative=cs_representative,
         )
+        self.assertEqual(ob_sales_representative, agency.ob_sales_representative)
+        self.assertEqual(ob_account_manager, agency.ob_account_manager)
 
         account = Account.objects.create(self.request, name="Test", agency=agency)
 
         self.assertEqual(sales_representative, account.settings.default_sales_representative)
         self.assertEqual(cs_representative, account.settings.default_cs_representative)
-        self.assertEqual(ob_representative, account.settings.ob_representative)
+        self.assertEqual(ob_sales_representative, account.settings.ob_sales_representative)
+        self.assertEqual(ob_account_manager, account.settings.ob_account_manager)
 
     def test_create_externally_managed_agency_invalid(self):
         agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", is_externally_managed=True)

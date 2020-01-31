@@ -73,20 +73,35 @@ class AccountSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error("default_cs_representative"))
 
-    def test_invalid_ob_rep(self):
+    def test_invalid_ob_sales_rep(self):
         form = forms.AccountSettingsForm(
             self.account,
             {
                 "id": 1,
                 "name": "Name",
                 "default_account_manager": 2,
-                "ob_representative": 3,
+                "ob_sales_representative": 3,
                 "allowed_sources": {"1": {"name": "Source name"}},
                 "currency": "USD",
             },
         )
         self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error("ob_representative"))
+        self.assertTrue(form.has_error("ob_sales_representative"))
+
+    def test_invalid_ob_account_manager(self):
+        form = forms.AccountSettingsForm(
+            self.account,
+            {
+                "id": 1,
+                "name": "Name",
+                "default_account_manager": 2,
+                "ob_account_manager": 3,
+                "allowed_sources": {"1": {"name": "Source name"}},
+                "currency": "USD",
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error("ob_account_manager"))
 
     def test_invalid_account_manager(self):
         account_manager_id = 123

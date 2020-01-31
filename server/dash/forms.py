@@ -442,7 +442,8 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     default_account_manager = forms.IntegerField(required=False)
     default_sales_representative = forms.IntegerField(required=False)
     default_cs_representative = forms.IntegerField(required=False)
-    ob_representative = forms.IntegerField(required=False)
+    ob_sales_representative = forms.IntegerField(required=False)
+    ob_account_manager = forms.IntegerField(required=False)
     account_type = forms.IntegerField(required=False)
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
@@ -515,20 +516,35 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
         return cs_representative
 
-    def clean_ob_representative(self):
-        ob_representative_id = self.cleaned_data.get("ob_representative")
+    def clean_ob_sales_representative(self):
+        ob_sales_representative_id = self.cleaned_data.get("ob_sales_representative")
 
-        if ob_representative_id is None:
+        if ob_sales_representative_id is None:
             return None
 
         try:
-            ob_representative = ZemUser.objects.get_users_with_perm("can_be_ob_representative").get(
-                pk=ob_representative_id
+            ob_sales_representative = ZemUser.objects.get_users_with_perm("can_be_ob_representative").get(
+                pk=ob_sales_representative_id
             )
         except ZemUser.DoesNotExist:
             raise forms.ValidationError("Invalid OB representative.")
 
-        return ob_representative
+        return ob_sales_representative
+
+    def clean_ob_account_manager(self):
+        ob_account_manager = self.cleaned_data.get("ob_account_manager")
+
+        if ob_account_manager is None:
+            return None
+
+        try:
+            ob_account_manager = ZemUser.objects.get_users_with_perm("can_be_ob_representative").get(
+                pk=ob_account_manager
+            )
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError("Invalid OB representative.")
+
+        return ob_account_manager
 
     def clean_account_type(self):
         account_type = self.cleaned_data.get("account_type")
@@ -751,10 +767,16 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
         self.fields["cs_representative"].label_from_instance = lambda obj: "{} <{}>".format(
             obj.get_full_name(), obj.email or ""
         )
-        self.fields["ob_representative"].queryset = (
+        self.fields["ob_sales_representative"].queryset = (
             ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
         )
-        self.fields["ob_representative"].label_from_instance = lambda obj: "{} <{}>".format(
+        self.fields["ob_sales_representative"].label_from_instance = lambda obj: "{} <{}>".format(
+            obj.get_full_name(), obj.email or ""
+        )
+        self.fields["ob_account_manager"].queryset = (
+            ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
+        )
+        self.fields["ob_account_manager"].label_from_instance = lambda obj: "{} <{}>".format(
             obj.get_full_name(), obj.email or ""
         )
 

@@ -6,7 +6,8 @@ export class AccountSettingsStoreFieldsErrorsState {
     defaultAccountManager: FieldErrors = [];
     defaultSalesRepresentative: FieldErrors = [];
     defaultCsRepresentative: FieldErrors = [];
-    obRepresentative: FieldErrors = [];
+    obSalesRepresentative: FieldErrors = [];
+    obAccountManager: FieldErrors = [];
     accountType: FieldErrors = [];
     agencyId: FieldErrors = [];
     salesforceUrl: FieldErrors = [];

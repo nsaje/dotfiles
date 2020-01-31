@@ -5,6 +5,7 @@ export interface AccountAgency {
     name: string;
     salesRepresentative: string;
     csRepresentative: string;
-    obRepresentative: string;
+    obSalesRepresentative: string;
+    obAccountManager: string;
     defaultAccountType: AccountType;
 }

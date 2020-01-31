@@ -406,7 +406,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
     search_fields = ("name", "id")
-    autocomplete_fields = ("available_sources", "allowed_sources", "ob_representative")
+    autocomplete_fields = ("available_sources", "allowed_sources", "ob_sales_representative", "ob_account_manager")
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
@@ -419,9 +419,9 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(AgencyAdmin, self).get_queryset(request)
-        return qs.select_related("sales_representative", "ob_representative", "cs_representative").prefetch_related(
-            "users", "account_set"
-        )
+        return qs.select_related(
+            "sales_representative", "ob_sales_representative", "ob_account_manager", "cs_representative"
+        ).prefetch_related("users", "account_set")
 
     def _users(self, obj):
         names = []

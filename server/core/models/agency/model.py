@@ -30,7 +30,8 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "name",
         "sales_representative",
         "cs_representative",
-        "ob_representative",
+        "ob_sales_representative",
+        "ob_account_manager",
         "white_label",
         "new_accounts_use_bcm_v2",
         "custom_flags",
@@ -61,6 +62,12 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
     )
     ob_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
+    )
+    ob_sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
+    )
+    ob_account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
     )
 

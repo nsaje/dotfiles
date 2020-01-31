@@ -50,7 +50,13 @@ def get_agencies(user, account):
         agencies = core.models.Agency.objects.all()
     return list(
         agencies.values(
-            "id", "name", "sales_representative", "cs_representative", "ob_representative", "default_account_type"
+            "id",
+            "name",
+            "sales_representative",
+            "cs_representative",
+            "ob_sales_representative",
+            "ob_account_manager",
+            "default_account_type",
         )
     )
 

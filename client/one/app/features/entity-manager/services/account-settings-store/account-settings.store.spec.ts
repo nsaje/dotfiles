@@ -356,15 +356,26 @@ describe('AccountSettingsStore', () => {
         expect(store.state.entity.defaultCsRepresentative).toEqual('11');
     });
 
-    it('should correctly change ob representative', () => {
+    it('should correctly change ob sales representative', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
 
-        store.patchState('22', 'entity', 'obRepresentative');
-        expect(store.state.entity.obRepresentative).toEqual('22');
-        store.setOutbrainRepresentative('11');
-        expect(store.state.entity.obRepresentative).toEqual('11');
+        store.patchState('22', 'entity', 'obSalesRepresentative');
+        expect(store.state.entity.obSalesRepresentative).toEqual('22');
+        store.setOutbrainSalesRepresentative('11');
+        expect(store.state.entity.obSalesRepresentative).toEqual('11');
+    });
+
+    it('should correctly change ob account manager', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.patchState('22', 'entity', 'obAccountManager');
+        expect(store.state.entity.obAccountManager).toEqual('22');
+        store.setOutbrainAccountManager('11');
+        expect(store.state.entity.obAccountManager).toEqual('11');
     });
 
     it('should correctly change account type', () => {
