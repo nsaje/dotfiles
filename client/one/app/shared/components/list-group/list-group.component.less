@@ -1,0 +1,67 @@
+@import 'variables';
+
+.zem-list-group {
+    display: block;
+}
+
+.zem-list-group__item {
+    display: flex;
+    height: 45px;
+    background-color: darken(@color--lighter-neutral, 4%);
+    cursor: pointer;
+
+    &:not(.zem-list-group__item--selected):hover {
+        background-color: #ffffff;
+    }
+}
+
+.zem-list-group__item--selected {
+    background-color: @color--secondary;
+}
+
+.zem-list-group__icon-container {
+    display: flex;
+    flex: 0 0 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+}
+
+.zem-list-group__icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.zem-list-group__icon--folder {
+    background: url('@{images-folder}/folder-sec.svg') no-repeat center;
+}
+
+.zem-list-group__item--selected
+    > .zem-list-group__icon-container
+    > .zem-list-group__icon--folder {
+    background-image: url('images/folder-white.svg');
+}
+
+.zem-list-group__value-container {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+}
+
+.zem-list-group__value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: @color--secondary;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.zem-list-group__item--selected
+    > .zem-list-group__value-container
+    > .zem-list-group__value {
+    color: #ffffff;
+}

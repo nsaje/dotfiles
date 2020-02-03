@@ -59,6 +59,7 @@ import {ContentFormGroupComponent} from './components/content-form-group/content
 import {ScopeSelectorCardComponent} from './components/scope-selector/components/scope-selector-card.component';
 import {ScopeSelectorComponent} from './components/scope-selector/scope-selector.component';
 import {BidModifierTypesGridComponent} from './components/bid-modifier-types-grid/bid-modifier-types-grid.component';
+import {ListGroupComponent} from './components/list-group/list-group.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -111,6 +112,7 @@ const EXPORTED_DECLARATIONS = [
     ScopeSelectorCardComponent,
     ScopeSelectorComponent,
     BidModifierTypesGridComponent,
+    ListGroupComponent,
 ];
 
 @NgModule({
