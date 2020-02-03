@@ -7,12 +7,14 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
     def create_default(self, ad_group, name):
         new_settings = self._create_default_obj(ad_group)
         new_settings.ad_group_name = name
+        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(None)
         return new_settings
 
     def get_default(self, ad_group, name):
         new_settings = self._create_default_obj(ad_group)
         new_settings.ad_group_name = name
+        self._override_settings_with_campaign_goal_value(new_settings, ad_group.campaign)
         return new_settings
 
     def create_restapi_default(self, ad_group, name):
@@ -22,6 +24,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.autopilot_daily_budget = 0
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(None)
         return new_settings
 
@@ -41,6 +44,7 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
             new_settings.start_date = dates_helper.local_today()
             new_settings.end_date = None
 
+        new_settings.keep_old_and_new_bid_values_in_sync(new_settings)
         new_settings.update_unsafe(request)
         return new_settings
 
@@ -56,3 +60,15 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.target_placements = campaign_settings.target_placements
         new_settings.ad_group_name = ad_group.name
         return new_settings
+
+    def _override_settings_with_campaign_goal_value(self, new_settings, campaign):
+        from dash import campaign_goals
+
+        cpc_campaign_goal_value = (
+            campaign_goals.get_campaign_goal_values(campaign)
+            .filter(campaign_goal__type=constants.CampaignGoalKPI.CPC)
+            .first()
+        )
+        if cpc_campaign_goal_value:
+            new_settings.cpc = cpc_campaign_goal_value.value
+            new_settings.local_cpc = cpc_campaign_goal_value.local_value

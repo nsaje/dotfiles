@@ -35,6 +35,8 @@ export class PopoverDirective extends NgbPopover
     zemPopover: string | TemplateRef<any>;
     @Input()
     stayOpenOnHover: boolean = false;
+    @Input()
+    popoverOpenDelay: number;
 
     private canClosePopover: boolean = true;
 
@@ -71,6 +73,9 @@ export class PopoverDirective extends NgbPopover
 
     ngOnInit(): void {
         this.ngbPopover = this.zemPopover;
+        if (commonHelpers.isDefined(this.popoverOpenDelay)) {
+            this.openDelay = this.popoverOpenDelay;
+        }
         this.popoverClass = 'zem-popover';
         super.ngOnInit();
 

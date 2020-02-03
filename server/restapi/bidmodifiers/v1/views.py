@@ -16,11 +16,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
     def _filter_bid_modifiers(self, ad_group_id, user):
-        return (
-            models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
-            # TEMP(tkusterle) temporarily disable source bid modifiers
-            .exclude(type=core.features.bid_modifiers.BidModifierType.SOURCE)
-        )
+        return models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
 
     def list(self, request, ad_group_id):
         bid_modifiers = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").order_by("pk")
@@ -42,10 +38,6 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer = serializers.BidModifierSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         input_data = serializer.validated_data
-
-        # TEMP(tkusterle) temporarily disable source bid modifiers
-        if input_data["type"] == core.features.bid_modifiers.BidModifierType.SOURCE:
-            raise exc.ValidationError("Source bid modifiers are temporarily disabled")
 
         try:
             ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)

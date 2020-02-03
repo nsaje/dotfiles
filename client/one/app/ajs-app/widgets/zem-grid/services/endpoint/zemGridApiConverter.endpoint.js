@@ -284,12 +284,11 @@ angular
                 convertedValue.target = value.target
                     ? value.target.toString()
                     : null;
-                convertedValue.bidMin = value.bid_min
-                    ? parseFloat(value.bid_min).toFixed(2)
+                convertedValue.bid = value.bid
+                    ? parseFloat(value.bid).toFixed(2)
                     : null;
-                convertedValue.bidMax = value.bid_max
-                    ? parseFloat(value.bid_max).toFixed(2)
-                    : null;
+                convertedValue.biddingType = value.bidding_type;
+                convertedValue.typeSummaries = value.type_summaries;
                 convertedValue.modifier = value.modifier;
 
                 return convertValueToDefaultObject(

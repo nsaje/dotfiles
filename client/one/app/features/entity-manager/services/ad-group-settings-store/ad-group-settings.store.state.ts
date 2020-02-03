@@ -20,8 +20,7 @@ export class AdGroupSettingsStoreState {
         redirectPixelUrls: [],
         redirectJavascript: null,
         trackingCode: null,
-        maxCpc: null,
-        maxCpm: null,
+        bid: null,
         deliveryType: null,
         clickCappingDailyAdGroupMaxClicks: null,
         dayparting: null,
@@ -71,6 +70,7 @@ export class AdGroupSettingsStoreState {
         autopilot: {
             state: null,
             dailyBudget: null,
+            maxBid: null,
         },
         manageRtbSourcesAsOne: false,
         frequencyCapping: null,
@@ -114,6 +114,10 @@ export class AdGroupSettingsStoreState {
         hacks: [],
         deals: [],
         bidModifierTypeSummaries: null,
+        currentBids: {
+            cpc: null,
+            cpm: null,
+        },
     };
     sources: Source[] = [];
     availableDeals: Deal[] = [];

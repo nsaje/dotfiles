@@ -7,6 +7,7 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+from core.features import bid_modifiers
 from utils import dates_helper
 from utils import zlogging
 from utils.magic_mixer import magic_mixer
@@ -191,6 +192,15 @@ class AdGroupsTest(K1APIBaseTest):
         ad_groups = magic_mixer.cycle(n).blend(dash.models.AdGroup, campaign_id=1)
         magic_mixer.cycle(n).blend(dash.models.AdGroupSource, ad_group=(ag for ag in ad_groups), source=source)
         for ad_group in ad_groups:
+            for ad_group_source in ad_group.adgroupsource_set.all():
+                magic_mixer.blend(
+                    bid_modifiers.BidModifier,
+                    ad_group=ad_group,
+                    type=bid_modifiers.BidModifierType.SOURCE,
+                    target=str(ad_group_source.source.id),
+                    modifier=1.0,
+                )
+        for ad_group in ad_groups:
             ad_group.settings.update_unsafe(None, brand_name="old")
         for ad_group in ad_groups:
             ad_group.settings.update_unsafe(None, brand_name="new")
@@ -216,7 +226,14 @@ class AdGroupsTest(K1APIBaseTest):
         source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign_id=1)
         ad_group.settings.update(None, start_date=None)
-        magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        magic_mixer.blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(ad_group_source.source.id),
+            modifier=1.0,
+        )
 
         response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
 
@@ -255,7 +272,14 @@ class AdGroupsTest(K1APIBaseTest):
         source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign_id=1)
         ad_group.settings.update(None, end_date=None)
-        magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        magic_mixer.blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(ad_group_source.source.id),
+            modifier=1.0,
+        )
 
         response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
 

@@ -483,8 +483,6 @@ class AdGroupSettingsFormTest(TestCase):
                 "state": constants.AdGroupRunningStatus.INACTIVE,
                 "cpc_cc": Decimal("1.00"),
                 "max_cpm": Decimal("1.50"),
-                "cpc": None,
-                "cpm": None,
                 "daily_budget_cc": Decimal("10.00"),
                 "end_date": datetime.date(2014, 12, 31),
                 "name": "Test ad group",
@@ -524,7 +522,6 @@ class AdGroupSettingsFormTest(TestCase):
     @patch("utils.dates_helper.local_today")
     def test_no_non_propagated_fields(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data["cpc_cc"] = None
         self.data["daily_budget_cc"] = None
         self.data["autopilot_state"] = None
         self.data["autopilot_daily_budget"] = None
@@ -534,7 +531,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
         self.assertEqual(form.cleaned_data.get("daily_budget_cc"), None)
-        self.assertEqual(form.cleaned_data.get("cpc_cc"), None)
+        self.assertEqual(form.cleaned_data.get("cpc_cc"), Decimal("1.00"))
         self.assertEqual(form.cleaned_data.get("autopilot_state"), None)
         self.assertEqual(form.cleaned_data.get("autopilot_daily_budget"), None)
 

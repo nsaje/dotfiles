@@ -58,6 +58,7 @@ import {TextHighlightDirective} from './directives/text-highlight/text-highlight
 import {ContentFormGroupComponent} from './components/content-form-group/content-form-group.component';
 import {ScopeSelectorCardComponent} from './components/scope-selector/components/scope-selector-card.component';
 import {ScopeSelectorComponent} from './components/scope-selector/scope-selector.component';
+import {BidModifierTypesGridComponent} from './components/bid-modifier-types-grid/bid-modifier-types-grid.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -109,6 +110,7 @@ const EXPORTED_DECLARATIONS = [
     SelectListComponent,
     ScopeSelectorCardComponent,
     ScopeSelectorComponent,
+    BidModifierTypesGridComponent,
 ];
 
 @NgModule({

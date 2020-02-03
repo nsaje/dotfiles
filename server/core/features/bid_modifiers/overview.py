@@ -1,14 +1,22 @@
 import dataclasses
+import decimal
 import functools
 import operator
+from typing import Dict
 from typing import List
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
+from django.db.models import CharField
 from django.db.models import Count
 from django.db.models import Max
 from django.db.models import Min
+from django.db.models import QuerySet
+from django.db.models.functions import Cast
+
+import core.models
+import dash.constants
 
 from . import constants
 from . import models
@@ -22,6 +30,22 @@ class BidModifierTypeSummary:
     max: float
 
 
+def get_min_max_local_bids(
+    ad_group: core.models.AdGroup,
+    included_types: Union[None, Sequence[int]] = None,
+    excluded_types: Union[None, Sequence[int]] = None,
+) -> Tuple[decimal.Decimal, decimal.Decimal]:
+    min_factor, max_factor = get_min_max_factors(
+        ad_group.id, included_types=included_types, excluded_types=excluded_types
+    )
+    bid = (
+        ad_group.settings.local_cpc
+        if ad_group.bidding_type == dash.constants.BiddingType.CPC
+        else ad_group.settings.local_cpm
+    )
+    return decimal.Decimal(min_factor) * bid, decimal.Decimal(max_factor) * bid
+
+
 def get_min_max_factors(
     ad_group_id: int,
     included_types: Union[None, Sequence[int]] = None,
@@ -29,25 +53,19 @@ def get_min_max_factors(
 ) -> Tuple[float, float]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
 
-    # TEMP(tkusterle) temporarily disable source bid modifiers
-    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
-    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
-
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)
 
     if excluded_types is not None:
         query_set = query_set.exclude(type__in=excluded_types)
 
-    min_max_list = list(
-        query_set.values("type")
-        .distinct()
-        .annotate(min_modifier=Min("modifier"), max_modifier=Max("modifier"))
-        .values("type", "min_modifier", "max_modifier")
-    )
+    min_max_list = [
+        _calculate_min_max(ad_group_id, e["type"], e["count"], e["min"], e["max"])
+        for e in _get_overview_queryset(ad_group_id, included_types=included_types, excluded_types=excluded_types)
+    ]
 
-    min_factor = functools.reduce(operator.mul, [min(e["min_modifier"], 1.) for e in min_max_list], 1.)
-    max_factor = functools.reduce(operator.mul, [max(e["max_modifier"], 1.) for e in min_max_list], 1.)
+    min_factor = functools.reduce(operator.mul, [e["min"] for e in min_max_list], 1.)
+    max_factor = functools.reduce(operator.mul, [e["max"] for e in min_max_list], 1.)
 
     return min_factor, max_factor
 
@@ -56,13 +74,8 @@ def get_type_summaries(
     ad_group_id: int,
     included_types: Union[None, Sequence[int]] = None,
     excluded_types: Union[None, Sequence[int]] = None,
-    include_ones: bool = True,
 ) -> List[BidModifierTypeSummary]:
     query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
-
-    # TEMP(tkusterle) temporarily disable source bid modifiers
-    excluded_types = set(excluded_types) if excluded_types else set()  # type: ignore
-    excluded_types.add(constants.BidModifierType.SOURCE)  # type: ignore
 
     if included_types is not None:
         query_set = query_set.filter(type__in=included_types)
@@ -72,19 +85,110 @@ def get_type_summaries(
 
     modifiers = [
         BidModifierTypeSummary(**kwargs)
-        for kwargs in query_set.values("type")
+        for kwargs in _get_overview_queryset(ad_group_id, included_types=included_types, excluded_types=excluded_types)
+    ]
+
+    for modifier in modifiers:
+        result = _calculate_min_max(ad_group_id, modifier.type, modifier.count, modifier.min, modifier.max)
+        modifier.min = result["min"]
+        modifier.max = result["max"]
+
+    return modifiers
+
+
+def _get_overview_queryset(
+    ad_group_id: int,
+    included_types: Union[None, Sequence[int]] = None,
+    excluded_types: Union[None, Sequence[int]] = None,
+) -> QuerySet:
+    query_set = models.BidModifier.objects.filter(ad_group__id=ad_group_id)
+
+    if included_types is not None:
+        query_set = query_set.filter(type__in=included_types)
+
+    if excluded_types is not None:
+        query_set = query_set.exclude(type__in=excluded_types)
+
+    return (
+        query_set.values("type")
         .annotate(count=Count("type"))
         .distinct()
         .annotate(min=Min("modifier"), max=Max("modifier"))
         .values("type", "count", "min", "max")
         .order_by("type")
-    ]
+    )
 
-    if include_ones:
-        for entry in modifiers:
-            if entry.max < 1:
-                entry.max = 1.0
-            elif entry.min > 1:
-                entry.min = 1.0
 
-    return modifiers
+def _calculate_min_max(
+    ad_group_id: int, modifier_type: int, count: int, min_value: float, max_value: float
+) -> Dict[str, float]:
+    if modifier_type in (
+        constants.BidModifierType.PUBLISHER,
+        constants.BidModifierType.COUNTRY,
+        constants.BidModifierType.STATE,
+        constants.BidModifierType.DMA,
+    ):
+        # for these dimensions we can not easily deduce exact min and max, thus we are expanding the range with 1 if applicable
+        min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.DEVICE:
+        if count != len(dash.constants.DeviceType.get_all()) - 1:  # account for UNKNOWN
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.OPERATING_SYSTEM:
+        if count != len(dash.constants.OperatingSystem.get_all()) - 1:  # account for UNKNOWN
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.PLACEMENT:
+        if count != len(dash.constants.PlacementMedium.get_all()) - 1:  # account for UNKNOWN
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.DAY_HOUR:
+        if count != len(dash.constants.DayHour.get_all()):
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.SOURCE:
+        # TODO subquery could be used to reduce number of DB queries, but there are problems with getting active sources count
+        active_sources_ids = list(
+            core.models.AdGroupSource.objects.filter(ad_group_id=ad_group_id)
+            .filter_active()
+            .annotate(target=Cast("source__id", CharField()))
+            .values_list("target", flat=True)
+        )
+        result = models.BidModifier.objects.filter(
+            ad_group_id=ad_group_id, type=constants.BidModifierType.SOURCE, target__in=active_sources_ids
+        ).aggregate(min=Min("modifier"), max=Max("modifier"), bid_modifier_count=Count("ad_group"))
+
+        min_value = result["min"] if result["min"] is not None else 1.0
+        max_value = result["max"] if result["max"] is not None else 1.0
+
+        if len(active_sources_ids) != result["bid_modifier_count"]:
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    elif modifier_type == constants.BidModifierType.AD:
+        # TODO subquer could be used to reduce number of DB queriesy, but there are problems with getting active sources count
+        active_content_ad_ids = list(
+            core.models.ContentAd.objects.filter(ad_group_id=ad_group_id)
+            .filter_active()
+            .annotate(target=Cast("id", CharField()))
+            .values_list("target", flat=True)
+        )
+
+        result = models.BidModifier.objects.filter(
+            ad_group_id=ad_group_id, type=constants.BidModifierType.AD, target__in=active_content_ad_ids
+        ).aggregate(min=Min("modifier"), max=Max("modifier"), bid_modifier_count=Count("ad_group"))
+
+        min_value = result["min"] if result["min"] is not None else 1.0
+        max_value = result["max"] if result["max"] is not None else 1.0
+
+        if len(active_content_ad_ids) != result["bid_modifier_count"]:
+            min_value, max_value = _min_max_with_ones(min_value, max_value)
+
+    else:
+        raise ValueError("Invalid bid modifier type {}".format(modifier_type))
+
+    return {"min": min_value, "max": max_value}
+
+
+def _min_max_with_ones(min_value, max_value):
+    return min(min_value, 1), max(max_value, 1)

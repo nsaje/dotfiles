@@ -7,14 +7,14 @@ export class AdGroupSettingsStoreFieldsErrorsState {
     endDate: FieldErrors = [];
     trackingCode: FieldErrors = [];
     biddingType: FieldErrors = [];
-    maxCpc: FieldErrors = [];
-    maxCpm: FieldErrors = [];
+    bid: FieldErrors = [];
     deliveryType: FieldErrors = [];
     clickCappingDailyAdGroupMaxClicks: FieldErrors = [];
     dayparting: FieldErrors = [];
     autopilot = {
         state: [] as FieldErrors,
         dailyBudget: [] as FieldErrors,
+        maxBid: [] as FieldErrors,
     };
     frequencyCapping: FieldErrors = [];
     deals: DealErrors[] = [];

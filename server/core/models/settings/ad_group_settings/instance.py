@@ -1,3 +1,5 @@
+import logging
+
 from django.db import transaction
 
 import core.common
@@ -5,8 +7,7 @@ import core.features.audiences
 import core.features.history
 import core.models
 import core.signals
-import dash.cpc_constraints
-from core.features import bid_modifiers
+import prodops.hacks
 from dash import constants
 from dash import retargeting_helper
 from utils import email_helper
@@ -18,6 +19,8 @@ from . import helpers
 
 REDIRECTOR_UPDATE_FIELDS = ("tracking_code", "click_capping_daily_ad_group_max_clicks")
 PRIORITY_UPDATE_FIELDS = ("state", "cpm", "cpc", "b1_sources_group_cpc_cc", "b1_sources_group_cpm")
+
+logger = logging.getLogger(__name__)
 
 
 class AdGroupSettingsMixin(object):
@@ -34,69 +37,67 @@ class AdGroupSettingsMixin(object):
         write_source_history=True,
         **updates
     ):
+        updates = prodops.hacks.override_ad_group_settings(self.ad_group, updates)
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
         if not skip_validation:
             self._validate_update(updates)
-        updates = self._ensure_bid_default_if_necessary(updates)
 
+        updates = self._set_bid_defaults(updates)
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
             is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
             if not skip_validation and not is_pause:
                 self.clean(new_settings)
-            self._handle_and_set_change_consequences(
+            self._handle_archived(new_settings)
+            self._handle_b1_sources_group_adjustments(new_settings)
+            self._handle_bid_autopilot_initial_bids(
                 new_settings, skip_notification=skip_notification, write_source_history=write_source_history
             )
+            self.keep_old_and_new_bid_values_in_sync(new_settings)
             changes = self.get_setting_changes(new_settings)
             if changes:
-                applied_changes = self._save_and_propagate(
-                    request, new_settings, system_user, write_history=write_history, skip_notification=skip_notification
+                new_settings.save(request, system_user=system_user, write_history=write_history)
+                b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
+                self.apply_bids_to_sources(
+                    b1_sources_group_bid_changed=b1_sources_group_bid_changed, write_source_history=write_source_history
+                )
+                self._propagate_changes(
+                    request, new_settings, changes, system_user, skip_notification=skip_notification
                 )
                 self._update_ad_group(request, changes)
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
-                return applied_changes
+                return changes
         return None
 
-    @transaction.atomic()
-    def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
-        # TEMP(tkusterle) keep the new fields up-to-date with the old ones.
-        if "cpc_cc" in kwargs and kwargs["cpc_cc"] is not None:
-            kwargs["cpc"] = kwargs["cpc_cc"]
-        if "local_cpc_cc" in kwargs and kwargs["local_cpc_cc"] is not None:
-            kwargs["local_cpc"] = kwargs["local_cpc_cc"]
-        if "max_cpm" in kwargs and kwargs["max_cpm"] is not None:
-            kwargs["cpm"] = kwargs["max_cpm"]
-        if "local_max_cpm" in kwargs and kwargs["local_max_cpm"] is not None:
-            kwargs["local_cpm"] = kwargs["local_max_cpm"]
+    def keep_old_and_new_bid_values_in_sync(self, update_object):
+        changes = update_object.__dict__
 
-        kwargs_copy = kwargs.copy()
-        kwargs_copy.pop("history_changes_text", None)
-        changes = self.get_changes(kwargs_copy)
+        # copy old settings (if used) into new ones so that we do not lose any changes done with old settings
+        if "cpc_cc" in changes and changes["cpc_cc"] is not None:
+            update_object.cpc = changes["cpc_cc"]
+        if "local_cpc_cc" in changes and changes["local_cpc_cc"] is not None:
+            update_object.local_cpc = changes["local_cpc_cc"]
+        if "max_cpm" in changes and changes["max_cpm"] is not None:
+            update_object.cpm = changes["max_cpm"]
+        if "local_max_cpm" in changes and changes["local_max_cpm"] is not None:
+            update_object.local_cpm = changes["local_max_cpm"]
 
-        super().update_unsafe(request, system_user=system_user, write_history=write_history, **kwargs)
-
-        user = request.user if request else None
-        bid_modifiers.source.handle_ad_group_settings_change(self, changes, user=user, system_user=system_user)
-
-    def _ensure_bid_default_if_necessary(self, updates):
-        if (
-            "cpc_cc" in updates
-            and updates["cpc_cc"] is None
-            or "local_cpc_cc" in updates
-            and updates["local_cpc_cc"] is None
-        ):
-            updates["cpc"] = core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
-        if (
-            "max_cpm" in updates
-            and updates["max_cpm"] is None
-            or "local_max_cpm" in updates
-            and updates["local_max_cpm"] is None
-        ):
-            updates["cpm"] = core.models.settings.ad_group_settings.model.DEFAULT_CPM_VALUE
-        return updates
+        # copy new settings into old ones so that we do not lose any changes if we need to roll back
+        if changes.get("autopilot_state", self.autopilot_state) == constants.AdGroupSettingsAutopilotState.INACTIVE:
+            update_object.cpc_cc = changes.get("cpc", self.cpc)
+            update_object.local_cpc_cc = changes.get("local_cpc", self.local_cpc)
+            update_object.max_cpm = changes.get("cpm", self.cpm)
+            update_object.local_max_cpm = changes.get("local_cpm", self.local_cpm)
+        else:
+            if self.ad_group.bidding_type == constants.BiddingType.CPC:
+                update_object.cpc_cc = changes.get("max_autopilot_bid", self.max_autopilot_bid)
+                update_object.local_cpc_cc = changes.get("local_max_autopilot_bid", self.local_max_autopilot_bid)
+            else:
+                update_object.max_cpm = changes.get("max_autopilot_bid", self.max_autopilot_bid)
+                update_object.local_max_cpm = changes.get("local_max_autopilot_bid", self.local_max_autopilot_bid)
 
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):
@@ -112,6 +113,19 @@ class AdGroupSettingsMixin(object):
         updates = self._remove_disallowed_fields(request, updates, skip_permission_check)
         return updates
 
+    def _set_bid_defaults(self, updates):
+        if self.ad_group.bidding_type == constants.BiddingType.CPC and (
+            "cpc" in updates and updates["cpc"] is None or "local_cpc" in updates and updates["local_cpc"] is None
+        ):
+            updates["cpc"] = self.DEFAULT_CPC_VALUE
+            updates.pop("local_cpc", None)
+        if self.ad_group.bidding_type == constants.BiddingType.CPM and (
+            "cpm" in updates and updates["cpm"] is None or "local_cpm" in updates and updates["local_cpm"] is None
+        ):
+            updates["cpm"] = self.DEFAULT_CPM_VALUE
+            updates.pop("local_cpm", None)
+        return updates
+
     def _remove_unsupported_fields(self, updates):
         ad_group_sources = self.ad_group.adgroupsource_set.all().select_related("source", "settings")
         if not retargeting_helper.supports_retargeting(ad_group_sources):
@@ -125,15 +139,49 @@ class AdGroupSettingsMixin(object):
         if "name" in updates:
             updates["ad_group_name"] = updates["name"]
 
+        self._remap_bid_fields(updates)
+
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             self._remove_no_change_fields(updates, "cpc_cc")
+            self._remove_no_change_fields(updates, "cpc")
         else:
             self._remove_no_change_fields(updates, "max_cpm")
+            self._remove_no_change_fields(updates, "cpm")
 
         self._remove_no_change_fields(updates, "b1_sources_group_cpc_cc")
         self._remove_no_change_fields(updates, "b1_sources_group_cpm")
 
         return updates
+
+    def _remap_bid_fields(self, updates):
+        bidding_type = updates.get("bidding_type", self.ad_group.bidding_type)
+        autopilot_active = (
+            updates.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        if "max_cpc_legacy" in updates and bidding_type == constants.BiddingType.CPC:
+            if autopilot_active:
+                updates["local_max_autopilot_bid"] = updates.pop("max_cpc_legacy")
+            else:
+                updates["local_cpc"] = updates.pop("max_cpc_legacy")
+        if "max_cpm_legacy" in updates and bidding_type == constants.BiddingType.CPM:
+            if autopilot_active:
+                updates["local_max_autopilot_bid"] = updates.pop("max_cpm_legacy")
+            else:
+                updates["local_cpm"] = updates.pop("max_cpm_legacy")
+
+        updates.pop("max_cpc_legacy", None)
+        updates.pop("max_cpm_legacy", None)
+
+        if "bid" in updates:
+            if self.ad_group.bidding_type == constants.BiddingType.CPC:
+                updates["cpc"] = updates.pop("bid")
+            elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+                updates["cpm"] = updates.pop("bid")
+        if "local_bid" in updates:
+            if self.ad_group.bidding_type == constants.BiddingType.CPC:
+                updates["local_cpc"] = updates.pop("local_bid")
+            elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+                updates["local_cpm"] = updates.pop("local_bid")
 
     def _remove_no_change_fields(self, updates, field):
         local_field = "local_" + field
@@ -177,14 +225,6 @@ class AdGroupSettingsMixin(object):
                 if not self.ad_group.can_archive():
                     raise exc.ForbiddenError("Ad group can not be archived.")
 
-    def _handle_and_set_change_consequences(self, new_settings, skip_notification=False, write_source_history=True):
-        self._handle_archived(new_settings)
-        self._handle_b1_sources_group_adjustments(new_settings)
-        self._handle_bid_autopilot_initial_bids(
-            new_settings, skip_notification=skip_notification, write_source_history=write_source_history
-        )
-        self._handle_bid_constraints(new_settings, write_source_history=write_source_history)
-
     def _handle_archived(self, new_settings):
         if new_settings.archived:
             new_settings.state = constants.AdGroupSettingsState.INACTIVE
@@ -205,37 +245,6 @@ class AdGroupSettingsMixin(object):
             if "b1_sources_group_daily_budget" not in changes:
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
 
-        if self.ad_group.bidding_type == constants.BiddingType.CPM:
-            # Changing adgroup max cpm
-            if changes.get("local_max_cpm") and new_settings.b1_sources_group_enabled:
-                new_settings.b1_sources_group_cpm = changes.get("max_cpm")  # reset to max, as implemented in #3353
-
-            if self.b1_sources_group_cpm != new_settings.b1_sources_group_cpm:
-                adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
-                adjusted_b1_sources_group_cpm = helpers._adjust_ad_group_source_bid_to_max(
-                    self.ad_group, new_settings, adjusted_b1_sources_group_cpm
-                )
-
-                if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
-                    new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
-        else:
-            # Changing adgroup max cpc
-            if changes.get("local_cpc_cc") and new_settings.b1_sources_group_enabled:
-                new_settings.local_b1_sources_group_cpc_cc = changes.get(
-                    "local_cpc_cc"
-                )  # reset to max, as implemented in #3353
-
-            if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
-                adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
-                    new_settings.b1_sources_group_cpc_cc, new_settings
-                )
-                adjusted_b1_sources_group_cpc_cc = helpers._adjust_ad_group_source_bid_to_max(
-                    self.ad_group, new_settings, adjusted_b1_sources_group_cpc_cc
-                )
-
-                if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
-                    new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
-
     def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
             return
@@ -253,26 +262,11 @@ class AdGroupSettingsMixin(object):
         avg_bid = sum(getattr(agss, ags_bid_field) for agss in active_b1_sources_settings) / len(
             active_b1_sources_settings
         )
-        new_ad_group_sources_bids = {ad_group_source: avg_bid for ad_group_source in all_b1_sources}
 
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             new_settings.b1_sources_group_cpm = avg_bid
-            helpers.set_ad_group_sources_cpms(
-                new_ad_group_sources_bids,
-                self.ad_group,
-                new_settings,
-                skip_notification=skip_notification,
-                write_source_history=write_source_history,
-            )
         else:
             new_settings.b1_sources_group_cpc_cc = avg_bid
-            helpers.set_ad_group_sources_cpcs(
-                new_ad_group_sources_bids,
-                self.ad_group,
-                new_settings,
-                skip_notification=skip_notification,
-                write_source_history=write_source_history,
-            )
 
     def _should_set_bid_autopilot_initial_bids(self, new_settings):
         return (
@@ -281,48 +275,18 @@ class AdGroupSettingsMixin(object):
             and new_settings.b1_sources_group_enabled
         )
 
-    def _handle_bid_constraints(self, new_settings, skip_notification=False, write_source_history=True):
-        ad_group_sources_bids = helpers.get_adjusted_ad_group_sources_bids(self.ad_group, new_settings)
-        if self.ad_group.bidding_type == constants.BiddingType.CPM:
-            self._handle_cpm_constraints(
-                new_settings,
-                ad_group_sources_bids,
-                skip_notification=skip_notification,
-                write_source_history=write_source_history,
-            )
-        else:
-            self._handle_cpc_constraints(
-                new_settings,
-                ad_group_sources_bids,
-                skip_notification=skip_notification,
-                write_source_history=write_source_history,
-            )
-
-    def _handle_cpm_constraints(
-        self, new_settings, ad_group_sources_cpms, skip_notification=False, write_source_history=True
+    def apply_bids_to_sources(
+        self, b1_sources_group_bid_changed=False, skip_notification=False, write_source_history=True
     ):
-        helpers.set_ad_group_sources_cpms(
-            ad_group_sources_cpms,
-            self.ad_group,
-            new_settings,
-            skip_validation=True,
-            skip_notification=skip_notification,
-            write_source_history=write_source_history,
+        ad_group_sources_bids = helpers.calculate_ad_group_sources_bids(
+            self, b1_sources_group_bid_changed=b1_sources_group_bid_changed
         )
-
-    def _handle_cpc_constraints(
-        self, new_settings, ad_group_sources_cpcs, skip_notification=False, write_source_history=True
-    ):
-        if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
-            bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
-            try:
-                helpers.validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, self.ad_group)
-            except dash.cpc_constraints.ValidationError as err:
-                raise exc.ValidationError(errors={"b1_sources_group_cpc_cc": list(set(err))})
-        helpers.set_ad_group_sources_cpcs(
-            ad_group_sources_cpcs,
+        # if source bid values change as consequence of ad group bid value change we skip source settings validation to avoid errors
+        helpers.set_ad_group_sources_bids(
+            self.ad_group.bidding_type,
+            ad_group_sources_bids,
             self.ad_group,
-            new_settings,
+            self,
             skip_validation=True,
             skip_notification=skip_notification,
             write_source_history=write_source_history,
@@ -346,13 +310,10 @@ class AdGroupSettingsMixin(object):
 
         autopilot.recalculate_budgets_ad_group(self.ad_group)
 
-    def _save_and_propagate(self, request, new_settings, system_user, write_history=True, skip_notification=False):
-        changes = self.get_setting_changes(new_settings)
+    def _propagate_changes(self, request, new_settings, changes, system_user, skip_notification=False):
         k1_priority = self.state == constants.AdGroupSettingsState.ACTIVE and any(
             field in changes for field in PRIORITY_UPDATE_FIELDS
         )
-
-        new_settings.save(request, system_user=system_user, write_history=write_history)
 
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request, instance=new_settings, changes=changes
@@ -376,11 +337,11 @@ class AdGroupSettingsMixin(object):
         email_helper.send_ad_group_notification_email(self.ad_group, request, changes_text)
 
     def add_to_history(self, user, action_type, changes, history_changes_text=None):
-        # TEMP(tkusterle) remove the new fields from histroy
-        changes.pop("cpc", None)
-        changes.pop("local_cpc", None)
-        changes.pop("cpm", None)
-        changes.pop("local_cpm", None)
+        # remove old bid fields from history
+        changes.pop("cpc_cc", None)
+        changes.pop("local_cpc_cc", None)
+        changes.pop("max_cpm", None)
+        changes.pop("local_max_cpm", None)
 
         changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(

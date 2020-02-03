@@ -1,4 +1,16 @@
 <ng-container *ngIf="(store.state$ | async) as state">
+    <ng-template #bidRangeInfoTemplate>
+        <zem-bid-range-info
+            class="zem-bid-range-info"
+            [bidModifier]="state.value"
+            [biddingType]="biddingType"
+            [bid]="bid"
+            [bidModifierTypeSummaries]="bidModifierTypeSummaries"
+            [currency]="state.currency"
+            [fractionSize]="state.fractionSize"
+            [adGroupAutopilotState]="adGroupAutopilotState"
+        ></zem-bid-range-info>
+    </ng-template>
     <zem-editable-cell
         class="zem-editable-cell"
         [isEditable]="isEditable"
@@ -7,15 +19,17 @@
         [containerElement]="containerElement"
         (modeChange)="onModeChange($event)"
         (placementChange)="onPlacementChange($event)"
+        (componentReady)="onEditableCellReady($event)"
     >
         <ng-container readMode>
             <span
-                [zemPopover]="editMessage"
+                [zemPopover]="bidRangeInfoTemplate"
+                [popoverOpenDelay]="500"
                 [stayOpenOnHover]="true"
-                [disablePopover]="isEditable"
+                [disablePopover]="false"
                 triggers="mouseenter:mouseleave"
                 container="body"
-                placement="left"
+                placement="top"
             >
                 {{ state.previousModifierPercent }}%
             </span>
@@ -37,64 +51,34 @@
                         (inputKeydown)="onInputKeydown($event)"
                     ></zem-bid-modifier-input>
                 </div>
-                <!-- <div class="zem-bid-modifier-cell__form-item">
+                <div class="zem-bid-modifier-cell__form-item">
                     <div class="zem-bid-modifier-cell__form-message">
                         <ng-template #bidModifierMessageTemplate>
                             <div
                                 class="zem-bid-modifier-cell__expanded-min-max-message"
                             >
-                                <span
-                                    *ngIf="
-                                        state.computedBidMin ===
-                                        state.computedBidMax
+                                <zem-bid-range-info
+                                    class="zem-bid-range-info"
+                                    [bidModifier]="state.value"
+                                    [biddingType]="biddingType"
+                                    [bid]="bid"
+                                    [bidModifierTypeSummaries]="
+                                        bidModifierTypeSummaries
                                     "
-                                >
-                                    Based on all applied bid modifiers your bid
-                                    will be about
-                                    <strong>{{ state.computedBidMin }}</strong
-                                    >.
-                                </span>
-                                <span
-                                    *ngIf="
-                                        state.computedBidMin !==
-                                        state.computedBidMax
+                                    [currency]="state.currency"
+                                    [fractionSize]="state.fractionSize"
+                                    [adGroupAutopilotState]="
+                                        adGroupAutopilotState
                                     "
+                                    [modifierPercent]="state.modifierPercent"
                                 >
-                                    Based on all applied bid modifiers your bid
-                                    will be between
-                                    <strong>{{ state.computedBidMin }}</strong>
-                                    and
-                                    <strong>{{ state.computedBidMax }}</strong
-                                    >.
-                                </span>
+                                </zem-bid-range-info>
                             </div>
                         </ng-template>
                         <span
                             *ngIf="placement === EditableCellPlacement.IN_LINE"
-                            [zemPopover]="bidModifierMessageTemplate"
-                            [stayOpenOnHover]="true"
-                            triggers="mouseenter:mouseleave"
-                            container="body"
-                            placement="top"
                         >
-                            <ng-container
-                                *ngIf="
-                                    state.computedBidMin ===
-                                    state.computedBidMax
-                                "
-                            >
-                                Bid: <strong>{{ state.computedBidMin }}</strong>
-                            </ng-container>
-                            <ng-container
-                                *ngIf="
-                                    state.computedBidMin !==
-                                    state.computedBidMax
-                                "
-                            >
-                                Bid:
-                                <strong>{{ state.computedBidMin }}</strong> -
-                                <strong>{{ state.computedBidMax }}</strong>
-                            </ng-container>
+                            <a (click)="showDetails()">details</a>
                         </span>
                         <ng-container
                             *ngIf="placement === EditableCellPlacement.MODAL"
@@ -104,7 +88,7 @@
                             ></ng-content>
                         </ng-container>
                     </div>
-                </div> -->
+                </div>
                 <div class="zem-bid-modifier-cell__form-item">
                     <div class="zem-bid-modifier-cell__form-buttons">
                         <button

@@ -39,9 +39,6 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source, bcm_modifiers=None)
     min_cpc = source_type.get_min_cpc(ad_group_settings, bcm_modifiers)
     _validate_min_bid_value(cpc_cc, min_cpc, ad_group_source.source.name)
 
-    max_cpc = ad_group_settings.cpc_cc  # NOTE: no need to apply bcm_modifiers, not an external setting
-    _validate_max_bid_value(cpc_cc, max_cpc, "ad group")
-
 
 def validate_source_cpm(cpm, source, source_type, bcm_modifiers=None):
     if cpm < 0:
@@ -66,9 +63,6 @@ def validate_ad_group_source_cpm(cpm, ad_group_source, bcm_modifiers=None):
     min_cpm = source_type.get_min_cpm(ad_group_settings, bcm_modifiers)
     _validate_min_bid_value(cpm, min_cpm, ad_group_source.source.name, is_cpm=True)
 
-    max_cpm = ad_group_settings.max_cpm  # NOTE: no need to apply bcm_modifiers, not an external setting
-    _validate_max_bid_value(cpm, max_cpm, "ad group", is_cpm=True)
-
 
 def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings, bcm_modifiers=None):
     if not ad_group_settings.b1_sources_group_enabled:
@@ -79,9 +73,6 @@ def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings, bcm_modifiers=No
 
     validate_source_cpc_cc(cpc_cc, all_rtb.AllRTBSource, all_rtb.AllRTBSourceType, bcm_modifiers)
 
-    ad_group_max_cpc = ad_group_settings.cpc_cc  # NOTE: no need to apply bcm_modifiers, not an external setting
-    _validate_max_bid_value(cpc_cc, ad_group_max_cpc, "ad group")
-
 
 def validate_b1_sources_group_cpm(cpm, ad_group_settings, bcm_modifiers=None):
     if not ad_group_settings.b1_sources_group_enabled:
@@ -91,9 +82,6 @@ def validate_b1_sources_group_cpm(cpm, ad_group_settings, bcm_modifiers=None):
         raise exceptions.B1SourcesCPMNegative("RTB Sources' bid CPM must be positive.")
 
     validate_source_cpm(cpm, all_rtb.AllRTBSource, all_rtb.AllRTBSourceType, bcm_modifiers)
-
-    ad_group_max_cpm = ad_group_settings.max_cpm  # NOTE: no need to apply bcm_modifiers, not an external setting
-    _validate_max_bid_value(cpm, ad_group_max_cpm, "ad group", is_cpm=True)
 
 
 def validate_b1_sources_group_daily_budget(daily_budget, ad_group_settings, bcm_modifiers):

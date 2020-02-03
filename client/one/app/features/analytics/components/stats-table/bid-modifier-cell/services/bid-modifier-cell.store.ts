@@ -9,8 +9,6 @@ import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
 import {BidModifier} from '../../../../../../core/bid-modifiers/types/bid-modifier';
 import * as clone from 'clone';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
-import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
-import {BID_MODIFIER_CELL_CONFIG} from '../bid-modifier-cell.config';
 import {Currency} from '../../../../../../app.constants';
 
 @Injectable()
@@ -33,25 +31,7 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
     ): void {
         const modifierPercent = this.convertModifierToPercent(
             bidModifier.modifier
-        ).toFixed(BID_MODIFIER_CELL_CONFIG.fractionSize);
-
-        const computedBidMin = this.formatBid(
-            this.getBid(
-                parseFloat(modifierPercent),
-                parseFloat(bidModifier.bidMin)
-            ),
-            BID_MODIFIER_CELL_CONFIG.fractionSize,
-            currency
-        );
-
-        const computedBidMax = this.formatBid(
-            this.getBid(
-                parseFloat(modifierPercent),
-                parseFloat(bidModifier.bidMax)
-            ),
-            BID_MODIFIER_CELL_CONFIG.fractionSize,
-            currency
-        );
+        ).toFixed(this.state.fractionSize);
 
         this.setState({
             ...this.state,
@@ -60,36 +40,11 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
             currency: currency,
             modifierPercent: modifierPercent,
             previousModifierPercent: modifierPercent,
-            computedBidMin: computedBidMin,
-            computedBidMax: computedBidMax,
         });
     }
 
     updateBidModifier($event: string): void {
-        const computedBidMin = this.formatBid(
-            this.getBid(
-                parseFloat($event),
-                parseFloat(this.state.value.bidMin)
-            ),
-            BID_MODIFIER_CELL_CONFIG.fractionSize,
-            this.state.currency
-        );
-
-        const computedBidMax = this.formatBid(
-            this.getBid(
-                parseFloat($event),
-                parseFloat(this.state.value.bidMax)
-            ),
-            BID_MODIFIER_CELL_CONFIG.fractionSize,
-            this.state.currency
-        );
-
-        this.setState({
-            ...this.state,
-            modifierPercent: $event,
-            computedBidMin: computedBidMin,
-            computedBidMax: computedBidMax,
-        });
+        this.patchState($event, 'modifierPercent');
     }
 
     saveBidModifier(): Promise<any> {
@@ -130,30 +85,5 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
             isNaN(modifierPercent)
             ? 0.0
             : (modifierPercent + 100) / 100.0;
-    }
-
-    private getBid(modifierPercent: number, bid: number): number {
-        if (!commonHelpers.isDefined(bid) || isNaN(bid)) {
-            return 0.0;
-        }
-        if (
-            !commonHelpers.isDefined(modifierPercent) ||
-            isNaN(modifierPercent)
-        ) {
-            return bid;
-        }
-        return bid * this.convertPercentToModifier(modifierPercent);
-    }
-
-    private formatBid(
-        bid: number,
-        fractionSize: number,
-        currency: Currency
-    ): string {
-        return currencyHelpers.formatCurrency(
-            bid.toString(),
-            currency,
-            fractionSize
-        );
     }
 }

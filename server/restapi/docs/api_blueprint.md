@@ -1161,8 +1161,9 @@ startDate    | string                    | start date of the ad group           
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                      | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
 biddingType  | `CPC` / `CPM`             | Bidding type. Set to `CPC` (use maxCpc) to focus on the clicks that your ad receives or `CPM` (use maxCpm) to focus on impressions.| optional | optional
-maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                      | optional | optional
-maxCpm       | [money](#money)           | maximum CPM for this ad group (currently beta only, please contact us for access)                                                  | optional | optional
+bid          | [money](#money)           | Bid value for this ad group. When ad group bid property is updated source bid values are calculated using the existing source bid modifiers. | required | required
+maxCpc (deprecated) | [money](#money)    | Maximum CPC for this ad group if autopilot is enabled and ad group's bid CPC value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
+maxCpm (deprecated) | [money](#money)    | Maximum CPM for this ad group if autopilot is enabled and ad group's bid CPM value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
 targeting    | [targeting](#targeting)   | targeting settings                                                                                                                 | optional | optional
 dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                                | optional | optional
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros))   | optional | optional
@@ -1289,10 +1290,11 @@ Get more information about Zemanta Autopilot in our [knowledge base](http://help
 In order to set Autopilot state to `ACTIVE_CPC_BUDGET` [all real-time bidding sources](#all-rtb-as-one)
  `groupEnabled` setting has to be set to `true`.
 
-Property    | Type                                | Description
-------------|-------------------------------------|------------------------|
-state       | [autopilot state](#autopilot-state) | autopilot state
-dailyBudget | dailyBudget                         | autopilot daily budget
+Property          | Type                                | Description
+------------------|-------------------------------------|---------------------
+state             | [autopilot state](#autopilot-state) | autopilot state
+dailyBudget       | dailyBudget                         | autopilot daily budget
+maxBid            | [money][#money]                     | the maximum allowed bid for autopilot
 
 
 ### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
@@ -1353,8 +1355,8 @@ Property    | Type                | Description
 ------------|---------------------|-------------------------------------------------------------|
 source      | string              | source identifier
 state       | `ACTIVE`/`INACTIVE` | is ad group being promoted on the given source
-cpc         | [money](#money)     | CPC for the given source
-cpm         | [money](#money)     | CPM for the given source (when ad group biddingType is CPM)
+cpc (deprecated) | [money](#money)     | CPC for the given source. This property is deprecated, please use ad group bid property and source bid modifiers instead.
+cpm (deprecated) | [money](#money)     | CPM for the given source (when ad group biddingType is CPM). This property is deprecated, please use ad group bid property and source bid modifiers instead.
 dailyBudget | [money](#money)     | daily budget for the given source
 
 ### Get ad group source settings [GET /rest/v1/adgroups/{adGroupId}/sources/]
@@ -1551,7 +1553,7 @@ The following bid modifier types are supported:
 | Type             | Description                                                               | Allowed Values                        |
 |-----------------|--------------------------------------------------------------------------|--------------------------------------|
 | PUBLISHER        | Modifies the bidding price for a specific source at a specific publisher. | the domain name of the publisher      |
-| SOURCE           | Modifies the bidding price for a specific source.                         | the ID of the source as a string      |
+| SOURCE           | Modifies the bidding price for a specific source.                         | the source slug      |
 | DEVICE           | Modifies the bidding price for a specific device type.                    | see [Device targeting](#device)       |
 | OPERATING_SYSTEM | Modifies the bidding price for a specific operating system.               | see [Operating system targeting](#os) |
 | PLACEMENT        | Modifies the bidding price for a specific add placement.                  | see [Placement targeting](#placement) |
@@ -1559,8 +1561,6 @@ The following bid modifier types are supported:
 | STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
 | DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
 | AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
-
-**A note on `SOURCE` bid modifiers**: API already supports `SOURCE` bid modifiers, but setting them currently has no effect in the system. Full support for `SOURCE` bid modifiers will be added shortly.
 
 ### Get bid modifiers for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{?type}]
 
@@ -1676,8 +1676,8 @@ A list of Bid Modifier IDs has to be included in request body to delete certain 
 + Request (application/json)
 
         [
-            {"id": 1236},
-            {"id": 1237}
+            {"id": 1240},
+            {"id": 1241}
         ]
 
 + Response 204 (application/json)
@@ -3417,6 +3417,7 @@ Examples:
 
 - `state`: `ACTIVE_CPC` (string)
 - `dailyBudget`: `100.0001` (string)
+- `maxBid`: `20.0000` (string, optional, nullable)
 
 ## `dayparting` (object)
 
@@ -3431,7 +3432,8 @@ Examples:
 - `archived`: `false` (boolean)
 - `startDate`: `2016-10-05` (string)
 - `endDate`: `2116-11-05` (string, optional, nullable)
-- `bidding_type`: `CPC` (string)
+- `biddingType`: `CPC` (string)
+- `bid`: `0.25` (string)
 - `maxCpc`: `0.25` (string)
 - `maxCpm`: (string)
 - `dailyBudget`: `20.0` (string)

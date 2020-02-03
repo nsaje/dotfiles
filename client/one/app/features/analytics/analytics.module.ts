@@ -11,6 +11,7 @@ import {AttributionLoockbackWindowPickerComponent} from './components/attributio
 import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad-preview.component';
 import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
 import {CampaignCloningFormComponent} from './components/campaign-cloning-form/campaign-cloning-form.component';
+import {BidRangeInfoComponent} from './components/stats-table/bid-range-info/bid-range-info.component';
 
 @NgModule({
     declarations: [
@@ -24,6 +25,7 @@ import {CampaignCloningFormComponent} from './components/campaign-cloning-form/c
         NativeAdPreviewComponent,
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
+        BidRangeInfoComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [

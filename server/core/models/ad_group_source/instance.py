@@ -27,8 +27,8 @@ class AdGroupSourceInstanceMixin:
                 and self.source.source_type.type == dash.constants.SourceType.B1
             ):
                 updates["cpc_cc"] = ad_group.settings.b1_sources_group_cpc_cc
-            if ad_group.settings.cpc_cc:
-                updates["cpc_cc"] = min(ad_group.settings.cpc_cc, updates["cpc_cc"])
+            if ad_group.settings.cpc:
+                updates["cpc_cc"] = min(ad_group.settings.cpc, updates["cpc_cc"])
         if "cpm" not in updates:
             updates["cpm"] = self.source.default_cpm
             if ad_group.settings.is_mobile_only():
@@ -39,8 +39,8 @@ class AdGroupSourceInstanceMixin:
                 and self.source.source_type.type == dash.constants.SourceType.B1
             ):
                 updates["cpm"] = ad_group.settings.b1_sources_group_cpm
-            if ad_group.settings.max_cpm:
-                updates["cpm"] = min(ad_group.settings.max_cpm, updates["cpm"])
+            if ad_group.settings.cpm:
+                updates["cpm"] = min(ad_group.settings.cpm, updates["cpm"])
         if "state" not in updates:
             if helpers.get_source_initial_state(self):
                 updates["state"] = dash.constants.AdGroupSourceSettingsState.ACTIVE

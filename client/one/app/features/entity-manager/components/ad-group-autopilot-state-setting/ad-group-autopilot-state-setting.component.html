@@ -1,5 +1,17 @@
 <div class="zem-form-group">
     <div class="zem-form-group__content">
+        <ng-template #goalOptimizationPopover>
+            <p>
+                Autopilot will automatically move budgets between media sources
+                and adjust bids in order to hit daily spend caps and your
+                campaign goals.
+            </p>
+            <p>
+                You will control the maximum CPC or CPM that the autopilot can
+                use and bid modifiers on other dimensions (ad, publisher,
+                device, placement, country, DMA, region,...).
+            </p>
+        </ng-template>
         <zem-radio-input
             class="zem-radio-input zem-form-group__content-item"
             [groupModel]="autopilotState"
@@ -11,7 +23,7 @@
             automatically optimize towards your campaign goal
             <zem-help-popover
                 class="zem-help-popover"
-                content="Autopilot will automatically move budgets between media sources and adjust bids in order to hit daily spend caps and your campaign goals."
+                [content]="goalOptimizationPopover"
                 placement="bottom"
             ></zem-help-popover>
         </zem-radio-input>

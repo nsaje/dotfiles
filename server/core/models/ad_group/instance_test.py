@@ -1,5 +1,3 @@
-import decimal
-
 import mock
 from django.test import TestCase
 
@@ -52,7 +50,6 @@ class AdGroupInstanceTest(TestCase):
             campaign=campaign,
             amplify_review=False,
         )
-        ad_group.settings.update(None, cpm=12, cpc_cc=decimal.Decimal("0.06"))
         blacklist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
         whitelist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
         tags = magic_mixer.cycle(2).blend(core.models.EntityTag)
@@ -73,9 +70,7 @@ class AdGroupInstanceTest(TestCase):
         self.assertEqual(ad_group.default_whitelist, whitelist)
         self.assertEqual(ad_group.default_blacklist, blacklist)
         self.assertEqual(set(ad_group.entity_tags.all()), set(tags))
-        mock_k1_ping.assert_has_calls(
-            [mock.call(ad_group, msg="AdGroupSettings.put", priority=False), mock.call(ad_group, "Adgroup.update")]
-        )
+        mock_k1_ping.assert_has_calls([mock.call(ad_group, "Adgroup.update")])
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_update_unset_fields(self, mock_k1_ping):

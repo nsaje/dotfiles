@@ -18,6 +18,32 @@ class BaseOverviewTestCase(TestCase):
         self.source_2 = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug_2")
         self.source_3 = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug_3")
         self.source_4 = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug_4")
+        self.ad_group_source_1 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_1
+        )
+        self.ad_group_source_2 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_2
+        )
+        self.ad_group_source_3 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_3
+        )
+        self.ad_group_source_4 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_4
+        )
+        self.other_ad_group_source_1 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.other_ad_group, source=self.source_1
+        )
+        self.ad_group_source_1.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source_2.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source_3.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source_4.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.other_ad_group_source_1.settings.update_unsafe(
+            None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+        )
+
+        self.content_ad_1 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+        self.content_ad_2 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+        self.content_ad_3 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
 
         self.ag_test_publisher_1, _ = bid_modifiers.set(
             self.ad_group, bid_modifiers.BidModifierType.PUBLISHER, "test_publisher_1", self.source_1, 0.53
@@ -116,13 +142,13 @@ class BaseOverviewTestCase(TestCase):
         self.ag_test_dma_2, _ = bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.DMA, "101", None, 1.61)
 
         self.ag_test_ad_1, _ = bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.AD, "test_ad_1", None, 1.71
+            self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_1.id), None, 1.71
         )
         self.ag_test_ad_2, _ = bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.AD, "test_ad_2", None, 0.81
+            self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_2.id), None, 0.81
         )
         self.ag_test_ad_3, _ = bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.AD, "test_ad_3", None, 1.5
+            self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_3.id), None, 1.5
         )
 
         self.oag_test_publisher_1, _ = bid_modifiers.set(
@@ -200,7 +226,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_min_factor = _multiply_modifiers(
             min,
             self.ag_test_publisher_2,
-            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_source_1,
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
             self.ag_test_placement_1,
@@ -212,7 +238,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_max_factor = _multiply_modifiers(
             max,
             self.ag_test_publisher_3,
-            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
             self.ag_test_placement_2,
@@ -229,16 +255,10 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
 
     def test_included_types(self):
         expected_min_factor = _multiply_modifiers(
-            min,
-            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
-            self.ag_test_operating_system_4,
-            self.ag_test_country_4,
+            min, self.ag_test_source_1, self.ag_test_operating_system_4, self.ag_test_country_4
         )
         expected_max_factor = _multiply_modifiers(
-            max,
-            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
-            self.ag_test_operating_system_3,
-            self.ag_test_country_2,
+            max, self.ag_test_source_4, self.ag_test_operating_system_3, self.ag_test_country_2
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
@@ -295,7 +315,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_min_factor = _multiply_modifiers(
             min,
             self.ag_test_publisher_2,
-            # self.ag_test_source_1,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_source_1,
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
             self.ag_test_placement_1,
@@ -307,7 +327,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         expected_max_factor = _multiply_modifiers(
             max,
             self.ag_test_publisher_3,
-            # self.ag_test_source_4,  # TEMP(tkusterle) temporarily disable source bid modifiers
+            self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
             self.ag_test_placement_2,
@@ -331,45 +351,195 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
         self.assertAlmostEqual(max_factor, 1, places=13)
 
 
+class TestGetMinMaxFactorsDetailed(TestCase):
+    def setUp(self):
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup)
+        self.source_1 = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug_1")
+        self.source_2 = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug_2")
+        self.ad_group_source_1 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_1
+        )
+        self.ad_group_source_2 = magic_mixer.blend(
+            dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source_2
+        )
+        self.ad_group_source_1.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.ad_group_source_2.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.content_ad_1 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+        self.content_ad_2 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+
+    def test_source_all_higher(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_2.id), None, 1.2)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.2)
+
+    def test_source_all_lower(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 0.9)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_2.id), None, 0.8)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 0.8)
+        self.assertEqual(max_factor, 0.9)
+
+    def test_source_not_all_higher(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_source_not_all_lower(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 0.9)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 0.9)
+        self.assertEqual(max_factor, 1.0)
+
+    def test_source_modifier_for_inactive_source(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_2.id), None, 1.2)
+        self.ad_group_source_2.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_source_no_modifier_for_active_source(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source_1.id), None, 1.1)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_ad_all_higher(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_2.id), None, 1.2)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.AD]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.2)
+
+    def test_ad_not_all_lower(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_1.id), None, 0.9)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.AD]
+        )
+        self.assertEqual(min_factor, 0.9)
+        self.assertEqual(max_factor, 1.0)
+
+    def test_ad_modifier_for_inactive_source(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_1.id), None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_2.id), None, 1.2)
+        self.content_ad_2.update(None, state=dash.constants.ContentAdSourceState.INACTIVE)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.AD]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_ad_no_modifier_for_active_source(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.AD, str(self.content_ad_1.id), None, 1.1)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.AD]
+        )
+        self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_placement_all_higher(self):
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 1.1
+        )
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 1.2
+        )
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+        )
+        self.assertEqual(min_factor, 1.1)
+        self.assertEqual(max_factor, 1.2)
+
+    def test_placement_all_lower(self):
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 0.9
+        )
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 0.8
+        )
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+        )
+        self.assertEqual(min_factor, 0.8)
+        self.assertEqual(max_factor, 0.9)
+
+    def test_placement_not_all_higher(self):
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 1.1
+        )
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+        )
+        self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.1)
+
+    def test_placement_not_all_lower(self):
+        bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 0.9
+        )
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+        )
+        self.assertEqual(min_factor, 0.9)
+        self.assertEqual(max_factor, 1.0)
+
+    def test_country_not_all_higher(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.COUNTRY, "us", None, 1.1)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.COUNTRY, "uk", None, 1.2)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.COUNTRY]
+        )
+        self.assertEqual(min_factor, 1.0)
+        self.assertEqual(max_factor, 1.2)
+
+    def test_country_not_all_lower(self):
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.COUNTRY, "us", None, 0.9)
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.COUNTRY, "uk", None, 0.8)
+
+        min_factor, max_factor = bid_modifiers.get_min_max_factors(
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.COUNTRY]
+        )
+        self.assertEqual(min_factor, 0.8)
+        self.assertEqual(max_factor, 1.0)
+
+
 def _multiply_modifiers(min_max_fn, *bid_modifiers):
     return functools.reduce(operator.mul, [min_max_fn(e.modifier, 1.) for e in bid_modifiers], 1.)
 
 
 class TestGetTypeSummaries(BaseOverviewTestCase):
-    def test_all_do_not_include_ones(self):
-        self.assertEqual(
-            bid_modifiers.get_type_summaries(self.ad_group.id, include_ones=False),
-            [
-                bid_modifiers.BidModifierTypeSummary(
-                    count=3, max=1.15, min=0.11, type=bid_modifiers.BidModifierType.PUBLISHER
-                ),
-                # bid_modifiers.BidModifierTypeSummary(
-                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
-                bid_modifiers.BidModifierTypeSummary(
-                    count=2, max=1.32, min=0.13, type=bid_modifiers.BidModifierType.DEVICE
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=5, max=2.1, min=0.02, type=bid_modifiers.BidModifierType.OPERATING_SYSTEM
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=2, max=1.76, min=0.36, type=bid_modifiers.BidModifierType.PLACEMENT
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=5, max=2.1, min=0.49, type=bid_modifiers.BidModifierType.COUNTRY
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=1, max=0.73, min=0.73, type=bid_modifiers.BidModifierType.STATE
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=2, max=1.61, min=0.26, type=bid_modifiers.BidModifierType.DMA
-                ),
-                bid_modifiers.BidModifierTypeSummary(
-                    count=3, max=1.71, min=0.81, type=bid_modifiers.BidModifierType.AD
-                ),
-            ],
-        )
-
     def test_all(self):
         self.assertEqual(
             bid_modifiers.get_type_summaries(self.ad_group.id),
@@ -377,9 +547,9 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                 bid_modifiers.BidModifierTypeSummary(
                     count=3, max=1.15, min=0.11, type=bid_modifiers.BidModifierType.PUBLISHER
                 ),
-                # bid_modifiers.BidModifierTypeSummary(
-                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
+                bid_modifiers.BidModifierTypeSummary(
+                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                ),
                 bid_modifiers.BidModifierTypeSummary(
                     count=2, max=1.32, min=0.13, type=bid_modifiers.BidModifierType.DEVICE
                 ),
@@ -415,9 +585,9 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                 ],
             ),
             [
-                # bid_modifiers.BidModifierTypeSummary(
-                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
+                bid_modifiers.BidModifierTypeSummary(
+                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                ),
                 bid_modifiers.BidModifierTypeSummary(
                     count=5, max=2.1, min=0.02, type=bid_modifiers.BidModifierType.OPERATING_SYSTEM
                 ),
@@ -464,18 +634,18 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
             bid_modifiers.get_type_summaries(
                 self.ad_group.id,
                 included_types=[
-                    # bid_modifiers.BidModifierType.SOURCE,
+                    bid_modifiers.BidModifierType.SOURCE,
                     bid_modifiers.BidModifierType.OPERATING_SYSTEM,
                     bid_modifiers.BidModifierType.COUNTRY,
                 ],
                 excluded_types=[bid_modifiers.BidModifierType.OPERATING_SYSTEM],
             ),
             [
-                # bid_modifiers.BidModifierTypeSummary(
-                #     count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
-                # ),  # TEMP(tkusterle) temporarily disable source bid modifiers
+                bid_modifiers.BidModifierTypeSummary(
+                    count=4, max=2.1, min=0.61, type=bid_modifiers.BidModifierType.SOURCE
+                ),
                 bid_modifiers.BidModifierTypeSummary(
                     count=5, max=2.1, min=0.49, type=bid_modifiers.BidModifierType.COUNTRY
-                )
+                ),
             ],
         )

@@ -50,6 +50,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "warnings": {"retargeting": {"sources": []}},
             "hacks": [],
             "deals": [],
+            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -95,6 +96,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
                 "deals": [],
+                "currentBids": {"cpc": "0.450", "cpm": "1.000"},
             },
         )
 
@@ -121,6 +123,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "warnings": {"retargeting": {"sources": []}},
             "hacks": [],
             "deals": [],
+            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -179,6 +182,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
                 "deals": [],
+                "currentBids": {"cpc": "0.450", "cpm": "1.000"},
             },
         )
 

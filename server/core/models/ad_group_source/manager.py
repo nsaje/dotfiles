@@ -127,14 +127,26 @@ class AdGroupSourceManager(core.common.BaseManager):
         )
 
     @transaction.atomic
-    def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
+    def bulk_create_on_allowed_sources(
+        self, request, ad_group, write_history=True, k1_sync=True, apply_ad_group_bids=False
+    ):
         sources = ad_group.campaign.account.allowed_sources.all().select_related(
             "source_type", "defaultsourcesettings__credentials"
         )
         added_ad_group_sources = []
 
-        if not dash.retargeting_helper.can_add_source_with_retargeting(sources, ad_group.settings):
-            raise utils.exc.ValidationError("Media sources can not be added because some do not support retargeting.")
+        for source in sources:
+            if not dash.retargeting_helper.can_add_source_with_retargeting(source, ad_group.settings):
+                raise utils.exc.ValidationError(
+                    "Media sources can not be added because some do not support retargeting."
+                )
+
+        updates = {}
+        if apply_ad_group_bids:
+            if ad_group.bidding_type == dash.constants.BiddingType.CPC:
+                updates["cpc_cc"] = ad_group.settings.cpc
+            else:
+                updates["cpm"] = ad_group.settings.cpm
 
         for source in sources:
             if (
@@ -156,6 +168,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                     k1_sync=False,
                     skip_validation=True,
                     skip_notification=True,
+                    **updates
                 )
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:

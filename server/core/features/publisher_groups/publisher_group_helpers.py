@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db import transaction
 
 from dash import constants
-from dash import cpc_constraints
 from dash import history_helpers
 from dash import models
 from dash.views import helpers
@@ -279,8 +278,6 @@ def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
 
     models.PublisherGroupEntry.objects.bulk_create(entries)
 
-    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
-
     if created:
         ping_k1(obj)
 
@@ -296,8 +293,6 @@ def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
 
     entries = _prepare_entries(entry_dicts, publisher_group)
     models.PublisherGroupEntry.objects.bulk_create(entries)
-
-    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
 
     if created:
         ping_k1(obj)
@@ -340,8 +335,6 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
     except PublisherGroupTargetingException:
         # pass if global level
         pass
-
-    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
 
 
 @transaction.atomic
@@ -520,37 +513,6 @@ def validate_outbrain_blacklist_count(obj, entries):
         and ob_blacklist_count_existing + ob_blacklist_count_added > OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS
     ):
         raise PublisherGroupTargetingException("Outbrain blacklist limit exceeded")
-
-
-def apply_outbrain_account_constraints_if_needed(obj, enforce_cpc):
-    outbrain = models.Source.objects.filter(source_type__type=constants.SourceType.OUTBRAIN)
-    if not outbrain.exists():
-        # some tests do not need to test outbrain and as such do not include it in fixtures
-        return
-
-    if obj is None:
-        # no need to handle when we do global blacklisting:
-        return
-
-    outbrain = outbrain.first()
-    account = obj.get_account()
-    ob_blacklist_count = get_ob_blacklisted_publishers_count(account)
-
-    if ob_blacklist_count > OUTBRAIN_CPC_CONSTRAINT_LIMIT:
-        cpc_constraints.create(
-            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
-            constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
-            enforce_cpc_settings=enforce_cpc,
-            source=outbrain,
-            account=account,
-        )
-    else:
-        cpc_constraints.clear(
-            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
-            constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
-            source=outbrain,
-            account=account,
-        )
 
 
 def get_ob_blacklisted_publishers_count(account):

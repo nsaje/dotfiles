@@ -22,13 +22,10 @@ class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
 
         if breakdown_name:
             modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
-
             cleaned_modifiers = bid_modifiers.service.get(ad_group, include_types=[modifier_type])
             csv_content = bid_modifiers.service.make_csv_file(modifier_type, cleaned_modifiers)
         else:
-            # TEMP(tkusterle) temporarily disable source bid modifiers
-            temp_exclude_types = [bid_modifiers.BidModifierType.SOURCE]
-            cleaned_modifiers = bid_modifiers.service.get(ad_group, exclude_types=temp_exclude_types)
+            cleaned_modifiers = bid_modifiers.service.get(ad_group)
             csv_content = bid_modifiers.service.make_bulk_csv_file(cleaned_modifiers)
 
         return csv_utils.create_csv_response(data=csv_content, filename="bid_modifiers_export")
@@ -66,10 +63,8 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
                     ad_group_id, csv_file
                 )
 
-                # TEMP(tkusterle) temporarily disable source bid modifiers
-                all_types = set(bid_modifiers.BidModifierType.get_all()) - {bid_modifiers.BidModifierType.SOURCE}
                 delete_type_counts = (
-                    bid_modifiers.count_types(ad_group_id, all_types, user=request.user)
+                    bid_modifiers.count_types(ad_group_id, bid_modifiers.BidModifierType.get_all(), user=request.user)
                     if ad_group_id is not None
                     else {}
                 )
@@ -100,9 +95,9 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
                 )
                 delete_type_counts = [{"type": modifier_type, "count": number_of_deleted}]
             else:
-                # TEMP(tkusterle) temporarily disable source bid modifiers
-                all_types = set(bid_modifiers.BidModifierType.get_all()) - {bid_modifiers.BidModifierType.SOURCE}
-                delete_type_counts = bid_modifiers.count_types(ad_group, all_types, user=request.user)
+                delete_type_counts = bid_modifiers.count_types(
+                    ad_group, bid_modifiers.BidModifierType.get_all(), user=request.user
+                )
 
                 number_of_deleted, instances, csv_error_key = bid_modifiers.service.process_bulk_csv_file_upload(
                     ad_group, csv_file, user=request.user
@@ -141,10 +136,6 @@ class BidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSe
     def download(self, request, breakdown_name=None):
         if breakdown_name:
             modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
-            # TEMP(tkusterle) temporarily disable source bid modifiers
-            if modifier_type == bid_modifiers.BidModifierType.SOURCE:
-                raise util_exc.ValidationError("Source bid modifiers are temporaily disabled")
-
             csv_example_file = bid_modifiers.service.make_csv_example_file(modifier_type)
         else:
             csv_example_file = bid_modifiers.service.make_bulk_csv_example_file()

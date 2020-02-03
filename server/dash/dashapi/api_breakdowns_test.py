@@ -184,15 +184,7 @@ CONTENT_AD_1 = {
     },
     "tracker_urls": ["http://testurl1.com", "http://testurl2.com"],
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
-    "bid_modifier": {
-        "bid_max": 1.0,
-        "bid_min": 1.0,
-        "id": None,
-        "modifier": None,
-        "source_slug": None,
-        "target": "1",
-        "type": "AD",
-    },
+    "bid_modifier": {"id": None, "modifier": None, "source_slug": None, "target": "1", "type": "AD"},
     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
@@ -239,15 +231,7 @@ CONTENT_AD_2 = {
     },
     "tracker_urls": [],
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
-    "bid_modifier": {
-        "bid_max": 1.0,
-        "bid_min": 1.0,
-        "id": None,
-        "modifier": None,
-        "source_slug": None,
-        "target": "2",
-        "type": "AD",
-    },
+    "bid_modifier": {"id": None, "modifier": None, "source_slug": None, "target": "2", "type": "AD"},
     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
@@ -288,15 +272,7 @@ AD_GROUP_SOURCE_1 = {
             "enabled": False,
         },
     },
-    "bid_modifier": {
-        "bid_max": 1.0,
-        "bid_min": 1.0,
-        "id": None,
-        "modifier": None,
-        "source_slug": None,
-        "target": 1,
-        "type": "SOURCE",
-    },
+    "bid_modifier": {"id": None, "modifier": None, "source_slug": None, "target": "adsnative", "type": "SOURCE"},
     "notifications": {},
 }
 AD_GROUP_SOURCE_2 = {
@@ -335,15 +311,7 @@ AD_GROUP_SOURCE_2 = {
             "enabled": False,
         },
     },
-    "bid_modifier": {
-        "bid_max": 1.0,
-        "bid_min": 1.0,
-        "id": None,
-        "modifier": None,
-        "source_slug": None,
-        "target": 2,
-        "type": "SOURCE",
-    },
+    "bid_modifier": {"id": None, "modifier": None, "source_slug": None, "target": "gravity", "type": "SOURCE"},
     "notifications": {},
 }
 
@@ -391,15 +359,7 @@ SOURCE_1__CONTENT_AD_1 = {
         }
     },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
-    "bid_modifier": {
-        "bid_max": 1.0,
-        "bid_min": 1.0,
-        "id": None,
-        "modifier": None,
-        "source_slug": None,
-        "target": "1",
-        "type": "AD",
-    },
+    "bid_modifier": {"id": None, "modifier": None, "source_slug": None, "target": "1", "type": "AD"},
     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
@@ -427,8 +387,6 @@ PUBLISHER_1__SOURCE_1 = {
         "target": "pub1.com",
         "source_slug": "adsnative",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -453,8 +411,6 @@ PUBLISHER_2__SOURCE_1 = {
         "target": "pub2.com",
         "source_slug": "adsnative",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -482,8 +438,6 @@ PUBLISHER_2__SOURCE_2 = {
         "target": "pub2.com",
         "source_slug": "gravity",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -511,8 +465,6 @@ PUBLISHER_3__SOURCE_2 = {
         "target": "pub3.com",
         "source_slug": "gravity",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -540,8 +492,6 @@ PUBLISHER_4__SOURCE_2 = {
         "target": "pub4.com",
         "source_slug": "gravity",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -569,8 +519,6 @@ PUBLISHER_5__SOURCE_2 = {
         "target": "pub5.com",
         "source_slug": "gravity",
         "modifier": None,
-        "bid_min": 1.0,
-        "bid_max": 1.0,
     },
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
@@ -1817,8 +1765,6 @@ class QueryForRowsTest(TestCase):
                         "source_slug": bid_modifier.source_slug,
                         "target": "DESKTOP",
                         "modifier": bid_modifier.modifier,
-                        "bid_min": 1.0,
-                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }
@@ -1859,8 +1805,6 @@ class QueryForRowsTest(TestCase):
                         "source_slug": bid_modifier.source_slug,
                         "target": "MACOSX",
                         "modifier": bid_modifier.modifier,
-                        "bid_min": 1.0,
-                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }
@@ -1891,8 +1835,6 @@ class QueryForRowsTest(TestCase):
                         "source_slug": None,
                         "target": "DESKTOP",
                         "modifier": None,
-                        "bid_min": 1.0,
-                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }

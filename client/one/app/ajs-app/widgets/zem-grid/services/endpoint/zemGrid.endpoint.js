@@ -155,6 +155,7 @@ angular
                 });
         }
 
+        /* eslint-disable complexity */
         function extendMetaData(breakdown, metaData) {
             if (!breakdown) return;
 
@@ -166,6 +167,26 @@ angular
             if (breakdown.currency) {
                 metaData.ext.currency = breakdown.currency;
                 delete breakdown.currency;
+            }
+
+            if (breakdown.biddingType) {
+                metaData.ext.biddingType = breakdown.biddingType;
+                delete breakdown.biddingType;
+            }
+
+            if (breakdown.bid) {
+                metaData.ext.bid = breakdown.bid;
+                delete breakdown.bid;
+            }
+
+            if (breakdown.typeSummaries) {
+                metaData.ext.typeSummaries = breakdown.typeSummaries;
+                delete breakdown.typeSummaries;
+            }
+
+            if (breakdown.autopilotState) {
+                metaData.ext.autopilotState = breakdown.autopilotState;
+                delete breakdown.autopilotState;
             }
 
             if (breakdown.obBlacklistedCount) {

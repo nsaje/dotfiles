@@ -1,3 +1,5 @@
+import copy
+
 from django.conf import settings
 from django.db import transaction
 
@@ -5,6 +7,7 @@ import core.common
 import core.models
 import core.models.helpers
 import dash.constants
+import prodops.hacks
 import utils.k1_helper
 import utils.redirector_helper
 
@@ -13,14 +16,25 @@ from . import model
 
 
 class AdGroupManager(core.common.BaseManager):
-    def create(self, request, campaign, is_restapi=False, name=None, **kwargs):
+    def create(
+        self,
+        request,
+        campaign,
+        is_restapi=False,
+        name=None,
+        bidding_type=dash.constants.BiddingType.CPC,
+        initial_settings=None,
+        **kwargs
+    ):
         self._validate_archived(campaign)
         self._validate_entity_limits(campaign)
 
         with transaction.atomic():
             if name is None:
                 name = self._create_default_name(campaign)
-            ad_group = self._prepare(campaign, name=name)
+            if bidding_type is None or not request.user.has_perm("zemauth.fea_can_use_cpm_buying"):
+                bidding_type = dash.constants.BiddingType.CPC
+            ad_group = self._prepare(campaign, name=name, bidding_type=bidding_type)
             ad_group.save(request)
 
             if is_restapi:
@@ -31,9 +45,32 @@ class AdGroupManager(core.common.BaseManager):
                 ad_group.settings = core.models.settings.AdGroupSettings.objects.create_default(ad_group, name=name)
             ad_group.save(request)
 
+            apply_ad_group_bids = False
+            autopilot_inactive = (
+                initial_settings.get("autopilot_state", ad_group.settings.autopilot_state)
+                if initial_settings
+                else ad_group.settings.autopilot_state
+            ) == dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+
+            if autopilot_inactive:
+                apply_ad_group_bids = True
+            elif initial_settings is not None:
+                if initial_settings.get("max_autopilot_bid") is not None:
+                    apply_ad_group_bids = True
+                    initial_settings["bid"] = initial_settings["max_autopilot_bid"]
+                elif initial_settings.get("local_max_autopilot_bid") is not None:
+                    apply_ad_group_bids = True
+                    initial_settings["local_bid"] = initial_settings["local_max_autopilot_bid"]
+
+            if initial_settings:
+                settings_updates = copy.copy(initial_settings)
+                self._set_initial_bids_if_necessary(ad_group, settings_updates)
+                ad_group.settings.update(request, **settings_updates)
+
             core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
-                request, ad_group, write_history=False, k1_sync=False
+                request, ad_group, write_history=False, k1_sync=False, apply_ad_group_bids=apply_ad_group_bids
             )
+
             if ad_group.amplify_review:
                 ad_group.ensure_amplify_review_source(request)
 
@@ -74,6 +111,7 @@ class AdGroupManager(core.common.BaseManager):
         self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)
+        prodops.hacks.apply_ad_group_create_hacks(request, ad_group)
         return ad_group
 
     def get_default(self, request, campaign):
@@ -122,3 +160,13 @@ class AdGroupManager(core.common.BaseManager):
         core.common.entity_limits.enforce(
             model.AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
         )
+
+    def _set_initial_bids_if_necessary(self, ad_group, settings_updates):
+        if ad_group.bidding_type == dash.constants.BiddingType.CPC and not (
+            settings_updates.get("cpc") or settings_updates.get("local_cpc")
+        ):
+            settings_updates["cpc"] = core.models.settings.AdGroupSettings.DEFAULT_CPC_VALUE
+        elif ad_group.bidding_type == dash.constants.BiddingType.CPM and not (
+            settings_updates.get("cpm") or settings_updates.get("local_cpm")
+        ):
+            settings_updates["cpm"] = core.models.settings.AdGroupSettings.DEFAULT_CPM_VALUE

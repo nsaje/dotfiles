@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.template.defaultfilters import pluralize
 from django.utils.safestring import mark_safe
 
-import core.features.bid_modifiers.source
 import core.features.deals
 import core.features.history
 import core.models.helpers
@@ -304,6 +303,7 @@ class AdGroupInstanceMixin:
         return new_updates
 
     def _apply_updates_and_save(self, request, updates):
+        bidding_type_changed = False
         for field, value in updates.items():
             if field == "entity_tags":
                 self.entity_tags.clear()
@@ -311,7 +311,8 @@ class AdGroupInstanceMixin:
                     self.entity_tags.add(*value)
             elif field == "bidding_type":
                 if value:
-                    self._update_bidding_type(request, value)
+                    self.bidding_type = value
+                    bidding_type_changed = True
             elif field == "amplify_review":
                 if value:
                     self.amplify_review = value
@@ -320,6 +321,5 @@ class AdGroupInstanceMixin:
                 setattr(self, field, value)
         self.save(request)
 
-    def _update_bidding_type(self, request, new_value):
-        self.bidding_type = new_value
-        core.features.bid_modifiers.source.handle_bidding_type_change(self, user=request.user if request else None)
+        if bidding_type_changed:
+            self.settings.apply_bids_to_sources()

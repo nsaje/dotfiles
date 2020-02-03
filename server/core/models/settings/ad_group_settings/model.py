@@ -32,9 +32,6 @@ from . import manager
 from . import queryset
 from . import validation
 
-DEFAULT_CPC_VALUE = Decimal("0.4500")
-DEFAULT_CPM_VALUE = Decimal("1.0000")
-
 
 class AdGroupSettings(
     validation.AdGroupSettingsValidatorMixin,
@@ -49,6 +46,14 @@ class AdGroupSettings(
 
     objects = manager.AdGroupSettingsManager()
     QuerySet = queryset.QuerySet
+
+    DEFAULT_CPC_VALUE = Decimal("0.4500")
+    DEFAULT_CPM_VALUE = Decimal("1.0000")
+
+    MIN_CPC_VALUE = Decimal("0.01")
+    MAX_CPC_VALUE = Decimal("20.0")
+    MIN_CPM_VALUE = Decimal("0.01")
+    MAX_CPM_VALUE = Decimal("25.0")
 
     _demo_fields = {
         "display_url": utils.demo_anonymizer.fake_display_url,
@@ -65,6 +70,8 @@ class AdGroupSettings(
         "local_cpc",
         "cpm",
         "local_cpm",
+        "max_autopilot_bid",
+        "local_max_autopilot_bid",
         "cpc_cc",
         "local_cpc_cc",
         "daily_budget_cc",
@@ -125,14 +132,13 @@ class AdGroupSettings(
         "additional_data": "zemauth.can_use_ad_additional_data",
     }
     multicurrency_fields = [
-        "cpc_cc",
-        "max_cpm",
+        "cpc",
+        "cpm",
+        "max_autopilot_bid",
         "autopilot_daily_budget",
         "b1_sources_group_daily_budget",
         "b1_sources_group_cpc_cc",
         "b1_sources_group_cpm",
-        "cpc",
-        "cpm",
     ]
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
@@ -150,6 +156,12 @@ class AdGroupSettings(
     local_cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPC")
     cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
     local_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
+    max_autopilot_bid = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum autopilot bid"
+    )
+    local_max_autopilot_bid = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum autopilot bid"
+    )
     cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
     )  # max CPC
@@ -251,6 +263,44 @@ class AdGroupSettings(
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
     additional_data = JSONField(null=True, blank=True)
 
+    @property
+    def bid(self):
+        if self.ad_group.bidding_type == constants.BiddingType.CPC:
+            return self.cpc
+        elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+            return self.cpm
+        else:
+            raise Exception("Unknown bidding type")
+
+    @property
+    def local_bid(self):
+        if self.ad_group.bidding_type == constants.BiddingType.CPC:
+            return self.local_cpc
+        elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+            return self.local_cpm
+        else:
+            raise Exception("Unknown bidding type")
+
+    @property
+    def max_cpc_legacy(self):
+        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+            return None
+
+        if self.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE:
+            return self.local_cpc
+        else:
+            return self.local_max_autopilot_bid
+
+    @property
+    def max_cpm_legacy(self):
+        if self.ad_group.bidding_type == constants.BiddingType.CPC:
+            return None
+
+        if self.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE:
+            return self.local_cpm
+        else:
+            return self.local_max_autopilot_bid
+
     @classmethod
     def get_defaults_dict(cls, currency=None):
         defaults = OrderedDict(
@@ -258,9 +308,10 @@ class AdGroupSettings(
                 ("state", constants.AdGroupSettingsState.INACTIVE),
                 ("start_date", dates_helper.utc_today()),
                 ("cpc_cc", None),
-                ("cpc", DEFAULT_CPC_VALUE),
+                ("cpc", cls.DEFAULT_CPC_VALUE),
                 ("max_cpm", None),
-                ("cpm", DEFAULT_CPM_VALUE),
+                ("cpm", cls.DEFAULT_CPM_VALUE),
+                ("max_autopilot_bid", None),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
                 ("target_regions", []),
@@ -294,6 +345,8 @@ class AdGroupSettings(
             "local_cpc": "Bid CPC",
             "cpm": "Bid CPM",
             "local_cpm": "Bid CPM",
+            "max_autopilot_bid": "Maximum autopilot bid",
+            "local_max_autopilot_bid": "Maximum autopilot bid",
             "cpc_cc": "Max CPC bid",
             "local_cpc_cc": "Max CPC bid",
             "max_cpm": "Max CPM bid",
@@ -357,6 +410,12 @@ class AdGroupSettings(
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "end_date" and value is None:
             value = "I'll stop it myself"
+        elif prop_name == "local_cpc" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_cpm" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_max_autopilot_bid" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_cpc_cc" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_max_cpm" and value is not None:

@@ -131,7 +131,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
     def test_adgroups_sources_rtb_rounding_cpc(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group = magic_mixer.blend(models.AdGroup, campaign__account__users=[self.user])
         ad_group.settings.update_unsafe(
-            None, cpc_cc=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+            None, cpc=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
 
         # min cpc - would return 0.12 without rounding ceiling
@@ -142,13 +142,13 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpc"][0])
 
-        # max cpc - would return 0.78 without rounding floor
-        test_agsr = self.adgroupsourcertb_repr(cpc="0.78")
+        # max cpc - over RTB sources CPC maximum
+        test_agsr = self.adgroupsourcertb_repr(cpc="30.00")
         r = self.client.put(
             reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}), test_agsr, format="json"
         )
         self.assertResponseError(r, "ValidationError")
-        self.assertTrue("0.77" in json.loads(r.content)["details"]["cpc"][0])
+        self.assertTrue("Maximum CPC on RTB Sources is" in json.loads(r.content)["details"]["cpc"][0])
 
         # min daily budget - would return 7 without rounding ceiling
         test_agsr = self.adgroupsourcertb_repr(daily_budget="7")
@@ -172,7 +172,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
             models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
         )
         ad_group.settings.update_unsafe(
-            None, max_cpm=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+            None, cpm=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
 
         # min cpm - would return 0.12 without rounding ceiling
@@ -183,10 +183,10 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
 
-        # max cpm - would return 0.78 without rounding floor
-        test_agsr = self.adgroupsourcertb_repr(cpm="0.78")
+        # max cpm - over RTB sources CPM maximum
+        test_agsr = self.adgroupsourcertb_repr(cpm="26.0")
         r = self.client.put(
             reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}), test_agsr, format="json"
         )
         self.assertResponseError(r, "ValidationError")
-        self.assertTrue("0.77" in json.loads(r.content)["details"]["cpm"][0])
+        self.assertTrue("Maximum CPM on RTB Sources is" in json.loads(r.content)["details"]["cpm"][0])

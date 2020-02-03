@@ -39,7 +39,7 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs)
     else:
         raise Exception("Invalid bid action type")
 
-    bid_field = "local_max_cpm" if ad_group.bidding_type == dash.constants.BiddingType.CPM else "local_cpc_cc"
+    bid_field = "local_cpm" if ad_group.bidding_type == dash.constants.BiddingType.CPM else "local_cpc"
     base_bid = getattr(ad_group.settings, bid_field)
     bid = limiter(base_bid + Decimal(str(change)), Decimal(str(rule.change_limit)))
 

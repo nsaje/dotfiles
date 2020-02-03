@@ -1,7 +1,6 @@
 import './bid-modifiers-overview.component.less';
 
 import {APP_CONFIG} from '../../../../app.config';
-import {BID_MODIFIER_TYPE_NAME_MAP} from '../../../../core/bid-modifiers/bid-modifiers.config';
 import {
     Component,
     ChangeDetectionStrategy,
@@ -9,19 +8,19 @@ import {
     Input,
     Output,
     OnChanges,
+    SimpleChanges,
 } from '@angular/core';
-import {ColDef, GridOptions} from 'ag-grid-community';
 import {BidModifierTypeSummary} from '../../../../core/bid-modifiers/types/bid-modifier-type-summary';
-import {HelpPopoverHeaderComponent} from '../../../../shared/components/smart-grid/components/header/help-popover/help-popover-header.component';
 import {BidModifiersImportErrorState} from '../../services/ad-group-settings-store/bid-modifiers-import-error-state';
 import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
+import {BidModifiersOverviewStore} from './bid-modifiers-overview.store';
 
 @Component({
     selector: 'zem-bid-modifiers-overview',
     templateUrl: './bid-modifiers-overview.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [BidModifiersOverviewStore],
 })
 export class BidModifiersOverviewComponent implements OnChanges {
     @Input()
@@ -35,77 +34,12 @@ export class BidModifiersOverviewComponent implements OnChanges {
     @Output()
     importFileChange = new EventEmitter<File>();
 
-    showOnlyNonGlobal: boolean = true;
+    constructor(public store: BidModifiersOverviewStore) {}
 
-    gridOptions: GridOptions = {
-        suppressMovableColumns: true,
-    };
-
-    columnDefs: ColDef[] = [
-        {
-            headerName: 'Dimension',
-            field: 'type',
-            valueFormatter: data => BID_MODIFIER_TYPE_NAME_MAP[data.value],
-        },
-        {
-            headerName: '#',
-            field: 'count',
-            headerComponentParams: {
-                tooltip: 'Number of configured bid modifiers per dimension.',
-                popoverPlacement: 'bottom',
-            },
-            headerComponentFramework: HelpPopoverHeaderComponent,
-        },
-        {
-            headerName: 'Min / Max',
-            field: 'limits',
-            headerComponentParams: {
-                tooltip:
-                    'Highest (Max) and lowest (Min) bid modifiers configured per dimension.',
-                popoverPlacement: 'bottom',
-            },
-            headerComponentFramework: HelpPopoverHeaderComponent,
-            valueFormatter: data => this.formatMinMaxLimits(data.value),
-        },
-    ];
-
-    gridRowData: any = null;
-
-    ngOnChanges(): void {
-        this.gridRowData = this.getGridRowData();
-    }
-
-    private getGridRowData(): any {
-        if (!commonHelpers.isDefined(this.bidModifierTypeSummaries)) {
-            return null;
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.bidModifierTypeSummaries) {
+            this.store.updateTypeSummaryGridRows(this.bidModifierTypeSummaries);
         }
-
-        return this.bidModifierTypeSummaries.map(item => {
-            return {
-                type: item.type,
-                count: item.count,
-                limits: {
-                    min: item.min,
-                    max: item.max,
-                },
-            };
-        });
-    }
-
-    private formatMinMaxLimits(limits: any): string {
-        return (
-            numericHelpers.convertNumberToPercentValue(
-                limits.min - 1.0,
-                true,
-                0
-            ) +
-            ' / ' +
-            numericHelpers.convertNumberToPercentValue(
-                limits.max - 1.0,
-                true,
-                0
-            )
-        );
     }
 
     exportBidModifiers(): void {

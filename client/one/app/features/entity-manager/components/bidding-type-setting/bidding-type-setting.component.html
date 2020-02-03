@@ -13,7 +13,7 @@
             class="zem-radio-input zem-form-group__content-item"
             [groupModel]="biddingType"
             [value]="BiddingType.CPC"
-            [hasError]="hasCpcBiddingTypeErrors()"
+            [hasError]="hasBidErrors() && biddingType === BiddingType.CPC"
             (select)="onBiddingTypeSelect($event)"
         >
             CPC
@@ -25,38 +25,68 @@
             class="zem-form-group__subgroup"
             *ngIf="biddingType === BiddingType.CPC"
         >
-            <div class="zem-bidding-type-setting__max-bid-form-group">
-                <label class="zem-bidding-type-setting__max-bid-label"
-                    >Maximum Bid CPC:</label
+            <div *ngIf="!isAutopilotActive()">
+                <div class="zem-bidding-type-setting__max-bid-form-group">
+                    <label class="zem-bidding-type-setting__max-bid-label"
+                        >Bid CPC:</label
+                    >
+                    <zem-currency-input
+                        class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
+                        [value]="bid"
+                        [hasError]="bidErrors && bidErrors.length > 0"
+                        [currencySymbol]="currencySymbol"
+                        fractionSize="3"
+                        (inputBlur)="bidChange.emit($event)"
+                    ></zem-currency-input>
+                    <div
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        The bidder will optimise towards the target CPC
+                        configured here. You can fine tune the target CPC on
+                        each traffic dimension using bid modifiers.
+                    </div>
+                </div>
+                <div
+                    class="zem-message zem-message--error zem-form-group__subgroup-item"
+                    *ngFor="let error of bidErrors"
                 >
-                <zem-currency-input
-                    class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
-                    [value]="maxCpc"
-                    placeholder="No limit"
-                    [hasError]="maxCpcErrors && maxCpcErrors.length > 0"
-                    [currencySymbol]="currencySymbol"
-                    fractionSize="3"
-                    (inputBlur)="maxCpcChange.emit($event)"
-                ></zem-currency-input>
+                    {{ error }}
+                </div>
             </div>
-            <div
-                class="zem-message zem-message--error zem-form-group__subgroup-item"
-                *ngFor="let error of maxCpcErrors"
-            >
-                {{ error }}
-            </div>
-            <div
-                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-form-group__subgroup-item"
-            >
-                The change of Maximum Bid CPC will update bids on all media
-                sources within the ad group.
+            <div *ngIf="isAutopilotActive()">
+                <div class="zem-bidding-type-setting__max-bid-form-group">
+                    <label class="zem-bidding-type-setting__max-bid-label"
+                        >Max Bid CPC:</label
+                    >
+                    <zem-currency-input
+                        class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
+                        [value]="maxBid"
+                        placeholder="No limit"
+                        [hasError]="maxBidErrors && maxBidErrors.length > 0"
+                        [currencySymbol]="currencySymbol"
+                        fractionSize="3"
+                        (inputBlur)="maxBidChange.emit($event)"
+                    ></zem-currency-input>
+                    <div
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        The change of Maximum Bid CPC will update bids on all
+                        media sources within the ad group.
+                    </div>
+                </div>
+                <div
+                    class="zem-message zem-message--error zem-form-group__subgroup-item"
+                    *ngFor="let error of maxBidErrors"
+                >
+                    {{ error }}
+                </div>
             </div>
         </div>
         <zem-radio-input
             class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
             [groupModel]="biddingType"
             [value]="BiddingType.CPM"
-            [hasError]="hasCpmBiddingTypeErrors()"
+            [hasError]="hasBidErrors() && biddingType === BiddingType.CPM"
             (select)="onBiddingTypeSelect($event)"
         >
             CPM
@@ -68,31 +98,61 @@
             class="zem-form-group__subgroup"
             *ngIf="biddingType === BiddingType.CPM"
         >
-            <div class="zem-bidding-type-setting__max-bid-form-group">
-                <label class="zem-bidding-type-setting__max-bid-label"
-                    >Maximum Bid CPM:</label
+            <div *ngIf="!isAutopilotActive()">
+                <div class="zem-bidding-type-setting__max-bid-form-group">
+                    <label class="zem-bidding-type-setting__max-bid-label"
+                        >Bid CPM:</label
+                    >
+                    <zem-currency-input
+                        class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
+                        [value]="bid"
+                        [hasError]="bidErrors && bidErrors.length > 0"
+                        [currencySymbol]="currencySymbol"
+                        fractionSize="3"
+                        (inputBlur)="bidChange.emit($event)"
+                    ></zem-currency-input>
+                    <div
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        The bidder will optimise towards the target CPM
+                        configured here. You can fine tune the target CPM on
+                        each traffic dimension using bid modifiers.
+                    </div>
+                </div>
+                <div
+                    class="zem-message zem-message--error zem-form-group__subgroup-item"
+                    *ngFor="let error of bidErrors"
                 >
-                <zem-currency-input
-                    class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
-                    [value]="maxCpm"
-                    placeholder="No limit"
-                    [hasError]="maxCpmErrors && maxCpmErrors.length > 0"
-                    [currencySymbol]="currencySymbol"
-                    fractionSize="3"
-                    (inputBlur)="maxCpmChange.emit($event)"
-                ></zem-currency-input>
+                    {{ error }}
+                </div>
             </div>
-            <div
-                class="zem-message zem-message--error zem-form-group__subgroup-item"
-                *ngFor="let error of maxCpmErrors"
-            >
-                {{ error }}
-            </div>
-            <div
-                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-form-group__subgroup-item"
-            >
-                The change of Maximum Bid CPM will update bids on all media
-                sources within the ad group.
+            <div *ngIf="isAutopilotActive()">
+                <div class="zem-bidding-type-setting__max-bid-form-group">
+                    <label class="zem-bidding-type-setting__max-bid-label"
+                        >Max Bid CPM:</label
+                    >
+                    <zem-currency-input
+                        class="zem-currency-input zem-form-group__input zem-bidding-type-setting__max-bid-input"
+                        [value]="maxBid"
+                        placeholder="No limit"
+                        [hasError]="maxBidErrors && maxBidErrors.length > 0"
+                        [currencySymbol]="currencySymbol"
+                        fractionSize="3"
+                        (inputBlur)="maxBidChange.emit($event)"
+                    ></zem-currency-input>
+                    <div
+                        class="message message--info message--with-icon zem-settings-section__item"
+                    >
+                        The change of Maximum Bid CPM will update bids on all
+                        media sources within the ad group.
+                    </div>
+                </div>
+                <div
+                    class="zem-message zem-message--error zem-form-group__subgroup-item"
+                    *ngFor="let error of maxBidErrors"
+                >
+                    {{ error }}
+                </div>
             </div>
         </div>
         <div
