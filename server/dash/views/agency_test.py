@@ -156,8 +156,8 @@ class AdGroupSettingsTest(TestCase):
                     ],
                     "settings": {
                         "bidding_type": constants.BiddingType.CPC,
-                        "cpc_cc": "1.000",
-                        "max_cpm": "1.000",
+                        "cpc_cc": "1.0000",
+                        "max_cpm": "1.0000",
                         "daily_budget_cc": "100.00",
                         "end_date": "2015-04-02",
                         "id": "1",
@@ -228,7 +228,7 @@ class AdGroupSettingsTest(TestCase):
         json_blob = json.loads(response.content)
         settings = json_blob.get("data").get("settings")
 
-        self.assertEqual(settings.get("cpc_cc"), "10.000")
+        self.assertEqual(settings.get("cpc_cc"), "10.0000")
 
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_get_local_cpm(self, mock_get_exchange_rate):
@@ -250,7 +250,7 @@ class AdGroupSettingsTest(TestCase):
         json_blob = json.loads(response.content)
         settings = json_blob.get("data").get("settings")
 
-        self.assertEqual(settings.get("max_cpm"), "10.000")
+        self.assertEqual(settings.get("max_cpm"), "10.0000")
 
     def test_get_not_retargetable(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -320,8 +320,8 @@ class AdGroupSettingsTest(TestCase):
                         },
                         "settings": {
                             "bidding_type": constants.BiddingType.CPC,
-                            "cpc_cc": "0.300",
-                            "max_cpm": "1.600",
+                            "cpc_cc": "0.3000",
+                            "max_cpm": "1.6000",
                             "daily_budget_cc": "200.00",
                             "end_date": str(datetime.date.today()),
                             "id": "1",
@@ -452,8 +452,8 @@ class AdGroupSettingsTest(TestCase):
                         },
                         "settings": {
                             "bidding_type": constants.BiddingType.CPM,
-                            "cpc_cc": "0.300",
-                            "max_cpm": "1.600",
+                            "cpc_cc": "0.3000",
+                            "max_cpm": "1.6000",
                             "daily_budget_cc": "200.00",
                             "end_date": str(datetime.date.today()),
                             "id": "1",
@@ -597,7 +597,7 @@ class AdGroupSettingsTest(TestCase):
             mock_k1_ping.assert_has_calls([call(ad_group, msg="AdGroupSettings.put", priority=False)])
 
             resp_json = json.loads(response.content)
-            self.assertEqual(resp_json["data"]["settings"]["cpc_cc"], "0.050")
+            self.assertEqual(resp_json["data"]["settings"]["cpc_cc"], "0.0500")
             self.assertEqual(
                 set(
                     ad_group.bidmodifier_set.filter(type=bid_modifiers.BidModifierType.SOURCE).values_list(
@@ -657,7 +657,7 @@ class AdGroupSettingsTest(TestCase):
             )
 
             resp_json = json.loads(response.content)
-            self.assertEqual(resp_json["data"]["settings"]["max_cpm"], "0.050")
+            self.assertEqual(resp_json["data"]["settings"]["max_cpm"], "0.0500")
             self.assertEqual(
                 set(
                     ad_group.bidmodifier_set.filter(type=bid_modifiers.BidModifierType.SOURCE).values_list(
