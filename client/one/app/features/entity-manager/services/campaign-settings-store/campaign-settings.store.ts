@@ -196,6 +196,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             this.dealsService
                 .list(
                     this.state.extras.agencyId,
+                    null,
                     !isKeywordDefined ? 0 : null,
                     !isKeywordDefined ? 10 : null,
                     !isKeywordDefined ? null : keyword.trim(),
@@ -220,6 +221,8 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             deal = {
                 id: null,
                 dealId: null,
+                agencyId: null,
+                accountId: null,
                 description: null,
                 name: null,
                 source: null,

@@ -8,43 +8,27 @@ from utils.magic_mixer import magic_mixer
 
 class DirectDealViewSetTest(RESTAPITest):
     def test_validate_empty(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        r = self.client.post(
-            reverse("restapi.directdeal.internal:directdeal_validate", kwargs={"agency_id": agency.id})
-        )
+        r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"))
         self.assertResponseValid(r, data_type=type(None))
 
     def test_validate(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)
-        data = {"dealId": "DEAL_123", "source": source.bidder_slug}
-        r = self.client.post(
-            reverse("restapi.directdeal.internal:directdeal_validate", kwargs={"agency_id": agency.id}),
-            data=data,
-            format="json",
-        )
+        data = {"dealId": "DEAL_123", "source": source.bidder_slug, "agencyId": agency.id}
+        r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"), data=data, format="json")
         self.assertResponseValid(r, data_type=type(None))
 
     def test_validate_error(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        data = {"dealId": None, "source": None}
-        r = self.client.post(
-            reverse("restapi.directdeal.internal:directdeal_validate", kwargs={"agency_id": agency.id}),
-            data=data,
-            format="json",
-        )
+        data = {"dealId": None, "source": None, "agencyId": None}
+        r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"), data=data, format="json")
         r = self.assertResponseError(r, "ValidationError")
         self.assertIn("This field may not be null.", r["details"]["dealId"][0])
         self.assertIn("This field may not be null.", r["details"]["source"][0])
 
     def test_validate_source_error(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        data = {"dealId": "DEAL_123", "source": "12345"}
-        r = self.client.post(
-            reverse("restapi.directdeal.internal:directdeal_validate", kwargs={"agency_id": agency.id}),
-            data=data,
-            format="json",
-        )
+        data = {"dealId": "DEAL_123", "source": "12345", "agencyId": agency.id}
+        r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"), data=data, format="json")
         r = self.assertResponseError(r, "DoesNotExist")
         self.assertIn("Source matching query does not exist.", r["details"])
 
@@ -55,11 +39,7 @@ class DirectDealViewSetTest(RESTAPITest):
             core.features.deals.DirectDeal, agency=agency, source=source, deal_id="DEAL_123", name="DEAL 123"
         )
 
-        r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            )
-        )
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(resp_json["data"]["id"], str(deal.id))
@@ -73,18 +53,14 @@ class DirectDealViewSetTest(RESTAPITest):
         magic_mixer.cycle(20).blend(core.features.deals.DirectDeal, agency=agency, source=source)
 
         r = self.client.get(
-            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
-            {"offset": 0, "limit": 20},
+            reverse("restapi.directdeal.internal:directdeal_list"), {"agencyId": agency.id, "offset": 0, "limit": 20}
         )
         resp_json = self.assertResponseValid(r, data_type=list)
-
         self.assertEqual(resp_json["count"], 20)
-        self.assertIsNone(resp_json["previous"])
         self.assertIsNone(resp_json["next"])
 
         r_paginated = self.client.get(
-            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
-            {"offset": 10, "limit": 10},
+            reverse("restapi.directdeal.internal:directdeal_list"), {"agencyId": agency.id, "offset": 10, "limit": 10}
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
 
@@ -103,8 +79,8 @@ class DirectDealViewSetTest(RESTAPITest):
         magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, name="Deal 3", deal_id="DEAL_3")
 
         r = self.client.get(
-            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
-            {"offset": 0, "limit": 20, "keyword": "test"},
+            reverse("restapi.directdeal.internal:directdeal_list"),
+            {"offset": 0, "limit": 20, "keyword": "test", "agencyId": agency.id},
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 
@@ -113,8 +89,8 @@ class DirectDealViewSetTest(RESTAPITest):
         self.assertIsNone(resp_json["next"])
 
         r = self.client.get(
-            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
-            {"offset": 0, "limit": 20, "keyword": "DEAL_1"},
+            reverse("restapi.directdeal.internal:directdeal_list"),
+            {"offset": 0, "limit": 20, "keyword": "DEAL_1", "agencyId": agency.id},
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 
@@ -131,11 +107,7 @@ class DirectDealViewSetTest(RESTAPITest):
             core.features.deals.DirectDeal, agency=agency, source=source, deal_id="DEAL_123", name="DEAL 123"
         )
 
-        r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            )
-        )
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
         resp_json = self.assertResponseValid(r)
 
         name = "DEAL 123 (UPDATED)"
@@ -144,11 +116,10 @@ class DirectDealViewSetTest(RESTAPITest):
         put_data = resp_json["data"].copy()
         put_data["name"] = name
         put_data["description"] = description
+        put_data["agencyId"] = agency.id
 
         r = self.client.put(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            ),
+            reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}),
             data=put_data,
             format="json",
         )
@@ -161,13 +132,9 @@ class DirectDealViewSetTest(RESTAPITest):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)
 
-        new_deal = {"dealId": "DEAL_444", "source": source.bidder_slug, "name": "DEAL 444"}
+        new_deal = {"dealId": "DEAL_444", "source": source.bidder_slug, "name": "DEAL 444", "agencyId": agency.id}
 
-        r = self.client.post(
-            reverse("restapi.directdeal.internal:directdeal_list", kwargs={"agency_id": agency.id}),
-            data=new_deal,
-            format="json",
-        )
+        r = self.client.post(reverse("restapi.directdeal.internal:directdeal_list"), data=new_deal, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
         self.assertIsNotNone(resp_json["data"]["id"])
@@ -182,28 +149,16 @@ class DirectDealViewSetTest(RESTAPITest):
             core.features.deals.DirectDeal, agency=agency, source=source, deal_id="DEAL_123", name="DEAL 123"
         )
 
-        r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            )
-        )
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertIsNotNone(resp_json["data"]["id"])
         self.assertEqual(resp_json["data"]["id"], str(deal.id))
 
-        r = self.client.delete(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            )
-        )
+        r = self.client.delete(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
         self.assertEqual(r.status_code, 204)
 
-        r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdeal_details", kwargs={"agency_id": agency.id, "deal_id": deal.id}
-            )
-        )
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
         self.assertResponseError(r, "MissingDataError")
 
     def test_list_connections(self):
@@ -232,10 +187,7 @@ class DirectDealViewSetTest(RESTAPITest):
         )
 
         r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdealconnection_list",
-                kwargs={"agency_id": agency.id, "deal_id": deal.id},
-            )
+            reverse("restapi.directdeal.internal:directdealconnection_list", kwargs={"deal_id": deal.id})
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 
@@ -286,10 +238,7 @@ class DirectDealViewSetTest(RESTAPITest):
         )
 
         r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdealconnection_list",
-                kwargs={"agency_id": agency.id, "deal_id": deal.id},
-            )
+            reverse("restapi.directdeal.internal:directdealconnection_list", kwargs={"deal_id": deal.id})
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 
@@ -311,16 +260,13 @@ class DirectDealViewSetTest(RESTAPITest):
         r = self.client.delete(
             reverse(
                 "restapi.directdeal.internal:directdealconnection_details",
-                kwargs={"agency_id": agency.id, "deal_id": deal.id, "deal_connection_id": deal_connection_account.id},
+                kwargs={"deal_id": deal.id, "deal_connection_id": deal_connection_account.id},
             )
         )
         self.assertEqual(r.status_code, 204)
 
         r = self.client.get(
-            reverse(
-                "restapi.directdeal.internal:directdealconnection_list",
-                kwargs={"agency_id": agency.id, "deal_id": deal.id},
-            )
+            reverse("restapi.directdeal.internal:directdealconnection_list", kwargs={"deal_id": deal.id})
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 

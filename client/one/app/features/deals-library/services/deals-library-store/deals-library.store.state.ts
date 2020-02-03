@@ -3,14 +3,18 @@ import {Source} from '../../../../core/sources/types/source';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {RequestState} from '../../../../shared/types/request-state';
 import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
+import {NonFieldErrors} from '../../../../shared/types/non-field-errors';
 
 export class DealsLibraryStoreState {
     agencyId: string = null;
+    accountId: string = null;
     entities: Deal[] = [];
     fieldsErrors: DealsLibraryStoreFieldsErrorsState[] = [];
     activeEntity = {
         entity: {
             id: null,
+            agencyId: null,
+            accountId: null,
             dealId: null,
             description: null,
             name: null,

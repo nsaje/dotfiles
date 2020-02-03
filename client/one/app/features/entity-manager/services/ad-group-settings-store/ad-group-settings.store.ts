@@ -207,6 +207,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             this.dealsService
                 .list(
                     this.state.extras.agencyId,
+                    null,
                     !isKeywordDefined ? 0 : null,
                     !isKeywordDefined ? 10 : null,
                     !isKeywordDefined ? null : keyword.trim(),
@@ -231,6 +232,8 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             deal = {
                 id: null,
                 dealId: null,
+                agencyId: null,
+                accountId: null,
                 description: null,
                 name: null,
                 source: null,

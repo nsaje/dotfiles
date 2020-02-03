@@ -1171,12 +1171,8 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        ad_group_settingss = models.AdGroupSettings.objects.all().group_current_settings()
-
         queried_state = int(self.value())
-        return queryset.filter(
-            content_ad__ad_group_id__in=[x.ad_group_id for x in ad_group_settingss if x.state == queried_state]
-        )
+        return queryset.filter(content_ad__ad_group__in=models.AdGroup.objects.filter(settings__state=queried_state))
 
 
 def _resubmit_content_ad(queryset, clear=False):
@@ -2107,8 +2103,8 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
 class DirectDealAdmin(admin.ModelAdmin):
     model = models.DirectDeal
     readonly_fields = ("id", "modified_dt", "created_dt", "created_by", "modified_by")
-    list_display = ("deal_id", "name", "source", "agency", "floor_price", "valid_from_date", "valid_to_date")
-    search_fields = ("id", "deal_id", "name", "agency__name", "source__name")
+    list_display = ("deal_id", "name", "source", "agency", "account", "floor_price", "valid_from_date", "valid_to_date")
+    search_fields = ("id", "deal_id", "name", "agency__name", "account__name", "source__name")
 
     def save_model(self, request, obj, form, change):
         obj.save(request)

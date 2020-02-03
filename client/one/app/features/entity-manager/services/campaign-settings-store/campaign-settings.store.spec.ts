@@ -957,6 +957,8 @@ describe('CampaignSettingsStore', () => {
         const mockedDeal = {
             id: '10000000',
             dealId: '45345',
+            agencyId: '45',
+            accountId: '55',
             description: 'test directDeal',
             name: 'test directDeal',
             source: 'urska',
@@ -982,6 +984,8 @@ describe('CampaignSettingsStore', () => {
             {
                 id: '10000000',
                 dealId: '45345',
+                agencyId: '45',
+                accountId: '55',
                 description: 'test directDeal',
                 name: 'test directDeal',
                 source: 'urska',

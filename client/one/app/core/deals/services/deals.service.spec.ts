@@ -15,6 +15,7 @@ describe('DealsService', () => {
     let mockedDeals: Deal[];
     let mockedDealId: string;
     let mockedAgencyId: string;
+    let mockedAccountId: string;
 
     beforeEach(() => {
         dealsEndpointStub = jasmine.createSpyObj(DealsEndpoint.name, [
@@ -28,11 +29,14 @@ describe('DealsService', () => {
         requestStateUpdater = (requestName, requestState) => {};
 
         mockedAgencyId = '71';
+        mockedAccountId = '55';
         mockedDealId = '456346';
         mockedDeals = [
             {
                 id: '10000000',
                 dealId: '45345',
+                agencyId: '71',
+                accountId: null,
                 description: 'test directDeal',
                 name: 'test directDeal',
                 source: 'urska',
@@ -47,6 +51,8 @@ describe('DealsService', () => {
             {
                 id: '10000001',
                 dealId: '456346',
+                agencyId: '71',
+                accountId: null,
                 description: 'second test deal',
                 name: 'test deal number two',
                 source: 'test2',
@@ -61,6 +67,8 @@ describe('DealsService', () => {
             {
                 id: '10000002',
                 dealId: '345245',
+                agencyId: '71',
+                accountId: null,
                 description: 'test 3',
                 name: 'test deal 3',
                 source: 'bsoutbrain',
@@ -85,13 +93,21 @@ describe('DealsService', () => {
             .calls.reset();
 
         service
-            .list(mockedAgencyId, offset, limit, keyword, requestStateUpdater)
+            .list(
+                mockedAgencyId,
+                mockedAccountId,
+                offset,
+                limit,
+                keyword,
+                requestStateUpdater
+            )
             .subscribe(deals => {
                 expect(deals).toEqual(mockedDeals);
             });
         expect(dealsEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.list).toHaveBeenCalledWith(
             mockedAgencyId,
+            mockedAccountId,
             offset,
             limit,
             keyword,
@@ -106,16 +122,13 @@ describe('DealsService', () => {
 
         const mockedNewDeal = clone(mockedDeal);
         mockedNewDeal.id = null;
-        service
-            .save(mockedAgencyId, mockedNewDeal, requestStateUpdater)
-            .subscribe(deal => {
-                expect(deal).toEqual(mockedDeal);
-            });
+        service.save(mockedNewDeal, requestStateUpdater).subscribe(deal => {
+            expect(deal).toEqual(mockedDeal);
+        });
         tick();
 
         expect(dealsEndpointStub.create).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.create).toHaveBeenCalledWith(
-            mockedAgencyId,
             mockedNewDeal,
             requestStateUpdater
         );
@@ -126,14 +139,11 @@ describe('DealsService', () => {
             .returnValue(of(mockedDeal, asapScheduler))
             .calls.reset();
 
-        service
-            .get(mockedAgencyId, mockedDealId, requestStateUpdater)
-            .subscribe(deal => {
-                expect(deal).toEqual(mockedDeal);
-            });
+        service.get(mockedDealId, requestStateUpdater).subscribe(deal => {
+            expect(deal).toEqual(mockedDeal);
+        });
         expect(dealsEndpointStub.get).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.get).toHaveBeenCalledWith(
-            mockedAgencyId,
             mockedDealId,
             requestStateUpdater
         );
@@ -145,15 +155,12 @@ describe('DealsService', () => {
             .returnValue(of(mockedDeal, asapScheduler))
             .calls.reset();
 
-        service
-            .save(mockedAgencyId, mockedNewDeal, requestStateUpdater)
-            .subscribe(newDeal => {
-                expect(newDeal).toEqual(mockedNewDeal);
-            });
+        service.save(mockedNewDeal, requestStateUpdater).subscribe(newDeal => {
+            expect(newDeal).toEqual(mockedNewDeal);
+        });
 
         expect(dealsEndpointStub.edit).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.edit).toHaveBeenCalledWith(
-            mockedAgencyId,
             mockedNewDeal,
             requestStateUpdater
         );

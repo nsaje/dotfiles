@@ -11,7 +11,8 @@ export class DealsService {
     constructor(private endpoint: DealsEndpoint) {}
 
     list(
-        agencyId: string,
+        agencyId: string | null,
+        accountId: string | null,
         offset: number | null,
         limit: number | null,
         keyword: string | null,
@@ -19,6 +20,7 @@ export class DealsService {
     ): Observable<Deal[]> {
         return this.endpoint.list(
             agencyId,
+            accountId,
             offset,
             limit,
             keyword,
@@ -27,60 +29,49 @@ export class DealsService {
     }
 
     save(
-        agencyId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
         if (!commonHelpers.isDefined(deal.id)) {
-            return this.create(agencyId, deal, requestStateUpdater);
+            return this.create(deal, requestStateUpdater);
         }
-        return this.edit(agencyId, deal, requestStateUpdater);
+        return this.edit(deal, requestStateUpdater);
     }
 
     validate(
-        agencyId: string,
         deal: Partial<Deal>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
-        return this.endpoint.validate(agencyId, deal, requestStateUpdater);
+        return this.endpoint.validate(deal, requestStateUpdater);
     }
 
     get(
-        agencyId: string,
         dealId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        return this.endpoint.get(agencyId, dealId, requestStateUpdater);
+        return this.endpoint.get(dealId, requestStateUpdater);
     }
 
     remove(
-        agencyId: string,
         dealId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
-        return this.endpoint.remove(agencyId, dealId, requestStateUpdater);
+        return this.endpoint.remove(dealId, requestStateUpdater);
     }
 
     listConnections(
-        agencyId: string,
         dealId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<DealConnection[]> {
-        return this.endpoint.listConnections(
-            agencyId,
-            dealId,
-            requestStateUpdater
-        );
+        return this.endpoint.listConnections(dealId, requestStateUpdater);
     }
 
     removeConnection(
-        agencyId: string,
         dealId: string,
         dealConnectionId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         return this.endpoint.removeConnection(
-            agencyId,
             dealId,
             dealConnectionId,
             requestStateUpdater
@@ -88,18 +79,16 @@ export class DealsService {
     }
 
     private create(
-        agencyId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        return this.endpoint.create(agencyId, deal, requestStateUpdater);
+        return this.endpoint.create(deal, requestStateUpdater);
     }
 
     private edit(
-        agencyId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        return this.endpoint.edit(agencyId, deal, requestStateUpdater);
+        return this.endpoint.edit(deal, requestStateUpdater);
     }
 }

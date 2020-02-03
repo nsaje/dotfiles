@@ -35,13 +35,18 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     }
 
     initStore(
-        agencyId: string,
+        agencyId: string | null,
+        accountId: string | null,
         page: number,
         pageSize: number,
         keyword: string | null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.patchState(agencyId, 'agencyId');
+            this.setState({
+                ...this.state,
+                agencyId: agencyId,
+                accountId: accountId,
+            });
             Promise.all([
                 this.loadEntities(page, pageSize, keyword),
                 this.loadSources(),
@@ -61,6 +66,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             this.dealsService
                 .list(
                     this.state.agencyId,
+                    this.state.accountId,
                     offset,
                     pageSize,
                     keyword,
@@ -82,11 +88,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     saveActiveEntity(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.dealsService
-                .save(
-                    this.state.agencyId,
-                    this.state.activeEntity.entity,
-                    this.requestStateUpdater
-                )
+                .save(this.state.activeEntity.entity, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
@@ -118,7 +120,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             this.state.activeEntity.entity
         );
         this.dealsService
-            .validate(this.state.agencyId, entity, this.requestStateUpdater)
+            .validate(this.state.activeEntity.entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
@@ -145,7 +147,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     deleteEntity(dealId: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.dealsService
-                .remove(this.state.agencyId, dealId, this.requestStateUpdater)
+                .remove(dealId, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
@@ -162,7 +164,6 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         return new Promise<void>((resolve, reject) => {
             this.dealsService
                 .listConnections(
-                    this.state.agencyId,
                     this.state.activeEntity.entity.id,
                     this.requestStateUpdater
                 )
@@ -187,7 +188,6 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         return new Promise<void>((resolve, reject) => {
             this.dealsService
                 .removeConnection(
-                    this.state.agencyId,
                     this.state.activeEntity.entity.id,
                     dealConnectionId,
                     this.requestStateUpdater
@@ -206,6 +206,8 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
 
     setActiveEntity(entity: Partial<Deal>): void {
         const emptyActiveEntity = new DealsLibraryStoreState().activeEntity;
+        // TODO @Katrca remove setting agencyID on entity once
+        // deals edit form has scope selector added which will handle this
         this.setState({
             ...this.state,
             activeEntity: {
@@ -213,6 +215,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                 entity: {
                     ...emptyActiveEntity.entity,
                     ...entity,
+                    agencyId: this.state.agencyId,
                 },
             },
         });

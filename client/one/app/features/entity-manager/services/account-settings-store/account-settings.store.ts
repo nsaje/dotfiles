@@ -175,6 +175,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             this.dealsService
                 .list(
                     this.state.entity.agencyId,
+                    null,
                     !isKeywordDefined ? 0 : null,
                     !isKeywordDefined ? 10 : null,
                     !isKeywordDefined ? null : keyword.trim(),
@@ -199,6 +200,8 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             deal = {
                 id: null,
                 dealId: null,
+                agencyId: null,
+                accountId: null,
                 description: null,
                 name: null,
                 source: null,

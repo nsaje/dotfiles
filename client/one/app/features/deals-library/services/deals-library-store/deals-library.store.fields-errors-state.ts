@@ -1,7 +1,10 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
+import {NonFieldErrors} from '../../../../shared/types/non-field-errors';
 
 export class DealsLibraryStoreFieldsErrorsState {
     id: FieldErrors = [];
+    agencyId: FieldErrors = [];
+    accountId: FieldErrors = [];
     dealId: FieldErrors = [];
     description: FieldErrors = [];
     name: FieldErrors = [];
@@ -15,4 +18,5 @@ export class DealsLibraryStoreFieldsErrorsState {
     numOfAccounts: FieldErrors = [];
     numOfCampaigns: FieldErrors = [];
     numOfAdgroups: FieldErrors = [];
+    nonFieldErrors: NonFieldErrors = [];
 }

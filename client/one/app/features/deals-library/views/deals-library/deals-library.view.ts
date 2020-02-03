@@ -35,6 +35,8 @@ const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 export class DealsLibraryView implements OnInit, OnDestroy {
     @Input()
     agencyId: string;
+    @Input()
+    accountId: string = null;
 
     @ViewChild('editDealModal', {static: false})
     editDealModal: ModalComponent;
@@ -139,6 +141,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             this.store
                 .initStore(
                     this.agencyId,
+                    this.accountId,
                     preselectedPagination.page,
                     preselectedPagination.pageSize,
                     keyword

@@ -18,6 +18,7 @@ describe('DealsLibraryStore', () => {
     let mockedSources: Source[];
     let mockedAgencyId: string;
     let mockedConnections: DealConnection[];
+    let mockedAccountId: string;
 
     beforeEach(() => {
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, [
@@ -37,6 +38,8 @@ describe('DealsLibraryStore', () => {
             {
                 id: '10000000',
                 dealId: '45345',
+                agencyId: '71',
+                accountId: null,
                 description: 'test directDeal',
                 name: 'test directDeal',
                 source: 'urska',
@@ -51,6 +54,8 @@ describe('DealsLibraryStore', () => {
             {
                 id: '10000001',
                 dealId: '456346',
+                agencyId: '71',
+                accountId: null,
                 description: 'second test deal',
                 name: 'test deal number two',
                 source: 'test2',
@@ -65,6 +70,8 @@ describe('DealsLibraryStore', () => {
             {
                 id: '10000002',
                 dealId: '345245',
+                agencyId: '71',
+                accountId: null,
                 description: 'test 3',
                 name: 'test deal 3',
                 source: 'bsoutbrain',
@@ -130,6 +137,7 @@ describe('DealsLibraryStore', () => {
         ];
 
         mockedAgencyId = '71';
+        mockedAccountId = '55';
     });
 
     it('should correctly initialize store', fakeAsync(() => {
@@ -141,11 +149,17 @@ describe('DealsLibraryStore', () => {
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
-        store.initStore(mockedAgencyId, mockedOffset, mockedLimit, null);
+        store.initStore(
+            mockedAgencyId,
+            mockedAccountId,
+            mockedOffset,
+            mockedLimit,
+            null
+        );
         tick();
 
         expect(store.state.entities).toEqual(mockedDeals);
-        expect(store.state.agencyId).toEqual(mockedAgencyId);
+        expect(store.state.accountId).toEqual(mockedAccountId);
         expect(store.state.sources).toEqual(mockedSources);
         expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
         expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
@@ -208,6 +222,7 @@ describe('DealsLibraryStore', () => {
 
     it('should set deal to activeEntity', () => {
         const mockedDeal = clone(mockedDeals[0]);
+        store.state.agencyId = mockedDeal.agencyId;
         const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
             .entity;
         store.setActiveEntity(mockedDeal);

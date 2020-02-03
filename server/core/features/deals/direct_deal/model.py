@@ -6,9 +6,10 @@ from django.db import models
 from . import instance
 from . import manager
 from . import queryset
+from . import validation
 
 
-class DirectDeal(instance.DirectDealMixin, models.Model):
+class DirectDeal(instance.DirectDealMixin, validation.DirectDealValidatorMixin, models.Model):
     class Meta:
         app_label = "dash"
 
@@ -23,6 +24,7 @@ class DirectDeal(instance.DirectDealMixin, models.Model):
     name = models.CharField(max_length=127, null=False, blank=False)
     source = models.ForeignKey("Source", null=False, blank=False, on_delete=models.PROTECT)
     agency = models.ForeignKey("Agency", null=True, blank=True, on_delete=models.PROTECT)
+    account = models.ForeignKey("Account", null=True, blank=True, on_delete=models.PROTECT)
     floor_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     valid_from_date = models.DateField(verbose_name="Valid from", null=True, blank=True)
     valid_to_date = models.DateField(verbose_name="Valid to", null=True, blank=True)
