@@ -94,7 +94,8 @@ def set_bulk(
 def _set(
     ad_group, modifier_type, target, source, modifier, user, write_history=True, skip_source_settings_update=False
 ):
-    if modifier == 1.0 or not modifier:
+    if (modifier == 1.0 and modifier_type != constants.BidModifierType.PUBLISHER) or not modifier:
+        # TODO publisher modifiers with value of 1 are currently needed to correctly support publisher hierarchy in bidder
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
         return None, None
 
