@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import backtosql
 import redshiftapi.db
 
@@ -31,7 +33,13 @@ def query(breakdown=None, constraints=None):
     )
     params = q.get_params()
 
-    return redshiftapi.db.execute_query(sql, params, query_name="inventory_planning", cache_name="inventory_planning")
+    return redshiftapi.db.execute_query(
+        sql,
+        params,
+        query_name="inventory_planning",
+        cache_name="inventory_planning",
+        db_cluster=settings.STATS_DB_HOT_CLUSTER,
+    )
 
 
 def query_top_publishers(breakdown=None, constraints=None):
