@@ -8,7 +8,7 @@ BATCH_SIZE = 100000
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0446_agency_available_sources")]
+    dependencies = [("dash", "0447_auto_20200127_1246")]
 
     operations = [
         migrations.AddField(
