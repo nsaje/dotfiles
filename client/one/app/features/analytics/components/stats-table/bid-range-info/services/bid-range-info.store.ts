@@ -41,6 +41,10 @@ export class BidRangeInfoStore extends Store<BidRangeInfoStoreState> {
         );
 
         const newBidModifier = clone(bidModifier);
+        if (!commonHelpers.isDefined(newBidModifier.modifier)) {
+            newBidModifier.modifier = 1.0;
+        }
+
         if (commonHelpers.isDefined(modifierPercent)) {
             const newModifierValue = this.convertPercentToModifier(
                 parseFloat(modifierPercent)

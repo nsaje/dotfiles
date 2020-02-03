@@ -341,4 +341,48 @@ describe('BidRangeInfoStore', () => {
         );
         expect(store.state.finalBidRangeValue).toEqual('$0.81 - $0.99');
     });
+
+    it('should correctly present bid range info for CPC / no source bid modifier / active autopilot / selected all dimensions', () => {
+        bidModifier = {
+            type: BidModifierType.SOURCE,
+            target: 'example.com',
+            modifier: null,
+        } as BidModifier;
+        bidModifierTypeSummaries = [] as BidModifierTypeSummary[];
+        adGroupAutopilotState = AdGroupAutopilotState.ACTIVE_CPC_BUDGET;
+
+        store.updateInputs(
+            bidModifier,
+            biddingType,
+            bid,
+            bidModifierTypeSummaries,
+            currency,
+            fractionSize,
+            adGroupAutopilotState,
+            modifierPercent
+        );
+        store.updateSelectedGridRows(store.state.bidModifierTypeGridRows);
+
+        expect(store.state.bidModifierTypeSummaries).toEqual([]);
+        expect(store.state.sourceBidModifierTypeSummary).toEqual(null);
+        expect(store.state.autopilot).toEqual(true);
+        expect(store.state.minFactor).toEqual(1.0);
+        expect(store.state.maxFactor).toEqual(1.0);
+        expect(store.state.computedBidMin).toEqual('$1.00');
+        expect(store.state.computedBidMax).toEqual('$1.00');
+        expect(store.state.infoMessage).toEqual(
+            'Your final bid CPC depends on bid CPC set by the autopilot on media source and bid modifiers set by you on other dimensions.'
+        );
+        expect(store.state.selectionTooltipMessage).toEqual(
+            'Dimensions that you select will be included in the calculation of final bid CPC range.'
+        );
+        expect(store.state.bidMessage).toEqual(
+            'Autopilot media source bid CPC:'
+        );
+        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.finalBidRangeMessage).toEqual(
+            'Final bid CPC range:'
+        );
+        expect(store.state.finalBidRangeValue).toEqual('$1.00 - $1.00');
+    });
 });
