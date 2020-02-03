@@ -24,10 +24,10 @@ class UserChangeForm(forms.UserChangeForm):
 class UserAdmin(authadmin.UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
-    search_fields = ("email", "username", "first_name", "last_name")
+    search_fields = ("email", "username", "first_name", "last_name", "outbrain_user_id")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        (_("Personal info"), {"fields": ("username", "first_name", "last_name")}),
+        (_("Personal info"), {"fields": ("username", "first_name", "last_name", "outbrain_user_id")}),
         (
             _("Permissions"),
             {"fields": ("is_active", "is_staff", "is_superuser", "is_test_user", "groups", "user_permissions")},

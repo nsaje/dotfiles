@@ -121,7 +121,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     sspd_sources = models.ManyToManyField(Source, blank=True)
 
     sspd_sources_markets = JSONField(null=True, blank=True, validators=[validate_sspd_sources_markets])
-
+    outbrain_user_id = models.CharField(null=True, blank=True, max_length=30, help_text="Outbrain ID")
     objects = UserManager()
 
     class QuerySet(models.QuerySet):
