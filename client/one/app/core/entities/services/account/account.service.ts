@@ -29,6 +29,10 @@ export class AccountService {
         return this.endpoint.get(id, requestStateUpdater);
     }
 
+    list(requestStateUpdater: RequestStateUpdater): Observable<Account[]> {
+        return this.endpoint.list(requestStateUpdater);
+    }
+
     validate(
         account: Partial<Account>,
         requestStateUpdater: RequestStateUpdater

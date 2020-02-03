@@ -3,6 +3,7 @@ import {APP_CONFIG} from '../../app.config';
 const adGroupApiUrl = `${APP_CONFIG.apiRestInternalUrl}/adgroups`;
 const campaignApiUrl = `${APP_CONFIG.apiRestInternalUrl}/campaigns`;
 const accountApiUrl = `${APP_CONFIG.apiRestInternalUrl}/accounts`;
+const agencyApiUrl = `${APP_CONFIG.apiRestInternalUrl}/agencies`;
 
 export const ENTITY_CONFIG = {
     requests: {
@@ -59,6 +60,10 @@ export const ENTITY_CONFIG = {
                 name: 'get',
                 url: `${accountApiUrl}/`,
             },
+            list: {
+                name: 'list',
+                url: `${accountApiUrl}/`,
+            },
             create: {
                 name: 'create',
                 url: `${accountApiUrl}/`,
@@ -74,6 +79,12 @@ export const ENTITY_CONFIG = {
             defaults: {
                 name: 'defaults',
                 url: `${accountApiUrl}/defaults/`,
+            },
+        },
+        agency: {
+            list: {
+                name: 'list',
+                url: `${agencyApiUrl}/`,
             },
         },
     },

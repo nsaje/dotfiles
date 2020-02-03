@@ -6,6 +6,8 @@ import {CampaignEndpoint} from './services/campaign/campaign.endpoint';
 import {CampaignService} from './services/campaign/campaign.service';
 import {AccountEndpoint} from './services/account/account.endpoint';
 import {AccountService} from './services/account/account.service';
+import {AgencyEndpoint} from './services/agency/agency.endpoint';
+import {AgencyService} from './services/agency/agency.service';
 
 @NgModule({
     providers: [
@@ -16,6 +18,8 @@ import {AccountService} from './services/account/account.service';
         AccountEndpoint,
         AccountService,
         EntitiesUpdatesService,
+        AgencyEndpoint,
+        AgencyService,
     ],
 })
 export class EntitiesModule {}

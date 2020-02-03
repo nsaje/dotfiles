@@ -24,6 +24,7 @@ describe('AccountService', () => {
         accountEndpointStub = jasmine.createSpyObj(AccountEndpoint.name, [
             'defaults',
             'get',
+            'list',
             'validate',
             'create',
             'edit',
@@ -91,6 +92,20 @@ describe('AccountService', () => {
         expect(accountEndpointStub.get).toHaveBeenCalledTimes(1);
         expect(accountEndpointStub.get).toHaveBeenCalledWith(
             mockedAccount.id,
+            requestStateUpdater
+        );
+    });
+
+    it('should list all accounts for user via endpoint', () => {
+        accountEndpointStub.list.and
+            .returnValue(of([mockedAccount], asapScheduler))
+            .calls.reset();
+
+        service.list(requestStateUpdater).subscribe(accounts => {
+            expect(accounts[0]).toEqual(mockedAccount);
+        });
+        expect(accountEndpointStub.list).toHaveBeenCalledTimes(1);
+        expect(accountEndpointStub.list).toHaveBeenCalledWith(
             requestStateUpdater
         );
     });
