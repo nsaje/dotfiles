@@ -11,6 +11,7 @@ import {ConversionPixelsModule} from './conversion-pixels/conversion-pixels.modu
 import {DealsModule} from './deals/deals.module';
 import {RulesModule} from './rules/rules.module';
 import {SourcesModule} from './sources/sources.module';
+import {NotificationService} from './notification/services/notification.service';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -33,6 +34,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         GoogleAnalyticsService,
         MixpanelService,
         PostAsGetRequestService,
+        NotificationService,
         HTTP_INTERCEPTOR_PROVIDERS,
     ],
 })

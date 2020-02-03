@@ -15,6 +15,8 @@ import {EntityManagerModule} from './features/entity-manager/entity-manager.modu
 import {AnalyticsModule} from './features/analytics/analytics.module';
 import {RulesLibraryModule} from './features/rules-library/rules-library.module';
 import {DealsLibraryModule} from './features/deals-library/deals-library.module';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {ToastrModule} from 'ngx-toastr';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -44,6 +46,17 @@ if (APP_CONFIG.env.prod) {
             headerName: 'X-CSRFToken',
         }),
         UpgradeModule,
+        BrowserAnimationsModule,
+
+        ToastrModule.forRoot({
+            enableHtml: true,
+            tapToDismiss: false,
+            closeButton: true,
+            timeOut: 0,
+            extendedTimeOut: 0,
+            positionClass: 'toast-bottom-right',
+            preventDuplicates: true,
+        }),
 
         CoreModule,
 
