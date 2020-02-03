@@ -48,5 +48,6 @@ def query_top_publishers(breakdown=None, constraints=None):
         params=None,
         query_name="inventory_planning_publisher_names",
         cache_name="inventory_planning",
+        db_cluster=settings.STATS_DB_HOT_CLUSTER,
     )
     return [row["publisher"] for row in result]
