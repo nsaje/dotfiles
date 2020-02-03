@@ -347,4 +347,5 @@ SALES_REP_AGENCY_MAPPING = {
     "ilasky@outbrain.com": 510,
     "gloulai@outbrain.com": 390,
     "jberkhemer@outbrain.com": 513,
+    "bdirienzo@outbrain.com": 508,
 }
