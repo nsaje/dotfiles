@@ -37,7 +37,7 @@ def refresh_inventory_data(date_from, date_to):
         {"valid_country_codes": valid_country_codes, "source_slug_to_id": source_slug_to_id},
     )
 
-    with db.get_stats_cursor() as c:
+    with db.get_write_stats_cursor() as c:
         maintenance.truncate(TABLE_NAME)
 
         logger.info("Starting materialization of table", table=TABLE_NAME)
