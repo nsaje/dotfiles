@@ -31,3 +31,8 @@ class GeolocationListViewTest(restapi.common.views_base_test.RESTAPITest):
         r = self.client.get(reverse("geolocation_list") + "?types=COUNTRY,CITY&nameContains=New")
         r = self.assertResponseValid(r, data_type=list)
         self.assertFalse(any(location["type"] not in types or "New" not in location["name"] for location in r["data"]))
+
+    def test_get_with_offset_and_limit(self):
+        r = self.client.get(reverse("geolocation_list") + "?offset=2&limit=2")
+        r = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(r["data"]), 2)

@@ -12,6 +12,7 @@ class GeolocationQueryParamsExpectations(restapi.serializers.serializers.QueryPa
         child=restapi.serializers.fields.DashConstantField(dash.constants.LocationType), max_length=10
     )
     limit = fields.IntegerField(max_value=50, default=10)
+    offset = fields.IntegerField(default=0)
     keys = fields.ListField(child=restapi.serializers.fields.PlainCharField(), max_length=50)
     name_contains = restapi.serializers.fields.PlainCharField(min_length=2, max_length=50, required=False)
 

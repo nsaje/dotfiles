@@ -1,11 +1,6 @@
 from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.source.internal.urls
+import restapi.source.v1.urls
 
-urlpatterns = [
-    url(
-        r"^internal/agencies/(?P<agency_id>\d+)/sources/",
-        include(restapi.source.internal.urls, namespace="restapi.source.internal"),
-    )
-]
+urlpatterns = [url(r"^v1/sources/", include(restapi.source.v1.urls, namespace="restapi.source.v1"))]

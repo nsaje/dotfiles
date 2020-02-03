@@ -23,7 +23,7 @@ class GeolocationQuerySet(models.QuerySet):
 
 
 class GeolocationManager(models.Manager):
-    def search(self, keys=None, types=None, name_contains=None, limit=None):
+    def search(self, keys=None, types=None, name_contains=None, limit=None, offset=0):
         locations = (
             super(GeolocationManager, self)
             .get_queryset()
@@ -44,8 +44,9 @@ class GeolocationManager(models.Manager):
         if name_contains:
             locations = locations.name_contains(name_contains)
             locations = locations.order_by("-num_external", "-name_match_count", "name")
-
-        return locations[:limit]
+        if limit:
+            limit += offset
+        return locations[offset:limit]
 
 
 class Geolocation(models.Model):

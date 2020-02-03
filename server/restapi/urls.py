@@ -10,6 +10,7 @@ import restapi.adgroupsourcestats.urls
 import restapi.adgroupstats.urls
 import restapi.agency.urls
 import restapi.audience.urls
+import restapi.availablesources.urls
 import restapi.bcm.urls
 import restapi.bidmodifiers.internal.urls
 import restapi.bidmodifiers.urls
@@ -60,6 +61,7 @@ urlpatterns += restapi.publishergroup.urls.urlpatterns
 urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.rules.urls.urlpatterns
 urlpatterns += restapi.source.urls.urlpatterns
+urlpatterns += restapi.availablesources.urls.urlpatterns
 
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns

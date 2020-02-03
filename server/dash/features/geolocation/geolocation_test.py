@@ -54,3 +54,5 @@ class GeolocationTestCase(TestCase):
         self.assertEqual(len(geolocation.Geolocation.objects.search(name_contains=params["name_contains"])), 1)
         self.assertEqual(len(geolocation.Geolocation.objects.search(limit=15)), 15)
         self.assertEqual(len(geolocation.Geolocation.objects.search(**params)), 1)
+        self.assertEqual(len(geolocation.Geolocation.objects.search(offset=10)), 13)
+        self.assertEqual(len(geolocation.Geolocation.objects.search(offset=10, limit=8)), 8)
