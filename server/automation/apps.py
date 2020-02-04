@@ -6,7 +6,7 @@ class AutomationAppConfig(AppConfig):
     name = "automation"
 
     def ready(self):
-        if not settings.DISABLE_SIGNALS:
+        if not settings.DISABLE_CAMPAIGNSTOP_SIGNALS:
             import automation.campaignstop.signals  # noqa
 
             automation.campaignstop.signals.connect_notify_budgets()

@@ -41,7 +41,7 @@ settings.ALLOWED_HOSTS = ["*"]
 settings.K1_DEMO_MODE = True
 settings.R1_DEMO_MODE = True
 settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = "mock"
-settings.DISABLE_SIGNALS = True
+settings.DISABLE_CAMPAIGNSTOP_SIGNALS = True
 
 BRANCH = None
 if os.environ.get("BRANCH"):
