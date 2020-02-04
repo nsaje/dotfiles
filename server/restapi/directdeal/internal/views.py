@@ -44,7 +44,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             )
         elif agency is not None:
             deal_items = (
-                core.features.deals.DirectDeal.objects.filter_by_agency(agency)
+                core.features.deals.DirectDeal.objects.filter(Q(agency=agency) | Q(account__agency=agency))
                 .select_related("source", "agency")
                 .order_by("-created_dt")
             )
