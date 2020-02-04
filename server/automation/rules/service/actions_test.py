@@ -363,7 +363,7 @@ class ActionsTest(TestCase):
         rule = magic_mixer.blend(Rule)
 
         with self.assertRaisesRegexp(Exception, "Invalid ad group bid adjustment target"):
-            actions.adjust_bid(str(ad_group.id + 1), rule, ad_group)
+            actions.adjust_bid(str(-1), rule, ad_group)
 
     def test_adjust_bid_unsupported_action(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -449,7 +449,7 @@ class ActionsTest(TestCase):
         rule = magic_mixer.blend(Rule)
 
         with self.assertRaisesRegexp(Exception, "Invalid ad group autopilot budget adjustment target"):
-            actions.adjust_autopilot_daily_budget(str(ad_group.id + 1), rule, ad_group)
+            actions.adjust_autopilot_daily_budget(str(-1), rule, ad_group)
 
     def test_adjust_ad_group_autopilot_budget_inactive(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -495,7 +495,7 @@ class ActionsTest(TestCase):
         )
 
         with self.assertRaisesRegexp(Exception, "Invalid ad group turn off target"):
-            actions.turn_off(str(ad_group.id + 1), rule, ad_group)
+            actions.turn_off(str(-1), rule, ad_group)
 
     def test_turn_off_ad(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -515,11 +515,10 @@ class ActionsTest(TestCase):
 
     def test_turn_off_ad_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
         rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
 
         with self.assertRaisesRegexp(Exception, "Invalid ad turn off target"):
-            actions.turn_off(str(ad.id + 1), rule, ad_group)
+            actions.turn_off(str(-1), rule, ad_group)
 
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_turn_off_ad_group_source(self, mock_recalculate_budgets):
@@ -546,14 +545,12 @@ class ActionsTest(TestCase):
 
     def test_turn_off_source_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        source = magic_mixer.blend(core.models.Source)
-        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, source=source, ad_group=ad_group)
         rule = magic_mixer.blend(
             Rule, target_type=constants.TargetType.SOURCE, action_type=constants.ActionType.TURN_OFF
         )
 
         with self.assertRaisesRegexp(Exception, "Invalid source turn off target"):
-            actions.turn_off(str(ad_group_source.id + 1), rule, ad_group)
+            actions.turn_off(str(-1), rule, ad_group)
 
     def test_turn_off_unsupported_action(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -630,10 +627,10 @@ class SendEmailTestCase(TestCase):
         )
 
         with self.assertRaisesRegexp(Exception, "Invalid target"):
-            actions.send_email(str(self.ad_group.id + 1), rule, self.ad_group, target_stats={})
+            actions.send_email(str(-1), rule, self.ad_group, target_stats={})
 
     def test_send_email_invalid_action(self, mock_send_official_email):
         rule = magic_mixer.blend(Rule, agency=self.agency, action_type=constants.ActionType.BLACKLIST)
 
         with self.assertRaisesRegexp(Exception, "Invalid action"):
-            actions.send_email(str(self.ad_group.id + 1), rule, self.ad_group, target_stats={})
+            actions.send_email(str(-1), rule, self.ad_group, target_stats={})

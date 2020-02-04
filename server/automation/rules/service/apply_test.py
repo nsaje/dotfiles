@@ -82,7 +82,7 @@ class ApplyTest(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
         rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
-        stats = {"1": {}, "2": {}, str(ad.id): {}}
+        stats = {"-1": {}, "-2": {}, str(ad.id): {}}
 
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
@@ -91,7 +91,7 @@ class ApplyTest(TestCase):
         self.assertEqual(1, len(changes))
         self.assertEqual(2, len(errors))
         for error in errors:
-            self.assertIn(error.target, ["1", "2"])
+            self.assertIn(error.target, ["-1", "-2"])
             self.assertEqual("Invalid ad turn off target", error.message)
             self.assertIn("Invalid ad turn off target", error.stack_trace)
 

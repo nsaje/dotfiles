@@ -282,7 +282,7 @@ class ValidationTest(TestCase):
 
         new_settings = model.AdGroupSettings()
 
-        new_settings.audience_targeting = [audience.id + 1]
+        new_settings.audience_targeting = [-1]
         with self.assertRaises(exceptions.AudienceTargetingInvalid):
             ad_group.settings._validate_custom_audiences(new_settings)
 
@@ -298,7 +298,7 @@ class ValidationTest(TestCase):
 
         new_settings = model.AdGroupSettings()
 
-        new_settings.exclusion_audience_targeting = [audience.id + 1]
+        new_settings.exclusion_audience_targeting = [-1]
         with self.assertRaises(exceptions.ExclusionAudienceTargetingInvalid):
             ad_group.settings._validate_custom_audiences(new_settings)
 

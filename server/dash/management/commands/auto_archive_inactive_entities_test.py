@@ -281,7 +281,7 @@ class AutoArchiveTest(TestCase):
             end_date=self.inactive_since,
         )
         adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
-            self.inactive_since, whitelist=[account.id + 1]
+            self.inactive_since, whitelist=[-1]
         )
         campaign.refresh_from_db()
         campaign.settings.refresh_from_db()
