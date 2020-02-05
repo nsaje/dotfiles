@@ -4,7 +4,7 @@ import analytics.monitor
 import utils.command_helpers
 import utils.slack
 
-MESSAGE = "Publisher <http://redash-zemanta.outbrain.com/dashboard/publisher-view-dashboard?p_publisher={publisher}|{publisher}> had a CTR of *{ctr}%* on {date} and that looks suspicious."  # noqa
+MESSAGE = "Publisher <http://redash-zemanta.outbrain.com/dashboard/publisher-view-dashboard?p_publisher={publisher}|{publisher}> had {clicks} clicks with CTR of *{ctr}%* on {date} and that looks suspicious."  # noqa
 HELPER_LINKS = "Those links might help you in your investigation : <http://redash-zemanta.outbrain.com/queries/575#table|Publisher CTR past 7 days> <http://redash-zemanta.outbrain.com/queries/576?p_date_compact={compact_date}| Publishers CTR by date>."  # noqa
 
 
