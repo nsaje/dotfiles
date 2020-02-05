@@ -38,7 +38,7 @@ class Command(Z1Command):
         today = dates_helper.utc_today()
         date_from = dates_helper.days_before(today, num_days)
         s3 = s3helpers.S3Helper(bucket)
-        with redshiftapi.db.get_stats_cursor(db_alias=STATS_DB_HOT_CLUSTER) as cur:
+        with redshiftapi.db.get_stats_cursor(db_alias=settings.STATS_DB_HOT_CLUSTER) as cur:
             subquery = cur.mogrify(select_query, (date_from, min_bid_req)).decode("utf-8")
             cur.execute(unload_query, (subquery, "s3://%s/tmp.csv" % bucket, ",", s3helpers.get_credentials_string()))
             dest_file = filename % dates_helper.utc_now().strftime(time_format)
