@@ -129,8 +129,8 @@ def create_bid_value_overview_settings(ad_group):
     ).format(bidding_type=bidding_type)
 
     min_bid, max_bid = core.features.bid_modifiers.get_min_max_local_bids(ad_group)
-    formatted_min_bid_value = _format_ad_group_bid_value(min_bid, ad_group.campaign.account.currency, places=2)
-    formatted_max_bid_value = _format_ad_group_bid_value(max_bid, ad_group.campaign.account.currency, places=2)
+    formatted_min_bid_value = _format_ad_group_bid_value(min_bid, ad_group.campaign.account.currency, places=4)
+    formatted_max_bid_value = _format_ad_group_bid_value(max_bid, ad_group.campaign.account.currency, places=4)
 
     overview_settings.append(
         OverviewSetting(

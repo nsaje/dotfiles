@@ -14,6 +14,8 @@ export class BidModifierCellStoreState {
     };
     currency: Currency = null;
     fractionSize: number = BID_MODIFIER_CELL_CONFIG.fractionSize;
+    calculatorFractionSize: number =
+        BID_MODIFIER_CELL_CONFIG.calculatorFractionSize;
     modifierPercent: string = null;
     previousModifierPercent: string = null;
     requests = {

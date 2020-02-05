@@ -43,7 +43,7 @@ describe('BidRangeInfoStore', () => {
             } as BidModifierTypeSummary,
         ] as BidModifierTypeSummary[];
         currency = Currency.USD;
-        fractionSize = 2;
+        fractionSize = 4;
         adGroupAutopilotState = AdGroupAutopilotState.INACTIVE;
         modifierPercent = null;
     });
@@ -99,8 +99,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(false);
         expect(store.state.minFactor).toEqual(1.0);
         expect(store.state.maxFactor).toEqual(1.0);
-        expect(store.state.computedBidMin).toEqual('$1.10');
-        expect(store.state.computedBidMax).toEqual('$1.10');
+        expect(store.state.computedBidMin).toEqual('$1.1000');
+        expect(store.state.computedBidMax).toEqual('$1.1000');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on target bid CPC set in the ad group settings and bid modifiers you set on this and other dimensions.'
         );
@@ -108,11 +108,11 @@ describe('BidRangeInfoStore', () => {
             'Dimensions that you select will be included in the calculation of final bid CPC range.'
         );
         expect(store.state.bidMessage).toEqual('Bid CPC:');
-        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.formattedBidValueRange).toEqual('$1.0000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$1.10 - $1.10');
+        expect(store.state.finalBidRangeValue).toEqual('$1.1000 - $1.1000');
     });
 
     it('should correctly present bid range info for CPM / device / inactive autopilot / no selected dimensions', () => {
@@ -141,8 +141,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(false);
         expect(store.state.minFactor).toEqual(1.0);
         expect(store.state.maxFactor).toEqual(1.0);
-        expect(store.state.computedBidMin).toEqual('$1.10');
-        expect(store.state.computedBidMax).toEqual('$1.10');
+        expect(store.state.computedBidMin).toEqual('$1.1000');
+        expect(store.state.computedBidMax).toEqual('$1.1000');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPM depends on target bid CPM set in the ad group settings and bid modifiers you set on this and other dimensions.'
         );
@@ -150,11 +150,11 @@ describe('BidRangeInfoStore', () => {
             'Dimensions that you select will be included in the calculation of final bid CPM range.'
         );
         expect(store.state.bidMessage).toEqual('Bid CPM:');
-        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.formattedBidValueRange).toEqual('$1.0000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPM range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$1.10 - $1.10');
+        expect(store.state.finalBidRangeValue).toEqual('$1.1000 - $1.1000');
     });
 
     it('should correctly present bid range info for CPC / source / inactive autopilot / no selected dimensions', () => {
@@ -187,8 +187,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(false);
         expect(store.state.minFactor).toEqual(1.0);
         expect(store.state.maxFactor).toEqual(1.0);
-        expect(store.state.computedBidMin).toEqual('$0.90');
-        expect(store.state.computedBidMax).toEqual('$0.90');
+        expect(store.state.computedBidMin).toEqual('$0.9000');
+        expect(store.state.computedBidMax).toEqual('$0.9000');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on target bid CPC set in the ad group settings and bid modifiers you set on this and other dimensions.'
         );
@@ -196,11 +196,11 @@ describe('BidRangeInfoStore', () => {
             'Dimensions that you select will be included in the calculation of final bid CPC range.'
         );
         expect(store.state.bidMessage).toEqual('Bid CPC:');
-        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.formattedBidValueRange).toEqual('$1.0000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$0.90 - $0.90');
+        expect(store.state.finalBidRangeValue).toEqual('$0.9000 - $0.9000');
     });
 
     it('should correctly present bid range info for CPC / device / inactive autopilot / selected all dimensions', () => {
@@ -228,8 +228,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(false);
         expect(store.state.minFactor).toEqual(0.8);
         expect(store.state.maxFactor).toEqual(1.2);
-        expect(store.state.computedBidMin).toEqual('$0.88');
-        expect(store.state.computedBidMax).toEqual('$1.32');
+        expect(store.state.computedBidMin).toEqual('$0.8800');
+        expect(store.state.computedBidMax).toEqual('$1.3200');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on target bid CPC set in the ad group settings and bid modifiers you set on this and other dimensions.'
         );
@@ -237,11 +237,11 @@ describe('BidRangeInfoStore', () => {
             'Dimensions that you select will be included in the calculation of final bid CPC range.'
         );
         expect(store.state.bidMessage).toEqual('Bid CPC:');
-        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.formattedBidValueRange).toEqual('$1.0000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$0.88 - $1.32');
+        expect(store.state.finalBidRangeValue).toEqual('$0.8800 - $1.3200');
     });
 
     it('should correctly present bid range info for CPC / device / active autopilot / selected all dimensions', () => {
@@ -269,8 +269,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(true);
         expect(store.state.minFactor).toEqual(1);
         expect(store.state.maxFactor).toEqual(1);
-        expect(store.state.computedBidMin).toEqual('$0.88');
-        expect(store.state.computedBidMax).toEqual('$1.32');
+        expect(store.state.computedBidMin).toEqual('$0.8800');
+        expect(store.state.computedBidMax).toEqual('$1.3200');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on bid CPC set by the autopilot on media source and bid modifiers set by you on other dimensions.'
         );
@@ -280,11 +280,11 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.bidMessage).toEqual(
             'Autopilot media source bid CPC range:'
         );
-        expect(store.state.formattedBidValueRange).toEqual('$0.80 - $1.20');
+        expect(store.state.formattedBidValueRange).toEqual('$0.8000 - $1.2000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$0.88 - $1.32');
+        expect(store.state.finalBidRangeValue).toEqual('$0.8800 - $1.3200');
     });
 
     it('should correctly present bid range info for CPC / source / active autopilot / selected all dimensions', () => {
@@ -324,8 +324,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(true);
         expect(store.state.minFactor).toEqual(0.9);
         expect(store.state.maxFactor).toEqual(1.1);
-        expect(store.state.computedBidMin).toEqual('$0.81');
-        expect(store.state.computedBidMax).toEqual('$0.99');
+        expect(store.state.computedBidMin).toEqual('$0.8100');
+        expect(store.state.computedBidMax).toEqual('$0.9900');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on bid CPC set by the autopilot on media source and bid modifiers set by you on other dimensions.'
         );
@@ -335,11 +335,11 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.bidMessage).toEqual(
             'Autopilot media source bid CPC:'
         );
-        expect(store.state.formattedBidValueRange).toEqual('$0.90');
+        expect(store.state.formattedBidValueRange).toEqual('$0.9000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$0.81 - $0.99');
+        expect(store.state.finalBidRangeValue).toEqual('$0.8100 - $0.9900');
     });
 
     it('should correctly present bid range info for CPC / no source bid modifier / active autopilot / selected all dimensions', () => {
@@ -368,8 +368,8 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.autopilot).toEqual(true);
         expect(store.state.minFactor).toEqual(1.0);
         expect(store.state.maxFactor).toEqual(1.0);
-        expect(store.state.computedBidMin).toEqual('$1.00');
-        expect(store.state.computedBidMax).toEqual('$1.00');
+        expect(store.state.computedBidMin).toEqual('$1.0000');
+        expect(store.state.computedBidMax).toEqual('$1.0000');
         expect(store.state.infoMessage).toEqual(
             'Your final bid CPC depends on bid CPC set by the autopilot on media source and bid modifiers set by you on other dimensions.'
         );
@@ -379,10 +379,10 @@ describe('BidRangeInfoStore', () => {
         expect(store.state.bidMessage).toEqual(
             'Autopilot media source bid CPC:'
         );
-        expect(store.state.formattedBidValueRange).toEqual('$1.00');
+        expect(store.state.formattedBidValueRange).toEqual('$1.0000');
         expect(store.state.finalBidRangeMessage).toEqual(
             'Final bid CPC range:'
         );
-        expect(store.state.finalBidRangeValue).toEqual('$1.00 - $1.00');
+        expect(store.state.finalBidRangeValue).toEqual('$1.0000 - $1.0000');
     });
 });

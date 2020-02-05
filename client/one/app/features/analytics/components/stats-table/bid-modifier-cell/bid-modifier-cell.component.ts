@@ -68,8 +68,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     placement: EditableCellPlacement;
     EditableCellPlacement = EditableCellPlacement;
 
-    fractionSize: number;
-
     editableCellApi: EditableCellApi;
 
     constructor(public store: BidModifierCellStore) {}
@@ -77,7 +75,6 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     ngOnInit(): void {
         this.mode = EditableCellMode.READ;
         this.placement = EditableCellPlacement.IN_LINE;
-        this.fractionSize = BID_MODIFIER_CELL_CONFIG.fractionSize;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
