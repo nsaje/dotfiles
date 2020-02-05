@@ -428,8 +428,8 @@ DCRON = {
     # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
     "min_separations": {},
-    "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
-    "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
+    "log_viewer_link": "http://kibana-eslogs.outbrain.com:5601/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-1h,mode:quick,to:now))&_a=(columns:!(message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'9dd4dcf0-faf7-11e9-b914-e5fa1366bcac',key:app,negate:!f,params:(query:{command_name},type:phrase),type:phrase,value:{command_name}),query:(match:(app:(query:{command_name},type:phrase))))),index:'9dd4dcf0-faf7-11e9-b914-e5fa1366bcac',interval:auto,query:(language:kuery,query:''),sort:!('@timestamp',desc))",
+    "log_viewer_link_live": "http://kibana-eslogs.outbrain.com:5601/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-1h,mode:quick,to:now))&_a=(columns:!(message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'9dd4dcf0-faf7-11e9-b914-e5fa1366bcac',key:app,negate:!f,params:(query:runautopilot,type:phrase),type:phrase,value:runautopilot),query:(match:(app:(query:runautopilot,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'9dd4dcf0-faf7-11e9-b914-e5fa1366bcac',key:host,negate:!f,params:(query:{host},type:phrase),type:phrase,value:{host}),query:(match:(host:(query:{host},type:phrase))))),index:'9dd4dcf0-faf7-11e9-b914-e5fa1366bcac',interval:auto,query:(language:kuery,query:''),sort:!('@timestamp',desc))",
 }
 
 sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])
