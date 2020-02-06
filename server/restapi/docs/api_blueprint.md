@@ -2502,10 +2502,16 @@ A string representing a decimal number. Example: `"15.48"`
 
 <a name="currency"></a>
 ## Account / Currency
-{% for key, value in constants.currency.items %}
-- `{{ key }}` - {{ value }}
-{% endfor %}
 
+- `USD` - US Dollar
+- `EUR` - Euro
+- `GBP` - British Pound
+- `AUD` - Australian Dollar
+- `SGD` - Singapore Dollar
+- `BRL` - Brazilian Real
+- `MYR` - Malaysian Ringgit
+- `CHF` - Swiss Franc
+- `ZAR` - South African Rand
 
 <a name=audience-rule-type></a>
 ## Audience rule type
@@ -2994,15 +3000,81 @@ Include traffic that meets the following conditions:
 
 <a name="os"></a>
 ## Operating system targeting
-{% for key, value in constants.os.items %}
-- `{{ key }}` - {{ value }}
-{% endfor %}
+
+- `WINDOWS` - Windows
+- `MACOSX` - MacOSX and macOS
+- `LINUX` - Linux
+- `ANDROID` - Android
+- `IOS` - iOS
+- `WINPHONE` - Windows Phone
 
 <a name="osv"></a>
 ## Operating system version targeting
-{% for key, value in constants.osv.items %}
-- `{{ key }}` - {{ value }}
-{% endfor %}
+
+- `WINDOWS_10` - Windows 10
+- `WINDOWS_8_1` - Windows 8.1
+- `WINDOWS_8` - Windows 8
+- `WINDOWS_7` - Windows 7
+- `WINDOWS_VISTA` - Windows Vista
+- `WINDOWS_XP` - Windows XP
+- `WINDOWS_2000` - Windows 2000
+- `WINDOWS_98` - Windows 98
+- `MACOSX_10_13` - macOS 10.13 High Sierra
+- `MACOSX_10_12` - macOS 10.12 Sierra
+- `MACOSX_10_11` - Mac OS X 10.11 El Capitan
+- `MACOSX_10_10` - Mac OS X 10.10 Yosemite
+- `MACOSX_10_9` - Mac OS X 10.9 Mavericks
+- `MACOSX_10_8` - Mac OS X 10.8 Mountain Lion
+- `MACOSX_10_7` - Mac OS X 10.7 Lion
+- `MACOSX_10_6` - Mac OS X 10.6 Snow Leopard
+- `MACOSX_10_5` - Mac OS X 10.5 Leopard
+- `MACOSX_10_4` - Mac OS X 10.4 Tiger
+- `ANDROID_8_0` - Android 8.0 Oreo
+- `ANDROID_7_1` - Android 7.1 Nougat
+- `ANDROID_7_0` - Android 7.0 Nougat
+- `ANDROID_6_0` - Android 6.0 Marshmallow
+- `ANDROID_5_1` - Android 5.1 Lollipop
+- `ANDROID_5_0` - Android 5.0 Lollipop
+- `ANDROID_4_4` - Android 4.4 KitKat
+- `ANDROID_4_3` - Android 4.3 Jelly Bean
+- `ANDROID_4_2` - Android 4.2 Jelly Bean
+- `ANDROID_4_1` - Android 4.1 Jelly Bean
+- `ANDROID_4_0` - Android 4.0 Ice Cream Sandwich
+- `ANDROID_3_2` - Android 3.2 Honeycomb
+- `ANDROID_3_1` - Android 3.1 Honeycomb
+- `ANDROID_3_0` - Android 3.0 Honeycomb
+- `ANDROID_2_3` - Android 2.3 Gingerbread
+- `ANDROID_2_2` - Android 2.2 Froyo
+- `ANDROID_2_1` - Android 2.1 Eclair
+- `IOS_11_0` - iOS 11.0
+- `IOS_10_3` - iOS 10.3
+- `IOS_10_2` - iOS 10.2
+- `IOS_10_1` - iOS 10.1
+- `IOS_10_0` - iOS 10.0
+- `IOS_9_3` - iOS 9.3
+- `IOS_9_2` - iOS 9.2
+- `IOS_9_1` - iOS 9.1
+- `IOS_9_0` - iOS 9.0
+- `IOS_8_4` - iOS 8.4
+- `IOS_8_3` - iOS 8.3
+- `IOS_8_2` - iOS 8.2
+- `IOS_8_1` - iOS 8.1
+- `IOS_8_0` - iOS 8.0
+- `IOS_7_1` - iOS 7.1
+- `IOS_7_0` - iOS 7.0
+- `IOS_6_1` - iOS 6.1
+- `IOS_6_0` - iOS 6.0
+- `IOS_5_1` - iOS 5.1
+- `IOS_5_0` - iOS 5.0
+- `IOS_4_3` - iOS 4.3
+- `IOS_4_2` - iOS 4.2
+- `IOS_4_1` - iOS 4.1
+- `IOS_4_0` - iOS 4.0
+- `IOS_3_2` - iOS 3.2
+- `WINPHONE_10` - Windows Phone 10
+- `WINPHONE_8_1` - Windows Phone 8.1
+- `WINPHONE_8_0` - Windows Phone 8.0
+- `WINPHONE_7` - Windows Phone 7
 
 <a name="interest-category"></a>
 ## Interest targeting
