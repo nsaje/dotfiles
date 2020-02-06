@@ -2,7 +2,7 @@ import analytics.monitor
 import utils.command_helpers
 import utils.slack
 
-ALERT_MSG_ENTITY = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
+ALERT_MSG_ENTITY = """Confirm *{}* for *{}* ({})"""
 ALERT_MSG_GLOBAL = """Unconfirmed global hack *{}* is spending"""
 
 
@@ -22,10 +22,11 @@ class Command(utils.command_helpers.Z1Command):
         self.verbose = options["verbose"]
         for hack, spend in analytics.monitor.audit_custom_hacks():
             entity = hack.get_entity()
+
             if not entity:
                 message = ALERT_MSG_GLOBAL.format(hack.summary)
             else:
-                message = ALERT_MSG_ENTITY.format(hack.get_level(), entity.name, entity.pk, spend, hack)
+                message = ALERT_MSG_ENTITY.format(hack, entity.name, entity.pk)
             self._print(message)
             if options.get("slack"):
                 utils.slack.publish(message, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username=utils.slack.USER_HACKS)

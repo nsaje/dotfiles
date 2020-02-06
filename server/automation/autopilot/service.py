@@ -147,6 +147,7 @@ def run_autopilot(
         details = "\n".join(["- {}".format(slack.campaign_url(campaign)) for campaign in failed_campaigns])
         slack.publish(
             "Autopilot run failed for the following campaigns:\n{}".format(details),
+            channel=slack.CHANNEL_RND_Z1_ALERTS_AUX,
             msg_type=slack.MESSAGE_TYPE_CRITICAL,
             username=slack.USER_AUTOPILOT,
         )
@@ -155,6 +156,7 @@ def run_autopilot(
         details = "\n".join(["- {}".format(slack.ad_group_url(ad_group)) for ad_group in failed_ad_groups])
         slack.publish(
             "Autopilot run failed for the following ad groups:\n{}".format(details),
+            channel=slack.CHANNEL_RND_Z1_ALERTS_AUX,
             msg_type=slack.MESSAGE_TYPE_CRITICAL,
             username=slack.USER_AUTOPILOT,
         )

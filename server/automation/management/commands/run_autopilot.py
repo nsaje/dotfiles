@@ -35,6 +35,7 @@ class Command(Z1Command):
             if not dry_run:
                 utils.slack.publish(
                     ALERT_MSG.format(repr(exc)),
+                    channel=utils.slack.CHANNEL_RND_Z1_ALERTS_AUX,
                     msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
                     username=utils.slack.USER_AUTOPILOT,
                 )

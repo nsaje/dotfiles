@@ -250,11 +250,13 @@ class AutopilotPlusTestCase(test.TestCase):
             [
                 call(
                     "Autopilot run failed for the following campaigns:\n- <https://one.zemanta.com/v2/analytics/campaign/2/|Test Campaign 2>",
+                    channel="rnd-z1-alerts-aux",
                     msg_type=":rage:",
                     username="Autopilot",
                 ),
                 call(
                     "Autopilot run failed for the following ad groups:\n- <https://one.zemanta.com/v2/analytics/adgroup/4/sources|Test AdGroup 4>",
+                    channel="rnd-z1-alerts-aux",
                     msg_type=":rage:",
                     username="Autopilot",
                 ),

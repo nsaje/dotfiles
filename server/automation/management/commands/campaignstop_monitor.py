@@ -33,12 +33,6 @@ class Command(Z1Command):
         if self.slack:
             slack.publish(
                 self._get_message_body(campaigns, output_type="slack"),
-                channel=slack.CHANNEL_ALERTS_RND_PRODOPS,
-                msg_type=slack.MESSAGE_TYPE_INFO,
-                username=slack.USER_CAMPAIGN_STOP,
-            )
-            slack.publish(
-                self._get_message_body(campaigns, output_type="slack"),
                 msg_type=slack.MESSAGE_TYPE_INFO,
                 username=slack.USER_CAMPAIGN_STOP,
                 channel=slack.CHANNEL_ZEM_FEED_CAMPSTOP,

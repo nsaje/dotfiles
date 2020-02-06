@@ -40,7 +40,8 @@ class Command(utils.command_helpers.Z1Command):
             if account.id in SKIP_ACCOUNTS:
                 continue
             self._print("- {} {}: ${:.2f}".format(account.name, account.id, account_overspend))
-            details += " - {}: ${:.2f}\n".format(utils.slack.account_url(account), account_overspend)
+            if account_overspend > 20:
+                details += " - {}: ${:.2f}\n".format(utils.slack.account_url(account), account_overspend)
         if self.slack and details:
             utils.slack.publish(
                 ALERT_MSG_OVERSPEND.format(date=self.date.strftime("%Y-%m-%d"), details=details),
