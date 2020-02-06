@@ -76,6 +76,7 @@ def clean_up_old_in_progress_reports(created_before):
 
 def process_report_job_fail(report_job, status, result, exception=None):
     report_job.status = constants.ReportJobStatus.FAILED
+    report_job.end_dt = datetime.datetime.now()
     report_job.result = result.format(id=report_job.id)
     if exception is not None:
         report_job.exception = traceback.format_exc()
@@ -151,6 +152,8 @@ class ReportJobExecutor(JobExecutor):
             process_report_job_fail(self.job, "too_old", "Service Timeout: Please try again later.")
             return
 
+        self.job.start_dt = datetime.datetime.now()
+        self.job.save()
         try:
             csv_report, filename = self.get_report(self.job)
 
@@ -172,6 +175,7 @@ class ReportJobExecutor(JobExecutor):
             self.send_by_email(self.job, report_path, **kwargs)
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
+            self.job.end_dt = datetime.datetime.now()
             metrics_compat.incr("dash.reports", 1, status="success")
             self.job.save()
         except utils.exc.BaseError as e:

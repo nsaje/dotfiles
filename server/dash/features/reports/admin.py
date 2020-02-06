@@ -1,5 +1,9 @@
+import html
+import json
+
 from django.contrib import admin
 from django.urls import reverse
+from django.utils import html as django_html
 from django.utils.safestring import mark_safe
 
 import utils.admin_common
@@ -25,11 +29,33 @@ class ReportJobAdmin(admin.ModelAdmin):
     model = ReportJob
     paginator = utils.admin_common.LargeTablePaginator
     show_full_result_count = False
-    list_display = ("id", "created_dt", "user", "status", "result", "is_scheduled", "is_email")
+    list_display = (
+        "id",
+        "created_dt",
+        "start_dt",
+        "end_dt",
+        "user",
+        "status",
+        "report_fields",
+        "result",
+        "is_scheduled",
+        "is_email",
+    )
 
     list_filter = ("status", IsScheduledListFilter)
 
-    readonly_fields = ("created_dt", "user", "query", "result", "scheduled_report", "link_to_scheduled_report")
+    readonly_fields = (
+        "created_dt",
+        "modified_dt",
+        "start_dt",
+        "end_dt",
+        "user",
+        "query_",
+        "result",
+        "scheduled_report",
+        "link_to_scheduled_report",
+    )
+    fields = readonly_fields
 
     search_fields = ("user__email", "result")
 
@@ -37,6 +63,16 @@ class ReportJobAdmin(admin.ModelAdmin):
         qs = super(ReportJobAdmin, self).get_queryset(request)
         qs = qs.select_related("user")
         return qs
+
+    def report_fields(self, obj):
+        try:
+            return ", ".join(f["field"] for f in obj.query["fields"])
+        except Exception:
+            return "malformed query"
+
+    def query_(self, obj):
+        body = json.dumps(obj.query, indent=4)
+        return django_html.mark_safe('<div style="overflow: hidden;"><pre>' + html.escape(body) + "</pre></div>")
 
     def link_to_scheduled_report(self, obj):
         if obj.scheduled_report is None:
