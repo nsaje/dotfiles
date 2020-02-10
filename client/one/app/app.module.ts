@@ -7,6 +7,7 @@ import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
+import {FooterComponent} from './components/footer/footer.component';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {SidebarContainerComponent} from './components/sidebar-container/sidebar-container.component';
 import {MainContainerComponent} from './components/main-container/main-container.component';
@@ -34,6 +35,7 @@ if (APP_CONFIG.env.prod) {
 @NgModule({
     declarations: [
         NewEntityAnalyticsMockView,
+        FooterComponent,
         SidebarComponent,
         SidebarContainerComponent,
         MainContainerComponent,

@@ -26,5 +26,8 @@
         </div>
     </zem-sidebar>
     <!-- Page content -->
-    <ng-container zem-sidebar-content> <ng-content></ng-content> </ng-container>
+    <div class="zem-main-container__content" zem-sidebar-content>
+        <ng-content></ng-content>
+        <zem-footer class="zem-footer"></zem-footer>
+    </div>
 </zem-sidebar-container>
