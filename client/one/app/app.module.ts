@@ -13,6 +13,7 @@ import {FooterComponent} from './components/footer/footer.component';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {SidebarContainerComponent} from './components/sidebar-container/sidebar-container.component';
 import {MainContainerComponent} from './components/main-container/main-container.component';
+import {HistoryComponent} from './components/history/history.component';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
@@ -43,6 +44,7 @@ if (APP_CONFIG.env.prod) {
         SidebarComponent,
         SidebarContainerComponent,
         MainContainerComponent,
+        HistoryComponent,
     ],
     imports: [
         // Angular modules

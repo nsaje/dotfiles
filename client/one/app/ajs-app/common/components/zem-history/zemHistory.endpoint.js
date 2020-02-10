@@ -1,5 +1,5 @@
 angular
-    .module('one.widgets')
+    .module('one.common')
     .service('zemHistoryEndpoint', function($q, $http, zemUtils) {
         this.getHistory = getHistory;
 
