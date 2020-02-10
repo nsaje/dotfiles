@@ -1,5 +1,5 @@
 angular
-    .module('one.common')
+    .module('one.widgets')
     .service('zemHistoryService', function(
         $rootScope,
         $location,

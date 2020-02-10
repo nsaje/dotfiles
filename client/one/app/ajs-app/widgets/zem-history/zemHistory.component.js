@@ -1,6 +1,6 @@
 require('./zemHistory.component.less');
 
-angular.module('one.common').component('zemHistory', {
+angular.module('one.widgets').component('zemHistory', {
     template: require('./zemHistory.component.html'),
     controller: function(hotkeys, zemHistoryService, zemNavigationNewService) {
         var $ctrl = this;

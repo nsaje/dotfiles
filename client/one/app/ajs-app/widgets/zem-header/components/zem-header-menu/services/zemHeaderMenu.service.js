@@ -1,7 +1,7 @@
-var commonHelpers = require('../../../../../../../shared/helpers/common.helpers');
+var commonHelpers = require('../../../../../../shared/helpers/common.helpers');
 
 angular
-    .module('one.common')
+    .module('one.widgets')
     .service('zemHeaderMenuService', function(
         $window,
         $state,
