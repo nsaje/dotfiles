@@ -7,6 +7,7 @@ from utils.magic_mixer import magic_mixer
 
 from . import auto_add_new_ad_group_sources
 from . import complete_release_shell
+from . import deprecate_sources
 from . import exceptions
 from . import release_source
 from . import unrelease_source
@@ -186,3 +187,16 @@ class SourceAdoptionTest(django.test.TestCase):
         self.assertTrue(self.source.released)
         self.assertEquals(0, n_allowed_on)
         self.assertEqual(0, n_available_on)
+
+    def test_deprecate_sources(self):
+        self.account.allowed_sources.add(self.source)
+        ags = core.models.AdGroupSource.objects.create(None, self.ad_group, self.source)
+        ags.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+
+        paused = list(deprecate_sources([self.source]))
+        self.assertEquals(paused[0], ags.pk)
+
+        ags = core.models.AdGroupSource.objects.get(pk=ags.pk)
+        self.assertEquals(ags.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        source = core.models.Source.objects.get(pk=self.source.pk)
+        self.assertTrue(source.deprecated)

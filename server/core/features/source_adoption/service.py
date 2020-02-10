@@ -16,20 +16,17 @@ PAUSE_INTERVAL = 30
 NAS_TAG = "biz/NES"
 
 
-def deprecate_shell(source_ids):
+def deprecate_sources(sources):
     sources_deprecated = []
     ad_group_sources_paused = set()
 
-    for source_id in source_ids:
-        source = core.models.Source.objects.get(id=int(source_id))
+    for source in sources:
         if source.deprecated:
             continue
 
-        ad_group_sources = (
-            core.models.AdGroupSource.objects.exclude(ad_group__campaign__account__id=305)
-            .filter(source=source, settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
-            .select_related("settings")
-        )
+        ad_group_sources = core.models.AdGroupSource.objects.filter(
+            source=source, settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+        ).select_related("settings")
         total_ags_count = ad_group_sources.count()
         total_ags_paused = 0
 
@@ -39,7 +36,12 @@ def deprecate_shell(source_ids):
             sources_deprecated.append(source.pk)
 
             for ags in ad_group_sources:
-                ags.settings.update(state=dash.constants.AdGroupSourceSettingsState.INACTIVE, skip_notification=True)
+                ags.settings.update(
+                    state=dash.constants.AdGroupSourceSettingsState.INACTIVE,
+                    skip_notification=True,
+                    skip_automation=True,
+                    k1_sync=False,
+                )
                 ad_group_sources_paused.add(ags.id)
                 total_ags_paused += 1
 
