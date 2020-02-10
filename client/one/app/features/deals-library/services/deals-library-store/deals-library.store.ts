@@ -120,7 +120,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             this.state.activeEntity.entity
         );
         this.dealsService
-            .validate(this.state.activeEntity.entity, this.requestStateUpdater)
+            .validate(entity, this.requestStateUpdater)
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {

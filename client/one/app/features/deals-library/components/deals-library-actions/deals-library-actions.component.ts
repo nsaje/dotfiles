@@ -3,6 +3,7 @@ import './deals-library-actions.component.less';
 import {
     Component,
     ChangeDetectionStrategy,
+    Input,
     Output,
     EventEmitter,
     OnInit,
@@ -17,6 +18,8 @@ import {takeUntil, distinctUntilChanged, debounceTime} from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DealsLibraryActionsComponent implements OnInit, OnDestroy {
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     search = new EventEmitter<string>();
     @Output()

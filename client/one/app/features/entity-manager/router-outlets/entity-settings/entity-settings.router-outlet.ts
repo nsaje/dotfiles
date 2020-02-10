@@ -1,18 +1,22 @@
-import {Component, Inject, OnInit, NgZone} from '@angular/core';
+import {Component, Inject, OnInit, NgZone, OnDestroy} from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {EntityType} from '../../../../app.constants';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-entity-settings-router-outlet',
     templateUrl: './entity-settings.router-outlet.html',
 })
 // tslint:disable-next-line component-class-suffix
-export class EntitySettingsRouterOutlet implements OnInit {
+export class EntitySettingsRouterOutlet implements OnInit, OnDestroy {
     readonly EntityType = EntityType;
     entityId: number = null;
     newEntityParentId: number = null;
     entityType: EntityType = null;
+
+    private stateChangeListener$: Function;
+    private locationChangeListener$: Function;
 
     constructor(
         private zone: NgZone,
@@ -23,16 +27,31 @@ export class EntitySettingsRouterOutlet implements OnInit {
 
     ngOnInit() {
         this.updateActiveSettingsEntity();
-        this.ajs$rootScope.$on('$zemStateChangeSuccess', () => {
-            this.zone.run(() => {
-                this.updateActiveSettingsEntity();
-            });
-        });
-        this.ajs$rootScope.$on('$locationChangeSuccess', () => {
-            this.zone.run(() => {
-                this.updateActiveSettingsEntity();
-            });
-        });
+        this.stateChangeListener$ = this.ajs$rootScope.$on(
+            '$zemStateChangeSuccess',
+            () => {
+                this.zone.run(() => {
+                    this.updateActiveSettingsEntity();
+                });
+            }
+        );
+        this.locationChangeListener$ = this.ajs$rootScope.$on(
+            '$locationChangeSuccess',
+            () => {
+                this.zone.run(() => {
+                    this.updateActiveSettingsEntity();
+                });
+            }
+        );
+    }
+
+    ngOnDestroy(): void {
+        if (commonHelpers.isDefined(this.stateChangeListener$)) {
+            this.stateChangeListener$();
+        }
+        if (commonHelpers.isDefined(this.locationChangeListener$)) {
+            this.locationChangeListener$();
+        }
     }
 
     private updateActiveSettingsEntity() {

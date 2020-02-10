@@ -9,15 +9,24 @@ import {SourcesEndpoint} from '../../../../core/sources/services/sources.endpoin
 import {DealsEndpoint} from '../../../../core/deals/services/deals.endpoint';
 import {ConnectionsListComponent} from '../../components/connections-list/connections-list.component';
 import {DealsLibraryActionsComponent} from '../../components/deals-library-actions/deals-library-actions.component';
+import {noop} from 'rxjs';
 
 describe('DealsLibraryView', () => {
     let component: DealsLibraryView;
     let fixture: ComponentFixture<DealsLibraryView>;
+    let ajs$rootScopeStub: any;
     let ajs$locationStub: any;
+    let zemNavigationNewServiceStub: any;
 
     beforeEach(() => {
+        ajs$rootScopeStub = {
+            $on: () => noop,
+        };
         ajs$locationStub = {
             search: () => '',
+        };
+        zemNavigationNewServiceStub = {
+            getEntityById: () => noop,
         };
         TestBed.configureTestingModule({
             declarations: [
@@ -31,8 +40,16 @@ describe('DealsLibraryView', () => {
                 DealsService,
                 DealsEndpoint,
                 {
+                    provide: 'ajs$rootScope',
+                    useValue: ajs$rootScopeStub,
+                },
+                {
                     provide: 'ajs$location',
                     useValue: ajs$locationStub,
+                },
+                {
+                    provide: 'zemNavigationNewService',
+                    useValue: zemNavigationNewServiceStub,
                 },
                 SourcesService,
                 SourcesEndpoint,

@@ -3,6 +3,7 @@
 >
     <zem-text-input
         class="zem-text-input zem-prefixed-input__input"
+        [isDisabled]="isDisabled"
         [placeholder]="'Search by name, media source or deal id'"
         (valueChange)="onSearchChange($event)"
     ></zem-text-input>
@@ -10,6 +11,7 @@
 <div class="zem-deals-library-actions__buttons">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-deals-library-actions__button"
+        [disabled]="isDisabled"
         (click)="dealCreate.emit()"
     >
         Add new deal

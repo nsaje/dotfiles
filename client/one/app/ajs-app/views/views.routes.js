@@ -105,10 +105,13 @@ angular.module('one.views').config(function($stateProvider) {
     });
 
     $stateProvider.state(UiRouterStateName.DEALS_LIBRARY, {
-        url: '/dealslibrary/account/{id:int}',
-        template: require('./deals/zemDealsLibraryView.partial.html'),
-        controller: 'zemDealsLibraryView as $ctrl',
+        url: '/dealslibrary/{level:account}/{id:int}',
+        template: '<zem-deals-library-view></zem-deals-library-view>',
         params: {
+            id: {
+                value: null,
+                squash: true,
+            },
             level: constants.levelStateParam.ACCOUNT,
         },
     });

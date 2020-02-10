@@ -1,11 +1,12 @@
 <h1 class="zem-main-container__view-title">Deals library</h1>
 
-<ng-container *ngIf="agencyId && (store.state$ | async) as state">
+<ng-container *ngIf="(store.state$ | async) as state">
     <div
         class="zem-panel zem-panel--with-padding zem-deals-library-view__panel"
     >
         <zem-deals-library-actions
             class="zem-deals-library-actions zem-deals-library-view__item"
+            [isDisabled]="!state.agencyId"
             (search)="searchDeals($event)"
             (dealCreate)="openEditDealModal({})"
         >
@@ -110,12 +111,4 @@
             </div>
         </ng-container>
     </zem-modal>
-</ng-container>
-
-<ng-container *ngIf="!agencyId">
-    <div
-        class="zem-message zem-message--bubble zem-message--with-icon zem-message--warning"
-    >
-        Deals library not available
-    </div>
 </ng-container>

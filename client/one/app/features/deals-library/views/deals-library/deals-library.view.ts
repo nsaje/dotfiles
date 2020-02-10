@@ -4,10 +4,10 @@ import {
     Component,
     ChangeDetectionStrategy,
     Inject,
-    Input,
     OnInit,
     OnDestroy,
     ViewChild,
+    HostBinding,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {merge, Subject, Observable} from 'rxjs';
@@ -33,17 +33,15 @@ const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
     providers: [DealsLibraryStore],
 })
 export class DealsLibraryView implements OnInit, OnDestroy {
-    @Input()
-    agencyId: string;
-    @Input()
-    accountId: string = null;
-
+    @HostBinding('class')
+    cssClass = 'zem-deals-library-view';
     @ViewChild('editDealModal', {static: false})
     editDealModal: ModalComponent;
     @ViewChild('connectionsModal', {static: false})
     connectionsModal: ModalComponent;
 
-    private ngUnsubscribe$: Subject<void> = new Subject();
+    agencyId: string;
+    accountId: string;
 
     context: any;
 
@@ -120,9 +118,15 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     connectionType: string;
     canSaveActiveEntity = false;
 
+    private stateChangeListener$: Function;
+    private locationChangeListener$: Function;
+    private ngUnsubscribe$: Subject<void> = new Subject();
+
     constructor(
         public store: DealsLibraryStore,
-        @Inject('ajs$location') private ajs$location: any
+        @Inject('ajs$rootScope') private ajs$rootScope: any,
+        @Inject('ajs$location') private ajs$location: any,
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {
         this.context = {
             componentParent: this,
@@ -130,28 +134,19 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        if (commonHelpers.isDefined(this.agencyId)) {
-            this.subscribeToStateUpdates();
-            const preselectedPagination = this.getPreselectedPagination();
-            const keyword = this.getPreselectedKeyword();
-            this.paginationOptions = {
-                ...this.paginationOptions,
-                ...preselectedPagination,
-            };
-            this.store
-                .initStore(
-                    this.agencyId,
-                    this.accountId,
-                    preselectedPagination.page,
-                    preselectedPagination.pageSize,
-                    keyword
-                )
-                .then(() => {
-                    this.updateUrlParamsWithSelectedPagination(
-                        preselectedPagination
-                    );
-                });
-        }
+        this.updateInternalState();
+        this.stateChangeListener$ = this.ajs$rootScope.$on(
+            '$zemStateChangeSuccess',
+            () => {
+                this.updateInternalState();
+            }
+        );
+        this.locationChangeListener$ = this.ajs$rootScope.$on(
+            '$locationChangeSuccess',
+            () => {
+                this.updateInternalState();
+            }
+        );
     }
 
     ngOnDestroy() {
@@ -160,8 +155,27 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             pageSize: null,
         });
         this.updateUrlParamsWithKeyword(null);
+        if (commonHelpers.isDefined(this.stateChangeListener$)) {
+            this.stateChangeListener$();
+        }
+        if (commonHelpers.isDefined(this.locationChangeListener$)) {
+            this.locationChangeListener$();
+        }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+    }
+
+    updateInternalState() {
+        const account: any = this.zemNavigationNewService.getActiveAccount();
+        if (
+            commonHelpers.isDefined(account) &&
+            (this.agencyId !== account.data.agencyId ||
+                this.accountId !== account.data.id)
+        ) {
+            this.agencyId = account.data.agencyId;
+            this.accountId = account.data.id;
+            this.doUpdateInternalState();
+        }
     }
 
     onPaginationChange($event: PaginationChangeEvent) {
@@ -241,6 +255,29 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         });
     }
 
+    private doUpdateInternalState() {
+        this.subscribeToStateUpdates();
+        const preselectedPagination = this.getPreselectedPagination();
+        const keyword = this.getPreselectedKeyword();
+        this.paginationOptions = {
+            ...this.paginationOptions,
+            ...preselectedPagination,
+        };
+        this.store
+            .initStore(
+                this.agencyId,
+                null, // this.accountId
+                preselectedPagination.page,
+                preselectedPagination.pageSize,
+                keyword
+            )
+            .then(() => {
+                this.updateUrlParamsWithSelectedPagination(
+                    preselectedPagination
+                );
+            });
+    }
+
     private subscribeToStateUpdates() {
         merge(this.createActiveEntityErrorUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
@@ -301,9 +338,10 @@ export class DealsLibraryView implements OnInit, OnDestroy {
 }
 
 declare var angular: angular.IAngularStatic;
-angular
-    .module('one.downgraded')
-    .directive(
-        'zemDealsLibraryView',
-        downgradeComponent({component: DealsLibraryView})
-    );
+angular.module('one.downgraded').directive(
+    'zemDealsLibraryView',
+    downgradeComponent({
+        component: DealsLibraryView,
+        propagateDigest: false,
+    })
+);
