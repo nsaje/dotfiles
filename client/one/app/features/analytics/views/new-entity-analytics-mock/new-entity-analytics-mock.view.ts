@@ -14,9 +14,10 @@ export class NewEntityAnalyticsMockView {
 }
 
 declare var angular: angular.IAngularStatic;
-angular
-    .module('one.downgraded')
-    .directive(
-        'zemNewEntityAnalyticsMockView',
-        downgradeComponent({component: NewEntityAnalyticsMockView})
-    );
+angular.module('one.downgraded').directive(
+    'zemNewEntityAnalyticsMockView',
+    downgradeComponent({
+        component: NewEntityAnalyticsMockView,
+        propagateDigest: false,
+    })
+);

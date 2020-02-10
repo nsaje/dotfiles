@@ -6,7 +6,6 @@ import {ErrorHandler, NgModule, DoBootstrap} from '@angular/core';
 import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
-import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
 import {HeaderComponent} from './components/header/header.component';
 import {FilterSelectorComponent} from './components/filter-selector/filter-selector.component';
 import {FooterComponent} from './components/footer/footer.component';
@@ -38,7 +37,6 @@ if (APP_CONFIG.env.prod) {
 
 @NgModule({
     declarations: [
-        NewEntityAnalyticsMockView,
         HeaderComponent,
         FilterSelectorComponent,
         FooterComponent,
@@ -77,7 +75,7 @@ if (APP_CONFIG.env.prod) {
         DealsLibraryModule,
         CreditsLibraryModule,
     ],
-    entryComponents: [NewEntityAnalyticsMockView, MainContainerComponent],
+    entryComponents: [MainContainerComponent],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         upgradeProvider('$rootScope', 'ajs$rootScope'),
