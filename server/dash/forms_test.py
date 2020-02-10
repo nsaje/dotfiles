@@ -538,7 +538,7 @@ class AdGroupSettingsFormTest(TestCase):
     @patch("utils.dates_helper.local_today")
     def test_errors_on_non_propagated_fields(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data["cpc_cc"] = 0.01
+        self.data["cpc_cc"] = 0.001
         self.data["daily_budget_cc"] = 1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
@@ -546,13 +546,13 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(
             form.errors,
             {
-                "cpc_cc": ["Maximum CPC can't be lower than $0.05."],
+                "cpc_cc": ["Maximum CPC can't be lower than $0.005."],
                 "daily_budget_cc": ["Please provide budget of at least $10.00."],
             },
         )
 
     def test_max_cpc_setting_min_value(self):
-        self.data["cpc_cc"] = 0.01
+        self.data["cpc_cc"] = 0.001
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 

@@ -323,12 +323,12 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
 
         if cpc_cc:
             currency_symbol = self.get_currency_symbol()
-            min_cpc_cc = decimal.Decimal("0.05") * self.get_exchange_rate()
+            min_cpc_cc = decimal.Decimal("0.005") * self.get_exchange_rate()
             max_cpc_cc = decimal.Decimal("10") * self.get_exchange_rate()
 
             if cpc_cc < min_cpc_cc:
                 raise forms.ValidationError(
-                    "Maximum CPC can't be lower than {}{:.2f}.".format(currency_symbol, min_cpc_cc)
+                    "Maximum CPC can't be lower than {}{:.3f}.".format(currency_symbol, min_cpc_cc)
                 )
             elif cpc_cc > max_cpc_cc:
                 raise forms.ValidationError(

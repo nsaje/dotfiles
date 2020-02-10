@@ -63,7 +63,7 @@ class AdGroupSettingsValidatorMixin(object):
         max_cpc = self.MAX_CPC_VALUE * self._get_exchange_rate()
 
         if cpc < min_cpc:
-            raise exceptions.CPCTooLow("CPC can't be lower than {}{:.2f}.".format(currency_symbol, min_cpc))
+            raise exceptions.CPCTooLow("CPC can't be lower than {}{:.3f}.".format(currency_symbol, min_cpc))
         elif cpc > max_cpc:
             raise exceptions.CPCTooHigh("CPC can't be higher than {}{:.2f}.".format(currency_symbol, max_cpc))
 

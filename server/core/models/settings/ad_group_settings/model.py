@@ -50,7 +50,7 @@ class AdGroupSettings(
     DEFAULT_CPC_VALUE = Decimal("0.4500")
     DEFAULT_CPM_VALUE = Decimal("1.0000")
 
-    MIN_CPC_VALUE = Decimal("0.01")
+    MIN_CPC_VALUE = Decimal("0.005")
     MAX_CPC_VALUE = Decimal("20.0")
     MIN_CPM_VALUE = Decimal("0.01")
     MAX_CPM_VALUE = Decimal("25.0")

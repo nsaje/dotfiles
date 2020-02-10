@@ -606,14 +606,14 @@ class AdGroupViewSetTest(RESTAPITest):
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
         )
         resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(resp_json["details"], {"maxCpc": ["CPC can't be lower than $0.01."]})
+        self.assertEqual(resp_json["details"], {"maxCpc": ["CPC can't be lower than $0.005."]})
 
         adgroup = self.adgroup_repr(bid="0.0")
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
         )
         resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(resp_json["details"], {"bid": ["CPC can't be lower than $0.01."]})
+        self.assertEqual(resp_json["details"], {"bid": ["CPC can't be lower than $0.005."]})
 
     def test_adgroups_post_high_cpm(self):
         new_ad_group = self.adgroup_repr(
