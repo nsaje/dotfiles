@@ -12,6 +12,7 @@ from utils.magic_mixer import magic_mixer
 from .. import Rule
 from .. import RuleHistory
 from .. import constants
+from . import exceptions
 from . import service
 from .actions import ValueChangeData
 from .apply import ErrorData
@@ -35,8 +36,22 @@ class ServiceTest(TestCase):
                 ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
             ],
             [
-                ErrorData(target="error_target_1", message="error message 1", stack_trace="traceback 1"),
-                ErrorData(target="error_target_2", message="error message 2", stack_trace="traceback 2"),
+                ErrorData(
+                    target="error_target_1", exc=exceptions.CampaignAutopilotActive("test1"), stack_trace="traceback 1"
+                ),
+                ErrorData(
+                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
+                ),
+                ErrorData(
+                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
+                ),
+                ErrorData(
+                    target="error_target_4", exc=exceptions.BudgetAutopilotInactive("test4"), stack_trace="traceback 4"
+                ),
+                ErrorData(target="error_target_5", exc=exceptions.AutopilotActive("test5"), stack_trace="traceback 5"),
+                ErrorData(target="error_target_6", exc=exceptions.AutopilotActive("test6"), stack_trace="traceback 6"),
+                ErrorData(target="error_target_7", exc=Exception("test7"), stack_trace="traceback 7"),
+                ErrorData(target="error_target_8", exc=Exception("test8"), stack_trace="traceback 8"),
             ],
         )
         mock_from_target.return_value = "readable target"
@@ -137,12 +152,25 @@ class ServiceTest(TestCase):
             self.assertEqual(constants.ApplyStatus.FAILURE, fail_history.status)
             self.assertEqual(
                 {
-                    "error_target_1": {"message": "error message 1", "stack_trace": "traceback 1"},
-                    "error_target_2": {"message": "error message 2", "stack_trace": "traceback 2"},
+                    "error_target_1": {"message": "test1", "stack_trace": "traceback 1"},
+                    "error_target_2": {"message": "test2", "stack_trace": "traceback 2"},
+                    "error_target_3": {"message": "test3", "stack_trace": "traceback 3"},
+                    "error_target_4": {"message": "test4", "stack_trace": "traceback 4"},
+                    "error_target_5": {"message": "test5", "stack_trace": "traceback 5"},
+                    "error_target_6": {"message": "test6", "stack_trace": "traceback 6"},
+                    "error_target_7": {"message": "test7", "stack_trace": "traceback 7"},
+                    "error_target_8": {"message": "test8", "stack_trace": "traceback 8"},
                 },
                 fail_history.changes,
             )
-            self.assertEqual("An error has occured.", fail_history.changes_text)
+            self.assertEqual(
+                "To change the autopilot daily budget the campaign budget optimization must not be active. "
+                + "To change the autopilot daily budget the autopilot goal optimization must be active. "
+                + "To change the source bid modifier the campaign budget optimization and autopilot goal optimization must not be active; "
+                + "rule failed to make changes on 2 sources. "
+                + "An error has occured.",
+                fail_history.changes_text,
+            )
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
@@ -153,7 +181,10 @@ class ServiceTest(TestCase):
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         mock_stats.return_value = [123]
         mock_format.return_value = {ad_group.id: {}}
-        mock_apply.return_value = ([], [ErrorData(target="test", message="error message", stack_trace="traceback")])
+        mock_apply.return_value = (
+            [],
+            [ErrorData(target="test", exc=Exception("error message"), stack_trace="traceback")],
+        )
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.PUBLISHER,

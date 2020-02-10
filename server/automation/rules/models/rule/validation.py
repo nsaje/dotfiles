@@ -66,11 +66,11 @@ class RuleValidationMixin:
                 raise exceptions.InvalidChangeStep("Please provide change step")
             elif change_step < action_type_config.min_step:
                 raise exceptions.InvalidChangeStep(
-                    f"Change step is too small. Please provide a value greater or equal to {action_type_config.min_step:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                    f"Change step is too small. Please provide a value greater or equal to {action_type_config.min_step:.2f}{self._get_sign(action_type_config)}."
                 )
             elif change_step > action_type_config.max_step:
                 raise exceptions.InvalidChangeStep(
-                    f"Change step is too big. Please provide a value lower than {action_type_config.max_step:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                    f"Change step is too big. Please provide a value lower than {action_type_config.max_step:.2f}{self._get_sign(action_type_config)}."
                 )
 
     def _validate_change_limit(self, changes, change_limit):
@@ -86,12 +86,19 @@ class RuleValidationMixin:
                 raise exceptions.InvalidChangeLimit("Please provide change limit")
             elif change_limit < action_type_config.min_limit:
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too small. Please provide a value greater or equal to {action_type_config.min_limit:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                    f"Change limit is too small. Please provide a value greater or equal to {action_type_config.min_limit:.2f}{self._get_sign(action_type_config)}."
                 )
             elif change_limit > action_type_config.max_limit:
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too big. Please provide a value lower than {action_type_config.max_limit:.2f}{'%' if action_type_config.sign == 'percentage' else ''}."
+                    f"Change limit is too big. Please provide a value lower than {action_type_config.max_limit:.2f}{self._get_sign(action_type_config)}."
                 )
+
+    def _get_sign(self, action_type_config):
+        if action_type_config.sign == "percentage":
+            return "%"
+        if action_type_config.sign == "currency":
+            return "$"
+        return ""
 
     def _validate_send_email_subject(self, changes, send_email_subject):
         action_type = changes.get("action_type", self.action_type)

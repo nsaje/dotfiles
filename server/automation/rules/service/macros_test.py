@@ -110,11 +110,11 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}"""
         )
         self.target_stats = {
-            "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
+            "etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
             "clicks": {constants.MetricWindow.LAST_30_DAYS: 2000},
             "impressions": {constants.MetricWindow.LAST_30_DAYS: 200000},
-            "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
-            "local_etfm_cpm": {constants.MetricWindow.LAST_30_DAYS: 0.7},
+            "etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
+            "etfm_cpm": {constants.MetricWindow.LAST_30_DAYS: 0.7},
             "visits": {constants.MetricWindow.LAST_30_DAYS: 300},
             "unique_users": {constants.MetricWindow.LAST_30_DAYS: 202},
             "new_users": {constants.MetricWindow.LAST_30_DAYS: 15},
@@ -128,11 +128,11 @@ class ExpandTestCase(TestCase):
             "bounce_rate": {constants.MetricWindow.LAST_30_DAYS: 0.89},
             "total_seconds": {constants.MetricWindow.LAST_30_DAYS: 30200},
             "avg_tos": {constants.MetricWindow.LAST_30_DAYS: 25.2},
-            "local_avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
-            "local_avg_etfm_cost_for_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
-            "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
-            "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
-            "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
+            "avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
+            "avg_etfm_cost_for_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
+            "avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
+            "avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
+            "avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
         }
 
     def test_expand_macros(self):

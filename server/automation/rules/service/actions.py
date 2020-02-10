@@ -12,6 +12,7 @@ import utils.email_helper
 
 from .. import Rule
 from .. import constants
+from . import exceptions
 from . import macros
 
 
@@ -39,7 +40,7 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs)
     else:
         raise Exception("Invalid bid action type")
 
-    bid_field = "local_cpm" if ad_group.bidding_type == dash.constants.BiddingType.CPM else "local_cpc"
+    bid_field = "cpm" if ad_group.bidding_type == dash.constants.BiddingType.CPM else "cpc"
     base_bid = getattr(ad_group.settings, bid_field)
     bid = limiter(base_bid + Decimal(str(change)), Decimal(str(rule.change_limit)))
 
@@ -48,13 +49,15 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs)
     return ValueChangeData(target=target, old_value=float(base_bid), new_value=float(bid))
 
 
-# TODO: autocamp: local_autopilot_daily_budget VS local_b1_sources_group_daily_budget
 def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group autopilot budget adjustment target")
 
+    if ad_group.campaign.settings.autopilot:
+        raise exceptions.CampaignAutopilotActive("Campaign autopilot must not be active")
+
     if ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-        raise Exception("Budget autopilot inactive")
+        raise exceptions.BudgetAutopilotInactive("Budget autopilot must be active")
 
     if rule.action_type == constants.ActionType.INCREASE_BUDGET:
         limiter, change = min, rule.change_step
@@ -63,10 +66,10 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     else:
         raise Exception("Invalid budget action type")
 
-    base_budget = ad_group.settings.local_autopilot_daily_budget
+    base_budget = ad_group.settings.autopilot_daily_budget
     budget = limiter(base_budget + Decimal(change), Decimal(rule.change_limit))
 
-    ad_group.settings.update(None, local_autopilot_daily_budget=budget)
+    ad_group.settings.update(None, autopilot_daily_budget=budget)
 
     return ValueChangeData(target=target, old_value=float(base_budget), new_value=float(budget))
 
@@ -78,6 +81,12 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, 
         limiter, change = max, -rule.change_step
     else:
         raise Exception("Invalid bid modifier action type")
+
+    if rule.target_type == constants.TargetType.SOURCE and (
+        ad_group.campaign.settings.autopilot
+        or ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+    ):
+        raise exceptions.AutopilotActive("Campaign and ad group autopilot must not be active")
 
     if rule.target_type == constants.TargetType.PUBLISHER:
         target, source_id = target.split("__")

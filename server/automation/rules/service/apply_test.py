@@ -92,7 +92,7 @@ class ApplyTest(TestCase):
         self.assertEqual(2, len(errors))
         for error in errors:
             self.assertIn(error.target, ["-1", "-2"])
-            self.assertEqual("Invalid ad turn off target", error.message)
+            self.assertEqual("Invalid ad turn off target", str(error.exc))
             self.assertIn("Invalid ad turn off target", error.stack_trace)
 
         self.assertEqual(3, cooldown_mock.call_count)
@@ -191,37 +191,37 @@ class ApplyTest(TestCase):
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertTrue(apply._meets_all_conditions(rule, stats))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LIFETIME: 10.0},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
+            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats))
 

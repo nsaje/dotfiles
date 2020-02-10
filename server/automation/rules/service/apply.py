@@ -36,11 +36,11 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
 @dataclasses.dataclass
 class ErrorData:
     target: str
-    message: str
+    exc: Exception
     stack_trace: str
 
     def to_dict(self) -> Dict[str, Dict[str, Optional[str]]]:
-        return {self.target: {"message": self.message, "stack_trace": self.stack_trace}}
+        return {self.target: {"message": str(self.exc), "stack_trace": self.stack_trace}}
 
 
 def apply_rule(
@@ -66,7 +66,7 @@ def apply_rule(
                     continue
 
                 except Exception as e:
-                    error_data = ErrorData(target=target, message=str(e), stack_trace=traceback.format_exc())
+                    error_data = ErrorData(target=target, exc=e, stack_trace=traceback.format_exc())
                     errors.append(error_data)
 
     return changes, errors
@@ -89,6 +89,7 @@ def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict
         left_operand_modifier = condition.left_operand_modifier or 1.0
         left_operand_value = left_operand_stat_value * left_operand_modifier
 
+        # TODO: handle constants
         if condition.right_operand_type in [constants.ValueType.ABSOLUTE, constants.ValueType.CONSTANT]:
             right_operand_value = float(condition.right_operand_value)
         else:
@@ -100,7 +101,7 @@ def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict
             try:
                 right_operand_modifier = float(condition.right_operand_value)
             except ValueError:
-                right_operand_modifier = 1.0  # "1.0" value default if right side spend when creating conditions?
+                right_operand_modifier = 1.0
 
             right_operand_value = right_operand_stat_value * right_operand_modifier
 

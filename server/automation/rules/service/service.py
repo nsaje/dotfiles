@@ -20,6 +20,7 @@ from utils import zlogging
 from .. import Rule
 from .. import RuleHistory
 from .. import constants
+from . import exceptions
 from .actions import ValueChangeData
 from .apply import ErrorData
 from .apply import apply_rule
@@ -128,11 +129,44 @@ def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[
     )
 
 
-def _write_fail_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ErrorData]) -> RuleHistory:
+def _write_fail_history(rule: Rule, ad_group: core.models.AdGroup, errors: Sequence[ErrorData]) -> RuleHistory:
     return RuleHistory.objects.create(
         rule=rule,
         ad_group=ad_group,
         status=constants.ApplyStatus.FAILURE,
-        changes=dict(ChainMap(*[c.to_dict() for c in changes])),
-        changes_text="An error has occured.",
+        changes=dict(ChainMap(*[e.to_dict() for e in errors])),
+        changes_text=_get_fail_history_message(errors),
     )
+
+
+def _get_fail_history_message(errors: Sequence[ErrorData]) -> str:
+    has_campaign_autopilot_errors = has_budget_autopilot_errors = has_generic_errors = False
+    autopilot_error_count = 0
+
+    for error in errors:
+        if isinstance(error.exc, exceptions.CampaignAutopilotActive):
+            has_campaign_autopilot_errors = True
+        elif isinstance(error.exc, exceptions.BudgetAutopilotInactive):
+            has_budget_autopilot_errors = True
+        elif isinstance(error.exc, exceptions.AutopilotActive):
+            autopilot_error_count += 1
+        else:
+            has_generic_errors = True
+
+    messages = []
+
+    if has_campaign_autopilot_errors:
+        messages.append("To change the autopilot daily budget the campaign budget optimization must not be active.")
+    if has_budget_autopilot_errors:
+        messages.append("To change the autopilot daily budget the autopilot goal optimization must be active.")
+    if autopilot_error_count > 0:
+        messages.append(
+            (
+                "To change the source bid modifier the campaign budget optimization and autopilot goal optimization must "
+                "not be active; rule failed to make changes on {count} source{suffix}."
+            ).format(count=autopilot_error_count, suffix="" if autopilot_error_count == 1 else "s")
+        )
+    if has_generic_errors:
+        messages.append("An error has occured.")
+
+    return " ".join(messages)
