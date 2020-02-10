@@ -98,8 +98,7 @@ angular.module('one.views').config(function($stateProvider) {
 
     $stateProvider.state(UiRouterStateName.ARCHIVED, {
         url: '/archived/{level:account|campaign|adgroup}/{id:int}',
-        template: require('./archived/zemArchivedView.partial.html'),
-        controller: 'zemArchivedView as $ctrl',
+        template: '<zem-archived-view></zem-archived-view>',
     });
 
     $stateProvider.state(UiRouterStateName.DEALS_LIBRARY, {

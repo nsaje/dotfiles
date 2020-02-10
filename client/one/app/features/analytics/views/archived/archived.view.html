@@ -1,5 +1,5 @@
 <zem-archived-entity
     class="zem-archived-entity"
-    ng-if="$ctrl.entity"
-    entity="$ctrl.entity"
+    *ngIf="!!entity"
+    [entity]="entity"
 ></zem-archived-entity>

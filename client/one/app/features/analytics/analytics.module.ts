@@ -16,6 +16,8 @@ import {ChartComponent} from './components/chart/chart.component';
 import {InfoboxComponent} from './components/infobox/infobox.component';
 import {GridContainerComponent} from './components/grid-container/grid-container.component';
 import {AnalyticsView} from './views/analytics/analytics.view';
+import {ArchivedEntityComponent} from './components/archived-entity/archived-entity.component';
+import {ArchivedView} from './views/archived/archived.view';
 
 @NgModule({
     declarations: [
@@ -33,7 +35,9 @@ import {AnalyticsView} from './views/analytics/analytics.view';
         ChartComponent,
         InfoboxComponent,
         GridContainerComponent,
+        ArchivedEntityComponent,
         AnalyticsView,
+        ArchivedView,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [
@@ -45,6 +49,7 @@ import {AnalyticsView} from './views/analytics/analytics.view';
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
         AnalyticsView,
+        ArchivedView,
     ],
 })
 export class AnalyticsModule {}
