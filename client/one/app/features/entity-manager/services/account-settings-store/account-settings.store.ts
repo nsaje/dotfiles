@@ -16,7 +16,6 @@ import {AccountType, Currency} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import * as fileHelpers from '../../../../shared/helpers/file.helpers';
-import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
 import {ChangeEvent} from '../../../../shared/types/change-event';

@@ -8,6 +8,7 @@ import {ApiResponse} from '../../../../shared/types/api-response';
 import {Account} from '../../types/account/account';
 import {AccountExtras} from '../../types/account/account-extras';
 import {map, catchError} from 'rxjs/operators';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AccountEndpoint {
@@ -77,28 +78,37 @@ export class AccountEndpoint {
             );
     }
 
-    list(requestStateUpdater: RequestStateUpdater): Observable<Account[]> {
+    list(
+        agencyId: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Account[]> {
         const request = ENTITY_CONFIG.requests.account.list;
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
-        return this.http.get<ApiResponse<Account[]>>(request.url).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = {
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+        };
+
+        return this.http
+            .get<ApiResponse<Account[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     validate(

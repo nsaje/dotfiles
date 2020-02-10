@@ -20,6 +20,7 @@ describe('zemPermissions', function() {
                 internalPermission: false,
             },
             email: 'test@zemanta.com',
+            agencies: [],
         };
         spyOn(zemUserService, 'current').and.callFake(function() {
             return mockedUser;
@@ -135,6 +136,18 @@ describe('zemPermissions', function() {
             expect(
                 zemPermissions.isPermissionInternal('internalPermission')
             ).toBe(true);
+        });
+    });
+
+    describe('hasAgencyScope:', function() {
+        it("should return false if user doesn't have agency scope for specified agency", function() {
+            mockedUser.agencies = ['5', '7'];
+            expect(zemPermissions.hasAgencyScope('9')).toBe(false);
+        });
+
+        it('should return true if user has agency scope for specified agency', function() {
+            mockedUser.agencies = ['5', '7'];
+            expect(zemPermissions.hasAgencyScope('5')).toBe(true);
         });
     });
 });

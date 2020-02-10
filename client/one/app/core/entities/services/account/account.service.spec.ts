@@ -97,15 +97,19 @@ describe('AccountService', () => {
     });
 
     it('should list all accounts for user via endpoint', () => {
+        const mockedAgencyId = '1';
         accountEndpointStub.list.and
             .returnValue(of([mockedAccount], asapScheduler))
             .calls.reset();
 
-        service.list(requestStateUpdater).subscribe(accounts => {
-            expect(accounts[0]).toEqual(mockedAccount);
-        });
+        service
+            .list(mockedAgencyId, requestStateUpdater)
+            .subscribe(accounts => {
+                expect(accounts[0]).toEqual(mockedAccount);
+            });
         expect(accountEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(accountEndpointStub.list).toHaveBeenCalledWith(
+            mockedAgencyId,
             requestStateUpdater
         );
     });

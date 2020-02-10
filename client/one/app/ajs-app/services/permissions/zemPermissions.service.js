@@ -14,6 +14,7 @@ angular
         this.isPermissionInternalBCMv2 = isPermissionInternalBCMv2;
         this.canAccessPlatformCosts = canAccessPlatformCosts;
         this.canAccessAgencyCosts = canAccessAgencyCosts;
+        this.hasAgencyScope = hasAgencyScope;
 
         function hasPermission(permission) {
             // Can take string or array (legacy option), returns true if user has all of the permissions
@@ -95,5 +96,10 @@ angular
                     (!activeAccount.data.usesBCMv2 &&
                         hasPermission('zemauth.can_manage_agency_margin')))
             );
+        }
+
+        function hasAgencyScope(agencyId) {
+            var user = zemUserService.current();
+            return user.agencies.includes(agencyId);
         }
     });

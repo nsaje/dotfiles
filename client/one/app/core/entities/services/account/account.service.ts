@@ -29,8 +29,11 @@ export class AccountService {
         return this.endpoint.get(id, requestStateUpdater);
     }
 
-    list(requestStateUpdater: RequestStateUpdater): Observable<Account[]> {
-        return this.endpoint.list(requestStateUpdater);
+    list(
+        agencyId: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Account[]> {
+        return this.endpoint.list(agencyId, requestStateUpdater);
     }
 
     validate(
