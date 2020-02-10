@@ -58,9 +58,8 @@ angular.module('one.views').config(function($stateProvider) {
     });
 
     $stateProvider.state(UiRouterStateName.CREDIT, {
-        url: '/credit/account/{id:int}',
-        template: require('./account-credit/zemAccountCreditView.partial.html'),
-        controller: 'zemAccountCreditView as $ctrl',
+        url: '/credit/{level:account}/{id:int}',
+        template: '<zem-credits-library-view></zem-credits-library-view>',
         params: {
             level: constants.levelStateParam.ACCOUNT,
         },

@@ -21,6 +21,7 @@ import {RulesLibraryModule} from './features/rules-library/rules-library.module'
 import {DealsLibraryModule} from './features/deals-library/deals-library.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
+import {CreditsLibraryModule} from './features/credits-library/credits-library.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -74,6 +75,7 @@ if (APP_CONFIG.env.prod) {
         AnalyticsModule,
         RulesLibraryModule,
         DealsLibraryModule,
+        CreditsLibraryModule,
     ],
     entryComponents: [NewEntityAnalyticsMockView, MainContainerComponent],
     providers: [
