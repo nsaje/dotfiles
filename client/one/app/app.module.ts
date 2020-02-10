@@ -8,6 +8,7 @@ import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
 import {HeaderComponent} from './components/header/header.component';
+import {FilterSelectorComponent} from './components/filter-selector/filter-selector.component';
 import {FooterComponent} from './components/footer/footer.component';
 import {SidebarComponent} from './components/sidebar/sidebar.component';
 import {SidebarContainerComponent} from './components/sidebar-container/sidebar-container.component';
@@ -37,6 +38,7 @@ if (APP_CONFIG.env.prod) {
     declarations: [
         NewEntityAnalyticsMockView,
         HeaderComponent,
+        FilterSelectorComponent,
         FooterComponent,
         SidebarComponent,
         SidebarContainerComponent,

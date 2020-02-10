@@ -1,5 +1,5 @@
 angular
-    .module('one.widgets')
+    .module('one.common')
     .service('zemFilterSelectorSharedService', function() {
         this.isSelectorExpanded = isSelectorExpanded;
         this.setSelectorExpanded = setSelectorExpanded;

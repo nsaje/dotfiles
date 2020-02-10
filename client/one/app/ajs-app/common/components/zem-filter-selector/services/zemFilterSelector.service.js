@@ -1,5 +1,5 @@
 angular
-    .module('one.widgets')
+    .module('one.common')
     .service('zemFilterSelectorService', function(
         $rootScope,
         $state,

@@ -1,6 +1,6 @@
 require('./zemFilterSelector.component.less');
 
-angular.module('one.widgets').component('zemFilterSelector', {
+angular.module('one.common').component('zemFilterSelector', {
     template: require('./zemFilterSelector.component.html'),
     controller: function(
         $element,
