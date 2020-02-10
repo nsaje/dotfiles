@@ -21,6 +21,7 @@ import {DealsLibraryModule} from './features/deals-library/deals-library.module'
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
 import {CreditsLibraryModule} from './features/credits-library/credits-library.module';
+import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -44,6 +45,7 @@ if (APP_CONFIG.env.prod) {
         SidebarContainerComponent,
         MainContainerComponent,
         HistoryComponent,
+        ErrorForbiddenView,
     ],
     imports: [
         // Angular modules
@@ -75,7 +77,7 @@ if (APP_CONFIG.env.prod) {
         DealsLibraryModule,
         CreditsLibraryModule,
     ],
-    entryComponents: [MainContainerComponent],
+    entryComponents: [MainContainerComponent, ErrorForbiddenView],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         upgradeProvider('$rootScope', 'ajs$rootScope'),

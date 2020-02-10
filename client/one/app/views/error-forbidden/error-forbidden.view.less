@@ -1,0 +1,73 @@
+@import 'variables';
+
+.zem-error-forbidden-view {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 2 * @spacing--default;
+    background: url('images/background.jpg') no-repeat center center;
+}
+
+.zem-error-forbidden-view__panel {
+    display: flex;
+    flex-direction: column;
+    background-color: @color--secondary;
+}
+
+.zem-error-forbidden-view__left {
+    display: block;
+    padding: 40px;
+    background: @color--primary url('images/zemanta-logo-squares-white.svg')
+        no-repeat left top;
+    background-size: 40px;
+}
+
+.zem-error-forbidden-view__right {
+    display: block;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 20px;
+    padding: 36px 40px;
+}
+
+.zem-error-forbidden-view__brand {
+    display: block;
+    height: 37px;
+    background: @color--primary url('images/zemanta-logo-white.svg') no-repeat
+        left top;
+}
+
+.zem-error-forbidden-view__right > h2 {
+    font-size: 42px;
+    font-weight: 400;
+    line-height: 46px;
+    margin: 0 0 20px 0;
+    color: #ffffff;
+}
+
+.zem-error-forbidden-view__link {
+    display: inline-block;
+    color: #ffffff !important;
+}
+
+///////////////////////////
+// RESPONSIVE //
+///////////////////////////
+
+.zem-error-forbidden-view {
+    @media only screen and (min-width: 880px) {
+        .zem-error-forbidden-view__panel {
+            flex-direction: row;
+        }
+
+        .zem-error-forbidden-view__left {
+            width: 280px;
+        }
+
+        .zem-error-forbidden-view__right {
+            width: 560px;
+        }
+    }
+}

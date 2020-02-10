@@ -121,9 +121,6 @@ angular.module('one.views').config(function($stateProvider) {
 
     $stateProvider.state(UiRouterStateName.ERROR_FORBIDDEN, {
         url: '/forbidden',
-        template: require('./common/403.partial.html'),
-        controller: function() {
-            require('./common/403.partial.less');
-        },
+        template: '<zem-error-forbidden-view></zem-error-forbidden-view>',
     });
 });
