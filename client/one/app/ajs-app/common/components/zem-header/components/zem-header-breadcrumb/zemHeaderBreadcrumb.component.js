@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemHeaderBreadcrumb', {
+angular.module('one.common').component('zemHeaderBreadcrumb', {
     template: require('./zemHeaderBreadcrumb.component.html'),
     controller: function(
         $rootScope,

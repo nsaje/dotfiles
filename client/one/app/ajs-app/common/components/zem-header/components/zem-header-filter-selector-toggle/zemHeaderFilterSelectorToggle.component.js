@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemHeaderFilterSelectorToggle', {
+angular.module('one.common').component('zemHeaderFilterSelectorToggle', {
     template: require('./zemHeaderFilterSelectorToggle.component.html'), // eslint-disable-line max-len
     controller: function(zemFilterSelectorSharedService) {
         var $ctrl = this;

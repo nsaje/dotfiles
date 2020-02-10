@@ -1,5 +1,5 @@
 angular
-    .module('one.widgets')
+    .module('one.common')
     .service('zemHeaderNavigationService', function(zemNavigationNewService) {
         // eslint-disable-line max-len
         this.quickNavigate = quickNavigate;

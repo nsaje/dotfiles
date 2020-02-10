@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemHeaderDateRangePicker', {
+angular.module('one.common').component('zemHeaderDateRangePicker', {
     template: require('./zemHeaderDateRangePicker.component.html'), // eslint-disable-line max-len
     controller: function(
         $state,

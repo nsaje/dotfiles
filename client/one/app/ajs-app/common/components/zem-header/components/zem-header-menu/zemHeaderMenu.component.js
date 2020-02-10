@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemHeaderMenu', {
+angular.module('one.common').component('zemHeaderMenu', {
     template: require('./zemHeaderMenu.component.html'),
     controller: function(config, zemHeaderMenuService, zemUserService) {
         var $ctrl = this;

@@ -1,6 +1,6 @@
 require('./zemHeader.component.less');
 
-angular.module('one.widgets').component('zemHeader', {
+angular.module('one.common').component('zemHeader', {
     template: require('./zemHeader.component.html'),
     controller: function($rootScope, $state, $window, config) {
         var $ctrl = this;

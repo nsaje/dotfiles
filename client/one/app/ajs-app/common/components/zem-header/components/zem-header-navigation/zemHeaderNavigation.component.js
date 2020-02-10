@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemHeaderNavigation', {
+angular.module('one.common').component('zemHeaderNavigation', {
     template: require('./zemHeaderNavigation.component.html'),
     controller: function(
         $scope,
