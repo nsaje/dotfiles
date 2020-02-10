@@ -55,6 +55,13 @@ export enum LevelStateParam {
     AD_GROUP = 'adgroup',
 }
 
+export enum Level {
+    AD_GROUPS = 'ad_groups',
+    CAMPAIGNS = 'campaigns',
+    ACCOUNTS = 'accounts',
+    ALL_ACCOUNTS = 'all_accounts',
+}
+
 export enum Day {
     Monday = 'monday',
     Tuesday = 'tuesday',
@@ -188,6 +195,18 @@ export enum InterestCategory {
     LAW = 'LAW',
     COUPONS = 'COUPONS',
     SHOPPING = 'SHOPPING',
+}
+
+export enum BreakdownStateParam {
+    SOURCES = 'sources',
+    PUBLISHERS = 'publishers',
+    INSIGHTS = 'insights',
+    COUNTRY = 'country',
+    STATE = 'region',
+    DMA = 'dma',
+    DEVICE = 'device',
+    PLACEMENT = 'placement',
+    OPERATING_SYSTEM = 'deviceos',
 }
 
 export enum Breakdown {
@@ -1328,23 +1347,8 @@ export const APP_CONSTANTS = {
     },
     entityType: EntityType,
     levelStateParam: LevelStateParam,
-    level: {
-        AD_GROUPS: 'ad_groups',
-        CAMPAIGNS: 'campaigns',
-        ACCOUNTS: 'accounts',
-        ALL_ACCOUNTS: 'all_accounts',
-    },
-    breakdownStateParam: {
-        SOURCES: 'sources',
-        PUBLISHERS: 'publishers',
-        INSIGHTS: 'insights',
-        COUNTRY: 'country',
-        STATE: 'region',
-        DMA: 'dma',
-        DEVICE: 'device',
-        PLACEMENT: 'placement',
-        OPERATING_SYSTEM: 'deviceos',
-    },
+    level: Level,
+    breakdownStateParam: BreakdownStateParam,
     breakdown: Breakdown,
     contentAdApprovalStatus: {
         PENDING: 1,
@@ -1534,7 +1538,6 @@ export const APP_CONSTANTS = {
     },
     levelStateParamToLevelMap: {},
     levelToLevelStateParamMap: {},
-    breakdownStateParamToBreakdownMap: {},
     breakdownToBreakdownStateParamMap: {},
     levelToEntityTypeMap: {},
     entityTypeToLevelMap: {},
@@ -1566,34 +1569,6 @@ APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.CAMPAIGNS] =
     APP_CONSTANTS.levelStateParam.CAMPAIGN;
 APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.AD_GROUPS] =
     APP_CONSTANTS.levelStateParam.AD_GROUP;
-
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.SOURCES
-] = APP_CONSTANTS.breakdown.MEDIA_SOURCE;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.COUNTRY
-] = APP_CONSTANTS.breakdown.COUNTRY;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.STATE
-] = APP_CONSTANTS.breakdown.STATE;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.DMA
-] = APP_CONSTANTS.breakdown.DMA;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.DEVICE
-] = APP_CONSTANTS.breakdown.DEVICE;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.PLACEMENT
-] = APP_CONSTANTS.breakdown.PLACEMENT;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.OPERATING_SYSTEM
-] = APP_CONSTANTS.breakdown.OPERATING_SYSTEM;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.PUBLISHERS
-] = APP_CONSTANTS.breakdown.PUBLISHER;
-APP_CONSTANTS.breakdownStateParamToBreakdownMap[
-    APP_CONSTANTS.breakdownStateParam.INSIGHTS
-] = APP_CONSTANTS.breakdown.INSIGHTS;
 
 APP_CONSTANTS.breakdownToBreakdownStateParamMap[
     APP_CONSTANTS.breakdown.MEDIA_SOURCE

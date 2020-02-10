@@ -1,0 +1,26 @@
+<div class="chart-infobox__container">
+    <div class="custom-panel chart-infobox__chart">
+        <zem-chart
+            *ngIf="isInitialized"
+            class="zem-chart"
+            [level]="level"
+            [breakdown]="chartBreakdown"
+            [entityId]="entity?.id"
+        ></zem-chart>
+    </div>
+    <div class="chart-infobox__spacing"></div>
+    <div class="custom-panel chart-infobox__infobox">
+        <zem-infobox
+            *ngIf="isInitialized"
+            class="zem-infobox"
+            [entity]="entity"
+        ></zem-infobox>
+    </div>
+</div>
+<zem-grid-container
+    *ngIf="isInitialized"
+    class="zem-grid-container"
+    [level]="level"
+    [breakdown]="breakdown"
+    [entity]="entity"
+></zem-grid-container>

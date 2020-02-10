@@ -16,8 +16,7 @@ angular.module('one.views').config(function($stateProvider) {
     $stateProvider.state(UiRouterStateName.ANALYTICS, {
         url:
             '/analytics/{level:accounts|account|campaign|adgroup}/{id:int}/{breakdown}',
-        template: require('./analytics/zemAnalyticsView.partial.html'),
-        controller: 'zemAnalyticsView as $ctrl',
+        template: '<zem-analytics-view></zem-analytics-view>',
         params: {
             id: {
                 value: null,

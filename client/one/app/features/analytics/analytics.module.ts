@@ -12,6 +12,10 @@ import {NativeAdPreviewComponent} from './components/native-ad-preview/native-ad
 import {DisplayAdPreviewComponent} from './components/display-ad-preview/display-ad-preview.component';
 import {CampaignCloningFormComponent} from './components/campaign-cloning-form/campaign-cloning-form.component';
 import {BidRangeInfoComponent} from './components/stats-table/bid-range-info/bid-range-info.component';
+import {ChartComponent} from './components/chart/chart.component';
+import {InfoboxComponent} from './components/infobox/infobox.component';
+import {GridContainerComponent} from './components/grid-container/grid-container.component';
+import {AnalyticsView} from './views/analytics/analytics.view';
 
 @NgModule({
     declarations: [
@@ -26,6 +30,10 @@ import {BidRangeInfoComponent} from './components/stats-table/bid-range-info/bid
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
         BidRangeInfoComponent,
+        ChartComponent,
+        InfoboxComponent,
+        GridContainerComponent,
+        AnalyticsView,
     ],
     imports: [SharedModule, RulesLibraryModule],
     entryComponents: [
@@ -36,6 +44,7 @@ import {BidRangeInfoComponent} from './components/stats-table/bid-range-info/bid
         NativeAdPreviewComponent,
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
+        AnalyticsView,
     ],
 })
 export class AnalyticsModule {}
