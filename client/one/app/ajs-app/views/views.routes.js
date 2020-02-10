@@ -83,9 +83,8 @@ angular.module('one.views').config(function($stateProvider) {
     });
 
     $stateProvider.state(UiRouterStateName.PIXELS, {
-        url: '/pixels/account/{id:int}',
-        template: require('./pixels/zemPixelsView.partial.html'),
-        controller: 'zemPixelsView as $ctrl',
+        url: '/pixels/{level:account}/{id:int}',
+        template: '<zem-pixels-library-view></zem-pixels-library-view>',
         params: {
             level: constants.levelStateParam.ACCOUNT,
         },

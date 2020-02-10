@@ -22,6 +22,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
 import {CreditsLibraryModule} from './features/credits-library/credits-library.module';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
+import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -76,6 +77,7 @@ if (APP_CONFIG.env.prod) {
         RulesLibraryModule,
         DealsLibraryModule,
         CreditsLibraryModule,
+        PixelsLibraryModule,
     ],
     entryComponents: [MainContainerComponent, ErrorForbiddenView],
     providers: [
