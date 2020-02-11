@@ -1,0 +1,33 @@
+<div class="zem-operating-system__platform-icon {{ platformIcon }}"></div>
+<div class="zem-operating-system__name">
+    <div class="zem-operating-system__icon {{ formattedOs.icon }}"></div>
+    {{ formattedOs.displayName }}
+</div>
+<zem-select-form-group
+    *ngIf="formattedOs.versions"
+    label="Min OS version:"
+    class="zem-select-form-group zem-operating-system__form-group"
+    [items]="formattedOs.versions"
+    [placeholder]="'-'"
+    bindLabel="displayName"
+    bindValue="name"
+    [value]="minVersion?.name"
+    (valueChange)="onVersionChanged($event, 'min')"
+>
+</zem-select-form-group>
+<zem-select-form-group
+    *ngIf="formattedOs.versions"
+    label="Max OS version:"
+    class="zem-select-form-group zem-operating-system__form-group"
+    [items]="formattedOs.versions"
+    [placeholder]="'-'"
+    bindLabel="displayName"
+    bindValue="name"
+    [value]="maxVersion?.name"
+    (valueChange)="onVersionChanged($event, 'max')"
+>
+</zem-select-form-group>
+<button
+    class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-operating-system__remove-button"
+    (click)="onOsDeleted()"
+></button>

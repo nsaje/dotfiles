@@ -1,21 +1,27 @@
 import './ad-group-settings-drawer.view.less';
 
 import {
-    Component,
-    Input,
-    Inject,
     AfterViewInit,
+    Component,
+    Inject,
+    Input,
     OnDestroy,
     OnInit,
 } from '@angular/core';
-import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
+import {
+    ENTITY_MANAGER_CONFIG,
+    TARGETING_DEVICE_OPTIONS,
+    TARGETING_PLACEMENT_OPTIONS,
+} from '../../entity-manager.config';
 import {AdGroupSettingsStore} from '../../services/ad-group-settings-store/ad-group-settings.store';
-import {LevelStateParam, EntityType, Currency} from '../../../../app.constants';
-import {Subject, merge, Observable} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import {Currency, EntityType, LevelStateParam} from '../../../../app.constants';
+import {merge, Observable, Subject} from 'rxjs';
+import {distinctUntilChanged, map, takeUntil, tap} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as messagesHelpers from '../../helpers/messages.helpers';
+import {ImageCheckboxInputGroupItem} from '../../../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
+import {ImageCheckboxInputIcon} from '../../../../shared/components/image-checkbox-input/image-checkbox-input.constants';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -35,6 +41,9 @@ export class AdGroupSettingsDrawerView
     isNewEntity = false;
     minEndDate = new Date();
     currencySymbol = '';
+
+    targetingDeviceOptions: ImageCheckboxInputGroupItem[] = TARGETING_DEVICE_OPTIONS;
+    targetingPlacementOptions: ImageCheckboxInputGroupItem[] = TARGETING_PLACEMENT_OPTIONS;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 

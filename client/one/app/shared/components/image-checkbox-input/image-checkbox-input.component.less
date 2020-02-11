@@ -1,0 +1,62 @@
+@import 'variables';
+
+.zem-image-checkbox-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.zem-image-checkbox-input__icon {
+    cursor: pointer;
+    height: 50px;
+    width: 50px;
+}
+
+.zem-image-checkbox-input__icon--desktop {
+    background: url('images/device-desktop-gray.svg') no-repeat center;
+    background-size: 50px;
+}
+
+.zem-image-checkbox-input__icon--desktop.zem-image-checkbox-input__icon--active {
+    background-image: url('@{images-folder}/device-desktop-sec.svg');
+}
+
+.zem-image-checkbox-input__icon--tablet {
+    background: url('images/device-tablet-gray.svg') no-repeat center;
+    background-size: 30px;
+}
+
+.zem-image-checkbox-input__icon--tablet.zem-image-checkbox-input__icon--active {
+    background-image: url('@{images-folder}/device-tablet-sec.svg');
+}
+
+.zem-image-checkbox-input__icon--mobile {
+    background: url('images/device-mobile-gray.svg') no-repeat center;
+    background-size: 20px;
+}
+
+.zem-image-checkbox-input__icon--mobile.zem-image-checkbox-input__icon--active {
+    background-image: url('@{images-folder}/device-mobile-sec.svg');
+}
+
+.zem-image-checkbox-input__icon--website {
+    background: url('images/placement-website-gray.svg') no-repeat center;
+    background-size: 50px;
+}
+
+.zem-image-checkbox-input__icon--website.zem-image-checkbox-input__icon--active {
+    background-image: url('@{images-folder}/placement-website-sec.svg');
+}
+
+.zem-image-checkbox-input__icon--in-app {
+    background: url('images/placement-in-app-gray.svg') no-repeat center;
+    background-size: 50px;
+}
+
+.zem-image-checkbox-input__icon--in-app.zem-image-checkbox-input__icon--active {
+    background-image: url('@{images-folder}/placement-in-app-sec.svg');
+}
+
+.zem-image-checkbox-input__checkbox {
+    margin-left: @spacing--default;
+}

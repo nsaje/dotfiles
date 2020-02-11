@@ -1,0 +1,8 @@
+<span *ngFor="let formattedOption of formattedOptions">
+    <ng-container
+        *ngTemplateOutlet="
+            imageCheckboxTemplate;
+            context: {formattedOption: formattedOption}
+        "
+    ></ng-container>
+</span>

@@ -22,7 +22,7 @@ import {
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
 import {AdGroupDayparting} from '../../../../core/entities/types/ad-group/ad-group-dayparting';
-import {OperatingSystem} from '../../../../core/entities/types/common/operating-system';
+import {TargetOperatingSystem} from '../../../../core/entities/types/common/target-operating-system';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
 import * as messagesHelpers from '../../helpers/messages.helpers';
@@ -31,6 +31,13 @@ import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {ChangeEvent} from '../../../../shared/types/change-event';
+import {OperatingSystem} from '../../components/operating-system/types/operating-system';
+import {
+    OPERATING_SYSTEMS,
+    TARGETING_DEVICE_OPTIONS,
+    TARGETING_PLACEMENT_OPTIONS,
+} from '../../entity-manager.config';
+import {isEmpty} from '../../../../shared/helpers/array.helpers';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -425,7 +432,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     setDeviceTargeting(deviceTargeting: {
         targetDevices?: string[];
         targetPlacements?: string[];
-        targetOs?: OperatingSystem[];
+        targetOs?: TargetOperatingSystem[];
     }) {
         this.setState({
             ...this.state,
@@ -439,6 +446,64 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 },
             },
         });
+        this.validateEntity();
+    }
+
+    toggleTargetingDevice(device: string) {
+        const oldDevices: string[] = this.state.entity.targeting.devices;
+        const allDevices: string[] = TARGETING_DEVICE_OPTIONS.map(
+            option => option.value
+        );
+        const newDevices: string[] = this.toggleTargetingItem(
+            device,
+            oldDevices,
+            allDevices
+        );
+
+        this.patchState(newDevices, 'entity', 'targeting', 'devices');
+        this.validateEntity();
+    }
+
+    toggleTargetingPlacement(placement: string) {
+        const oldPlacements: string[] = this.state.entity.targeting.placements;
+        const allPlacements: string[] = TARGETING_PLACEMENT_OPTIONS.map(
+            option => option.value
+        );
+        const newPlacements: string[] = this.toggleTargetingItem(
+            placement,
+            oldPlacements,
+            allPlacements
+        );
+
+        this.patchState(newPlacements, 'entity', 'targeting', 'placements');
+        this.validateEntity();
+    }
+
+    addDeviceTargetingOs(osName: string) {
+        const newTargetOses: TargetOperatingSystem[] = this.state.entity.targeting.os.concat(
+            {
+                name: osName,
+                version: {},
+            }
+        );
+        this.patchState(newTargetOses, 'entity', 'targeting', 'os');
+        this.validateEntity();
+    }
+
+    changeDeviceTargetingOs($event: ChangeEvent<TargetOperatingSystem>) {
+        const newTargetOses: TargetOperatingSystem[] = this.patchListItem(
+            this.state.entity.targeting.os,
+            $event
+        ).map(this.fixVersionOrder.bind(this));
+        this.patchState(newTargetOses, 'entity', 'targeting', 'os');
+        this.validateEntity();
+    }
+
+    deleteDeviceTargetingOs(deletedOs: TargetOperatingSystem) {
+        const newTargetOses: TargetOperatingSystem[] = this.state.entity.targeting.os.filter(
+            targetOs => targetOs.name !== deletedOs.name
+        );
+        this.patchState(newTargetOses, 'entity', 'targeting', 'os');
         this.validateEntity();
     }
 
@@ -703,5 +768,62 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 this.state.entity.manageRtbSourcesAsOne
             )
         );
+    }
+
+    /**
+     * If the min version of the OS is newer than the max version, change the min version to match the max
+     */
+    private fixVersionOrder(
+        targetOs: TargetOperatingSystem
+    ): TargetOperatingSystem {
+        const fixedTargetOs: TargetOperatingSystem = {...targetOs};
+        const osType: OperatingSystem = OPERATING_SYSTEMS[fixedTargetOs.name];
+
+        if (
+            osType.versions &&
+            fixedTargetOs.version.min &&
+            fixedTargetOs.version.max
+        ) {
+            const osVersionNames: string[] = osType.versions.map(x => x.name);
+            const indexOfMinVersion: number = osVersionNames.indexOf(
+                fixedTargetOs.version.min
+            );
+            const indexOfMaxVersion: number = osVersionNames.indexOf(
+                fixedTargetOs.version.max
+            );
+            if (indexOfMinVersion > indexOfMaxVersion) {
+                fixedTargetOs.version.max = fixedTargetOs.version.min;
+            }
+        }
+
+        return fixedTargetOs;
+    }
+
+    private patchListItem<T>(list: T[], $event: ChangeEvent<T>): T[] {
+        const newList = list.map(item => {
+            if (item === $event.target) {
+                return {
+                    ...$event.target,
+                    ...$event.changes,
+                };
+            } else {
+                return item;
+            }
+        });
+
+        return newList;
+    }
+
+    private toggleTargetingItem<T>(item: T, oldItems: T[], allItems: T[]): T[] {
+        let newItems: T[];
+        if (oldItems.includes(item)) {
+            newItems = oldItems.filter(x => x !== item);
+        } else {
+            newItems = oldItems.concat(item);
+        }
+        if (isEmpty(newItems)) {
+            newItems = allItems;
+        }
+        return newItems;
     }
 }

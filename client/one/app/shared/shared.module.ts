@@ -60,6 +60,8 @@ import {ScopeSelectorCardComponent} from './components/scope-selector/components
 import {ScopeSelectorComponent} from './components/scope-selector/scope-selector.component';
 import {BidModifierTypesGridComponent} from './components/bid-modifier-types-grid/bid-modifier-types-grid.component';
 import {ListGroupComponent} from './components/list-group/list-group.component';
+import {ImageCheckboxInputComponent} from './components/image-checkbox-input/image-checkbox-input.component';
+import {ImageCheckboxInputGroupComponent} from './components/image-checkbox-input-group/image-checkbox-input-group.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -113,6 +115,8 @@ const EXPORTED_DECLARATIONS = [
     ScopeSelectorComponent,
     BidModifierTypesGridComponent,
     ListGroupComponent,
+    ImageCheckboxInputComponent,
+    ImageCheckboxInputGroupComponent,
 ];
 
 @NgModule({

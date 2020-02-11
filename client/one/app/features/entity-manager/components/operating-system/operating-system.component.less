@@ -1,0 +1,79 @@
+@import 'variables';
+
+.zem-operating-system {
+    border-radius: @border-radius--default;
+    border: 1px solid @color--lighter-neutral;
+    padding: @spacing--small;
+    background-color: white;
+    margin-bottom: 5px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.zem-operating-system__platform-icon {
+    background-repeat: no-repeat;
+    width: 50px;
+    height: 36px;
+}
+
+.zem-operating-system__platform-icon--desktop {
+    background-image: url('images/device-desktop-gray.svg');
+}
+
+.zem-operating-system__platform-icon--tablet-mobile {
+    background-image: url('images/device-tablet-gray.svg');
+    background-size: 26px;
+    background-position: bottom left;
+    position: relative;
+
+    &::after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        left: 26px;
+        top: 12px;
+        height: 24px;
+        width: 24px;
+        background: url('images/device-mobile-gray.svg') no-repeat center center;
+    }
+}
+
+.zem-operating-system__name {
+    font-size: 18px;
+    margin: @spacing--small 0 @spacing--small 0;
+    display: flex;
+    align-items: center;
+}
+
+.zem-operating-system__icon {
+    height: 24px;
+    width: 24px;
+    background: no-repeat center center;
+    background-size: contain;
+    margin-right: @spacing--small;
+    flex-shrink: 0;
+}
+
+.zem-operating-system__icon--windows {
+    background-image: url('images/os-windows.svg');
+    background-size: 18px 18px;
+}
+
+.zem-operating-system__icon--apple {
+    background-image: url('images/os-apple.svg');
+    margin-top: -2px;
+}
+
+.zem-operating-system__icon--linux {
+    background-image: url('images/os-linux.svg');
+}
+
+.zem-operating-system__icon--android {
+    background-image: url('images/os-android.svg');
+}
+
+.zem-operating-system__remove-button {
+    position: absolute;
+    right: @spacing--small;
+}

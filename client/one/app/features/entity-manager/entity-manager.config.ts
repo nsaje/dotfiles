@@ -17,6 +17,10 @@ import {IabCategoryConfig} from './types/iabcategory-config';
 import {LanguageConfig} from './types/language-config';
 import {AccountTypeConfig} from './types/account-type-config';
 import {CurrencyConfig} from './types/currency-config';
+import {OperatingSystem} from './components/operating-system/types/operating-system';
+import {OperatingSystemIcon} from './components/operating-system/operating-system.constants';
+import {ImageCheckboxInputGroupItem} from '../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
+import {ImageCheckboxInputIcon} from '../../shared/components/image-checkbox-input/image-checkbox-input.constants';
 
 export const ENTITY_MANAGER_CONFIG = {
     settingsQueryParam: 'settings',
@@ -1318,3 +1322,162 @@ export const CURRENCIES: CurrencyConfig[] = [
     {name: 'New Zealand Dollar', value: Currency.NZD},
     {name: 'Turkish Lira', value: Currency.TRY},
 ];
+
+export const TARGETING_DEVICE_OPTIONS: ImageCheckboxInputGroupItem[] = [
+    {
+        value: 'DESKTOP',
+        displayValue: 'Desktop',
+        icon: ImageCheckboxInputIcon.DESKTOP,
+    },
+    {
+        value: 'TABLET',
+        displayValue: 'Tablet',
+        icon: ImageCheckboxInputIcon.TABLET,
+    },
+    {
+        value: 'MOBILE',
+        displayValue: 'Mobile',
+        icon: ImageCheckboxInputIcon.MOBILE,
+    },
+];
+
+export const TARGETING_PLACEMENT_OPTIONS: ImageCheckboxInputGroupItem[] = [
+    {
+        value: 'SITE',
+        displayValue: 'Website',
+        icon: ImageCheckboxInputIcon.SITE,
+    },
+    {
+        value: 'APP',
+        displayValue: 'In-app',
+        icon: ImageCheckboxInputIcon.APP,
+    },
+];
+
+export const OPERATING_SYSTEMS: {[key: string]: OperatingSystem} = {
+    WINDOWS: {
+        deviceTypes: ['DESKTOP'],
+        name: 'WINDOWS',
+        displayName: 'Microsoft Windows',
+        icon: OperatingSystemIcon.WINDOWS,
+        versions: [
+            {name: 'WINDOWS_98', displayName: '98'},
+            {name: 'WINDOWS_2000', displayName: '2000'},
+            {name: 'WINDOWS_XP', displayName: 'XP'},
+            {name: 'WINDOWS_VISTA', displayName: 'Vista'},
+            {name: 'WINDOWS_7', displayName: '7'},
+            {name: 'WINDOWS_8', displayName: '8'},
+            {name: 'WINDOWS_8_1', displayName: '8.1'},
+            {name: 'WINDOWS_10', displayName: '10'},
+        ],
+    },
+    MACOSX: {
+        deviceTypes: ['DESKTOP'],
+        name: 'MACOSX',
+        displayName: 'Apple macOS',
+        icon: OperatingSystemIcon.APPLE,
+        versions: [
+            {name: 'MACOSX_10_4', displayName: '10.4 Tiger'},
+            {name: 'MACOSX_10_5', displayName: '10.5 Leopard'},
+            {name: 'MACOSX_10_6', displayName: '10.6 Snow Leopard'},
+            {name: 'MACOSX_10_7', displayName: '10.7 Lion'},
+            {name: 'MACOSX_10_8', displayName: '10.8 Mountain Lion'},
+            {name: 'MACOSX_10_9', displayName: '10.9 Mavericks'},
+            {name: 'MACOSX_10_10', displayName: '10.10 Yosemite'},
+            {name: 'MACOSX_10_11', displayName: '10.11 El Capitan'},
+            {name: 'MACOSX_10_12', displayName: '10.12 Sierra'},
+            {name: 'MACOSX_10_13', displayName: '10.13 High Sierra'},
+            {name: 'MACOSX_10_14', displayName: '10.14 Mojave'},
+            {name: 'MACOSX_10_15', displayName: '10.15 Catalina'},
+        ],
+    },
+    LINUX: {
+        deviceTypes: ['DESKTOP'],
+        name: 'LINUX',
+        displayName: 'Linux',
+        icon: OperatingSystemIcon.LINUX,
+        versions: null,
+    },
+    IOS: {
+        deviceTypes: ['MOBILE', 'TABLET'],
+        name: 'IOS',
+        displayName: 'Apple iOS',
+        icon: OperatingSystemIcon.APPLE,
+        versions: [
+            {name: 'IOS_3_2', displayName: '3.2'},
+            {name: 'IOS_4_0', displayName: '4.0'},
+            {name: 'IOS_4_1', displayName: '4.1'},
+            {name: 'IOS_4_2', displayName: '4.2'},
+            {name: 'IOS_4_3', displayName: '4.3'},
+            {name: 'IOS_5_0', displayName: '5.0'},
+            {name: 'IOS_5_1', displayName: '5.1'},
+            {name: 'IOS_6_0', displayName: '6.0'},
+            {name: 'IOS_6_1', displayName: '6.1'},
+            {name: 'IOS_7_0', displayName: '7.0'},
+            {name: 'IOS_7_1', displayName: '7.1'},
+            {name: 'IOS_8_0', displayName: '8.0'},
+            {name: 'IOS_8_1', displayName: '8.1'},
+            {name: 'IOS_8_2', displayName: '8.2'},
+            {name: 'IOS_8_3', displayName: '8.3'},
+            {name: 'IOS_8_4', displayName: '8.4'},
+            {name: 'IOS_9_0', displayName: '9.0'},
+            {name: 'IOS_9_1', displayName: '9.1'},
+            {name: 'IOS_9_2', displayName: '9.2'},
+            {name: 'IOS_9_3', displayName: '9.3'},
+            {name: 'IOS_10_0', displayName: '10.0'},
+            {name: 'IOS_10_1', displayName: '10.1'},
+            {name: 'IOS_10_2', displayName: '10.2'},
+            {name: 'IOS_10_3', displayName: '10.3'},
+            {name: 'IOS_11_0', displayName: '11.0'},
+            {name: 'IOS_12_0', displayName: '12.0'},
+            {name: 'IOS_12_1', displayName: '12.1'},
+            {name: 'IOS_12_2', displayName: '12.2'},
+            {name: 'IOS_12_3', displayName: '12.3'},
+            {name: 'IOS_12_4', displayName: '12.4'},
+            {name: 'IOS_13_0', displayName: '13.0'},
+            {name: 'IOS_13_1', displayName: '13.1'},
+            {name: 'IOS_13_2', displayName: '13.2'},
+        ],
+    },
+    ANDROID: {
+        deviceTypes: ['MOBILE', 'TABLET'],
+        name: 'ANDROID',
+        displayName: 'Google Android',
+        icon: OperatingSystemIcon.ANDROID,
+        versions: [
+            {name: null, displayName: '-'},
+            {name: 'ANDROID_2_1', displayName: '2.1 Eclair'},
+            {name: 'ANDROID_2_2', displayName: '2.2 Froyo'},
+            {name: 'ANDROID_2_3', displayName: '2.3 Gingerbread'},
+            {name: 'ANDROID_3_0', displayName: '3.0 Honeycomb'},
+            {name: 'ANDROID_3_1', displayName: '3.1 Honeycomb'},
+            {name: 'ANDROID_3_2', displayName: '3.2 Honeycomb'},
+            {name: 'ANDROID_4_0', displayName: '4.0 Ice Cream Sandwich'},
+            {name: 'ANDROID_4_1', displayName: '4.1 Jelly Bean'},
+            {name: 'ANDROID_4_2', displayName: '4.2 Jelly Bean'},
+            {name: 'ANDROID_4_3', displayName: '4.3 Jelly Bean'},
+            {name: 'ANDROID_4_4', displayName: '4.4 KitKat'},
+            {name: 'ANDROID_5_0', displayName: '5.0 Lollipop'},
+            {name: 'ANDROID_5_1', displayName: '5.1 Lollipop'},
+            {name: 'ANDROID_6_0', displayName: '6.0 Marshmallow'},
+            {name: 'ANDROID_7_0', displayName: '7.0 Nougat'},
+            {name: 'ANDROID_7_1', displayName: '7.1 Nougat'},
+            {name: 'ANDROID_8_0', displayName: '8.0 Oreo'},
+            {name: 'ANDROID_8_1', displayName: '8.1 Oreo'},
+            {name: 'ANDROID_9_0', displayName: '9.0 Pie'},
+            {name: 'ANDROID_10_0', displayName: 'Android 10'},
+        ],
+    },
+    WINPHONE: {
+        deviceTypes: ['MOBILE', 'TABLET'],
+        name: 'WINPHONE',
+        displayName: 'Windows Phone',
+        icon: OperatingSystemIcon.WINDOWS,
+        versions: [
+            {name: 'WINPHONE_7', displayName: '7'},
+            {name: 'WINPHONE_8_0', displayName: '8.0'},
+            {name: 'WINPHONE_8_1', displayName: '8.1'},
+            {name: 'WINPHONE_10', displayName: '10'},
+        ],
+    },
+};

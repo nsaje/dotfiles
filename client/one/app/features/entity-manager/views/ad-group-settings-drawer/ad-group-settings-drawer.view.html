@@ -349,14 +349,113 @@
                             The devices on which your content ads will be shown.
                         </div>
                     </div>
-                    <zem-device-targeting-settings
-                        class="zem-device-targeting-settings zem-settings-section__item"
-                        [targetDevices]="state.entity.targeting.devices"
-                        [targetPlacements]="state.entity.targeting.placements"
-                        [targetOs]="state.entity.targeting.os"
-                        (onUpdate)="store.setDeviceTargeting($event.$event)"
-                    ></zem-device-targeting-settings>
+                    <zem-image-checkbox-input-group
+                        class="zem-image-checkbox-input-group zem-settings-section__item"
+                        [options]="targetingDeviceOptions"
+                        [values]="state.entity.targeting.devices"
+                    >
+                        <ng-template
+                            #imageCheckboxTemplate
+                            let-formattedOption="formattedOption"
+                        >
+                            <zem-image-checkbox-input
+                                class="zem-image-checkbox-input"
+                                [value]="formattedOption"
+                                (itemToggled)="
+                                    store.toggleTargetingDevice($event)
+                                "
+                            >
+                            </zem-image-checkbox-input>
+                        </ng-template>
+                    </zem-image-checkbox-input-group>
                 </div>
+
+                <zem-advanced-settings-section
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_set_advanced_device_targeting'
+                        )
+                    "
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(state.entity.targeting.os) ||
+                        state.entity.targeting.placements.length === 1
+                    "
+                    [overviewText]="'Advanced device targeting options'"
+                >
+                    <div class="zem-settings-section">
+                        <div class="zem-settings-section__header">
+                            <div
+                                class="zem-settings-section__title"
+                                [zemInternalFeature]="
+                                    zemPermissions.isPermissionInternal(
+                                        'zemauth.can_set_advanced_device_targeting'
+                                    )
+                                "
+                            >
+                                Advanced device targeting options
+                            </div>
+                            <div class="zem-settings-section__description">
+                                Choose operating system:
+                            </div>
+                            <div
+                                *ngIf="state.entity.targeting.os.length === 0"
+                                class="zem-message"
+                            >
+                                You are currently targeting all operating
+                                systems. To target only specific operating
+                                system add it by clicking button below.
+                            </div>
+                            <zem-operating-system-list
+                                class="zem-operating-system-list zem-settings-section__item"
+                                [oses]="state.entity.targeting.os"
+                                [devices]="state.entity.targeting.devices"
+                                (osAdded)="store.addDeviceTargetingOs($event)"
+                            >
+                                <ng-template #osItemTemplate let-os="os">
+                                    <zem-operating-system
+                                        class="zem-operating-system"
+                                        [os]="os"
+                                        (osChange)="
+                                            store.changeDeviceTargetingOs(
+                                                $event
+                                            )
+                                        "
+                                        (osDelete)="
+                                            store.deleteDeviceTargetingOs(os)
+                                        "
+                                    >
+                                    </zem-operating-system>
+                                </ng-template>
+                            </zem-operating-system-list>
+                            <hr />
+                            <div class="zem-settings-section__description">
+                                Choose placement:
+                            </div>
+                            <zem-image-checkbox-input-group
+                                class="zem-image-checkbox-input-group zem-settings-section__item"
+                                [options]="targetingPlacementOptions"
+                                [values]="state.entity.targeting.placements"
+                            >
+                                >
+                                <ng-template
+                                    #imageCheckboxTemplate
+                                    let-formattedOption="formattedOption"
+                                >
+                                    <zem-image-checkbox-input
+                                        class="zem-image-checkbox-input"
+                                        [value]="formattedOption"
+                                        (itemToggled)="
+                                            store.toggleTargetingPlacement(
+                                                $event
+                                            )
+                                        "
+                                    >
+                                    </zem-image-checkbox-input>
+                                </ng-template>
+                            </zem-image-checkbox-input-group>
+                        </div>
+                    </div>
+                </zem-advanced-settings-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">

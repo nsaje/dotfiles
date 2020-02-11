@@ -1,3 +1,5 @@
+@import 'variables';
+
 .zem-ad-group-settings-drawer {
     @media only screen and (min-width: 550px) {
         .zem-settings__table {
@@ -8,6 +10,108 @@
                     }
                 }
             }
+        }
+    }
+
+    @media only screen and (min-width: 620px) {
+        //////////////////////////////////////
+        // zem-operating-system //
+        //////////////////////////////////////
+
+        .zem-operating-system {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .zem-operating-system__platform-icon {
+            height: 50px;
+            min-width: 70px;
+            background-position: center center;
+            margin: 0 @spacing--default 0 0;
+        }
+
+        .zem-operating-system__platform-icon--tablet-mobile {
+            background-size: 32px;
+            background-position: 5px bottom;
+
+            &::after {
+                left: 40px;
+                top: 24px;
+                height: 26px;
+                width: 26px;
+            }
+        }
+
+        .zem-operating-system__name {
+            margin: 0 @spacing--small 0 0;
+            flex-basis: 250px;
+            min-width: 110px;
+            flex-shrink: 2;
+        }
+
+        .zem-operating-system__form-group {
+            margin: 0 @spacing--small 0 0;
+            max-width: 160px;
+            min-width: 100px;
+        }
+
+        .zem-operating-system__form-group .zem-form-group__content {
+            min-width: 100px;
+        }
+
+        .zem-operating-system__remove-button {
+            position: relative;
+            right: 0px;
+            margin-left: auto;
+        }
+
+        //////////////////////////////////////
+        ////// zem-image-checkbox-group //////
+        //////////////////////////////////////
+
+        .zem-image-checkbox-input-group {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        //////////////////////////////////////
+        ///////// zem-image-checkbox /////////
+        //////////////////////////////////////
+
+        .zem-image-checkbox-input {
+            flex-direction: column;
+        }
+
+        .zem-image-checkbox-input__icon {
+            height: 100px;
+            width: 100px;
+        }
+
+        .zem-image-checkbox-input__icon--desktop {
+            background-size: 100px;
+        }
+
+        .zem-image-checkbox-input__icon--tablet {
+            background-position: center 40px;
+            background-size: 40px;
+        }
+
+        .zem-image-checkbox-input__icon--mobile {
+            background-position: center 60px;
+            background-size: 20px;
+        }
+
+        .zem-image-checkbox-input__icon--website {
+            background-size: 100px;
+        }
+
+        .zem-image-checkbox-input__icon--in-app {
+            background-size: 100px;
+        }
+
+        .zem-image-checkbox-input__checkbox {
+            margin-top: @spacing--small;
+            margin-left: 0;
         }
     }
 }

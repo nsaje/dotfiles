@@ -14,6 +14,8 @@ import {DemographicTargetingComponent} from './components/demographic-targeting/
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
 import {ZipTargetingComponent} from './components/zip-targeting/zip-targeting.component';
 import {DeviceTargetingSettingsComponent} from './components/device-targeting-settings/device-targeting-settings.component';
+import {OperatingSystemListComponent} from './components/operating-system-list/operating-system-list.component';
+import {OperatingSystemComponent} from './components/operating-system/operating-system.component';
 import {TrackingCodeSettingComponent} from './components/tracking-code-setting/tracking-code-setting.component';
 import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting/tracking-pixel-setting.component';
 import {InterestTargetingComponent} from './components/interest-targeting/interest-targeting.component';
@@ -55,6 +57,8 @@ import {DealComponent} from './components/deal/deal.component';
         GeoTargetingComponent,
         ZipTargetingComponent,
         DeviceTargetingSettingsComponent,
+        OperatingSystemListComponent,
+        OperatingSystemComponent,
         TrackingCodeSettingComponent,
         TrackingPixelSettingComponent,
         InterestTargetingComponent,

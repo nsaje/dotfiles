@@ -18,6 +18,7 @@ import {SourcesService} from '../../../../core/sources/services/sources.service'
 import {Source} from '../../../../core/sources/types/source';
 import {BidModifiersService} from '../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
+import {TargetOperatingSystem} from '../../../../core/entities/types/common/target-operating-system';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -491,6 +492,147 @@ describe('AdGroupSettingsStore', () => {
         );
         expect(store.state.entity.targeting.os).toEqual($event.targetOs);
         expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
+    });
+
+    it('should allow adding of device targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.devices = ['DESKTOP'];
+        store.toggleTargetingDevice('MOBILE');
+        expect(store.state.entity.targeting.devices).toEqual([
+            'DESKTOP',
+            'MOBILE',
+        ]);
+    });
+
+    it('should allow deleting of device targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.devices = ['DESKTOP', 'MOBILE'];
+        store.toggleTargetingDevice('DESKTOP');
+        expect(store.state.entity.targeting.devices).toEqual(['MOBILE']);
+    });
+
+    it('should select all device targetings if all are deleted', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.devices = ['DESKTOP'];
+        store.toggleTargetingDevice('DESKTOP');
+        expect(store.state.entity.targeting.devices).toEqual([
+            'DESKTOP',
+            'TABLET',
+            'MOBILE',
+        ]);
+    });
+
+    it('should allow adding of targeting placement', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.placements = ['SITE'];
+        store.toggleTargetingPlacement('APP');
+        expect(store.state.entity.targeting.placements).toEqual([
+            'SITE',
+            'APP',
+        ]);
+    });
+
+    it('should allow deleting of targeting placement', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.placements = ['SITE', 'APP'];
+        store.toggleTargetingPlacement('SITE');
+        expect(store.state.entity.targeting.placements).toEqual(['APP']);
+    });
+
+    it('should select all targeting placements if all are deleted', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        store.state.entity.targeting.placements = ['SITE'];
+        store.toggleTargetingPlacement('SITE');
+        expect(store.state.entity.targeting.placements).toEqual([
+            'SITE',
+            'APP',
+        ]);
+    });
+
+    it('should allow adding device targeting OSes', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+        expect(store.state.entity.targeting.os).toEqual([]);
+        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(false);
+        store.addDeviceTargetingOs('WINDOWS');
+        expect(store.state.entity.targeting.os).toEqual([
+            {name: 'WINDOWS', version: {}},
+        ]);
+        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
+    });
+
+    it('should allow updating device targeting OSes', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+        const windows: TargetOperatingSystem = {
+            name: 'WINDOWS',
+            version: {min: 'WINDOWS_XP', max: 'WINDOWS_10'},
+        };
+        store.state.entity.targeting.os = [windows];
+
+        store.changeDeviceTargetingOs({
+            target: windows,
+            changes: {version: {min: 'WINDOWS_XP', max: 'WINDOWS_7'}},
+        });
+
+        expect(store.state.entity.targeting.os).toEqual([
+            {name: 'WINDOWS', version: {min: 'WINDOWS_XP', max: 'WINDOWS_7'}},
+        ]);
+    });
+
+    it('should fix max OS version when the updated min OS version is set higher than the max', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+        const windows: TargetOperatingSystem = {
+            name: 'WINDOWS',
+            version: {min: 'WINDOWS_XP', max: 'WINDOWS_10'},
+        };
+        store.state.entity.targeting.os = [windows];
+
+        store.changeDeviceTargetingOs({
+            target: windows,
+            changes: {version: {min: 'WINDOWS_7', max: 'WINDOWS_XP'}},
+        });
+
+        expect(store.state.entity.targeting.os).toEqual([
+            {name: 'WINDOWS', version: {min: 'WINDOWS_7', max: 'WINDOWS_7'}},
+        ]);
+    });
+
+    it('should allow deleting device targeting OSes', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+        const windows: TargetOperatingSystem = {
+            name: 'WINDOWS',
+            version: {min: 'WINDOWS_XP', max: 'WINDOWS_10'},
+        };
+        store.state.entity.targeting.os = [windows];
+
+        store.deleteDeviceTargetingOs(windows);
+
+        expect(store.state.entity.targeting.os).toEqual([]);
     });
 
     it('should correctly set publisher groups', () => {

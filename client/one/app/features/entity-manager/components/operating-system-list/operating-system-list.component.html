@@ -1,0 +1,28 @@
+<span *ngFor="let os of oses">
+    <ng-container
+        *ngTemplateOutlet="osItemTemplate; context: {os: os}"
+    ></ng-container>
+</span>
+<div
+    zemDropdown
+    #addOsDropdown="zemDropdown"
+    class="zem-dropdown zem-dropdown--no-mobile-style zem-operating-system-list__dropdown"
+>
+    <button
+        class="zem-button zem-button--with-icon zem-button--add-icon"
+        zemDropdownToggle
+    >
+        Add Operating System
+    </button>
+    <div class="zem-dropdown__content">
+        <ul class="zem-operating-system-list__dropdown-list">
+            <li
+                *ngFor="let os of filteredOses"
+                class="zem-operating-system-list__dropdown-item"
+                (click)="osAdded.emit(os.name)"
+            >
+                {{ os.displayName }}
+            </li>
+        </ul>
+    </div>
+</div>
