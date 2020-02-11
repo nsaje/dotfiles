@@ -17,8 +17,7 @@ angular
                 $scope,
                 zemGridConstants,
                 zemGridStateAndStatusHelpers,
-                zemGridActionsService,
-                zemToastsService
+                zemGridActionsService
             ) {
                 // eslint-disable-line max-len
                 var vm = this;
@@ -68,10 +67,6 @@ angular
                     ) {
                         vm.active = previousState;
                         vm.isToggleStateInProgress = false;
-                        var errorMessage = getErrorMessage(error.error);
-                        if (errorMessage) {
-                            zemToastsService.error(errorMessage);
-                        }
                     }
                 }
 
@@ -196,32 +191,6 @@ angular
                                 vm.row.entity.type ===
                                     constants.entityType.AD_GROUP))
                     );
-                }
-
-                function getErrorMessage(error) {
-                    if (!error) {
-                        return;
-                    }
-
-                    var errorMessage =
-                        '[' + vm.row.data.stats.breakdown_name.value + '] ';
-                    if (error.state) {
-                        errorMessage = errorMessage + error.state[0];
-                    } else if (error.cpc) {
-                        errorMessage = errorMessage + error.cpc[0];
-                    } else if (error.cpm) {
-                        errorMessage = errorMessage + error.cpm[0];
-                    } else if (error.dailyBudget) {
-                        errorMessage = errorMessage + error.dailyBudget[0];
-                    } else if (error.data && error.data.message) {
-                        errorMessage = errorMessage + error.data.message;
-                    } else {
-                        errorMessage =
-                            errorMessage +
-                            'An error occurred. Please try again.';
-                    }
-
-                    return errorMessage;
                 }
 
                 function getBreakdown(grid, row) {

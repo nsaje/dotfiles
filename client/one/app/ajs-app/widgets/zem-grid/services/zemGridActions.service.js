@@ -9,7 +9,6 @@ angular
         zemUploadService,
         zemUploadApiConverter,
         zemEntityService,
-        zemToastsService,
         zemCloneAdGroupService,
         zemCloneCampaignService,
         zemCloneContentService,
@@ -282,7 +281,7 @@ angular
                                     );
                                 }
                             });
-                    }, handleError);
+                    });
             }
 
             // calling component hides loader on promise resolve, we do not want loader when opening modal
@@ -322,7 +321,7 @@ angular
                             )
                             .then(function() {
                                 grid.meta.api.loadData();
-                            }, handleError);
+                            });
                     }
                     return zemEntityService
                         .executeAction(
@@ -332,7 +331,7 @@ angular
                         )
                         .then(function() {
                             grid.meta.api.loadData();
-                        }, handleError);
+                        });
                 });
         }
 
@@ -362,7 +361,7 @@ angular
                     )
                     .then(function() {
                         grid.meta.api.loadData();
-                    }, handleError);
+                    });
             }
             return zemEntityService
                 .executeAction(
@@ -372,7 +371,7 @@ angular
                 )
                 .then(function() {
                     grid.meta.api.loadData();
-                }, handleError);
+                });
         }
 
         function downloadRow(row, grid) {
@@ -408,10 +407,6 @@ angular
                 .execute(action, false, {selected: [row], unselected: []})
                 .then(function() {
                     grid.meta.api.loadData();
-                }, handleError);
-        }
-
-        function handleError(data) {
-            zemToastsService.error(data.data.message);
+                });
         }
     });

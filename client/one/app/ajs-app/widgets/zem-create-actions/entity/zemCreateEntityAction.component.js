@@ -3,12 +3,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     bindings: {
         parentEntity: '<',
     },
-    controller: function(
-        $state,
-        $location,
-        zemCreateEntityActionService,
-        zemToastsService
-    ) {
+    controller: function($state, $location, zemCreateEntityActionService) {
         var $ctrl = this;
         var MAP_PARENT_TYPE = {};
         MAP_PARENT_TYPE[constants.entityType.ACCOUNT] =
@@ -72,9 +67,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             $ctrl.createInProgress = true;
             zemCreateEntityActionService
                 .createEntity(entityProperties)
-                .catch(function(data) {
-                    zemToastsService.error(data.data.data, {timeout: 7000});
-                })
                 .finally(function() {
                     $ctrl.createInProgress = false;
                 });

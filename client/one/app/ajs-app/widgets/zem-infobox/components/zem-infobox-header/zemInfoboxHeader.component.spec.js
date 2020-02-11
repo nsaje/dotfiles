@@ -5,7 +5,6 @@ describe('zemInfoboxHeader', function() {
     var $httpBackend;
     var zemEntityService;
     var zemNavigationService;
-    var zemToastsService;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -17,7 +16,6 @@ describe('zemInfoboxHeader', function() {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityService = $injector.get('zemEntityService');
         zemNavigationService = $injector.get('zemNavigationService');
-        zemToastsService = $injector.get('zemToastsService');
 
         $httpBackend.whenGET(/^\/api\/.*/).respond(200, {data: {}});
     }));
@@ -194,35 +192,5 @@ describe('zemInfoboxHeader', function() {
         $ctrl.toggleEntityState();
         $rootScope.$digest();
         expect(zemNavigationService.reloadAdGroup).toHaveBeenCalled();
-    });
-
-    it('should display error toast if action executed unsuccessfully', function() {
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
-            $injector,
-            {data: {message: 'Error message'}},
-            true
-        );
-        var entity = {
-            id: 1,
-            type: constants.entityType.AD_GROUP,
-            data: {
-                state: constants.settingsState.ACTIVE,
-            },
-        };
-        var bindings = {
-            entity: entity,
-        };
-        var $ctrl = $componentController('zemInfoboxHeader', null, bindings);
-
-        spyOn(zemEntityService, 'executeAction').and.callFake(
-            mockedAsyncFunction
-        );
-        spyOn(zemToastsService, 'error').and.stub();
-
-        $ctrl.toggleEntityState();
-        $rootScope.$digest();
-        expect(zemToastsService.error).toHaveBeenCalledWith('Error message', {
-            timeout: 5000,
-        });
     });
 });

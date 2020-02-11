@@ -11,8 +11,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         $location,
         zemEntityService,
         zemNavigationService,
-        zemPermissions,
-        zemToastsService
+        zemPermissions
     ) {
         // eslint-disable-line max-len
         var $ctrl = this;
@@ -88,15 +87,8 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
                 .then(function(response) {
                     zemNavigationService.reloadAdGroup(response.data.id);
                 })
-                .catch(function(error) {
+                .catch(function() {
                     $ctrl.isEntityEnabled = !$ctrl.isEntityEnabled;
-                    var message = '';
-                    if (error) {
-                        message = error.data.message;
-                    } else {
-                        message = 'Something went wrong.';
-                    }
-                    zemToastsService.error(message, {timeout: 5000});
                 })
                 .finally(function() {
                     requestInProgress = false;
