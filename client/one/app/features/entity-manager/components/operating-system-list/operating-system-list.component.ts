@@ -43,7 +43,12 @@ export class OperatingSystemListComponent implements OnChanges {
         this.filteredOses = this.getFilteredOses();
     }
 
-    private getFilteredOses() {
+    addOs(os: OperatingSystem) {
+        this.osAdded.emit(os.name);
+        this.addOsDropdown.close();
+    }
+
+    private getFilteredOses(): OperatingSystem[] {
         // Allow OS to be selected if it is not selected yet and if appropriate device types are selected which support it
         return Object.values(OPERATING_SYSTEMS).filter(
             osType =>

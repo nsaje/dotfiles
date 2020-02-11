@@ -19,7 +19,7 @@
             <li
                 *ngFor="let os of filteredOses"
                 class="zem-operating-system-list__dropdown-item"
-                (click)="osAdded.emit(os.name)"
+                (click)="addOs(os)"
             >
                 {{ os.displayName }}
             </li>
