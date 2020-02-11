@@ -37,6 +37,7 @@ export const APP_CONFIG = {
         [Currency.NZD]: 'NZ$',
         [Currency.TRY]: '₺',
     },
+    requestRetryTimeout: 500,
     maxRequestRetries: 3,
     httpStatusCodesForRequestRetry: [504],
 };

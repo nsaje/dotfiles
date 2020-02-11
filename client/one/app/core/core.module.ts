@@ -11,12 +11,19 @@ import {ConversionPixelsModule} from './conversion-pixels/conversion-pixels.modu
 import {DealsModule} from './deals/deals.module';
 import {RulesModule} from './rules/rules.module';
 import {SourcesModule} from './sources/sources.module';
+import {ExceptionHttpInterceptor} from './interceptors/exception.interceptor';
 import {NotificationService} from './notification/services/notification.service';
+import {ExceptionHandlerService} from './exception-handler/services/exception-handler.service';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
         provide: HTTP_INTERCEPTORS,
         useClass: ApiConverterHttpInterceptor,
+        multi: true,
+    },
+    {
+        provide: HTTP_INTERCEPTORS,
+        useClass: ExceptionHttpInterceptor,
         multi: true,
     },
 ];
@@ -35,6 +42,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         MixpanelService,
         PostAsGetRequestService,
         NotificationService,
+        ExceptionHandlerService,
         HTTP_INTERCEPTOR_PROVIDERS,
     ],
 })

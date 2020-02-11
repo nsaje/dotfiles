@@ -9,4 +9,15 @@ angular
         this.getUpdatesOfEntity$ = function() {
             return empty();
         };
+    })
+    .service('zemExceptionHandlerService', function() {
+        this.handleHttpException = function() {
+            return empty();
+        };
+        this.shouldRetryRequest = function() {
+            return empty();
+        };
+        this.getRequestRetryTimeout = function() {
+            return empty();
+        };
     });
