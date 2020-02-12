@@ -46,8 +46,7 @@ angular.module('one.views').config(function($stateProvider) {
 
     $stateProvider.state(UiRouterStateName.REPORTS, {
         url: '/reports/{level:accounts|account}/{id:int}',
-        template: require('./scheduled-reports/zemScheduledReports.partial.html'),
-        controller: 'zemScheduledReportsView as $ctrl',
+        template: '<zem-reports-library-view></zem-reports-library-view>',
         params: {
             id: {
                 value: null,
@@ -65,18 +64,17 @@ angular.module('one.views').config(function($stateProvider) {
     });
 
     $stateProvider.state(UiRouterStateName.PUBLISHER_GROUPS, {
-        url: '/publishergroups/account/{id:int}',
-        template: require('./publisher-groups/zemPublisherGroupsView.partial.html'),
-        controller: 'zemPublisherGroupsView as $ctrl',
+        url: '/publishergroups/{level:account}/{id:int}',
+        template:
+            '<zem-publisher-groups-library-view></zem-publisher-groups-library-view>',
         params: {
             level: constants.levelStateParam.ACCOUNT,
         },
     });
 
     $stateProvider.state(UiRouterStateName.USERS, {
-        url: '/users/account/{id:int}',
-        template: require('./users/zemUsersView.partial.html'),
-        controller: 'zemUsersView as $ctrl',
+        url: '/users/{level:account}/{id:int}',
+        template: '<zem-users-library-view></zem-users-library-view>',
         params: {
             level: constants.levelStateParam.ACCOUNT,
         },
