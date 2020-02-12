@@ -28,6 +28,7 @@ class DirectDeal(instance.DirectDealMixin, validation.DirectDealValidatorMixin, 
     floor_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     valid_from_date = models.DateField(verbose_name="Valid from", null=True, blank=True)
     valid_to_date = models.DateField(verbose_name="Valid to", null=True, blank=True)
+    is_internal = models.BooleanField(default=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     created_by = models.ForeignKey(

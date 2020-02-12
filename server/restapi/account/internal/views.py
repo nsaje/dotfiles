@@ -96,7 +96,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             account.allowed_media_sources = helpers.get_allowed_sources(account)
         account.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
-            account.deals = account.get_deals()
+            account.deals = account.get_deals(request)
 
     @staticmethod
     def _validate_default_icon(account):
@@ -174,7 +174,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         new_deals_set = set(new_deals)
 
-        deals = account.get_deals()
+        deals = account.get_deals(request)
         deals_set = set(deals)
 
         to_be_removed = deals_set.difference(new_deals_set)

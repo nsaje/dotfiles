@@ -186,6 +186,86 @@ class AdGroupViewSetTest(RESTAPITest):
             },
         )
 
+    @mock.patch("restapi.adgroup.internal.helpers.get_extra_data")
+    def test_get_internal_deals_no_permission(self, mock_get_extra_data):
+        mock_get_extra_data.return_value = {
+            "action_is_waiting": False,
+            "can_archive": False,
+            "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "agency_id": 12345,
+            "currency": dash.constants.Currency.USD,
+            "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
+            "default_settings": {
+                "target_regions": [],
+                "exclusion_target_regions": [],
+                "target_devices": [],
+                "target_os": [],
+                "target_placements": [],
+            },
+            "retargetable_ad_groups": [],
+            "audiences": [],
+            "warnings": {"retargeting": {"sources": []}},
+            "hacks": [],
+            "deals": [],
+            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
+        }
+
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 0)
+
+    @mock.patch("restapi.adgroup.internal.helpers.get_extra_data")
+    def test_get_internal_deals_permission(self, mock_get_extra_data):
+        mock_get_extra_data.return_value = {
+            "action_is_waiting": False,
+            "can_archive": False,
+            "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "agency_id": 12345,
+            "currency": dash.constants.Currency.USD,
+            "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
+            "default_settings": {
+                "target_regions": [],
+                "exclusion_target_regions": [],
+                "target_devices": [],
+                "target_os": [],
+                "target_placements": [],
+            },
+            "retargetable_ad_groups": [],
+            "audiences": [],
+            "warnings": {"retargeting": {"sources": []}},
+            "hacks": [],
+            "deals": [],
+            "current_bids": {"cpc": "0.4500", "cpm": "1.0000"},
+        }
+
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
+
+        test_helper.add_permissions(self.user, ["can_see_internal_deals"])
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
+
     @mock.patch.object(core.models.settings.AdGroupSettings, "update")
     def test_ad_group_state_set_to_inactive_on_b1_sources_group_enabled_update(self, mock_ad_group_settings_update):
         agency = magic_mixer.blend(core.models.Agency)

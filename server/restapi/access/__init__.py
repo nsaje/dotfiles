@@ -126,7 +126,13 @@ def get_direct_deal(user, deal_id, agency=None, account=None) -> core.features.d
             deal_qs = deal_qs.filter_by_agency(agency)
         if account is not None:
             deal_qs = deal_qs.filter_by_account(account)
-        return deal_qs.get()
+        deal = deal_qs.get()
+
+        if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
+            raise utils.exc.AuthorizationError()
+
+        return deal
+
     except core.features.deals.DirectDeal.DoesNotExist:
         raise utils.exc.MissingDataError("Deal does not exist")
 

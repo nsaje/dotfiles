@@ -440,6 +440,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_deals_library", "User can see deals library."),
             ("can_see_direct_deals_section", "User can see direct deals section."),
             ("can_review_and_set_bid_modifiers_in_settings", "User can review and set bid modifiers in settings."),
+            ("can_see_internal_deals", "User can see and edit internal deals in the library."),
         )
 
     def get_full_name(self):

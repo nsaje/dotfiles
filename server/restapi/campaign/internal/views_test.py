@@ -11,6 +11,7 @@ import dash.features.clonecampaign.service
 import dash.models
 import restapi.serializers.targeting
 from restapi.common.views_base_test import RESTAPITest
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -494,6 +495,91 @@ class CampaignViewSetTest(RESTAPITest):
                 ],
             },
         )
+
+    @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
+    def test_get_internal_deals_no_permission(self, mock_get_extra_data):
+        mock_get_extra_data.return_value = {
+            "archived": False,
+            "language": dash.constants.Language.ENGLISH,
+            "can_archive": True,
+            "can_restore": True,
+            "agency_id": 12345,
+            "currency": dash.constants.Currency.USD,
+            "goals_defaults": {
+                dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
+                dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
+            },
+            "campaign_managers": [
+                {"id": 123, "name": "manager1@outbrain.com"},
+                {"id": 456, "name": "manager2@outbrain.com"},
+            ],
+            "hacks": [],
+            "deals": [],
+            "budgets_overview": {
+                "available_budgets_sum": decimal.Decimal("10.0000"),
+                "unallocated_credit": decimal.Decimal("10.0000"),
+                "campaign_spend": decimal.Decimal("10.0000"),
+                "media_spend": decimal.Decimal("220.0000"),
+                "data_spend": decimal.Decimal("100.0000"),
+                "license_fee": decimal.Decimal("5.0000"),
+                "margin": decimal.Decimal("2.0000"),
+            },
+            "budgets_depleted": [],
+            "account_credits": [],
+        }
+
+        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 0)
+
+    @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
+    def test_get_internal_deals_permission(self, mock_get_extra_data):
+        mock_get_extra_data.return_value = {
+            "archived": False,
+            "language": dash.constants.Language.ENGLISH,
+            "can_archive": True,
+            "can_restore": True,
+            "agency_id": 12345,
+            "currency": dash.constants.Currency.USD,
+            "goals_defaults": {
+                dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
+                dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
+            },
+            "campaign_managers": [
+                {"id": 123, "name": "manager1@outbrain.com"},
+                {"id": 456, "name": "manager2@outbrain.com"},
+            ],
+            "hacks": [],
+            "deals": [],
+            "budgets_overview": {
+                "available_budgets_sum": decimal.Decimal("10.0000"),
+                "unallocated_credit": decimal.Decimal("10.0000"),
+                "campaign_spend": decimal.Decimal("10.0000"),
+                "media_spend": decimal.Decimal("220.0000"),
+                "data_spend": decimal.Decimal("100.0000"),
+                "license_fee": decimal.Decimal("5.0000"),
+                "margin": decimal.Decimal("2.0000"),
+            },
+            "budgets_depleted": [],
+            "account_credits": [],
+        }
+
+        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, campaign=campaign)
+
+        test_helper.add_permissions(self.user, ["can_see_internal_deals"])
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")

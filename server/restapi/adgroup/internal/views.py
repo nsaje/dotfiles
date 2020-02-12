@@ -98,7 +98,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
     def _augment_ad_group(request, ad_group):
         ad_group.settings.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
-            ad_group.settings.deals = ad_group.get_deals()
+            ad_group.settings.deals = ad_group.get_deals(request)
 
     @staticmethod
     def _handle_deals(request, ad_group, data):
@@ -129,7 +129,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
 
         new_deals_set = set(new_deals)
 
-        deals = ad_group.get_deals()
+        deals = ad_group.get_deals(request)
         deals_set = set(deals)
 
         to_be_removed = deals_set.difference(new_deals_set)

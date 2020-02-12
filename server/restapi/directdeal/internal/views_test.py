@@ -3,6 +3,7 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 from restapi.common.views_base_test import RESTAPITest
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -127,6 +128,27 @@ class DirectDealViewSetTest(RESTAPITest):
         self.assertIsNone(resp_json["next"])
 
         self.assertEqual(resp_json["data"][0]["dealId"], "DEAL_1")
+
+    def test_list_internal_no_permission(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        source = magic_mixer.blend(core.models.Source)
+        magic_mixer.cycle(10).blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=False)
+        magic_mixer.cycle(10).blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=True)
+
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_list"), {"agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["count"], 10)
+
+    def test_list_internal_permission(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        source = magic_mixer.blend(core.models.Source)
+        magic_mixer.cycle(10).blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=False)
+        magic_mixer.cycle(10).blend(core.features.deals.DirectDeal, agency=agency, source=source, is_internal=True)
+
+        test_helper.add_permissions(self.user, ["can_see_internal_deals"])
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_list"), {"agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["count"], 20)
 
     def test_put(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])

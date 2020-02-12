@@ -5,6 +5,7 @@ import core.features.deals
 import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -468,6 +469,30 @@ class AccountViewSetTest(RESTAPITest):
             },
         )
 
+    @mock.patch("restapi.account.internal.helpers.get_extra_data")
+    def test_get_internal_deals_no_permission(self, mock_get_extra_data):
+        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 0)
+
+    @mock.patch("restapi.account.internal.helpers.get_extra_data")
+    def test_get_internal_deals_permission(self, mock_get_extra_data):
+        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
+
+        test_helper.add_permissions(self.user, ["can_see_internal_deals"])
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
+
     @mock.patch("utils.slack.publish")
     def test_put(self, mock_slack_publish):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
@@ -487,7 +512,8 @@ class AccountViewSetTest(RESTAPITest):
 
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list(sources))
-        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+        account_allowed_sources = [sources[0], sources[1], sources[2]]
+        account.allowed_sources.add(*list(account_allowed_sources))
 
         deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal_to_be_removed, account=account)
@@ -498,9 +524,9 @@ class AccountViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 3)
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][0]["id"], str(sources[0].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][1]["id"], str(sources[1].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][2]["id"], str(sources[2].id))
+        account_allowed_sources_ids = [str(s.id) for s in account_allowed_sources]
+        for i in range(3):
+            self.assertIn(resp_json["data"]["allowedMediaSources"][i]["id"], account_allowed_sources_ids)
 
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_removed.deal_id)

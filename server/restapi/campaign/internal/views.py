@@ -119,7 +119,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             campaign.settings.budgets = self._get_campaign_budgets(campaign)
         campaign.settings.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
-            campaign.settings.deals = campaign.get_deals()
+            campaign.settings.deals = campaign.get_deals(request)
 
     def _handle_campaign_goals(self, request, campaign, data):
         if len(data) <= 0:
@@ -381,7 +381,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         new_deals_set = set(new_deals)
 
-        deals = campaign.get_deals()
+        deals = campaign.get_deals(request)
         deals_set = set(deals)
 
         to_be_removed = deals_set.difference(new_deals_set)

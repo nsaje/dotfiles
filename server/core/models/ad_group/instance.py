@@ -246,14 +246,19 @@ class AdGroupInstanceMixin:
             | Q(agency=None, account=None, campaign=None, adgroup=None)
         )
 
-    def get_deals(self):
-        return list(
+    def get_deals(self, request):
+        deals = (
             core.features.deals.DirectDeal.objects.filter(
                 directdealconnection__adgroup__isnull=False, directdealconnection__adgroup__id=self.id
             )
             .select_related("source")
             .distinct()
         )
+
+        if request and not request.user.has_perm("zemauth.can_see_internal_deals"):
+            deals = deals.exclude(is_internal=True)
+
+        return list(deals)
 
     def remove_deals(self, request, deals):
         self.directdealconnection_set.filter(deal__id__in=[x.id for x in deals]).delete(request=request)

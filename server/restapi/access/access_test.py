@@ -1,10 +1,14 @@
 import mock
 from django.test import TestCase
 
-import dash.models
+import core.features.deals
+import core.models
 import utils.exc
 from restapi import access
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
+
+from .__init__ import get_direct_deal
 
 
 class GeneratePermissionClass(TestCase):
@@ -40,11 +44,11 @@ class ObjectAccess(TestCase):
         cls = access.HasAccountAccess
 
         # linked to user
-        account = magic_mixer.blend(dash.models.Account, users=request.user)
+        account = magic_mixer.blend(core.models.Account, users=request.user)
         self.assertTrue(cls().has_permission(request, mock.Mock(kwargs={"account_id": account.id})))
 
         # no link
-        account = magic_mixer.blend(dash.models.Account)
+        account = magic_mixer.blend(core.models.Account)
         with self.assertRaises(utils.exc.MissingDataError):
             cls().has_permission(request, mock.Mock(kwargs={"account_id": account.id}))
 
@@ -53,11 +57,11 @@ class ObjectAccess(TestCase):
         cls = access.HasCampaignAccess
 
         # linked to user
-        campaign = magic_mixer.blend(dash.models.Campaign, account__users=request.user)
+        campaign = magic_mixer.blend(core.models.Campaign, account__users=request.user)
         self.assertTrue(cls().has_permission(request, mock.Mock(kwargs={"campaign_id": campaign.id})))
 
         # no link
-        campaign = magic_mixer.blend(dash.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign)
         with self.assertRaises(utils.exc.MissingDataError):
             cls().has_permission(request, mock.Mock(kwargs={"campaign_id": campaign.id}))
 
@@ -66,10 +70,24 @@ class ObjectAccess(TestCase):
         cls = access.HasAdGroupAccess
 
         # linked to user
-        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__users=request.user)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=request.user)
         self.assertTrue(cls().has_permission(request, mock.Mock(kwargs={"ad_group_id": ad_group.id})))
 
         # no link
-        ad_group = magic_mixer.blend(dash.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup)
         with self.assertRaises(utils.exc.MissingDataError):
             cls().has_permission(request, mock.Mock(kwargs={"ad_group_id": ad_group.id}))
+
+    def test_has_internal_deal_access_no_permission(self):
+        request = magic_mixer.blend_request_user()
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, is_internal=True)
+
+        with self.assertRaises(utils.exc.AuthorizationError):
+            get_direct_deal(request.user, deal.id)
+
+    def test_has_internal_deal_access_permission(self):
+        request = magic_mixer.blend_request_user()
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, is_internal=True)
+
+        test_helper.add_permissions(request.user, ["can_see_internal_deals"])
+        get_direct_deal(request.user, deal.id)

@@ -61,6 +61,10 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
                 | Q(source__name__icontains=keyword)
                 | Q(source__bidder_slug__icontains=keyword)
             )
+
+        if not request.user.has_perm("zemauth.can_see_internal_deals"):
+            deal_items = deal_items.exclude(is_internal=True)
+
         paginator = StandardPagination()
         deal_items_paginated = paginator.paginate_queryset(deal_items, request)
         return paginator.get_paginated_response(

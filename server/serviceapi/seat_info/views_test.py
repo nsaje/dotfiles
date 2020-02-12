@@ -127,7 +127,7 @@ class SeatInfoTestCase(TestCase):
 
         url = reverse("service.seatinfo.seats", kwargs={"seat_id": 1})
         response = self.client.get(url)
-        print(response.content)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json(),
