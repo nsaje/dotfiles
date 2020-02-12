@@ -3531,8 +3531,8 @@ Examples:
 <!-- SOURCE    -->
 ## SourceResponse
 
-- `slug`: `qQAkDxQnWxXkcNfGyAct` (string)
-- `name`: `Douglas Hood` (string)
+- `slug`: `outbrainrtb` (string)
+- `name`: `Outbrain RTB` (string)
 
 <!-- AUDIENCES -->
 ## AudienceTargetingCategory (object)
