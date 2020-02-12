@@ -33,6 +33,7 @@ class Command(Z1Command):
         )
         template = Template(file_content)
         sys.stdout.write(template.render(context))
+        sys.stdout.flush()
 
     def generate_constants_section(self, constants_model: constant_base.ConstantBase):
         constant_dict = dict()
