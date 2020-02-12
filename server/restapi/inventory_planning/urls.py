@@ -1,16 +1,11 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.inventory_planning.internal.urls
 
 urlpatterns = [
     url(
-        r"internal/inventory-planning/(?P<breakdown>({0}))/?$".format("|".join(views.VALID_BREAKDOWNS)),
-        views.InventoryPlanningView.as_view({"get": "get", "post": "post"}),
-        name="inventory_planning",
-    ),
-    url(
-        r"internal/inventory-planning/export/?$",
-        views.InventoryPlanningView.as_view({"post": "export"}),
-        name="inventory_planning_export",
-    ),
+        r"^internal/inventory-planning/",
+        include(restapi.inventory_planning.internal.urls, namespace="restapi.inventory_planning.internal"),
+    )
 ]

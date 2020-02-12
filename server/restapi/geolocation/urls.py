@@ -1,5 +1,6 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.geolocation.v1.urls
 
-urlpatterns = [url(r"^v1/geolocations/$", views.GeolocationViewSet.as_view({"get": "list"}), name="geolocation_list")]
+urlpatterns = [url(r"^v1/geolocations/", include(restapi.geolocation.v1.urls, namespace="restapi.geolocation.v1"))]
