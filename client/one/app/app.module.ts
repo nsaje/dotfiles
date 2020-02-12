@@ -23,6 +23,9 @@ import {ToastrModule} from 'ngx-toastr';
 import {CreditsLibraryModule} from './features/credits-library/credits-library.module';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
+import {UsersLibraryModule} from './features/users-library/users-library.module';
+import {ReportsLibraryModule} from './features/reports-library/reports-library.module';
+import {PublisherGroupsLibraryModule} from './features/publisher-groups-library/publisher-groups-library.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -79,6 +82,9 @@ if (APP_CONFIG.env.prod) {
         DealsLibraryModule,
         CreditsLibraryModule,
         PixelsLibraryModule,
+        UsersLibraryModule,
+        ReportsLibraryModule,
+        PublisherGroupsLibraryModule,
     ],
     entryComponents: [MainContainerComponent, ErrorForbiddenView],
     providers: [

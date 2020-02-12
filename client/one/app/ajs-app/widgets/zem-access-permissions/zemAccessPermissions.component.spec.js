@@ -7,7 +7,7 @@ describe('component: zemAccessPermissions', function() {
 
     beforeEach(inject(function($rootScope, $componentController) {
         var bindings = {
-            entity: {
+            account: {
                 settings: {
                     id: -1,
                 },
