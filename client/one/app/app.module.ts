@@ -64,7 +64,7 @@ if (APP_CONFIG.env.prod) {
             closeButton: true,
             timeOut: 0,
             extendedTimeOut: 0,
-            positionClass: 'toast-bottom-right',
+            positionClass: 'toast-top-right',
             toastClass: 'ngx-toastr zem-toastr',
             preventDuplicates: true,
         }),
