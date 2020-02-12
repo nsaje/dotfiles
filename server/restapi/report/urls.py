@@ -1,6 +1,8 @@
-from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.report.v1.urls
+from . import views
 
-urlpatterns = [url(r"^v1/reports/", include(restapi.report.v1.urls, namespace="restapi.report.v1"))]
+urlpatterns = [
+    url(r"^v1/reports/(?P<job_id>\d+)$", views.ReportsViewSet.as_view({"get": "get"}), name="reports_details"),
+    url(r"^v1/reports/$", views.ReportsViewSetCreate.as_view({"post": "create"}), name="reports_list"),
+]

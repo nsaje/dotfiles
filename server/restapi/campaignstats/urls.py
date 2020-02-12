@@ -1,6 +1,11 @@
-from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.campaignstats.v1.urls
+from . import views
 
-urlpatterns = [url(r"^v1/campaignstats/", include(restapi.campaignstats.v1.urls, namespace="restapi.campaignstats.v1"))]
+urlpatterns = [
+    url(
+        r"^v1/campaigns/(?P<campaign_id>\d+)/stats/$",
+        views.CampaignStatsViewSet.as_view({"get": "get"}),
+        name="campaignstats",
+    )
+]

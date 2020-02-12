@@ -1,11 +1,16 @@
-from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.publishergroupentry.v1.urls
+from . import views
 
 urlpatterns = [
     url(
-        r"^v1/publishergroups/",
-        include(restapi.publishergroupentry.v1.urls, namespace="restapi.publishergroupentry.v1"),
-    )
+        r"^v1/publishergroups/(?P<publisher_group_id>\d+)/entries/(?P<entry_id>\d+)$",
+        views.PublisherGroupEntryViewSet.as_view({"get": "retrieve", "put": "partial_update", "delete": "destroy"}),
+        name="publisher_group_entry_details",
+    ),
+    url(
+        r"^v1/publishergroups/(?P<publisher_group_id>\d+)/entries/$",
+        views.PublisherGroupEntryViewSet.as_view({"get": "list", "post": "create"}),
+        name="publisher_group_entry_list",
+    ),
 ]

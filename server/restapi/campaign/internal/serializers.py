@@ -6,7 +6,7 @@ import dash.constants
 import restapi.accountcredit.internal.serializers
 import restapi.campaign.v1.serializers
 import restapi.campaignbudget.internal.serializers
-import restapi.campaigngoal.v1.serializers
+import restapi.campaigngoal.serializers
 import restapi.directdeal.internal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
@@ -49,7 +49,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, default=dash.constants.Currency.USD, required=False
     )
-    goals_defaults = restapi.campaigngoal.v1.serializers.CampaignGoalsDefaultsSerializer()
+    goals_defaults = restapi.campaigngoal.serializers.CampaignGoalsDefaultsSerializer()
     campaign_managers = rest_framework.serializers.ListField(
         child=restapi.serializers.user.UserSerializer(), default=[], allow_empty=True
     )
@@ -81,7 +81,7 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)
     goals = rest_framework.serializers.ListSerializer(
-        child=restapi.campaigngoal.v1.serializers.CampaignGoalSerializer(), default=[], allow_empty=True
+        child=restapi.campaigngoal.serializers.CampaignGoalSerializer(), default=[], allow_empty=True
     )
     budgets = rest_framework.serializers.ListSerializer(
         child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True

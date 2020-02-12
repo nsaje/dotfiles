@@ -10,8 +10,8 @@ import dash.api
 import dash.constants
 import dash.models
 import restapi.adgroup.v1.views
-import restapi.adgroupsource.v1.views
-import restapi.adgroupsourcesrtb.v1.views
+import restapi.adgroupsource.views
+import restapi.adgroupsourcesrtb.views
 from integrations.bizwire import config
 from integrations.bizwire import models
 from integrations.bizwire.internal import helpers
@@ -210,7 +210,7 @@ def _set_all_rtb_default_cpc(ad_group_id):
 def _list_ad_group_sources(ad_group_id):
     url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
     return _make_restapi_fake_get_request(
-        restapi.adgroupsource.v1.views.AdGroupSourceViewSet, url, view_args=[ad_group_id]
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, view_args=[ad_group_id]
     )
 
 
@@ -231,7 +231,7 @@ def _set_initial_sources_settings(ad_group_id):
     ]
     url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsource.v1.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
     )
 
 
@@ -239,7 +239,7 @@ def _set_source_daily_budget(ad_group_id, source, daily_budget):
     data = [{"source": source, "dailyBudget": daily_budget, "state": "ACTIVE"}]
     url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsource.v1.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
     )
 
 
@@ -247,7 +247,7 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
     data = {"groupEnabled": True, "dailyBudget": daily_budget, "cpc": config.DEFAULT_CPC, "state": "ACTIVE"}
     url = "rest/v1/adgroups/{}/sources/rtb/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsourcesrtb.v1.views.AdGroupSourcesRTBViewSet, url, data, view_args=[ad_group_id]
+        restapi.adgroupsourcesrtb.views.AdGroupSourcesRTBViewSet, url, data, view_args=[ad_group_id]
     )
 
 

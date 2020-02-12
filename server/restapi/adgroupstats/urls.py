@@ -1,6 +1,11 @@
-from django.conf.urls import include
 from django.conf.urls import url
 
-import restapi.adgroupstats.v1.urls
+from . import views
 
-urlpatterns = [url(r"^v1/adgroupstats/", include(restapi.adgroupstats.v1.urls, namespace="restapi.adgroupstats.v1"))]
+urlpatterns = [
+    url(
+        r"^v1/adgroups/(?P<ad_group_id>\d+)/realtimestats/$",
+        views.AdGroupRealtimeStatsViewSet.as_view({"get": "get"}),
+        name="adgroups_realtimestats",
+    )
+]

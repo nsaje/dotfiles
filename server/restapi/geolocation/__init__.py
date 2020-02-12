@@ -1,1 +1,1 @@
-from restapi.geolocation.v1.views import *
+from .views import *
