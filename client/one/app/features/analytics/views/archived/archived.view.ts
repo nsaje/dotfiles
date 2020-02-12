@@ -72,5 +72,6 @@ angular.module('one.downgraded').directive(
     'zemArchivedView',
     downgradeComponent({
         component: ArchivedView,
+        propagateDigest: false,
     })
 );

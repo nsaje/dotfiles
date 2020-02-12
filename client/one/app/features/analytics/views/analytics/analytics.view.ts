@@ -143,5 +143,6 @@ angular.module('one.downgraded').directive(
     'zemAnalyticsView',
     downgradeComponent({
         component: AnalyticsView,
+        propagateDigest: false,
     })
 );

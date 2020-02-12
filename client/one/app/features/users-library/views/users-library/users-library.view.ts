@@ -70,5 +70,6 @@ angular.module('one.downgraded').directive(
     'zemUsersLibraryView',
     downgradeComponent({
         component: UsersLibraryView,
+        propagateDigest: false,
     })
 );
