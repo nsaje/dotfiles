@@ -1824,21 +1824,8 @@ class MaxAutopilotBidTestCase(TestCase):
         self.request = magic_mixer.blend_request_user(["fea_can_use_cpm_buying"])
 
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_cpc(self, mock_autopilot):
-        self.ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPC,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE,
-                "cpc": decimal.Decimal("5.0"),
-            },
-        )
-
-        self.ad_group_source_1 = self.ad_group.adgroupsource_set.get(source=self.source_1)
-        self.ad_group_source_2 = self.ad_group.adgroupsource_set.get(source=self.source_2)
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("5.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("5.0"))
+    def test_enable_full_autopilot_cpc(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPC)
 
         self.ad_group.settings.update(
             None,
@@ -1849,9 +1836,35 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
 
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_enable_bid_autopilot_cpc(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPC)
+        self.ad_group.settings.update(
+            None,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+            max_autopilot_bid=decimal.Decimal("3.0"),
+        )
+
+        self.ad_group_source_1.refresh_from_db()
+        self.ad_group_source_2.refresh_from_db()
+
+        # changing max autopilot bid changes cpc
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("3.0"))
+
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_disable_autopilot_increase_cpc(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPC)
+        self.ad_group.settings.update(
+            None,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            max_autopilot_bid=decimal.Decimal("3.0"),
+        )
         self.ad_group.settings.update(
             None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE, cpc=decimal.Decimal("20.0")
         )
@@ -1859,38 +1872,60 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("12.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("12.0"))
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("20.0"))
 
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_increase_max_autopilot_bid_cpc_bid_modifier_resets(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPC)
         self.ad_group.settings.update(
             None,
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-            max_autopilot_bid=decimal.Decimal("11.0"),
+            max_autopilot_bid=decimal.Decimal("10.0"),
+        )
+
+        bid_modifier_1 = magic_mixer.blend(
+            models.BidModifier,
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            modifier=0.3,
+            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+        )
+        self.ad_group.settings.update(
+            None,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+            max_autopilot_bid=decimal.Decimal("15.0"),
         )
 
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
-        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("11.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("11.0"))
+        with self.assertRaises(models.BidModifier.DoesNotExist):
+            # was reset because max autopilot bid changed
+            bid_modifier_1.refresh_from_db()
+
+        # changing max autopilot bid changes cpc
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("15.0"))
 
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_cpm(self, mock_autopilot):
-        self.ad_group = models.AdGroup.objects.create(
-            self.request,
-            self.campaign,
-            bidding_type=constants.BiddingType.CPM,
-            initial_settings={
-                "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE,
-                "cpm": decimal.Decimal("5.0"),
-            },
+    def test_disable_autopilot_cpm(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPM)
+        self.ad_group.settings.update(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE, cpm=decimal.Decimal("20.0")
         )
 
-        self.ad_group_source_1 = self.ad_group.adgroupsource_set.get(source=self.source_1)
-        self.ad_group_source_2 = self.ad_group.adgroupsource_set.get(source=self.source_2)
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("5.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("5.0"))
+        self.ad_group_source_1.refresh_from_db()
+        self.ad_group_source_2.refresh_from_db()
 
+        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("20.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("20.0"))
+
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_enable_full_autopilot_cpm(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
             None,
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
@@ -1900,27 +1935,69 @@ class MaxAutopilotBidTestCase(TestCase):
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
+        self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
         self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
 
-        self.ad_group.settings.update(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE, cpm=decimal.Decimal("20.0")
-        )
-
-        self.ad_group_source_1.refresh_from_db()
-        self.ad_group_source_2.refresh_from_db()
-
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("12.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("12.0"))
-
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_enable_bid_autopilot_cpm(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
             None,
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-            max_autopilot_bid=decimal.Decimal("11.0"),
+            max_autopilot_bid=decimal.Decimal("3.0"),
         )
 
         self.ad_group_source_1.refresh_from_db()
         self.ad_group_source_2.refresh_from_db()
 
-        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("11.0"))
-        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("11.0"))
+        # changing max autopilot bid changes cpm
+        self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("3.0"))
+
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_increase_max_autopilot_bid_reset_bid_modifier(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPM)
+        self.ad_group.settings.update(
+            None,
+            max_autopilot_bid=decimal.Decimal("10.0"),
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+        )
+
+        bid_modifier_1 = magic_mixer.blend(
+            models.BidModifier,
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            modifier=0.3,
+            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+        )
+        self.ad_group.settings.update(None, max_autopilot_bid=decimal.Decimal("15.0"))
+
+        self.ad_group_source_1.refresh_from_db()
+        self.ad_group_source_2.refresh_from_db()
+
+        with self.assertRaises(models.BidModifier.DoesNotExist):
+            # was reset because max autopilot bid changed
+            bid_modifier_1.refresh_from_db()
+
+        # changing max autopilot bid changes cpm
+        self.assertEqual(self.ad_group.settings.cpm, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpm, decimal.Decimal("15.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpm, decimal.Decimal("15.0"))
+
+    def _init_ad_group(self, bidding_type):
+        initial_bid = decimal.Decimal("5.0")
+        bid_field = "cpc" if bidding_type == constants.BiddingType.CPC else "cpm"
+        initial_settings = {"autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE, bid_field: initial_bid}
+
+        self.ad_group = models.AdGroup.objects.create(
+            self.request, self.campaign, bidding_type=bidding_type, initial_settings=initial_settings
+        )
+
+        self.ad_group_source_1 = self.ad_group.adgroupsource_set.get(source=self.source_1)
+        self.ad_group_source_2 = self.ad_group.adgroupsource_set.get(source=self.source_2)
+
+        ad_group_source_bid_field = "cpc_cc" if bidding_type == constants.BiddingType.CPC else "cpm"
+        self.assertEqual(getattr(self.ad_group_source_1.settings, ad_group_source_bid_field), initial_bid)
+        self.assertEqual(getattr(self.ad_group_source_2.settings, ad_group_source_bid_field), initial_bid)

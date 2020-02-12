@@ -54,7 +54,14 @@ def check_b1_sources_group_bid_changed(ad_group_settings, changes):
         return "b1_sources_group_cpc_cc" in changes
 
 
-def calculate_ad_group_sources_bids(ad_group_settings, b1_sources_group_bid_changed):
+def check_max_autopilot_bid_changed(ad_group_settings, changes):
+    return (
+        ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+        and "max_autopilot_bid" in changes
+    )
+
+
+def calculate_ad_group_sources_bids(ad_group_settings, max_autopilot_bid_changed, b1_sources_group_bid_changed):
     adjusted_bids = {}
     campaign_goal = _get_campaign_goal(ad_group_settings)
     for ad_group_source in ad_group_settings.ad_group.adgroupsource_set.all().select_related(
@@ -71,7 +78,9 @@ def calculate_ad_group_sources_bids(ad_group_settings, b1_sources_group_bid_chan
         source_bid = _replace_with_b1_sources_group_bid_if_needed(
             source_bid, ad_group_source, ad_group_settings, campaign_goal, b1_sources_group_bid_changed
         )
-        source_bid = _threshold_autopilot_bid_if_needed(ad_group_settings, source_bid)
+        source_bid = _adjust_to_autopilot_bid_if_needed(
+            ad_group_settings, source_bid, max_autopilot_bid_changed=max_autopilot_bid_changed
+        )
         adjusted_bids[ad_group_source] = source_bid
     return adjusted_bids
 
@@ -107,12 +116,11 @@ def _replace_with_b1_sources_group_bid_if_needed(
     return source_bid
 
 
-def _threshold_autopilot_bid_if_needed(ad_group_settings, proposed_bid):
-    if (
+def _adjust_to_autopilot_bid_if_needed(ad_group_settings, proposed_bid, max_autopilot_bid_changed=False):
+    if max_autopilot_bid_changed or (
         ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
         and ad_group_settings.max_autopilot_bid
         and proposed_bid > ad_group_settings.max_autopilot_bid
     ):
-        return ad_group_settings.max_autopilot_bid
-
+        proposed_bid = ad_group_settings.max_autopilot_bid
     return proposed_bid

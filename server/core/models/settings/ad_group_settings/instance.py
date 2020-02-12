@@ -50,6 +50,7 @@ class AdGroupSettingsMixin(object):
             if not skip_validation and not is_pause:
                 self.clean(new_settings)
             self._handle_archived(new_settings)
+            self._handle_max_autopilot_bid_change(new_settings)
             self._handle_b1_sources_group_adjustments(new_settings)
             self._handle_bid_autopilot_initial_bids(
                 new_settings, skip_notification=skip_notification, write_source_history=write_source_history
@@ -58,9 +59,12 @@ class AdGroupSettingsMixin(object):
             changes = self.get_setting_changes(new_settings)
             if changes:
                 new_settings.save(request, system_user=system_user, write_history=write_history)
+                max_autopilot_bid_changed = helpers.check_max_autopilot_bid_changed(self, changes)
                 b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
                 self.apply_bids_to_sources(
-                    b1_sources_group_bid_changed=b1_sources_group_bid_changed, write_source_history=write_source_history
+                    max_autopilot_bid_changed=max_autopilot_bid_changed,
+                    b1_sources_group_bid_changed=b1_sources_group_bid_changed,
+                    write_source_history=write_source_history,
                 )
                 self._propagate_changes(
                     request, new_settings, changes, system_user, skip_notification=skip_notification
@@ -229,6 +233,22 @@ class AdGroupSettingsMixin(object):
         if new_settings.archived:
             new_settings.state = constants.AdGroupSettingsState.INACTIVE
 
+    def _handle_max_autopilot_bid_change(self, new_settings):
+        changes = self.get_setting_changes(new_settings)
+        autopilot_enabled = (
+            changes.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        if autopilot_enabled and "max_autopilot_bid" in changes:
+            if self.ad_group.bidding_type == constants.BiddingType.CPC:
+                new_settings.cpc = changes["max_autopilot_bid"]
+            elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+                new_settings.cpm = changes["max_autopilot_bid"]
+        elif autopilot_enabled and "local_max_autopilot_bid" in changes:
+            if self.ad_group.bidding_type == constants.BiddingType.CPC:
+                new_settings.local_cpc = changes["local_max_autopilot_bid"]
+            elif self.ad_group.bidding_type == constants.BiddingType.CPM:
+                new_settings.local_cpm = changes["local_max_autopilot_bid"]
+
     def _handle_b1_sources_group_adjustments(self, new_settings):
         changes = self.get_setting_changes(new_settings)
 
@@ -276,10 +296,16 @@ class AdGroupSettingsMixin(object):
         )
 
     def apply_bids_to_sources(
-        self, b1_sources_group_bid_changed=False, skip_notification=False, write_source_history=True
+        self,
+        max_autopilot_bid_changed=False,
+        b1_sources_group_bid_changed=False,
+        skip_notification=False,
+        write_source_history=True,
     ):
         ad_group_sources_bids = helpers.calculate_ad_group_sources_bids(
-            self, b1_sources_group_bid_changed=b1_sources_group_bid_changed
+            self,
+            max_autopilot_bid_changed=max_autopilot_bid_changed,
+            b1_sources_group_bid_changed=b1_sources_group_bid_changed,
         )
         # if source bid values change as consequence of ad group bid value change we skip source settings validation to avoid errors
         helpers.set_ad_group_sources_bids(
