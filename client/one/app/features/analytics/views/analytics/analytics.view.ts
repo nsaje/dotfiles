@@ -21,6 +21,7 @@ import {
     DEFAULT_BREAKDOWN,
     LEVEL_STATE_PARAM_TO_LEVEL_MAP,
     BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP,
+    LEVEL_TO_ENTITY_TYPE_MAP,
 } from '../../analytics.config';
 
 @Component({
@@ -39,7 +40,6 @@ export class AnalyticsView implements OnInit, OnDestroy {
     isInitialized: boolean = false;
 
     private stateChangeListener$: Function;
-    private locationChangeListener$: Function;
 
     constructor(
         private changeDetectorRef: ChangeDetectorRef,
@@ -57,20 +57,11 @@ export class AnalyticsView implements OnInit, OnDestroy {
                 this.updateInternalState();
             }
         );
-        this.locationChangeListener$ = this.ajs$rootScope.$on(
-            '$locationChangeSuccess',
-            () => {
-                this.updateInternalState();
-            }
-        );
     }
 
     ngOnDestroy(): void {
         if (commonHelpers.isDefined(this.stateChangeListener$)) {
             this.stateChangeListener$();
-        }
-        if (commonHelpers.isDefined(this.locationChangeListener$)) {
-            this.locationChangeListener$();
         }
     }
 
@@ -78,6 +69,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
         this.level = this.getLevel(this.ajs$state.params.level);
         if (!commonHelpers.isDefined(this.level)) {
             this.isInitialized = false;
+            this.changeDetectorRef.markForCheck();
             return;
         }
 
@@ -89,10 +81,22 @@ export class AnalyticsView implements OnInit, OnDestroy {
             this.level,
             this.breakdown
         );
-        this.entity = this.zemNavigationNewService.getActiveEntity();
 
-        this.isInitialized = true;
-        this.changeDetectorRef.markForCheck();
+        const entityId = this.ajs$state.params.id;
+        if (!commonHelpers.isDefined(entityId)) {
+            this.entity = null;
+            this.isInitialized = true;
+            this.changeDetectorRef.markForCheck();
+            return;
+        }
+
+        this.zemNavigationNewService
+            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[this.level], entityId)
+            .then((entity: any) => {
+                this.entity = entity;
+                this.isInitialized = true;
+                this.changeDetectorRef.markForCheck();
+            });
     }
 
     private getLevel(levelStateParam: LevelStateParam): Level {

@@ -3,6 +3,7 @@ import {
     LevelStateParam,
     Breakdown,
     BreakdownStateParam,
+    EntityType,
 } from '../../app.constants';
 
 export const DEFAULT_BREAKDOWN = {
@@ -29,4 +30,10 @@ export const BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownStateParam.OPERATING_SYSTEM]: Breakdown.OPERATING_SYSTEM,
     [BreakdownStateParam.PUBLISHERS]: Breakdown.PUBLISHER,
     [BreakdownStateParam.INSIGHTS]: Breakdown.INSIGHTS,
+};
+
+export const LEVEL_TO_ENTITY_TYPE_MAP = {
+    [Level.ACCOUNTS]: EntityType.ACCOUNT,
+    [Level.CAMPAIGNS]: EntityType.CAMPAIGN,
+    [Level.AD_GROUPS]: EntityType.AD_GROUP,
 };

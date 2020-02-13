@@ -11,6 +11,11 @@ import {
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {LevelStateParam, Level} from '../../../../app.constants';
+import {
+    LEVEL_STATE_PARAM_TO_LEVEL_MAP,
+    LEVEL_TO_ENTITY_TYPE_MAP,
+} from '../../../analytics/analytics.config';
 
 @Component({
     selector: 'zem-publisher-groups-library-view',
@@ -21,14 +26,14 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-publisher-groups-library-view';
 
-    account: any;
+    entity: any;
 
     private stateChangeListener$: Function;
-    private locationChangeListener$: Function;
 
     constructor(
         private changeDetectorRef: ChangeDetectorRef,
         @Inject('ajs$rootScope') private ajs$rootScope: any,
+        @Inject('ajs$state') private ajs$state: any,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
@@ -40,28 +45,39 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
                 this.updateInternalState();
             }
         );
-        this.locationChangeListener$ = this.ajs$rootScope.$on(
-            '$locationChangeSuccess',
-            () => {
-                this.updateInternalState();
-            }
-        );
     }
 
     ngOnDestroy(): void {
         if (commonHelpers.isDefined(this.stateChangeListener$)) {
             this.stateChangeListener$();
         }
-        if (commonHelpers.isDefined(this.locationChangeListener$)) {
-            this.locationChangeListener$();
-        }
     }
 
     updateInternalState() {
-        if (!commonHelpers.isDefined(this.account)) {
-            this.account = this.zemNavigationNewService.getActiveAccount();
+        const level = this.getLevel(this.ajs$state.params.level);
+        if (!commonHelpers.isDefined(level)) {
+            this.entity = null;
             this.changeDetectorRef.markForCheck();
+            return;
         }
+
+        const entityId = this.ajs$state.params.id;
+        if (!commonHelpers.isDefined(entityId)) {
+            this.entity = null;
+            this.changeDetectorRef.markForCheck();
+            return;
+        }
+
+        this.zemNavigationNewService
+            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], entityId)
+            .then((entity: any) => {
+                this.entity = entity;
+                this.changeDetectorRef.markForCheck();
+            });
+    }
+
+    private getLevel(levelStateParam: LevelStateParam): Level {
+        return LEVEL_STATE_PARAM_TO_LEVEL_MAP[levelStateParam];
     }
 }
 
