@@ -136,13 +136,13 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     def post_all_rtb_source(self, request, ad_group_id, filtered_sources, settings):
         updates = {}
         if "daily_budget_cc" in settings:
-            updates["b1_sources_group_daily_budget"] = decimal.Decimal(settings["daily_budget_cc"])
+            updates["local_b1_sources_group_daily_budget"] = decimal.Decimal(settings["daily_budget_cc"])
         if "cpc_cc" in settings:
-            updates["b1_sources_group_cpc_cc"] = decimal.Decimal(settings["cpc_cc"])
+            updates["local_b1_sources_group_cpc_cc"] = decimal.Decimal(settings["cpc_cc"])
         if "cpm" in settings:
-            updates["b1_sources_group_cpm"] = decimal.Decimal(settings["cpm"])
+            updates["local_b1_sources_group_cpm"] = decimal.Decimal(settings["cpm"])
         if "state" in settings:
-            updates["b1_sources_group_state"] = settings["state"]
+            updates["local_b1_sources_group_state"] = settings["state"]
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
