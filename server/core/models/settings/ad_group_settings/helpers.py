@@ -117,10 +117,13 @@ def _replace_with_b1_sources_group_bid_if_needed(
 
 
 def _adjust_to_autopilot_bid_if_needed(ad_group_settings, proposed_bid, max_autopilot_bid_changed=False):
-    if max_autopilot_bid_changed or (
-        ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
-        and ad_group_settings.max_autopilot_bid
-        and proposed_bid > ad_group_settings.max_autopilot_bid
+    if ad_group_settings.max_autopilot_bid and (
+        max_autopilot_bid_changed
+        or (
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+            and ad_group_settings.max_autopilot_bid
+            and proposed_bid > ad_group_settings.max_autopilot_bid
+        )
     ):
         proposed_bid = ad_group_settings.max_autopilot_bid
     return proposed_bid
