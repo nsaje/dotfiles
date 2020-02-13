@@ -50,9 +50,12 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
     def validate(self, data):
+        conversion_goal = data.get("conversion_goal")
         if (
-            data["conversion_goal"]["type"] == constants.ConversionGoalType.PIXEL
-            and data["conversion_goal"]["conversion_window"] is None
+            conversion_goal
+            and conversion_goal.get("type") == constants.ConversionGoalType.PIXEL
+            and "conversion_window" in conversion_goal
+            and conversion_goal["conversion_window"] is None
         ):
             raise rest_framework.serializers.ValidationError(
                 {"conversion_window": "Conversion window should not be empty."}
