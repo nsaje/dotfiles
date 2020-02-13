@@ -7,13 +7,16 @@ TODO when we move base level:
 """
 
 import datetime
+import decimal
 import json
 
+import core.features.multicurrency
 import core.models.content_ad_candidate.exceptions
+import core.models.settings.ad_group_settings.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
 import stats.helpers
 from core.models import all_rtb
 from dash import constants
-from dash import forms
 from dash import legacy
 from dash import views
 from dash.features import contentupload
@@ -131,40 +134,132 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
     # MVP for all-RTB-sources-as-one
     def post_all_rtb_source(self, request, ad_group_id, filtered_sources, settings):
-        ad_group_settings_response = views.agency.AdGroupSettings().get(request, ad_group_id)
-        ad_group_settings_dict = json.loads(ad_group_settings_response.content)["data"]["settings"]
+        updates = {}
         if "daily_budget_cc" in settings:
-            ad_group_settings_dict["b1_sources_group_daily_budget"] = settings["daily_budget_cc"]
+            updates["b1_sources_group_daily_budget"] = decimal.Decimal(settings["daily_budget_cc"])
         if "cpc_cc" in settings:
-            ad_group_settings_dict["b1_sources_group_cpc_cc"] = settings["cpc_cc"]
+            updates["b1_sources_group_cpc_cc"] = decimal.Decimal(settings["cpc_cc"])
         if "cpm" in settings:
-            ad_group_settings_dict["b1_sources_group_cpm"] = settings["cpm"]
+            updates["b1_sources_group_cpm"] = decimal.Decimal(settings["cpm"])
         if "state" in settings:
-            ad_group_settings_dict["b1_sources_group_state"] = settings["state"]
+            updates["b1_sources_group_state"] = settings["state"]
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group_settings = ad_group.get_current_settings()
-        form = forms.B1SourcesGroupSettingsForm(
-            ad_group_settings,
-            {
-                "b1_sources_group_daily_budget": ad_group_settings_dict["b1_sources_group_daily_budget"],
-                "b1_sources_group_cpc_cc": ad_group_settings_dict["b1_sources_group_cpc_cc"],
-                "b1_sources_group_cpm": ad_group_settings_dict["b1_sources_group_cpm"],
-                "b1_sources_group_state": ad_group_settings_dict["b1_sources_group_state"],
-            },
-        )
-        if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
+        try:
+            ad_group.settings.update(request, **updates)
+        except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpc_cc": [
+                        "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
 
-        request._body = json.dumps({"settings": ad_group_settings_dict})
+        except core.models.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "CPM on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
 
-        views.agency.AdGroupSettings().put(request, ad_group_id)
-        ad_group_settings = ad_group.get_current_settings()
-        ad_group_settings.refresh_from_db()
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpc_cc": [
+                        "Minimum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpc_cc": [
+                        "Maximum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "Minimum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "Maximum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_daily_budget": [
+                        "Please provide daily spend cap of at least {}.".format(
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 0, decimal.ROUND_CEILING, ad_group.settings.get_currency()
+                            )
+                        )
+                    ]
+                }
+            )
+
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+            raise exc.ValidationError(
+                errors={
+                    "b1_sources_group_daily_budget": [
+                        "Maximum allowed daily spend cap is {}. "
+                        "If you want use a higher daily spend cap, please contact support.".format(
+                            core.features.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
+                            )
+                        )
+                    ]
+                }
+            )
+
         row = breakdown_helpers.create_all_rtb_source_row_data(
             request,
             ad_group,
-            ad_group_settings,
+            ad_group.settings,
             show_rtb_group_bid=request.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc"),
         )
         response_update = legacy.get_updated_ad_group_sources_changes(

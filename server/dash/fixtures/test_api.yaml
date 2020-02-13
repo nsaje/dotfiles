@@ -462,7 +462,7 @@
         target_devices: ['desktop', 'mobile']
         start_date: '2015-03-02'
         cpc: 1.00
-        cpc: 1.00
+        cpm: 1.00
         local_cpm: 1.00
         local_cpc: 1.00
         b1_sources_group_cpc_cc: '0.0100'
