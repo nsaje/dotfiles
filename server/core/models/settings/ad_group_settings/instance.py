@@ -238,12 +238,12 @@ class AdGroupSettingsMixin(object):
         autopilot_enabled = (
             changes.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
         )
-        if autopilot_enabled and "max_autopilot_bid" in changes:
+        if autopilot_enabled and changes.get("max_autopilot_bid"):
             if self.ad_group.bidding_type == constants.BiddingType.CPC:
                 new_settings.cpc = changes["max_autopilot_bid"]
             elif self.ad_group.bidding_type == constants.BiddingType.CPM:
                 new_settings.cpm = changes["max_autopilot_bid"]
-        elif autopilot_enabled and "local_max_autopilot_bid" in changes:
+        elif autopilot_enabled and changes.get("local_max_autopilot_bid"):
             if self.ad_group.bidding_type == constants.BiddingType.CPC:
                 new_settings.local_cpc = changes["local_max_autopilot_bid"]
             elif self.ad_group.bidding_type == constants.BiddingType.CPM:
