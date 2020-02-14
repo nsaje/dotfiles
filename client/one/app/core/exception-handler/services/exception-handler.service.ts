@@ -4,6 +4,7 @@ import {APP_CONFIG} from '../../../app.config';
 import {NotificationService} from '../../notification/services/notification.service';
 import {isDefined} from '../../../shared/helpers/common.helpers';
 import {HttpException} from '../types/http-exception';
+import * as arrayHelpers from '../../../shared/helpers/array.helpers';
 
 @Injectable()
 export class ExceptionHandlerService {
@@ -12,8 +13,9 @@ export class ExceptionHandlerService {
     handleHttpException(exception: HttpException) {
         if (this.shouldShowErrorMessage(exception)) {
             const exceptionInfos: string[] = this.getExceptionInfos(exception);
-
-            this.notificationService.error(exceptionInfos.join('<br>'));
+            if (!arrayHelpers.isEmpty(exceptionInfos)) {
+                this.notificationService.error(exceptionInfos.join('<br>'));
+            }
         }
     }
 
