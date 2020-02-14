@@ -23,6 +23,7 @@ angular
         this.getNavigationHierarchyPromise = getNavigationHierarchyPromise;
         this.onHierarchyUpdate = onHierarchyUpdate;
         this.onActiveEntityChange = onActiveEntityChange;
+        this.onBidModifierUpdate = onBidModifierUpdate;
         this.onUsesBCMv2Update = onUsesBCMv2Update;
 
         var EVENTS = {
@@ -30,6 +31,8 @@ angular
             ON_ACTIVE_ENTITY_CHANGE:
                 'zem-navigation-service-on-active-entity-change',
             ON_USES_BCMV2_UPDATE: 'zem-navigation-service-on-uses-bcmv2-update',
+            ON_BID_MODIFIER_UPDATE:
+                'zem-navigation-service-on-bid-modifier-update',
         };
 
         var $scope = $rootScope.$new(); // Scope used for listener stuff (TODO: remove dependency)
@@ -39,6 +42,10 @@ angular
 
         function init() {
             zemNavigationService.onUpdate($scope, handleDataUpdate);
+            zemNavigationService.onBidModifierUpdate(
+                $scope,
+                handleBidModifierUpdate
+            );
 
             initUsesBCMv2();
 
@@ -58,6 +65,10 @@ angular
                 );
             }
             notifyListeners(EVENTS.ON_HIERARCHY_UPDATE, hierarchyRoot);
+        }
+
+        function handleBidModifierUpdate() {
+            notifyListeners(EVENTS.ON_BID_MODIFIER_UPDATE);
         }
 
         function handleStateChange() {
@@ -348,6 +359,10 @@ angular
 
         function onActiveEntityChange(callback) {
             return registerListener(EVENTS.ON_ACTIVE_ENTITY_CHANGE, callback);
+        }
+
+        function onBidModifierUpdate(callback) {
+            return registerListener(EVENTS.ON_BID_MODIFIER_UPDATE, callback);
         }
 
         function onUsesBCMv2Update(callback) {

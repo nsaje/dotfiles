@@ -48,6 +48,11 @@ export enum EntityUpdateAction {
     CLONE = 'clone',
 }
 
+export enum BidModifierUpdateAction {
+    EDIT = 'edit',
+    CREATE = 'create',
+}
+
 export enum LevelStateParam {
     ACCOUNTS = 'accounts',
     ACCOUNT = 'account',

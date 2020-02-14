@@ -1,15 +1,16 @@
 import {BidModifiersService} from './bid-modifiers.service';
 import {BidModifiersEndpoint} from './bid-modifiers.endpoint';
 import {of} from 'rxjs';
-import {BiddingType, BidModifierType, Breakdown} from '../../../app.constants';
+import {BidModifierType, Breakdown} from '../../../app.constants';
 import {BidModifier} from '../types/bid-modifier';
-import {BidModifierTypeSummary} from '../types/bid-modifier-type-summary';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as clone from 'clone';
+import {BidModifierUpdatesService} from './bid-modifier-updates.service';
 
 describe('BidModifiersService', () => {
     let service: BidModifiersService;
     let endpointStub: jasmine.SpyObj<BidModifiersEndpoint>;
+    let bidModifierUpdatesStub: jasmine.SpyObj<BidModifierUpdatesService>;
     let mockedAdGroupId: number;
     let mockedBidModifier: BidModifier;
     let mockedBreakdown: Breakdown;
@@ -23,7 +24,11 @@ describe('BidModifiersService', () => {
             'upload',
             'validateUpload',
         ]);
-        service = new BidModifiersService(endpointStub);
+        bidModifierUpdatesStub = jasmine.createSpyObj(
+            BidModifierUpdatesService.name,
+            ['registerBidModifierUpdate']
+        );
+        service = new BidModifiersService(endpointStub, bidModifierUpdatesStub);
         mockedAdGroupId = 1234;
         mockedBidModifier = {
             id: null,

@@ -10,6 +10,11 @@ angular
             return empty();
         };
     })
+    .service('zemBidModifierUpdatesService', function() {
+        this.getAllUpdates$ = function() {
+            return empty();
+        };
+    })
     .service('zemExceptionHandlerService', function() {
         this.handleHttpException = function() {
             return empty();

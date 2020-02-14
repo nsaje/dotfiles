@@ -4,7 +4,8 @@ angular
         $rootScope,
         $q,
         zemNavigationLegacyEndpoint,
-        zemEntitiesUpdatesService
+        zemEntitiesUpdatesService,
+        zemBidModifierUpdatesService
     ) {
         // eslint-disable-line max-len
 
@@ -148,6 +149,10 @@ angular
             $rootScope.$emit('navigation-updated');
         }
 
+        function notifyBidModifierUpdate() {
+            $rootScope.$emit('bid-modifier-updated');
+        }
+
         function notifyAdGroupReloading(id, reloading) {
             $rootScope.$emit('navigation-adgroup-loading-' + id);
             var adGroupCached = findAdGroupInNavTree(id);
@@ -162,6 +167,10 @@ angular
             zemEntitiesUpdatesService
                 .getAllUpdates$()
                 .subscribe(reloadOnEntityUpdate);
+
+            zemBidModifierUpdatesService
+                .getAllUpdates$()
+                .subscribe(notifyBidModifierUpdate);
 
             $rootScope.$emit('navigation-loading', true);
             return zemNavigationLegacyEndpoint
@@ -358,6 +367,11 @@ angular
             reloadAdGroup: reloadAdGroup,
 
             notifyAdGroupReloading: notifyAdGroupReloading,
+
+            onBidModifierUpdate: function(scope, callback) {
+                var handler = $rootScope.$on('bid-modifier-updated', callback);
+                scope.$on('$destroy', handler);
+            },
 
             onUpdate: function(scope, callback) {
                 var handler = $rootScope.$on('navigation-updated', callback);
