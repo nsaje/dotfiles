@@ -80,6 +80,7 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         "videocdn",
         "weborama",
         "ob_sales_representative-eyeota",
+        "ob-eyeota",
     )
 
     def __init__(self, *args, **kwargs):
