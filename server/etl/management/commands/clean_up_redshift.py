@@ -29,8 +29,11 @@ class Command(Z1Command):
 
     def _clean_up_table(self, table_name, keep_days):
         self._delete_old_data(table_name, keep_days)
-        maintenance.vacuum(table_name, delete_only=True)
-        maintenance.analyze(table_name)
+        try:
+            maintenance.vacuum(table_name, delete_only=True)
+            maintenance.analyze(table_name)
+        except Exception:
+            logger.exception("Vacuum after cleanup failed, skipping", table=table_name)
 
     @staticmethod
     def _delete_old_data(table, keep_days):
