@@ -2,9 +2,12 @@ from contextlib import contextmanager
 
 from django import test
 
+import core.features.publisher_groups
+import core.models
 import utils.exc
 from core.features.bid_modifiers import MODIFIER_MAX
 from core.features.bid_modifiers import MODIFIER_MIN
+from utils.magic_mixer import magic_mixer
 
 from ... import constants
 from ... import exceptions
@@ -13,7 +16,7 @@ from . import model
 
 class RuleValidationTest(test.TestCase):
     def setUp(self):
-        self.rule = model.Rule()
+        self.rule = magic_mixer.blend(model.Rule)
 
     def test_validate_state(self):
         self.rule.clean({"state": constants.RuleState.ENABLED})
@@ -275,6 +278,58 @@ class RuleValidationTest(test.TestCase):
                 {
                     "notification_recipients": ["usertest.com"],
                     "notification_type": constants.NotificationType.ON_RULE_RUN,
+                }
+            )
+
+    def test_validate_valid_publisher_group_agency(self):
+        valid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, agency=self.rule.agency, account=None
+        )
+        self.rule.clean(
+            {
+                "publisher_group": valid_publisher_group,
+                "target_type": constants.TargetType.PUBLISHER,
+                "action_type": constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            }
+        )
+
+    def test_validate_valid_publisher_group_account(self):
+        valid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account__agency=self.rule.agency, agency=None
+        )
+        self.rule.clean(
+            {
+                "publisher_group": valid_publisher_group,
+                "target_type": constants.TargetType.PUBLISHER,
+                "action_type": constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            }
+        )
+
+    def test_validate_invalid_publisher_group_agency(self):
+        unconnected_agency = magic_mixer.blend(core.models.Agency)
+        invalid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account=None, agency=unconnected_agency
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidPublisherGroup]):
+            self.rule.clean(
+                {
+                    "publisher_group": invalid_publisher_group,
+                    "target_type": constants.TargetType.PUBLISHER,
+                    "action_type": constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+                }
+            )
+
+    def test_validate_invalid_publisher_group_account(self):
+        unconnected_account = magic_mixer.blend(core.models.Account)
+        invalid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account=unconnected_account, agency=None
+        )
+        with self._assert_multiple_validation_error([exceptions.InvalidPublisherGroup]):
+            self.rule.clean(
+                {
+                    "publisher_group": invalid_publisher_group,
+                    "target_type": constants.TargetType.PUBLISHER,
+                    "action_type": constants.ActionType.ADD_TO_PUBLISHER_GROUP,
                 }
             )
 

@@ -32,7 +32,8 @@ VALID_ACTION_TYPES_FOR_TARGET = {
     constants.TargetType.PUBLISHER: [
         constants.ActionType.INCREASE_BID_MODIFIER,
         constants.ActionType.DECREASE_BID_MODIFIER,
-        # constants.ActionType.BLACKLIST,
+        constants.ActionType.BLACKLIST,
+        constants.ActionType.ADD_TO_PUBLISHER_GROUP,
     ],
     constants.TargetType.DEVICE: [
         constants.ActionType.INCREASE_BID_MODIFIER,

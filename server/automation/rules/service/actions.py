@@ -6,6 +6,7 @@ from typing import Optional
 from typing import Union
 
 import core.features.bid_modifiers
+import core.features.publisher_groups
 import core.models
 import dash.constants
 import utils.email_helper
@@ -182,15 +183,28 @@ def blacklist(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) 
         raise Exception("Invalid blacklist target")
 
     target, source_id = target.split("__")
+    source = core.models.Source.objects.get(id=source_id)
 
-    entry_dict = {
-        "publisher": target,
-        "source": core.models.Source.objects.get(id=source_id),
-        "include_subdomains": False,
-    }
+    entry_dict = {"publisher": target, "source": source, "include_subdomains": False}
     publisher_group_helpers.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
     return ValueChangeData(
         target=target,
         old_value=dash.constants.PublisherStatus.ENABLED,
         new_value=dash.constants.PublisherStatus.BLACKLISTED,
     )
+
+
+def add_to_publisher_group(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
+    if rule.action_type != constants.ActionType.ADD_TO_PUBLISHER_GROUP:
+        raise Exception("Invalid action type for adding to publisher group")
+
+    if rule.target_type != constants.TargetType.PUBLISHER:
+        raise Exception("Invalid add to publisher group target")
+
+    target, source_id = target.split("__")
+    source = core.models.Source.objects.get(id=source_id)
+
+    core.features.publisher_groups.PublisherGroupEntry.objects.create(
+        publisher_group=rule.publisher_group, publisher=target, source=source, include_subdomains=False
+    )
+    return ValueChangeData(target=target, old_value=None, new_value="Added to publisher group")

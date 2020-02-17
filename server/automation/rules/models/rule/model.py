@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+import core.features.publisher_groups
 import core.models
 
 from ... import constants
@@ -31,7 +32,7 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
     ]
 
     id = models.AutoField(primary_key=True)
-    agency = models.ForeignKey(core.models.Agency, on_delete=models.CASCADE)
+    agency = models.ForeignKey(core.models.Agency, on_delete=models.PROTECT)
 
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     state = models.IntegerField(default=constants.RuleState.ENABLED, choices=constants.RuleState.get_choices())
@@ -50,6 +51,10 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
     send_email_subject = models.TextField(null=True, blank=True)
     send_email_body = models.TextField(null=True, blank=True)
     send_email_recipients = ArrayField(models.TextField(), null=True, blank=True)
+
+    publisher_group = models.ForeignKey(
+        core.features.publisher_groups.PublisherGroup, on_delete=models.PROTECT, null=True, blank=True
+    )
 
     notification_type = models.IntegerField(choices=constants.NotificationType.get_choices())
     notification_recipients = ArrayField(models.TextField(), null=True, blank=True)

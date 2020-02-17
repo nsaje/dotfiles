@@ -27,6 +27,7 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "send_email_recipients"),
             partial(self._validate_if_present, "change_step"),
             partial(self._validate_if_present, "change_limit"),
+            partial(self._validate_if_present, "publisher_group"),
             partial(self._validate_if_present, "conditions"),
             changes=changes,
         )
@@ -166,6 +167,20 @@ class RuleValidationMixin:
     def _validate_email_list(self, email_list):
         for email in email_list:
             validate_email(email)
+
+    def _validate_publisher_group(self, changes, publisher_group):
+        action_type = changes.get("action_type", self.action_type)
+        if action_type != constants.ActionType.ADD_TO_PUBLISHER_GROUP:
+            raise exceptions.InvalidPublisherGroup("Invalid action type")
+
+        target_type = changes.get("target_type", self.target_type)
+        if target_type != constants.TargetType.PUBLISHER:
+            raise exceptions.InvalidPublisherGroup("Invalid target type")
+
+        if publisher_group.agency and publisher_group.agency_id != self.agency_id:
+            raise exceptions.InvalidPublisherGroup("Publisher group has to belong to the rule's agency")
+        if publisher_group.account and publisher_group.account.agency_id != self.agency_id:
+            raise exceptions.InvalidPublisherGroup("Publisher group has to belong to an account of the rule's agency")
 
     def _validate_conditions(self, changes, conditions):
         if len(conditions) < 1:

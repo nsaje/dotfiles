@@ -5,6 +5,7 @@ import mock
 from django.test import TestCase
 
 import core.features.bid_modifiers
+import core.features.publisher_groups
 import core.models
 import dash.constants
 import dash.features.geolocation
@@ -718,7 +719,6 @@ class BlacklistTestCase(TestCase):
             action_type=constants.ActionType.DECREASE_BID,
             target_type=constants.TargetType.PUBLISHER,
         )
-        self.assertEqual(self.ad_group.default_blacklist, None)
 
         with self.assertRaisesRegexp(Exception, "Invalid action"):
             actions.blacklist("publisher1.com__" + str(self.source.id), rule, self.ad_group)
@@ -731,3 +731,50 @@ class BlacklistTestCase(TestCase):
 
         with self.assertRaisesRegexp(Exception, "Invalid blacklist target"):
             actions.blacklist("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+
+
+class AddToPublisherGroupTestCase(TestCase):
+    def setUp(self):
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
+        self.source = magic_mixer.blend(core.models.Source)
+        self.publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account=self.ad_group.campaign.account
+        )
+
+    def test_add_to_publisher_group(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            publisher_group=self.publisher_group,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            target_type=constants.TargetType.PUBLISHER,
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+        actions.add_to_publisher_group("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+        self.assertCountEqual(
+            self.publisher_group.entries.all().values("publisher", "include_subdomains", "source"),
+            [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
+        )
+
+    def test_invalid_action_type(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.DECREASE_BID,
+            target_type=constants.TargetType.PUBLISHER,
+        )
+
+        with self.assertRaisesRegexp(Exception, "Invalid action type for adding to publisher group"):
+            actions.add_to_publisher_group("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+
+    def test_invalid_target_type(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            target_type=constants.TargetType.AD,
+        )
+
+        with self.assertRaisesRegexp(Exception, "Invalid add to publisher group target"):
+            actions.add_to_publisher_group("publisher1.com__" + str(self.source.id), rule, self.ad_group)

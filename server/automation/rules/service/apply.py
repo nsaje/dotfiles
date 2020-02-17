@@ -31,6 +31,7 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
     constants.ActionType.SEND_EMAIL: actions.send_email,
     constants.ActionType.TURN_OFF: actions.turn_off,
     constants.ActionType.BLACKLIST: actions.blacklist,
+    constants.ActionType.ADD_TO_PUBLISHER_GROUP: actions.add_to_publisher_group,
 }
 
 

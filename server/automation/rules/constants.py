@@ -73,6 +73,7 @@ class ActionType(ConstantBase):
     TURN_OFF = 7
     BLACKLIST = 8
     SEND_EMAIL = 9
+    ADD_TO_PUBLISHER_GROUP = 10
 
     _VALUES = {
         INCREASE_BID: "Increase bid",
@@ -84,6 +85,7 @@ class ActionType(ConstantBase):
         TURN_OFF: "Turn off",
         BLACKLIST: "Blacklist",
         SEND_EMAIL: "Send an e-mail",
+        ADD_TO_PUBLISHER_GROUP: "Add to publisher group",
     }
 
 
