@@ -20,6 +20,7 @@ export interface Rule {
     sendEmailRecipients: string[];
     sendEmailSubject: string;
     sendEmailBody: string;
+    publisherGroupId: string;
     conditions: RuleCondition[];
     window: TimeRange;
     notificationType: RuleNotificationType;

@@ -18,10 +18,10 @@ class PublisherGroupSearchViewSet(RESTAPIBaseViewSet):
         paginator = StandardPagination()
         queryset = (
             core.features.publisher_groups.PublisherGroup.objects.search(
-                search_expression=qpe.validated_data["keyword"]
+                search_expression=qpe.validated_data.get("keyword", "")
             )
             .filter(agency=agency, account__isnull=True)
-            .order_by("id")
+            .order_by("name")
         )
         paginated_publisher_groups = paginator.paginate_queryset(queryset, request)
         return paginator.get_paginated_response(

@@ -9,6 +9,7 @@ export class RulesEditFormStoreFieldsErrorsState {
     actionFrequency: FieldErrors = [];
     changeStep: FieldErrors = [];
     changeLimit: FieldErrors = [];
+    publisherGroupId: FieldErrors = [];
     conditions: RuleConditionError[] | string[];
     notificationType: FieldErrors = [];
     notificationRecipients: FieldErrors = [];

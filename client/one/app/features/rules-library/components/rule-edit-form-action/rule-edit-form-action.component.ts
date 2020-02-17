@@ -18,6 +18,7 @@ import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config'
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {FieldErrors} from '../../../../shared/types/field-errors';
 import {EMAIL_MACROS} from '../../rules-library.config';
+import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 
 @Component({
     selector: 'zem-rule-edit-form-action',
@@ -42,6 +43,10 @@ export class RuleEditFormActionComponent implements OnChanges {
     @Input()
     availableActions: RuleActionConfig[];
     @Input()
+    availablePublisherGroups: PublisherGroup[];
+    @Input()
+    isSearchLoading: boolean;
+    @Input()
     actionTypeErrors: FieldErrors;
     @Input()
     actionFrequencyErrors: FieldErrors;
@@ -55,6 +60,8 @@ export class RuleEditFormActionComponent implements OnChanges {
     sendEmailSubjectErrors: FieldErrors;
     @Input()
     sendEmailBodyErrors: FieldErrors;
+    @Input()
+    publisherGroupIdErrors: FieldErrors;
     @Output()
     actionTypeChange = new EventEmitter<RuleActionType>();
     @Output()
@@ -69,11 +76,18 @@ export class RuleEditFormActionComponent implements OnChanges {
     sendEmailSubjectChange = new EventEmitter<string>();
     @Output()
     sendEmailBodyChange = new EventEmitter<string>();
+    @Output()
+    publisherGroupChange = new EventEmitter<string>();
+    @Output()
+    publisherGroupsSearch = new EventEmitter<string>();
+    @Output()
+    publisherGroupsOpen = new EventEmitter<void>();
 
     selectedActionConfig: RuleActionConfig;
     selectedMacro: Macro;
     shouldAppendMacroToSubject = true;
     availableActionFrequencies: {label: string; value: number}[];
+    availablePublisherGroupsItems: {label: string; value: string}[];
     RuleActionType = RuleActionType;
     EMAIL_MACROS = EMAIL_MACROS;
 
@@ -88,6 +102,12 @@ export class RuleEditFormActionComponent implements OnChanges {
             );
             this.availableActionFrequencies = this.getAvailableActionFrequencies(
                 this.selectedActionConfig
+            );
+        }
+
+        if (changes.availablePublisherGroups) {
+            this.availablePublisherGroupsItems = this.getAvailablePublisherGroupsItems(
+                this.availablePublisherGroups
             );
         }
     }
@@ -118,6 +138,10 @@ export class RuleEditFormActionComponent implements OnChanges {
             changeLimit = changeLimit / 100.0 + 1;
         }
         this.changeLimitChange.emit(changeLimit);
+    }
+
+    updatePublisherGroup(publisherGroupId: string) {
+        this.publisherGroupChange.emit(publisherGroupId);
     }
 
     updateSendEmailSubject(sendEmailSubject: string) {
@@ -217,5 +241,16 @@ export class RuleEditFormActionComponent implements OnChanges {
             case RuleActionFrequency.Days7:
                 return '7 days';
         }
+    }
+
+    private getAvailablePublisherGroupsItems(
+        availablePublisherGroups: PublisherGroup[]
+    ): {label: string; value: string}[] {
+        return availablePublisherGroups.map(publisherGroup => {
+            return {
+                value: publisherGroup.id,
+                label: publisherGroup.name,
+            };
+        });
     }
 }

@@ -69,6 +69,8 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
                     errors.setdefault("send_email_body", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidSendEmailRecipients):
                     errors.setdefault("send_email_recipients", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidPublisherGroup):
+                    errors.setdefault("publisher_group_id", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidNotificationRecipients):
                     errors.setdefault("notification_recipients", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidRuleConditions):

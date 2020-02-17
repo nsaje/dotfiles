@@ -159,6 +159,12 @@ export const RULE_ACTIONS_OPTIONS = {
             RuleActionFrequency.Days7,
         ],
     },
+    [RuleActionType.AddToPublisherGroup]: {
+        label: 'Add to publisher group',
+        type: RuleActionType.AddToPublisherGroup,
+        hasPublisherGroupSelector: true,
+        frequencies: [] as RuleActionFrequency[],
+    },
 };
 
 export const TIME_RANGES = [

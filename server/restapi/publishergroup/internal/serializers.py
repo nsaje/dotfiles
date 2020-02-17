@@ -6,7 +6,7 @@ import restapi.serializers.serializers
 
 
 class PublisherGroupQueryParamsExpectations(restapi.serializers.serializers.QueryParamsExpectations):
-    keyword = restapi.serializers.fields.PlainCharField(min_length=2, max_length=50, required=True)
+    keyword = restapi.serializers.fields.PlainCharField(max_length=50, required=False)
     limit = fields.IntegerField(max_value=50, default=10)
     offset = fields.IntegerField(default=0)
 

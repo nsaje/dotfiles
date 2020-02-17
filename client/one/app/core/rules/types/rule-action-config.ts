@@ -10,4 +10,5 @@ export interface RuleActionConfig {
     hasLimit?: boolean;
     limitLabel?: string;
     limitDescription?: string;
+    hasPublisherGroupSelector?: boolean;
 }

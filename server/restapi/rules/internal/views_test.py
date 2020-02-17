@@ -65,6 +65,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         cooldown,
         notification_type,
         notification_recipients,
+        publisher_group_id,
         conditions,
     ):
         representation = {
@@ -80,6 +81,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             "actionFrequency": cooldown,
             "notificationType": automation.rules.NotificationType.get_name(notification_type),
             "notificationRecipients": notification_recipients,
+            "publisherGroupId": str(publisher_group_id) if publisher_group_id else None,
             "conditions": [cls.rule_condition_repr(**condition) for condition in conditions],
         }
         if id is not None:
@@ -134,6 +136,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             cooldown=rule_db.cooldown,
             notification_type=rule_db.notification_type,
             notification_recipients=rule_db.notification_recipients,
+            publisher_group_id=rule_db.publisher_group_id,
             conditions=[
                 {
                     "operator": condition.operator,
@@ -182,6 +185,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             cooldown=48,
             notification_type=automation.rules.NotificationType.ON_RULE_RUN,
             notification_recipients=["user@domain.com"],
+            publisher_group_id=None,
             conditions=[
                 {
                     "left_operand_type": automation.rules.MetricType.AVG_CPC,

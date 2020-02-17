@@ -77,13 +77,9 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=rest_framework.serializers.EmailField(), default=[], allow_empty=True, required=False, initial=None
     )
 
-    action_frequency = rest_framework.serializers.IntegerField(
-        source="cooldown",
-        error_messages={
-            "required": "Please specify an action frequency.",
-            "null": "Please specify an action frequency.",
-        },
-    )
+    publisher_group_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+
+    action_frequency = rest_framework.serializers.IntegerField(source="cooldown", required=False, allow_null=True)
 
     notification_type = restapi.serializers.fields.DashConstantField(automation.rules.NotificationType)
     notification_recipients = rest_framework.serializers.ListSerializer(

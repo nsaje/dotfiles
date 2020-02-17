@@ -14,6 +14,7 @@ import {
     RULE_ACTIONS_OPTIONS,
     RULE_CONDITIONS_OPTIONS,
 } from '../../../rules-library.config';
+import {PublisherGroupsService} from '../../../../../core/publisher-groups/services/publisher-groups.service';
 import {RulesService} from '../../../../../core/rules/services/rules.service';
 import {RuleConditionConfig} from '../../../../../core/rules/types/rule-condition-config';
 import * as storeHelpers from '../../../../../shared/helpers/store.helpers';
@@ -24,17 +25,27 @@ import {Subject} from 'rxjs';
 import {ChangeEvent} from '../../../../../shared/types/change-event';
 import {HttpErrorResponse} from '@angular/common/http';
 import {RulesEditFormStoreFieldsErrorsState} from './rule-edit-form.fields-errors-state';
+import {PublisherGroup} from '../../../../../core/publisher-groups/types/publisher-group';
+import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private publisherGroupsRequestStateUpdater: RequestStateUpdater;
 
-    constructor(private rulesService: RulesService) {
+    constructor(
+        private rulesService: RulesService,
+        private publisherGroupsService: PublisherGroupsService
+    ) {
         super(new RuleEditFormStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
+        );
+        this.publisherGroupsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'publisherGroupsRequests'
         );
     }
 
@@ -100,6 +111,19 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     }
 
     setRuleActionType(actionType: RuleActionType) {
+        // reset fields that depend on action type
+        this.setState({
+            ...this.state,
+            rule: {
+                ...this.state.rule,
+                changeStep: null,
+                changeLimit: null,
+                sendEmailRecipients: [],
+                sendEmailSubject: null,
+                sendEmailBody: null,
+                publisherGroupId: null,
+            },
+        });
         if (!actionType) {
             this.setState({
                 ...this.state,
@@ -140,6 +164,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
 
     setSendEmailBody(body: string) {
         this.patchState(body, 'rule', 'sendEmailBody');
+    }
+
+    setPublisherGroupId(publisherGroupId: string) {
+        this.patchState(publisherGroupId, 'rule', 'publisherGroupId');
     }
 
     addCondition(condition: RuleCondition) {
@@ -211,6 +239,33 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         this.patchState(recipientsList, 'rule', 'notificationRecipients');
     }
 
+    loadAvailablePublisherGroups(keyword: string | null) {
+        return new Promise<void>((resolve, reject) => {
+            const isKeywordDefined = commonHelpers.isDefined(keyword);
+            this.publisherGroupsService
+                .search(
+                    this.state.agencyId,
+                    !isKeywordDefined ? null : keyword.trim(),
+                    0,
+                    10,
+                    this.publisherGroupsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (publisherGroups: PublisherGroup[]) => {
+                        this.patchState(
+                            publisherGroups,
+                            'availablePublisherGroups'
+                        );
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     private getActionsForTarget(target: RuleTargetType): RuleActionConfig[] {
         if (RuleTargetType.Ad === target) {
             return [
@@ -236,7 +291,8 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             return [
                 RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
                 RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
-                // RULE_ACTIONS_OPTIONS[RuleActionType.Blacklist],
+                RULE_ACTIONS_OPTIONS[RuleActionType.Blacklist],
+                RULE_ACTIONS_OPTIONS[RuleActionType.AddToPublisherGroup],
             ];
         }
         if (RuleTargetType.AdGroupSource === target) {

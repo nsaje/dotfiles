@@ -9,6 +9,7 @@ import {ApiConverterHttpInterceptor} from './interceptors/api-converter.intercep
 import {BidModifiersModule} from './bid-modifiers/bid-modifiers.module';
 import {ConversionPixelsModule} from './conversion-pixels/conversion-pixels.module';
 import {DealsModule} from './deals/deals.module';
+import {PublisherGroupsModule} from './publisher-groups/publisher-groups.module';
 import {RulesModule} from './rules/rules.module';
 import {SourcesModule} from './sources/sources.module';
 import {ExceptionHttpInterceptor} from './interceptors/exception.interceptor';
@@ -36,6 +37,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         DealsModule,
         RulesModule,
         SourcesModule,
+        PublisherGroupsModule,
     ],
     providers: [
         GoogleAnalyticsService,

@@ -38,12 +38,34 @@
 
 <zem-select-form-group
     class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
+    label="Publisher Group"
+    [value]="publisherGroup"
+    helpMessage="The publisher group to be used."
+    bindLabel="label"
+    bindValue="value"
+    *ngIf="selectedActionConfig.hasPublisherGroupSelector"
+    [items]="availablePublisherGroupsItems"
+    [isLoading]="isSearchLoading"
+    [isSearchable]="true"
+    [isClearable]="false"
+    [errors]="publisherGroupIdErrors"
+    (valueChange)="updatePublisherGroup($event)"
+    (search)="publisherGroupsSearch.emit($event)"
+    (open)="publisherGroupsOpen.emit()"
+></zem-select-form-group>
+
+<zem-select-form-group
     label="Action frequency"
+    class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
     [value]="actionFrequency"
     helpMessage="The minimum amount of time that needs to pass since the last action."
     bindLabel="label"
     bindValue="value"
-    [isDisabled]="!actionType"
+    [isDisabled]="
+        !actionType ||
+        !availableActionFrequencies ||
+        !availableActionFrequencies.length
+    "
     [items]="availableActionFrequencies"
     [isSearchable]="false"
     [isClearable]="false"

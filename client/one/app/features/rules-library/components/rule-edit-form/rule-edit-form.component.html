@@ -62,6 +62,8 @@
             [sendEmailSubject]="state.rule.sendEmailSubject"
             [sendEmailBody]="state.rule.sendEmailBody"
             [availableActions]="state.availableActions"
+            [availablePublisherGroups]="state.availablePublisherGroups"
+            [isSearchLoading]="state.publisherGroupsRequests.search.inProgress"
             [actionTypeErrors]="state.fieldsErrors?.actionType"
             [actionFrequencyErrors]="state.fieldsErrors?.actionFrequency"
             [changeStepErrors]="state.fieldsErrors?.changeStep"
@@ -71,6 +73,7 @@
             "
             [sendEmailSubjectErrors]="state.fieldsErrors?.sendEmailSubject"
             [sendEmailBodyErrors]="state.fieldsErrors?.sendEmailBody"
+            [publisherGroupIdErrors]="state.fieldsErrors?.publisherGroupId"
             (actionTypeChange)="store.setRuleActionType($event)"
             (actionFrequencyChange)="store.setRuleActionFrequency($event)"
             (changeStepChange)="store.setRuleChangeStep($event)"
@@ -78,6 +81,9 @@
             (sendEmailRecipientsChange)="store.setSendEmailRecipients($event)"
             (sendEmailSubjectChange)="store.setSendEmailSubject($event)"
             (sendEmailBodyChange)="store.setSendEmailBody($event)"
+            (publisherGroupChange)="store.setPublisherGroupId($event)"
+            (publisherGroupsSearch)="store.loadAvailablePublisherGroups($event)"
+            (publisherGroupsOpen)="store.loadAvailablePublisherGroups(null)"
         ></zem-rule-edit-form-action>
     </div>
     <div class="zem-rule-edit-form__section">

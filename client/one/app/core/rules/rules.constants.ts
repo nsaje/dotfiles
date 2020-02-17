@@ -21,6 +21,7 @@ export enum RuleActionType {
     TurnOff = 'TURN_OFF',
     Blacklist = 'BLACKLIST',
     SendEmail = 'SEND_EMAIL',
+    AddToPublisherGroup = 'ADD_TO_PUBLISHER_GROUP',
 }
 
 export enum RuleActionFrequency {

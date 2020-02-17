@@ -9,6 +9,8 @@ import {RuleEditFormConditionModifierComponent} from '../rule-edit-form-conditio
 import {RuleEditFormNotificationComponent} from '../rule-edit-form-notification/rule-edit-form-notification.component';
 import {RulesService} from '../../../../core/rules/services/rules.service';
 import {RulesEndpoint} from '../../../../core/rules/services/rules.endpoint';
+import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
+import {PublisherGroupsEndpoint} from '../../../..//core/publisher-groups/services/publisher-groups.endpoint';
 
 describe('RuleEditFormComponent', () => {
     let component: RuleEditFormComponent;
@@ -36,6 +38,8 @@ describe('RuleEditFormComponent', () => {
             ],
             imports: [FormsModule, SharedModule],
             providers: [
+                PublisherGroupsService,
+                PublisherGroupsEndpoint,
                 RulesService,
                 RulesEndpoint,
                 {
