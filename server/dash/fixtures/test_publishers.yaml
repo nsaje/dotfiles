@@ -258,6 +258,7 @@
     created_dt: '2015-09-23T09:57:22'
     modified_dt: '2015-09-23T09:57:22'
     modified_by: 1
+    implicit: true
   model: dash.publishergroup
   pk: 4
 
@@ -273,11 +274,32 @@
   pk: 5
 
 - fields:
+    name: 'agency pg 1'
+    account: !!null
+    agency: 1
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 6
+
+- fields:
+    name: 'agency pg 2'
+    account: !!null
+    agency: 1
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 7
+
+- fields:
     name: 'default blacklist for account 1'
     account: 1
     created_dt: '2015-09-23T09:57:22'
     modified_dt: '2015-09-23T09:57:22'
     modified_by: 1
+    implicit: true
   model: dash.publishergroup
   pk: 1000
 

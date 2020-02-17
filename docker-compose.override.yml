@@ -35,6 +35,7 @@ services:
         environment:
           - AWS_PROFILE
           - DB
+          - PYTHONBREAKPOINT=ipdb.set_trace
         working_dir: /app/z1/
         entrypoint: /src/docker/entrypoint_dev.sh
         command: python manage.py runserver 0.0.0.0:8000
