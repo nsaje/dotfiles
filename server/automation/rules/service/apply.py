@@ -30,6 +30,7 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
     constants.ActionType.DECREASE_BID_MODIFIER: actions.adjust_bid_modifier,
     constants.ActionType.SEND_EMAIL: actions.send_email,
     constants.ActionType.TURN_OFF: actions.turn_off,
+    constants.ActionType.BLACKLIST: actions.blacklist,
 }
 
 

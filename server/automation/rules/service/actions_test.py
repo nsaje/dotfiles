@@ -688,3 +688,46 @@ class SendEmailTestCase(TestCase):
 
         with self.assertRaisesRegexp(Exception, "Invalid action"):
             actions.send_email(str(-1), rule, self.ad_group, target_stats={})
+
+
+class BlacklistTestCase(TestCase):
+    def setUp(self):
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
+        self.source = magic_mixer.blend(core.models.Source)
+
+    def test_blacklist_publisher(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.BLACKLIST,
+            target_type=constants.TargetType.PUBLISHER,
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+
+        actions.blacklist("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+        self.assertCountEqual(
+            self.ad_group.default_blacklist.entries.all().values("publisher", "include_subdomains", "source"),
+            [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
+        )
+
+    def test_invalid_action_type(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            action_type=constants.ActionType.DECREASE_BID,
+            target_type=constants.TargetType.PUBLISHER,
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+
+        with self.assertRaisesRegexp(Exception, "Invalid action"):
+            actions.blacklist("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+
+    def test_invalid_target_type(self):
+        rule = magic_mixer.blend(
+            Rule, agency=self.agency, action_type=constants.ActionType.BLACKLIST, target_type=constants.TargetType.AD
+        )
+        self.assertEqual(self.ad_group.default_blacklist, None)
+
+        with self.assertRaisesRegexp(Exception, "Invalid blacklist target"):
+            actions.blacklist("publisher1.com__" + str(self.source.id), rule, self.ad_group)

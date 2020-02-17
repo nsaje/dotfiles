@@ -38,6 +38,9 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(obj.get_account(), obj.default_blacklist.account)
         self.assertTrue(obj.default_blacklist.implicit)
 
+    def assertHistoryNotWritten(self, history):
+        self.assertEqual(history.count(), 0)
+
     def assertHistoryWritten(self, history, changes_text, default_list_created):
         self.assertEqual(history.count(), 2 if default_list_created else 1)
         self.assertEqual(history.first().changes_text, changes_text)
@@ -61,6 +64,25 @@ class PublisherGroupHelpersTest(TestCase):
 
     @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
+    def test_blacklist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
+        obj = models.AdGroup.objects.get(pk=1)
+        publisher_group_helpers.blacklist_publishers(
+            self.request,
+            [{"publisher": "cnn.com", "source": None, "include_subdomains": False}],
+            obj,
+            should_write_history=False,
+        )
+
+        self.assertEntriesEqual(
+            obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+        )
+
+        mock_email.assert_not_called()
+        self.assertHistoryNotWritten(history_helpers.get_ad_group_history(obj))
+        mock_k1_ping.assert_not_called()
+
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
         publisher_group_helpers.whitelist_publishers(
@@ -74,6 +96,23 @@ class PublisherGroupHelpersTest(TestCase):
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
+
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("utils.email_helper.send_obj_changes_notification_email")
+    def test_whitelist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
+        obj = models.AdGroup.objects.get(pk=1)
+        publisher_group_helpers.whitelist_publishers(
+            self.request,
+            [{"publisher": "cnn.com", "source": None, "include_subdomains": False}],
+            obj,
+            should_write_history=False,
+        )
+
+        self.assertEntriesEqual(
+            obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
+        )
+        mock_email.assert_not_called()
+        self.assertHistoryNotWritten(history_helpers.get_ad_group_history(obj))
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_blacklist_publisher_ad_group_k1_ping(self, mock_k1_ping):

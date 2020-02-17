@@ -264,7 +264,7 @@ def handle_publishers(request, entry_dicts, obj, status, enforce_cpc):
 
 
 @transaction.atomic
-def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
+def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_write_history=True):
     publisher_group, created = get_blacklist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
@@ -281,11 +281,12 @@ def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
     if created:
         ping_k1(obj)
 
-    write_history(request, obj, entries, constants.PublisherTargetingStatus.BLACKLISTED)
+    if should_write_history:
+        write_history(request, obj, entries, constants.PublisherTargetingStatus.BLACKLISTED)
 
 
 @transaction.atomic
-def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
+def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_write_history=True):
     publisher_group, created = get_whitelist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
@@ -297,7 +298,8 @@ def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
     if created:
         ping_k1(obj)
 
-    write_history(request, obj, entries, constants.PublisherTargetingStatus.WHITELISTED)
+    if should_write_history:
+        write_history(request, obj, entries, constants.PublisherTargetingStatus.WHITELISTED)
 
 
 @transaction.atomic

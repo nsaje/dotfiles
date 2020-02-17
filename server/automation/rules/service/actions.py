@@ -9,6 +9,7 @@ import core.features.bid_modifiers
 import core.models
 import dash.constants
 import utils.email_helper
+from core.features.publisher_groups import publisher_group_helpers
 
 from .. import Rule
 from .. import constants
@@ -171,3 +172,25 @@ def send_email(
 
     utils.email_helper.send_official_email(rule.agency, recipient_list=recipients, subject=subject, body=body)
     return ValueChangeData(target=target, old_value=None, new_value="Email sent.")
+
+
+def blacklist(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
+    if rule.action_type != constants.ActionType.BLACKLIST:
+        raise Exception("Invalid action type for blacklisting")
+
+    if rule.target_type != constants.TargetType.PUBLISHER:
+        raise Exception("Invalid blacklist target")
+
+    target, source_id = target.split("__")
+
+    entry_dict = {
+        "publisher": target,
+        "source": core.models.Source.objects.get(id=source_id),
+        "include_subdomains": False,
+    }
+    publisher_group_helpers.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
+    return ValueChangeData(
+        target=target,
+        old_value=dash.constants.PublisherStatus.ENABLED,
+        new_value=dash.constants.PublisherStatus.BLACKLISTED,
+    )
