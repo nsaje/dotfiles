@@ -44,20 +44,10 @@ class PublisherGroupSearchTest(RESTAPITest):
         publisher_groups_db = core.features.publisher_groups.PublisherGroup.objects.filter(id__in=[3, 6])
         self.assertCountEqual(map(self.publishergroup_repr, publisher_groups_db), response["data"])
 
-    def test_list_keyword_param_too_short(self):
-        r = self.client.get(
-            reverse("restapi.publishergroup.internal:publisher_group_search", kwargs={"agency_id": 1}) + "?keyword=1"
-        )
-        self.assertEqual(r.status_code, 400)
-
     def test_list_keyword_param_too_long(self):
         r = self.client.get(
             reverse("restapi.publishergroup.internal:publisher_group_search", kwargs={"agency_id": 1})
             + "?keyword="
             + ("1" * 51)
         )
-        self.assertEqual(r.status_code, 400)
-
-    def test_list_missing_keyword_param(self):
-        r = self.client.get(reverse("restapi.publishergroup.internal:publisher_group_search", kwargs={"agency_id": 1}))
         self.assertEqual(r.status_code, 400)
