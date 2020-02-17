@@ -87,7 +87,7 @@
                         ></div>
                         <div ng-show="!user.requestInProgress">
                             <span
-                                ng-if="$ctrl.entity.data.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')"
+                                ng-if="$ctrl.account.data.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')"
                             >
                                 <button
                                     tabindex="-1"
@@ -101,7 +101,7 @@
                                 </button>
                             </span>
                             <span
-                                ng-if="$ctrl.entity.data.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')"
+                                ng-if="$ctrl.account.data.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')"
                             >
                                 <button
                                     tabindex="-1"
