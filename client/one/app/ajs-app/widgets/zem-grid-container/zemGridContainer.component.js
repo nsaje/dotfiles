@@ -13,7 +13,8 @@ angular.module('one.widgets').component('zemGridContainer', {
         $timeout,
         zemGridIntegrationService,
         zemGridContainerTabsService,
-        zemLocalStorageService
+        zemLocalStorageService,
+        zemBidModifierUpdatesService
     ) {
         var $ctrl = this;
 
@@ -94,10 +95,22 @@ angular.module('one.widgets').component('zemGridContainer', {
                     }
                 });
             } else {
+                if (tab.shouldRefresh) {
+                    tab.grid.api.reload();
+                }
                 $timeout(function() {
                     tab.grid.api.refreshUI();
                 }, 100);
             }
+            tab.shouldRefresh = false;
+        }
+
+        function markOtherTabsForRefresh() {
+            var currentTab = getTab($ctrl.breakdown);
+            $ctrl.tabs.forEach(function(tab) {
+                tab.shouldRefresh = true;
+            });
+            currentTab.shouldRefresh = false;
         }
 
         function selectTab(tab) {
@@ -148,6 +161,10 @@ angular.module('one.widgets').component('zemGridContainer', {
 
         function onGridInitialized(tab, gridApi) {
             tab.gridIntegrationService.setGridApi(gridApi);
+
+            zemBidModifierUpdatesService
+                .getAllUpdates$()
+                .subscribe(markOtherTabsForRefresh);
         }
     },
 });
