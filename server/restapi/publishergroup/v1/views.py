@@ -6,8 +6,7 @@ import utils.exc
 from restapi.common import pagination
 from restapi.common.permissions import CanEditPublisherGroupsPermission
 from restapi.common.views_base import RESTAPIBaseViewSet
-
-from . import serializers
+from restapi.publishergroup.v1 import serializers
 
 
 class PublisherGroupViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelViewSet):

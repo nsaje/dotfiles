@@ -1,6 +1,5 @@
+from restapi.campaigngoal.v1 import serializers
 from restapi.common.views_base_test import RESTAPITest
-
-from . import serializers
 
 
 class CampaignGoalsSerializerTest(RESTAPITest):

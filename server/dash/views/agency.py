@@ -20,7 +20,7 @@ import core.models.conversion_pixel.exceptions
 import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
-import restapi.campaigngoal.serializers
+import restapi.campaigngoal.v1.serializers
 import utils.exc
 from automation import autopilot
 from dash import campaign_goals
@@ -563,7 +563,7 @@ class CampaignSettings(api_common.BaseApiView):
         }
         if request.user.has_perm("zemauth.can_see_campaign_goals"):
             response["goals"] = self.get_campaign_goals(request, campaign)
-            response["goals_defaults"] = restapi.campaigngoal.serializers.CampaignGoalsDefaultsSerializer(
+            response["goals_defaults"] = restapi.campaigngoal.v1.serializers.CampaignGoalsDefaultsSerializer(
                 core.features.goals.get_campaign_goals_defaults(campaign.account)
             ).data
 

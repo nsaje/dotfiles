@@ -2,9 +2,8 @@ from django.urls import reverse
 
 import core.features.publisher_groups
 from restapi.common.views_base_test import RESTAPITest
+from restapi.publishergroup.v1 import views
 from utils import test_helper
-
-from . import views
 
 
 class PublisherGroupTest(RESTAPITest):
