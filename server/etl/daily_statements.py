@@ -327,7 +327,7 @@ def get_campaigns_with_budgets_in_timeframe(date_since):
 def _query_ad_groups_with_spend(params):
     sql = backtosql.generate_sql("etl_ad_groups_with_spend.sql", None)
 
-    with db.get_stats_cursor() as cursor:
+    with db.get_write_stats_cursor() as cursor:
         cursor.execute(sql, params)
         ad_group_ids = [x for x, in cursor]  # row is a tuple
 
