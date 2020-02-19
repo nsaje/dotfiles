@@ -25,7 +25,7 @@ DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2", "read-replica-3"]
 
 # Stats databases
 STATS_DB_POSTGRES_MAX_DAYS = 62
-STATS_DB_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_POSTGRES = ["stats-postgres-1"]  # , "stats-postgres-2"]
 STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
 STATS_DB_HOT_CLUSTER = "stats-hot-1"
 STATS_DB_COLD_CLUSTERS = ["stats-cold-1"]
