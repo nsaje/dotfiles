@@ -111,11 +111,11 @@ class BaseOverviewTestCase(TestCase):
             2.01,
         )
 
-        self.ag_test_placement_1, _ = bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 0.36
+        self.ag_test_environment_1, _ = bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 0.36
         )
-        self.ag_test_placement_2, _ = bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 1.76
+        self.ag_test_environment_2, _ = bid_modifiers.set(
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 1.76
         )
 
         self.ag_test_country_1, _ = bid_modifiers.set(
@@ -184,19 +184,11 @@ class BaseOverviewTestCase(TestCase):
             0.013,
         )
 
-        self.oag_test_placement_1, _ = bid_modifiers.set(
-            self.other_ad_group,
-            bid_modifiers.BidModifierType.PLACEMENT,
-            dash.constants.PlacementMedium.APP,
-            None,
-            10.62,
+        self.oag_test_environment_1, _ = bid_modifiers.set(
+            self.other_ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 10.62
         )
-        self.oag_test_placement_2, _ = bid_modifiers.set(
-            self.other_ad_group,
-            bid_modifiers.BidModifierType.PLACEMENT,
-            dash.constants.PlacementMedium.SITE,
-            None,
-            0.014,
+        self.oag_test_environment_2, _ = bid_modifiers.set(
+            self.other_ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 0.014
         )
 
         self.oag_test_country_1, _ = bid_modifiers.set(
@@ -229,7 +221,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             self.ag_test_source_1,
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
-            self.ag_test_placement_1,
+            self.ag_test_environment_1,
             self.ag_test_country_4,
             self.ag_test_state_1,
             self.ag_test_dma_1,
@@ -241,7 +233,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
-            self.ag_test_placement_2,
+            self.ag_test_environment_2,
             self.ag_test_country_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,
@@ -278,7 +270,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             min,
             self.ag_test_publisher_2,
             self.ag_test_device_1,
-            self.ag_test_placement_1,
+            self.ag_test_environment_1,
             self.ag_test_state_1,
             self.ag_test_dma_1,
             self.ag_test_ad_2,
@@ -287,7 +279,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             max,
             self.ag_test_publisher_3,
             self.ag_test_device_2,
-            self.ag_test_placement_2,
+            self.ag_test_environment_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,
             self.ag_test_ad_1,
@@ -318,7 +310,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             self.ag_test_source_1,
             self.ag_test_device_1,
             self.ag_test_operating_system_4,
-            self.ag_test_placement_1,
+            self.ag_test_environment_1,
             self.ag_test_country_4,
             self.ag_test_state_1,
             self.ag_test_dma_1,
@@ -330,7 +322,7 @@ class TestGetMinMaxFactors(BaseOverviewTestCase):
             self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
-            self.ag_test_placement_2,
+            self.ag_test_environment_2,
             self.ag_test_country_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,
@@ -464,52 +456,52 @@ class TestGetMinMaxFactorsDetailed(TestCase):
         self.assertEqual(min_factor, 1.0)
         self.assertEqual(max_factor, 1.1)
 
-    def test_placement_all_higher(self):
+    def test_environment_all_higher(self):
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 1.1
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 1.1
         )
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 1.2
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 1.2
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.ENVIRONMENT]
         )
         self.assertEqual(min_factor, 1.1)
         self.assertEqual(max_factor, 1.2)
 
-    def test_placement_all_lower(self):
+    def test_environment_all_lower(self):
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 0.9
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 0.9
         )
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 0.8
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 0.8
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.ENVIRONMENT]
         )
         self.assertEqual(min_factor, 0.8)
         self.assertEqual(max_factor, 0.9)
 
-    def test_placement_not_all_higher(self):
+    def test_environment_not_all_higher(self):
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 1.1
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 1.1
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.ENVIRONMENT]
         )
         self.assertEqual(min_factor, 1.0)
         self.assertEqual(max_factor, 1.1)
 
-    def test_placement_not_all_lower(self):
+    def test_environment_not_all_lower(self):
         bid_modifiers.set(
-            self.ad_group, bid_modifiers.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.APP, None, 0.9
+            self.ad_group, bid_modifiers.BidModifierType.ENVIRONMENT, dash.constants.Environment.APP, None, 0.9
         )
 
         min_factor, max_factor = bid_modifiers.get_min_max_factors(
-            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.PLACEMENT]
+            self.ad_group.id, included_types=[bid_modifiers.BidModifierType.ENVIRONMENT]
         )
         self.assertEqual(min_factor, 0.9)
         self.assertEqual(max_factor, 1.0)
@@ -557,7 +549,7 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                     count=5, max=2.1, min=0.02, type=bid_modifiers.BidModifierType.OPERATING_SYSTEM
                 ),
                 bid_modifiers.BidModifierTypeSummary(
-                    count=2, max=1.76, min=0.36, type=bid_modifiers.BidModifierType.PLACEMENT
+                    count=2, max=1.76, min=0.36, type=bid_modifiers.BidModifierType.ENVIRONMENT
                 ),
                 bid_modifiers.BidModifierTypeSummary(
                     count=5, max=2.1, min=0.49, type=bid_modifiers.BidModifierType.COUNTRY
@@ -615,7 +607,7 @@ class TestGetTypeSummaries(BaseOverviewTestCase):
                     count=2, max=1.32, min=0.13, type=bid_modifiers.BidModifierType.DEVICE
                 ),
                 bid_modifiers.BidModifierTypeSummary(
-                    count=2, max=1.76, min=0.36, type=bid_modifiers.BidModifierType.PLACEMENT
+                    count=2, max=1.76, min=0.36, type=bid_modifiers.BidModifierType.ENVIRONMENT
                 ),
                 bid_modifiers.BidModifierTypeSummary(
                     count=1, max=1.0, min=0.73, type=bid_modifiers.BidModifierType.STATE

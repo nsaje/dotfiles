@@ -184,8 +184,10 @@ formatters[constants.DeliveryDimension.DEVICE_OS] = get_dash_constant_formatter(
 formatters[constants.DeliveryDimension.DEVICE_OS_VERSION] = get_dash_constant_formatter(
     dash.constants.OperatingSystemVersion
 )
-formatters[constants.DeliveryDimension.PLACEMENT_MEDIUM] = get_dash_constant_formatter(dash.constants.PlacementMedium)
-formatters[constants.DeliveryDimension.PLACEMENT_TYPE] = get_dash_constant_formatter(dash.constants.PlacementType)
+formatters[constants.DeliveryDimension.ENVIRONMENT] = get_dash_constant_formatter(dash.constants.Environment)
+formatters[constants.DeliveryDimension.ZEM_PLACEMENT_TYPE] = get_dash_constant_formatter(
+    dash.constants.ZemPlacementType
+)
 formatters[constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD] = get_dash_constant_formatter(
     dash.constants.VideoPlaybackMethod
 )

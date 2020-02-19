@@ -572,7 +572,7 @@ angular
                             constants.breakdown.STATE,
                             constants.breakdown.DMA,
                             constants.breakdown.DEVICE,
-                            constants.breakdown.PLACEMENT,
+                            constants.breakdown.ENVIRONMENT,
                             constants.breakdown.OPERATING_SYSTEM,
                         ],
                     },
@@ -1746,8 +1746,8 @@ angular
             name: 'Device',
             help: '',
         };
-        NAME_COLUMN_BRANDING[constants.breakdown.PLACEMENT] = {
-            name: 'Placement',
+        NAME_COLUMN_BRANDING[constants.breakdown.ENVIRONMENT] = {
+            name: 'Environment',
             help: '',
         };
         NAME_COLUMN_BRANDING[constants.breakdown.OPERATING_SYSTEM] = {
@@ -2090,7 +2090,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
         ];
         COLUMNS.actions.exceptions.custom.push({
@@ -2206,7 +2206,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
             constants.breakdown.PUBLISHER,
             constants.breakdown.MEDIA_SOURCE,
@@ -2224,7 +2224,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.accountId.exceptions.breakdowns = [
@@ -2236,7 +2236,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.campaignId.exceptions.breakdowns = [
@@ -2247,7 +2247,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.adGroupId.exceptions.breakdowns = [
@@ -2257,7 +2257,7 @@ angular
             constants.breakdown.STATE,
             constants.breakdown.DMA,
             constants.breakdown.DEVICE,
-            constants.breakdown.PLACEMENT,
+            constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
         ];
         COLUMNS.contentAdId.exceptions.breakdowns = [

@@ -1,0 +1,23 @@
+<div
+    ng-repeat="environment in $ctrl.environments"
+    class="form__group zem-environment-device-targeting__option
+            zem-environment-device-targeting__option--{{ environment.value }}"
+    ng-class="{
+            'zem-environment-device-targeting__option--active': environment.selected,
+            'zem-environment-device-targeting__option--enabled': environment.enabled,
+        }"
+>
+    <label class="form__label" for="{{ environment.value }}"></label>
+    <div class="form__checkbox">
+        <label>
+            <input
+                class="input-checkbox"
+                type="checkbox"
+                id="{{ environment.value }}"
+                ng-model="environment.selected"
+                ng-change="$ctrl.updateEnvironments()"
+            />
+            <span class="checkbox-text">{{ environment.name }}</span>
+        </label>
+    </div>
+</div>

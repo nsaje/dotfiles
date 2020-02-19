@@ -13,9 +13,9 @@ INSERT INTO mv_master_pubs(
         device_type,
         device_os,
         device_os_version,
-        placement_medium,
+        environment,
 
-        placement_type,
+        zem_placement_type,
         video_playback_method,
 
         country,

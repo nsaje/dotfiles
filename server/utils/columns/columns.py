@@ -73,8 +73,8 @@ _FIELD_MAPPING = {
     "dma": ("DMA",),
     "device_type": ("Device",),
     "device_os": ("Operating System",),
-    "placement_medium": ("Placement",),
-    "placement_type": ("Placement Type",),
+    "environment": ("Environment", "Placement"),  # TODO: PLAC: remove after legacy grace period
+    "zem_placement_type": ("Zemanta Placement Type", "Placement Type"),  # TODO: PLAC: remove after legacy grace period
     "video_playback_method": ("Video Playback Method",),
     "agency_cost": ("Total Spend + Margin",),
     "agency_cost_refund": ("Total Spend + Margin Refund",),

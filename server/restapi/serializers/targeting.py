@@ -54,11 +54,11 @@ class BrowsersSerializer(rest_framework.serializers.ListSerializer):
         super().__init__(*args, **kwargs)
 
 
-class PlacementsSerializer(rest_framework.serializers.ListSerializer):
+class EnvironmentsSerializer(rest_framework.serializers.ListSerializer):
     def __init__(self, *args, **kwargs):
-        self.child = restapi.serializers.fields.DashConstantField(dash.constants.Placement)
+        self.child = restapi.serializers.fields.DashConstantField(dash.constants.AdTargetEnvironment)
         kwargs["allow_null"] = True
-        super(PlacementsSerializer, self).__init__(*args, **kwargs)
+        super(EnvironmentsSerializer, self).__init__(*args, **kwargs)
 
 
 class DevicesSerializer(rest_framework.serializers.ListSerializer):

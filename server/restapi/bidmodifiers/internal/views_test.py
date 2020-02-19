@@ -537,8 +537,8 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.PLACEMENT
-                ): constants.PlacementMedium.get_name(constants.PlacementMedium.SITE),
+                    bid_modifiers.constants.BidModifierType.ENVIRONMENT
+                ): constants.Environment.get_name(constants.Environment.SITE),
                 "Bid Modifier": "1.5",
             },
             {
@@ -590,7 +590,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                             {"type": "SOURCE", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
-                            {"type": "PLACEMENT", "count": 1},
+                            {"type": "ENVIRONMENT", "count": 1},
                             {"type": "COUNTRY", "count": 1},
                             {"type": "STATE", "count": 1},
                             {"type": "DMA", "count": 1},
@@ -605,7 +605,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                             {"type": "SOURCE", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
-                            {"type": "PLACEMENT", "count": 1},
+                            {"type": "ENVIRONMENT", "count": 1},
                             {"type": "COUNTRY", "count": 1},
                             {"type": "STATE", "count": 1},
                             {"type": "DMA", "count": 1},
@@ -644,8 +644,8 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                     "modifier": 1.4,
                 },
                 {
-                    "type": bid_modifiers.constants.BidModifierType.PLACEMENT,
-                    "target": constants.PlacementMedium.SITE,
+                    "type": bid_modifiers.constants.BidModifierType.ENVIRONMENT,
+                    "target": constants.Environment.SITE,
                     "source": None,
                     "modifier": 1.5,
                 },
@@ -707,8 +707,8 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.PLACEMENT
-                ): constants.PlacementMedium.get_name(constants.PlacementMedium.SITE),
+                    bid_modifiers.constants.BidModifierType.ENVIRONMENT
+                ): constants.Environment.get_name(constants.Environment.SITE),
                 "Bid Modifier": "1.5",
             },
             {
@@ -760,7 +760,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                             {"type": "PUBLISHER", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
-                            {"type": "PLACEMENT", "count": 1},
+                            {"type": "ENVIRONMENT", "count": 1},
                             {"type": "COUNTRY", "count": 1},
                             {"type": "STATE", "count": 1},
                             {"type": "DMA", "count": 1},
@@ -807,8 +807,8 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.PLACEMENT
-                ): constants.PlacementMedium.get_name(constants.PlacementMedium.SITE),
+                    bid_modifiers.constants.BidModifierType.ENVIRONMENT
+                ): constants.Environment.get_name(constants.Environment.SITE),
                 "Bid Modifier": "1.5",
             },
             {
@@ -856,7 +856,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                             {"type": "PUBLISHER", "count": 1},
                             {"type": "DEVICE", "count": 1},
                             {"type": "OPERATING_SYSTEM", "count": 1},
-                            {"type": "PLACEMENT", "count": 1},
+                            {"type": "ENVIRONMENT", "count": 1},
                             {"type": "COUNTRY", "count": 1},
                             {"type": "STATE", "count": 1},
                             {"type": "DMA", "count": 1},
@@ -908,7 +908,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.PLACEMENT
+                    bid_modifiers.constants.BidModifierType.ENVIRONMENT
                 ): "illegal",
                 "Bid Modifier": "1.5",
             },
@@ -967,8 +967,8 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "Operating System,Bid Modifier,Errors\r\n",
                 "Android,-0.1,Bid modifier too low: -0.1 (< 0.01)\r\n",
                 "\r\n",
-                "Placement,Bid Modifier,Errors\r\n",
-                "illegal,1.5,Invalid Placement Medium\r\n",
+                "Environment,Bid Modifier,Errors\r\n",
+                "illegal,1.5,Invalid Environment\r\n",
                 "\r\n",
                 "Country,Bid Modifier,Errors\r\n",
                 "illegal,1.6,Invalid Geolocation\r\n",

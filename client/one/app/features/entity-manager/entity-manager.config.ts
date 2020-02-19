@@ -1341,7 +1341,7 @@ export const TARGETING_DEVICE_OPTIONS: ImageCheckboxInputGroupItem[] = [
     },
 ];
 
-export const TARGETING_PLACEMENT_OPTIONS: ImageCheckboxInputGroupItem[] = [
+export const TARGETING_ENVIRONMENT_OPTIONS: ImageCheckboxInputGroupItem[] = [
     {
         value: 'SITE',
         displayValue: 'Website',

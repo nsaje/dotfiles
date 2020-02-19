@@ -508,9 +508,9 @@ def make_csv_example_file(modifier_type):
             {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.LINUX)},
             {target_column_name: dash_constants.OperatingSystem.get_name(dash_constants.OperatingSystem.CHROMEOS)},
         ],
-        constants.BidModifierType.PLACEMENT: [
-            {target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP)},
-            {target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE)},
+        constants.BidModifierType.ENVIRONMENT: [
+            {target_column_name: dash_constants.Environment.get_name(dash_constants.Environment.APP)},
+            {target_column_name: dash_constants.Environment.get_name(dash_constants.Environment.SITE)},
         ],
         constants.BidModifierType.COUNTRY: [{target_column_name: "US"}],
         constants.BidModifierType.STATE: [{target_column_name: "US-TX"}],

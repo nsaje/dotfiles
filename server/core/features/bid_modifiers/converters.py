@@ -15,7 +15,7 @@ class TargetConverter:
         constants.BidModifierType.SOURCE: "_from_source_target",
         constants.BidModifierType.DEVICE: "_from_device_type_target",
         constants.BidModifierType.OPERATING_SYSTEM: "_from_operating_system_target",
-        constants.BidModifierType.PLACEMENT: "_from_placement_medium_target",
+        constants.BidModifierType.ENVIRONMENT: "_from_environment_target",
         constants.BidModifierType.COUNTRY: "_from_country_target",
         constants.BidModifierType.STATE: "_from_state_target",
         constants.BidModifierType.DMA: "_from_dma_target",
@@ -27,7 +27,7 @@ class TargetConverter:
         constants.BidModifierType.SOURCE: "_to_source_target",
         constants.BidModifierType.DEVICE: "_to_device_type_target",
         constants.BidModifierType.OPERATING_SYSTEM: "_to_operating_system_target",
-        constants.BidModifierType.PLACEMENT: "_to_placement_medium_target",
+        constants.BidModifierType.ENVIRONMENT: "_to_environment_target",
         constants.BidModifierType.COUNTRY: "_to_country_target",
         constants.BidModifierType.STATE: "_to_state_target",
         constants.BidModifierType.DMA: "_to_dma_target",
@@ -77,7 +77,7 @@ class TargetConverter:
     @classmethod
     def _to_device_type_target(cls, value):
         if value == dash_constants.DeviceType.get_text(dash_constants.DeviceType.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Device Type Traget")
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Device Type Target")
 
         device_type = dash_constants.DeviceType.get_constant_value(value)
         if device_type is None:
@@ -117,19 +117,19 @@ class TargetConverter:
         return dash_constants.OperatingSystem.get_name(target)
 
     @classmethod
-    def _to_placement_medium_target(cls, value):
-        if value == dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Placement Medium Traget")
+    def _to_environment_target(cls, value):
+        if value == dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN):
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Environment Target")
 
-        placement_medium = dash_constants.PlacementMedium.get_constant_value(value)
-        if placement_medium is None:
-            raise exceptions.BidModifierTargetInvalid("Invalid Placement Medium")
+        environment = dash_constants.Environment.get_constant_value(value)
+        if environment is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Environment")
 
-        return placement_medium
+        return environment
 
     @classmethod
-    def _from_placement_medium_target(cls, target):
-        return dash_constants.PlacementMedium.get_name(target)
+    def _from_environment_target(cls, target):
+        return dash_constants.Environment.get_name(target)
 
     @classmethod
     @utils.cache_helper.memoize
@@ -206,7 +206,7 @@ class DashboardConverter(TargetConverter):
     @classmethod
     def _to_device_type_target(cls, value):
         if value == dash_constants.DeviceType.get_text(dash_constants.DeviceType.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Device Type Traget")
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Device Type Target")
 
         device_type_text = dash_constants.DeviceType.get_text(value)
         if device_type_text is None:
@@ -246,19 +246,19 @@ class DashboardConverter(TargetConverter):
         return value
 
     @classmethod
-    def _to_placement_medium_target(cls, value):
-        if value == dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.UNKNOWN):
-            raise exceptions.BidModifierUnsupportedTarget("Unsupported Placement Medium Traget")
+    def _to_environment_target(cls, value):
+        if value == dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN):
+            raise exceptions.BidModifierUnsupportedTarget("Unsupported Environment Target")
 
-        placement_medium_text = dash_constants.PlacementMedium.get_text(value)
-        if placement_medium_text is None:
-            raise exceptions.BidModifierTargetInvalid("Invalid Placement Medium")
+        environment_text = dash_constants.Environment.get_text(value)
+        if environment_text is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Environment")
 
         return value
 
     @classmethod
-    def _from_placement_medium_target(cls, target):
-        dash_constants.PlacementMedium.get_name(target)
+    def _from_environment_target(cls, target):
+        dash_constants.Environment.get_name(target)
         return target
 
     @classmethod
@@ -301,9 +301,9 @@ class StatsConverter(TargetConverter):
         return DashboardConverter._from_operating_system_target(target)
 
     @classmethod
-    def _to_placement_medium_target(cls, value):
-        return DashboardConverter._to_placement_medium_target(value)
+    def _to_environment_target(cls, value):
+        return DashboardConverter._to_environment_target(value)
 
     @classmethod
-    def _from_placement_medium_target(cls, target):
-        return DashboardConverter._from_placement_medium_target(target)
+    def _from_environment_target(cls, target):
+        return DashboardConverter._from_environment_target(target)

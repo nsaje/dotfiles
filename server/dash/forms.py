@@ -210,8 +210,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     target_browsers = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.BrowsersSerializer, required=False
     )
-    target_placements = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.PlacementsSerializer, required=False
+    target_environments = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.EnvironmentsSerializer, required=False
     )
     target_regions = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.TargetRegionsSerializer, required=False
@@ -806,8 +806,8 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     target_os = dash.compatibility.forms.RestFrameworkSerializer(
         restapi.serializers.targeting.OSsSerializer, required=False
     )
-    target_placements = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.PlacementsSerializer, required=False
+    target_environments = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.serializers.targeting.EnvironmentsSerializer, required=False
     )
 
     target_regions = dash.compatibility.forms.RestFrameworkSerializer(

@@ -52,7 +52,7 @@ INSERT INTO mv_touchpointconversions (
             WHEN NULLIF(TRIM(a.device_os_version), '') IS NOT NULL THEN 'Other'
             ELSE NULL
         END AS device_os_version,
-        NULLIF(TRIM(a.placement_medium), '') as placement_medium,
+        NULLIF(TRIM(a.environment), '') as environment,
 
         NULLIF(TRIM(UPPER(a.country)), '') AS country,
         CASE WHEN a.state ILIKE '%%-%%' THEN NULLIF(TRIM(UPPER(a.state)), '')
@@ -91,7 +91,7 @@ INSERT INTO mv_touchpointconversions (
               c.device_type as device_type,
               c.device_os as device_os,
               c.device_os_version as device_os_version,
-              c.placement_medium as placement_medium,
+              c.environment as environment,
 
               c.country as country,
               c.state as state,

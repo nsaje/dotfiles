@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS mv_touchpointconversions (
       device_type int2,
       device_os varchar(127),
       device_os_version varchar(127),
-      placement_medium varchar(10),
+      environment varchar(10),
 
       country varchar(2),
       state varchar(32),

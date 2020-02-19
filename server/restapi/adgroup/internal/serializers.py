@@ -18,7 +18,7 @@ class ExtraDataDefaultSettingsSerializer(restapi.serializers.base.RESTAPIBaseSer
     exclusion_target_regions = restapi.serializers.targeting.TargetRegionsSerializer(required=False, allow_null=True)
     target_devices = restapi.serializers.targeting.DevicesSerializer(required=False, allow_null=True)
     target_os = restapi.serializers.targeting.OSsSerializer(required=False, allow_null=True)
-    target_placements = restapi.serializers.targeting.PlacementsSerializer(required=False, allow_null=True)
+    target_environments = restapi.serializers.targeting.EnvironmentsSerializer(required=False, allow_null=True)
 
 
 class ExtraDataRetargetableAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

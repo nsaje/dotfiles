@@ -21,7 +21,7 @@ export class DeviceTargetingSettingsComponent extends UpgradeComponent
     @Input()
     targetDevices: any;
     @Input()
-    targetPlacements: any;
+    targetEnvironments: any;
     @Input()
     targetOs: any;
     @Input()

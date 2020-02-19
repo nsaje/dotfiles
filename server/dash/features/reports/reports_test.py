@@ -413,6 +413,27 @@ class ReportsGetReportCSVTest(TestCase):
         expected = """"Device","Device Name","Clicks","State / Region","State / Region Name"\r\n"MOBILE","Mobile","5","IT-25","Lombardy, Italy"\r\n"""
         self.assertEqual(expected, output)
 
+    @mock.patch("stats.api_reports.query")
+    def test_environment(self, mock_query):
+        self.reportJob.query = self.build_query(["Environment"])
+        row = {"environment": "app", "etfm_cost": Decimal("12.3"), "clicks": 5}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Environment","Environment Name"\r\n"APP","In-app"\r\n"""
+        self.assertEqual(expected, output)
+
+    # TODO: PLAC: remove after legacy grace period
+    @mock.patch("stats.api_reports.query")
+    def test_environment_legacy(self, mock_query):
+        self.reportJob.query = self.build_query(["Placement"])
+        row = {"environment": "app", "etfm_cost": Decimal("12.3"), "clicks": 5}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Placement","Placement Name","Environment","Environment Name"\r\n"APP","In-app","APP","In-app"\r\n"""
+        )
+        self.assertEqual(expected, output)
+
 
 class IncludeEntityTagsReportTestCase(TestCase):
     def setUp(self):

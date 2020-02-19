@@ -739,7 +739,7 @@ adobe    |                   |                                       |
 Targeting        | Property | Property  | Type                                          | Description
 -----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
 devices          |          |           | array[[device](#device)]                      | A list of default device types that will be set on newly created ad groups.
-placements       |          |           | array[[placement](#placement)]                | A list of default placements that will be set on newly created ad groups.
+environments     |          |           | array[[environment](#environment)]            | A list of default environments that will be set on newly created ad groups.
 os               |          |           | array[[operatingSystem](#os-targeting)        | A list of default operating systems and operating system versions that will be se on newly created ad groups.
 publisherGroups  |          |           |                                               |
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
@@ -1179,7 +1179,7 @@ clickCappingDailyAdGroupMaxClicks | number | Limit number of clicks you want to 
 Targeting        | Property | Property   | Type                                                                 | Description
 -----------------|----------|------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 devices          |          |            | array[[device](#device)]                                             | A list of device types to target. If none specified, content is served to all device types.
-placements       |          |            | array[[placement](#placement)]                                       | A list of placements to target. If none specified, content is served to all placements.
+environments     |          |            | array[[environment](#environment)]                                       | A list of environments to target. If none specified, content is served to all environments.
 os               |          |            | array[[operatingSystem](#os-targeting)]                              | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version.
 geo              |          |            |
 &nbsp;           | included |            |                                                                      |
@@ -1556,7 +1556,7 @@ The following bid modifier types are supported:
 | SOURCE           | Modifies the bidding price for a specific source.                         | the source slug      |
 | DEVICE           | Modifies the bidding price for a specific device type.                    | see [Device targeting](#device)       |
 | OPERATING_SYSTEM | Modifies the bidding price for a specific operating system.               | see [Operating system targeting](#os) |
-| PLACEMENT        | Modifies the bidding price for a specific add placement.                  | see [Placement targeting](#placement) |
+| ENVIRONMENT      | Modifies the bidding price for a specific add environment.                | see [Environment targeting](#environment) |
 | COUNTRY          | Modifies the bidding price for a specific country.                        | see [Country](#country)               |
 | STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
 | DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
@@ -2321,8 +2321,9 @@ Delivery breakdown:
 - State / Region
 - DMA
 - Device
+- Environment
 - Operating System
-<!-- - Placement: add when renamed to Environment -->
+
 Time breakdown:
 - Day (e.g. 2017-03-30)
 - Week (e.g. Week 2017-03-27 - 2017-04-02)
@@ -2986,8 +2987,8 @@ Include traffic that meets the following conditions:
 - `TABLET`
 - `MOBILE`
 
-<a name="placement"></a>
-## Placement targeting
+<a name="environment"></a>
+## Environment targeting
 
 - `SITE`
 - `APP`
@@ -3347,7 +3348,7 @@ Examples:
 ## `targeting` (object)
 
 - `devices`: `DESKTOP`, `MOBILE` (array[string])
-- `placements`: `SITE`, `APP` (array[string])
+- `environments`: `SITE`, `APP` (array[string])
 - `os` (array[os])
 - `geo` (geo)
 - `interest` (interest)

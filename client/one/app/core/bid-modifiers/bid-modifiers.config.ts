@@ -26,7 +26,7 @@ export const BID_MODIFIER_TYPE_NAME_MAP = {
     [BidModifierType.SOURCE]: 'Source',
     [BidModifierType.DEVICE]: 'Device',
     [BidModifierType.OPERATING_SYSTEM]: 'Operating System',
-    [BidModifierType.PLACEMENT]: 'Placement',
+    [BidModifierType.ENVIRONMENT]: 'Environment',
     [BidModifierType.COUNTRY]: 'Country',
     [BidModifierType.STATE]: 'State / Region',
     [BidModifierType.DMA]: 'DMA',

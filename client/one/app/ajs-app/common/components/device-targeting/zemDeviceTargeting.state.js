@@ -19,7 +19,7 @@ angular
             //
             var state = {
                 devices: [],
-                placements: [],
+                environments: [],
                 operatingSystems: [],
             };
 
@@ -36,10 +36,10 @@ angular
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // Internals
             //
-            function initialize(targetDevices, targetPlacements, targetOs) {
+            function initialize(targetDevices, targetEnvironments, targetOs) {
                 angular.extend(
                     state,
-                    convertFromApi(targetDevices, targetPlacements, targetOs)
+                    convertFromApi(targetDevices, targetEnvironments, targetOs)
                 );
             }
 
@@ -91,10 +91,16 @@ angular
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // Converters
             //
-            function convertFromApi(targetDevices, targetPlacements, targetOs) {
+            function convertFromApi(
+                targetDevices,
+                targetEnvironments,
+                targetOs
+            ) {
                 var data = {
                     devices: convertTargetDevicesFromApi(targetDevices),
-                    placements: convertPlacementsFromApi(targetPlacements),
+                    environments: convertEnvironmentsFromApi(
+                        targetEnvironments
+                    ),
                     operatingSystems: convertOperatingSystemsFromApi(targetOs),
                 };
 
@@ -104,7 +110,9 @@ angular
             function convertToApi(state) {
                 return {
                     targetDevices: convertTargetDevicesToApi(state.devices),
-                    targetPlacements: convertPlacementsToApi(state.placements),
+                    targetEnvironments: convertEnvironmentsToApi(
+                        state.environments
+                    ),
                     targetOs: convertOperatingSystemsToApi(
                         state.operatingSystems
                     ),
@@ -193,32 +201,33 @@ angular
                 }
             }
 
-            function convertPlacementsToApi(placements) {
-                var data = placements
-                    .filter(function(placement) {
-                        return placement.selected;
+            function convertEnvironmentsToApi(environments) {
+                var data = environments
+                    .filter(function(environment) {
+                        return environment.selected;
                     })
-                    .map(function(placement) {
-                        return placement.value;
+                    .map(function(environment) {
+                        return environment.value;
                     });
 
-                if (data.length === placements.length || data.length === 0)
+                if (data.length === environments.length || data.length === 0)
                     return [];
 
                 return data;
             }
 
-            function convertPlacementsFromApi(data) {
+            function convertEnvironmentsFromApi(data) {
                 if (!data) data = [];
-                var placements = angular.copy(
-                    zemDeviceTargetingConstants.PLACEMENTS
+                var environments = angular.copy(
+                    zemDeviceTargetingConstants.ENVIRONMENTS
                 );
-                placements.forEach(function(placement) {
-                    placement.selected =
-                        data.length === 0 || data.indexOf(placement.value) >= 0;
+                environments.forEach(function(environment) {
+                    environment.selected =
+                        data.length === 0 ||
+                        data.indexOf(environment.value) >= 0;
                 });
 
-                return placements;
+                return environments;
             }
 
             ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -190,7 +190,7 @@
         campaign_goal: 4
         target_devices: ['mobile']
         target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app']
+        target_environments: ['app']
         target_regions: ['US']
         campaign: 608
     model: dash.campaignsettings
@@ -395,7 +395,7 @@
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
         target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
+        target_environments: ['app', 'site']
         target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'
@@ -676,7 +676,7 @@
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
         target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
+        target_environments: ['app', 'site']
         target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'
@@ -709,7 +709,7 @@
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
         target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
+        target_environments: ['app', 'site']
         target_regions: ['GB', 'US', 'CA']
         display_url: 'example.com'
         brand_name: 'Example'

@@ -72,8 +72,8 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             magic_mixer.blend(
                 bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.BidModifierType.PLACEMENT,
-                target=constants.PlacementMedium.APP,
+                type=bid_modifiers.BidModifierType.ENVIRONMENT,
+                target=constants.Environment.APP,
                 source=None,
                 source_slug="",
                 modifier=3.6,
@@ -508,7 +508,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 "details": {
                     "modifier": ["Ensure this value is less than or equal to 11.0."],
                     "type": [
-                        "Invalid choice INVALID! Valid choices: PUBLISHER, SOURCE, DEVICE, OPERATING_SYSTEM, PLACEMENT, COUNTRY, STATE, DMA, AD, DAY_HOUR"
+                        "Invalid choice INVALID! Valid choices: PUBLISHER, SOURCE, DEVICE, OPERATING_SYSTEM, ENVIRONMENT, COUNTRY, STATE, DMA, AD, DAY_HOUR"
                     ],
                 },
             },

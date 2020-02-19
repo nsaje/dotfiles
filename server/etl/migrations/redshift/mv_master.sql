@@ -16,9 +16,9 @@ CREATE TABLE mv_master (
        device_type int2 encode zstd,
        device_os varchar(127) encode lzo,
        device_os_version varchar(127) encode lzo,
-       placement_medium varchar(10) encode zstd,
+       environment varchar(10) encode zstd,
 
-       placement_type int2 encode lzo,
+       zem_placement_type int2 encode lzo,
        video_playback_method int2 encode lzo,
 
        country varchar(2) encode zstd,

@@ -99,12 +99,25 @@ class AdGroupTargetingSerializer(
     class Meta:
         permissioned_fields = {"language": "zemauth.can_use_language_targeting"}
 
+    # TODO: PLAC: remove after legacy grace period
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret["placements"] = ret["environments"]
+        return ret
+
+    # TODO: PLAC: remove after legacy grace period
+    def to_internal_value(self, data):
+        if "environments" not in data and "placements" in data:
+            data["environments"] = data["placements"]
+        ret = super().to_internal_value(data)
+        return ret
+
     devices = restapi.serializers.targeting.DevicesSerializer(
         source="target_devices",
         allow_empty=False,
         error_messages={"required": "Please select at least one target device."},
     )
-    placements = restapi.serializers.targeting.PlacementsSerializer(source="target_placements", required=False)
+    environments = restapi.serializers.targeting.EnvironmentsSerializer(source="target_environments", required=False)
     os = restapi.serializers.targeting.OSsSerializer(source="target_os", required=False)
     browsers = restapi.serializers.targeting.BrowsersSerializer(source="target_browsers", required=False)
     audience = restapi.serializers.targeting.AudienceSerializer(source="bluekai_targeting", required=False)

@@ -286,7 +286,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         }
         if (
             RuleTargetType.AdGroupPublisher === target ||
-            RuleTargetType.AdGroupPlacement === target
+            RuleTargetType.AdGroupEnvironment === target
         ) {
             return [
                 RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],

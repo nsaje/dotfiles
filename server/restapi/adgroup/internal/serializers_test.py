@@ -22,7 +22,7 @@ class ExtraDataSerializerTest(TestCase):
                 "exclusion_target_regions": [],
                 "target_devices": [],
                 "target_os": [],
-                "target_placements": [],
+                "target_environments": [],
             },
             "retargetable_ad_groups": [
                 {"id": 795, "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}
@@ -75,7 +75,7 @@ class ExtraDataSerializerTest(TestCase):
                 },
                 "target_devices": [],
                 "target_os": [],
-                "target_placements": [],
+                "target_environments": [],
             },
             "retargetable_ad_groups": [
                 {"id": "795", "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}

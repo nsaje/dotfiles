@@ -74,6 +74,13 @@ class AdTargetDevice(ConstantBase):
     _VALUES = {DESKTOP: "Desktop", TABLET: "Tablet", MOBILE: "Mobile"}
 
 
+class AdTargetEnvironment(ConstantBase):
+    APP = "app"
+    SITE = "site"
+
+    _VALUES = {APP: "In-app", SITE: "Website"}
+
+
 class AdTargetLocation(ConstantBase):
     _VALUES = dict(
         list(regions.COUNTRY_BY_CODE.items())
@@ -2048,13 +2055,6 @@ class LocationType(ConstantBase):
     _VALUES = {COUNTRY: "Country", REGION: "State / Region", CITY: "City", DMA: "DMA", ZIP: "Postal Code"}
 
 
-class Placement(ConstantBase):
-    APP = "app"
-    SITE = "site"
-
-    _VALUES = {APP: "In-app", SITE: "Website"}
-
-
 class OperatingSystem(ConstantBase):
     UNKNOWN = None
     ANDROID = "android"
@@ -2356,15 +2356,16 @@ class BrowserFamily(ConstantBase):
     }
 
 
-class PlacementMedium(ConstantBase):
+class Environment(ConstantBase):
     UNKNOWN = None
     APP = "app"
     SITE = "site"
 
-    _VALUES = {UNKNOWN: "Unknown", APP: Placement.get_text(Placement.APP), SITE: Placement.get_text(Placement.SITE)}
+    _VALUES = dict(AdTargetEnvironment._VALUES)
+    _VALUES.update({UNKNOWN: "Unknown"})
 
 
-class PlacementType(ConstantBase):
+class ZemPlacementType(ConstantBase):
     UNKNOWN = None
     IN_APP = 1
     IN_FEED_WITH_IMAGE = 2

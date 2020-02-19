@@ -140,8 +140,8 @@ class MasterView(Materialize):
                         dash.constants.DeviceType.UNKNOWN,
                         None,  # device_os
                         None,  # device_os_version
-                        dash.constants.PlacementMedium.UNKNOWN,
-                        dash.constants.PlacementType.UNKNOWN,
+                        dash.constants.Environment.UNKNOWN,
+                        dash.constants.ZemPlacementType.UNKNOWN,
                         dash.constants.VideoPlaybackMethod.UNKNOWN,
                         None,  # country
                         None,  # state

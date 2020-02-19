@@ -63,8 +63,8 @@ angular
                             'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
-                        name: 'Placement',
-                        breakdown: constants.breakdown.PLACEMENT,
+                        name: 'Environment',
+                        breakdown: constants.breakdown.ENVIRONMENT,
                         permissions:
                             'zemauth.can_see_top_level_delivery_breakdowns',
                     },

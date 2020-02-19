@@ -392,7 +392,7 @@ def _normalize_row(row):
 
     _normalize_field(row, "exclusion_target_regions")
     _normalize_field(row, "target_os")
-    _normalize_array(row, "target_placements")
+    _normalize_array(row, "target_environments")
     _normalize_array(row, "target_devices")
 
     row["agency_tags"] = tag_helpers.entity_tag_names_to_string(row["agency_tags"])
@@ -766,7 +766,7 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "b1_sources_group_cpc_cc": F("settings__b1_sources_group_cpc_cc"),
         "exclusion_target_regions": F("settings__exclusion_target_regions"),
         "target_os": F("settings__target_os"),
-        "target_placements": F("settings__target_placements"),
+        "target_environments": F("settings__target_environments"),
         "delivery_type": F("settings__delivery_type"),
         "click_capping_daily_ad_group_max_clicks": F("settings__click_capping_daily_ad_group_max_clicks"),
         "b1_sources_group_cpm": F("settings__b1_sources_group_cpm"),

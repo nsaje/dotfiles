@@ -475,20 +475,20 @@ describe('AdGroupSettingsStore', () => {
             .calls.reset();
         const $event: any = {
             targetDevices: ['TABLE', 'MOBILE'],
-            targetPlacements: [],
+            targetEnvironments: [],
             targetOs: ['MACOSX', 'LINUX'],
         };
 
         expect(store.state.entity.targeting.devices).toEqual([]);
-        expect(store.state.entity.targeting.placements).toEqual([]);
+        expect(store.state.entity.targeting.environments).toEqual([]);
         expect(store.state.entity.targeting.os).toEqual([]);
         expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(false);
         store.setDeviceTargeting($event);
         expect(store.state.entity.targeting.devices).toEqual(
             $event.targetDevices
         );
-        expect(store.state.entity.targeting.placements).toEqual(
-            $event.targetPlacements
+        expect(store.state.entity.targeting.environments).toEqual(
+            $event.targetEnvironments
         );
         expect(store.state.entity.targeting.os).toEqual($event.targetOs);
         expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
@@ -531,37 +531,37 @@ describe('AdGroupSettingsStore', () => {
         ]);
     });
 
-    it('should allow adding of targeting placement', () => {
+    it('should allow adding of targeting environment', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
 
-        store.state.entity.targeting.placements = ['SITE'];
-        store.toggleTargetingPlacement('APP');
-        expect(store.state.entity.targeting.placements).toEqual([
+        store.state.entity.targeting.environments = ['SITE'];
+        store.toggleTargetingEnvironment('APP');
+        expect(store.state.entity.targeting.environments).toEqual([
             'SITE',
             'APP',
         ]);
     });
 
-    it('should allow deleting of targeting placement', () => {
+    it('should allow deleting of targeting environment', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
 
-        store.state.entity.targeting.placements = ['SITE', 'APP'];
-        store.toggleTargetingPlacement('SITE');
-        expect(store.state.entity.targeting.placements).toEqual(['APP']);
+        store.state.entity.targeting.environments = ['SITE', 'APP'];
+        store.toggleTargetingEnvironment('SITE');
+        expect(store.state.entity.targeting.environments).toEqual(['APP']);
     });
 
-    it('should select all targeting placements if all are deleted', () => {
+    it('should select all targeting environments if all are deleted', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
 
-        store.state.entity.targeting.placements = ['SITE'];
-        store.toggleTargetingPlacement('SITE');
-        expect(store.state.entity.targeting.placements).toEqual([
+        store.state.entity.targeting.environments = ['SITE'];
+        store.toggleTargetingEnvironment('SITE');
+        expect(store.state.entity.targeting.environments).toEqual([
             'SITE',
             'APP',
         ]);

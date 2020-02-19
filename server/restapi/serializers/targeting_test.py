@@ -3,19 +3,19 @@ from django.test import TestCase
 from . import targeting
 
 
-class PlacementsSerializerTests(TestCase):
+class EnvironmentsSerializerTests(TestCase):
     def test_serialization(self):
         data = ["app", "site"]
-        serializer = targeting.PlacementsSerializer(data)
+        serializer = targeting.EnvironmentsSerializer(data)
         self.assertEqual(serializer.data, ["APP", "SITE"])
 
     def test_serialization_with_none(self):
-        serializer = targeting.PlacementsSerializer(None)
+        serializer = targeting.EnvironmentsSerializer(None)
         self.assertEqual(serializer.data, [])
 
     def test_deserialization(self):
         data = ["APP", "SITE"]
-        serializer = targeting.PlacementsSerializer(data=data)
+        serializer = targeting.EnvironmentsSerializer(data=data)
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data, ["app", "site"])
 

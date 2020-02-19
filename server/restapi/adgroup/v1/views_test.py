@@ -40,7 +40,7 @@ class AdGroupViewSetTest(RESTAPITest):
         target_regions={"countries": ["US"], "postalCodes": ["CA:12345"]},
         exclusion_target_regions={},
         target_devices=[constants.AdTargetDevice.DESKTOP],
-        target_placements=[constants.Placement.APP],
+        target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}],
         target_browsers=[{"family": constants.BrowserFamily.CHROME}],
         interest_targeting=["women", "fashion"],
@@ -88,7 +88,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "targeting": {
                 "geo": {"included": final_target_regions, "excluded": final_exclusion_target_regions},
                 "devices": restapi.serializers.targeting.DevicesSerializer(target_devices).data,
-                "placements": restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                "environments": restapi.serializers.targeting.EnvironmentsSerializer(target_environments).data,
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
                 "browsers": restapi.serializers.targeting.BrowsersSerializer(target_browsers).data,
                 "interest": {
@@ -172,13 +172,15 @@ class AdGroupViewSetTest(RESTAPITest):
             retargeting_ad_groups=settings_db.retargeting_ad_groups,
             exclusion_retargeting_ad_groups=settings_db.exclusion_retargeting_ad_groups,
             target_devices=settings_db.target_devices,
-            target_placements=settings_db.target_placements,
+            target_environments=settings_db.target_environments,
             target_os=settings_db.target_os,
             target_browsers=settings_db.target_browsers,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
             click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
             frequency_capping=settings_db.frequency_capping,
         )
+        # TODO: PLAC: remove after legacy grace period
+        expected["targeting"]["placements"] = expected["targeting"]["environments"]
         self.assertEqual(expected, adgroup)
 
     def test_adgroups_get_cpc(self):
@@ -276,6 +278,8 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["bid"] = resp_json["data"]["maxCpc"]
         self.assertEqual(resp_json["data"], new_ad_group)
         adgroup_db = dash.models.AdGroup.objects.get(pk=new_ad_group["id"])
@@ -291,6 +295,8 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpc"] = resp_json["data"]["bid"]
         self.assertEqual(resp_json["data"], new_ad_group)
         adgroup_db = dash.models.AdGroup.objects.get(pk=new_ad_group["id"])
@@ -305,6 +311,8 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         # "bid" value overrides "maxCpc" value
         new_ad_group["maxCpc"] = new_ad_group["bid"]
         self.assertEqual(resp_json["data"], new_ad_group)
@@ -323,6 +331,8 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpm"] = resp_json["data"]["maxCpm"]
         new_ad_group["bid"] = resp_json["data"]["maxCpm"]
         self.assertEqual(resp_json["data"], new_ad_group)
@@ -339,6 +349,8 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_ad_group["targeting"]["placements"] = new_ad_group["targeting"]["environments"]
         new_ad_group["maxCpm"] = resp_json["data"]["bid"]
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
@@ -394,6 +406,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         test_adgroup["bid"] = resp_json["data"]["maxCpc"]
         self.assertEqual(resp_json["data"], test_adgroup)
 
@@ -407,6 +421,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         test_adgroup["maxCpc"] = resp_json["data"]["bid"]
         self.assertEqual(resp_json["data"], test_adgroup)
 
@@ -419,6 +435,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         # "bid" value overrides "maxCpc" value
         test_adgroup["maxCpc"] = test_adgroup["bid"]
         self.assertEqual(resp_json["data"], test_adgroup)
@@ -439,6 +457,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         test_adgroup["maxCpm"] = resp_json["data"]["maxCpm"]
         test_adgroup["bid"] = test_adgroup["maxCpm"]
         self.assertEqual(resp_json["data"], test_adgroup)
@@ -461,6 +481,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         test_adgroup["maxCpm"] = resp_json["data"]["bid"]
         self.assertEqual(resp_json["data"], test_adgroup)
         self.assertFalse(resp_json["data"]["maxCpc"])
@@ -478,6 +500,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         test_adgroup["bid"] = resp_json["data"]["bid"]
         test_adgroup["maxCpc"] = resp_json["data"]["maxCpc"]
         test_adgroup["maxCpm"] = resp_json["data"]["maxCpm"]
@@ -568,6 +592,8 @@ class AdGroupViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_adgroup["targeting"]["placements"] = test_adgroup["targeting"]["environments"]
         self.assertEqual(resp_json["data"], test_adgroup)
 
     def test_adgroups_put_invalid_autopilot_state(self):
@@ -584,6 +610,68 @@ class AdGroupViewSetTest(RESTAPITest):
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
+
+    # TODO: PLAC: remove after legacy grace period
+    def test_ad_group_put_environment_targeting_legacy(self):
+        ad_group = dash.models.AdGroup.objects.get(id=2040)
+        self.assertEqual(["app", "site"], ad_group.settings.target_environments)
+
+        ad_group_data = self.adgroup_repr()
+        del ad_group_data["targeting"]["environments"]
+        ad_group_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=ad_group_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        ad_group.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.SITE], ad_group.settings.target_environments)
+
+        ad_group_data = self.adgroup_repr(target_environments=[constants.Environment.APP])
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=ad_group_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        ad_group.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.APP], ad_group.settings.target_environments)
+
+        ad_group_data = self.adgroup_repr()
+        ad_group_data["targeting"]["environments"] = ["APP"]
+        ad_group_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=ad_group_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        ad_group.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.APP], ad_group.settings.target_environments)
+
+        ad_group_data = self.adgroup_repr(target_environments=[constants.Environment.SITE])
+        ad_group_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=ad_group_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        ad_group.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.SITE], ad_group.settings.target_environments)
 
     def test_adgroups_post_high_cpc(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group", max_cpc=Decimal("9000"))

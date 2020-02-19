@@ -16,9 +16,9 @@ SELECT
     NULL AS device_type,
     NULL AS device_os,
     NULL AS device_os_version,
-    NULL AS placement_medium,
+    NULL AS environment,
 
-    NULL AS placement_type,
+    NULL AS zem_placement_type,
     NULL AS video_playback_method,
 
     NULL AS country,

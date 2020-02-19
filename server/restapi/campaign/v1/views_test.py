@@ -32,7 +32,7 @@ class CampaignViewSetTest(RESTAPITest):
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
         target_devices=[constants.AdTargetDevice.DESKTOP],
-        target_placements=[constants.Placement.APP],
+        target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}, {"name": constants.OperatingSystem.LINUX}],
         frequency_capping=None,
     ):
@@ -55,7 +55,7 @@ class CampaignViewSetTest(RESTAPITest):
             },
             "targeting": {
                 "devices": restapi.serializers.targeting.DevicesSerializer(target_devices).data,
-                "placements": restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                "environments": restapi.serializers.targeting.EnvironmentsSerializer(target_environments).data,
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
                 "publisherGroups": {"included": whitelist_publisher_groups, "excluded": blacklist_publisher_groups},
             },
@@ -83,10 +83,12 @@ class CampaignViewSetTest(RESTAPITest):
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
             target_devices=settings_db.target_devices,
-            target_placements=settings_db.target_placements,
+            target_environments=settings_db.target_environments,
             target_os=settings_db.target_os,
             frequency_capping=settings_db.frequency_capping,
         )
+        # TODO: PLAC: remove after legacy grace period
+        expected["targeting"]["placements"] = expected["targeting"]["environments"]
         self.assertEqual(expected, campaign)
 
     def test_campaigns_get(self):
@@ -103,6 +105,8 @@ class CampaignViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        # TODO: PLAC: remove after legacy grace period
+        test_campaign["targeting"]["placements"] = test_campaign["targeting"]["environments"]
         self.assertEqual(resp_json["data"], test_campaign)
 
     def test_campaigns_put_empty(self):
@@ -144,6 +148,68 @@ class CampaignViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["archived"], False)
+
+    # TODO: PLAC: remove after legacy grace period
+    def test_campaign_put_environment_targeting_legacy(self):
+        campaign = dash.models.Campaign.objects.get(id=308)
+        self.assertIsNone(campaign.settings.target_environments)
+
+        campaign_data = self.campaign_repr()
+        del campaign_data["targeting"]["environments"]
+        campaign_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data=campaign_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        campaign.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.SITE], campaign.settings.target_environments)
+
+        campaign_data = self.campaign_repr(target_environments=[constants.Environment.APP])
+        r = self.client.put(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data=campaign_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        campaign.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.APP], campaign.settings.target_environments)
+
+        campaign_data = self.campaign_repr()
+        campaign_data["targeting"]["environments"] = ["APP"]
+        campaign_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data=campaign_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["APP"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        campaign.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.APP], campaign.settings.target_environments)
+
+        campaign_data = self.campaign_repr(target_environments=[constants.Environment.SITE])
+        campaign_data["targeting"]["placements"] = ["SITE"]
+        r = self.client.put(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data=campaign_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["environments"])
+        self.assertEqual(["SITE"], resp_json["data"]["targeting"]["placements"])
+        del resp_json["data"]["targeting"]["placements"]
+        campaign.refresh_from_db()
+        self.assertEqual([dash.constants.AdTargetEnvironment.SITE], campaign.settings.target_environments)
 
     def test_campaigns_list(self):
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
@@ -232,6 +298,8 @@ class CampaignViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
+        # TODO: PLAC: remove after legacy grace period
+        new_campaign["targeting"]["placements"] = new_campaign["targeting"]["environments"]
         self.assertEqual(resp_json["data"], new_campaign)
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
@@ -266,6 +334,8 @@ class CampaignViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
         new_campaign["type"] = resp_json["data"]["type"]
+        # TODO: PLAC: remove after legacy grace period
+        new_campaign["targeting"]["placements"] = new_campaign["targeting"]["environments"]
         self.assertEqual(resp_json["data"], new_campaign)
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.CONTENT))
 

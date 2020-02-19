@@ -116,38 +116,36 @@ class TestTargetConverter(TestCase):
             self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, 1234)
         self.assertEqual(str(ctx.exception), "Invalid Operating System")
 
-    def test_placement_medium(self):
+    def test_environment(self):
         # full circle test
-        output_value = self.converter.from_target(
-            constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.APP
-        )
-        self.assertEqual(output_value, dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP))
+        output_value = self.converter.from_target(constants.BidModifierType.ENVIRONMENT, dash_constants.Environment.APP)
+        self.assertEqual(output_value, dash_constants.Environment.get_name(dash_constants.Environment.APP))
 
-        target_value = self.converter.to_target(constants.BidModifierType.PLACEMENT, output_value)
-        self.assertEqual(target_value, dash_constants.PlacementMedium.APP)
+        target_value = self.converter.to_target(constants.BidModifierType.ENVIRONMENT, output_value)
+        self.assertEqual(target_value, dash_constants.Environment.APP)
 
         # unsupported target test
         with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
             self.converter.to_target(
-                constants.BidModifierType.PLACEMENT,
-                dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.UNKNOWN),
+                constants.BidModifierType.ENVIRONMENT,
+                dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN),
             )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
-            self.converter.from_target(constants.BidModifierType.PLACEMENT, 1234)
+            self.converter.from_target(constants.BidModifierType.ENVIRONMENT, 1234)
 
         with self.assertRaises(KeyError):
-            self.converter.from_target(constants.BidModifierType.PLACEMENT, "invalid")
+            self.converter.from_target(constants.BidModifierType.ENVIRONMENT, "invalid")
 
         # illegal input target value tests
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PLACEMENT, "invalid")
-        self.assertEqual(str(ctx.exception), "Invalid Placement Medium")
+            self.converter.to_target(constants.BidModifierType.ENVIRONMENT, "invalid")
+        self.assertEqual(str(ctx.exception), "Invalid Environment")
 
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PLACEMENT, 1234)
-        self.assertEqual(str(ctx.exception), "Invalid Placement Medium")
+            self.converter.to_target(constants.BidModifierType.ENVIRONMENT, 1234)
+        self.assertEqual(str(ctx.exception), "Invalid Environment")
 
     def test_country(self):
         # full circle test
@@ -369,38 +367,36 @@ class TestDashboardConverter(TestCase):
             self.converter.to_target(constants.BidModifierType.OPERATING_SYSTEM, 1234)
         self.assertEqual(str(ctx.exception), "Invalid Operating System")
 
-    def test_placement_medium(self):
+    def test_environment(self):
         # full circle test
-        output_value = self.converter.from_target(
-            constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.APP
-        )
-        self.assertEqual(output_value, dash_constants.PlacementMedium.APP)
+        output_value = self.converter.from_target(constants.BidModifierType.ENVIRONMENT, dash_constants.Environment.APP)
+        self.assertEqual(output_value, dash_constants.Environment.APP)
 
-        target_value = self.converter.to_target(constants.BidModifierType.PLACEMENT, output_value)
-        self.assertEqual(target_value, dash_constants.PlacementMedium.APP)
+        target_value = self.converter.to_target(constants.BidModifierType.ENVIRONMENT, output_value)
+        self.assertEqual(target_value, dash_constants.Environment.APP)
 
         # unsupported target tests
         with self.assertRaises(exceptions.BidModifierUnsupportedTarget):
             self.converter.to_target(
-                constants.BidModifierType.PLACEMENT,
-                dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.UNKNOWN),
+                constants.BidModifierType.ENVIRONMENT,
+                dash_constants.Environment.get_text(dash_constants.Environment.UNKNOWN),
             )
 
         # illegal target value tests
         with self.assertRaises(KeyError):
-            self.converter.from_target(constants.BidModifierType.PLACEMENT, 1234)
+            self.converter.from_target(constants.BidModifierType.ENVIRONMENT, 1234)
 
         with self.assertRaises(KeyError):
-            self.converter.from_target(constants.BidModifierType.PLACEMENT, "invalid")
+            self.converter.from_target(constants.BidModifierType.ENVIRONMENT, "invalid")
 
         # illegal input target value tests
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PLACEMENT, "invalid")
-        self.assertEqual(str(ctx.exception), "Invalid Placement Medium")
+            self.converter.to_target(constants.BidModifierType.ENVIRONMENT, "invalid")
+        self.assertEqual(str(ctx.exception), "Invalid Environment")
 
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
-            self.converter.to_target(constants.BidModifierType.PLACEMENT, 1234)
-        self.assertEqual(str(ctx.exception), "Invalid Placement Medium")
+            self.converter.to_target(constants.BidModifierType.ENVIRONMENT, 1234)
+        self.assertEqual(str(ctx.exception), "Invalid Environment")
 
     def test_dma(self):
         # full circle test
@@ -482,10 +478,10 @@ class TestStatsConverter(TestCase):
         mock_to_target.assert_called_once_with(1)
         mock_from_target.assert_called_once_with(1)
 
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_placement_medium_target")
-    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_placement_medium_target")
-    def test_placement_medium(self, mock_to_target, mock_from_target):
-        self.converter.to_target(constants.BidModifierType.PLACEMENT, 1)
-        self.converter.from_target(constants.BidModifierType.PLACEMENT, 1)
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._to_environment_target")
+    @mock.patch("core.features.bid_modifiers.converters.DashboardConverter._from_environment_target")
+    def test_environment(self, mock_to_target, mock_from_target):
+        self.converter.to_target(constants.BidModifierType.ENVIRONMENT, 1)
+        self.converter.from_target(constants.BidModifierType.ENVIRONMENT, 1)
         mock_to_target.assert_called_once_with(1)
         mock_from_target.assert_called_once_with(1)

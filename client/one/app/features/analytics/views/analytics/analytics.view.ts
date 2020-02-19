@@ -130,7 +130,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
             Breakdown.STATE,
             Breakdown.DMA,
             Breakdown.DEVICE,
-            Breakdown.PLACEMENT,
+            Breakdown.ENVIRONMENT,
             Breakdown.OPERATING_SYSTEM,
         ].includes(breakdown);
         if (isDeliveryBreakdown) {

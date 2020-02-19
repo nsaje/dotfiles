@@ -7,7 +7,7 @@ import {TargetLanguage} from '../common/target-language';
 
 export interface AdGroupTargetings {
     devices?: string[];
-    placements?: string[];
+    environments?: string[];
     os?: TargetOperatingSystem[];
     browsers?: Browser[];
     audience?: any;

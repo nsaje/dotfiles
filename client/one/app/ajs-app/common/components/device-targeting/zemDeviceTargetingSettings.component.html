@@ -48,12 +48,12 @@
                 on-update="$ctrl.updateOperatingSystems($event)"
             ></zem-os-device-targeting-settings>
             <hr />
-            <div class="form__label">Choose placement:</div>
-            <zem-placement-device-targeting-settings
-                class="zem-placement-device-targeting-settings"
-                target-placements="$ctrl.state.placements"
-                on-update="$ctrl.updatePlacements($event)"
-            ></zem-placement-device-targeting-settings>
+            <div class="form__label">Choose environment:</div>
+            <zem-environment-device-targeting-settings
+                class="zem-environment-device-targeting-settings"
+                target-environments="$ctrl.state.environments"
+                on-update="$ctrl.updateEnvironments($event)"
+            ></zem-environment-device-targeting-settings>
         </div>
     </div>
 

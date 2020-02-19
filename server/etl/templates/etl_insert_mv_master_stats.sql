@@ -18,9 +18,9 @@ INSERT INTO mv_master (
       d.device_type,
       d.device_os,
       d.device_os_version,
-      d.placement_medium,
+      d.environment,
 
-      d.placement_type,
+      d.zem_placement_type,
       d.video_playback_method,
 
       d.country,
@@ -110,7 +110,7 @@ INSERT INTO mv_master (
           device_type,
           device_os,
           device_os_version,
-          placement_medium,
+          environment,
           country,
           state,
           dma,

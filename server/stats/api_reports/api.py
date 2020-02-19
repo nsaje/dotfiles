@@ -119,7 +119,7 @@ UNABLE_TO_SORT = (
     "daily_budget",
     "call_to_action",
     "default_cs_representative",
-    "placement_type",
+    "zem_placement_type",
     "image_url",
     "tracker_urls",
     "publisher_status",

@@ -78,7 +78,7 @@ class AdGroupSettings(
         "target_devices",
         "target_os",
         "target_browsers",
-        "target_placements",
+        "target_environments",
         "target_regions",
         "exclusion_target_regions",
         "retargeting_ad_groups",
@@ -173,7 +173,7 @@ class AdGroupSettings(
     )
 
     target_devices = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
-    target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Placement")
+    target_environments = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Environment")
     target_os = JSONField(null=True, blank=True, verbose_name="Operating System")
     target_browsers = JSONField(null=True, blank=True, verbose_name="Browsers")
 
@@ -353,7 +353,7 @@ class AdGroupSettings(
             "local_max_cpm": "Max CPM bid",
             "daily_budget_cc": "Daily spend cap",
             "target_devices": "Device targeting",
-            "target_placements": "Placement",
+            "target_environments": "Environment",
             "target_os": "Operating Systems",
             "target_browsers": "Browser targeting",
             "target_regions": "Locations",
@@ -424,8 +424,8 @@ class AdGroupSettings(
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "target_devices":
             value = ", ".join(constants.AdTargetDevice.get_text(x) for x in value)
-        elif prop_name == "target_placements":
-            value = ", ".join(constants.Placement.get_text(x) for x in value) if value else ""
+        elif prop_name == "target_environments":
+            value = ", ".join(constants.Environment.get_text(x) for x in value) if value else ""
         elif prop_name == "target_os":
             value = ", ".join(helpers.get_human_value_target_os(x) for x in value) if value else ""
         elif prop_name == "target_browsers":
@@ -545,7 +545,7 @@ class AdGroupSettings(
             excluded_keys.update(["whitelist_publisher_groups", "blacklist_publisher_groups"])
 
         if user is not None and not user.has_perm("zemauth.can_set_advanced_device_targeting"):
-            excluded_keys.update(["target_os", "target_placements"])
+            excluded_keys.update(["target_os", "target_environments"])
 
         if user is not None and not user.has_perm("zemauth.can_use_language_targeting"):
             excluded_keys.update("language_targeting_enabled")

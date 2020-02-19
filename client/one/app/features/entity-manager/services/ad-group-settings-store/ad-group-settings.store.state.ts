@@ -27,7 +27,7 @@ export class AdGroupSettingsStoreState {
         deals: [],
         targeting: {
             devices: [],
-            placements: [],
+            environments: [],
             os: [],
             browsers: [],
             audience: {},
@@ -102,7 +102,7 @@ export class AdGroupSettingsStoreState {
             },
             targetDevices: [],
             targetOs: [],
-            targetPlacements: [],
+            targetEnvironments: [],
         },
         retargetableAdGroups: [],
         audiences: [],

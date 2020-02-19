@@ -19,7 +19,7 @@ export const adGroupMock: AdGroup = {
     deals: [],
     targeting: {
         devices: [],
-        placements: [],
+        environments: [],
         os: [],
         browsers: [],
         audience: null,

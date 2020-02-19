@@ -49,7 +49,7 @@ VALID_ACTION_TYPES_FOR_TARGET = {
     ],
     constants.TargetType.DMA: [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER],
     constants.TargetType.OS: [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER],
-    constants.TargetType.PLACEMENT: [
+    constants.TargetType.ENVIRONMENT: [
         constants.ActionType.INCREASE_BID_MODIFIER,
         constants.ActionType.DECREASE_BID_MODIFIER,
         # constants.ActionType.BLACKLIST,

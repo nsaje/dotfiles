@@ -111,18 +111,18 @@ angular
                 internal: 'zemauth.can_view_breakdown_by_delivery_extended',
             },
 
-            placementMedium: {
-                name: 'Placement',
-                query: 'placement_medium',
-                report_query: 'Placement',
+            environment: {
+                name: 'Environment',
+                query: 'environment',
+                report_query: 'Environment',
                 shown: 'zemauth.can_view_breakdown_by_delivery',
                 internal: 'zemauth.can_view_breakdown_by_delivery',
             },
 
-            placementType: {
-                name: 'Placement Type',
-                query: 'placement_type',
-                report_query: 'Placement Type',
+            zemPlacementType: {
+                name: 'Zemanta Placement Type',
+                query: 'zem_placement_type',
+                report_query: 'Zemanta Placement Type',
                 shown: 'zemauth.can_view_breakdown_by_delivery_extended',
                 internal: 'zemauth.can_view_breakdown_by_delivery_extended',
             },
@@ -169,7 +169,7 @@ angular
             BREAKDOWNS.region,
             BREAKDOWNS.dma,
             BREAKDOWNS.device,
-            BREAKDOWNS.placementMedium,
+            BREAKDOWNS.environment,
             BREAKDOWNS.deviceOs,
         ]);
 
@@ -183,11 +183,11 @@ angular
             BREAKDOWNS.dma,
 
             BREAKDOWNS.device,
-            BREAKDOWNS.placementMedium,
+            BREAKDOWNS.environment,
             BREAKDOWNS.deviceOs,
             BREAKDOWNS.deviceOsVersion,
 
-            BREAKDOWNS.placementType,
+            BREAKDOWNS.zemPlacementType,
             BREAKDOWNS.videoPlaybackMethod,
         ];
 
@@ -237,7 +237,7 @@ angular
                 case constants.breakdown.STATE:
                 case constants.breakdown.DMA:
                 case constants.breakdown.DEVICE:
-                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
                     break;
                 default:
@@ -259,7 +259,7 @@ angular
                 case constants.breakdown.STATE:
                 case constants.breakdown.DMA:
                 case constants.breakdown.DEVICE:
-                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
                     return [];
                 default:
@@ -273,7 +273,7 @@ angular
                 case constants.breakdown.STATE:
                 case constants.breakdown.DMA:
                 case constants.breakdown.DEVICE:
-                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.ENVIRONMENT:
                 case constants.breakdown.OPERATING_SYSTEM:
                     return [];
                 default:

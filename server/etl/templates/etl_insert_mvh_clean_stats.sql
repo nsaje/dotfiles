@@ -52,19 +52,19 @@ INSERT INTO mvh_clean_stats (
            ELSE NULL
       END AS device_os_version,
 
-      CASE WHEN placement_medium IN (
-               {% for placement_medium in valid_placement_mediums %}
+      CASE WHEN environment IN (
+               {% for environment in valid_environments %}
                    {% if forloop.last %}
-                       '{{ placement_medium }}'
+                       '{{ environment }}'
                    {% else %}
-                       '{{ placement_medium }}',
+                       '{{ environment }}',
                    {% endif %}
                {% endfor %}
-           ) THEN placement_medium
+           ) THEN environment
            ELSE NULL
-      END as placement_medium,
+      END as environment,
 
-      NULLIF(placement_type, 0) as placement_type,
+      NULLIF(zem_placement_type, 0) as zem_placement_type,
       NULLIF(video_playback_method, 0) as video_playback_method,
 
       NULLIF(TRIM(UPPER(country)), '') AS country,

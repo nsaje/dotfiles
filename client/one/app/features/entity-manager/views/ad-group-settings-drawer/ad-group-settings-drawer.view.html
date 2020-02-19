@@ -378,7 +378,7 @@
                     "
                     [expandedByDefault]="
                         doesAnySettingHaveValue(state.entity.targeting.os) ||
-                        state.entity.targeting.placements.length === 1
+                        state.entity.targeting.environments.length === 1
                     "
                     [overviewText]="'Advanced device targeting options'"
                 >
@@ -429,12 +429,12 @@
                             </zem-operating-system-list>
                             <hr />
                             <div class="zem-settings-section__description">
-                                Choose placement:
+                                Choose environment:
                             </div>
                             <zem-image-checkbox-input-group
                                 class="zem-image-checkbox-input-group zem-settings-section__item"
-                                [options]="targetingPlacementOptions"
-                                [values]="state.entity.targeting.placements"
+                                [options]="targetingEnvironmentOptions"
+                                [values]="state.entity.targeting.environments"
                             >
                                 >
                                 <ng-template
@@ -445,7 +445,7 @@
                                         class="zem-image-checkbox-input"
                                         [value]="formattedOption"
                                         (itemToggled)="
-                                            store.toggleTargetingPlacement(
+                                            store.toggleTargetingEnvironment(
                                                 $event
                                             )
                                         "

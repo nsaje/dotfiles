@@ -35,7 +35,7 @@ import {OperatingSystem} from '../../components/operating-system/types/operating
 import {
     OPERATING_SYSTEMS,
     TARGETING_DEVICE_OPTIONS,
-    TARGETING_PLACEMENT_OPTIONS,
+    TARGETING_ENVIRONMENT_OPTIONS,
 } from '../../entity-manager.config';
 import {isEmpty} from '../../../../shared/helpers/array.helpers';
 
@@ -417,21 +417,21 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             this.state.entity.targeting.os,
             this.state.extras.defaultSettings.targetOs
         );
-        const areTargetPlacementsDifferent = !deepEqual(
-            this.state.entity.targeting.placements,
-            this.state.extras.defaultSettings.targetPlacements
+        const areTargetEnvironmentsDifferent = !deepEqual(
+            this.state.entity.targeting.environments,
+            this.state.extras.defaultSettings.targetEnvironments
         );
 
         return (
             areTargetDevicesDifferent ||
             areTargetOsDifferent ||
-            areTargetPlacementsDifferent
+            areTargetEnvironmentsDifferent
         );
     }
 
     setDeviceTargeting(deviceTargeting: {
         targetDevices?: string[];
-        targetPlacements?: string[];
+        targetEnvironments?: string[];
         targetOs?: TargetOperatingSystem[];
     }) {
         this.setState({
@@ -441,7 +441,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 targeting: {
                     ...this.state.entity.targeting,
                     devices: deviceTargeting.targetDevices,
-                    placements: deviceTargeting.targetPlacements,
+                    environments: deviceTargeting.targetEnvironments,
                     os: deviceTargeting.targetOs,
                 },
             },
@@ -464,18 +464,19 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.validateEntity();
     }
 
-    toggleTargetingPlacement(placement: string) {
-        const oldPlacements: string[] = this.state.entity.targeting.placements;
-        const allPlacements: string[] = TARGETING_PLACEMENT_OPTIONS.map(
+    toggleTargetingEnvironment(environment: string) {
+        const oldEnvironments: string[] = this.state.entity.targeting
+            .environments;
+        const allEnvironments: string[] = TARGETING_ENVIRONMENT_OPTIONS.map(
             option => option.value
         );
-        const newPlacements: string[] = this.toggleTargetingItem(
-            placement,
-            oldPlacements,
-            allPlacements
+        const newEnvironments: string[] = this.toggleTargetingItem(
+            environment,
+            oldEnvironments,
+            allEnvironments
         );
 
-        this.patchState(newPlacements, 'entity', 'targeting', 'placements');
+        this.patchState(newEnvironments, 'entity', 'targeting', 'environments');
         this.validateEntity();
     }
 

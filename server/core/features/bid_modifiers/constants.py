@@ -8,7 +8,7 @@ class BidModifierType(ConstantBase):
     SOURCE = 2
     DEVICE = 3
     OPERATING_SYSTEM = 4
-    PLACEMENT = 5
+    ENVIRONMENT = 5
     COUNTRY = 6
     STATE = 7
     DMA = 8
@@ -20,7 +20,7 @@ class BidModifierType(ConstantBase):
         SOURCE: "Source",
         DEVICE: "Device",
         OPERATING_SYSTEM: "Operating System",
-        PLACEMENT: "Placement",
+        ENVIRONMENT: "Environment",
         COUNTRY: "Country",
         STATE: "State",
         DMA: "DMA",

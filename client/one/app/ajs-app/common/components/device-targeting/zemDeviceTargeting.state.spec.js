@@ -17,7 +17,7 @@ describe('state: zemDeviceTargetingStateService', function() {
         );
         expect(stateService.getState()).toEqual({
             devices: [],
-            placements: [],
+            environments: [],
             operatingSystems: [],
         });
     });
@@ -27,20 +27,20 @@ describe('state: zemDeviceTargetingStateService', function() {
             angular.noop
         );
         var targetDevices = ['MOBILE'];
-        var targetPlacements = ['SITE', 'APP'];
+        var targetEnvironments = ['SITE', 'APP'];
         var targetOs = [
             {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
             {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}},
         ];
 
-        stateService.initialize(targetDevices, targetPlacements, targetOs);
+        stateService.initialize(targetDevices, targetEnvironments, targetOs);
         expect(stateService.getState()).toEqual({
             devices: [
                 {name: 'Desktop', value: 'DESKTOP', checked: false},
                 {name: 'Tablet', value: 'TABLET', checked: false},
                 {name: 'Mobile', value: 'MOBILE', checked: true},
             ],
-            placements: [
+            environments: [
                 {
                     value: 'SITE',
                     name: 'Website',
@@ -91,13 +91,13 @@ describe('state: zemDeviceTargetingStateService', function() {
             callbackSpy
         );
         var targetDevices = ['MOBILE'];
-        var targetPlacements = ['SITE', 'APP'];
+        var targetEnvironments = ['SITE', 'APP'];
         var targetOs = [
             {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
             {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}},
         ];
 
-        stateService.initialize(targetDevices, targetPlacements, targetOs);
+        stateService.initialize(targetDevices, targetEnvironments, targetOs);
 
         var spy = jasmine.createSpy();
         stateService.onUpdate(spy);
@@ -113,21 +113,21 @@ describe('state: zemDeviceTargetingStateService', function() {
             callbackSpy
         );
         var targetDevices = ['MOBILE'];
-        var targetPlacements = ['SITE', 'APP'];
+        var targetEnvironments = ['SITE', 'APP'];
         var targetOs = [{name: 'IOS', version: {min: 'IOS_4_0', max: null}}];
 
-        stateService.initialize(targetDevices, targetPlacements, targetOs);
+        stateService.initialize(targetDevices, targetEnvironments, targetOs);
 
         var state = stateService.getState();
 
         state.devices[0].checked = true;
-        state.placements[0].selected = false;
+        state.environments[0].selected = false;
         stateService.update();
 
         expect(callbackSpy).toHaveBeenCalledWith({
             targetDevices: ['DESKTOP', 'MOBILE'],
             targetOs: [{name: 'IOS', version: {min: 'IOS_4_0'}}],
-            targetPlacements: ['APP'],
+            targetEnvironments: ['APP'],
         });
     });
 

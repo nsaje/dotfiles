@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS mv_master_pubs (
         device_type int2,
         device_os varchar(127),
         device_os_version varchar(127),
-        placement_medium varchar(10),
+        environment varchar(10),
 
-        placement_type int2,
+        zem_placement_type int2,
         video_playback_method int2,
 
         country varchar(2),

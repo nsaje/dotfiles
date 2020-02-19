@@ -3,7 +3,7 @@ require('./zemDeviceTargetingSettings.component.less');
 angular.module('one.common').component('zemDeviceTargetingSettings', {
     bindings: {
         targetDevices: '<',
-        targetPlacements: '<',
+        targetEnvironments: '<',
         targetOs: '<',
         errors: '<',
         onUpdate: '&',
@@ -21,7 +21,7 @@ angular.module('one.common').component('zemDeviceTargetingSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.updateOperatingSystems = updateOperatingSystems;
-        $ctrl.updatePlacements = updatePlacements;
+        $ctrl.updateEnvironments = updateEnvironments;
 
         $ctrl.showAdvanceGroup = false;
 
@@ -36,19 +36,19 @@ angular.module('one.common').component('zemDeviceTargetingSettings', {
             }
             if (
                 !$ctrl.targetDevices ||
-                !$ctrl.targetPlacements ||
+                !$ctrl.targetEnvironments ||
                 !$ctrl.targetOs
             ) {
                 return;
             }
             if (
                 changes.targetDevices ||
-                changes.targetPlacements ||
+                changes.targetEnvironments ||
                 changes.targetOs
             ) {
                 $ctrl.stateService.initialize(
                     $ctrl.targetDevices,
-                    $ctrl.targetPlacements,
+                    $ctrl.targetEnvironments,
                     $ctrl.targetOs
                 );
                 $ctrl.showAdvanceGroup =
@@ -67,10 +67,12 @@ angular.module('one.common').component('zemDeviceTargetingSettings', {
         function isAdvanceGroupVisible() {
             if ($ctrl.state.operatingSystems.length > 0) return true;
 
-            var selectedPlacements = $ctrl.state.placements.filter(function(p) {
+            var selectedEnvironments = $ctrl.state.environments.filter(function(
+                p
+            ) {
                 return p.selected;
             });
-            if (selectedPlacements.length !== $ctrl.state.placements.length)
+            if (selectedEnvironments.length !== $ctrl.state.environments.length)
                 return true;
 
             return false;
@@ -81,8 +83,8 @@ angular.module('one.common').component('zemDeviceTargetingSettings', {
             $ctrl.stateService.update();
         }
 
-        function updatePlacements($event) {
-            $ctrl.state.placements = $event;
+        function updateEnvironments($event) {
+            $ctrl.state.environments = $event;
             $ctrl.stateService.update();
         }
     },

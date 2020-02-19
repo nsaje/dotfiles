@@ -58,9 +58,9 @@ class ApiRulesTest(TestCase):
                 "fields": "device_os AS device_os",
             },
             {
-                "target_type": automation.rules.constants.TargetType.PLACEMENT,
-                "table": "mv_adgroup_placement",
-                "fields": "placement_medium AS placement_medium",
+                "target_type": automation.rules.constants.TargetType.ENVIRONMENT,
+                "table": "mv_adgroup_environment",
+                "fields": "environment AS environment",
             },
             {
                 "target_type": automation.rules.constants.TargetType.SOURCE,
@@ -547,7 +547,7 @@ video_etfm_cpcv
             {"target_type": automation.rules.constants.TargetType.STATE, "name": "state"},
             {"target_type": automation.rules.constants.TargetType.DMA, "name": "dma"},
             {"target_type": automation.rules.constants.TargetType.OS, "name": "os"},
-            {"target_type": automation.rules.constants.TargetType.PLACEMENT, "name": "placement"},
+            {"target_type": automation.rules.constants.TargetType.ENVIRONMENT, "name": "environment"},
             {"target_type": automation.rules.constants.TargetType.SOURCE, "name": "source"},
         ]
 

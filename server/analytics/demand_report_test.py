@@ -144,7 +144,7 @@ class DemandReportTestCase(test.TestCase):
             "b1_sources_group_cpc_cc": ad_group.settings.b1_sources_group_cpc_cc,
             "exclusion_target_regions": _repr_bool_normalized_value(ad_group.settings.exclusion_target_regions),
             "target_os": _repr_bool_normalized_value(ad_group.settings.target_os),
-            "target_placements": demand_report._normalize_array_value(ad_group.settings.target_placements),
+            "target_environments": demand_report._normalize_array_value(ad_group.settings.target_environments),
             "delivery_type": ad_group.settings.delivery_type,
             "click_capping_daily_ad_group_max_clicks": ad_group.settings.click_capping_daily_ad_group_max_clicks,
             "b1_sources_group_cpm": ad_group.settings.b1_sources_group_cpm,

@@ -23,7 +23,7 @@ def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
         constants.BidModifierType.SOURCE,
         constants.BidModifierType.DEVICE,
         constants.BidModifierType.OPERATING_SYSTEM,
-        constants.BidModifierType.PLACEMENT,
+        constants.BidModifierType.ENVIRONMENT,
         constants.BidModifierType.COUNTRY,
         constants.BidModifierType.STATE,
         constants.BidModifierType.DMA,
@@ -57,7 +57,7 @@ class TestBidModifierService(TestCase):
         service.set(
             self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
@@ -91,8 +91,8 @@ class TestBidModifierService(TestCase):
                     "modifier": 1.7,
                 },
                 {
-                    "type": constants.BidModifierType.PLACEMENT,
-                    "target": dash.constants.PlacementMedium.SITE,
+                    "type": constants.BidModifierType.ENVIRONMENT,
+                    "target": dash.constants.Environment.SITE,
                     "source": None,
                     "modifier": 3.6,
                 },
@@ -116,7 +116,7 @@ class TestBidModifierService(TestCase):
         service.set(
             self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
@@ -141,7 +141,7 @@ class TestBidModifierService(TestCase):
         service.set(
             self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash.constants.OperatingSystem.ANDROID, None, 1.7
         )
-        service.set(self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6)
+        service.set(self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6)
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
@@ -152,7 +152,7 @@ class TestBidModifierService(TestCase):
                 exclude_types=[
                     constants.BidModifierType.PUBLISHER,
                     constants.BidModifierType.OPERATING_SYSTEM,
-                    constants.BidModifierType.PLACEMENT,
+                    constants.BidModifierType.ENVIRONMENT,
                 ],
             ),
             [
@@ -400,8 +400,8 @@ class TestBidModifierService(TestCase):
                 "modifier": 1.7,
             },
             {
-                "type": constants.BidModifierType.PLACEMENT,
-                "target": dash.constants.PlacementMedium.SITE,
+                "type": constants.BidModifierType.ENVIRONMENT,
+                "target": dash.constants.Environment.SITE,
                 "source": None,
                 "modifier": 3.6,
             },
@@ -439,8 +439,8 @@ class TestBidModifierService(TestCase):
                     "modifier": 1.7,
                 },
                 {
-                    "type": constants.BidModifierType.PLACEMENT,
-                    "target": dash.constants.PlacementMedium.SITE,
+                    "type": constants.BidModifierType.ENVIRONMENT,
+                    "target": dash.constants.Environment.SITE,
                     "source": None,
                     "modifier": 3.6,
                 },
@@ -456,7 +456,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -473,7 +473,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -485,7 +485,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -503,7 +503,7 @@ class TestBidModifierService(TestCase):
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
-                self.ad_group, constants.BidModifierType.PLACEMENT, dash.constants.PlacementMedium.SITE, None, 3.6
+                self.ad_group, constants.BidModifierType.ENVIRONMENT, dash.constants.Environment.SITE, None, 3.6
             )[0].id,
             service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
         ]
@@ -599,14 +599,14 @@ class TestBidModifierService(TestCase):
             },
             {
                 helpers.output_modifier_type(
-                    constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.SITE),
+                    constants.BidModifierType.ENVIRONMENT
+                ): dash.constants.Environment.get_name(dash.constants.Environment.SITE),
                 "Bid Modifier": "-0.1",
             },
             {
                 helpers.output_modifier_type(
-                    constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.APP),
+                    constants.BidModifierType.ENVIRONMENT
+                ): dash.constants.Environment.get_name(dash.constants.Environment.APP),
                 "Bid Modifier": "0.5",
             },
             {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "XY", "Bid Modifier": "1.6"},
@@ -633,15 +633,15 @@ class TestBidModifierService(TestCase):
             },
             {
                 helpers.output_modifier_type(
-                    constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.SITE),
+                    constants.BidModifierType.ENVIRONMENT
+                ): dash.constants.Environment.get_name(dash.constants.Environment.SITE),
                 "Bid Modifier": "-0.1",
                 "Errors": helpers._get_modifier_bounds_error_message(-0.1),
             },
             {
                 helpers.output_modifier_type(
-                    constants.BidModifierType.PLACEMENT
-                ): dash.constants.PlacementMedium.get_name(dash.constants.PlacementMedium.APP),
+                    constants.BidModifierType.ENVIRONMENT
+                ): dash.constants.Environment.get_name(dash.constants.Environment.APP),
                 "Bid Modifier": "0.5",
                 "Errors": "",
             },

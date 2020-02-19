@@ -130,7 +130,7 @@ angular
         breakdownUrlMap[constants.breakdown.STATE] = 'region';
         breakdownUrlMap[constants.breakdown.DMA] = 'dma';
         breakdownUrlMap[constants.breakdown.DEVICE] = 'device_type';
-        breakdownUrlMap[constants.breakdown.PLACEMENT] = 'placement_medium';
+        breakdownUrlMap[constants.breakdown.ENVIRONMENT] = 'environment';
         breakdownUrlMap[constants.breakdown.OPERATING_SYSTEM] = 'device_os';
 
         function getUrl(level, id, breakdown) {

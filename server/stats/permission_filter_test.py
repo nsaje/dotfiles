@@ -131,11 +131,11 @@ class FilterTestCase(TestCase):
             "region",
             "gender",
             "month",
-            "placement_type",
+            "zem_placement_type",
             "week",
             "device_os",
             "device_os_version",
-            "placement_medium",
+            "environment",
             "archived",
             "maintenance",
             "notifications",
@@ -645,7 +645,7 @@ class BreakdownAllowedTest(TestCase):
         self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
 
         user = User.objects.get(pk=1)
-        delivery_fields = ["device_type", "device_os", "placement_medium", "country", "region", "dma"]
+        delivery_fields = ["device_type", "device_os", "environment", "country", "region", "dma"]
         for field in delivery_fields:
             with self.assertRaises(exc.MissingDataError):
                 permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, [field])
@@ -675,8 +675,8 @@ class BreakdownAllowedTest(TestCase):
         with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
             permission_filter.validate_breakdown_by_structure(["account_id", "day", "device_type"])
 
-    def test_validate_first_level_placement_breakdown_structure(self):
-        delivery_fields = ["device_type", "device_os", "placement_medium", "country", "region", "dma"]
+    def test_validate_first_level_environment_breakdown_structure(self):
+        delivery_fields = ["device_type", "device_os", "environment", "country", "region", "dma"]
         for field in delivery_fields:
             permission_filter.validate_breakdown_by_structure([field])
 

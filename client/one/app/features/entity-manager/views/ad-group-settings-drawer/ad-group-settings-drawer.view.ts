@@ -11,7 +11,7 @@ import {
 import {
     ENTITY_MANAGER_CONFIG,
     TARGETING_DEVICE_OPTIONS,
-    TARGETING_PLACEMENT_OPTIONS,
+    TARGETING_ENVIRONMENT_OPTIONS,
 } from '../../entity-manager.config';
 import {AdGroupSettingsStore} from '../../services/ad-group-settings-store/ad-group-settings.store';
 import {Currency, EntityType, LevelStateParam} from '../../../../app.constants';
@@ -43,7 +43,7 @@ export class AdGroupSettingsDrawerView
     currencySymbol = '';
 
     targetingDeviceOptions: ImageCheckboxInputGroupItem[] = TARGETING_DEVICE_OPTIONS;
-    targetingPlacementOptions: ImageCheckboxInputGroupItem[] = TARGETING_PLACEMENT_OPTIONS;
+    targetingEnvironmentOptions: ImageCheckboxInputGroupItem[] = TARGETING_ENVIRONMENT_OPTIONS;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 

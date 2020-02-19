@@ -201,12 +201,11 @@ def insert_delivery_name_columns_if_necessary(requested_columns, field_name_mapp
         for i, column in enumerate(requested_columns)
         if column in field_name_mapping
     }
-
-    delivery_fileds = set(stats.constants.get_top_level_delivery_dimensions()) & set(requested_field_map.keys())
+    delivery_fields = set(stats.constants.get_top_level_delivery_dimensions()) & set(requested_field_map.keys())
 
     columns_to_insert = []
 
-    for delivery_field in delivery_fileds:
+    for delivery_field in delivery_fields:
         delivery_column_name = "{} Name".format(requested_field_map[delivery_field]["column"])
         delivery_field_name = "{}_name".format(delivery_field)
 

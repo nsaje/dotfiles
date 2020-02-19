@@ -40,9 +40,9 @@ MATERIALIZED_VIEWS = [
         distkey="content_ad_id",
     ),
     MasterDerivedView.create(
-        table_name="mv_contentad_placement",
-        breakdown=AD_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
-        sortkey=AD_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
+        table_name="mv_contentad_environment",
+        breakdown=AD_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
+        sortkey=AD_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
         distkey="content_ad_id",
     ),
     MasterDerivedView.create(
@@ -72,9 +72,9 @@ MATERIALIZED_VIEWS = [
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
-        table_name="mv_contentad_touch_placement",
-        breakdown=AD_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=AD_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        table_name="mv_contentad_touch_environment",
+        breakdown=AD_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=AD_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -97,9 +97,9 @@ MATERIALIZED_VIEWS = [
         distkey="ad_group_id",
     ),
     MasterDerivedView.create(
-        table_name="mv_adgroup_placement",
-        breakdown=AD_GROUP_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
-        sortkey=AD_GROUP_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
+        table_name="mv_adgroup_environment",
+        breakdown=AD_GROUP_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
+        sortkey=AD_GROUP_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
         distkey="ad_group_id",
     ),
     MasterDerivedView.create(
@@ -129,9 +129,9 @@ MATERIALIZED_VIEWS = [
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
-        table_name="mv_adgroup_touch_placement",
-        breakdown=AD_GROUP_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=AD_GROUP_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        table_name="mv_adgroup_touch_environment",
+        breakdown=AD_GROUP_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=AD_GROUP_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -154,9 +154,9 @@ MATERIALIZED_VIEWS = [
         distkey="campaign_id",
     ),
     MasterDerivedView.create(
-        table_name="mv_campaign_placement",
-        breakdown=CAMPAIGN_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
-        sortkey=CAMPAIGN_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
+        table_name="mv_campaign_environment",
+        breakdown=CAMPAIGN_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
+        sortkey=CAMPAIGN_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
         distkey="campaign_id",
     ),
     MasterDerivedView.create(
@@ -186,9 +186,9 @@ MATERIALIZED_VIEWS = [
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
-        table_name="mv_campaign_touch_placement",
-        breakdown=CAMPAIGN_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=CAMPAIGN_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        table_name="mv_campaign_touch_environment",
+        breakdown=CAMPAIGN_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=CAMPAIGN_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
@@ -212,9 +212,9 @@ MATERIALIZED_VIEWS = [
         distkey="account_id",
     ),
     MasterDerivedView.create(
-        table_name="mv_account_placement",
-        breakdown=ACCOUNT_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
-        sortkey=ACCOUNT_BREAKDOWN + ["placement_medium", "placement_type", "video_playback_method"],
+        table_name="mv_account_environment",
+        breakdown=ACCOUNT_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
+        sortkey=ACCOUNT_BREAKDOWN + ["environment", "zem_placement_type", "video_playback_method"],
         distkey="account_id",
     ),
     MasterDerivedView.create(
@@ -244,9 +244,9 @@ MATERIALIZED_VIEWS = [
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(
-        table_name="mv_account_touch_placement",
-        breakdown=ACCOUNT_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
-        sortkey=ACCOUNT_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        table_name="mv_account_touch_environment",
+        breakdown=ACCOUNT_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=ACCOUNT_BREAKDOWN + ["environment"] + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(

@@ -6,5 +6,5 @@ export interface AdGroupExtrasDefaultSettings {
     exclusionTargetRegions: TargetRegions;
     targetDevices: string[];
     targetOs: TargetOperatingSystem[];
-    targetPlacements: string[];
+    targetEnvironments: string[];
 }

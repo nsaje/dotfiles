@@ -55,7 +55,7 @@ OUTPUT_COLUMN_NAMES = [
     "b1_sources_group_cpc_cc",
     "exclusion_target_regions",
     "target_os",
-    "target_placements",
+    "target_environments",
     "delivery_type",
     "click_capping_daily_ad_group_max_clicks",
     "b1_sources_group_cpm",

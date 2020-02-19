@@ -35,7 +35,7 @@ class CampaignViewSetTest(RESTAPITest):
         whitelist_publisher_groups=[],
         blacklist_publisher_groups=[],
         target_devices=[dash.constants.AdTargetDevice.DESKTOP],
-        target_placements=[dash.constants.Placement.APP],
+        target_environments=[dash.constants.AdTargetEnvironment.APP],
         target_os=[{"name": dash.constants.OperatingSystem.ANDROID}, {"name": dash.constants.OperatingSystem.LINUX}],
         frequency_capping=None,
         campaign_manager=None,
@@ -62,7 +62,7 @@ class CampaignViewSetTest(RESTAPITest):
             },
             "targeting": {
                 "devices": restapi.serializers.targeting.DevicesSerializer(target_devices).data,
-                "placements": restapi.serializers.targeting.PlacementsSerializer(target_placements).data,
+                "environments": restapi.serializers.targeting.EnvironmentsSerializer(target_environments).data,
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
                 "publisherGroups": {"included": whitelist_publisher_groups, "excluded": blacklist_publisher_groups},
             },

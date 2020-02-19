@@ -7,7 +7,7 @@ export enum RuleTargetType {
     AdGroupDma = 'DMA',
     AdGroupDevice = 'DEVICE',
     AdGroupOs = 'OS',
-    AdGroupPlacement = 'PLACEMENT',
+    AdGroupEnvironment = 'ENVIRONMENT',
     AdGroupSource = 'SOURCE',
 }
 

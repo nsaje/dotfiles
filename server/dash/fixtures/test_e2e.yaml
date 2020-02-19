@@ -292,7 +292,7 @@
         campaign_goal: 4
         target_devices: ['mobile']
         target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app']
+        target_environments: ['app']
         target_regions: ['US']
         campaign: 1
     model: dash.campaignsettings

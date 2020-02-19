@@ -203,17 +203,17 @@
                 </li>
             </ul>
         </ng-container>
-        <ng-container *ngSwitchCase="Breakdown.PLACEMENT">
+        <ng-container *ngSwitchCase="Breakdown.ENVIRONMENT">
             <ul>
                 <li>
-                    First column in the CSV file contains the placement
+                    First column in the CSV file contains the environment
                     specifier and the second column the bid modifier. The first
                     row in the CSV file is ignored.
                 </li>
-                <li>Valid placement specifiers are: APP, SITE.</li>
+                <li>Valid environment specifiers are: APP, SITE.</li>
                 <li>
                     Bid modifier values should range from 0 up. The resulting
-                    placement bid is obtained by multiplying existing ad group
+                    environment bid is obtained by multiplying existing ad group
                     bid with the number from the imported CSV file.
                 </li>
                 <li>

@@ -145,7 +145,7 @@ angular.module('one.common').factory('zemDeviceTargetingConstants', function() {
         },
     ];
 
-    var PLACEMENTS = [
+    var ENVIRONMENTS = [
         {
             value: 'SITE',
             name: 'Website',
@@ -166,6 +166,6 @@ angular.module('one.common').factory('zemDeviceTargetingConstants', function() {
         DEVICE_TYPE: DEVICE_TYPE,
         DEVICES: DEVICES,
         OPERATING_SYSTEMS: OPERATING_SYSTEMS,
-        PLACEMENTS: PLACEMENTS,
+        ENVIRONMENTS: ENVIRONMENTS,
     };
 });

@@ -42,7 +42,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         "archived",
         "target_devices",
         "target_os",
-        "target_placements",
+        "target_environments",
         "target_regions",
         "exclusion_target_regions",
         "autopilot",
@@ -62,7 +62,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         "campaign_goal",
         "target_devices",
         "target_os",
-        "target_placements",
+        "target_environments",
         "target_regions",
         "exclusion_target_regions",
         "autopilot",
@@ -101,7 +101,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
     )
 
     target_devices = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
-    target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Placement")
+    target_environments = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Environment")
     target_os = JSONField(null=True, blank=True, verbose_name="Operating Systems")
 
     target_regions = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
@@ -160,7 +160,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
             "promotion_goal": "Promotion Goal",
             "archived": "Archived",
             "target_devices": "Device targeting",
-            "target_placements": "Placement",
+            "target_environments": "Environment",
             "target_os": "Operating Systems",
             "target_regions": "Locations",
             "exclusion_target_regions": "Excluded Locations",
@@ -194,8 +194,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
             value = constants.PromotionGoal.get_text(value)
         elif prop_name == "target_devices":
             value = ", ".join(constants.AdTargetDevice.get_text(x) for x in value)
-        elif prop_name == "target_placements":
-            value = ", ".join(constants.Placement.get_text(x) for x in value) if value else ""
+        elif prop_name == "target_environments":
+            value = ", ".join(constants.Environment.get_text(x) for x in value) if value else ""
         elif prop_name == "target_os":
             value = ", ".join(helpers.get_human_value_target_os(x) for x in value) if value else ""
         elif prop_name in ("target_regions", "exclusion_target_regions"):

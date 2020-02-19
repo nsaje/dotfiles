@@ -14,7 +14,7 @@ CREATE TABLE mv_touchpointconversions (
       device_type int2 encode zstd,
       device_os varchar(127) encode lzo,
       device_os_version varchar(127) encode lzo,
-      placement_medium varchar(10) encode zstd,
+      environment varchar(10) encode zstd,
 
       country varchar(2) encode zstd,
       state varchar(32) encode bytedict,

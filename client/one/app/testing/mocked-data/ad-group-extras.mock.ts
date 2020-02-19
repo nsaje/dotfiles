@@ -26,7 +26,7 @@ export const adGroupExtrasMock: AdGroupExtras = {
         },
         targetDevices: [],
         targetOs: [],
-        targetPlacements: [],
+        targetEnvironments: [],
     },
     retargetableAdGroups: [],
     audiences: [],

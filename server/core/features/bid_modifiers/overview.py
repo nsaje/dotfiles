@@ -139,8 +139,8 @@ def _calculate_min_max(
         if count != len(dash.constants.OperatingSystem.get_all()) - 1:  # account for UNKNOWN
             min_value, max_value = _min_max_with_ones(min_value, max_value)
 
-    elif modifier_type == constants.BidModifierType.PLACEMENT:
-        if count != len(dash.constants.PlacementMedium.get_all()) - 1:  # account for UNKNOWN
+    elif modifier_type == constants.BidModifierType.ENVIRONMENT:
+        if count != len(dash.constants.Environment.get_all()) - 1:  # account for UNKNOWN
             min_value, max_value = _min_max_with_ones(min_value, max_value)
 
     elif modifier_type == constants.BidModifierType.DAY_HOUR:

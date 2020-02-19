@@ -210,7 +210,7 @@ export enum BreakdownStateParam {
     STATE = 'region',
     DMA = 'dma',
     DEVICE = 'device',
-    PLACEMENT = 'placement',
+    ENVIRONMENT = 'environment',
     OPERATING_SYSTEM = 'deviceos',
 }
 
@@ -226,7 +226,7 @@ export enum Breakdown {
     STATE = 'region',
     DMA = 'dma',
     DEVICE = 'device_type',
-    PLACEMENT = 'placement_medium',
+    ENVIRONMENT = 'environment',
     OPERATING_SYSTEM = 'device_os',
 }
 
@@ -241,7 +241,7 @@ export enum BidModifierType {
     SOURCE = 'SOURCE',
     DEVICE = 'DEVICE',
     OPERATING_SYSTEM = 'OPERATING_SYSTEM',
-    PLACEMENT = 'PLACEMENT',
+    ENVIRONMENT = 'ENVIRONMENT',
     COUNTRY = 'COUNTRY',
     STATE = 'STATE',
     DMA = 'DMA',
@@ -1589,8 +1589,8 @@ APP_CONSTANTS.breakdownToBreakdownStateParamMap[
     APP_CONSTANTS.breakdown.DEVICE
 ] = APP_CONSTANTS.breakdownStateParam.DEVICE;
 APP_CONSTANTS.breakdownToBreakdownStateParamMap[
-    APP_CONSTANTS.breakdown.PLACEMENT
-] = APP_CONSTANTS.breakdownStateParam.PLACEMENT;
+    APP_CONSTANTS.breakdown.ENVIRONMENT
+] = APP_CONSTANTS.breakdownStateParam.ENVIRONMENT;
 APP_CONSTANTS.breakdownToBreakdownStateParamMap[
     APP_CONSTANTS.breakdown.OPERATING_SYSTEM
 ] = APP_CONSTANTS.breakdownStateParam.OPERATING_SYSTEM;

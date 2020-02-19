@@ -18,8 +18,8 @@ class DeliveryDimension:
     DEVICE_OS = "device_os"
     DEVICE_OS_VERSION = "device_os_version"
 
-    PLACEMENT_MEDIUM = "placement_medium"
-    PLACEMENT_TYPE = "placement_type"
+    ENVIRONMENT = "environment"
+    ZEM_PLACEMENT_TYPE = "zem_placement_type"
     VIDEO_PLAYBACK_METHOD = "video_playback_method"
 
     COUNTRY = "country"
@@ -34,8 +34,8 @@ class DeliveryDimension:
         DEVICE,
         DEVICE_OS,
         DEVICE_OS_VERSION,
-        PLACEMENT_MEDIUM,
-        PLACEMENT_TYPE,
+        ENVIRONMENT,
+        ZEM_PLACEMENT_TYPE,
         VIDEO_PLAYBACK_METHOD,
         COUNTRY,
         REGION,
@@ -45,7 +45,7 @@ class DeliveryDimension:
         AGE_GENDER,
     ]
 
-    _EXTENDED = [DEVICE_OS_VERSION, PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD, AGE, GENDER, AGE_GENDER]
+    _EXTENDED = [DEVICE_OS_VERSION, ZEM_PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD, AGE, GENDER, AGE_GENDER]
 
 
 class TimeDimension:
@@ -69,8 +69,8 @@ DEVICE = DeliveryDimension.DEVICE
 DEVICE_OS = DeliveryDimension.DEVICE_OS
 DEVICE_OS_VERSION = DeliveryDimension.DEVICE_OS_VERSION
 
-PLACEMENT_MEDIUM = DeliveryDimension.PLACEMENT_MEDIUM
-PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
+ENVIRONMENT = DeliveryDimension.ENVIRONMENT
+ZEM_PLACEMENT_TYPE = DeliveryDimension.ZEM_PLACEMENT_TYPE
 VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 COUNTRY = DeliveryDimension.COUNTRY
@@ -115,7 +115,7 @@ DimensionIdentifierMapping = {
 DeliveryDimensionConstantClassMap = {
     DeliveryDimension.DEVICE: dash.constants.DeviceType,
     DeliveryDimension.DEVICE_OS: dash.constants.OperatingSystem,
-    DeliveryDimension.PLACEMENT_MEDIUM: dash.constants.PlacementMedium,
+    DeliveryDimension.ENVIRONMENT: dash.constants.Environment,
 }
 
 
@@ -207,7 +207,7 @@ TargetDimensionToBidModifierTypeMap = {
     StructureDimension.SOURCE: bid_modifiers.BidModifierType.SOURCE,
     DeliveryDimension.DEVICE: bid_modifiers.BidModifierType.DEVICE,
     DeliveryDimension.DEVICE_OS: bid_modifiers.BidModifierType.OPERATING_SYSTEM,
-    DeliveryDimension.PLACEMENT_MEDIUM: bid_modifiers.BidModifierType.PLACEMENT,
+    DeliveryDimension.ENVIRONMENT: bid_modifiers.BidModifierType.ENVIRONMENT,
     DeliveryDimension.COUNTRY: bid_modifiers.BidModifierType.COUNTRY,
     DeliveryDimension.REGION: bid_modifiers.BidModifierType.STATE,
     DeliveryDimension.DMA: bid_modifiers.BidModifierType.DMA,

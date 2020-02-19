@@ -243,6 +243,8 @@ class ReportJobExecutor(JobExecutor):
         cls._append_currency_column_if_necessary(column_names, column_to_field_name_map)
         cls._append_entity_tag_columns_if_necessary(user, constraints, breakdown, column_names)
         helpers.insert_delivery_name_columns_if_necessary(column_names, column_to_field_name_map)
+        # TODO: PLAC: remove after legacy grace period
+        cls._handle_legacy_columns(column_names, column_to_field_name_map)
 
         currency = None
         account_currency_map = None
@@ -391,6 +393,19 @@ class ReportJobExecutor(JobExecutor):
                 requested_columns.append("Ad Group Tags")
             if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.SOURCE] in breakdown:
                 requested_columns.append("Source Tags")
+
+    # TODO: PLAC: remove after legacy grace period
+    @staticmethod
+    def _handle_legacy_columns(columns, column_to_field_name_map):
+        legacy_to_column_map = {"Placement": "Environment", "Placement Name": "Environment Name"}
+
+        if all(
+            legacy_field in columns and legacy_field in column_to_field_name_map and field not in columns
+            for legacy_field, field in legacy_to_column_map.items()
+        ):
+            for legacy_field, field in legacy_to_column_map.items():
+                columns.append(field)
+                column_to_field_name_map[field] = column_to_field_name_map[legacy_field]
 
     @classmethod
     def convert_to_csv(

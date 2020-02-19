@@ -26,7 +26,7 @@ export const BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownStateParam.STATE]: Breakdown.STATE,
     [BreakdownStateParam.DMA]: Breakdown.DMA,
     [BreakdownStateParam.DEVICE]: Breakdown.DEVICE,
-    [BreakdownStateParam.PLACEMENT]: Breakdown.PLACEMENT,
+    [BreakdownStateParam.ENVIRONMENT]: Breakdown.ENVIRONMENT,
     [BreakdownStateParam.OPERATING_SYSTEM]: Breakdown.OPERATING_SYSTEM,
     [BreakdownStateParam.PUBLISHERS]: Breakdown.PUBLISHER,
     [BreakdownStateParam.INSIGHTS]: Breakdown.INSIGHTS,

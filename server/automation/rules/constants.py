@@ -19,7 +19,7 @@ class TargetType(ConstantBase):
     STATE = 6
     DMA = 7
     OS = 8
-    PLACEMENT = 9  # TODO: AUTOCAMP: may need to rename to ENVIRONMENT
+    ENVIRONMENT = 9
     SOURCE = 10
 
     _VALUES = {
@@ -31,7 +31,7 @@ class TargetType(ConstantBase):
         STATE: "State",
         DMA: "DMA",
         OS: "Operating system",
-        PLACEMENT: "Placement",
+        ENVIRONMENT: "Environment",
         SOURCE: "Source",
     }
 
@@ -45,7 +45,7 @@ TARGET_TYPE_MV_COLUMNS_MAPPING = {
     TargetType.STATE: ["region"],
     TargetType.DMA: ["dma"],
     TargetType.OS: ["device_os"],
-    TargetType.PLACEMENT: ["placement_medium"],
+    TargetType.ENVIRONMENT: ["environment"],
     TargetType.SOURCE: ["source_id"],
 }
 
@@ -58,7 +58,7 @@ TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING = {
     TargetType.STATE: core.features.bid_modifiers.constants.BidModifierType.STATE,
     TargetType.DMA: core.features.bid_modifiers.constants.BidModifierType.DMA,
     TargetType.OS: core.features.bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-    TargetType.PLACEMENT: core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
+    TargetType.ENVIRONMENT: core.features.bid_modifiers.constants.BidModifierType.ENVIRONMENT,
     TargetType.SOURCE: core.features.bid_modifiers.constants.BidModifierType.SOURCE,
 }
 

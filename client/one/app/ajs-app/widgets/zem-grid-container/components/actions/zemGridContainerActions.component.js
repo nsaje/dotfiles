@@ -34,7 +34,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown !== constants.breakdown.STATE &&
                 $ctrl.breakdown !== constants.breakdown.DMA &&
                 $ctrl.breakdown !== constants.breakdown.DEVICE &&
-                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
+                $ctrl.breakdown !== constants.breakdown.ENVIRONMENT &&
                 $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
             );
         }
@@ -103,7 +103,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown !== constants.breakdown.STATE &&
                 $ctrl.breakdown !== constants.breakdown.DMA &&
                 $ctrl.breakdown !== constants.breakdown.DEVICE &&
-                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
+                $ctrl.breakdown !== constants.breakdown.ENVIRONMENT &&
                 $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
             );
         }
@@ -134,7 +134,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                     $ctrl.breakdown === constants.breakdown.STATE ||
                     $ctrl.breakdown === constants.breakdown.DMA ||
                     $ctrl.breakdown === constants.breakdown.DEVICE ||
-                    $ctrl.breakdown === constants.breakdown.PLACEMENT ||
+                    $ctrl.breakdown === constants.breakdown.ENVIRONMENT ||
                     $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM)
             );
         }

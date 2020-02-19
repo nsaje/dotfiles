@@ -397,7 +397,7 @@ class AdGroupSettings(api_common.BaseApiView):
         from restapi.serializers.targeting import (
             DevicesSerializer,
             OSsSerializer,
-            PlacementsSerializer,
+            EnvironmentsSerializer,
             AudienceSerializer,
             TargetRegionsSerializer,
             BrowsersSerializer,
@@ -408,7 +408,7 @@ class AdGroupSettings(api_common.BaseApiView):
         result["target_devices"] = DevicesSerializer(settings.target_devices).data
         result["target_os"] = OSsSerializer(settings.target_os).data
         result["target_browsers"] = BrowsersSerializer(settings.target_browsers).data
-        result["target_placements"] = PlacementsSerializer(settings.target_placements).data
+        result["target_environments"] = EnvironmentsSerializer(settings.target_environments).data
         result["bluekai_targeting"] = AudienceSerializer(settings.bluekai_targeting).data
         result["bluekai_targeting_old"] = AudienceSerializer(settings.bluekai_targeting, use_list_repr=True).data
 
@@ -427,7 +427,7 @@ class AdGroupSettings(api_common.BaseApiView):
         from restapi.serializers.targeting import (
             DevicesSerializer,
             OSsSerializer,
-            PlacementsSerializer,
+            EnvironmentsSerializer,
             TargetRegionsSerializer,
         )
 
@@ -435,7 +435,7 @@ class AdGroupSettings(api_common.BaseApiView):
         result["exclusion_target_regions"] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result["target_devices"] = DevicesSerializer(settings.target_devices).data
         result["target_os"] = OSsSerializer(settings.target_os).data
-        result["target_placements"] = PlacementsSerializer(settings.target_placements).data
+        result["target_environments"] = EnvironmentsSerializer(settings.target_environments).data
 
         return result
 
@@ -799,7 +799,7 @@ class CampaignSettings(api_common.BaseApiView):
         from restapi.serializers.targeting import (
             DevicesSerializer,
             OSsSerializer,
-            PlacementsSerializer,
+            EnvironmentsSerializer,
             TargetRegionsSerializer,
         )
 
@@ -807,7 +807,7 @@ class CampaignSettings(api_common.BaseApiView):
         result["exclusion_target_regions"] = TargetRegionsSerializer(settings.exclusion_target_regions).data
         result["target_devices"] = DevicesSerializer(settings.target_devices).data
         result["target_os"] = OSsSerializer(settings.target_os).data
-        result["target_placements"] = PlacementsSerializer(settings.target_placements).data
+        result["target_environments"] = EnvironmentsSerializer(settings.target_environments).data
 
         if request.user.has_perm("zemauth.can_set_frequency_capping"):
             result["frequency_capping"] = settings.frequency_capping

@@ -53,8 +53,21 @@ class PublisherGroupsSerializer(rest_framework.serializers.Serializer):
 
 
 class CampaignTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    # TODO: PLAC: remove after legacy grace period
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret["placements"] = ret["environments"]
+        return ret
+
+    # TODO: PLAC: remove after legacy grace period
+    def to_internal_value(self, data):
+        if "environments" not in data and "placements" in data:
+            data["environments"] = data["placements"]
+        ret = super().to_internal_value(data)
+        return ret
+
     devices = restapi.serializers.targeting.DevicesSerializer(source="target_devices", required=False)
-    placements = restapi.serializers.targeting.PlacementsSerializer(source="target_placements", required=False)
+    environments = restapi.serializers.targeting.EnvironmentsSerializer(source="target_environments", required=False)
     os = restapi.serializers.targeting.OSsSerializer(source="target_os", required=False)
     publisher_groups = PublisherGroupsSerializer(source="*", required=False)
 

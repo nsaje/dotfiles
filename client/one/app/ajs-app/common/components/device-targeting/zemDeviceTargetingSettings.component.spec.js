@@ -8,7 +8,7 @@ describe('component: zemDeviceTargetingSettings', function() {
     beforeEach(inject(function($rootScope, $componentController) {
         var bindings = {
             targetDevices: [],
-            targetPlacements: [],
+            targetEnvironments: [],
             targetOs: [],
             errors: {},
             onUpdate: angular.noop,

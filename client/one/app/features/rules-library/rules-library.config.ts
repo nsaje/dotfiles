@@ -38,8 +38,8 @@ export const RULE_TARGET_TYPES = [
         value: RuleTargetType.AdGroupOs,
     },
     {
-        label: 'Ad group / placements',
-        value: RuleTargetType.AdGroupPlacement,
+        label: 'Ad group / environments',
+        value: RuleTargetType.AdGroupEnvironment,
     },
     {
         label: 'Ad group / sources',

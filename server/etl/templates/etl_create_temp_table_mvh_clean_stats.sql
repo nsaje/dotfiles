@@ -9,9 +9,9 @@ CREATE TEMP TABLE mvh_clean_stats (
     device_type integer encode bytedict,
     device_os varchar(127) encode bytedict,
     device_os_version varchar(127) encode zstd,
-    placement_medium varchar(10) encode bytedict,
+    environment varchar(10) encode bytedict,
 
-    placement_type int2 encode zstd,
+    zem_placement_type int2 encode zstd,
     video_playback_method int2 encode zstd,
 
     country varchar(2) encode zstd,

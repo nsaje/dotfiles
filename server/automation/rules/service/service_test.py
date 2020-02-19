@@ -70,8 +70,8 @@ class ServiceTest(TestCase):
         state_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:5])
         dma_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:4])
         os_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:3])
-        placement_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.PLACEMENT, ad_groups_included=ad_groups[:2]
+        environment_rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.ENVIRONMENT, ad_groups_included=ad_groups[:2]
         )
         source_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:1])
 
@@ -119,7 +119,7 @@ class ServiceTest(TestCase):
         self._test_history(state_rule)
         self._test_history(dma_rule)
         self._test_history(os_rule)
-        self._test_history(placement_rule)
+        self._test_history(environment_rule)
         self._test_history(source_rule)
 
     def _test_history(self, rule):
@@ -459,7 +459,7 @@ class ServiceTest(TestCase):
                 constants.TargetType.STATE,
                 constants.TargetType.DMA,
                 constants.TargetType.OS,
-                constants.TargetType.PLACEMENT,
+                constants.TargetType.ENVIRONMENT,
                 constants.TargetType.SOURCE,
             ]
         }

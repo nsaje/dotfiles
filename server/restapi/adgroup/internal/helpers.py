@@ -62,7 +62,7 @@ def get_default_settings(ad_group):
         "exclusion_target_regions": settings.exclusion_target_regions,
         "target_devices": settings.target_devices,
         "target_os": settings.target_os,
-        "target_placements": settings.target_placements,
+        "target_environments": settings.target_environments,
     }
 
     return result
