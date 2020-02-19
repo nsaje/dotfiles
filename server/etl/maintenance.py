@@ -37,7 +37,7 @@ def truncate(table, db_name=None):
 def stats_min_date():
     logger.info("Querying earliest date in stats table")
     sql = "select min(date) from stats;"
-    with db.get_stats_cursor() as c:
+    with db.get_write_stats_cursor() as c:
         c.execute(sql)
         result = c.fetchone()[0]
     logger.info("Finished querying earliest date in stats table")
