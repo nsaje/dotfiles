@@ -117,7 +117,7 @@ class RDSAccount(RDSModelization):
         account_account_manager="settings__default_account_manager__email",
         account_cs_representative="settings__default_cs_representative__email",
         ob_sales_representative="settings__ob_sales_representative__email",
-        ob_account_manager="settings__ob_account_manager__email",
+        account_ob_account_manager="settings__ob_account_manager__email",
         archived="settings__archived",
         account_type=RDSModelization._get_constant_value("settings__account_type", dash.constants.AccountType),
         whitelist_publisher_groups="settings__whitelist_publisher_groups",
