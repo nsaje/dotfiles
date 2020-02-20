@@ -469,31 +469,6 @@ describe('AdGroupSettingsStore', () => {
         expect(store.isAdGroupAutopilotEnabled()).toBe(false);
     });
 
-    it('should correctly set device targeting', () => {
-        spyOn(store, 'validateEntity')
-            .and.returnValue()
-            .calls.reset();
-        const $event: any = {
-            targetDevices: ['TABLE', 'MOBILE'],
-            targetEnvironments: [],
-            targetOs: ['MACOSX', 'LINUX'],
-        };
-
-        expect(store.state.entity.targeting.devices).toEqual([]);
-        expect(store.state.entity.targeting.environments).toEqual([]);
-        expect(store.state.entity.targeting.os).toEqual([]);
-        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(false);
-        store.setDeviceTargeting($event);
-        expect(store.state.entity.targeting.devices).toEqual(
-            $event.targetDevices
-        );
-        expect(store.state.entity.targeting.environments).toEqual(
-            $event.targetEnvironments
-        );
-        expect(store.state.entity.targeting.os).toEqual($event.targetOs);
-        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
-    });
-
     it('should allow adding of device targeting', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()

@@ -429,26 +429,6 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    setDeviceTargeting(deviceTargeting: {
-        targetDevices?: string[];
-        targetEnvironments?: string[];
-        targetOs?: TargetOperatingSystem[];
-    }) {
-        this.setState({
-            ...this.state,
-            entity: {
-                ...this.state.entity,
-                targeting: {
-                    ...this.state.entity.targeting,
-                    devices: deviceTargeting.targetDevices,
-                    environments: deviceTargeting.targetEnvironments,
-                    os: deviceTargeting.targetOs,
-                },
-            },
-        });
-        this.validateEntity();
-    }
-
     toggleTargetingDevice(device: string) {
         const oldDevices: string[] = this.state.entity.targeting.devices;
         const allDevices: string[] = TARGETING_DEVICE_OPTIONS.map(
