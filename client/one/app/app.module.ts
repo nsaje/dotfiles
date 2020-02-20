@@ -70,6 +70,7 @@ if (APP_CONFIG.env.prod) {
             positionClass: 'toast-bottom-center',
             toastClass: 'ngx-toastr zem-toastr',
             preventDuplicates: true,
+            maxOpened: 1,
         }),
 
         CoreModule,
