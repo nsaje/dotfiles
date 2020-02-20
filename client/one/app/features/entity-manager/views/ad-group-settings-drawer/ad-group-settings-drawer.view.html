@@ -860,6 +860,35 @@
                 class="zem-panel zem-settings__panel"
                 *ngIf="
                     zemPermissions.hasPermission(
+                        'zemauth.can_review_and_set_bid_modifiers_in_settings'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Bid modifiers
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-bid-modifiers-overview
+                        class="zem-bid-modifiers-overview"
+                        [adGroupId]="entityId"
+                        [bidModifierTypeSummaries]="
+                            state.extras.bidModifierTypeSummaries
+                        "
+                        [importError]="state.bidModifiersImportError"
+                        [importSummary]="state.bidModifiersImportSummary"
+                        (importFileChange)="
+                            store.handleBidModifierImportFileChange($event)
+                        "
+                    ></zem-bid-modifiers-overview>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
                         'zemauth.can_see_backend_hacks'
                     )
                 "
@@ -903,35 +932,6 @@
                         class="zem-deals zem-settings-section__item"
                         [deals]="state.extras.deals"
                     ></zem-deals>
-                </div>
-            </div>
-
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="
-                    zemPermissions.hasPermission(
-                        'zemauth.can_review_and_set_bid_modifiers_in_settings'
-                    )
-                "
-            >
-                <div class="zem-panel__header">
-                    <h2 class="zem-settings__panel-header-title">
-                        Bid modifiers
-                    </h2>
-                </div>
-                <div class="zem-settings-section">
-                    <zem-bid-modifiers-overview
-                        class="zem-bid-modifiers-overview"
-                        [adGroupId]="entityId"
-                        [bidModifierTypeSummaries]="
-                            state.extras.bidModifierTypeSummaries
-                        "
-                        [importError]="state.bidModifiersImportError"
-                        [importSummary]="state.bidModifiersImportSummary"
-                        (importFileChange)="
-                            store.handleBidModifierImportFileChange($event)
-                        "
-                    ></zem-bid-modifiers-overview>
                 </div>
             </div>
         </div>
