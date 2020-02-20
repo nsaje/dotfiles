@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "dcron",
     "dev",
     "demo",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [

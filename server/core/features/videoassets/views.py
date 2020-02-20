@@ -13,7 +13,6 @@ class VideoAssetBaseView(restapi.common.views_base.RESTAPIBaseView):
 
     permission_classes = (
         rest_framework.permissions.IsAuthenticated,
-        restapi.access.HasAccountAccess,
         restapi.access.gen_permission_class("zemauth.fea_video_upload"),
     )
 

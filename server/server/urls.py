@@ -1,4 +1,6 @@
 import django.views.defaults
+import drf_yasg
+import drf_yasg.views
 import oauth2_provider.views
 from django.conf import settings
 from django.conf.urls import include
@@ -9,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
+from rest_framework import permissions
 
 import dash.features.contentupload.views
 import dash.features.daily_stats.views
@@ -28,6 +31,8 @@ import etl.crossvalidation.views
 import restapi.bcm.urls
 import stats.constants
 import zemauth.views
+from restapi.common.views_base import CanUseRESTAPIPermission
+from restapi.docs.swagger import RestAPISchemaGenerator
 from zemauth.forms import AuthenticationForm
 
 admin.site.login = login_required(admin.site.login)
@@ -624,6 +629,32 @@ urlpatterns += [
 
 # Health Check
 urlpatterns += [url(r"^healthcheck$", dash.views.views.healthcheck, name="healthcheck")]
+
+# Swagger API
+schema_view = drf_yasg.views.get_schema_view(
+    drf_yasg.openapi.Info(
+        title="Zemanta One API",
+        default_version="v1",
+        contact=drf_yasg.openapi.Contact(email="api-support@zemanta.com"),
+        description="Find more info here http://dev.zemanta.com/one/api/",
+    ),
+    public=False,
+    permission_classes=(permissions.IsAuthenticated, CanUseRESTAPIPermission),
+    generator_class=RestAPISchemaGenerator,
+)
+schema_view_internal = drf_yasg.views.get_schema_view(
+    drf_yasg.openapi.Info(title="Internal API", default_version="v1"),
+    public=False,
+    permission_classes=(permissions.IsAdminUser,),
+)
+urlpatterns += [
+    url(
+        r"^swagger_internal/$",
+        login_required(schema_view_internal.with_ui("swagger", cache_timeout=0)),
+        name="schema-swagger-internal-ui",
+    ),
+    url(r"^swagger/$", login_required(schema_view.with_ui("swagger", cache_timeout=0)), name="schema-swagger-ui"),
+]
 
 # TOS
 urlpatterns += [url(r"^tos/$", TemplateView.as_view(template_name="tos.html"))]
