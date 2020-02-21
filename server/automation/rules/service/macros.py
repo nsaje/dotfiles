@@ -91,7 +91,7 @@ def _get_macro_value(macro, ad_group, currency, target_stats):
 def _get_stat_macro_value(
     macro_prefix: str, window: str, currency, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]
 ):
-    stat_key = constants.EMAIL_MACRO_MV_COLUMNS_MAPPING[macro_prefix]
+    stat_key = constants.EMAIL_MACRO_STATS_MAPPING[macro_prefix]
     window_constant_value = constants.MetricWindow.get_constant_value(window)
     macro_stat = target_stats[stat_key][window_constant_value]
     if macro_prefix in CURRENCY_MACROS and macro_stat is not None:

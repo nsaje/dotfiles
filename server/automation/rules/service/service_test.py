@@ -451,7 +451,7 @@ class ServiceTest(TestCase):
 
     def test_format_stats(self):
         test_cases = {
-            target_type: constants.TARGET_TYPE_MV_COLUMNS_MAPPING[target_type][0]
+            target_type: constants.TARGET_TYPE_STATS_MAPPING[target_type][0]
             for target_type in [
                 constants.TargetType.AD,
                 constants.TargetType.DEVICE,

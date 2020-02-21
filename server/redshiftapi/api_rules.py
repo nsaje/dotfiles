@@ -25,7 +25,7 @@ def query(target_type: int, ad_groups: Sequence[core.models.AdGroup]):
 def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGroup]) -> str:
     local_today = utils.dates_helper.local_today()
 
-    target_type_columns = automation.rules.constants.TARGET_TYPE_MV_COLUMNS_MAPPING[target_type]
+    target_type_columns = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
     breakdown_columns = ["ad_group_id"]
     aggregate_columns = [
         "clicks",

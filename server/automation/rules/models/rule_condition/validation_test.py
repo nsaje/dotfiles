@@ -13,7 +13,7 @@ from . import model
 class RuleConditionValidationTest(TestCase):
     def setUp(self):
         self.rule_condition = model.RuleCondition(
-            operator=constants.Operator.EQUALS,
+            operator=constants.Operator.GREATER_THAN,
             left_operand_type=constants.MetricType.TOTAL_SPEND,
             left_operand_window=None,
             left_operand_modifier=None,
@@ -23,16 +23,24 @@ class RuleConditionValidationTest(TestCase):
         )
 
     def test_validate_operator(self):
-        self.rule_condition.clean({"operator": constants.Operator.EQUALS})
+        self.rule_condition.clean({"operator": constants.Operator.LESS_THAN})
+        with self._assert_multiple_validation_error([exceptions.InvalidOperator]):
+            self.rule_condition.clean({"operator": constants.Operator.EQUALS})
         with self._assert_multiple_validation_error([exceptions.InvalidOperator]):
             self.rule_condition.clean({"operator": 999})
+
+        self.assertFalse(constants.Operator.CONTAINS in config.VALID_OPERATORS[constants.MetricType.TOTAL_SPEND])
+        with self._assert_multiple_validation_error([exceptions.InvalidOperator]):
+            self.rule_condition.clean(
+                {"operator": constants.Operator.CONTAINS, "left_operand_type": constants.MetricType.TOTAL_SPEND}
+            )
 
     def test_validate_left_operand_type(self):
         self.rule_condition.clean({"left_operand_type": constants.MetricType.CLICKS})
         self.assertFalse(constants.MetricType.VIDEO_START in config.VALID_LEFT_OPERAND_TYPES)
         with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType]):
             self.rule_condition.clean({"left_operand_type": constants.MetricType.VIDEO_START})
-        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType]):
+        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType, exceptions.InvalidOperator]):
             self.rule_condition.clean({"left_operand_type": 999})
 
     def test_validate_left_operand_window(self):

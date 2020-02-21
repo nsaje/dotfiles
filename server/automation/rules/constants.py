@@ -36,7 +36,7 @@ class TargetType(ConstantBase):
     }
 
 
-TARGET_TYPE_MV_COLUMNS_MAPPING = {
+TARGET_TYPE_STATS_MAPPING = {
     TargetType.AD_GROUP: ["ad_group_id"],
     TargetType.AD: ["content_ad_id"],
     TargetType.PUBLISHER: ["publisher", "source_id"],
@@ -118,51 +118,66 @@ class MetricWindow(ConstantBase):
 
 
 class MetricType(ConstantBase):
-    AD_GROUP_DAILY_CAP = 1
-    AD_GROUP_DAILY_CAP_SPENT_RATIO = 2
-    BID = 3
-    BID_MODIFIER = 4
-    TOTAL_SPEND = 5
-    PRIMARY_GOAL = 6
-    IMPRESSIONS = 7
-    CLICKS = 8
-    CTR = 9
-    AVG_CPC = 10
-    AVG_CPM = 11
-    VISITS = 12
-    NEW_VISITS = 13
-    UNIQUE_USERS = 14
-    NEW_USERS = 15
-    RETURNING_USERS = 16
-    NEW_USERS_RATIO = 17
-    CLICK_DISCREPANCY = 18
-    PAGEVIEWS = 19
-    PAGEVIEWS_PER_VISIT = 20
-    BOUNCED_VISITS = 21
-    NON_BOUNCED_VISITS = 22
-    BOUNCE_RATE = 23
-    TOTAL_SECONDS = 24
-    AVG_TIME_ON_SITE = 25
-    AVG_COST_PER_VISIT = 26
-    AVG_COST_PER_NEW_VISITOR = 27
-    AVG_COST_PER_PAGEVIEW = 28
-    AVG_COST_PER_NON_BOUNCED_VISIT = 29
-    AVG_COST_PER_MINUTE = 30
-    VIDEO_START = 31
-    VIDEO_FIRST_QUARTILE = 32
-    VIDEO_MIDPOINT = 33
-    VIDEO_THIRD_QUARTILE = 34
-    VIDEO_COMPLETE = 35
-    AVG_CPV = 36
-    AVG_CPCV = 37
+    TOTAL_SPEND = 1
+    IMPRESSIONS = 2
+    CLICKS = 3
+    CTR = 4
+    AVG_CPC = 5
+    AVG_CPM = 6
+    VISITS = 7
+    NEW_VISITS = 8
+    UNIQUE_USERS = 9
+    NEW_USERS = 10
+    RETURNING_USERS = 11
+    NEW_USERS_RATIO = 12
+    CLICK_DISCREPANCY = 13
+    PAGEVIEWS = 14
+    PAGEVIEWS_PER_VISIT = 15
+    BOUNCED_VISITS = 16
+    NON_BOUNCED_VISITS = 17
+    BOUNCE_RATE = 18
+    TOTAL_SECONDS = 19
+    AVG_TIME_ON_SITE = 20
+    AVG_COST_PER_VISIT = 21
+    AVG_COST_PER_NEW_VISITOR = 22
+    AVG_COST_PER_PAGEVIEW = 23
+    AVG_COST_PER_NON_BOUNCED_VISIT = 24
+    AVG_COST_PER_MINUTE = 25
+    VIDEO_START = 26
+    VIDEO_FIRST_QUARTILE = 27
+    VIDEO_MIDPOINT = 28
+    VIDEO_THIRD_QUARTILE = 29
+    VIDEO_COMPLETE = 30
+    AVG_CPV = 31
+    AVG_CPCV = 32
+    ACCOUNT_NAME = 33
+    ACCOUNT_CREATED_DATE = 34
+    DAYS_SINCE_ACCOUNT_CREATED = 35
+    CAMPAIGN_NAME = 36
+    CAMPAIGN_CREATED_DATE = 37
+    DAYS_SINCE_CAMPAIGN_CREATED = 38
+    CAMPAIGN_TYPE = 39
+    CAMPAIGN_MANAGER = 40
+    CAMPAIGN_CATEGORY = 41
+    CAMPAIGN_LANGUAGE = 42
+    CAMPAIGN_PRIMARY_GOAL = 43
+    CAMPAIGN_PRIMARY_GOAL_VALUE = 44
+    AD_GROUP_NAME = 45
+    AD_GROUP_CREATED_DATE = 46
+    DAYS_SINCE_AD_GROUP_CREATED = 47
+    AD_GROUP_START_DATE = 48
+    AD_GROUP_END_DATE = 49
+    AD_GROUP_BIDDING_TYPE = 50
+    AD_GROUP_BID = 51
+    AD_GROUP_DAILY_CAP = 52
+    AD_GROUP_DELIVERY_TYPE = 53
+    AD_TITLE = 54
+    AD_LABEL = 55
+    AD_CREATED_DATE = 56
+    DAYS_SINCE_AD_CREATED = 57
 
     _VALUES = {
-        AD_GROUP_DAILY_CAP: "Daily cap",
-        AD_GROUP_DAILY_CAP_SPENT_RATIO: "Daily cap spent percentage",
-        BID: "Bid",
-        BID_MODIFIER: "Bid modifier",
         TOTAL_SPEND: "Total spend",
-        PRIMARY_GOAL: "Primary goal",
         IMPRESSIONS: "Impressions",
         CLICKS: "Clicks",
         CTR: "CTR",
@@ -194,10 +209,35 @@ class MetricType(ConstantBase):
         VIDEO_COMPLETE: "Video complete",
         AVG_CPV: "Average CPV",
         AVG_CPCV: "Average CPCV",
+        ACCOUNT_NAME: "Account name",
+        ACCOUNT_CREATED_DATE: "Account created date",
+        DAYS_SINCE_ACCOUNT_CREATED: "Days since account created",
+        CAMPAIGN_NAME: "Campaign name",
+        CAMPAIGN_CREATED_DATE: "Campaign created date",
+        DAYS_SINCE_CAMPAIGN_CREATED: "Days since campaign created",
+        CAMPAIGN_TYPE: "Campaign type",
+        CAMPAIGN_MANAGER: "Campaign manager",
+        CAMPAIGN_CATEGORY: "Campaign category",
+        CAMPAIGN_LANGUAGE: "Campaign language",
+        CAMPAIGN_PRIMARY_GOAL: "Campaign primary goal",
+        CAMPAIGN_PRIMARY_GOAL_VALUE: "Campaign primary goal value",
+        AD_GROUP_NAME: "Ad group name",
+        AD_GROUP_CREATED_DATE: "Ad group created date",
+        DAYS_SINCE_AD_GROUP_CREATED: "Days since ad group created",
+        AD_GROUP_START_DATE: "Ad group start date",
+        AD_GROUP_END_DATE: "Ad group end date",
+        AD_GROUP_BIDDING_TYPE: "Ad group bidding type",
+        AD_GROUP_BID: "Ad group bid",
+        AD_GROUP_DAILY_CAP: "Ad group daily cap",
+        AD_GROUP_DELIVERY_TYPE: "Ad group delivery type",
+        AD_TITLE: "Ad title",
+        AD_LABEL: "Ad label",
+        AD_CREATED_DATE: "Ad created date",
+        DAYS_SINCE_AD_CREATED: "Days since ad created",
     }
 
 
-METRIC_MV_COLUMNS_MAPPING = {
+METRIC_STATS_MAPPING = {
     MetricType.CLICKS: "clicks",
     MetricType.IMPRESSIONS: "impressions",
     MetricType.TOTAL_SPEND: "etfm_cost",
@@ -233,6 +273,43 @@ METRIC_MV_COLUMNS_MAPPING = {
 }
 
 
+METRIC_SETTINGS_MAPPING = {
+    MetricType.ACCOUNT_NAME: "account_name",
+    MetricType.ACCOUNT_CREATED_DATE: "account_created_date",
+    MetricType.DAYS_SINCE_ACCOUNT_CREATED: "days_since_account_created",
+    MetricType.CAMPAIGN_NAME: "campaign_name",
+    MetricType.CAMPAIGN_CREATED_DATE: "campaign_created_date",
+    MetricType.DAYS_SINCE_CAMPAIGN_CREATED: "days_since_campaign_created",
+    MetricType.CAMPAIGN_TYPE: "campaign_type",
+    MetricType.CAMPAIGN_MANAGER: "campaign_manager",
+    MetricType.CAMPAIGN_CATEGORY: "campaign_category",
+    MetricType.CAMPAIGN_LANGUAGE: "campaign_language",
+    MetricType.CAMPAIGN_PRIMARY_GOAL: "campaign_primary_goal",
+    MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE: "campaign_primary_goal_value",
+    MetricType.AD_GROUP_NAME: "ad_group_name",
+    MetricType.AD_GROUP_CREATED_DATE: "ad_group_created_date",
+    MetricType.DAYS_SINCE_AD_GROUP_CREATED: "days_since_ad_group_created",
+    MetricType.AD_GROUP_START_DATE: "ad_group_start_date",
+    MetricType.AD_GROUP_END_DATE: "ad_group_end_date",
+    MetricType.AD_GROUP_BIDDING_TYPE: "ad_group_bidding_type",
+    MetricType.AD_GROUP_BID: "ad_group_bid",
+    MetricType.AD_GROUP_DAILY_CAP: "ad_group_daily_cap",
+    MetricType.AD_GROUP_DELIVERY_TYPE: "ad_group_delivery_type",
+    MetricType.AD_TITLE: "ad_title",
+    MetricType.AD_LABEL: "ad_label",
+    MetricType.AD_CREATED_DATE: "ad_created_date",
+    MetricType.DAYS_SINCE_AD_CREATED: "days_since_ad_created",
+}
+
+
+CONTENT_AD_SETTINGS = {
+    MetricType.AD_TITLE,
+    MetricType.AD_LABEL,
+    MetricType.AD_CREATED_DATE,
+    MetricType.DAYS_SINCE_AD_CREATED,
+}
+
+
 # TODO: find a better name
 class ValueType(ConstantBase):
     ABSOLUTE = 1
@@ -245,8 +322,9 @@ class ValueType(ConstantBase):
     AD_GROUP_BID = 8
     AD_GROUP_CLICK_DAILY_CAP = 9
     AD_GROUP_DAILY_CAP = 10
-    TOTAL_SPEND = 11
-    TOTAL_SPEND_DAILY_AVG = 12
+    AD_GROUP_DAILY_CAP_SPENT_RATIO = 11
+    TOTAL_SPEND = 12
+    TOTAL_SPEND_DAILY_AVG = 13
 
     _VALUES = {
         ABSOLUTE: "Absolute value",
@@ -259,12 +337,13 @@ class ValueType(ConstantBase):
         AD_GROUP_BID: "Ad group bid",
         AD_GROUP_CLICK_DAILY_CAP: "Ad group click daily cap",
         AD_GROUP_DAILY_CAP: "Daily cap",
+        AD_GROUP_DAILY_CAP_SPENT_RATIO: "Daily cap spent ratio",
         TOTAL_SPEND: "Total spend",
         TOTAL_SPEND_DAILY_AVG: "Total spend (daily average)",  # TODO: AUTOCAMP
     }
 
 
-VALUE_MV_COLUMNS_MAPPING = {ValueType.TOTAL_SPEND: "etfm_cost"}
+VALUE_STATS_MAPPING = {ValueType.TOTAL_SPEND: "etfm_cost"}
 
 
 class Operator(ConstantBase):
@@ -364,7 +443,7 @@ class EmailActionMacro(ConstantBase):
     }
 
 
-EMAIL_MACRO_MV_COLUMNS_MAPPING = {
+EMAIL_MACRO_STATS_MAPPING = {
     EmailActionMacro.TOTAL_SPEND: "etfm_cost",
     EmailActionMacro.CLICKS: "clicks",
     EmailActionMacro.IMPRESSIONS: "impressions",

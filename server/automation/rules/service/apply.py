@@ -83,37 +83,56 @@ def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> b
 
 def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]) -> bool:
     for condition in rule.conditions.all():
-        left_operand_key = constants.METRIC_MV_COLUMNS_MAPPING[condition.left_operand_type]
-        left_operand_stat_value = target_stats[left_operand_key][condition.left_operand_window]
-        if left_operand_stat_value is None:
-            return False
-
-        left_operand_modifier = condition.left_operand_modifier or 1.0
-        left_operand_value = left_operand_stat_value * left_operand_modifier
-
-        # TODO: handle constants
-        if condition.right_operand_type in [constants.ValueType.ABSOLUTE, constants.ValueType.CONSTANT]:
-            right_operand_value = float(condition.right_operand_value)
-        else:
-            right_operand_key = constants.VALUE_MV_COLUMNS_MAPPING[condition.right_operand_type]
-            right_operand_stat_value = target_stats[right_operand_key][condition.right_operand_window]
-            if right_operand_stat_value is None:
-                return False
-
-            try:
-                right_operand_modifier = float(condition.right_operand_value)
-            except ValueError:
-                right_operand_modifier = 1.0
-
-            right_operand_value = right_operand_stat_value * right_operand_modifier
-
+        left_operand_value, right_operand_value = _prepare_operands(condition, target_stats)
         if not _meets_condition(condition.operator, left_operand_value, right_operand_value):
             return False
-
     return True
 
 
+def _prepare_operands(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+    if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
+        return _prepare_stats_operands(condition, target_stats)
+    elif condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING:
+        pass
+
+    raise ValueError("Invalid condition type")
+
+
+def _prepare_stats_operands(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+    left_operand_value = _prepare_left_stat_operand(condition, target_stats)
+    right_operand_value = _prepare_right_stat_operand(condition, target_stats)
+    return left_operand_value, right_operand_value
+
+
+def _prepare_left_stat_operand(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+    left_operand_key = constants.METRIC_STATS_MAPPING[condition.left_operand_type]
+    left_operand_stat_value = target_stats[left_operand_key][condition.left_operand_window]
+    if left_operand_stat_value is None:
+        return left_operand_stat_value
+    left_operand_modifier = condition.left_operand_modifier or 1.0
+    return left_operand_stat_value * left_operand_modifier
+
+
+def _prepare_right_stat_operand(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+    # TODO: handle constants
+    if condition.right_operand_type == constants.ValueType.ABSOLUTE:
+        return float(condition.right_operand_value)
+    elif condition.right_operand_type in constants.VALUE_STATS_MAPPING:
+        right_operand_key = constants.VALUE_STATS_MAPPING[condition.right_operand_type]
+        right_operand_stat_value = target_stats[right_operand_key][condition.right_operand_window]
+        if right_operand_stat_value is None:
+            return right_operand_stat_value
+        try:
+            right_operand_modifier = float(condition.right_operand_value)
+        except ValueError:
+            right_operand_modifier = 1.0
+        return right_operand_stat_value * right_operand_modifier
+    raise ValueError("Invalid right operand")
+
+
 def _meets_condition(operator: int, left_value, right_value) -> bool:
+    if left_value is None or right_value is None:
+        return False
     if operator == constants.Operator.EQUALS:
         return left_value == right_value
     if operator == constants.Operator.NOT_EQUALS:
@@ -126,7 +145,6 @@ def _meets_condition(operator: int, left_value, right_value) -> bool:
         return right_value in left_value
     if operator == constants.Operator.NOT_CONTAINS:
         return right_value not in left_value
-
     raise ValueError("Invalid operator type")
 
 

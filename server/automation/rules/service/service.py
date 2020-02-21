@@ -88,7 +88,7 @@ def _format_stats(
     dict_tree: Callable[[], DefaultDict] = lambda: defaultdict(dict_tree)  # noqa
     formatted_stats = dict_tree()
 
-    target_column_keys = automation.rules.constants.TARGET_TYPE_MV_COLUMNS_MAPPING[target_type]
+    target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
 
     for row in stats:
         ad_group_id = row.pop("ad_group_id", None)

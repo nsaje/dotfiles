@@ -18,8 +18,12 @@ class RuleConditionValidationMixin:
         )
 
     def _validate_operator(self, changes):
-        if changes.get("operator", self.operator) not in constants.Operator.get_all():
+        operator = changes.get("operator", self.operator)
+        if operator not in constants.Operator.get_all():
             raise exceptions.InvalidOperator("Invalid operator")
+        left_operand_type = changes.get("left_operand_type", self.left_operand_type)
+        if left_operand_type not in config.VALID_OPERATORS or operator not in config.VALID_OPERATORS[left_operand_type]:
+            raise exceptions.InvalidOperator("Invalid operator for metric")
 
     def _validate_left_operand_type(self, changes):
         left_operand_type = changes.get("left_operand_type", self.left_operand_type)
