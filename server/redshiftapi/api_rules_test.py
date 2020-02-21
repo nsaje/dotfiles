@@ -524,9 +524,7 @@ video_etfm_cpcv
                     group_by=", ".join(
                         [
                             field
-                            for field in automation.rules.constants.TARGET_TYPE_MV_COLUMNS_MAPPING[
-                                test_case["target_type"]
-                            ]
+                            for field in automation.rules.constants.TARGET_TYPE_STATS_MAPPING[test_case["target_type"]]
                         ]
                     ),
                 ),
