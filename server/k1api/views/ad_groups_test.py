@@ -44,7 +44,8 @@ class AdGroupsTest(K1APIBaseTest):
                 "target_devices": [],
                 "target_os": None,
                 "target_browsers": None,
-                "target_placements": None,
+                "target_placements": None,  # TODO: plac: remove after k1 merge
+                "target_environments": None,
                 "iab_category": "IAB24",
                 "campaign_language": "en",
                 "target_regions": [],
@@ -130,7 +131,8 @@ class AdGroupsTest(K1APIBaseTest):
                 "target_devices": [],
                 "target_os": None,
                 "target_browsers": None,
-                "target_placements": None,
+                "target_placements": None,  # TODO: plac: remove after k1 merge
+                "target_environments": None,
                 "iab_category": "IAB24",
                 "campaign_language": "en",
                 "target_regions": [],

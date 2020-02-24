@@ -114,7 +114,8 @@ class AdGroupsView(K1APIView):
                 "target_devices": ad_group.settings.target_devices,
                 "target_os": ad_group.settings.target_os,
                 "target_browsers": ad_group.settings.target_browsers,
-                "target_placements": ad_group.settings.target_environments,
+                "target_placements": ad_group.settings.target_environments,  # TODO: plac: remove after k1 merge
+                "target_environments": ad_group.settings.target_environments,
                 "target_regions": ad_group.settings.target_regions,
                 "exclusion_target_regions": ad_group.settings.exclusion_target_regions,
                 "iab_category": ad_group.campaign.settings.iab_category,
