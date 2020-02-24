@@ -128,6 +128,9 @@ class AdGroupClone(TestCase):
         )
 
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.MOBILE)
+        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1)
+
+        magic_mixer.cycle(5).blend(core.features.deals.DirectDealConnection, deal=direct_deal, adgroup=source_ad_group)
 
         ad_group_name = "Ad Group (Clone)"
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, ad_group_name)
@@ -137,6 +140,8 @@ class AdGroupClone(TestCase):
         self.assertEqual(ad_group.name, ad_group_name)
         self.assertEqual(ad_group.bidding_type, source_ad_group.bidding_type)
         self.assertEqual(ad_group.settings.state, source_ad_group.settings.state)
+        self.assertEqual(5, ad_group.directdealconnection_set.count())
+        self.assertEqual(5, ad_group.directdealconnection_set.filter(deal=direct_deal).count())
 
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)
@@ -144,8 +149,9 @@ class AdGroupClone(TestCase):
         mock_k1_ping.assert_called_with(ad_group, msg="Campaignmodel.AdGroups.put")
 
         history = dash.history_helpers.get_ad_group_history(ad_group)
-        self.assertEqual(len(history), 1)
-        self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
+        self.assertEqual(len(history), 6)
+        self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.DEAL_CONNECTION_CREATE)
+        self.assertEqual(history[5].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
     def test_clone_state_override(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()

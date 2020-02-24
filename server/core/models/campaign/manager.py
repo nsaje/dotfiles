@@ -84,6 +84,9 @@ class CampaignManager(core.common.BaseManager):
             for campaign_goal in source_campaign.campaigngoal_set.all():
                 core.features.goals.CampaignGoal.objects.clone(request, campaign_goal, campaign)
 
+            for deal_connection in source_campaign.directdealconnection_set.all():
+                core.features.deals.DirectDealConnection.objects.clone(request, deal_connection, campaign=campaign)
+
         return campaign
 
     def get_default(self, request, account):

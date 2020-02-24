@@ -73,6 +73,8 @@ class TestCampaignManager(TestCase):
         magic_mixer.blend(
             core.features.goals.CampaignGoalValue, campaign_goal=campaign_goal, value="0.30", local_value="0.30"
         )
+        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1)
+        magic_mixer.cycle(5).blend(core.features.deals.DirectDealConnection, deal=direct_deal, campaign=campaign)
 
         cloned_campaign = Campaign.objects.clone(self.request, campaign, "Cloned Campaign", clone_budget=True)
 
@@ -97,6 +99,9 @@ class TestCampaignManager(TestCase):
         self.assertFalse(cloned_campaign.campaigngoal_set.all().intersection(campaign.campaigngoal_set.all()))
         self.assertEqual(1, cloned_campaign.conversiongoal_set.count())
         self.assertFalse(cloned_campaign.conversiongoal_set.all().intersection(campaign.conversiongoal_set.all()))
+
+        self.assertEqual(5, cloned_campaign.directdealconnection_set.filter(deal=direct_deal).count())
+        self.assertEqual(5, cloned_campaign.directdealconnection_set.count())
 
     @patch("automation.autopilot.recalculate_budgets_campaign")
     @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))

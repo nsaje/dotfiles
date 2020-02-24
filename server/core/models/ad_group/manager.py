@@ -108,6 +108,9 @@ class AdGroupManager(core.common.BaseManager):
             if ad_group.amplify_review:
                 ad_group.ensure_amplify_review_source(request)
 
+            for deal_connection in source_ad_group.directdealconnection_set.all():
+                core.features.deals.DirectDealConnection.objects.clone(request, deal_connection, adgroup=ad_group)
+
         self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)

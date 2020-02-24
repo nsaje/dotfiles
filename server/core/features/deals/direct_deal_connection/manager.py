@@ -16,3 +16,6 @@ class DirectDealConnectionManager(core.common.BaseManager):
     def _prepare(deal, account=None, campaign=None, adgroup=None):
         deal_connection = model.DirectDealConnection(deal=deal, account=account, campaign=campaign, adgroup=adgroup)
         return deal_connection
+
+    def clone(self, request, source_deal_connection, account=None, campaign=None, adgroup=None):
+        return self.create(request, source_deal_connection.deal, account, campaign, adgroup)
