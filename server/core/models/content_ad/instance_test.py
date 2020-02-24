@@ -87,6 +87,25 @@ class InstanceTest(TestCase):
         )
 
     @mock.patch.object(k1_helper, "update_content_ad")
+    def test_oen_document_data_change_only_features(self, mock_k1_update):
+        content_ad = magic_mixer.blend(model.ContentAd, ad_group__campaign__account__id=305, document_id=12345)
+
+        additional_data = {
+            "document_id": 12345,
+            "language": "EN",
+            "document_features": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+        }
+        content_ad.update(None, additional_data=additional_data)
+        self.assertEqual(content_ad.document_id, 12345)
+        self.assertEqual(
+            content_ad.document_features,
+            {
+                "language": [{"value": "en", "confidence": 1.0}],
+                "categories": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+            },
+        )
+
+    @mock.patch.object(k1_helper, "update_content_ad")
     def test_oen_document_data_no_change_if_not_present(self, mock_k1_update):
         content_ad = magic_mixer.blend(model.ContentAd, document_id=123, document_features={"a": "b"})
 

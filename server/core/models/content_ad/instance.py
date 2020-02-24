@@ -88,7 +88,7 @@ class ContentAdInstanceMixin(object):
         oen_document_id = self.additional_data.get("document_id")
         if oen_document_id and oen_document_id != self.document_id:
             self.document_id = oen_document_id
-            self.document_features = self._remap_document_feature_fields(self.additional_data)
+        self.document_features = self._remap_document_feature_fields(self.additional_data)
 
     def _write_change_history(self, request, changes):
         description = "Content ad {id} edited.".format(id=self.pk)
