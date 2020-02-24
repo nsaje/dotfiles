@@ -1,6 +1,6 @@
 describe('zemEntityService', function() {
     var zemEntityService,
-        zemAccountService,
+        zemLegacyAccountService,
         zemCampaignService,
         zemAdGroupService,
         zemContentAdService;
@@ -13,7 +13,7 @@ describe('zemEntityService', function() {
     beforeEach(inject(function($injector) {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityService = $injector.get('zemEntityService');
-        zemAccountService = $injector.get('zemAccountService');
+        zemLegacyAccountService = $injector.get('zemLegacyAccountService');
         zemCampaignService = $injector.get('zemCampaignService');
         zemAdGroupService = $injector.get('zemAdGroupService');
         zemContentAdService = $injector.get('zemContentAdService');
@@ -31,7 +31,7 @@ describe('zemEntityService', function() {
     });
 
     it('should provide GET CRUD action for entities', function() {
-        spyOn(zemAccountService, 'get').and.callThrough();
+        spyOn(zemLegacyAccountService, 'get').and.callThrough();
         spyOn(zemCampaignService, 'get').and.callThrough();
         spyOn(zemAdGroupService, 'get').and.callThrough();
 
@@ -39,7 +39,7 @@ describe('zemEntityService', function() {
         zemEntityService.getEntity(constants.entityType.CAMPAIGN, 2);
         zemEntityService.getEntity(constants.entityType.AD_GROUP, 3);
 
-        expect(zemAccountService.get).toHaveBeenCalledWith(1);
+        expect(zemLegacyAccountService.get).toHaveBeenCalledWith(1);
         expect(zemCampaignService.get).toHaveBeenCalledWith(2);
         expect(zemAdGroupService.get).toHaveBeenCalledWith(3);
 
@@ -50,7 +50,7 @@ describe('zemEntityService', function() {
     });
 
     it('should provide CREATE CRUD action for entities', function() {
-        spyOn(zemAccountService, 'create').and.callThrough();
+        spyOn(zemLegacyAccountService, 'create').and.callThrough();
         spyOn(zemCampaignService, 'create').and.callThrough();
         spyOn(zemAdGroupService, 'create').and.callThrough();
 
@@ -68,7 +68,7 @@ describe('zemEntityService', function() {
         zemEntityService.createEntity(campaignProperties);
         zemEntityService.createEntity(adGroupProperties);
 
-        expect(zemAccountService.create).toHaveBeenCalledWith(
+        expect(zemLegacyAccountService.create).toHaveBeenCalledWith(
             accountProperties
         );
         expect(zemCampaignService.create).toHaveBeenCalledWith(
@@ -85,7 +85,7 @@ describe('zemEntityService', function() {
     });
 
     it('should provide UPDATE CRUD action for entities', function() {
-        spyOn(zemAccountService, 'update').and.callThrough();
+        spyOn(zemLegacyAccountService, 'update').and.callThrough();
         spyOn(zemCampaignService, 'update').and.callThrough();
         spyOn(zemAdGroupService, 'update').and.callThrough();
 
@@ -94,7 +94,7 @@ describe('zemEntityService', function() {
         zemEntityService.updateEntity(constants.entityType.CAMPAIGN, 2, data);
         zemEntityService.updateEntity(constants.entityType.AD_GROUP, 3, data);
 
-        expect(zemAccountService.update).toHaveBeenCalledWith(1, data);
+        expect(zemLegacyAccountService.update).toHaveBeenCalledWith(1, data);
         expect(zemCampaignService.update).toHaveBeenCalledWith(2, data);
         expect(zemAdGroupService.update).toHaveBeenCalledWith(3, data);
 
@@ -107,7 +107,7 @@ describe('zemEntityService', function() {
     it('should provide helper to access entity services', function() {
         expect(
             zemEntityService.getEntityService(constants.entityType.ACCOUNT)
-        ).toBe(zemAccountService);
+        ).toBe(zemLegacyAccountService);
         expect(
             zemEntityService.getEntityService(constants.entityType.CAMPAIGN)
         ).toBe(zemCampaignService);

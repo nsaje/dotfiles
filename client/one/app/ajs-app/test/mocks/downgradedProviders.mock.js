@@ -15,6 +15,11 @@ angular
             return empty();
         };
     })
+    .service('zemAccountService', function() {
+        this.list = function() {
+            return empty();
+        };
+    })
     .service('zemExceptionHandlerService', function() {
         this.handleHttpException = function() {
             return empty();

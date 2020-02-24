@@ -3,7 +3,7 @@ angular
     .service('zemEntityService', function(
         $http,
         $q,
-        zemAccountService,
+        zemLegacyAccountService,
         zemCampaignService,
         zemAdGroupService,
         zemContentAdService
@@ -62,7 +62,7 @@ angular
 
         function getEntityService(entityType) {
             if (entityType === constants.entityType.ACCOUNT)
-                return zemAccountService;
+                return zemLegacyAccountService;
             if (entityType === constants.entityType.CAMPAIGN)
                 return zemCampaignService;
             if (entityType === constants.entityType.AD_GROUP)

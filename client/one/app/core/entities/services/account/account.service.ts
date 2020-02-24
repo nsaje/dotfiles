@@ -8,6 +8,7 @@ import {Account} from '../../types/account/account';
 import {tap} from 'rxjs/operators';
 import {EntityType, EntityUpdateAction} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {downgradeInjectable} from '@angular/upgrade/static';
 
 @Injectable()
 export class AccountService {
@@ -100,3 +101,8 @@ export class AccountService {
         );
     }
 }
+
+declare var angular: angular.IAngularStatic;
+angular
+    .module('one.downgraded')
+    .factory('zemAccountService', downgradeInjectable(AccountService));

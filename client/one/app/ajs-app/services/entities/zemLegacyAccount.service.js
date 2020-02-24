@@ -1,6 +1,6 @@
 angular
     .module('one.services')
-    .service('zemAccountService', function(
+    .service('zemLegacyAccountService', function(
         $http,
         $q,
         zemEntityInstanceService,
