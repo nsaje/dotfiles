@@ -111,6 +111,15 @@ class AdGroupManager(core.common.BaseManager):
             for deal_connection in source_ad_group.directdealconnection_set.all():
                 core.features.deals.DirectDealConnection.objects.clone(request, deal_connection, adgroup=ad_group)
 
+            if source_ad_group.bidmodifier_set.exists():
+                core.features.bid_modifiers.set_bulk(
+                    ad_group,
+                    source_ad_group.bidmodifier_set.all(),
+                    user=request.user,
+                    write_history=False,
+                    propagate_to_k1=False,
+                )
+
         self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)

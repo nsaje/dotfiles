@@ -8,6 +8,7 @@ import core.models.settings
 import dash.constants
 import dash.history_helpers
 import utils.exc
+from core.features import bid_modifiers
 from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -233,3 +234,24 @@ class AdGroupClone(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.CONTENT)
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
+    def test_clone_bid_modifiers(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+        source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
+        source = magic_mixer.blend(core.models.Source, bidder_slug="slug")
+        magic_mixer.cycle(5).blend(
+            core.features.bid_modifiers.BidModifier,
+            modifier=2.9,
+            ad_group=source_ad_group,
+            source=source,
+            type=bid_modifiers.BidModifierType.PUBLISHER,
+        )
+        campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+
+        ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
+        self.assertEqual(source_ad_group.bidmodifier_set.count(), ad_group.bidmodifier_set.count())
+        self.assertEqual(5, ad_group.bidmodifier_set.filter(source=source).count())
+        self.assertEqual(5, ad_group.bidmodifier_set.filter(ad_group=ad_group).count())

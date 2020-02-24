@@ -1,21 +1,8 @@
 from django.db import models
 
 from . import constants
-
-
-class BidModifierQuerySet(models.QuerySet):
-    def filter_by_user(self, user):
-        if user.has_perm("zemauth.can_see_all_accounts"):
-            return self
-        return self.filter(
-            models.Q(ad_group__campaign__account__users__id=user.id)
-            | models.Q(ad_group__campaign__account__agency__users__id=user.id)
-        ).distinct()
-
-
-class PublisherBidModifierManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(type=constants.BidModifierType.PUBLISHER)
+from . import manager
+from . import queryset
 
 
 class BidModifier(models.Model):
@@ -33,5 +20,5 @@ class BidModifier(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
 
-    objects = models.Manager.from_queryset(BidModifierQuerySet)()
-    publisher_objects = PublisherBidModifierManager()
+    objects = models.Manager.from_queryset(queryset.BidModifierQuerySet)()
+    publisher_objects = manager.PublisherBidModifierManager()
