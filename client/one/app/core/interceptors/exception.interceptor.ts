@@ -14,30 +14,6 @@ import {isDefined} from '../../shared/helpers/common.helpers';
 
 @Injectable()
 export class ExceptionHttpInterceptor implements HttpInterceptor {
-    private retryRequestIfNecessary: MonoTypeOperatorFunction<
-        HttpEvent<any>
-    > = retryWhen(responses =>
-        responses.pipe(
-            concatMap((response, previousAttempts) =>
-                iif(
-                    () =>
-                        this.exceptionHandlerService.shouldRetryRequest(
-                            this.formatException(response),
-                            previousAttempts
-                        ),
-                    // Trigger a repeated request after a set timeout
-                    of(response).pipe(
-                        delay(
-                            this.exceptionHandlerService.getRequestRetryTimeout()
-                        )
-                    ),
-                    // else
-                    throwError(response)
-                )
-            )
-        )
-    );
-
     constructor(private exceptionHandlerService: ExceptionHandlerService) {}
 
     intercept(
@@ -45,7 +21,7 @@ export class ExceptionHttpInterceptor implements HttpInterceptor {
         next: HttpHandler
     ): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(
-            this.retryRequestIfNecessary,
+            this.retryRequestIfNecessary(request),
             catchError(
                 (
                     response: HttpErrorResponse,
@@ -53,7 +29,7 @@ export class ExceptionHttpInterceptor implements HttpInterceptor {
                 ) => {
                     // We did not retry => handle exception and cancel request
                     this.exceptionHandlerService.handleHttpException(
-                        this.formatException(response)
+                        this.formatException(request, response)
                     );
                     return throwError(response);
                 }
@@ -61,7 +37,36 @@ export class ExceptionHttpInterceptor implements HttpInterceptor {
         );
     }
 
-    private formatException(response: HttpErrorResponse): HttpException {
+    private retryRequestIfNecessary(
+        request: HttpRequest<any>
+    ): MonoTypeOperatorFunction<HttpEvent<any>> {
+        return retryWhen(responses =>
+            responses.pipe(
+                concatMap((response, previousRetries) =>
+                    iif(
+                        () =>
+                            this.exceptionHandlerService.shouldRetryRequest(
+                                this.formatException(request, response),
+                                previousRetries
+                            ),
+                        // Trigger a repeated request after a set timeout
+                        of(response).pipe(
+                            delay(
+                                this.exceptionHandlerService.getRequestRetryTimeout()
+                            )
+                        ),
+                        // else
+                        throwError(response)
+                    )
+                )
+            )
+        );
+    }
+
+    private formatException(
+        request: HttpRequest<any>,
+        response: HttpErrorResponse
+    ): HttpException {
         const errorData: any = response.error;
         let message: string;
         let errorCode: string;
@@ -74,6 +79,8 @@ export class ExceptionHttpInterceptor implements HttpInterceptor {
             errorCode: errorCode,
             headers: (key: string) => response.headers.get(key),
             status: response.status,
+            method: request.method,
+            url: request.url,
         };
 
         return exception;

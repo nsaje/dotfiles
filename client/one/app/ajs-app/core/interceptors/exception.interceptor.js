@@ -14,19 +14,27 @@ angular
                 message = errorData.details || errorData.message;
                 errorCode = errorData.errorCode || errorData.error_code;
             }
+            var requestMethod;
+            var requestUrl;
+            if (response.config) {
+                requestMethod = response.config.method;
+                requestUrl = response.config.url;
+            }
             var exception = {
                 message: message,
                 errorCode: errorCode,
                 headers: response.headers,
                 status: response.status,
+                method: requestMethod,
+                url: requestUrl,
             };
 
             return exception;
         }
 
-        function incrementAttemptCounter(response) {
-            response.config.previousAttempts =
-                (response.config.previousAttempts || 0) + 1;
+        function incrementRetryCounter(response) {
+            response.config.previousRetries =
+                (response.config.previousRetries || 0) + 1;
         }
 
         function retryRequestIfNecessary(response) {
@@ -35,10 +43,10 @@ angular
             if (
                 zemExceptionHandlerService.shouldRetryRequest(
                     formatException(response),
-                    response.config.previousAttempts
+                    response.config.previousRetries
                 )
             ) {
-                incrementAttemptCounter(response);
+                incrementRetryCounter(response);
 
                 // Trigger a repeated request after a set timeout
                 setTimeout(function() {

@@ -21,9 +21,9 @@ export class ExceptionHandlerService {
 
     shouldRetryRequest(
         exception: HttpException,
-        previousAttempts: number | undefined
+        previousRetries: number | undefined
     ): boolean {
-        const nextRetryNumber: number = (previousAttempts || 0) + 1;
+        const nextRetryNumber: number = (previousRetries || 0) + 1;
         return (
             nextRetryNumber < APP_CONFIG.maxRequestRetries &&
             APP_CONFIG.httpStatusCodesForRequestRetry.includes(exception.status)
@@ -37,12 +37,41 @@ export class ExceptionHandlerService {
     private shouldShowErrorMessage(exception: HttpException) {
         return (
             isDefined(exception.status) &&
-            this.isServerHttpErrorCode(exception.status)
+            this.isServerHttpErrorCode(exception.status) &&
+            this.shouldShowErrorForHttpMethod(exception.method) &&
+            this.shouldShowErrorForUrl(exception.url)
         );
     }
 
-    private isServerHttpErrorCode(httpStatus: number) {
+    private isServerHttpErrorCode(httpStatus: number): boolean {
         return httpStatus >= 500 && httpStatus <= 599;
+    }
+
+    private shouldShowErrorForHttpMethod(httpMethod: string): boolean {
+        if (
+            isDefined(httpMethod) &&
+            isDefined(APP_CONFIG.httpErrorPopupIncludeHttpMethods)
+        ) {
+            return APP_CONFIG.httpErrorPopupIncludeHttpMethods.includes(
+                httpMethod
+            );
+        } else {
+            return true;
+        }
+    }
+
+    private shouldShowErrorForUrl(url: string): boolean {
+        if (
+            isDefined(url) &&
+            isDefined(APP_CONFIG.httpErrorPopupExcludeUrlRegexes)
+        ) {
+            const urlExcluded: boolean = APP_CONFIG.httpErrorPopupExcludeUrlRegexes.some(
+                regex => regex.test(url)
+            );
+            return !urlExcluded;
+        } else {
+            return true;
+        }
     }
 
     private getExceptionInfos(exception: HttpException): string[] {
@@ -65,7 +94,9 @@ export class ExceptionHandlerService {
     }
 
     private getTraceId(exception: HttpException): string | undefined {
-        return exception.headers('X_Z1_TRACE_ID');
+        return isDefined(exception.headers)
+            ? exception.headers('X_Z1_TRACE_ID')
+            : undefined;
     }
 }
 

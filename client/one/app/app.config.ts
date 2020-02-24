@@ -40,4 +40,6 @@ export const APP_CONFIG = {
     requestRetryTimeout: 500,
     maxRequestRetries: 3,
     httpStatusCodesForRequestRetry: [504],
+    httpErrorPopupIncludeHttpMethods: ['PUT', 'POST'],
+    httpErrorPopupExcludeUrlRegexes: [/.*(\/breakdown\/).*/],
 };
