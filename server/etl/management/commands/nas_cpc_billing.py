@@ -24,42 +24,44 @@ class Command(Z1Command):
 
     def handle(self, *args, **options):
         self.slack = options["slack"]
-
-        if options.get("until"):
-            until = datetime.datetime.strptime(options["until"], "%Y-%m-%d").date()
-        else:
-            until = datetime.date.today()
         try:
-            since = datetime.datetime.strptime(options["from"], "%Y-%m-%d").date()
-        except (ValueError, TypeError):
-            delta = int(options["from"])
-            since = until - datetime.timedelta(days=delta)
+            if options.get("until"):
+                until = datetime.datetime.strptime(options["until"], "%Y-%m-%d").date()
+            else:
+                until = datetime.date.today()
+            try:
+                since = datetime.datetime.strptime(options["from"], "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                delta = int(options["from"])
+                since = until - datetime.timedelta(days=delta)
 
-        if since > until:
-            raise ValueError("Starting date '{}' must be before the end date '{}'".format(since, until))
-        agency_id = options.get("agency_id")
-        if agency_id not in hacks.CPC_GOAL_TO_BID_AGENCIES:
-            raise ValueError(
-                "'{}' is not a Native Ad Server CPC billing customer. Valid IDs are : {}".format(
-                    agency_id, hacks.CPC_GOAL_TO_BID_AGENCIES
+            if since > until:
+                raise ValueError("Starting date '{}' must be before the end date '{}'".format(since, until))
+            agency_id = options.get("agency_id")
+            if agency_id not in hacks.CPC_GOAL_TO_BID_AGENCIES:
+                raise ValueError(
+                    "'{}' is not a Native Ad Server CPC billing customer. Valid IDs are : {}".format(
+                        agency_id, hacks.CPC_GOAL_TO_BID_AGENCIES
+                    )
                 )
-            )
-        nas_cpc_billing.process_cpc_billing(since, until, agency_id)
+            nas_cpc_billing.process_cpc_billing(since, until, agency_id)
 
-        discrepancies = nas_cpc_billing.check_discrepancy(since, until)
-        if discrepancies:
-            messages = [MESSAGE.format(**disc) for disc in discrepancies]
-            text = "\n".join(messages)
-
-            if self.slack:
-                try:
+            discrepancies = nas_cpc_billing.check_discrepancy(since, until)
+            if discrepancies:
+                messages = [MESSAGE.format(**disc) for disc in discrepancies]
+                text = "\n".join(messages)
+                if self.slack:
                     utils.slack.publish(
                         text,
                         channel=utils.slack.CHANNEL_ALERTS_RND_PRODOPS,
                         username=utils.slack.USER_NAS_CPC_BILLING,
                         msg_type=utils.slack.MESSAGE_TYPE_WARNING,
                     )
-                except Exception as e:
-                    raise e
-
-            self.stdout.write(text)
+                self.stdout.write(text)
+        except Exception as e:
+            utils.slack.publish(
+                "Error with nas_cpc_billing_processing: {}".format(e),
+                channel=utils.slack.CHANNEL_ALERTS_RND_PRODOPS,
+                username=utils.slack.USER_NAS_CPC_BILLING,
+                msg_type=utils.slack.MESSAGE_TYPE_WARNING,
+            )

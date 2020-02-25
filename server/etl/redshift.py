@@ -36,15 +36,16 @@ def unload_table(
 
 
 def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
-    with db.get_write_stats_transaction():
-        with db.get_write_stats_cursor() as c:
-            delete_from_table(table_name)
-            logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
-            sql, params = prepare_copy_query(
-                s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
-            )
-            c.execute(sql, params)
-            logger.info("Unloaded table to S3 path", table=table_name, s3_path=s3_path)
+    for db_name in [settings.STATS_DB_HOT_CLUSTER] + settings.STATS_DB_COLD_CLUSTERS:
+        with db.get_write_stats_transaction(db_name):
+            with db.get_write_stats_cursor(db_name) as c:
+                delete_from_table(table_name)
+                logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
+                sql, params = prepare_copy_query(
+                    s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
+                )
+                c.execute(sql, params)
+                logger.info("Unloaded table to S3 path", table=table_name, s3_path=s3_path)
 
 
 def unload_table_tz(

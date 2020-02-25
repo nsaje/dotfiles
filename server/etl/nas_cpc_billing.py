@@ -1,5 +1,7 @@
 import datetime
 
+from django.conf import settings
+from django.db import connections
 from django.db.models import F
 
 import backtosql
@@ -42,7 +44,7 @@ def check_discrepancy(from_date, to_date):
 
     context = helpers.get_local_multiday_date_context(from_date, to_date)
     sql = backtosql.generate_sql("nas_spend_discrepency.sql", context)
-    with redshiftapi.db.get_stats_cursor() as c:
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(sql)
         return redshiftapi.db.dictfetchall(c)
 
