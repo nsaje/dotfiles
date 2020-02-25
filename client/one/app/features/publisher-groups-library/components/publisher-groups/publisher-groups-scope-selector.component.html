@@ -1,0 +1,31 @@
+<zem-scope-selector
+    class="zem-scope-selector"
+    [scopeState]="scopeState"
+    [isAgencyScopeDisabled]="isAgencyScopeDisabled"
+    [isAccountScopeDisabled]="isAccountScopeDisabled"
+    (scopeStateChange)="scopeStateChange.emit($event)"
+>
+    <ng-template #agencyScopeHeaderTemplate>
+        <strong>Agency</strong><br />
+        You will be able to use the publisher group on the entire agency and all
+        accounts, campaigns and ad groups.
+    </ng-template>
+    <ng-template #accountScopeHeaderTemplate>
+        <strong>Account</strong><br />
+        You will be able to use the publisher group on the selected account and
+        all campaigns and ad groups belonging to the selected account.
+    </ng-template>
+    <ng-template #accountScopeContentTemplate>
+        <zem-select-input
+            class="zem-select-input"
+            [items]="accounts"
+            [placeholder]="'Select account'"
+            [value]="account"
+            [bindLabel]="'name'"
+            [bindValue]="'id'"
+            [isClearable]="hasAgencyScope"
+            (valueChange)="this.accountChange.emit($event)"
+        >
+        </zem-select-input>
+    </ng-template>
+</zem-scope-selector>
