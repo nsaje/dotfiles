@@ -324,6 +324,7 @@ angular
         //
 
         function setUrlParam(name, value) {
+            if (!value) value = null;
             $location.search(name, value).replace();
         }
 
