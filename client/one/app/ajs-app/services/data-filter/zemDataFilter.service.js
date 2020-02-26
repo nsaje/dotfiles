@@ -148,9 +148,31 @@ angular
                 dateRange.endDate = newDateRange.endDate;
             }
 
+            var formattedStartDate = dateRange.startDate.format('YYYY-MM-DD');
+            if (
+                formattedStartDate !==
+                moment()
+                    .startOf('month')
+                    .format('YYYY-MM-DD')
+            ) {
+                setUrlParam('start_date', formattedStartDate);
+            } else {
+                setUrlParam('start_date', null);
+            }
+
+            var formattedEndDate = dateRange.endDate.format('YYYY-MM-DD');
+            if (
+                formattedEndDate !==
+                moment()
+                    .endOf('month')
+                    .format('YYYY-MM-DD')
+            ) {
+                setUrlParam('end_date', formattedEndDate);
+            } else {
+                setUrlParam('end_date', null);
+            }
+
             pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
-            setUrlParam('start_date', dateRange.startDate.format('YYYY-MM-DD'));
-            setUrlParam('end_date', dateRange.endDate.format('YYYY-MM-DD'));
         }
 
         function getAppliedConditions() {
@@ -302,7 +324,6 @@ angular
         //
 
         function setUrlParam(name, value) {
-            if (!value) value = null;
             $location.search(name, value).replace();
         }
 

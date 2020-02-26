@@ -33,7 +33,6 @@ angular.module('one.widgets').component('zemHeader', {
         };
 
         function updateComponentState() {
-            $ctrl.homeHref = zemNavigationNewService.getHomeHref();
             $ctrl.isDateRangePickerVisible = false;
             $ctrl.isFilterSelectorToggleVisible = false;
 

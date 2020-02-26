@@ -157,16 +157,7 @@ angular
 
         function getHomeHref() {
             var urlTree = getUrlTree();
-            var href = NgRouter.createUrlTree(urlTree).toString();
-            if (
-                NgRouter.url.includes(
-                    RoutePathName.APP_BASE + '/' + RoutePathName.ANALYTICS
-                )
-            ) {
-                var queryParams = $location.absUrl().split('?')[1];
-                if (queryParams) href += '?' + queryParams;
-            }
-            return href;
+            return NgRouter.createUrlTree(urlTree).toString();
         }
 
         // prettier-ignore
