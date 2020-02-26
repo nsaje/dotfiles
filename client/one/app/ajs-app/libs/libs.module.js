@@ -5,7 +5,6 @@ angular.module('one.libs', [
     'ngRaven',
     'config',
     'ngSanitize',
-    'ui.router',
     'ui.bootstrap',
     'ui.bootstrap.tooltip',
     'ui.bootstrap.datetimepicker',

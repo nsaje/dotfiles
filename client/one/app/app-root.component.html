@@ -1,0 +1,5 @@
+<div class="splash" *ngIf="!isRendered"><div class="loader"></div></div>
+<ng-container *ngIf="isInitialized">
+    <router-outlet></router-outlet>
+    <router-outlet name="drawer"></router-outlet>
+</ng-container>

@@ -30,6 +30,7 @@ angular
         this.onFilteredAccountTypesUpdate = onFilteredAccountTypesUpdate;
         this.onFilteredStatusesUpdate = onFilteredStatusesUpdate;
         this.onFilteredPublisherStatusUpdate = onFilteredPublisherStatusUpdate;
+        this.onFilteredBusinessesUpdate = onFilteredBusinessesUpdate;
 
         var pubSub = zemPubSubService.createInstance();
         var EVENTS = {
@@ -132,7 +133,6 @@ angular
                     appliedConditions[condition.name] = condition.default;
                 }
             });
-            initFilterFromUrlParams();
         }
 
         function getDateRange() {
@@ -140,54 +140,21 @@ angular
         }
 
         function setDateRange(newDateRange) {
-            var updated = false;
-
-            if (
-                newDateRange.startDate.isValid() &&
-                !newDateRange.startDate.isSame(dateRange.startDate)
-            ) {
+            if (newDateRange.startDate && newDateRange.startDate.isValid()) {
                 dateRange.startDate = newDateRange.startDate;
-                updated = true;
             }
 
-            if (
-                newDateRange.endDate.isValid() &&
-                !newDateRange.endDate.isSame(dateRange.endDate)
-            ) {
+            if (newDateRange.endDate && newDateRange.endDate.isValid()) {
                 dateRange.endDate = newDateRange.endDate;
-                updated = true;
             }
 
-            if (updated) {
-                pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
-                setUrlParam(
-                    'start_date',
-                    dateRange.startDate.format('YYYY-MM-DD')
-                );
-                setUrlParam('end_date', dateRange.endDate.format('YYYY-MM-DD'));
-            }
+            pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
+            setUrlParam('start_date', dateRange.startDate.format('YYYY-MM-DD'));
+            setUrlParam('end_date', dateRange.endDate.format('YYYY-MM-DD'));
         }
 
-        function getAppliedConditions(excludeDefaults) {
-            if (!excludeDefaults) {
-                return angular.copy(appliedConditions);
-            }
-
-            var conditionsExcludedDefaults = {};
-            angular.forEach(appliedConditions, function(
-                conditionValue,
-                conditionName
-            ) {
-                if (
-                    !angular.equals(
-                        CONDITIONS[conditionName].default,
-                        conditionValue
-                    )
-                ) {
-                    conditionsExcludedDefaults[conditionName] = conditionValue;
-                }
-            });
-            return conditionsExcludedDefaults;
+        function getAppliedConditions() {
+            return angular.copy(appliedConditions);
         }
 
         function getAppliedCondition(condition) {
@@ -202,77 +169,50 @@ angular
         }
 
         function applyConditions(conditions) {
-            var updated = false;
             angular.forEach(conditions, function(condition) {
-                updated =
-                    setCondition(condition.condition, condition.value) ||
-                    updated;
+                setCondition(condition.condition, condition.value);
             });
-            if (updated) {
-                pubSub.notify(
-                    EVENTS.ON_DATA_FILTER_UPDATE,
-                    getAppliedConditions()
-                );
-            }
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
         }
 
         function resetCondition(condition, ignoreNotify) {
             if (!condition) return;
 
-            var updated = false;
-
             switch (condition.type) {
                 case CONDITION_TYPES.value:
-                    updated = setCondition(
-                        condition,
-                        condition.default || null
-                    );
+                    setCondition(condition, condition.default || null);
                     break;
                 case CONDITION_TYPES.list:
-                    updated = setCondition(condition, condition.default || []);
+                    setCondition(condition, condition.default || []);
                     break;
             }
 
-            if (updated && !ignoreNotify) {
+            if (!ignoreNotify) {
                 pubSub.notify(
                     EVENTS.ON_DATA_FILTER_UPDATE,
                     getAppliedConditions()
                 );
             }
-
-            return updated;
         }
 
         function resetAllConditions() {
-            var updated = false;
             angular.forEach(CONDITIONS, function(condition) {
-                updated = resetCondition(condition, true) || updated;
+                resetCondition(condition, true);
             });
-            if (updated) {
-                pubSub.notify(
-                    EVENTS.ON_DATA_FILTER_UPDATE,
-                    getAppliedConditions()
-                );
-            }
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
         }
 
         function removeValueFromConditionList(condition, value) {
             var values = getAppliedCondition(condition);
             if (!values) return;
 
-            var updated = false;
             var index = values.indexOf(value);
             if (index !== -1) {
                 values.splice(index, 1);
-                updated = setCondition(condition, values);
+                setCondition(condition, values);
             }
 
-            if (updated) {
-                pubSub.notify(
-                    EVENTS.ON_DATA_FILTER_UPDATE,
-                    getAppliedConditions()
-                );
-            }
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
         }
 
         function getFilteredSources() {
@@ -350,26 +290,16 @@ angular
             );
         }
 
+        function onFilteredBusinessesUpdate(callback) {
+            return pubSub.register(
+                EVENTS.ON_FILTERED_PUBLISHER_STATUS_UPDATE,
+                callback
+            );
+        }
+
         //
         // Private methods
         //
-        function initFilterFromUrlParams() {
-            var params = $location.search();
-
-            // Date range
-            var startDateParam = params.start_date;
-            var endDateParam = params.end_date;
-            if (startDateParam) dateRange.startDate = moment(startDateParam);
-            if (endDateParam) dateRange.endDate = moment(endDateParam);
-
-            // Conditions
-            angular.forEach(CONDITIONS, function(condition) {
-                var param = params[condition.urlParam];
-                if (param) {
-                    setCondition(condition, param);
-                }
-            });
-        }
 
         function setUrlParam(name, value) {
             if (!value) value = null;
@@ -377,21 +307,17 @@ angular
         }
 
         function setCondition(condition, value) {
-            var updated = false;
-
             switch (condition.type) {
                 case CONDITION_TYPES.value:
-                    updated = setConditionValue(condition, value);
+                    setConditionValue(condition, value);
                     break;
                 case CONDITION_TYPES.list:
                     var list = angular.isArray(value)
                         ? value
                         : value.split(',');
-                    updated = setConditionList(condition, list);
+                    setConditionList(condition, list);
                     break;
             }
-
-            return updated;
         }
 
         function setConditionValue(condition, value) {
@@ -406,7 +332,6 @@ angular
             appliedConditions[condition.name] = value;
             setUrlParam(condition.urlParam, value);
             pubSub.notify(condition.event, getAppliedCondition(condition));
-            return true;
         }
 
         function setConditionList(condition, list) {
@@ -421,6 +346,5 @@ angular
             appliedConditions[condition.name] = list;
             setUrlParam(condition.urlParam, list.join(','));
             pubSub.notify(condition.event, getAppliedCondition(condition));
-            return true;
         }
     });

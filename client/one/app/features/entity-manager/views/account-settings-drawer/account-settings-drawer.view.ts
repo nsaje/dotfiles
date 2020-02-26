@@ -9,16 +9,18 @@ import {
     OnDestroy,
 } from '@angular/core';
 import {
-    ENTITY_MANAGER_CONFIG,
     ACCOUNT_TYPES,
     CURRENCIES,
+    ENTITY_MANAGER_CONFIG,
 } from '../../entity-manager.config';
 import {AccountSettingsStore} from '../../services/account-settings-store/account-settings.store';
 import {Subject, merge, Observable} from 'rxjs';
 import * as messagesHelpers from '../../helpers/messages.helpers';
-import {LevelStateParam, EntityType} from '../../../../app.constants';
+import {LevelParam, EntityType, RoutePathName} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'zem-account-settings-drawer',
@@ -29,8 +31,6 @@ export class AccountSettingsDrawerView
     implements OnInit, OnDestroy, AfterViewInit {
     @Input()
     entityId: string;
-    @Input()
-    newEntityParentId: string;
 
     EntityType = EntityType;
     ACCOUNT_TYPES = ACCOUNT_TYPES;
@@ -44,9 +44,8 @@ export class AccountSettingsDrawerView
 
     constructor(
         public store: AccountSettingsStore,
-        @Inject('zemPermissions') public zemPermissions: any,
-        @Inject('ajs$state') private ajs$state: any,
-        @Inject('ajs$location') private ajs$location: any
+        private router: Router,
+        @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
     ngOnInit(): void {
@@ -77,15 +76,7 @@ export class AccountSettingsDrawerView
 
     close() {
         this.isOpen = false;
-        setTimeout(() => {
-            this.ajs$location
-                .search({
-                    [ENTITY_MANAGER_CONFIG.settingsQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.levelQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.idQueryParam]: null,
-                })
-                .replace();
-        });
+        this.navigateToRoute([]);
     }
 
     cancel() {
@@ -97,7 +88,11 @@ export class AccountSettingsDrawerView
         }
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToParentAnalyticsView(this.newEntityParentId);
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.ACCOUNTS,
+                ]);
             } else {
                 this.close();
             }
@@ -112,9 +107,12 @@ export class AccountSettingsDrawerView
         const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToNewEntityAnalyticsView(
-                    this.store.state.entity.id
-                );
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.ACCOUNT,
+                    this.store.state.entity.id,
+                ]);
             } else {
                 this.close();
             }
@@ -124,31 +122,41 @@ export class AccountSettingsDrawerView
     async archive() {
         const shouldReload = await this.store.archiveEntity();
         if (shouldReload) {
-            this.redirectToNewEntityAnalyticsView(this.store.state.entity.id);
+            this.navigateToRoute([
+                RoutePathName.APP_BASE,
+                RoutePathName.ARCHIVED,
+                LevelParam.ACCOUNT,
+                this.store.state.entity.id,
+            ]);
         }
     }
 
-    private redirectToNewEntityAnalyticsView(newEntityId: string) {
-        this.redirectToEntityAnalyticsView(
-            LevelStateParam.ACCOUNT,
-            newEntityId
-        );
-    }
-
-    private redirectToParentAnalyticsView(parentId: string) {
-        this.redirectToEntityAnalyticsView(LevelStateParam.ACCOUNTS, parentId);
-    }
-
-    private redirectToEntityAnalyticsView(
-        level: LevelStateParam,
-        entityId: string
-    ) {
+    private navigateToRoute(routePath: string[]) {
         this.isOpen = false;
-        const url = this.ajs$state.href('v2.analytics', {
-            level: level,
-            id: entityId,
-        });
-        this.ajs$location.url(url);
+        this.router
+            .navigate(
+                [
+                    {
+                        outlets: {drawer: null},
+                    },
+                ],
+                {
+                    queryParams: commonHelpers.getValueWithoutProps(
+                        this.router.routerState.root.snapshot.queryParams,
+                        [
+                            ENTITY_MANAGER_CONFIG.idQueryParam,
+                            ENTITY_MANAGER_CONFIG.typeQueryParam,
+                        ]
+                    ),
+                }
+            )
+            .then(() => {
+                if (!arrayHelpers.isEmpty(routePath)) {
+                    this.router.navigate(routePath, {
+                        queryParamsHandling: 'preserve',
+                    });
+                }
+            });
     }
 
     private subscribeToStateUpdates() {

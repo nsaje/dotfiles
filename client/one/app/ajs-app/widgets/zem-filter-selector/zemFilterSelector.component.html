@@ -12,7 +12,7 @@
     <div class="applied-conditions__list-container">
         <div class="applied-conditions__list">
             <span
-                ng-repeat="condition in $ctrl.appliedConditions"
+                ng-repeat="condition in $ctrl.appliedConditions track by condition.text"
                 class="applied-conditions__condition"
             >
                 <span class="applied-conditions__condition-name">{{
@@ -49,7 +49,7 @@
     ng-class="$ctrl.getVisibleSectionsClasses()"
 >
     <div
-        ng-repeat="section in $ctrl.visibleSections"
+        ng-repeat="section in $ctrl.visibleSections track by section.title"
         is-internal="{{ section.permissions[0] }}"
         class="filter-sections__section filter-sections__section--{{
             section.cssClass
@@ -70,7 +70,7 @@
         <div class="filter-sections__options-container custom-scroller">
             <ul class="filter-sections__options-list">
                 <li
-                    ng-repeat="option in section.options"
+                    ng-repeat="option in section.options track by option.text"
                     class="filter-sections__option"
                 >
                     <span ng-switch="section.condition.type">

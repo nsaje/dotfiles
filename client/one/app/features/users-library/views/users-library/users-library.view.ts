@@ -4,18 +4,19 @@ import {
     Component,
     ChangeDetectionStrategy,
     OnInit,
-    OnDestroy,
     Inject,
     HostBinding,
     ChangeDetectorRef,
+    OnDestroy,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
-import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {LevelStateParam, Level} from '../../../../app.constants';
+import {LevelParam, Level} from '../../../../app.constants';
 import {
-    LEVEL_STATE_PARAM_TO_LEVEL_MAP,
+    LEVEL_PARAM_TO_LEVEL_MAP,
     LEVEL_TO_ENTITY_TYPE_MAP,
-} from '../../../analytics/analytics.config';
+} from '../../../../app.constants';
+import {ActivatedRoute, Params} from '@angular/router';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
     selector: 'zem-users-library-view',
@@ -28,45 +29,32 @@ export class UsersLibraryView implements OnInit, OnDestroy {
 
     entity: any;
 
-    private stateChangeListener$: Function;
+    private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
+        private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('ajs$rootScope') private ajs$rootScope: any,
-        @Inject('ajs$state') private ajs$state: any,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
     ngOnInit(): void {
-        this.updateInternalState();
-        this.stateChangeListener$ = this.ajs$rootScope.$on(
-            '$zemStateChangeSuccess',
-            () => {
-                this.updateInternalState();
-            }
-        );
+        this.route.params
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe((params: Params) => {
+                this.updateInternalState(
+                    this.route.snapshot.data.level,
+                    params.id
+                );
+            });
     }
 
     ngOnDestroy(): void {
-        if (commonHelpers.isDefined(this.stateChangeListener$)) {
-            this.stateChangeListener$();
-        }
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState() {
-        const level = this.getLevel(this.ajs$state.params.level);
-        if (!commonHelpers.isDefined(level)) {
-            this.entity = null;
-            this.changeDetectorRef.markForCheck();
-            return;
-        }
-
-        const entityId = this.ajs$state.params.id;
-        if (!commonHelpers.isDefined(entityId)) {
-            this.entity = null;
-            this.changeDetectorRef.markForCheck();
-            return;
-        }
+    updateInternalState(levelParam: LevelParam, entityId: string) {
+        const level = this.getLevel(levelParam);
 
         this.zemNavigationNewService
             .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], entityId)
@@ -76,16 +64,7 @@ export class UsersLibraryView implements OnInit, OnDestroy {
             });
     }
 
-    private getLevel(levelStateParam: LevelStateParam): Level {
-        return LEVEL_STATE_PARAM_TO_LEVEL_MAP[levelStateParam];
+    private getLevel(levelParam: LevelParam): Level {
+        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemUsersLibraryView',
-    downgradeComponent({
-        component: UsersLibraryView,
-        propagateDigest: false,
-    })
-);

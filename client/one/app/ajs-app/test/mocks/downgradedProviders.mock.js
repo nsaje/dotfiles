@@ -1,4 +1,8 @@
 var empty = require('rxjs').empty;
+var of = require('rxjs').of;
+var arrayHelpers = require('../../../shared/helpers/array.helpers');
+var LevelParam = require('../../../app.constants').LevelParam;
+var BreakdownParam = require('../../../app.constants').BreakdownParam;
 
 angular
     .module('one.mocks.downgradedProviders', [])
@@ -29,5 +33,97 @@ angular
         };
         this.getRequestRetryTimeout = function() {
             return empty();
+        };
+    })
+    .service('NgZone', function() {
+        this.runOutsideAngular = function(fn) {
+            fn();
+        };
+    })
+    .service('NgRouter', function() {
+        this.url = '/';
+        this.routerState = {
+            root: {
+                firstChild: null,
+                snapshot: {
+                    data: {},
+                    params: {},
+                    queryParams: {},
+                },
+            },
+        };
+        this.events = of('/');
+
+        this.createUrlTree = function(commands) {
+            return {
+                toString: function() {
+                    if (arrayHelpers.isEmpty(commands)) {
+                        return '/';
+                    }
+                    return '/' + commands.join('/');
+                },
+            };
+        };
+
+        this.navigateByUrl = function() {
+            return true;
+        };
+
+        this.navigate = function(commands) {
+            this.url = this.createUrlTree(commands).toString();
+            var levelParams = this.getLevelParams(commands);
+            this.routerState.root.snapshot.data = {
+                level: levelParams,
+            };
+            var breakdownParams = this.getBreakdownParams(commands);
+            this.routerState.root.snapshot.params = {
+                breakdown: breakdownParams,
+            };
+            return true;
+        };
+
+        this.getLevelParams = function(commands) {
+            if (arrayHelpers.isEmpty(commands)) {
+                return null;
+            }
+            var levelParams = null;
+            var levelsParams = [
+                LevelParam.ACCOUNTS,
+                LevelParam.ACCOUNT,
+                LevelParam.CAMPAIGN,
+                LevelParam.AD_GROUP,
+            ];
+            commands.forEach(function(command) {
+                if (levelsParams.includes(command)) {
+                    levelParams = command;
+                    return;
+                }
+            });
+            return levelParams;
+        };
+
+        this.getBreakdownParams = function(commands) {
+            if (arrayHelpers.isEmpty(commands)) {
+                return null;
+            }
+            var breakdownParams = null;
+            var breakdownsParams = [
+                BreakdownParam.SOURCES,
+                BreakdownParam.PUBLISHERS,
+                BreakdownParam.INSIGHTS,
+                BreakdownParam.COUNTRY,
+                BreakdownParam.STATE,
+                BreakdownParam.DMA,
+                BreakdownParam.DEVICE,
+                BreakdownParam.PLACEMENT,
+                BreakdownParam.OPERATING_SYSTEM,
+            ];
+            commands.forEach(function(command) {
+                if (breakdownsParams.includes(command)) {
+                    breakdownParams = command;
+                    return;
+                }
+            });
+            return breakdownParams;
         };
     });

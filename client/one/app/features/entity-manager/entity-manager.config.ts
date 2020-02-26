@@ -1,5 +1,4 @@
 import {
-    EntityType,
     CampaignConversionGoalType,
     Unit,
     DataType,
@@ -23,16 +22,9 @@ import {ImageCheckboxInputGroupItem} from '../../shared/components/image-checkbo
 import {ImageCheckboxInputIcon} from '../../shared/components/image-checkbox-input/image-checkbox-input.constants';
 
 export const ENTITY_MANAGER_CONFIG = {
-    settingsQueryParam: 'settings',
-    idStateParam: 'id',
-    levelStateParam: 'level',
+    outletName: 'settings',
     idQueryParam: 'settingsEntityId',
-    levelQueryParam: 'settingsEntiyLevel',
-    levelToEntityTypeMap: {
-        account: EntityType.ACCOUNT,
-        campaign: EntityType.CAMPAIGN,
-        adgroup: EntityType.AD_GROUP,
-    },
+    typeQueryParam: 'settingsEntiyType',
     maxCampaignConversionGoals: 15,
 };
 

@@ -1,10 +1,4 @@
-import {
-    Level,
-    LevelStateParam,
-    Breakdown,
-    BreakdownStateParam,
-    EntityType,
-} from '../../app.constants';
+import {Level, Breakdown, BreakdownParam} from '../../app.constants';
 
 export const DEFAULT_BREAKDOWN = {
     [Level.ALL_ACCOUNTS]: Breakdown.ACCOUNT,
@@ -13,27 +7,14 @@ export const DEFAULT_BREAKDOWN = {
     [Level.AD_GROUPS]: Breakdown.CONTENT_AD,
 };
 
-export const LEVEL_STATE_PARAM_TO_LEVEL_MAP = {
-    [LevelStateParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
-    [LevelStateParam.ACCOUNT]: Level.ACCOUNTS,
-    [LevelStateParam.CAMPAIGN]: Level.CAMPAIGNS,
-    [LevelStateParam.AD_GROUP]: Level.AD_GROUPS,
-};
-
 export const BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP = {
-    [BreakdownStateParam.SOURCES]: Breakdown.MEDIA_SOURCE,
-    [BreakdownStateParam.COUNTRY]: Breakdown.COUNTRY,
-    [BreakdownStateParam.STATE]: Breakdown.STATE,
-    [BreakdownStateParam.DMA]: Breakdown.DMA,
-    [BreakdownStateParam.DEVICE]: Breakdown.DEVICE,
-    [BreakdownStateParam.ENVIRONMENT]: Breakdown.ENVIRONMENT,
-    [BreakdownStateParam.OPERATING_SYSTEM]: Breakdown.OPERATING_SYSTEM,
-    [BreakdownStateParam.PUBLISHERS]: Breakdown.PUBLISHER,
-    [BreakdownStateParam.INSIGHTS]: Breakdown.INSIGHTS,
-};
-
-export const LEVEL_TO_ENTITY_TYPE_MAP = {
-    [Level.ACCOUNTS]: EntityType.ACCOUNT,
-    [Level.CAMPAIGNS]: EntityType.CAMPAIGN,
-    [Level.AD_GROUPS]: EntityType.AD_GROUP,
+    [BreakdownParam.SOURCES]: Breakdown.MEDIA_SOURCE,
+    [BreakdownParam.COUNTRY]: Breakdown.COUNTRY,
+    [BreakdownParam.STATE]: Breakdown.STATE,
+    [BreakdownParam.DMA]: Breakdown.DMA,
+    [BreakdownParam.DEVICE]: Breakdown.DEVICE,
+    [BreakdownParam.ENVIRONMENT]: Breakdown.ENVIRONMENT,
+    [BreakdownParam.OPERATING_SYSTEM]: Breakdown.OPERATING_SYSTEM,
+    [BreakdownParam.PUBLISHERS]: Breakdown.PUBLISHER,
+    [BreakdownParam.INSIGHTS]: Breakdown.INSIGHTS,
 };

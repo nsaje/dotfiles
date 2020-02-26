@@ -1,5 +1,4 @@
 import {Injectable, Inject} from '@angular/core';
-import {downgradeInjectable} from '@angular/upgrade/static';
 
 import {APP_CONSTANTS, CampaignType} from '../../app.constants';
 import {APP_CONFIG} from '../../app.config';
@@ -57,8 +56,3 @@ export class MixpanelService {
         });
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular
-    .module('one.downgraded')
-    .factory('zemMixpanelService', downgradeInjectable(MixpanelService));

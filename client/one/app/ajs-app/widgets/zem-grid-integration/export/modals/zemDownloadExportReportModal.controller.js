@@ -1,3 +1,5 @@
+var routerHelpers = require('../../../../../shared/helpers/router.helpers');
+
 //
 // TODO: On major update, refactor to component
 //
@@ -6,7 +8,7 @@ angular
     .controller('zemDownloadExportReportModalCtrl', function(
         $scope,
         $window,
-        $state,
+        NgRouter,
         zemDataFilterService,
         zemDownloadExportReportModalEndpoint
     ) {
@@ -17,9 +19,10 @@ angular
         $scope.setDisabledExportOptions = function() {
             $scope.showInProgress = true;
             var dateRange = zemDataFilterService.getDateRange();
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
             zemDownloadExportReportModalEndpoint
                 .get(
-                    $state.params.id,
+                    activatedRoute.snapshot.paramMap.get('id'),
                     $scope.level,
                     $scope.exportSources,
                     dateRange.startDate,

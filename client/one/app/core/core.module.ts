@@ -1,5 +1,4 @@
 import {NgModule, Optional, SkipSelf} from '@angular/core';
-import {throwIfAlreadyLoaded} from './core.module.guard';
 import {GoogleAnalyticsService} from './google-analytics/google-analytics.service';
 import {MixpanelService} from './mixpanel/mixpanel.service';
 import {EntitiesModule} from './entities/entities.module';
@@ -54,6 +53,12 @@ export class CoreModule {
         @SkipSelf()
         parentModule: CoreModule
     ) {
-        throwIfAlreadyLoaded(parentModule, CoreModule.name);
+        if (parentModule) {
+            throw new Error(
+                `${CoreModule.name} has already been loaded. Import ${
+                    CoreModule.name
+                } in the AppModule only.`
+            );
+        }
     }
 }

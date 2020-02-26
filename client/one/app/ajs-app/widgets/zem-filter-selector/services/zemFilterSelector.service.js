@@ -1,8 +1,12 @@
+var RoutePathName = require('../../../../app.constants').RoutePathName;
+var routerHelpers = require('../../../../shared/helpers/router.helpers');
+var deepEqual = require('fast-deep-equal');
+
 angular
     .module('one.widgets')
     .service('zemFilterSelectorService', function(
         $rootScope,
-        $state,
+        NgRouter,
         $filter,
         zemPermissions,
         zemDataFilterService,
@@ -13,11 +17,13 @@ angular
     ) {
         // eslint-disable-line max-len
         this.init = init;
+        this.destroy = destroy;
         this.getVisibleSections = getVisibleSections;
         this.getAppliedConditions = getAppliedConditions;
         this.applyFilter = applyFilter;
         this.removeAppliedCondition = removeAppliedCondition;
         this.toggleSelectAll = toggleSelectAll;
+        this.resetAllConditions = resetAllConditions;
 
         this.onSectionsUpdate = onSectionsUpdate;
 
@@ -43,7 +49,9 @@ angular
                 cssClass: 'sources',
                 getOptions: getSourcesOptions,
                 isVisible: function() {
-                    return $state.includes('v2.analytics');
+                    return NgRouter.url.includes(
+                        RoutePathName.APP_BASE + '/' + RoutePathName.ANALYTICS
+                    );
                 },
             },
             {
@@ -54,9 +62,17 @@ angular
                 getOptions: getAgenciesOptions,
                 permissions: ['zemauth.can_filter_by_agency'],
                 isVisible: function() {
+                    var activatedRoute = routerHelpers.getActivatedRoute(
+                        NgRouter
+                    );
                     return (
-                        $state.params.level ===
-                        constants.levelStateParam.ACCOUNTS
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.ANALYTICS
+                        ) &&
+                        activatedRoute.snapshot.data.level ===
+                            constants.levelParam.ACCOUNTS
                     );
                 },
             },
@@ -68,9 +84,17 @@ angular
                 getOptions: getAccountTypesOptions,
                 permissions: ['zemauth.can_filter_by_account_type'],
                 isVisible: function() {
+                    var activatedRoute = routerHelpers.getActivatedRoute(
+                        NgRouter
+                    );
                     return (
-                        $state.params.level ===
-                        constants.levelStateParam.ACCOUNTS
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.ANALYTICS
+                        ) &&
+                        activatedRoute.snapshot.data.level ===
+                            constants.levelParam.ACCOUNTS
                     );
                 },
             },
@@ -82,9 +106,17 @@ angular
                 getOptions: getBusinessesOptions,
                 permissions: ['zemauth.can_filter_by_business'],
                 isVisible: function() {
+                    var activatedRoute = routerHelpers.getActivatedRoute(
+                        NgRouter
+                    );
                     return (
-                        $state.params.level ===
-                        constants.levelStateParam.ACCOUNTS
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.ANALYTICS
+                        ) &&
+                        activatedRoute.snapshot.data.level ===
+                            constants.levelParam.ACCOUNTS
                     );
                 },
             },
@@ -94,6 +126,20 @@ angular
                 appliedConditionName: 'Status',
                 cssClass: 'statuses',
                 getOptions: getStatusesOptions,
+                isVisible: function() {
+                    return (
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.ANALYTICS
+                        ) ||
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.PIXELS_LIBRARY
+                        )
+                    );
+                },
             },
             {
                 condition: zemDataFilterService.CONDITIONS.publisherStatus,
@@ -103,9 +149,17 @@ angular
                 getOptions: getPublisherStatusOptions,
                 permissions: ['zemauth.can_see_publisher_blacklist_status'],
                 isVisible: function() {
+                    var activatedRoute = routerHelpers.getActivatedRoute(
+                        NgRouter
+                    );
                     return (
-                        $state.params.breakdown ===
-                        constants.breakdownStateParam.PUBLISHERS
+                        NgRouter.url.includes(
+                            RoutePathName.APP_BASE +
+                                '/' +
+                                RoutePathName.ANALYTICS
+                        ) &&
+                        activatedRoute.snapshot.params.breakdown ===
+                            constants.breakdownParam.PUBLISHERS
                     );
                 },
             },
@@ -150,18 +204,45 @@ angular
         var availableSources;
         var availableAgencies;
 
+        var mediaSourcesUpdateHandler,
+            agenciesUpdateHandler,
+            dataFilterUpdateHandler;
+
+        var appliedConditions;
+
         //
         // Public methods
         //
         function init() {
-            zemMediaSourcesService.onSourcesUpdate(refreshAvailableSources);
-            zemAgenciesService.onAgenciesUpdate(refreshAvailableAgencies);
+            mediaSourcesUpdateHandler = zemMediaSourcesService.onSourcesUpdate(
+                refreshAvailableSources
+            );
+            agenciesUpdateHandler = zemAgenciesService.onAgenciesUpdate(
+                refreshAvailableAgencies
+            );
+            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
+                function() {
+                    pubSub.notify(
+                        EVENTS.ON_SECTIONS_UPDATE,
+                        getVisibleSections()
+                    );
+                }
+            );
 
-            // Collapse filter selector when user navigates to different view and update visible categories and options
-            $rootScope.$on('$zemStateChangeSuccess', function() {
+            $rootScope.$on('$zemNavigationEnd', function() {
+                initFromUrlParams();
                 zemFilterSelectorSharedService.setSelectorExpanded(false);
                 pubSub.notify(EVENTS.ON_SECTIONS_UPDATE, getVisibleSections());
             });
+
+            initFromUrlParams();
+            zemFilterSelectorSharedService.setSelectorExpanded(false);
+        }
+
+        function destroy() {
+            if (mediaSourcesUpdateHandler) mediaSourcesUpdateHandler();
+            if (agenciesUpdateHandler) agenciesUpdateHandler();
+            if (dataFilterUpdateHandler) dataFilterUpdateHandler();
         }
 
         function getVisibleSections() {
@@ -204,7 +285,7 @@ angular
         function getAppliedConditions() {
             var appliedConditions = [];
             angular.forEach(
-                zemDataFilterService.getAppliedConditions(true),
+                zemDataFilterService.getAppliedConditions(),
                 function(conditionValue, conditionName) {
                     var section = findConditionSection(conditionName);
                     if (!section) return;
@@ -247,7 +328,7 @@ angular
         }
 
         function applyFilter(visibleSections) {
-            var conditions = [];
+            appliedConditions = [];
             angular.forEach(visibleSections, function(section) {
                 var value;
                 switch (section.condition.type) {
@@ -268,14 +349,14 @@ angular
                 }
 
                 if (value) {
-                    conditions.push({
+                    appliedConditions.push({
                         condition: section.condition,
                         value: value,
                     });
                 }
             });
 
-            zemDataFilterService.applyConditions(conditions);
+            zemDataFilterService.applyConditions(appliedConditions);
         }
 
         function removeAppliedCondition(condition, value) {
@@ -296,6 +377,10 @@ angular
             });
         }
 
+        function resetAllConditions() {
+            zemDataFilterService.resetAllConditions();
+        }
+
         //
         // Events
         //
@@ -306,6 +391,34 @@ angular
         //
         // Private methods
         //
+
+        function initFromUrlParams() {
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
+            var queryParams = activatedRoute.snapshot.queryParams;
+
+            var conditions = [];
+            angular.forEach(zemDataFilterService.CONDITIONS, function(
+                condition
+            ) {
+                var param = queryParams[condition.urlParam];
+                if (param) {
+                    conditions.push({
+                        condition: condition,
+                        value: param,
+                    });
+                }
+            });
+
+            if (!deepEqual(appliedConditions, conditions)) {
+                appliedConditions = conditions;
+                if (appliedConditions.length > 0) {
+                    zemDataFilterService.applyConditions(conditions);
+                } else {
+                    resetAllConditions();
+                }
+            }
+        }
+
         function findConditionSection(conditionName) {
             var visibleSections = getVisibleSections();
             for (var i = 0; i < visibleSections.length; i++) {

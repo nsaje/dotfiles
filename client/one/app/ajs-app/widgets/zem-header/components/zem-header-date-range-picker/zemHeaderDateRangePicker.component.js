@@ -1,7 +1,9 @@
+var routerHelpers = require('../../../../../shared/helpers/router.helpers');
+
 angular.module('one.widgets').component('zemHeaderDateRangePicker', {
     template: require('./zemHeaderDateRangePicker.component.html'), // eslint-disable-line max-len
     controller: function(
-        $state,
+        NgRouter,
         $timeout,
         config,
         zemDataFilterService,
@@ -10,7 +12,7 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
         // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
-        $ctrl.isVisible = isVisible;
+        $ctrl.isInitialized = false;
 
         var dateRangeUpdateHandler;
 
@@ -60,32 +62,41 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                     .addClass('zem-header-date-range-picker-dropdown');
             }, 0);
 
-            $ctrl.dateRange = zemDataFilterService.getDateRange();
-
             dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
-                onDateRangeDataFilterUpdate
+                updateInternalState
             );
+
+            initFromUrlParams();
         };
 
         $ctrl.$onDestroy = function() {
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
         };
 
-        function isVisible() {
-            return !(
-                $state.includes('*.*.agency') ||
-                $state.includes('*.*.settings') ||
-                $state.includes('*.*.budget') ||
-                $state.includes('*.*.budget')
-            );
+        function initFromUrlParams() {
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
+            var queryParams = activatedRoute.snapshot.queryParams;
+
+            // Date range
+            var dateRange = {
+                startDate: moment().startOf('month'),
+                endDate: moment().endOf('month'),
+            };
+            var startDateParam = queryParams.start_date;
+            var endDateParam = queryParams.end_date;
+            if (startDateParam) dateRange.startDate = moment(startDateParam);
+            if (endDateParam) dateRange.endDate = moment(endDateParam);
+
+            zemDataFilterService.setDateRange(dateRange);
         }
 
         function handleDateRangeUpdateFromPicker() {
             zemDataFilterService.setDateRange($ctrl.dateRange);
         }
 
-        function onDateRangeDataFilterUpdate(event, updatedDateRange) {
-            $ctrl.dateRange = updatedDateRange;
+        function updateInternalState() {
+            $ctrl.dateRange = zemDataFilterService.getDateRange();
+            $ctrl.isInitialized = true;
         }
     },
 });

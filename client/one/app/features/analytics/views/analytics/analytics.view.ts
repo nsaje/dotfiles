@@ -9,20 +9,24 @@ import {
     HostBinding,
     ChangeDetectorRef,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {
     Breakdown,
     Level,
-    LevelStateParam,
-    BreakdownStateParam,
+    LevelParam,
+    BreakdownParam,
 } from '../../../../app.constants';
 import {
     DEFAULT_BREAKDOWN,
-    LEVEL_STATE_PARAM_TO_LEVEL_MAP,
     BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP,
-    LEVEL_TO_ENTITY_TYPE_MAP,
 } from '../../analytics.config';
+import {
+    LEVEL_PARAM_TO_LEVEL_MAP,
+    LEVEL_TO_ENTITY_TYPE_MAP,
+} from '../../../../app.constants';
+import {ActivatedRoute, Params} from '@angular/router';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
     selector: 'zem-analytics-view',
@@ -39,50 +43,42 @@ export class AnalyticsView implements OnInit, OnDestroy {
     entity: any;
     isInitialized: boolean = false;
 
-    private stateChangeListener$: Function;
+    private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
+        private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('ajs$rootScope') private ajs$rootScope: any,
-        @Inject('ajs$state') private ajs$state: any,
-        @Inject('zemPermissions') public zemPermissions: any,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
     ngOnInit(): void {
-        this.updateInternalState();
-        this.stateChangeListener$ = this.ajs$rootScope.$on(
-            '$zemStateChangeSuccess',
-            () => {
-                this.updateInternalState();
-            }
-        );
+        this.route.params
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe((params: Params) => {
+                this.updateInternalState(
+                    this.route.snapshot.data.level,
+                    params.id,
+                    params.breakdown
+                );
+            });
     }
 
     ngOnDestroy(): void {
-        if (commonHelpers.isDefined(this.stateChangeListener$)) {
-            this.stateChangeListener$();
-        }
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState() {
-        this.level = this.getLevel(this.ajs$state.params.level);
-        if (!commonHelpers.isDefined(this.level)) {
-            this.isInitialized = false;
-            this.changeDetectorRef.markForCheck();
-            return;
-        }
-
-        this.breakdown = this.getBreakdown(
-            this.level,
-            this.ajs$state.params.breakdown
-        );
+    updateInternalState(
+        levelParam: LevelParam,
+        entityId: string,
+        breakdownParam: BreakdownParam
+    ) {
+        this.level = this.getLevel(levelParam);
+        this.breakdown = this.getBreakdown(this.level, breakdownParam);
         this.chartBreakdown = this.getChartBreakdown(
             this.level,
             this.breakdown
         );
-
-        const entityId = this.ajs$state.params.id;
         if (!commonHelpers.isDefined(entityId)) {
             this.entity = null;
             this.isInitialized = true;
@@ -99,20 +95,17 @@ export class AnalyticsView implements OnInit, OnDestroy {
             });
     }
 
-    private getLevel(levelStateParam: LevelStateParam): Level {
-        return LEVEL_STATE_PARAM_TO_LEVEL_MAP[levelStateParam];
+    private getLevel(levelParam: LevelParam): Level {
+        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
     }
 
     private getBreakdown(
         level: Level,
-        breakdownStateParam: BreakdownStateParam
+        breakdownParam: BreakdownParam
     ): Breakdown {
         const breakdown =
-            BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP[breakdownStateParam];
-        if (
-            commonHelpers.isDefined(breakdown) &&
-            this.canSeeBreakdown(breakdown)
-        ) {
+            BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP[breakdownParam];
+        if (commonHelpers.isDefined(breakdown)) {
             return breakdown;
         }
         return DEFAULT_BREAKDOWN[level];
@@ -123,30 +116,4 @@ export class AnalyticsView implements OnInit, OnDestroy {
             ? DEFAULT_BREAKDOWN[level]
             : breakdown;
     }
-
-    private canSeeBreakdown(breakdown: Breakdown): boolean {
-        const isDeliveryBreakdown = [
-            Breakdown.COUNTRY,
-            Breakdown.STATE,
-            Breakdown.DMA,
-            Breakdown.DEVICE,
-            Breakdown.ENVIRONMENT,
-            Breakdown.OPERATING_SYSTEM,
-        ].includes(breakdown);
-        if (isDeliveryBreakdown) {
-            return this.zemPermissions.hasPermission(
-                'zemauth.can_see_top_level_delivery_breakdowns'
-            );
-        }
-        return true;
-    }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemAnalyticsView',
-    downgradeComponent({
-        component: AnalyticsView,
-        propagateDigest: false,
-    })
-);

@@ -17,9 +17,7 @@ angular.module('one.widgets').component('zemCloneAdGroupSuccessfulModal', {
                     $ctrl.resolve.destinationAdGroup.id
                 )
                 .then(function(navigationEntity) {
-                    zemNavigationNewService.navigateTo(navigationEntity, {
-                        settings: 'create',
-                    });
+                    zemNavigationNewService.navigateTo(navigationEntity);
                 });
         }
     },

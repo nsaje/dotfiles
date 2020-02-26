@@ -9,15 +9,18 @@ import {
     OnDestroy,
 } from '@angular/core';
 import {
-    ENTITY_MANAGER_CONFIG,
     CAMPAIGN_TYPES,
     IAB_CATEGORIES,
     LANGUAGES,
+    ENTITY_MANAGER_CONFIG,
 } from '../../entity-manager.config';
 import {CampaignSettingsStore} from '../../services/campaign-settings-store/campaign-settings.store';
-import {LevelStateParam, EntityType} from '../../../../app.constants';
+import {LevelParam, EntityType, RoutePathName} from '../../../../app.constants';
 import * as messagesHelpers from '../../helpers/messages.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {Subject} from 'rxjs';
+import {Router} from '@angular/router';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-campaign-settings-drawer',
@@ -43,9 +46,8 @@ export class CampaignSettingsDrawerView
 
     constructor(
         public store: CampaignSettingsStore,
+        private router: Router,
         @Inject('zemPermissions') public zemPermissions: any,
-        @Inject('ajs$state') private ajs$state: any,
-        @Inject('ajs$location') private ajs$location: any,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
@@ -76,15 +78,7 @@ export class CampaignSettingsDrawerView
 
     close() {
         this.isOpen = false;
-        setTimeout(() => {
-            this.ajs$location
-                .search({
-                    [ENTITY_MANAGER_CONFIG.settingsQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.levelQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.idQueryParam]: null,
-                })
-                .replace();
-        }, 250);
+        this.navigateToRoute([]);
     }
 
     cancel() {
@@ -96,7 +90,12 @@ export class CampaignSettingsDrawerView
         }
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToParentAnalyticsView(this.newEntityParentId);
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.ACCOUNT,
+                    this.newEntityParentId,
+                ]);
             } else {
                 this.close();
             }
@@ -107,9 +106,12 @@ export class CampaignSettingsDrawerView
         const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToNewEntityAnalyticsView(
-                    this.store.state.entity.id
-                );
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.CAMPAIGN,
+                    this.store.state.entity.id,
+                ]);
             } else {
                 this.close();
             }
@@ -119,7 +121,12 @@ export class CampaignSettingsDrawerView
     async archive() {
         const shouldReload = await this.store.archiveEntity();
         if (shouldReload) {
-            this.redirectToNewEntityAnalyticsView(this.store.state.entity.id);
+            this.navigateToRoute([
+                RoutePathName.APP_BASE,
+                RoutePathName.ARCHIVED,
+                LevelParam.CAMPAIGN,
+                this.store.state.entity.id,
+            ]);
         }
     }
 
@@ -135,26 +142,31 @@ export class CampaignSettingsDrawerView
         );
     }
 
-    private redirectToNewEntityAnalyticsView(newEntityId: string) {
-        this.redirectToEntityAnalyticsView(
-            LevelStateParam.CAMPAIGN,
-            newEntityId
-        );
-    }
-
-    private redirectToParentAnalyticsView(parentId: string) {
-        this.redirectToEntityAnalyticsView(LevelStateParam.ACCOUNT, parentId);
-    }
-
-    private redirectToEntityAnalyticsView(
-        level: LevelStateParam,
-        entityId: string
-    ) {
+    private navigateToRoute(routePath: string[]) {
         this.isOpen = false;
-        const url = this.ajs$state.href('v2.analytics', {
-            level: level,
-            id: entityId,
-        });
-        this.ajs$location.url(url);
+        this.router
+            .navigate(
+                [
+                    {
+                        outlets: {drawer: null},
+                    },
+                ],
+                {
+                    queryParams: commonHelpers.getValueWithoutProps(
+                        this.router.routerState.root.snapshot.queryParams,
+                        [
+                            ENTITY_MANAGER_CONFIG.idQueryParam,
+                            ENTITY_MANAGER_CONFIG.typeQueryParam,
+                        ]
+                    ),
+                }
+            )
+            .then(() => {
+                if (!arrayHelpers.isEmpty(routePath)) {
+                    this.router.navigate(routePath, {
+                        queryParamsHandling: 'preserve',
+                    });
+                }
+            });
     }
 }

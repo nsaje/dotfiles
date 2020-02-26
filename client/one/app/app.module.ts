@@ -6,13 +6,6 @@ import {ErrorHandler, NgModule, DoBootstrap} from '@angular/core';
 import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
-import {HeaderComponent} from './components/header/header.component';
-import {FilterSelectorComponent} from './components/filter-selector/filter-selector.component';
-import {FooterComponent} from './components/footer/footer.component';
-import {SidebarComponent} from './components/sidebar/sidebar.component';
-import {SidebarContainerComponent} from './components/sidebar-container/sidebar-container.component';
-import {MainContainerComponent} from './components/main-container/main-container.component';
-import {HistoryComponent} from './components/history/history.component';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
@@ -26,6 +19,16 @@ import {PixelsLibraryModule} from './features/pixels-library/pixels-library.modu
 import {UsersLibraryModule} from './features/users-library/users-library.module';
 import {ReportsLibraryModule} from './features/reports-library/reports-library.module';
 import {PublisherGroupsLibraryModule} from './features/publisher-groups-library/publisher-groups-library.module';
+import {DashboardView} from './views/dashboard/dashboard.view';
+import {AppRootComponent} from './app-root.component';
+import {LayoutModule} from './layout/layout.module';
+import {AppInitializationModule} from './app-initialization.module';
+import {RouterModule} from '@angular/router';
+import {APP_ROUTES} from './app.routes';
+import {ArchivedModule} from './features/archived/archived.module';
+import {NewEntityAnalyticsMockModule} from './features/new-entity-analytics-mock/new-entity-analytics-mock.module';
+import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.guard';
+import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -41,16 +44,7 @@ if (APP_CONFIG.env.prod) {
 }
 
 @NgModule({
-    declarations: [
-        HeaderComponent,
-        FilterSelectorComponent,
-        FooterComponent,
-        SidebarComponent,
-        SidebarContainerComponent,
-        MainContainerComponent,
-        HistoryComponent,
-        ErrorForbiddenView,
-    ],
+    declarations: [DashboardView, ErrorForbiddenView, AppRootComponent],
     imports: [
         // Angular modules
         BrowserModule,
@@ -73,12 +67,17 @@ if (APP_CONFIG.env.prod) {
             maxOpened: 1,
         }),
 
+        // Initialization module
+        AppInitializationModule,
+
         CoreModule,
 
         // Feature modules
+        LayoutModule,
         InventoryPlanningModule,
         EntityManagerModule,
         AnalyticsModule,
+        ArchivedModule,
         RulesLibraryModule,
         DealsLibraryModule,
         CreditsLibraryModule,
@@ -86,24 +85,29 @@ if (APP_CONFIG.env.prod) {
         UsersLibraryModule,
         ReportsLibraryModule,
         PublisherGroupsLibraryModule,
-    ],
-    entryComponents: [MainContainerComponent, ErrorForbiddenView],
-    providers: [
-        {provide: ErrorHandler, useClass: RavenErrorHandler},
-        upgradeProvider('$rootScope', 'ajs$rootScope'),
-        upgradeProvider('$state', 'ajs$state'),
-        upgradeProvider('$location', 'ajs$location'),
-        upgradeProvider('zemPermissions'),
-        upgradeProvider('zemNavigationNewService'),
-    ],
-})
-export class AppModule implements DoBootstrap {
-    constructor(private upgrade: UpgradeModule) {}
+        NewEntityAnalyticsMockModule,
 
-    ngDoBootstrap() {
-        this.upgrade.bootstrap(document.body, ['one'], {strictDi: true});
-    }
-}
+        // App router
+        RouterModule.forRoot(APP_ROUTES),
+    ],
+    providers: [
+        CanActivateDashboardGuard,
+        CanActivateRedirectGuard,
+        {provide: ErrorHandler, useClass: RavenErrorHandler},
+        {
+            provide: '$scope',
+            useFactory: (i: any) => i.get('$rootScope'),
+            deps: ['$injector'],
+        },
+        upgradeProvider('zemPermissions'),
+        upgradeProvider('zemNavigationService'),
+        upgradeProvider('zemNavigationNewService'),
+        upgradeProvider('zemDesignHelpersService'),
+        upgradeProvider('zemInitializationService'),
+    ],
+    bootstrap: [AppRootComponent],
+})
+export class AppModule {}
 
 function upgradeProvider(ajsName: string, name?: string): any {
     return {

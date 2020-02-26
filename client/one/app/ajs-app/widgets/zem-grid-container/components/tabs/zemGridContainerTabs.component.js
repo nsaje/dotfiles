@@ -1,5 +1,8 @@
 require('./zemGridContainerTabs.component.less');
+
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
 var arrayHelpers = require('../../../../../shared/helpers/array.helpers');
+var RoutePathName = require('../../../../../app.constants').RoutePathName;
 
 angular.module('one.widgets').component('zemGridContainerTabs', {
     template: require('./zemGridContainerTabs.component.html'),
@@ -7,7 +10,7 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         tabs: '<',
         entity: '<',
     },
-    controller: function($rootScope, $state, $location, $window, zemUtils) {
+    controller: function(NgRouter, $location, $window, zemUtils) {
         var $ctrl = this;
 
         $ctrl.navigateToStateWithQueryParams = navigateToStateWithQueryParams;
@@ -24,24 +27,14 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                     '_blank'
                 );
             } else {
-                // [WORKAROUND] Silently change state (notify: false) to avoid component reinitialization
-                // and notify directly with $zemStateChangeStart and $zemStateChangeSuccess
-                var params = getQueryParams(tab, option);
-                $rootScope.$broadcast('$zemStateChangeStart');
-                $state
-                    .go('v2.analytics', params, {
-                        notify: false,
-                        location: 'replace',
-                    })
-                    .then(function() {
-                        $rootScope.$broadcast('$zemStateChangeSuccess');
-                    });
+                var href = getStateHrefWithQueryParams(tab, option);
+                NgRouter.navigateByUrl(href);
             }
         }
 
         function getStateHrefWithQueryParams(tab, option) {
-            var params = getQueryParams(tab, option);
-            var href = $state.href('v2.analytics', params);
+            var urlTree = getUrlTree(tab, option);
+            var href = NgRouter.createUrlTree(urlTree).toString();
             var queryParamsIndex = $location.url().indexOf('?');
             if (queryParamsIndex !== -1) {
                 href += $location.url().slice(queryParamsIndex);
@@ -49,21 +42,30 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
             return href;
         }
 
-        function getQueryParams(tab, option) {
-            var id = $ctrl.entity ? $ctrl.entity.id : null;
+        function getUrlTree(tab, option) {
+            var urlTree = [RoutePathName.APP_BASE, RoutePathName.ANALYTICS];
+
             var level = $ctrl.entity
                 ? constants.entityTypeToLevelMap[$ctrl.entity.type]
                 : constants.level.ALL_ACCOUNTS;
-            var levelStateParam = constants.levelToLevelStateParamMap[level];
-            var breakdownStateParam =
-                constants.breakdownToBreakdownStateParamMap[
+            var levelParam = constants.levelToLevelParamMap[level];
+            if (commonHelpers.isDefined(levelParam)) {
+                urlTree.push(levelParam);
+                var id = $ctrl.entity ? $ctrl.entity.id : null;
+                if (commonHelpers.isDefined(id)) {
+                    urlTree.push(id);
+                }
+            }
+
+            var breakdownParam =
+                constants.breakdownToBreakdownParamMap[
                     option ? option.breakdown : tab.breakdown
                 ];
-            return {
-                id: id,
-                level: levelStateParam,
-                breakdown: breakdownStateParam,
-            };
+            if (commonHelpers.isDefined(breakdownParam)) {
+                urlTree.push(breakdownParam);
+            }
+
+            return urlTree;
         }
 
         function hasOptions(tab) {

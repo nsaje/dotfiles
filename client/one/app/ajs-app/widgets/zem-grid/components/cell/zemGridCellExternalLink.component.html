@@ -3,7 +3,7 @@
         <span ng-switch-when="link" class="icon-link">
             <a
                 ng-show="ctrl.url && ctrl.fieldVisible"
-                ng-href="{{ ctrl.url }}"
+                href="{{ ctrl.url }}"
                 target="_blank"
                 ><img
                     ng-src="{{ ctrl.config.staticUrl }}/one/images/link.svg"
@@ -24,7 +24,7 @@
         <span ng-switch-when="visibleLink" class="visible-link">
             <a
                 ng-show="ctrl.url && ctrl.fieldVisible"
-                ng-href="{{ ctrl.url }}"
+                href="{{ ctrl.url }}"
                 target="_blank"
                 ><img
                     ng-src="{{ ctrl.config.staticUrl }}/one/images/link.svg"
@@ -34,7 +34,7 @@
         <span ng-switch-default class="text-link">
             <a
                 ng-show="ctrl.url && ctrl.fieldVisible"
-                ng-href="{{ ctrl.url }}"
+                href="{{ ctrl.url }}"
                 ng-click="ctrl.openUrl($event)"
                 ng-attr-title="{{ ctrl.text }}"
                 >{{ ctrl.text }}</a

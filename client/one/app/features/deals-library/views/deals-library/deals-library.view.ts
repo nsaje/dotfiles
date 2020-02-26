@@ -9,9 +9,8 @@ import {
     ViewChild,
     HostBinding,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
 import {merge, Subject, Observable} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import {takeUntil, map, distinctUntilChanged, tap, take} from 'rxjs/operators';
 import {ColDef} from 'ag-grid-community';
 import * as moment from 'moment';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
@@ -23,6 +22,13 @@ import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/ty
 import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
+import {ActivatedRoute, Router} from '@angular/router';
+import {
+    LEVEL_TO_ENTITY_TYPE_MAP,
+    LevelParam,
+    Level,
+    LEVEL_PARAM_TO_LEVEL_MAP,
+} from '../../../../app.constants';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -118,14 +124,12 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     connectionType: string;
     canSaveActiveEntity = false;
 
-    private stateChangeListener$: Function;
-    private locationChangeListener$: Function;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         public store: DealsLibraryStore,
-        @Inject('ajs$rootScope') private ajs$rootScope: any,
-        @Inject('ajs$location') private ajs$location: any,
+        private route: ActivatedRoute,
+        private router: Router,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {
         this.context = {
@@ -134,48 +138,21 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.updateInternalState();
-        this.stateChangeListener$ = this.ajs$rootScope.$on(
-            '$zemStateChangeSuccess',
-            () => {
+        this.accountId = this.route.snapshot.params.id;
+        const level = this.getLevel(this.route.snapshot.data.level);
+
+        this.zemNavigationNewService
+            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], this.accountId)
+            .then((account: any) => {
+                this.agencyId = account.data.agencyId;
+                this.accountId = account.data.id;
                 this.updateInternalState();
-            }
-        );
-        this.locationChangeListener$ = this.ajs$rootScope.$on(
-            '$locationChangeSuccess',
-            () => {
-                this.updateInternalState();
-            }
-        );
+            });
     }
 
     ngOnDestroy() {
-        this.updateUrlParamsWithSelectedPagination({
-            page: null,
-            pageSize: null,
-        });
-        this.updateUrlParamsWithKeyword(null);
-        if (commonHelpers.isDefined(this.stateChangeListener$)) {
-            this.stateChangeListener$();
-        }
-        if (commonHelpers.isDefined(this.locationChangeListener$)) {
-            this.locationChangeListener$();
-        }
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
-    }
-
-    updateInternalState() {
-        const account: any = this.zemNavigationNewService.getActiveAccount();
-        if (
-            commonHelpers.isDefined(account) &&
-            (this.agencyId !== account.data.agencyId ||
-                this.accountId !== account.data.id)
-        ) {
-            this.agencyId = account.data.agencyId;
-            this.accountId = account.data.id;
-            this.doUpdateInternalState();
-        }
     }
 
     onPaginationChange($event: PaginationChangeEvent) {
@@ -255,7 +232,11 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         });
     }
 
-    private doUpdateInternalState() {
+    private getLevel(levelParam: LevelParam): Level {
+        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
+    }
+
+    private updateInternalState() {
         this.subscribeToStateUpdates();
         const preselectedPagination = this.getPreselectedPagination();
         const keyword = this.getPreselectedKeyword();
@@ -302,16 +283,25 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         page: number;
         pageSize: number;
     }): void {
+        const queryParams = {};
         PAGINATION_URL_PARAMS.forEach(paramName => {
             const paramValue = selectedPagination[paramName];
-            this.ajs$location.search(paramName, paramValue).replace();
+            queryParams[paramName] = paramValue;
+        });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: queryParams,
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
         });
     }
 
     private getPreselectedPagination(): {page: number; pageSize: number} {
         const pagination = this.DEFAULT_PAGINATION;
         PAGINATION_URL_PARAMS.forEach(paramName => {
-            const value: string = this.ajs$location.search()[paramName];
+            const value: string = this.route.snapshot.queryParamMap.get(
+                paramName
+            );
             if (value) {
                 pagination[paramName] = Number(value);
             }
@@ -321,11 +311,16 @@ export class DealsLibraryView implements OnInit, OnDestroy {
 
     private updateUrlParamsWithKeyword(keyword: string | null): void {
         keyword = keyword ? keyword : null;
-        this.ajs$location.search('keyword', keyword).replace();
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {keyword: keyword},
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
     }
 
     private getPreselectedKeyword(): string | null {
-        const keyword = this.ajs$location.search().keyword;
+        const keyword = this.route.snapshot.queryParamMap.get('keyword');
         return commonHelpers.isDefined(keyword) ? keyword : null;
     }
 
@@ -336,12 +331,3 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         return 'N/A';
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemDealsLibraryView',
-    downgradeComponent({
-        component: DealsLibraryView,
-        propagateDigest: false,
-    })
-);

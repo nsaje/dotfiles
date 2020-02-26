@@ -7,8 +7,8 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
     },
     template: require('./zemInfoboxHeader.component.html'),
     controller: function(
-        $timeout,
         $location,
+        NgRouter,
         zemEntityService,
         zemNavigationService,
         zemPermissions
@@ -26,9 +26,17 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         };
 
         function openSettings() {
-            $location
-                .search(ENTITY_MANAGER_CONFIG.settingsQueryParam, true)
-                .replace();
+            var queryParams = $location.search();
+            queryParams[ENTITY_MANAGER_CONFIG.typeQueryParam] =
+                $ctrl.entity.type;
+            queryParams[ENTITY_MANAGER_CONFIG.idQueryParam] = $ctrl.entity.id;
+
+            NgRouter.navigate(
+                [{outlets: {drawer: ENTITY_MANAGER_CONFIG.outletName}}],
+                {
+                    queryParams: queryParams,
+                }
+            );
         }
 
         function updateView(entity) {

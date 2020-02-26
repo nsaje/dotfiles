@@ -1,5 +1,6 @@
 import * as clone from 'clone';
 import * as deepEqual from 'fast-deep-equal';
+import * as arrayHelpers from './array.helpers';
 
 export function getValueOrDefault<T>(value: T, defaultValue: T): T {
     if (isDefined(value)) {
@@ -41,4 +42,28 @@ export function isEqualToAnyItem(value: any, items: any[]): boolean {
 
 export function isPrimitive(value: any) {
     return value !== Object(value);
+}
+
+export function getValueWithoutProps<T>(value: T, props: string[]): Partial<T> {
+    if (!isDefined(value)) {
+        return value;
+    }
+    if (Array.isArray(value)) {
+        return value;
+    }
+    if (typeof value !== 'object') {
+        return value;
+    }
+    if (arrayHelpers.isEmpty(props)) {
+        return value;
+    }
+
+    const formattedValue: any = {...value};
+    props.forEach(prop => {
+        if (Object.keys(formattedValue).includes(prop)) {
+            delete formattedValue[prop];
+        }
+    });
+
+    return formattedValue;
 }

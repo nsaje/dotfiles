@@ -1,11 +1,12 @@
 <div
-    ng-repeat="item in $ctrl.breadcrumb"
+    ng-repeat="item in $ctrl.breadcrumb track by item.name"
     class="zem-header-breadcrumb__item"
     ng-class="{'zem-header-breadcrumb__item--with-slash': $index > 0}"
 >
     <a
         class="zem-header-breadcrumb__link"
-        ng-href="{{ item.href }}"
+        href="{{ item.href }}"
+        ng-click="$ctrl.openUrl(item.href)"
         title="{{ item.name }}"
     >
         <span class="zem-header-breadcrumb__type-name"

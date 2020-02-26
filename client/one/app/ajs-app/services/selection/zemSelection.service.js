@@ -1,10 +1,6 @@
 angular
     .module('one.services')
-    .service('zemSelectionService', function(
-        $rootScope,
-        $location,
-        zemPubSubService
-    ) {
+    .service('zemSelectionService', function(zemPubSubService) {
         this.init = init;
         this.getSelection = getSelection;
         this.isIdInSelected = isIdInSelected;
@@ -68,12 +64,7 @@ angular
         // Public methods
         //
         function init() {
-            selection = initFromUrlParams();
-
-            $rootScope.$on('$zemStateChangeStart', function() {
-                clear();
-                pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
-            });
+            selection = getDefaultSelection();
         }
 
         function getSelection() {
@@ -123,7 +114,6 @@ angular
             );
             if (!angular.equals(selection, newSelectionCopy)) {
                 selection = newSelectionCopy;
-                setUrlParams(selection);
                 pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
             }
         }
@@ -137,13 +127,11 @@ angular
 
         function selectTotals() {
             selection[TOTALS_UNSELECTED] = false;
-            setUrlParams(selection);
             pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
         }
 
         function unselectTotals() {
             selection[TOTALS_UNSELECTED] = true;
-            setUrlParams(selection);
             pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
         }
 
@@ -151,7 +139,6 @@ angular
             clear();
             selection[ALL] = true;
             selection[TOTALS_UNSELECTED] = false;
-            setUrlParams(selection);
             pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
         }
 
@@ -172,7 +159,6 @@ angular
         //
         function clear() {
             selection = getDefaultSelection();
-            setUrlParams(selection);
         }
 
         function isSelectedSet() {
@@ -196,7 +182,6 @@ angular
             });
 
             if (updated) {
-                setUrlParams(selection);
                 pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
             }
         }
@@ -213,52 +198,8 @@ angular
             });
 
             if (updated) {
-                setUrlParams(selection);
                 pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
             }
-        }
-
-        function initFromUrlParams() {
-            var params = $location.search();
-            var selection = getDefaultSelection();
-
-            angular.forEach(URL_PARAMS, function(param, key) {
-                var value = params[param.name];
-
-                if (value && param.type === URL_PARAMS_TYPES.list) {
-                    value = value
-                        .split(',')
-                        .filter(function(item) {
-                            return (
-                                item !== null &&
-                                item !== undefined &&
-                                item.toString() !== ''
-                            );
-                        })
-                        .map(function(item) {
-                            return item.toString();
-                        });
-                } else if (value && param.type === URL_PARAMS_TYPES.number) {
-                    value = parseInt(value);
-                }
-
-                if (value) {
-                    selection[key] = value;
-                }
-            });
-
-            return selection;
-        }
-
-        function setUrlParams(selection) {
-            angular.forEach(selection, function(value, key) {
-                if (!value || (value instanceof Array && value.length === 0)) {
-                    value = null;
-                } else if (value instanceof Array) {
-                    value = value.join(',');
-                }
-                $location.search(URL_PARAMS[key].name, value).replace();
-            });
         }
 
         function getDefaultSelection() {

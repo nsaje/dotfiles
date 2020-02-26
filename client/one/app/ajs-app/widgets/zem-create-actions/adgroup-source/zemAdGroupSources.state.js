@@ -2,9 +2,7 @@ angular
     .module('one.widgets')
     .service('zemAdGroupSourcesStateService', function(
         $q,
-        $http,
-        $state,
-        zemUserService,
+        zemNavigationNewService,
         zemDataFilterService,
         zemAdGroupSourcesEndpoint
     ) {
@@ -40,7 +38,7 @@ angular
                     .create(adGroup.id, sourceId)
                     .then(
                         function() {
-                            $state.reload();
+                            zemNavigationNewService.reloadCurrentRoute();
                         },
                         function(err) {
                             state.requests.create.error = true;

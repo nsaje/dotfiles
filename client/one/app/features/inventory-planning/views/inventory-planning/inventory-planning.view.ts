@@ -8,10 +8,9 @@ import {
     ChangeDetectionStrategy,
     HostBinding,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
-
 import {Subject} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged} from 'rxjs/operators';
+import {Router, ActivatedRoute} from '@angular/router';
 
 import {Filters} from '../../types/filters';
 import {FilterOption} from '../../types/filter-option';
@@ -19,6 +18,7 @@ import {InventoryPlanningStore} from '../../services/inventory-planning.store';
 import {InventoryPlanningEndpoint} from '../../services/inventory-planning.endpoint';
 import {PostAsGetRequestService} from '../../../../core/post-as-get-request/post-as-get-request.service';
 import * as requestPayloadHelpers from '../../helpers/request-payload.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
 
@@ -35,10 +35,11 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
     private ngUnsubscribe$: Subject<undefined> = new Subject();
 
     constructor(
+        public store: InventoryPlanningStore,
         private postAsGetRequestService: PostAsGetRequestService,
-        @Inject('ajs$location') private ajs$location: any,
-        @Inject('zemPermissions') private zemPermissions: any,
-        public store: InventoryPlanningStore
+        private route: ActivatedRoute,
+        private router: Router,
+        @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
     ngOnInit() {
@@ -67,11 +68,19 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
     }
 
     updateUrlParamsWithSelectedFilters(selectedFilters: Filters) {
+        const queryParams = {};
         FILTER_URL_PARAMS.forEach(paramName => {
             const paramValue = selectedFilters[paramName]
                 .map((x: FilterOption) => x.value)
                 .join(',');
-            this.setUrlParam(paramName, paramValue);
+            if (paramValue !== '') {
+                queryParams[paramName] = paramValue;
+            }
+        });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: queryParams,
+            replaceUrl: true,
         });
     }
 
@@ -89,7 +98,9 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
     }[] {
         const preselectedFilters: {key: string; value: string}[] = [];
         FILTER_URL_PARAMS.forEach(paramName => {
-            const values: string = this.ajs$location.search()[paramName];
+            const values: string = this.route.snapshot.queryParamMap.get(
+                paramName
+            );
             if (values) {
                 values.split(',').forEach(value => {
                     preselectedFilters.push({key: paramName, value: value});
@@ -98,19 +109,4 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
         });
         return preselectedFilters.length > 0 ? preselectedFilters : null;
     }
-
-    private setUrlParam(name: string, value: string) {
-        if (!value) {
-            value = null;
-        }
-        this.ajs$location.search(name, value).replace();
-    }
 }
-
-declare var angular: angular.IAngularStatic;
-angular
-    .module('one.downgraded')
-    .directive(
-        'zemInventoryPlanningView',
-        downgradeComponent({component: InventoryPlanningView})
-    );

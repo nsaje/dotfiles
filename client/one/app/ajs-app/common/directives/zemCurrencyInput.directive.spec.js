@@ -22,11 +22,6 @@ describe('zemCurrencyInput', function() {
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    // $state needs to be mocked because of
-    // some strange issues with ui-router
-    // https://github.com/angular-ui/ui-router/issues/212
-    beforeEach(angular.mock.module('stateMock'));
-
     beforeEach(inject(function($rootScope, _$compile_) {
         $scope = $rootScope.$new();
         $compile = _$compile_;

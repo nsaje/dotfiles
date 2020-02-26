@@ -1,0 +1,33 @@
+<zem-sidebar-container class="zem-sidebar-container">
+    <!-- Sidebar -->
+    <zem-sidebar
+        class="zem-sidebar"
+        [opened]="isSidebarVisible && opened"
+        [dock]="isSidebarVisible"
+        [position]="'left'"
+        [mode]="'push'"
+        [dockedSize]="'45px'"
+    >
+        <div class="zem-main-container__sidebar" *ngIf="isSidebarVisible">
+            <div class="zem-main-container__sidebar-content">
+                <!--TODO: add content components-->
+            </div>
+            <div class="zem-main-container__sidebar-footer">
+                <div
+                    class="zem-main-container__icon"
+                    (click)="opened = !opened"
+                >
+                    <div
+                        class="zem-main-container__arrow"
+                        [class.zem-main-container__arrow--left]="opened"
+                    ></div>
+                </div>
+            </div>
+        </div>
+    </zem-sidebar>
+    <!-- Page content -->
+    <div class="zem-main-container__content" zem-sidebar-content>
+        <div class="zem-main-container__view"><ng-content></ng-content></div>
+        <zem-footer class="zem-footer"></zem-footer>
+    </div>
+</zem-sidebar-container>

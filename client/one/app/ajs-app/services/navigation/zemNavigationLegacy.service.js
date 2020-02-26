@@ -80,7 +80,7 @@ angular
             // Loads data from cache or calls api if data is not in cache
 
             var data = searchCacheFunc(id);
-            if (data) {
+            if (canResolve(data)) {
                 // simulate api call - return a promise, but resolve it
                 // beforehand just to preserve the api behaviour
                 return $q.resolve(data);
@@ -89,6 +89,24 @@ angular
             return apiFunc(id).then(function(data) {
                 return data;
             });
+        }
+
+        function canResolve(data) {
+            if (!data) {
+                return false;
+            }
+
+            if (data.account && data.account.reloading) {
+                return false;
+            }
+            if (data.campaign && data.campaign.reloading) {
+                return false;
+            }
+            if (data.adGroup && data.adGroup.reloading) {
+                return false;
+            }
+
+            return true;
         }
 
         function getAccount(id) {
@@ -151,6 +169,26 @@ angular
 
         function notifyBidModifierUpdate() {
             $rootScope.$emit('bid-modifier-updated');
+        }
+
+        function notifyAccountReloading(id, reloading) {
+            $rootScope.$emit('navigation-account-loading-' + id);
+            var accountCached = findAccountInNavTree(id);
+            if (accountCached) {
+                updateModel(accountCached.account, {
+                    reloading: reloading,
+                });
+            }
+        }
+
+        function notifyCampaignReloading(id, reloading) {
+            $rootScope.$emit('navigation-campaign-loading-' + id);
+            var campaignCached = findCampaignInNavTree(id);
+            if (campaignCached) {
+                updateModel(campaignCached.campaign, {
+                    reloading: reloading,
+                });
+            }
         }
 
         function notifyAdGroupReloading(id, reloading) {
@@ -258,6 +296,8 @@ angular
         }
 
         function reloadAccount(id) {
+            notifyAccountReloading(id, true);
+
             return zemNavigationLegacyEndpoint
                 .getAccount(id)
                 .then(function(data) {
@@ -270,12 +310,15 @@ angular
                     if (!accountsLoaded) {
                         postponeDataUpdate(data);
                     }
+                    notifyAccountReloading(id, false);
                     notifyCacheUpdate();
                     return accountCached;
                 });
         }
 
         function reloadCampaign(id) {
+            notifyCampaignReloading(id, true);
+
             return zemNavigationLegacyEndpoint
                 .getCampaign(id)
                 .then(function(data) {
@@ -289,6 +332,7 @@ angular
                     if (!accountsLoaded) {
                         postponeDataUpdate(data);
                     }
+                    notifyCampaignReloading(id, false);
                     notifyCacheUpdate();
                     return campaignCached;
                 });

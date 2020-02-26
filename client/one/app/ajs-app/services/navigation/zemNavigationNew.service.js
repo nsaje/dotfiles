@@ -1,17 +1,22 @@
+var RoutePathName = require('../../../app.constants').RoutePathName;
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+var routerHelpers = require('../../../shared/helpers/router.helpers');
+var deepEqual = require('fast-deep-equal');
+
 angular
     .module('one.services')
     .service('zemNavigationNewService', function(
         $rootScope,
         $q,
         $location,
-        $state,
+        NgRouter,
         zemNavigationService,
         zemPermissions
     ) {
         // eslint-disable-line max-len
         this.init = init;
         this.navigateTo = navigateTo;
-        this.refreshState = refreshState;
+        this.reloadCurrentRoute = reloadCurrentRoute;
         this.getEntityHref = getEntityHref;
         this.getHomeHref = getHomeHref;
         this.getEntityById = getEntityById;
@@ -49,10 +54,7 @@ angular
 
             initUsesBCMv2();
 
-            $rootScope.$on('$zemStateChangeStart', function() {
-                activeEntity = undefined;
-            });
-            $rootScope.$on('$zemStateChangeSuccess', handleStateChange);
+            $rootScope.$on('$zemNavigationEnd', handleNavigationChange);
         }
 
         function handleDataUpdate() {
@@ -71,13 +73,22 @@ angular
             notifyListeners(EVENTS.ON_BID_MODIFIER_UPDATE);
         }
 
-        function handleStateChange() {
-            var id = $state.params.id;
+        function handleNavigationChange() {
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
+            var id = activatedRoute.snapshot.params.id;
             var level =
-                constants.levelStateParamToLevelMap[$state.params.level];
+                constants.levelParamToLevelMap[
+                    activatedRoute.snapshot.data.level
+                ];
             var type = constants.levelToEntityTypeMap[level];
 
-            if ($state.includes('v2.createEntity')) {
+            if (
+                NgRouter.url.includes(
+                    RoutePathName.APP_BASE +
+                        '/' +
+                        RoutePathName.NEW_ENTITY_ANALYTICS_MOCK
+                )
+            ) {
                 type = constants.entityToParentTypeMap[type];
             }
 
@@ -145,99 +156,108 @@ angular
         }
 
         function getHomeHref() {
-            var href;
-            href = $state.href('v2.analytics', getTargetStateParams());
-
-            var query = $location.absUrl().split('?')[1];
-            if (query) href += '?' + query;
-
+            var urlTree = getUrlTree();
+            var href = NgRouter.createUrlTree(urlTree).toString();
+            if (
+                NgRouter.url.includes(
+                    RoutePathName.APP_BASE + '/' + RoutePathName.ANALYTICS
+                )
+            ) {
+                var queryParams = $location.absUrl().split('?')[1];
+                if (queryParams) href += '?' + queryParams;
+            }
             return href;
         }
 
         // prettier-ignore
-        function getTargetStateParams(entity) { // eslint-disable-line complexity
-            var level = constants.levelStateParam.ACCOUNTS;
+        function getUrlTree(entity) { // eslint-disable-line complexity
+            var level = constants.levelParam.ACCOUNTS;
             var id = entity ? entity.id : null;
 
-            var breakdown = $state.params.breakdown;
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
+            var breakdown = activatedRoute.snapshot.params.breakdown;
             var isAdGroup =
                 entity && entity.type === constants.entityType.AD_GROUP;
             var isCampaign =
                 entity && entity.type === constants.entityType.CAMPAIGN;
             if (
-                (breakdown === constants.breakdownStateParam.PUBLISHERS &&
+                (breakdown === constants.breakdownParam.PUBLISHERS &&
                     !isAdGroup &&
                     !zemPermissions.hasPermission(
                         'zemauth.can_see_publishers_all_levels'
                     )) ||
-                (breakdown === constants.breakdownStateParam.INSIGHTS &&
+                (breakdown === constants.breakdownParam.INSIGHTS &&
                     !isCampaign)
             ) {
                 breakdown = null;
             }
 
             if (entity && entity.type === constants.entityType.ACCOUNT)
-                level = constants.levelStateParam.ACCOUNT;
+                level = constants.levelParam.ACCOUNT;
             if (entity && entity.type === constants.entityType.CAMPAIGN)
-                level = constants.levelStateParam.CAMPAIGN;
+                level = constants.levelParam.CAMPAIGN;
             if (entity && entity.type === constants.entityType.AD_GROUP)
-                level = constants.levelStateParam.AD_GROUP;
+                level = constants.levelParam.AD_GROUP;
 
-            return {
-                level: level,
-                id: id,
-                breakdown: breakdown,
-            };
+            var urlTree = [RoutePathName.APP_BASE];
+
+            if (entity && entity.data && entity.data.archived) {
+                urlTree.push(RoutePathName.ARCHIVED);
+            } else {
+                urlTree.push(RoutePathName.ANALYTICS);
+            }
+
+            if (commonHelpers.isDefined(level)) {
+                urlTree.push(level);
+                if (commonHelpers.isDefined(id)) {
+                    urlTree.push(id);
+                }
+            }
+            if (commonHelpers.isDefined(breakdown)) {
+                urlTree.push(breakdown);
+            }
+
+            return urlTree;
         }
 
         function getEntityHref(entity, includeQueryParams) {
-            var href;
-            href = $state.href('v2.analytics', getTargetStateParams(entity));
-
-            if (includeQueryParams) {
-                var query = $location.absUrl().split('?')[1];
-                if (query) href += '?' + query;
+            var urlTree = getUrlTree(entity);
+            var href = NgRouter.createUrlTree(urlTree).toString();
+            if (
+                NgRouter.url.includes(
+                    RoutePathName.APP_BASE + '/' + RoutePathName.ANALYTICS
+                ) &&
+                includeQueryParams
+            ) {
+                var queryParams = $location.absUrl().split('?')[1];
+                if (queryParams) href += '?' + queryParams;
             }
             return href;
         }
 
-        function refreshState() {
-            if ($state.includes('v2')) {
-                $state.reload();
-            } else {
-                navigateTo(getActiveEntity());
-            }
-        }
-
-        function navigateTo(entity, params) {
-            if (!params) params = {};
-
-            params = angular.extend(params, getTargetStateParams(entity));
-            return $state.go('v2.analytics', params);
-        }
-
-        function redirectArchived(entity) {
-            if (!entity) return;
-
-            var level = constants.entityTypeToLevelMap[entity.type];
-            var params = {
-                level: constants.levelToLevelStateParamMap[level],
-                id: entity.id,
-            };
-
+        function navigateTo(entity) {
+            var urlTree = getUrlTree(entity);
+            var href = NgRouter.createUrlTree(urlTree).toString();
             if (
-                entity.data &&
-                entity.data.archived &&
-                !$state.includes('v2.archived')
+                NgRouter.url.includes(
+                    RoutePathName.APP_BASE + '/' + RoutePathName.ANALYTICS
+                )
             ) {
-                return $state.go('v2.archived', params);
-            } else if (
-                entity.data &&
-                !entity.data.archived &&
-                $state.includes('v2.archived')
-            ) {
-                return $state.go('v2.analytics', params);
+                var queryParams = $location.absUrl().split('?')[1];
+                if (queryParams) href += '?' + queryParams;
             }
+            return NgRouter.navigateByUrl(href);
+        }
+
+        function reloadCurrentRoute() {
+            var url = NgRouter.url;
+            NgRouter.navigate(['/'], {skipLocationChange: true}).then(
+                function() {
+                    NgRouter.navigateByUrl(url, {
+                        queryParams: $location.search(),
+                    });
+                }
+            );
         }
 
         function getEntityById(type, id) {
@@ -300,9 +320,7 @@ angular
         }
 
         function setActiveEntity(entity) {
-            if ($state.includes('v2') && redirectArchived(entity)) return;
-
-            if (activeEntity === entity) return;
+            if (deepEqual(activeEntity, entity)) return;
             activeEntity = entity;
             notifyListeners(EVENTS.ON_ACTIVE_ENTITY_CHANGE, activeEntity);
         }

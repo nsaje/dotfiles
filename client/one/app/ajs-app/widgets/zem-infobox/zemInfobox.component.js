@@ -13,7 +13,6 @@ angular.module('one.widgets').component('zemInfobox', {
         zemHistoryService,
         zemPermissions,
         zemUtils,
-        $state,
         $location,
         $window
     ) {

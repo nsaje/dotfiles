@@ -5,7 +5,6 @@ angular.module('one.widgets').component('zemFilterSelector', {
     controller: function(
         $element,
         $timeout,
-        zemDataFilterService,
         zemFilterSelectorService,
         zemFilterSelectorSharedService,
         zemPermissions
@@ -16,7 +15,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.isExpanded = zemFilterSelectorSharedService.isSelectorExpanded;
         $ctrl.removeCondition = zemFilterSelectorService.removeAppliedCondition;
-        $ctrl.clearFilter = zemDataFilterService.resetAllConditions;
+        $ctrl.clearFilter = zemFilterSelectorService.resetAllConditions;
         $ctrl.toggleSelectAll = zemFilterSelectorService.toggleSelectAll;
         $ctrl.applyFilter = applyFilter;
         $ctrl.closeFilter = zemFilterSelectorSharedService.toggleSelector;
@@ -26,8 +25,8 @@ angular.module('one.widgets').component('zemFilterSelector', {
         var listContainerElement;
         var listElement;
         var listElementWidth;
+
         var selectionUpdateHandler;
-        var dataFilterUpdateHandler;
 
         $ctrl.$onInit = function() {
             zemFilterSelectorService.init();
@@ -38,24 +37,15 @@ angular.module('one.widgets').component('zemFilterSelector', {
                     updateListElementWidth();
                 }
             );
-            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
-                function() {
-                    refresh();
-                    updateListElementWidth();
-                }
-            );
-
-            $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions();
-            $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
-            $ctrl.isListElementOverflowing = false;
 
             refresh();
             updateListElementWidth();
+            $ctrl.isListElementOverflowing = false;
         };
 
         $ctrl.$onDestroy = function() {
             if (selectionUpdateHandler) selectionUpdateHandler();
-            if (dataFilterUpdateHandler) dataFilterUpdateHandler();
+            zemFilterSelectorService.destroy();
         };
 
         $ctrl.$postLink = function() {
@@ -73,7 +63,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
 
         function getVisibleSectionsClasses() {
             var classes = '';
-            $ctrl.visibleSections.forEach(function(section) {
+            ($ctrl.visibleSections || []).forEach(function(section) {
                 classes += 'filter-sections--visible-' + section.cssClass + ' ';
             });
             return classes;

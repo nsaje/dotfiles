@@ -1,5 +1,9 @@
 <div class="zem-header__logo-container">
-    <a ui-sref="v2" class="zem-header__logo"></a>
+    <a
+        href="{{ $ctrl.homeHref }}"
+        ng-click="$ctrl.navigateTo($event)"
+        class="zem-header__logo"
+    ></a>
 </div>
 <zem-header-navigation
     class="zem-header-navigation"

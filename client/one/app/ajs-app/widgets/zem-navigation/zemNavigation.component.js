@@ -6,11 +6,11 @@ angular.module('one.widgets').component('zemNavigation', {
         $scope,
         $element,
         $timeout,
-        hotkeys,
         zemPermissions,
         zemNavigationUtils,
         zemNavigationNewService,
-        zemDataFilterService
+        zemDataFilterService,
+        NgZone
     ) {
         // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
@@ -255,16 +255,16 @@ angular.module('one.widgets').component('zemNavigation', {
 
         function getItemHref(entity) {
             var includeQueryParams = true;
-            var reuseNestedState = true;
             return zemNavigationNewService.getEntityHref(
                 entity,
-                includeQueryParams,
-                reuseNestedState
+                includeQueryParams
             );
         }
 
         function navigateTo(entity) {
-            zemNavigationNewService.navigateTo(entity);
+            NgZone.run(function() {
+                zemNavigationNewService.navigateTo(entity);
+            });
         }
     },
 });

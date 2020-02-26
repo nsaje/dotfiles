@@ -18,7 +18,9 @@ angular
         zemUtils,
         $location,
         zemGridConstants,
-        zemPermissions
+        zemPermissions,
+        NgRouter,
+        NgZone
     ) {
         // eslint-disable-line max-len
 
@@ -390,13 +392,18 @@ angular
         }
 
         function openSettingsRow(row) {
-            var searchParams = {};
-            searchParams[ENTITY_MANAGER_CONFIG.settingsQueryParam] = true;
-            searchParams[ENTITY_MANAGER_CONFIG.levelQueryParam] =
-                row.entity.type;
-            searchParams[ENTITY_MANAGER_CONFIG.idQueryParam] = row.entity.id;
+            var queryParams = $location.search();
+            queryParams[ENTITY_MANAGER_CONFIG.typeQueryParam] = row.entity.type;
+            queryParams[ENTITY_MANAGER_CONFIG.idQueryParam] = row.entity.id;
 
-            $location.search(searchParams).replace();
+            NgZone.run(function() {
+                NgRouter.navigate(
+                    [{outlets: {drawer: ENTITY_MANAGER_CONFIG.outletName}}],
+                    {
+                        queryParams: queryParams,
+                    }
+                );
+            });
 
             // calling component hides loader on promise resolve
             return $q.resolve();

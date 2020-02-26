@@ -3,8 +3,6 @@ var commonHelpers = require('../../../../shared/helpers/common.helpers');
 angular
     .module('one.widgets')
     .factory('zemGridUIService', function(
-        $timeout,
-        $state,
         zemGridConstants,
         zemGridDataFormatter,
         zemGridActionsService

@@ -1,6 +1,7 @@
 <span class="zem-grid-cell-internal-link">
     <a
-        ng-href="{{ ctrl.href }}"
+        href="{{ ctrl.href }}"
+        ng-click="ctrl.openUrl($event)"
         ng-bind="ctrl.data.value"
         title="{{ ctrl.data.value }}"
     ></a>

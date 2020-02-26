@@ -1,9 +1,12 @@
+var filter = require('rxjs/operators').filter;
+var NavigationStart = require('@angular/router').NavigationStart;
+var NavigationEnd = require('@angular/router').NavigationEnd;
+
 angular.module('one', [
     'one.libs', // NOTE: Must be referenced first!
     'one.core',
     'one.common',
     'one.services',
-    'one.views',
     'one.widgets',
     'one.downgraded',
 ]);
@@ -84,48 +87,32 @@ angular.module('one').config(function($provide) {
     });
 });
 
-var locationSearch;
-// Fixes https://github.com/angular-ui/ui-router/issues/679
 angular
     .module('one')
-    .run(function($state, $rootScope, $location, config, zemIntercomService) {
+    .run(function(NgRouter, $rootScope, config, zemIntercomService) {
         // eslint-disable-line max-len
         $rootScope.config = config;
-        $rootScope.$state = $state;
 
-        // [WORKAROUND] Wrap state change event into custom one and use in app
-        // This enables us to navigate to states without reinitialization (notify: false) but
-        // still using state change events to refresh depended services and components
-        $rootScope.$on('$stateChangeStart', function() {
-            $rootScope.$broadcast('$zemStateChangeStart');
-        });
-        $rootScope.$on('$stateChangeSuccess', function() {
-            $rootScope.$broadcast('$zemStateChangeSuccess');
-        });
-        // [END WORKAROUND]
-
-        $rootScope.$on('$zemStateChangeStart', function() {
-            // Save location.search so we can add it back after transition is done
-            if (!locationSearch) locationSearch = $location.search();
-        });
-
-        $rootScope.$on('$zemStateChangeSuccess', function() {
-            // Restore all query string parameters back to $location.search
-            // and keep the new ones if applied in the process of changing state
-            // (e.g. params passed through ui-router $state)
-            angular.merge(locationSearch, $location.search());
-            $location.search(locationSearch);
-            locationSearch = null;
-        });
-
-        $rootScope.$on('$locationChangeSuccess', function() {
-            zemIntercomService.update();
-        });
+        NgRouter.events
+            .pipe(
+                filter(function(event) {
+                    return event instanceof NavigationStart;
+                })
+            )
+            .subscribe(function() {
+                $rootScope.$broadcast('$zemNavigationStart');
+            });
+        NgRouter.events
+            .pipe(
+                filter(function(event) {
+                    return event instanceof NavigationEnd;
+                })
+            )
+            .subscribe(function() {
+                zemIntercomService.update();
+                $rootScope.$broadcast('$zemNavigationEnd');
+            });
     });
-
-angular.module('one').run(function(zemInitializationService) {
-    zemInitializationService.initApp();
-});
 
 angular.module('one').config(function($provide) {
     // Fix sourcemaps
@@ -143,9 +130,13 @@ angular.module('one').config(function($provide) {
     var downgradeInjectable = require('@angular/upgrade/static')
         .downgradeInjectable;
 
-    // Downgrade NgZone service to support `NgZone.runOutsideAngular()` calls in AngularJS app
     var NgZone = require('@angular/core').NgZone;
     angular
         .module('one.downgraded')
         .factory('NgZone', downgradeInjectable(NgZone));
+
+    var NgRouter = require('@angular/router').Router;
+    angular
+        .module('one.downgraded')
+        .factory('NgRouter', downgradeInjectable(NgRouter));
 })();

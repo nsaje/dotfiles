@@ -17,9 +17,7 @@ angular.module('one.widgets').component('zemCloneCampaignSuccessfulModal', {
                     $ctrl.resolve.campaign.id
                 )
                 .then(function(navigationEntity) {
-                    zemNavigationNewService.navigateTo(navigationEntity, {
-                        settings: 'create',
-                    });
+                    zemNavigationNewService.navigateTo(navigationEntity);
                 });
         }
     },

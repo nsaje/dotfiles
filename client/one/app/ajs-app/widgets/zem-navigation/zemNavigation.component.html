@@ -27,6 +27,7 @@
             <a
                 class="zem-navigation__item"
                 ng-href="{{ $ctrl.getItemHref(item) }}"
+                ng-click="$ctrl.navigateTo(item)"
                 ng-class="$ctrl.getItemClasses(item)"
             >
                 <span

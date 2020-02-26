@@ -1,5 +1,5 @@
 describe('state: zemAdGroupSourcesStateService', function() {
-    var $q, $state, $rootScope;
+    var $q;
     var zemAdGroupSourcesStateService, zemAdGroupSourcesEndpoint;
 
     beforeEach(angular.mock.module('one'));
@@ -7,8 +7,6 @@ describe('state: zemAdGroupSourcesStateService', function() {
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($injector) {
         $q = $injector.get('$q');
-        $state = $injector.get('$state');
-        $rootScope = $injector.get('$rootScope');
         zemAdGroupSourcesStateService = $injector.get(
             'zemAdGroupSourcesStateService'
         );
@@ -38,7 +36,6 @@ describe('state: zemAdGroupSourcesStateService', function() {
             var $httpBackend = $injector.get('$httpBackend');
             $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
 
-            spyOn($state, 'reload');
             spyOn(zemAdGroupSourcesEndpoint, 'create').and.callFake(function() {
                 return $q.resolve();
             });
@@ -54,18 +51,12 @@ describe('state: zemAdGroupSourcesStateService', function() {
                 1
             );
         });
+
         it('should use endpoint for list', function() {
             stateService.list(1);
             expect(zemAdGroupSourcesEndpoint.list).toHaveBeenCalledWith(-1, {
                 filteredSources: [],
             });
-        });
-
-        it('should reload after creation', function() {
-            stateService.create(1);
-            expect($state.reload).not.toHaveBeenCalled();
-            $rootScope.$apply();
-            expect($state.reload).toHaveBeenCalled();
         });
     });
 });

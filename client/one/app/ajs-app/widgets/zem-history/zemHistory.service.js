@@ -1,9 +1,12 @@
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+var routerHelpers = require('../../../shared/helpers/router.helpers');
+
 angular
     .module('one.widgets')
     .service('zemHistoryService', function(
         $rootScope,
         $location,
-        $state,
+        NgRouter,
         $timeout,
         $q,
         zemPubSubService,
@@ -31,16 +34,10 @@ angular
         // Public methods
         //
         function init() {
-            handleStateChange();
-            handleLocationChange();
-
-            $rootScope.$on('$zemStateChangeSuccess', handleStateChange);
             $rootScope.$on('$locationChangeSuccess', handleLocationChange);
         }
 
         function open() {
-            if (!$state.includes('v2.analytics')) return;
-
             $location.search(QUERY_PARAM, true).replace();
             pubsub.notify(EVENTS.ON_OPEN);
         }
@@ -52,15 +49,16 @@ angular
 
         function clearParams() {
             $location.search(QUERY_PARAM, null).replace();
-
-            if ($state.params[QUERY_PARAM]) {
-                // Silently clear state params (avoid reinitialization)
-                var params = angular.copy($state.params);
-                params[QUERY_PARAM] = undefined;
-                $state.go($state.current, params, {
-                    reload: false,
-                    notify: false,
-                    inherit: false,
+            var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
+            var value = activatedRoute.snapshot.queryParams[QUERY_PARAM];
+            if (commonHelpers.isDefined(value)) {
+                var queryParams = commonHelpers.getValueWithoutProps(
+                    $location.search(),
+                    [QUERY_PARAM]
+                );
+                NgRouter.navigate([], {
+                    relativeTo: activatedRoute,
+                    queryParams: queryParams,
                 });
             }
         }
@@ -98,21 +96,12 @@ angular
         //
         // Private methods
         //
-        function handleStateChange() {
-            // Support for $state params (history)
-            // If settings parameters set when using $state transition pass it to the $location.search
-            // which will trigger change event which is again handled in this service
-            var value = $state.params[QUERY_PARAM];
-            if (value) {
-                $location.search(QUERY_PARAM, true).replace();
-            }
-        }
 
         function handleLocationChange() {
             var value = $location.search()[QUERY_PARAM];
-            if (value) {
+            if (commonHelpers.isDefined(value)) {
                 $timeout(function() {
-                    open();
+                    pubsub.notify(EVENTS.ON_OPEN);
                 });
             }
         }

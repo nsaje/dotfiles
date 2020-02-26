@@ -29,6 +29,9 @@ import {KeyCode} from '../../../../../app.constants';
 import {ResizeObserverHelper} from '../../../../../shared/helpers/resize-observer.helper';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
 import {EditableCellApi} from './types/editable-cell-api';
+import {Router, NavigationEnd} from '@angular/router';
+import {takeUntil, filter} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
     selector: 'zem-editable-cell',
@@ -71,6 +74,8 @@ export class EditableCellComponent
     private sidebarContainerContentElement: Element;
     private onSidebarContainerContentElementScrollCallback: any;
 
+    private ngUnsubscribe$: Subject<void> = new Subject();
+
     constructor(
         @Inject(DOCUMENT) private document: Document,
         private componentFactoryResolver: ComponentFactoryResolver,
@@ -79,7 +84,7 @@ export class EditableCellComponent
         private hostElement: ElementRef,
         private renderer: Renderer2,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('ajs$rootScope') private ajs$rootScope: any
+        private router: Router
     ) {
         this.onSidebarContainerContentElementScrollCallback = this.switchToReadMode.bind(
             this
@@ -96,9 +101,12 @@ export class EditableCellComponent
     }
 
     ngOnInit(): void {
-        this.ajs$rootScope.$on('$zemStateChangeSuccess', () => {
-            this.modeChange.emit(EditableCellMode.READ);
-        });
+        this.router.events
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe(() => {
+                this.modeChange.emit(EditableCellMode.READ);
+            });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -138,6 +146,8 @@ export class EditableCellComponent
 
     ngOnDestroy(): void {
         this.detachHost();
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
     switchToEditMode(): void {

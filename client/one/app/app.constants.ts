@@ -53,7 +53,7 @@ export enum BidModifierUpdateAction {
     CREATE = 'create',
 }
 
-export enum LevelStateParam {
+export enum LevelParam {
     ACCOUNTS = 'accounts',
     ACCOUNT = 'account',
     CAMPAIGN = 'campaign',
@@ -202,7 +202,7 @@ export enum InterestCategory {
     SHOPPING = 'SHOPPING',
 }
 
-export enum BreakdownStateParam {
+export enum BreakdownParam {
     SOURCES = 'sources',
     PUBLISHERS = 'publishers',
     INSIGHTS = 'insights',
@@ -728,21 +728,46 @@ export enum AccountType {
     PAAS = 'PAAS',
 }
 
-export enum UiRouterStateName {
+export enum RoutePathName {
     APP_BASE = 'v2',
-    ANALYTICS = 'v2.analytics',
-    CREATE_ENTITY = 'v2.createEntity',
-    REPORTS = 'v2.reports',
-    CREDIT = 'v2.accountCredit',
-    PUBLISHER_GROUPS = 'v2.publisherGroups',
-    USERS = 'v2.users',
-    PIXELS = 'v2.pixels',
-    INVENTORY_PLANNING = 'v2.inventoryPlanning',
-    ARCHIVED = 'v2.archived',
-    DEALS_LIBRARY = 'v2.dealsLibrary',
-    ERROR_BASE = 'error',
-    ERROR_FORBIDDEN = 'error.forbidden',
+    ANALYTICS = 'analytics',
+    NEW_ENTITY_ANALYTICS_MOCK = 'create',
+    REPORTS_LIBRARY = 'reports',
+    CREDITS_LIBRARY = 'credit',
+    PUBLISHER_GROUPS_LIBRARY = 'publishergroups',
+    USERS_LIBRARY = 'users',
+    PIXELS_LIBRARY = 'pixels',
+    INVENTORY_PLANNING = 'inventory-planning',
+    ARCHIVED = 'archived',
+    DEALS_LIBRARY = 'dealslibrary',
+    ERROR_FORBIDDEN = 'error/forbidden',
 }
+
+export const LEVEL_PARAM_TO_LEVEL_MAP = {
+    [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
+    [LevelParam.ACCOUNT]: Level.ACCOUNTS,
+    [LevelParam.CAMPAIGN]: Level.CAMPAIGNS,
+    [LevelParam.AD_GROUP]: Level.AD_GROUPS,
+};
+
+export const LEVEL_TO_LEVEL_PARAM_MAP = {
+    [Level.ALL_ACCOUNTS]: LevelParam.ACCOUNTS,
+    [Level.ACCOUNTS]: LevelParam.ACCOUNT,
+    [Level.CAMPAIGNS]: LevelParam.CAMPAIGN,
+    [Level.AD_GROUPS]: LevelParam.AD_GROUP,
+};
+
+export const LEVEL_TO_ENTITY_TYPE_MAP = {
+    [Level.ACCOUNTS]: EntityType.ACCOUNT,
+    [Level.CAMPAIGNS]: EntityType.CAMPAIGN,
+    [Level.AD_GROUPS]: EntityType.AD_GROUP,
+};
+
+export const ENTITY_TYPE_TO_LEVEL_MAP = {
+    [EntityType.ACCOUNT]: Level.ACCOUNTS,
+    [EntityType.CAMPAIGN]: Level.CAMPAIGNS,
+    [EntityType.AD_GROUP]: Level.AD_GROUPS,
+};
 
 export const APP_CONSTANTS = {
     /**
@@ -1351,9 +1376,9 @@ export const APP_CONSTANTS = {
         BULK: 'bulk',
     },
     entityType: EntityType,
-    levelStateParam: LevelStateParam,
+    levelParam: LevelParam,
     level: Level,
-    breakdownStateParam: BreakdownStateParam,
+    breakdownParam: BreakdownParam,
     breakdown: Breakdown,
     contentAdApprovalStatus: {
         PENDING: 1,
@@ -1541,9 +1566,9 @@ export const APP_CONSTANTS = {
         PLATFORM: 'platform',
         ANY: 'any',
     },
-    levelStateParamToLevelMap: {},
-    levelToLevelStateParamMap: {},
-    breakdownToBreakdownStateParamMap: {},
+    levelParamToLevelMap: {},
+    levelToLevelParamMap: {},
+    breakdownToBreakdownParamMap: {},
     levelToEntityTypeMap: {},
     entityTypeToLevelMap: {},
     entityToParentTypeMap: {},
@@ -1554,52 +1579,45 @@ export const APP_CONSTANTS = {
     hackLevel: HackLevel,
 };
 
-APP_CONSTANTS.levelStateParamToLevelMap[
-    APP_CONSTANTS.levelStateParam.ACCOUNTS
-] = APP_CONSTANTS.level.ALL_ACCOUNTS;
-APP_CONSTANTS.levelStateParamToLevelMap[APP_CONSTANTS.levelStateParam.ACCOUNT] =
+APP_CONSTANTS.levelParamToLevelMap[APP_CONSTANTS.levelParam.ACCOUNTS] =
+    APP_CONSTANTS.level.ALL_ACCOUNTS;
+APP_CONSTANTS.levelParamToLevelMap[APP_CONSTANTS.levelParam.ACCOUNT] =
     APP_CONSTANTS.level.ACCOUNTS;
-APP_CONSTANTS.levelStateParamToLevelMap[
-    APP_CONSTANTS.levelStateParam.CAMPAIGN
-] = APP_CONSTANTS.level.CAMPAIGNS;
-APP_CONSTANTS.levelStateParamToLevelMap[
-    APP_CONSTANTS.levelStateParam.AD_GROUP
-] = APP_CONSTANTS.level.AD_GROUPS;
+APP_CONSTANTS.levelParamToLevelMap[APP_CONSTANTS.levelParam.CAMPAIGN] =
+    APP_CONSTANTS.level.CAMPAIGNS;
+APP_CONSTANTS.levelParamToLevelMap[APP_CONSTANTS.levelParam.AD_GROUP] =
+    APP_CONSTANTS.level.AD_GROUPS;
 
-APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.ALL_ACCOUNTS] =
-    APP_CONSTANTS.levelStateParam.ACCOUNTS;
-APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.ACCOUNTS] =
-    APP_CONSTANTS.levelStateParam.ACCOUNT;
-APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.CAMPAIGNS] =
-    APP_CONSTANTS.levelStateParam.CAMPAIGN;
-APP_CONSTANTS.levelToLevelStateParamMap[APP_CONSTANTS.level.AD_GROUPS] =
-    APP_CONSTANTS.levelStateParam.AD_GROUP;
+APP_CONSTANTS.levelToLevelParamMap[APP_CONSTANTS.level.ALL_ACCOUNTS] =
+    APP_CONSTANTS.levelParam.ACCOUNTS;
+APP_CONSTANTS.levelToLevelParamMap[APP_CONSTANTS.level.ACCOUNTS] =
+    APP_CONSTANTS.levelParam.ACCOUNT;
+APP_CONSTANTS.levelToLevelParamMap[APP_CONSTANTS.level.CAMPAIGNS] =
+    APP_CONSTANTS.levelParam.CAMPAIGN;
+APP_CONSTANTS.levelToLevelParamMap[APP_CONSTANTS.level.AD_GROUPS] =
+    APP_CONSTANTS.levelParam.AD_GROUP;
 
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+APP_CONSTANTS.breakdownToBreakdownParamMap[
     APP_CONSTANTS.breakdown.MEDIA_SOURCE
-] = APP_CONSTANTS.breakdownStateParam.SOURCES;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
-    APP_CONSTANTS.breakdown.COUNTRY
-] = APP_CONSTANTS.breakdownStateParam.COUNTRY;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[APP_CONSTANTS.breakdown.STATE] =
-    APP_CONSTANTS.breakdownStateParam.STATE;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[APP_CONSTANTS.breakdown.DMA] =
-    APP_CONSTANTS.breakdownStateParam.DMA;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
-    APP_CONSTANTS.breakdown.DEVICE
-] = APP_CONSTANTS.breakdownStateParam.DEVICE;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+] = APP_CONSTANTS.breakdownParam.SOURCES;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.COUNTRY] =
+    APP_CONSTANTS.breakdownParam.COUNTRY;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.STATE] =
+    APP_CONSTANTS.breakdownParam.STATE;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.DMA] =
+    APP_CONSTANTS.breakdownParam.DMA;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.DEVICE] =
+    APP_CONSTANTS.breakdownParam.DEVICE;
+APP_CONSTANTS.breakdownToBreakdownParamMap[
     APP_CONSTANTS.breakdown.ENVIRONMENT
-] = APP_CONSTANTS.breakdownStateParam.ENVIRONMENT;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+] = APP_CONSTANTS.breakdownParam.ENVIRONMENT;
+APP_CONSTANTS.breakdownToBreakdownParamMap[
     APP_CONSTANTS.breakdown.OPERATING_SYSTEM
-] = APP_CONSTANTS.breakdownStateParam.OPERATING_SYSTEM;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
-    APP_CONSTANTS.breakdown.PUBLISHER
-] = APP_CONSTANTS.breakdownStateParam.PUBLISHERS;
-APP_CONSTANTS.breakdownToBreakdownStateParamMap[
-    APP_CONSTANTS.breakdown.INSIGHTS
-] = APP_CONSTANTS.breakdownStateParam.INSIGHTS;
+] = APP_CONSTANTS.breakdownParam.OPERATING_SYSTEM;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.PUBLISHER] =
+    APP_CONSTANTS.breakdownParam.PUBLISHERS;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.INSIGHTS] =
+    APP_CONSTANTS.breakdownParam.INSIGHTS;
 
 APP_CONSTANTS.levelToEntityTypeMap[APP_CONSTANTS.level.ALL_ACCOUNTS] = null;
 APP_CONSTANTS.levelToEntityTypeMap[APP_CONSTANTS.level.ACCOUNTS] =

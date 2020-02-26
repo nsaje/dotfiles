@@ -4,7 +4,6 @@ describe('ZemUploadEditFormCtrl', function() {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('stateMock'));
 
     beforeEach(inject(function(
         $controller,

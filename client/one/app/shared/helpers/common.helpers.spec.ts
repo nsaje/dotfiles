@@ -70,4 +70,41 @@ describe('commonHelpers', () => {
             })
         ).toBeFalse();
     });
+
+    it('should correctly remove props from object', () => {
+        expect(commonHelpers.getValueWithoutProps(null, [])).toEqual(null);
+        expect(commonHelpers.getValueWithoutProps(undefined, [])).toEqual(
+            undefined
+        );
+        expect(commonHelpers.getValueWithoutProps({}, [])).toEqual({});
+
+        const value = {
+            name: 'test',
+            surname: 'test',
+            email: 'test@test.com',
+        };
+        expect(commonHelpers.getValueWithoutProps(value, [])).toEqual(value);
+        expect(commonHelpers.getValueWithoutProps(value, ['name'])).toEqual({
+            surname: 'test',
+            email: 'test@test.com',
+        });
+        expect(
+            commonHelpers.getValueWithoutProps(value, ['name', 'surname'])
+        ).toEqual({
+            email: 'test@test.com',
+        });
+        expect(
+            commonHelpers.getValueWithoutProps(value, [
+                'name',
+                'surname',
+                'email',
+            ])
+        ).toEqual({});
+        expect(
+            commonHelpers.getValueWithoutProps(
+                [value],
+                ['name', 'surname', 'email']
+            )
+        ).toEqual([value]);
+    });
 });

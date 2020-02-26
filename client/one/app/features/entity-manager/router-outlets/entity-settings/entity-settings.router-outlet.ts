@@ -1,8 +1,9 @@
-import {Component, Inject, OnInit, NgZone, OnDestroy} from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
-import {EntityType} from '../../../../app.constants';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
+import {EntityType, RoutePathName} from '../../../../app.constants';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
-import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
     selector: 'zem-entity-settings-router-outlet',
@@ -11,94 +12,47 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 // tslint:disable-next-line component-class-suffix
 export class EntitySettingsRouterOutlet implements OnInit, OnDestroy {
     readonly EntityType = EntityType;
-    entityId: number = null;
-    newEntityParentId: number = null;
+    entityId: string = null;
+    newEntityParentId: string = null;
     entityType: EntityType = null;
 
-    private stateChangeListener$: Function;
-    private locationChangeListener$: Function;
+    private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
-        private zone: NgZone,
-        @Inject('ajs$rootScope') private ajs$rootScope: any,
-        @Inject('ajs$location') private ajs$location: any,
-        @Inject('ajs$state') private ajs$state: any
+        private router: Router,
+        private outletRoute: ActivatedRoute,
+        private changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
-        this.updateActiveSettingsEntity();
-        this.stateChangeListener$ = this.ajs$rootScope.$on(
-            '$zemStateChangeSuccess',
-            () => {
-                this.zone.run(() => {
-                    this.updateActiveSettingsEntity();
-                });
-            }
-        );
-        this.locationChangeListener$ = this.ajs$rootScope.$on(
-            '$locationChangeSuccess',
-            () => {
-                this.zone.run(() => {
-                    this.updateActiveSettingsEntity();
-                });
-            }
-        );
+        this.outletRoute.queryParams
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(queryParams => {
+                this.entityId = null;
+                this.newEntityParentId = null;
+                this.entityType = null;
+
+                if (this.router.url.includes(RoutePathName.ANALYTICS)) {
+                    this.entityId =
+                        queryParams[ENTITY_MANAGER_CONFIG.idQueryParam];
+                } else if (
+                    this.router.url.includes(
+                        RoutePathName.NEW_ENTITY_ANALYTICS_MOCK
+                    )
+                ) {
+                    this.newEntityParentId =
+                        queryParams[ENTITY_MANAGER_CONFIG.idQueryParam];
+                }
+
+                this.entityType =
+                    queryParams[ENTITY_MANAGER_CONFIG.typeQueryParam];
+
+                this.changeDetectorRef.markForCheck();
+            });
     }
 
     ngOnDestroy(): void {
-        if (commonHelpers.isDefined(this.stateChangeListener$)) {
-            this.stateChangeListener$();
-        }
-        if (commonHelpers.isDefined(this.locationChangeListener$)) {
-            this.locationChangeListener$();
-        }
-    }
-
-    private updateActiveSettingsEntity() {
-        this.entityId = null;
-        this.newEntityParentId = null;
-        this.entityType = null;
-
-        if (
-            this.ajs$state.includes('v2.analytics') &&
-            this.isSettingsQueryParamSet()
-        ) {
-            this.entityId = this.getEntityIdFromUrlParams();
-            this.entityType = this.getEntityTypeFromUrlParams();
-        } else if (this.ajs$state.includes('v2.createEntity')) {
-            this.newEntityParentId = this.getEntityIdFromUrlParams();
-            this.entityType = this.getEntityTypeFromUrlParams();
-        }
-    }
-
-    private isSettingsQueryParamSet(): boolean {
-        return this.ajs$location.search()[
-            ENTITY_MANAGER_CONFIG.settingsQueryParam
-        ];
-    }
-
-    private getEntityIdFromUrlParams(): number {
-        return (
-            this.ajs$location.search()[ENTITY_MANAGER_CONFIG.idQueryParam] ||
-            this.ajs$state.params[ENTITY_MANAGER_CONFIG.idStateParam]
-        );
-    }
-
-    private getEntityTypeFromUrlParams(): EntityType {
-        return (
-            this.ajs$location.search()[ENTITY_MANAGER_CONFIG.levelQueryParam] ||
-            ENTITY_MANAGER_CONFIG.levelToEntityTypeMap[
-                this.ajs$state.params[ENTITY_MANAGER_CONFIG.levelStateParam]
-            ]
-        );
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemEntitySettingsRouterOutlet',
-    downgradeComponent({
-        component: EntitySettingsRouterOutlet,
-        propagateDigest: false,
-    })
-);

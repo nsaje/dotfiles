@@ -9,19 +9,25 @@ import {
     OnInit,
 } from '@angular/core';
 import {
-    ENTITY_MANAGER_CONFIG,
     TARGETING_DEVICE_OPTIONS,
     TARGETING_ENVIRONMENT_OPTIONS,
+    ENTITY_MANAGER_CONFIG,
 } from '../../entity-manager.config';
 import {AdGroupSettingsStore} from '../../services/ad-group-settings-store/ad-group-settings.store';
-import {Currency, EntityType, LevelStateParam} from '../../../../app.constants';
+import {
+    Currency,
+    EntityType,
+    LevelParam,
+    RoutePathName,
+} from '../../../../app.constants';
 import {merge, Observable, Subject} from 'rxjs';
 import {distinctUntilChanged, map, takeUntil, tap} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as messagesHelpers from '../../helpers/messages.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ImageCheckboxInputGroupItem} from '../../../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
-import {ImageCheckboxInputIcon} from '../../../../shared/components/image-checkbox-input/image-checkbox-input.constants';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -49,9 +55,8 @@ export class AdGroupSettingsDrawerView
 
     constructor(
         public store: AdGroupSettingsStore,
-        @Inject('zemPermissions') public zemPermissions: any,
-        @Inject('ajs$state') private ajs$state: any,
-        @Inject('ajs$location') private ajs$location: any
+        private router: Router,
+        @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
     ngOnInit() {
@@ -83,15 +88,7 @@ export class AdGroupSettingsDrawerView
 
     close() {
         this.isOpen = false;
-        setTimeout(() => {
-            this.ajs$location
-                .search({
-                    [ENTITY_MANAGER_CONFIG.settingsQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.levelQueryParam]: null,
-                    [ENTITY_MANAGER_CONFIG.idQueryParam]: null,
-                })
-                .replace();
-        });
+        this.navigateToRoute([]);
     }
 
     cancel() {
@@ -103,7 +100,12 @@ export class AdGroupSettingsDrawerView
         }
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToParentAnalyticsView(this.newEntityParentId);
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.CAMPAIGN,
+                    this.newEntityParentId,
+                ]);
             } else {
                 this.close();
             }
@@ -128,9 +130,12 @@ export class AdGroupSettingsDrawerView
         const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
             if (this.isNewEntity) {
-                this.redirectToNewEntityAnalyticsView(
-                    this.store.state.entity.id
-                );
+                this.navigateToRoute([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.AD_GROUP,
+                    this.store.state.entity.id,
+                ]);
             } else {
                 this.close();
             }
@@ -140,7 +145,12 @@ export class AdGroupSettingsDrawerView
     async archive() {
         const shouldReload = await this.store.archiveEntity();
         if (shouldReload) {
-            this.redirectToNewEntityAnalyticsView(this.store.state.entity.id);
+            this.navigateToRoute([
+                RoutePathName.APP_BASE,
+                RoutePathName.ARCHIVED,
+                LevelParam.AD_GROUP,
+                this.store.state.entity.id,
+            ]);
         }
     }
 
@@ -160,26 +170,31 @@ export class AdGroupSettingsDrawerView
         );
     }
 
-    private redirectToNewEntityAnalyticsView(newEntityId: string) {
-        this.redirectToEntityAnalyticsView(
-            LevelStateParam.AD_GROUP,
-            newEntityId
-        );
-    }
-
-    private redirectToParentAnalyticsView(parentId: string) {
-        this.redirectToEntityAnalyticsView(LevelStateParam.CAMPAIGN, parentId);
-    }
-
-    private redirectToEntityAnalyticsView(
-        level: LevelStateParam,
-        entityId: string
-    ) {
+    private navigateToRoute(routePath: string[]) {
         this.isOpen = false;
-        const url = this.ajs$state.href('v2.analytics', {
-            level: level,
-            id: entityId,
-        });
-        this.ajs$location.url(url);
+        this.router
+            .navigate(
+                [
+                    {
+                        outlets: {drawer: null},
+                    },
+                ],
+                {
+                    queryParams: commonHelpers.getValueWithoutProps(
+                        this.router.routerState.root.snapshot.queryParams,
+                        [
+                            ENTITY_MANAGER_CONFIG.idQueryParam,
+                            ENTITY_MANAGER_CONFIG.typeQueryParam,
+                        ]
+                    ),
+                }
+            )
+            .then(() => {
+                if (!arrayHelpers.isEmpty(routePath)) {
+                    this.router.navigate(routePath, {
+                        queryParamsHandling: 'preserve',
+                    });
+                }
+            });
     }
 }

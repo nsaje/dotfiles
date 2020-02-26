@@ -1,14 +1,17 @@
-import {Injectable, Inject} from '@angular/core';
-import {downgradeInjectable} from '@angular/upgrade/static';
+import {Injectable, Inject, OnDestroy} from '@angular/core';
 
 import {APP_CONSTANTS, CampaignType} from '../../app.constants';
 import {APP_CONFIG} from '../../app.config';
+import {Router, NavigationEnd} from '@angular/router';
+import {Subject} from 'rxjs';
+import {takeUntil, filter} from 'rxjs/operators';
 
 @Injectable()
-export class GoogleAnalyticsService {
+export class GoogleAnalyticsService implements OnDestroy {
+    private ngUnsubscribe$: Subject<void> = new Subject();
+
     constructor(
-        @Inject('ajs$rootScope') private ajs$rootScope: any,
-        @Inject('ajs$location') private ajs$location: any,
+        private router: Router,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
@@ -18,11 +21,19 @@ export class GoogleAnalyticsService {
         }
 
         (<any>window).ga('create', APP_CONFIG.GAKey, 'auto');
-        (<any>window).ga('send', 'pageview', this.ajs$location.path());
+        (<any>window).ga('send', 'pageview', this.router.url);
 
-        this.ajs$rootScope.$on('$zemStateChangeSuccess', () => {
-            (<any>window).ga('send', 'pageview', this.ajs$location.path());
-        });
+        this.router.events
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe(() => {
+                (<any>window).ga('send', 'pageview', this.router.url);
+            });
+    }
+
+    ngOnDestroy(): void {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
     logCampaignTypeSelection(campaignType: number | CampaignType) {
@@ -70,11 +81,3 @@ export class GoogleAnalyticsService {
         );
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular
-    .module('one.downgraded')
-    .factory(
-        'zemGoogleAnalyticsService',
-        downgradeInjectable(GoogleAnalyticsService)
-    );

@@ -9,7 +9,6 @@ require('../lib/components/angular-bootstrap-datetimepicker/src/js/datetimepicke
 require('../lib/components/angular-daterangepicker/js/angular-daterangepicker.js');
 require('../lib/components/angular-hotkeys/build/hotkeys.js');
 require('../lib/components/angular-sanitize/angular-sanitize.js');
-require('../lib/components/angular-ui-router/release/angular-ui-router.js');
 require('../lib/components/angular-ui-select/dist/select.js');
 require('../lib/components/angular-ui-select2/src/select2.js');
 require('../lib/components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js');

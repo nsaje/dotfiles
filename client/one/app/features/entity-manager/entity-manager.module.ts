@@ -40,6 +40,9 @@ import {CampaignPerformanceTrackingComponent} from './components/campaign-perfor
 import {MediaSourcesComponent} from './components/media-sources/media-sources.component';
 import {DealsListComponent} from './components/deals-list/deals-list.component';
 import {DealComponent} from './components/deal/deal.component';
+import {RouterModule} from '@angular/router';
+import {ENTITY_MANAGER_ROUTES} from './entity-manager.routes';
+import {CanActivateEntityGuard} from './route-guards/entity.guard';
 
 @NgModule({
     declarations: [
@@ -80,7 +83,8 @@ import {DealComponent} from './components/deal/deal.component';
         DealsListComponent,
         DealComponent,
     ],
-    imports: [SharedModule],
+    imports: [SharedModule, RouterModule.forChild(ENTITY_MANAGER_ROUTES)],
+    providers: [CanActivateEntityGuard],
     entryComponents: [EntitySettingsRouterOutlet],
 })
 export class EntityManagerModule {}

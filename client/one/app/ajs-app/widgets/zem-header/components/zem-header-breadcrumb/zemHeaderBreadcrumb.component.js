@@ -1,9 +1,14 @@
+var RoutePathName = require('../../../../../app.constants').RoutePathName;
+var ENTITY_TYPE_TO_LEVEL_MAP = require('../../../../../app.constants')
+    .ENTITY_TYPE_TO_LEVEL_MAP;
+var LEVEL_TO_LEVEL_PARAM_MAP = require('../../../../../app.constants')
+    .LEVEL_TO_LEVEL_PARAM_MAP;
+
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     template: require('./zemHeaderBreadcrumb.component.html'),
     controller: function(
         $rootScope,
-        $state,
-        $location,
+        NgRouter,
         $document,
         $window,
         config,
@@ -13,17 +18,17 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
+        $ctrl.openUrl = openUrl;
 
-        var zemStateChangeHandler,
+        var zemNavigationEndHandler,
             locationChangeUpdateHandler,
             activeEntityUpdateHandler,
             hierarchyUpdateHandler;
 
         $ctrl.$onInit = function() {
             update();
-
-            zemStateChangeHandler = $rootScope.$on(
-                '$zemStateChangeSuccess',
+            zemNavigationEndHandler = $rootScope.$on(
+                '$zemNavigationEnd',
                 update
             );
             locationChangeUpdateHandler = $rootScope.$on(
@@ -40,7 +45,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         };
 
         $ctrl.$onDestroy = function() {
-            if (zemStateChangeHandler) zemStateChangeHandler();
+            if (zemNavigationEndHandler) zemNavigationEndHandler();
             if (locationChangeUpdateHandler) locationChangeUpdateHandler();
             if (activeEntityUpdateHandler) activeEntityUpdateHandler();
             if (hierarchyUpdateHandler) hierarchyUpdateHandler();
@@ -70,25 +75,22 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         function getBreadcrumb(entity) {
             var breadcrumb = [];
 
-            var administrationPage = getAdministrationPage();
-            if (administrationPage && administrationPage.root) {
+            var administrationPage = getAdministrationPage(entity);
+            if (administrationPage) {
                 breadcrumb.push(administrationPage);
-                return breadcrumb;
-            } else if (administrationPage) {
-                breadcrumb.push(administrationPage);
+                if (administrationPage.root) {
+                    return breadcrumb;
+                }
             }
 
-            var includeQueryParmas = true;
-            var reuseNestedState =
-                !administrationPage && !$state.includes('v2');
+            var includeQueryParams = true;
             while (entity) {
                 breadcrumb.unshift({
                     name: entity.name,
                     typeName: getTypeName(entity.type),
                     href: zemNavigationNewService.getEntityHref(
                         entity,
-                        includeQueryParmas,
-                        reuseNestedState
+                        includeQueryParams
                     ),
                 });
                 entity = entity.parent;
@@ -114,74 +116,144 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         }
 
         // prettier-ignore
-        function getAdministrationPage() { // eslint-disable-line complexity
-            if ($state.includes('**.users') || $state.includes('v2.users')) {
+        function getAdministrationPage(entity) { // eslint-disable-line complexity
+            var entityId = entity ? entity.id : null;
+            var levelParam = entity
+                ? LEVEL_TO_LEVEL_PARAM_MAP[
+                      ENTITY_TYPE_TO_LEVEL_MAP[entity.type]
+                  ]
+                : null;
+
+            var urlTree = [];
+            if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USERS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.USERS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'User permissions',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if (
-                $state.includes('**.credit_v2') ||
-                $state.includes('v2.accountCredit')
-            ) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.CREDITS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'Account credit',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if (
-                $state.includes('**.scheduled_reports_v2') ||
-                $state.includes('v2.reports')
-            ) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.REPORTS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.REPORTS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'Scheduled reports',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if ($state.includes('**.pixels') || $state.includes('v2.pixels')) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PIXELS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.PIXELS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'Pixels & Audiences',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if ($state.includes('v2.dealsLibrary')) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.DEALS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.DEALS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'Deals library',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if (
-                $state.includes('**.publisherGroups') ||
-                $state.includes('v2.publisherGroups')
-            ) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS_LIBRARY)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.PUBLISHER_GROUPS_LIBRARY
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Account settings',
                     name: 'Publisher groups',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
-            }
-            if ($state.includes('v2.inventoryPlanning')) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.INVENTORY_PLANNING
+                ];
                 return {
                     typeName: 'Utilities',
                     name: 'Inventory planning',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                     root: true,
                 };
-            }
-            if ($state.includes('v2.createEntity')) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.NEW_ENTITY_ANALYTICS_MOCK)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.NEW_ENTITY_ANALYTICS_MOCK
+                ];
+                if (levelParam) {
+                    urlTree.push(levelParam);
+                }
+                if (entityId) {
+                    urlTree.push(entityId);
+                }
                 return {
                     typeName: 'Entity management',
                     name: 'New entity',
-                    href: $location.absUrl(),
+                    href: NgRouter.createUrlTree(urlTree).toString(),
                 };
             }
             return null;
+        }
+
+        function openUrl(href) {
+            NgRouter.navigateByUrl(href);
         }
     },
 });

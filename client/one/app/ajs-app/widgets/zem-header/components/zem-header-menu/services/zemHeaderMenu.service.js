@@ -1,10 +1,12 @@
 var commonHelpers = require('../../../../../../shared/helpers/common.helpers');
+var RoutePathName = require('../../../../../../app.constants').RoutePathName;
+var LevelParam = require('../../../../../../app.constants').LevelParam;
 
 angular
     .module('one.widgets')
     .service('zemHeaderMenuService', function(
         $window,
-        $state,
+        NgRouter,
         $uibModal,
         zemPermissions,
         zemNavigationNewService
@@ -151,25 +153,39 @@ angular
 
         function navigateToPublisherGroupsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $state.go('v2.publisherGroups', {id: activeAccount.id});
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+                LevelParam.ACCOUNT,
+                activeAccount.id,
+            ]);
         }
 
         function navigateToAccountCreditView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $state.go('v2.accountCredit', {id: activeAccount.id});
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.CREDITS_LIBRARY,
+                LevelParam.ACCOUNT,
+                activeAccount.id,
+            ]);
         }
 
         function navigateToScheduledReportsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
             if (activeAccount) {
-                $state.go('v2.reports', {
-                    level: constants.levelStateParam.ACCOUNT,
-                    id: activeAccount.id,
-                });
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.REPORTS_LIBRARY,
+                    LevelParam.ACCOUNT,
+                    activeAccount.id,
+                ]);
             } else if (activeAccount === null) {
-                $state.go('v2.reports', {
-                    level: constants.levelStateParam.ACCOUNTS,
-                });
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.REPORTS_LIBRARY,
+                    LevelParam.ACCOUNTS,
+                ]);
             }
         }
 
@@ -196,7 +212,12 @@ angular
 
         function navigateToUserPermissions() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $state.go('v2.users', {id: activeAccount.id});
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.USERS_LIBRARY,
+                LevelParam.ACCOUNT,
+                activeAccount.id,
+            ]);
         }
 
         function isPixelsViewAvailable() {
@@ -211,7 +232,12 @@ angular
 
         function navigateToPixelsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $state.go('v2.pixels', {id: activeAccount.id});
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.PIXELS_LIBRARY,
+                LevelParam.ACCOUNT,
+                activeAccount.id,
+            ]);
         }
 
         function isDealsLibraryViewAvailable() {
@@ -224,10 +250,18 @@ angular
 
         function navigateToDealsLibraryView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $state.go('v2.dealsLibrary', {id: activeAccount.id});
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.DEALS_LIBRARY,
+                LevelParam.ACCOUNT,
+                activeAccount.id,
+            ]);
         }
 
         function navigateToInventoryPlanning() {
-            $state.go('v2.inventoryPlanning');
+            NgRouter.navigate([
+                RoutePathName.APP_BASE,
+                RoutePathName.INVENTORY_PLANNING,
+            ]);
         }
     });

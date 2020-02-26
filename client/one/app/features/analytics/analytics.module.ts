@@ -16,9 +16,8 @@ import {ChartComponent} from './components/chart/chart.component';
 import {InfoboxComponent} from './components/infobox/infobox.component';
 import {GridContainerComponent} from './components/grid-container/grid-container.component';
 import {AnalyticsView} from './views/analytics/analytics.view';
-import {ArchivedEntityComponent} from './components/archived-entity/archived-entity.component';
-import {ArchivedView} from './views/archived/archived.view';
-import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
+import {CanActivateBreakdownGuard} from './route-guards/canActivateBreakdown.guard';
+import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
 
 @NgModule({
     declarations: [
@@ -36,12 +35,10 @@ import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-
         ChartComponent,
         InfoboxComponent,
         GridContainerComponent,
-        ArchivedEntityComponent,
         AnalyticsView,
-        ArchivedView,
-        NewEntityAnalyticsMockView,
     ],
     imports: [SharedModule, RulesLibraryModule],
+    providers: [CanActivateEntityGuard, CanActivateBreakdownGuard],
     entryComponents: [
         BidModifierCellComponent,
         BidModifierActionsComponent,
@@ -51,8 +48,6 @@ import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
         AnalyticsView,
-        ArchivedView,
-        NewEntityAnalyticsMockView,
     ],
 })
 export class AnalyticsModule {}

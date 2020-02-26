@@ -50,71 +50,6 @@ describe('zemDataFilterService', function() {
         );
     });
 
-    it('should init correctly with url params', function() {
-        spyOn($location, 'search').and.returnValue({
-            replace: angular.noop,
-            start_date: moment('2016-11-01').format('YYYY-MM-DD'),
-            end_date: moment('2016-12-01').format('YYYY-MM-DD'),
-            filtered_sources: '1,2',
-            filtered_agencies: '3,4',
-            filtered_account_types: '5,6',
-            filtered_statuses:
-                zemDataFilterService.STATUSES_CONDITION_VALUES.archived,
-            filtered_publisher_status:
-                zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active,
-        });
-
-        zemDataFilterService.init();
-
-        var dateRange = zemDataFilterService.getDateRange();
-        expect(dateRange.startDate.valueOf()).toEqual(
-            moment('2016-11-01').valueOf()
-        );
-        expect(dateRange.endDate.valueOf()).toEqual(
-            moment('2016-12-01').valueOf()
-        );
-
-        var expectedConditions = {};
-        expectedConditions[zemDataFilterService.CONDITIONS.sources.name] = [
-            '1',
-            '2',
-        ];
-        expectedConditions[zemDataFilterService.CONDITIONS.agencies.name] = [
-            '3',
-            '4',
-        ];
-        expectedConditions[
-            zemDataFilterService.CONDITIONS.accountTypes.name
-        ] = ['5', '6'];
-        expectedConditions[zemDataFilterService.CONDITIONS.statuses.name] = [
-            zemDataFilterService.STATUSES_CONDITION_VALUES.archived,
-        ]; // eslint-disable-line max-len
-        expectedConditions[
-            zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active; // eslint-disable-line max-len
-        expect(zemDataFilterService.getAppliedConditions()).toEqual(
-            expectedConditions
-        );
-    });
-
-    it("shouldn't init with url params if user doesn't have permissions", function() {
-        spyOn($location, 'search').and.returnValue({
-            filtered_publisher_status:
-                zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active,
-        });
-        zemPermissions.setMockedPermissions([]);
-
-        zemDataFilterService.init();
-
-        var expectedConditions = {};
-        expectedConditions[
-            zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
-        expect(zemDataFilterService.getAppliedConditions()).toEqual(
-            expectedConditions
-        );
-    });
-
     it('should correctly set date range', function() {
         var dateRange = {
             startDate: moment('2015-12-03'),
@@ -139,7 +74,7 @@ describe('zemDataFilterService', function() {
         expect(zemDataFilterService.getFilteredSources()).toEqual([]);
     });
 
-    it('should correctly return applied conditions and exclude conditions with default values', function() {
+    it('should correctly return applied conditions', function() {
         zemDataFilterService.init();
 
         var expectedConditions = {};
@@ -149,7 +84,6 @@ describe('zemDataFilterService', function() {
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
-        expect(zemDataFilterService.getAppliedConditions(true)).toEqual({});
     });
 
     it('should correctly apply conditions', function() {

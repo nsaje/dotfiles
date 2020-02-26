@@ -1,13 +1,15 @@
+var RoutePathName = require('../../../app.constants').RoutePathName;
+var ENTITY_TYPE_TO_LEVEL_MAP = require('../../../app.constants')
+    .ENTITY_TYPE_TO_LEVEL_MAP;
+var LEVEL_TO_LEVEL_PARAM_MAP = require('../../../app.constants')
+    .LEVEL_TO_LEVEL_PARAM_MAP;
+
 angular.module('one').component('zemArchivedEntity', {
     bindings: {
         entity: '<',
     },
     template: require('./zemArchivedEntity.component.html'),
-    controller: function(
-        zemEntityService,
-        zemNavigationNewService,
-        zemNavigationService
-    ) {
+    controller: function(NgRouter, zemEntityService, zemNavigationService) {
         var $ctrl = this;
         $ctrl.restore = restore;
         $ctrl.getEntityTypeName = getEntityTypeName;
@@ -21,7 +23,18 @@ angular.module('one').component('zemArchivedEntity', {
                     $ctrl.entity.id
                 )
                 .then(updateNavigationCache)
-                .then(zemNavigationNewService.refreshState)
+                .then(function() {
+                    var urlTree = [
+                        RoutePathName.APP_BASE,
+                        RoutePathName.ANALYTICS,
+                        LEVEL_TO_LEVEL_PARAM_MAP[
+                            ENTITY_TYPE_TO_LEVEL_MAP[$ctrl.entity.type]
+                        ],
+                        $ctrl.entity.id,
+                    ];
+
+                    NgRouter.navigate(urlTree);
+                })
                 .finally(function() {
                     $ctrl.requestInProgress = false;
                 });
