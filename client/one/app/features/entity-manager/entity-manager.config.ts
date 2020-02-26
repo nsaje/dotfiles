@@ -24,7 +24,7 @@ import {ImageCheckboxInputIcon} from '../../shared/components/image-checkbox-inp
 export const ENTITY_MANAGER_CONFIG = {
     outletName: 'settings',
     idQueryParam: 'settingsEntityId',
-    typeQueryParam: 'settingsEntiyType',
+    typeQueryParam: 'settingsEntityType',
     maxCampaignConversionGoals: 15,
 };
 
