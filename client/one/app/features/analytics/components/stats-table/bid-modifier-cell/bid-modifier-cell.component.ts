@@ -141,5 +141,6 @@ angular.module('one.downgraded').directive(
     'zemBidModifierCell',
     downgradeComponent({
         component: BidModifierCellComponent,
+        propagateDigest: false,
     })
 );

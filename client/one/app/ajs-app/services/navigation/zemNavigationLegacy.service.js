@@ -427,14 +427,6 @@ angular
                 scope.$on('$destroy', handler);
             },
 
-            onAdGroupLoading: function(scope, id, callback) {
-                var handler = $rootScope.$on(
-                    'navigation-adgroup-loading-' + id,
-                    callback
-                );
-                scope.$on('$destroy', handler);
-            },
-
             getAccounts: function() {
                 return accounts;
             },

@@ -67,5 +67,6 @@ angular.module('one.downgraded').directive(
     'zemRuleActions',
     downgradeComponent({
         component: RuleActionsComponent,
+        propagateDigest: false,
     })
 );

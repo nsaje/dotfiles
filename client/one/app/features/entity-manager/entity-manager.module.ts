@@ -42,7 +42,7 @@ import {DealsListComponent} from './components/deals-list/deals-list.component';
 import {DealComponent} from './components/deal/deal.component';
 import {RouterModule} from '@angular/router';
 import {ENTITY_MANAGER_ROUTES} from './entity-manager.routes';
-import {CanActivateEntityGuard} from './route-guards/entity.guard';
+import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySettings.guard';
 
 @NgModule({
     declarations: [
@@ -84,7 +84,7 @@ import {CanActivateEntityGuard} from './route-guards/entity.guard';
         DealComponent,
     ],
     imports: [SharedModule, RouterModule.forChild(ENTITY_MANAGER_ROUTES)],
-    providers: [CanActivateEntityGuard],
+    providers: [CanActivateEntitySettingsGuard],
     entryComponents: [EntitySettingsRouterOutlet],
 })
 export class EntityManagerModule {}

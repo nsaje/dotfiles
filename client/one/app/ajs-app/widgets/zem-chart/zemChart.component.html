@@ -4,18 +4,20 @@
 ></div>
 <zem-chart-metric-selector
     class="zem-chart-metrics-selector"
+    ng-if="$ctrl.initialized"
     chart="$ctrl.chart"
     metric="$ctrl.metrics.metric1"
     on-metric-changed="$ctrl.onMetricsChanged(value, $ctrl.metrics.metric2)"
 ></zem-chart-metric-selector>
 <zem-chart-metric-selector
     class="zem-chart-metrics-selector zem-chart-metrics-selector--second"
+    ng-if="$ctrl.initialized"
     chart="$ctrl.chart"
     metric="$ctrl.metrics.metric2"
     on-metric-changed="$ctrl.onMetricsChanged($ctrl.metrics.metric1, value)"
     nullable="true"
 ></zem-chart-metric-selector>
-<ul class="zem-chart__legend">
+<ul class="zem-chart__legend" ng-if="$ctrl.initialized">
     <li
         class="zem-chart__legend-item"
         ng-repeat="item in $ctrl.chart.legend.items"

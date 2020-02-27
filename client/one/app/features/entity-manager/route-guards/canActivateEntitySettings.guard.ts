@@ -7,19 +7,19 @@ import {
 } from '@angular/router';
 import {
     RoutePathName,
-    LevelParam,
     EntityType,
-    LEVEL_TO_ENTITY_TYPE_MAP,
-    LEVEL_PARAM_TO_LEVEL_MAP,
+    ENTITY_TYPE_TO_LEVEL_MAP,
+    LEVEL_TO_LEVEL_PARAM_MAP,
+    LevelParam,
 } from '../../../app.constants';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import {ENTITY_MANAGER_CONFIG} from '../entity-manager.config';
 
 @Injectable()
-export class CanActivateArchivedEntityGuard implements CanActivate {
+export class CanActivateEntitySettingsGuard implements CanActivate {
     constructor(
         private router: Router,
-        @Inject('zemNavigationNewService')
-        private zemNavigationNewService: any
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
     canActivate(
@@ -27,17 +27,13 @@ export class CanActivateArchivedEntityGuard implements CanActivate {
         state: RouterStateSnapshot
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
-            const levelParam: LevelParam = route.data.level;
-            if (!commonHelpers.isDefined(levelParam)) {
-                this.router.navigate([
-                    RoutePathName.APP_BASE,
-                    RoutePathName.ANALYTICS,
-                    LevelParam.ACCOUNTS,
-                ]);
-                return resolve(false);
+            if (state.url.includes(RoutePathName.NEW_ENTITY_ANALYTICS_MOCK)) {
+                return resolve(true);
             }
 
-            const entityId = route.paramMap.get('id');
+            const entityId: string = route.queryParamMap.get(
+                ENTITY_MANAGER_CONFIG.idQueryParam
+            );
             if (!commonHelpers.isDefined(entityId)) {
                 this.router.navigate([
                     RoutePathName.APP_BASE,
@@ -47,8 +43,16 @@ export class CanActivateArchivedEntityGuard implements CanActivate {
                 return resolve(false);
             }
 
-            const entityType: EntityType =
-                LEVEL_TO_ENTITY_TYPE_MAP[LEVEL_PARAM_TO_LEVEL_MAP[levelParam]];
+            const entityType =
+                route.queryParams[ENTITY_MANAGER_CONFIG.typeQueryParam];
+            if (!this.isValidEntityType(entityType)) {
+                this.router.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.ACCOUNTS,
+                ]);
+                return resolve(false);
+            }
 
             this.zemNavigationNewService
                 .getEntityById(entityType, entityId)
@@ -63,12 +67,14 @@ export class CanActivateArchivedEntityGuard implements CanActivate {
                     }
                     if (
                         commonHelpers.isDefined(entity.data) &&
-                        !entity.data.archived
+                        entity.data.archived
                     ) {
                         this.router.navigate([
                             RoutePathName.APP_BASE,
-                            RoutePathName.ANALYTICS,
-                            levelParam,
+                            RoutePathName.ARCHIVED,
+                            LEVEL_TO_LEVEL_PARAM_MAP[
+                                ENTITY_TYPE_TO_LEVEL_MAP[entityType]
+                            ],
                             entityId,
                         ]);
                         return resolve(false);
@@ -76,5 +82,17 @@ export class CanActivateArchivedEntityGuard implements CanActivate {
                     return resolve(true);
                 });
         });
+    }
+
+    private isValidEntityType(entityType: any): boolean {
+        const entityTypes: EntityType[] = [
+            EntityType.ACCOUNT,
+            EntityType.CAMPAIGN,
+            EntityType.AD_GROUP,
+        ];
+        return (
+            commonHelpers.isDefined(entityType) &&
+            entityTypes.includes(entityType)
+        );
     }
 }

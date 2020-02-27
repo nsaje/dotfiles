@@ -38,5 +38,6 @@ angular.module('one.downgraded').directive(
     'zemPublisherGroupsScopeSelector',
     downgradeComponent({
         component: PublisherGroupsScopeSelectorComponent,
+        propagateDigest: false,
     })
 );

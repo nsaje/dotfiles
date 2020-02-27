@@ -5,14 +5,20 @@ import {
     RouterStateSnapshot,
     Router,
 } from '@angular/router';
-import {RoutePathName, LevelParam} from '../../../app.constants';
+import {
+    RoutePathName,
+    LevelParam,
+    EntityType,
+    LEVEL_PARAM_TO_LEVEL_MAP,
+    LEVEL_TO_ENTITY_TYPE_MAP,
+} from '../../../app.constants';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class CanActivateEntityGuard implements CanActivate {
     constructor(
         private router: Router,
-        @Inject('zemNavigationService') private zemNavigationService: any
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
     canActivate(
@@ -22,7 +28,12 @@ export class CanActivateEntityGuard implements CanActivate {
         return new Promise<boolean>(resolve => {
             const levelParam: LevelParam = route.data.level;
             if (!commonHelpers.isDefined(levelParam)) {
-                return resolve(true);
+                this.router.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.ANALYTICS,
+                    LevelParam.ACCOUNTS,
+                ]);
+                return resolve(false);
             }
 
             const entityId = route.paramMap.get('id');
@@ -30,69 +41,34 @@ export class CanActivateEntityGuard implements CanActivate {
                 return resolve(true);
             }
 
-            const entityGetter = this.getEntityGetter(levelParam);
-            if (!commonHelpers.isDefined(entityGetter)) {
-                return resolve(true);
-            }
+            const entityType: EntityType =
+                LEVEL_TO_ENTITY_TYPE_MAP[LEVEL_PARAM_TO_LEVEL_MAP[levelParam]];
 
-            entityGetter(entityId)
-                .then((data: any) => {
-                    switch (levelParam) {
-                        case LevelParam.ACCOUNT:
-                            if (data.account.archived) {
-                                this.router.navigate([
-                                    RoutePathName.APP_BASE,
-                                    RoutePathName.ARCHIVED,
-                                    LevelParam.ACCOUNT,
-                                    data.account.id,
-                                ]);
-                                return resolve(false);
-                            }
-                            break;
-                        case LevelParam.CAMPAIGN:
-                            if (data.campaign.archived) {
-                                this.router.navigate([
-                                    RoutePathName.APP_BASE,
-                                    RoutePathName.ARCHIVED,
-                                    LevelParam.CAMPAIGN,
-                                    data.campaign.id,
-                                ]);
-                                return resolve(false);
-                            }
-                            break;
-                        case LevelParam.AD_GROUP:
-                            if (data.adGroup.archived) {
-                                this.router.navigate([
-                                    RoutePathName.APP_BASE,
-                                    RoutePathName.ARCHIVED,
-                                    LevelParam.AD_GROUP,
-                                    data.adGroup.id,
-                                ]);
-                                return resolve(false);
-                            }
-                            break;
+            this.zemNavigationNewService
+                .getEntityById(entityType, entityId)
+                .then((entity: any) => {
+                    if (!commonHelpers.isDefined(entity)) {
+                        this.router.navigate([
+                            RoutePathName.APP_BASE,
+                            RoutePathName.ANALYTICS,
+                            LevelParam.ACCOUNTS,
+                        ]);
+                        return resolve(false);
+                    }
+                    if (
+                        commonHelpers.isDefined(entity.data) &&
+                        entity.data.archived
+                    ) {
+                        this.router.navigate([
+                            RoutePathName.APP_BASE,
+                            RoutePathName.ARCHIVED,
+                            levelParam,
+                            entityId,
+                        ]);
+                        return resolve(false);
                     }
                     return resolve(true);
-                })
-                .catch(() => {
-                    this.router.navigate([
-                        RoutePathName.APP_BASE,
-                        RoutePathName.ANALYTICS,
-                        LevelParam.ACCOUNTS,
-                    ]);
-                    return resolve(false);
                 });
         });
-    }
-
-    private getEntityGetter(levelParam: LevelParam) {
-        switch (levelParam) {
-            case LevelParam.ACCOUNT:
-                return this.zemNavigationService.getAccount;
-            case LevelParam.CAMPAIGN:
-                return this.zemNavigationService.getCampaign;
-            case LevelParam.AD_GROUP:
-                return this.zemNavigationService.getAdGroup;
-        }
     }
 }

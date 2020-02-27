@@ -9,7 +9,6 @@ import {
     SimpleChanges,
     OnChanges,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
 import {Day} from '../../../../app.constants';
 import {DaypartingSetting} from '../../types/dayparting-setting';
 import {DaypartingDay} from '../../../../shared/components/dayparting-input/dayparting-day';
@@ -173,12 +172,3 @@ export class DaypartingSettingComponent implements OnChanges {
         return activeHours;
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemDaypartingSetting',
-    downgradeComponent({
-        component: DaypartingSettingComponent,
-        inputs: ['daypartingSetting', 'errors'],
-    })
-);

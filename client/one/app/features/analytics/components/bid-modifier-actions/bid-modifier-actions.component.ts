@@ -74,5 +74,6 @@ angular.module('one.downgraded').directive(
     'zemBidModifierActions',
     downgradeComponent({
         component: BidModifierActionsComponent,
+        propagateDigest: false,
     })
 );

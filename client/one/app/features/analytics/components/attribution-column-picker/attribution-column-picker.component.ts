@@ -197,5 +197,6 @@ angular.module('one.downgraded').directive(
         component: AttributionColumnPickerComponent,
         inputs: ['pixelColumns'],
         outputs: ['toggleColumn', 'toggleColumns'],
+        propagateDigest: false,
     })
 );
