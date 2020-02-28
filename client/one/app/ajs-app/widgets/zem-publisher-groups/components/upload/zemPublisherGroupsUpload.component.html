@@ -18,6 +18,7 @@
                 id="zem-publisher-group-modal-name"
                 ng-model="$ctrl.formData.name"
                 ng-change="$ctrl.clearValidationError('name')"
+                ng-disabled="$ctrl.isReadOnly"
             />
             <div
                 class="message message--error"
@@ -35,6 +36,7 @@
                         type="checkbox"
                         ng-model="$ctrl.formData.include_subdomains"
                         ng-change="$ctrl.clearValidationError('include_subdomains')"
+                        ng-disabled="$ctrl.isReadOnly"
                     />
                     <span class="checkbox-text">Include subdomains</span>
                 </label>
@@ -50,6 +52,7 @@
         </div>
 
         <div
+            ng-if="!$ctrl.isReadOnly"
             class="form__group form__group--choose-file"
             ng-class="{'form--error': !!$ctrl.errors.file}"
         >
@@ -113,8 +116,10 @@
                 [account-id]="$ctrl.formData.accountId"
                 [accounts]="$ctrl.accounts"
                 [has-agency-scope]="$ctrl.hasAgencyScope"
-                [is-agency-scope-disabled]="!$ctrl.hasAgencyScope"
-                [is-account-scope-disabled]="$ctrl.isAccountScopeDisabled"
+                [is-agency-scope-disabled]="
+                    !$ctrl.hasAgencyScope || $ctrl.isReadOnly
+                "
+                [is-account-scope-disabled]="$ctrl.isReadOnly"
                 (scope-state-change)="$ctrl.onScopeStateChange($event)"
                 (account-change)="$ctrl.onAccountChange($event)"
             >
@@ -126,7 +131,7 @@
     <button
         class="button button--highlight button--with-icon check-icon"
         ng-disabled="!!$ctrl.putRequestInProgress"
-        ng-if="!$ctrl.isCreationMode"
+        ng-if="!$ctrl.isCreationMode && !$ctrl.isReadOnly"
         ng-click="$ctrl.upsert()"
     >
         Update

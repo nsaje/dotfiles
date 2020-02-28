@@ -1,6 +1,7 @@
 describe('component: zemPublisherGroups', function() {
     var $ctrl;
     var zemPublisherGroupsEndpoint;
+    var mockedUser;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -8,7 +9,8 @@ describe('component: zemPublisherGroups', function() {
 
     beforeEach(inject(function(
         $componentController,
-        _zemPublisherGroupsEndpoint_
+        _zemPublisherGroupsEndpoint_,
+        zemUserService
     ) {
         zemPublisherGroupsEndpoint = _zemPublisherGroupsEndpoint_;
         var bindings = {
@@ -20,6 +22,10 @@ describe('component: zemPublisherGroups', function() {
             },
         };
         $ctrl = $componentController('zemPublisherGroups', {}, bindings);
+        mockedUser = {agencies: []};
+        spyOn(zemUserService, 'current').and.callFake(function() {
+            return mockedUser;
+        });
     }));
 
     it('should initialize without errors', function() {

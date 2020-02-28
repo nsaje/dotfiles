@@ -37,9 +37,16 @@
                             >Download</a
                         >
                         <a
+                            ng-if="!item.isReadOnly"
                             class="button button--small button--with-icon edit-icon"
-                            ng-click="$ctrl.edit(item.id)"
+                            ng-click="$ctrl.openPublisherGroupModal(item)"
                             >Edit</a
+                        >
+                        <a
+                            ng-if="item.isReadOnly"
+                            class="button button--small button--with-icon copy-icon"
+                            ng-click="$ctrl.openPublisherGroupModal(item)"
+                            >View</a
                         >
                     </td>
                 </tr>

@@ -8,18 +8,29 @@ angular.module('one.widgets').component('zemPublisherGroups', {
         account: '<',
         agency: '<',
     },
-    controller: function($filter, $uibModal, zemPublisherGroupsEndpoint) {
+    controller: function(
+        $filter,
+        $uibModal,
+        zemPublisherGroupsEndpoint,
+        zemPermissions
+    ) {
         var $ctrl = this;
+        var hasAgencyScope = false;
 
         $ctrl.showCollapsed = false;
         $ctrl.loading = true;
 
         $ctrl.download = download;
-        $ctrl.edit = edit;
+        $ctrl.openPublisherGroupModal = openPublisherGroupModal;
+        $ctrl.isReadOnly = isReadOnly;
         $ctrl.createNew = createNew;
 
         $ctrl.$onInit = function() {
             initPublisherGroups();
+
+            if (commonHelpers.isDefined($ctrl.agency)) {
+                hasAgencyScope = zemPermissions.hasAgencyScope($ctrl.agency.id);
+            }
         };
 
         function getAccountId() {
@@ -42,6 +53,9 @@ angular.module('one.widgets').component('zemPublisherGroups', {
                 .then(function(data) {
                     $ctrl.publisherGroups = data;
                     $ctrl.loading = false;
+                    $ctrl.publisherGroups.forEach(function(pg) {
+                        pg.isReadOnly = isReadOnly(pg);
+                    });
                 });
         }
 
@@ -57,15 +71,15 @@ angular.module('one.widgets').component('zemPublisherGroups', {
             openPublisherGroupModal(null);
         }
 
-        function edit(publisherGroupId) {
-            var publisherGroup = getPublisherGroup(publisherGroupId);
-
-            if (publisherGroup) {
-                openPublisherGroupModal(publisherGroup);
+        function isReadOnly(publisherGroup) {
+            if (publisherGroup.agency_id && !hasAgencyScope) {
+                return true;
             }
+            return false;
         }
 
         function openPublisherGroupModal(publisherGroup) {
+            var isNew = !commonHelpers.isDefined(publisherGroup);
             var modal = $uibModal.open({
                 component: 'zemPublisherGroupsUpload',
                 backdrop: 'static',
@@ -75,23 +89,11 @@ angular.module('one.widgets').component('zemPublisherGroups', {
                     publisherGroup: publisherGroup,
                     account: $ctrl.account,
                     agency: $ctrl.agency,
+                    isReadOnly: !isNew && publisherGroup.isReadOnly,
                 },
             });
 
             modal.result.then(initPublisherGroups);
-        }
-
-        function getPublisherGroup(publisherGroupId) {
-            var publisherGroup = null;
-
-            for (var i = 0; i < $ctrl.publisherGroups.length; i++) {
-                if ($ctrl.publisherGroups[i].id === publisherGroupId) {
-                    publisherGroup = $ctrl.publisherGroups[i];
-                    break;
-                }
-            }
-
-            return publisherGroup;
         }
     },
 });

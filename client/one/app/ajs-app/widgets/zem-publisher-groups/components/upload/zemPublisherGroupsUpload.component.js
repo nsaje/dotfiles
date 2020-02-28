@@ -28,19 +28,21 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
 
         $ctrl.errors = null;
         $ctrl.putRequestInProgress = false;
-        $ctrl.isAgencyScopeDisabled = false;
-        $ctrl.isAccountScopeDisabled = false;
         $ctrl.accounts = [];
         $ctrl.agencyId = null;
         $ctrl.accountId = null;
+        $ctrl.isReadOnly = true;
 
         $ctrl.$onInit = function() {
             if ($ctrl.resolve) {
-                if ($ctrl.resolve.agency) {
+                if (commonHelpers.isDefined($ctrl.resolve.agency)) {
                     $ctrl.agencyId = $ctrl.resolve.agency.id;
                 }
-                if ($ctrl.resolve.account) {
+                if (commonHelpers.isDefined($ctrl.resolve.account)) {
                     $ctrl.accountId = $ctrl.resolve.account.id;
+                }
+                if (commonHelpers.isDefined($ctrl.resolve.isReadOnly)) {
+                    $ctrl.isReadOnly = $ctrl.resolve.isReadOnly;
                 }
             }
 

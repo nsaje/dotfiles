@@ -24,6 +24,7 @@
             [bindLabel]="'name'"
             [bindValue]="'id'"
             [isClearable]="hasAgencyScope"
+            [isDisabled]="isAccountScopeDisabled"
             (valueChange)="this.accountChange.emit($event)"
         >
         </zem-select-input>
