@@ -25,6 +25,7 @@ from utils import lc_helper
 from utils import validation_helper
 
 from . import bcm_slack
+from . import credit_line_item
 from . import dailystatement
 from . import exceptions
 
@@ -178,6 +179,10 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     @transaction.atomic
     def save(self, request=None, user=None, action_type=None, *args, **kwargs):
         import core.features.bcm
+
+        # lock credit for the duration of the save
+        credit_line_item.CreditLineItem.objects.select_for_update().get(pk=self.credit.id)
+        self.credit.refresh_from_db()
 
         self.full_clean()
         if user and not self.pk:

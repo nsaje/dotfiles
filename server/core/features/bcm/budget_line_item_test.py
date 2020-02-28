@@ -1,12 +1,17 @@
+import concurrent.futures
 import datetime
+import time
 from decimal import Decimal
 
 from django.test import TestCase
+from django.test import TransactionTestCase
 from mock import patch
 
 import core.models
 import dash.constants
 import zemauth
+from core.features.bcm.exceptions import BudgetAmountExceededCreditAmount
+from utils import dates_helper
 from utils.exc import MultipleValidationError
 from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
@@ -18,7 +23,7 @@ from .credit_line_item import CreditLineItem
 TODAY = datetime.datetime(2015, 12, 1).date()
 
 
-@patch("dash.forms.dates_helper.local_today", lambda: TODAY)
+@patch.object(dates_helper, "local_today", lambda: TODAY)
 class TestBudgetLineItemManager(TestCase):
     def setUp(self):
         self.user = magic_mixer.blend(zemauth.models.User)
@@ -201,21 +206,33 @@ class TestBudgetLineItemManager(TestCase):
 
     def test_clone_start_date_in_the_past(self):
         request = magic_mixer.blend_request_user()
-        start_date = TODAY - datetime.timedelta(days=10)
-        end_date = datetime.date(2017, 1, 2)
-        self.credit.start_date = start_date
-        item = BudgetLineItem.objects.create(
-            request, self.campaign, self.credit, TODAY, end_date, 100, Decimal("0.15"), "test"
+        start_date = TODAY
+        end_date = TODAY + datetime.timedelta(days=100)
+        self.credit = magic_mixer.blend(
+            CreditLineItem,
+            account=self.account,
+            start_date=TODAY - datetime.timedelta(days=10),
+            end_date=TODAY + datetime.timedelta(days=300),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal("0.10"),
         )
-        item.start_date = start_date
+        item = BudgetLineItem.objects.create(
+            request, self.campaign, self.credit, start_date, end_date, 100, Decimal("0.15"), "test"
+        )
+
+        # move 10 days into the future
+        new_today = TODAY + datetime.timedelta(days=10)
+        dash.forms.dates_helper.local_today = lambda: new_today
+
         destination_campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         cloned_item = BudgetLineItem.objects.clone(request, item, destination_campaign)
 
-        self.assertTrue(item.start_date < TODAY)
+        self.assertTrue(item.start_date < new_today)
         self.assertEqual(item.start_date, start_date)
         self.assertEqual(item.end_date, end_date)
 
-        self.assertEqual(TODAY, cloned_item.start_date)
+        self.assertEqual(new_today, cloned_item.start_date)
         self.assertEqual(item.end_date, cloned_item.end_date)
 
     def test_clone_not_enough_credit(self):
@@ -266,3 +283,52 @@ class TestBudgetLineItemManager(TestCase):
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = t0 + datetime.timedelta(days=2)
             self.assertEqual(list(BudgetLineItem.objects.all().filter_present_and_future()), [item2, item3])
+
+
+@patch.object(dates_helper, "local_today", lambda: TODAY)
+class TestBudgetLineItemManagerTransactional(TransactionTestCase):
+    def test_create_race_condition(self):
+        self.user = magic_mixer.blend(zemauth.models.User)
+        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        self.credit = magic_mixer.blend(
+            CreditLineItem,
+            account=self.account,
+            start_date=datetime.date(2016, 12, 1),
+            end_date=datetime.date(2017, 3, 3),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal("0.10"),
+        )
+
+        def sleep_wrapper(func):
+            def wrapper(*args, **kwargs):
+                func(*args, **kwargs)
+                time.sleep(0.5)
+
+            return wrapper
+
+        def create_budget():
+            request = magic_mixer.blend_request_user()
+            start_date = datetime.date(2017, 1, 1)
+            end_date = datetime.date(2017, 1, 2)
+            return BudgetLineItem.objects.create(
+                request, self.campaign, self.credit, start_date, end_date, self.credit.amount, Decimal("0.15"), "test"
+            )
+
+        BudgetLineItem.objects.all().delete()
+        with patch.object(BudgetLineItem, "full_clean", sleep_wrapper(BudgetLineItem.full_clean)):
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(create_budget)
+                time.sleep(0.1)
+                try:
+                    create_budget()
+                    raise Exception("not raised")
+                except MultipleValidationError as e:
+                    self.assertIsInstance(e.errors[0], BudgetAmountExceededCreditAmount)
+                except Exception as e:
+                    raise Exception("incorrect exception raised", e)
+
+                async_budget = future.result()
+                self.assertEqual(async_budget.amount, self.credit.amount)
+                self.assertEqual(list(BudgetLineItem.objects.all()), [async_budget])
