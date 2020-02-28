@@ -1,6 +1,5 @@
 var RoutePathName = require('../../../../app.constants').RoutePathName;
 var routerHelpers = require('../../../../shared/helpers/router.helpers');
-var deepEqual = require('fast-deep-equal');
 
 angular
     .module('one.widgets')
@@ -208,7 +207,7 @@ angular
             agenciesUpdateHandler,
             dataFilterUpdateHandler;
 
-        var appliedConditions;
+        var navigateFromSecondaryRouterOutlet, navigateToSecondaryRouterOutlet;
 
         //
         // Public methods
@@ -222,17 +221,28 @@ angular
             );
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
                 function() {
-                    pubSub.notify(
-                        EVENTS.ON_SECTIONS_UPDATE,
-                        getVisibleSections()
-                    );
+                    pubSub.notify(EVENTS.ON_SECTIONS_UPDATE);
                 }
             );
 
+            $rootScope.$on('$zemNavigationStart', function() {
+                navigateFromSecondaryRouterOutlet = NgRouter.url.includes(
+                    '(drawer:'
+                );
+            });
+
             $rootScope.$on('$zemNavigationEnd', function() {
+                navigateToSecondaryRouterOutlet = NgRouter.url.includes(
+                    '(drawer:'
+                );
+                if (
+                    navigateFromSecondaryRouterOutlet ||
+                    navigateToSecondaryRouterOutlet
+                ) {
+                    return;
+                }
                 initFromUrlParams();
                 zemFilterSelectorSharedService.setSelectorExpanded(false);
-                pubSub.notify(EVENTS.ON_SECTIONS_UPDATE, getVisibleSections());
             });
 
             initFromUrlParams();
@@ -282,12 +292,15 @@ angular
             return visibleSections;
         }
 
-        function getAppliedConditions() {
+        function getAppliedConditions(visibleSections) {
             var appliedConditions = [];
             angular.forEach(
                 zemDataFilterService.getAppliedConditions(),
                 function(conditionValue, conditionName) {
-                    var section = findConditionSection(conditionName);
+                    var section = findConditionInVisibleSections(
+                        conditionName,
+                        visibleSections
+                    );
                     if (!section) return;
 
                     var sectionOptions = section.getOptions();
@@ -328,7 +341,7 @@ angular
         }
 
         function applyFilter(visibleSections) {
-            appliedConditions = [];
+            var appliedConditions = [];
             angular.forEach(visibleSections, function(section) {
                 var value;
                 switch (section.condition.type) {
@@ -355,7 +368,6 @@ angular
                     });
                 }
             });
-
             zemDataFilterService.applyConditions(appliedConditions);
         }
 
@@ -396,32 +408,31 @@ angular
             var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
             var queryParams = activatedRoute.snapshot.queryParams;
 
-            var conditions = [];
+            var appliedConditions = [];
             angular.forEach(zemDataFilterService.CONDITIONS, function(
                 condition
             ) {
                 var param = queryParams[condition.urlParam];
                 if (param) {
-                    conditions.push({
+                    appliedConditions.push({
                         condition: condition,
                         value: param,
                     });
                 }
             });
 
-            if (!deepEqual(appliedConditions, conditions)) {
-                appliedConditions = conditions;
-                if (appliedConditions.length > 0) {
-                    zemDataFilterService.applyConditions(conditions);
-                } else {
-                    resetAllConditions();
-                }
+            if (appliedConditions.length > 0) {
+                zemDataFilterService.applyConditions(appliedConditions);
+            } else {
+                resetAllConditions();
             }
         }
 
-        function findConditionSection(conditionName) {
-            var visibleSections = getVisibleSections();
-            for (var i = 0; i < visibleSections.length; i++) {
+        function findConditionInVisibleSections(
+            conditionName,
+            visibleSections
+        ) {
+            for (var i = 0; i < (visibleSections || []).length; i++) {
                 if (visibleSections[i].condition.name === conditionName) {
                     return visibleSections[i];
                 }
@@ -448,13 +459,15 @@ angular
             return true;
         }
 
+        var refreshAvailableSourcesFired = false;
         function getSourcesOptions() {
-            if (!availableSources) {
+            if (!availableSources && !refreshAvailableSourcesFired) {
                 refreshAvailableSources();
+                refreshAvailableSourcesFired = true;
                 return;
             }
 
-            var sourcesOptions = availableSources.map(function(source) {
+            var sourcesOptions = (availableSources || []).map(function(source) {
                 source.enabled =
                     zemDataFilterService
                         .getFilteredSources()
@@ -466,13 +479,17 @@ angular
             return sourcesOptions;
         }
 
+        var refreshAvailableAgenciesFired = false;
         function getAgenciesOptions() {
-            if (!availableAgencies) {
+            if (!availableAgencies && !refreshAvailableAgenciesFired) {
                 refreshAvailableAgencies();
+                refreshAvailableAgenciesFired = true;
                 return;
             }
 
-            var agenciesOptions = availableAgencies.map(function(agency) {
+            var agenciesOptions = (availableAgencies || []).map(function(
+                agency
+            ) {
                 agency.enabled =
                     zemDataFilterService
                         .getFilteredAgencies()
@@ -537,10 +554,7 @@ angular
                     availableSources = sources.map(function(source) {
                         return {value: source.id, text: source.name};
                     });
-                    pubSub.notify(
-                        EVENTS.ON_SECTIONS_UPDATE,
-                        getVisibleSections()
-                    );
+                    pubSub.notify(EVENTS.ON_SECTIONS_UPDATE);
                 });
         }
 
@@ -549,7 +563,7 @@ angular
                 availableAgencies = agencies.map(function(agency) {
                     return {value: agency.id, text: agency.name};
                 });
-                pubSub.notify(EVENTS.ON_SECTIONS_UPDATE, getVisibleSections());
+                pubSub.notify(EVENTS.ON_SECTIONS_UPDATE);
             });
         }
     });

@@ -280,7 +280,10 @@ describe('zemFilterSelectorService', function() {
             BreakdownParam.PUBLISHERS,
         ]);
 
-        expect(zemFilterSelectorService.getAppliedConditions()).toEqual([
+        var visibleSections = zemFilterSelectorService.getVisibleSections();
+        expect(
+            zemFilterSelectorService.getAppliedConditions(visibleSections)
+        ).toEqual([
             {
                 name: 'Account type',
                 text: 'Test',

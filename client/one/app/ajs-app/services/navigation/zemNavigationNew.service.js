@@ -1,7 +1,6 @@
 var RoutePathName = require('../../../app.constants').RoutePathName;
 var commonHelpers = require('../../../shared/helpers/common.helpers');
 var routerHelpers = require('../../../shared/helpers/router.helpers');
-var deepEqual = require('fast-deep-equal');
 
 angular
     .module('one.services')
@@ -320,7 +319,13 @@ angular
         }
 
         function setActiveEntity(entity) {
-            if (deepEqual(activeEntity, entity)) return;
+            if (
+                commonHelpers.isDefined(activeEntity) &&
+                commonHelpers.isDefined(entity) &&
+                activeEntity.id === entity.id
+            ) {
+                return;
+            }
             activeEntity = entity;
             notifyListeners(EVENTS.ON_ACTIVE_ENTITY_CHANGE, activeEntity);
         }

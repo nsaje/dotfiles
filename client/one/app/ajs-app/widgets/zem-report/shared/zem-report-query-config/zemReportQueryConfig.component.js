@@ -73,7 +73,10 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.selectedColumns = [];
 
         $ctrl.$onInit = function() {
-            $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
+            var visibleSections = zemFilterSelectorService.getVisibleSections();
+            $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions(
+                visibleSections
+            );
             if ($ctrl.appliedFilterConditions.length > SHORTLIST_LIMIT) {
                 $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(
                     0,

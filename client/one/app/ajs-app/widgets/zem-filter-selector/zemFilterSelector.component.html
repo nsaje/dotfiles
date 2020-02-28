@@ -46,7 +46,7 @@
 <div
     ng-show="$ctrl.isExpanded()"
     class="filter-sections custom-scroller clearfix"
-    ng-class="$ctrl.getVisibleSectionsClasses()"
+    ng-class="$ctrl.visibleSectionsClasses"
 >
     <div
         ng-repeat="section in $ctrl.visibleSections track by section.title"

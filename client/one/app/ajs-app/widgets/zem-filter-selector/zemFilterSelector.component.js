@@ -19,7 +19,6 @@ angular.module('one.widgets').component('zemFilterSelector', {
         $ctrl.toggleSelectAll = zemFilterSelectorService.toggleSelectAll;
         $ctrl.applyFilter = applyFilter;
         $ctrl.closeFilter = zemFilterSelectorSharedService.toggleSelector;
-        $ctrl.getVisibleSectionsClasses = getVisibleSectionsClasses;
         $ctrl.scrollAppliedConditionsList = scrollAppliedConditionsList;
 
         var listContainerElement;
@@ -29,8 +28,6 @@ angular.module('one.widgets').component('zemFilterSelector', {
         var selectionUpdateHandler;
 
         $ctrl.$onInit = function() {
-            zemFilterSelectorService.init();
-
             selectionUpdateHandler = zemFilterSelectorService.onSectionsUpdate(
                 function() {
                     refresh();
@@ -38,8 +35,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
                 }
             );
 
-            refresh();
-            updateListElementWidth();
+            zemFilterSelectorService.init();
             $ctrl.isListElementOverflowing = false;
         };
 
@@ -117,8 +113,11 @@ angular.module('one.widgets').component('zemFilterSelector', {
         }
 
         function refresh() {
-            $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions();
             $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
+            $ctrl.visibleSectionsClasses = getVisibleSectionsClasses();
+            $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions(
+                $ctrl.visibleSections
+            );
 
             // Add or remove data-filter-enabled class to body to enable global desing changes if data filter is enabled
             if ($ctrl.appliedConditions.length) {
