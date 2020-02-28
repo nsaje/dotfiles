@@ -15,7 +15,7 @@ SELECT (CASE
         END) AS client_size,
        (CASE
             WHEN tags LIKE '%biz/US%' THEN 'US'
-            WHEN tags LIKE '%biz/intl%' THEN 'Intl'
+            WHEN tags LIKE '%biz/int%' THEN 'Intl'
             ELSE '-'
         END) AS region,
        sum(y_media) AS y_media,
@@ -47,6 +47,8 @@ FROM
           y.y_fee,
           nvl(listagg(DISTINCT (CASE
                                     WHEN agency_id IS NULL THEN acct.name
+                                    WHEN ayt.name like '%biz/zms%' AND acct.name IS NULL then ayt.name 
+                                    WHEN acct.name IS NOT NULL THEN acct.name
                                     ELSE ayt.name
                                 END), ' '),'') AS tags
    FROM
