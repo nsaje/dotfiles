@@ -14,6 +14,7 @@ import {OperatingSystemVersion} from './types/operating-system-version';
 import {OPERATING_SYSTEMS} from '../../entity-manager.config';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {PlatformIcon} from './operating-system.constants';
+import {safeGet} from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-operating-system',
@@ -39,11 +40,11 @@ export class OperatingSystemComponent implements OnChanges {
         this.formattedOs = this.getFormattedOs(this.os.name);
         this.minVersion = this.getFormattedVersion(
             this.formattedOs,
-            this.os.version.min
+            safeGet(this.os.version, x => x.min)
         );
         this.maxVersion = this.getFormattedVersion(
             this.formattedOs,
-            this.os.version.max
+            safeGet(this.os.version, x => x.max)
         );
         this.platformIcon = this.getPlatformIcon(this.formattedOs);
     }
@@ -71,8 +72,8 @@ export class OperatingSystemComponent implements OnChanges {
 
     private getFormattedVersion(
         formattedOs: OperatingSystem,
-        versionName: string
-    ): OperatingSystemVersion {
+        versionName: string | undefined
+    ): OperatingSystemVersion | undefined {
         let version: OperatingSystemVersion;
 
         if (formattedOs.versions && versionName) {

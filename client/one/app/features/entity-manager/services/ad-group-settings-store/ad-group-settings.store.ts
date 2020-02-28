@@ -762,6 +762,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
         if (
             osType.versions &&
+            fixedTargetOs.version &&
             fixedTargetOs.version.min &&
             fixedTargetOs.version.max
         ) {

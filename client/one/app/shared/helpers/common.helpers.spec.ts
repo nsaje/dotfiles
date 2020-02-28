@@ -107,4 +107,21 @@ describe('commonHelpers', () => {
             )
         ).toEqual([value]);
     });
+
+    it('should retrieve value if object is defined', () => {
+        let testObject: any;
+        expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(undefined);
+
+        testObject = {a: 1};
+        expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(1);
+
+        testObject = {b: 2};
+        expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(undefined);
+
+        testObject = {a: null};
+        expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(null);
+
+        testObject = {a: undefined};
+        expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(undefined);
+    });
 });

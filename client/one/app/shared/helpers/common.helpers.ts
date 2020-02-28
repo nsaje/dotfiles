@@ -67,3 +67,14 @@ export function getValueWithoutProps<T>(value: T, props: string[]): Partial<T> {
 
     return formattedValue;
 }
+
+export function safeGet<T, S>(
+    object: T | null | undefined,
+    getter: (t: T) => S | undefined
+): S | undefined {
+    let result: S | undefined;
+    if (isDefined(object)) {
+        result = getter(object);
+    }
+    return result;
+}
