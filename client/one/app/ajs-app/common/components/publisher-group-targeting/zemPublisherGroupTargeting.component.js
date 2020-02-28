@@ -42,7 +42,7 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
                 $ctrl.accountPublisherGroups = null;
                 if ($ctrl.accountId) {
                     zemPublisherGroupsEndpoint
-                        .list($ctrl.accountId, true)
+                        .list($ctrl.accountId, null, true)
                         .then(function(data) {
                             $ctrl.accountPublisherGroups = data;
                             $ctrl.targetings = generateTargetings(

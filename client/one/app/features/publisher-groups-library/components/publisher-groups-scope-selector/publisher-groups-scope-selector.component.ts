@@ -24,7 +24,7 @@ export class PublisherGroupsScopeSelectorComponent {
     @Input()
     accounts: Account[];
     @Input()
-    account: Account;
+    accountId: string;
     @Input()
     hasAgencyScope: boolean;
     @Output()

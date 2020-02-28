@@ -27,7 +27,8 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-publisher-groups-library-view';
 
-    entity: any;
+    account: any;
+    agency: any;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -53,13 +54,13 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState(levelParam: LevelParam, entityId: string) {
+    updateInternalState(levelParam: LevelParam, accountId: string) {
         const level = this.getLevel(levelParam);
 
         this.zemNavigationNewService
-            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], entityId)
-            .then((entity: any) => {
-                this.entity = entity;
+            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], accountId)
+            .then((account: any) => {
+                this.account = account;
                 this.changeDetectorRef.markForCheck();
             });
     }

@@ -1,9 +1,12 @@
 require('./zemPublisherGroups.component.less');
 
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+
 angular.module('one.widgets').component('zemPublisherGroups', {
     template: require('./zemPublisherGroups.component.html'),
     bindings: {
         account: '<',
+        agency: '<',
     },
     controller: function($filter, $uibModal, zemPublisherGroupsEndpoint) {
         var $ctrl = this;
@@ -19,9 +22,23 @@ angular.module('one.widgets').component('zemPublisherGroups', {
             initPublisherGroups();
         };
 
+        function getAccountId() {
+            if (commonHelpers.isDefined($ctrl.account)) {
+                return $ctrl.account.id;
+            }
+            return null;
+        }
+
+        function getAgencyId() {
+            if (commonHelpers.isDefined($ctrl.agency)) {
+                return $ctrl.agency.id;
+            }
+            return null;
+        }
+
         function initPublisherGroups() {
             zemPublisherGroupsEndpoint
-                .list($ctrl.account.id)
+                .list(getAccountId(), getAgencyId())
                 .then(function(data) {
                     $ctrl.publisherGroups = data;
                     $ctrl.loading = false;
@@ -30,7 +47,8 @@ angular.module('one.widgets').component('zemPublisherGroups', {
 
         function download(publisherGroupId) {
             zemPublisherGroupsEndpoint.download(
-                $ctrl.account.id,
+                getAccountId(),
+                getAgencyId(),
                 publisherGroupId
             );
         }
@@ -56,6 +74,7 @@ angular.module('one.widgets').component('zemPublisherGroups', {
                 resolve: {
                     publisherGroup: publisherGroup,
                     account: $ctrl.account,
+                    agency: $ctrl.agency,
                 },
             });
 

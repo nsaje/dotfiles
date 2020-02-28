@@ -23,7 +23,7 @@ describe('component: zemPublisherGroupsEndpoint', function() {
         );
         spyOn($http, 'get').and.callFake(mockedAsyncFunction);
 
-        zemPublisherGroupsEndpoint.list(1);
+        zemPublisherGroupsEndpoint.list(1, null);
 
         expect($http.get).toHaveBeenCalledWith(
             '/api/accounts/1/publisher_groups/',
@@ -41,10 +41,11 @@ describe('component: zemPublisherGroupsEndpoint', function() {
         );
         spyOn($http, 'post').and.callFake(mockedAsyncFunction);
 
-        zemPublisherGroupsEndpoint.upsert(1, {
+        zemPublisherGroupsEndpoint.upsert({
             name: 'asd',
             include_subdomains: true,
             file: {},
+            accountId: 1,
         });
 
         var formData = new FormData();

@@ -15,7 +15,7 @@ describe('component: zemPublisherGroupsUpload', function() {
         bindings = {
             resolve: {
                 account: {
-                    id: 1,
+                    id: '1',
                 },
             },
             modalInstance: {},
@@ -40,6 +40,24 @@ describe('component: zemPublisherGroupsUpload', function() {
                 id: 1,
                 name: 'asd',
                 include_subdomains: false,
+                scopeState: 'ACCOUNT_SCOPE',
+                agencyId: null,
+                accountId: '1',
+            });
+        });
+
+        it('should initialize update mode for agency', function() {
+            bindings.resolve.publisherGroup.agency_id = 123;
+            $ctrl.$onInit();
+
+            expect($ctrl.isCreationMode).toBe(false);
+            expect($ctrl.formData).toEqual({
+                id: 1,
+                name: 'asd',
+                include_subdomains: false,
+                scopeState: 'AGENCY_SCOPE',
+                agencyId: 123,
+                accountId: '1',
             });
         });
 
@@ -48,10 +66,13 @@ describe('component: zemPublisherGroupsUpload', function() {
             spyOn(zemPublisherGroupsEndpoint, 'upsert').and.callThrough();
             $ctrl.upsert();
 
-            expect(zemPublisherGroupsEndpoint.upsert).toHaveBeenCalledWith(1, {
+            expect(zemPublisherGroupsEndpoint.upsert).toHaveBeenCalledWith({
                 id: 1,
                 name: 'asd',
                 include_subdomains: false,
+                scopeState: 'ACCOUNT_SCOPE',
+                agencyId: null,
+                accountId: '1',
             });
         });
     });
@@ -64,7 +85,12 @@ describe('component: zemPublisherGroupsUpload', function() {
         it('should initialize create mode', function() {
             $ctrl.$onInit();
 
-            expect($ctrl.formData).toEqual({include_subdomains: true});
+            expect($ctrl.formData).toEqual({
+                include_subdomains: true,
+                scopeState: 'ACCOUNT_SCOPE',
+                agencyId: null,
+                accountId: '1',
+            });
             expect($ctrl.isCreationMode).toBe(true);
         });
 
@@ -74,9 +100,12 @@ describe('component: zemPublisherGroupsUpload', function() {
             $ctrl.formData.name = 'asd';
             $ctrl.upsert();
 
-            expect(zemPublisherGroupsEndpoint.upsert).toHaveBeenCalledWith(1, {
+            expect(zemPublisherGroupsEndpoint.upsert).toHaveBeenCalledWith({
                 name: 'asd',
                 include_subdomains: true,
+                scopeState: 'ACCOUNT_SCOPE',
+                agencyId: null,
+                accountId: '1',
             });
         });
     });

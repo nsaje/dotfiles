@@ -15,6 +15,9 @@ describe('component: zemPublisherGroups', function() {
             account: {
                 id: 1,
             },
+            agency: {
+                id: 7,
+            },
         };
         $ctrl = $componentController('zemPublisherGroups', {}, bindings);
     }));
@@ -30,6 +33,10 @@ describe('component: zemPublisherGroups', function() {
         spyOn(zemPublisherGroupsEndpoint, 'download').and.callThrough();
         $ctrl.download(2);
 
-        expect(zemPublisherGroupsEndpoint.download).toHaveBeenCalledWith(1, 2);
+        expect(zemPublisherGroupsEndpoint.download).toHaveBeenCalledWith(
+            1,
+            7,
+            2
+        );
     });
 });

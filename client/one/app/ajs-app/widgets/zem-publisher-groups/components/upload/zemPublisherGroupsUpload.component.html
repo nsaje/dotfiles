@@ -103,6 +103,23 @@
                 ><br />
             </div>
         </div>
+
+        <div ng-if="false">
+            <div class="form__text">
+                Use scope to control where your publisher group can be used.
+            </div>
+            <zem-publisher-groups-scope-selector
+                [scope-state]="$ctrl.formData.scopeState"
+                [account-id]="$ctrl.formData.accountId"
+                [accounts]="$ctrl.accounts"
+                [has-agency-scope]="$ctrl.hasAgencyScope"
+                [is-agency-scope-disabled]="!$ctrl.hasAgencyScope"
+                [is-account-scope-disabled]="$ctrl.isAccountScopeDisabled"
+                (scope-state-change)="$ctrl.onScopeStateChange($event)"
+                (account-change)="$ctrl.onAccountChange($event)"
+            >
+            </zem-publisher-groups-scope-selector>
+        </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">

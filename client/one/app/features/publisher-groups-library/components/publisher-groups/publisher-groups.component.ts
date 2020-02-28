@@ -19,6 +19,8 @@ export class PublisherGroupsComponent extends UpgradeComponent
     implements OnInit, OnChanges, DoCheck, OnDestroy {
     @Input()
     account: any;
+    @Input()
+    agency: any;
 
     constructor(
         @Inject(ElementRef) elementRef: ElementRef,

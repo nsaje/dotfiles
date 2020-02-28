@@ -1,3 +1,6 @@
+var ScopeSelectorState = require('../../../shared/components/scope-selector/scope-selector.constants')
+    .ScopeSelectorState;
+
 angular
     .module('one.widgets')
     .service('zemPublisherGroupsEndpoint', function($q, $http, $window) {
@@ -7,7 +10,7 @@ angular
         this.downloadErrors = downloadErrors;
         this.downloadExample = downloadExample;
 
-        function list(accountId, notImplicit) {
+        function list(accountId, agencyId, notImplicit) {
             var url = '/api/accounts/' + accountId + '/publisher_groups/';
             var config = {
                 params: {
@@ -27,7 +30,7 @@ angular
             return deferred.promise;
         }
 
-        function download(accountId, publisherGroupId) {
+        function download(accountId, agencyId, publisherGroupId) {
             var url =
                 '/api/accounts/' +
                 accountId +
@@ -37,10 +40,10 @@ angular
             $window.open(url, '_blank');
         }
 
-        function upsert(accountId, data) {
+        function upsert(data) {
             var deferred = $q.defer();
             var url =
-                '/api/accounts/' + accountId + '/publisher_groups/upload/';
+                '/api/accounts/' + data.accountId + '/publisher_groups/upload/';
 
             var formData = new FormData();
             formData.append('name', data.name);
@@ -52,6 +55,18 @@ angular
 
             if (data.id) {
                 formData.append('id', data.id);
+            }
+
+            if (
+                data.scopeState === ScopeSelectorState.AGENCY_SCOPE &&
+                data.agencyId
+            ) {
+                formData.append('agency_id', data.agencyId);
+            } else if (
+                data.scopeState === ScopeSelectorState.ACCOUNT_SCOPE &&
+                data.accountId
+            ) {
+                formData.append('account_id', data.accountId);
             }
 
             $http
@@ -79,7 +94,7 @@ angular
             return deferred.promise;
         }
 
-        function downloadErrors(accountId, csvKey) {
+        function downloadErrors(accountId, agencyId, csvKey) {
             var url =
                 '/api/accounts/' +
                 accountId +
