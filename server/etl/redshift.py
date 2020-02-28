@@ -37,9 +37,9 @@ def unload_table(
 
 def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
     for db_name in [settings.STATS_DB_HOT_CLUSTER] + settings.STATS_DB_COLD_CLUSTERS:
-        with db.get_write_stats_transaction(db_name):
-            with db.get_write_stats_cursor(db_name) as c:
-                delete_from_table(table_name)
+        with db.get_write_stats_transaction(db_alias=db_name):
+            with db.get_write_stats_cursor(db_alias=db_name) as c:
+                delete_from_table(table_name, db_alias=db_name)
                 logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
                 sql, params = prepare_copy_query(
                     s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
@@ -199,9 +199,9 @@ def prepare_date_range_delete_query(table_name, date_from, date_to, account_id):
     return sql, params
 
 
-def delete_from_table(table_name):
+def delete_from_table(table_name, db_alias=None):
     sql = backtosql.generate_sql("etl_delete_table_mv_rds.sql", {"table": table_name})
-    with db.get_write_stats_cursor() as c:
+    with db.get_write_stats_cursor(db_alias=db_alias) as c:
         logger.info("Will truncate table", table=table_name)
         c.execute(sql)
         logger.info("Table truncated", table=table_name)
