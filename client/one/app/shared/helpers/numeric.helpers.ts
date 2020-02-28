@@ -21,7 +21,7 @@ export function parseDecimal(value: string, fractionSize: number = 2): string {
         result = `${result}.${chunks[1]}`;
     }
 
-    if (result === '-' || result === '+') {
+    if (holder === '.' || result === '-' || result === '+') {
         return (0.0).toFixed(fractionSize);
     }
     return result !== '' ? parseFloat(result).toFixed(fractionSize) : result;

@@ -48,5 +48,21 @@ describe('FilterKeydownEventDirective', () => {
         $event.keyCode = KeyCode.BACKSPACE;
         directive.handle($event);
         expect(directive.filteredKeydown.emit).not.toHaveBeenCalled();
+
+        $event.keyCode = KeyCode.DELETE;
+        directive.handle($event);
+        expect(directive.filteredKeydown.emit).not.toHaveBeenCalled();
+    });
+
+    it('should emit backspace and delete if filterDeletionKeys is set to false', () => {
+        directive.filterDeletionKeys = false;
+
+        const $event: any = {keyCode: KeyCode.BACKSPACE};
+        directive.handle($event);
+        expect(directive.filteredKeydown.emit).toHaveBeenCalled();
+
+        $event.keyCode = KeyCode.DELETE;
+        directive.handle($event);
+        expect(directive.filteredKeydown.emit).toHaveBeenCalled();
     });
 });

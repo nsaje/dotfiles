@@ -24,6 +24,18 @@ describe('numericHelpers', () => {
         expect(numericHelpers.parseDecimal('')).toEqual('');
     });
 
+    it('should assume the whole number is 0 if number begins with a dot', () => {
+        expect(numericHelpers.parseDecimal('.1')).toEqual('0.10');
+        expect(numericHelpers.parseDecimal('+.2')).toEqual('0.20');
+        expect(numericHelpers.parseDecimal('-.5')).toEqual('-0.50');
+    });
+
+    it('should assume whole numbers if number ends with a dot', () => {
+        expect(numericHelpers.parseDecimal('1.')).toEqual('1.00');
+        expect(numericHelpers.parseDecimal('-5.')).toEqual('-5.00');
+        expect(numericHelpers.parseDecimal('.')).toEqual('0.00');
+    });
+
     it('should correctly handle number sign', () => {
         expect(numericHelpers.parseDecimal('-1.7')).toEqual('-1.70');
         expect(numericHelpers.parseDecimal('+2.44')).toEqual('2.44');

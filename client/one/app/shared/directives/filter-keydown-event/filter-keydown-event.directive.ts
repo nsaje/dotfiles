@@ -15,7 +15,9 @@ export class FilterKeydownEventDirective {
     @Input()
     keyFilter: number[];
     @Output()
-    filteredKeydown = new EventEmitter<any>();
+    filteredKeydown = new EventEmitter<KeyboardEvent>();
+    @Input()
+    filterDeletionKeys: boolean = true;
 
     @HostListener('keydown', ['$event'])
     handle($event: KeyboardEvent) {
@@ -33,7 +35,6 @@ export class FilterKeydownEventDirective {
 
     private createFilter(): number[] {
         const filter: number[] = [
-            KeyCode.BACKSPACE,
             KeyCode.TAB,
             KeyCode.SHIFT,
             KeyCode.ESCAPE,
@@ -43,11 +44,17 @@ export class FilterKeydownEventDirective {
             KeyCode.UP_ARROW,
             KeyCode.RIGHT_ARROW,
             KeyCode.DOWN_ARROW,
-            KeyCode.DELETE,
         ];
+        const deletionKeys: number[] = [KeyCode.BACKSPACE, KeyCode.DELETE];
 
-        return filter.concat(
+        let selectedFilters: number[] = filter.concat(
             commonHelpers.getValueOrDefault(this.keyFilter, [])
         );
+
+        if (this.filterDeletionKeys) {
+            selectedFilters = selectedFilters.concat(deletionKeys);
+        }
+
+        return selectedFilters;
     }
 }

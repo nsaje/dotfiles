@@ -8,11 +8,13 @@ import {
     EventEmitter,
     Output,
     Input,
+    ChangeDetectorRef,
     OnInit,
 } from '@angular/core';
-import * as commonHelpers from '../../helpers/common.helpers';
-import * as stringHelpers from '../../helpers/string.helpers';
 import * as numericHelpers from '../../helpers/numeric.helpers';
+import {parseDecimal} from '../../helpers/numeric.helpers';
+import {getValueOrDefault} from '../../helpers/common.helpers';
+import {simulateTextChange} from '../../helpers/text-input.helpers';
 
 @Component({
     selector: 'zem-decimal-input',
@@ -36,6 +38,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     minValue: number;
     @Input()
     maxValue: number;
+
     @Output()
     valueChange = new EventEmitter<string>();
     @Output()
@@ -45,97 +48,100 @@ export class DecimalInputComponent implements OnInit, OnChanges {
 
     model: string;
 
-    private regExp: RegExp;
+    private validInputRegex: RegExp;
+    private inputValidators: ((value: string) => boolean)[] = [
+        this.validateRegex.bind(this),
+        this.validateMinMax.bind(this),
+    ];
+    private isModelLocked: boolean = false;
+    private originalValue: string;
 
-    ngOnInit() {
-        this.fractionSize = commonHelpers.getValueOrDefault(
-            this.fractionSize,
-            2
-        );
-        this.regExp = new RegExp(
-            `^[-+]?(\\d+(\\.\\d{0,${this.fractionSize}})?)?$`
+    constructor(private changeDetectorRef: ChangeDetectorRef) {}
+
+    ngOnInit(): void {
+        this.fractionSize = getValueOrDefault(this.fractionSize, 2);
+        this.validInputRegex = new RegExp(
+            `^[-+]?((\\d+)?(\\.\\d{0,${this.fractionSize}})?)?$`
         );
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.value) {
-            this.model = numericHelpers.parseDecimal(
-                this.value,
-                this.fractionSize
-            );
+        if (changes.value && !this.isModelLocked) {
+            this.model = this.formatModel(this.value);
         }
+    }
+
+    onFocus() {
+        this.originalValue = this.value;
     }
 
     onKeydown($event: KeyboardEvent) {
         this.inputKeydown.emit($event);
-        const indexToInsert = Number((<any>$event.target).selectionStart);
-        const valueToInsert = $event.key;
-        const isValid = this.validate(
-            this.model,
-            indexToInsert,
-            valueToInsert,
-            this.minValue,
-            this.maxValue
-        );
-        if (!isValid) {
-            // prevent the execution of $event
-            // the ngModel will not be updated
-            $event.preventDefault();
-        }
+        this.processInputEvent($event);
     }
 
     onPaste($event: ClipboardEvent) {
-        const indexToInsert = Number((<any>$event.target).selectionStart);
-        const valueToInsert = $event.clipboardData.getData('text/plain');
-        const isValid = this.validate(
-            this.model,
-            indexToInsert,
-            valueToInsert,
-            this.minValue,
-            this.maxValue
-        );
-        if (!isValid) {
-            // prevent the execution of $event
-            // the ngModel will not be updated
+        this.processInputEvent($event);
+    }
+
+    onBlur() {
+        const formattedModel: string = this.formatModel(this.model);
+
+        if (this.isInputValid(formattedModel)) {
+            this.value = formattedModel;
+            if (this.value !== this.originalValue) {
+                this.inputBlur.emit(formattedModel);
+            }
+        }
+        this.model = this.value;
+    }
+
+    onModelChange() {
+        if (this.isModelLocked) {
+            this.isModelLocked = false;
+        } else {
+            this.undoModelChange();
+        }
+    }
+
+    private formatModel(text: string) {
+        return parseDecimal(text, this.fractionSize);
+    }
+
+    private processInputEvent($event: KeyboardEvent | ClipboardEvent) {
+        const nextModel: string = simulateTextChange(this.model, $event);
+
+        if (this.isInputValid(nextModel)) {
+            this.isModelLocked = true;
+            const formattedModel: string = this.formatModel(nextModel);
+            this.valueChange.emit(formattedModel);
+        } else {
             $event.preventDefault();
         }
     }
 
-    onModelChange($event: string) {
-        this.valueChange.emit($event);
+    private undoModelChange() {
+        setTimeout(() => {
+            this.model = this.formatModel(this.value);
+            this.changeDetectorRef.detectChanges();
+        });
     }
 
-    onBlur() {
-        const decimalValue = numericHelpers.parseDecimal(
-            this.model,
-            this.fractionSize
-        );
-        if (decimalValue !== this.value) {
-            this.inputBlur.emit(decimalValue);
-        } else {
-            this.model = decimalValue;
-        }
+    private isInputValid(value: string): boolean {
+        return this.inputValidators
+            .map(v => v(value))
+            .reduce((a, b) => a && b, true);
     }
 
-    private validate(
-        currentValue: string,
-        indexToInsert: number,
-        valueToInsert: string,
-        minValue: number,
-        maxValue: number
-    ): boolean {
-        const value = stringHelpers.insertStringAtIndex(
-            currentValue,
-            indexToInsert,
-            valueToInsert
-        );
-        if (!this.regExp.test(value)) {
-            return false;
-        }
+    private validateRegex(value: string): boolean {
+        return this.validInputRegex.test(value);
+    }
+
+    private validateMinMax(value: string): boolean {
         return numericHelpers.validateMinMax(
             parseFloat(value),
-            minValue,
-            maxValue
+            this.minValue,
+            this.maxValue
         );
     }
 }

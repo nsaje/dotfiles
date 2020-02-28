@@ -2,13 +2,15 @@
     class="zem-input-text"
     [ngClass]="{'zem-input-text--error': hasError}"
     type="text"
-    placeholder="{{ placeholder }}"
+    [placeholder]="placeholder"
     [(ngModel)]="model"
-    (ngModelChange)="onModelChange($event)"
+    (ngModelChange)="onModelChange()"
     [disabled]="isDisabled"
     [zemFocus]="isFocused"
+    (focus)="onFocus()"
     (paste)="onPaste($event)"
     (blur)="onBlur()"
     zemFilterKeydownEvent
+    [filterDeletionKeys]="false"
     (filteredKeydown)="onKeydown($event)"
 />
