@@ -103,6 +103,8 @@ def _recalculate_ad_group_source_settings_amounts(ad_group_source):
 
 
 def _sanity_check(changes, multicurrency_fields):
+    if not changes:
+        return
     changes.pop("cpc_cc", None)
     changes.pop("local_cpc_cc", None)
     changes.pop("max_cpm", None)

@@ -49,16 +49,14 @@ def set_ad_group_sources_bids(
 
 def check_b1_sources_group_bid_changed(ad_group_settings, changes):
     if ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPM:
-        return "b1_sources_group_cpm" in changes
+        return "local_b1_sources_group_cpm" in changes
     else:
-        return "b1_sources_group_cpc_cc" in changes
+        return "local_b1_sources_group_cpc_cc" in changes
 
 
 def check_max_autopilot_bid_changed(ad_group_settings, changes):
-    return (
-        ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
-        and "max_autopilot_bid" in changes
-    )
+    autopilot_state = changes.get("autopilot_state", ad_group_settings.autopilot_state)
+    return autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE and "local_max_autopilot_bid" in changes
 
 
 def calculate_ad_group_sources_bids(ad_group_settings, max_autopilot_bid_changed, b1_sources_group_bid_changed):
