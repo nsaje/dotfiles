@@ -40,7 +40,7 @@ battery 0 {
 	status_chr = "⚇ CHR"
 	status_bat = "⚡ BAT"
 	status_full = "☻ FULL"
-	path = "/home/nsaje/.local/bin/.uevent"
+	path = "/sys/class/power_supply/BAT0/uevent"
 	low_threshold = 10
 	integer_battery_capacity = true
 	last_full_capacity = true

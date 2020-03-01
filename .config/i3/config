@@ -15,7 +15,11 @@ set $mod Mod4
 
 # have some gnome goodness
 #Fedora: exec --no-startup-id /usr/libexec/gnome-settings-daemon
-exec --no-startup-id /usr/lib/gnome-settings-daemon/gnome-settings-daemon
+#exec --no-startup-id /usr/lib/gnome-settings-daemon/gnome-settings-daemon
+exec --no-startup-id /usr/lib/gnome-settings-daemon/gsd-xsettings
+exec_always --no-startup-id gnome-power-manager
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id gnome-flashback
 
 # notification daemon
 exec --no-startup-id dunst -config ~/.config/i3/config_dunst
@@ -23,35 +27,28 @@ exec --no-startup-id dunst -config ~/.config/i3/config_dunst
 # ssh agent
 exec --no-startup-id ssh-add
 
-# combine BAT0 and BAT1 (thinkpad batteries)
-exec ~/.local/bin/batt.sh
-
 # low battery check
 exec ~/.local/bin/lowbattery.sh
-
-# vpn auto connect
-#exec ~/.local/bin/vpnautoconnect.sh
-
-#exec compton -bCG  # too much battery drain
 
 # tray autostart
 exec --no-startup-id nm-applet
 exec --no-startup-id dropbox start
 
 # redshift
-exec --no-startup-id redshift
+# exec --no-startup-id redshift  # use night light from Ubuntu
 
-exec --no-startup-id setxkbmap -option ctrl:swapcaps
-exec --no-startup-id setxkbmap -option altwin:swap_lalt_lwin
+# better set up in gnome settings as well
+exec_always --no-startup-id setxkbmap -option ctrl:swapcaps
+exec_always --no-startup-id setxkbmap -option altwin:swap_lalt_lwin
 
 # Pulse Audio controls
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 1 +5% #increase sound volume
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 1 -5% #decrease sound volume
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 1 toggle # mute sound
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 0 +5% #increase sound volume
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5% #decrease sound volume
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle # mute sound
 
 # Sreen brightness controls
-bindsym XF86MonBrightnessUp exec --no-startup-id xbacklight -inc 20 # increase screen brightness
-bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 20 # decrease screen brightness
+bindsym XF86MonBrightnessUp exec --no-startup-id light -A 20 # increase screen brightness
+bindsym XF86MonBrightnessDown exec --no-startup-id light -U 20 # decrease screen brightness
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
@@ -79,14 +76,18 @@ bindsym $mod+Return exec gnome-terminal --hide-menubar
 
 # start browser
 #bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25
-bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Profile 1"
-bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Default"
+#bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Profile 1"
+#bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.00 --profile-directory="Default"
 #bindsym $mod+bracketright exec firefox -P "Zemanta"
-#bindsym $mod+backslash exec firefox -P "Nejc"
+bindsym $mod+backslash exec firefox
 bindsym $mod+apostrophe exec emacsclient -c
 # firefox:
 # devpixelsperpx 1.25
 # doubleclickselectsall false
+bindsym $mod+m exec /home/nsaje/new-monitors.sh
+
+exec --no-startup-id i3-msg 'workspace 1; exec /usr/bin/firefox; workspace 2; exec /usr/bin/emacs25; workspace 10; exec /usr/bin/slack; exec /snap/bin/mailspring'
+exec --no-startup-id meta  # metanetworks client
 
 # additional workspaces
 #bindsym $mod+p workspace p
@@ -100,7 +101,8 @@ exec --no-startup-id xautolock -time 5 -locker "bash ~/.local/bin/fuzzy_lock.sh"
 # NOTE: should be put into sleep hooks as well
 
 # thinkpad touchpad
-exec --no-startup-id xinput --set-prop 11 "Synaptics Finger" 5 20 0
+#exec --no-startup-id xinput --set-prop 11 "Synaptics Finger" 5 20 0
+exec_always --no-startup-id xinput --set-prop "ETPS/2 Elantech TrackPoint" "libinput Accel Speed" 0
 
 set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
 mode "$mode_system" {

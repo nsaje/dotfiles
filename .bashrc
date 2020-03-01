@@ -116,5 +116,62 @@ if ! shopt -oq posix; then
   fi
 fi
 
+### nsaje modifications
+
+#HISTORY
+# Avoid duplicates
+export HISTCONTROL=ignoredups:erasedups
+# When the shell exits, append to the history file instead of overwriting it
+shopt -s histappend
+# unlimited history size
+export HISTSIZE=
+export HISTFILESIZE=
+# write history in real time
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+
+export PATH="/home/nsaje/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 [ -s "/home/nsaje/.scm_breeze/scm_breeze.sh" ] && source "/home/nsaje/.scm_breeze/scm_breeze.sh"
 source ~/.git-completion.bash
+
+# prompt
+export GITAWAREPROMPT=~/.bash/git-aware-prompt
+source "${GITAWAREPROMPT}/main.sh"
+
+export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\] \[\033[33;1m\]\w\[\033[m\]\n\$ "
+
+# cache pip-installed packages to avoid re-downloading
+export PIP_DOWNLOAD_CACHE=$HOME/.pip/cache
+syspip(){
+   PIP_REQUIRE_VIRTUALENV="" pip "$@"
+}
+
+export TERM=xterm-256color
+
+genpasswd() {
+	local l=$1
+       	[ "$l" == "" ] && l=16
+      	tr -dc A-Za-z0-9_ < /dev/urandom | head -c ${l} | xargs
+}
+
+eval "$(fasd --init auto)"
+
+alias gcom="git checkout master"
+alias dcp="docker-compose"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/nsaje/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/nsaje/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/nsaje/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/nsaje/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
