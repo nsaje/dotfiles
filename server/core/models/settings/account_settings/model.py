@@ -55,9 +55,6 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, instance.Account
     default_cs_representative = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT
     )
-    ob_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
-    )
     ob_sales_representative = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, related_name="+", on_delete=models.PROTECT
     )
