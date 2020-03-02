@@ -5,6 +5,7 @@ import dash.constants
 import utils.exc
 from utils.magic_mixer import magic_mixer
 
+from . import append_source
 from . import auto_add_new_ad_group_sources
 from . import complete_release_shell
 from . import deprecate_sources
@@ -200,3 +201,45 @@ class SourceAdoptionTest(django.test.TestCase):
         self.assertEquals(ags.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
         source = core.models.Source.objects.get(pk=self.source.pk)
         self.assertTrue(source.deprecated)
+
+    def test_append_source(self):
+        additional_source = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        magic_mixer.blend(core.models.DefaultSourceSettings, source=additional_source, credentials=magic_mixer.RANDOM)
+
+        release_source(self.request, self.source)
+        release_source(self.request, additional_source)
+        auto_add_new_ad_group_sources(self.source)
+
+        n_available_on, n_not_available_on = append_source(self.source, additional_source)
+        ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=additional_source)
+        self.assertEqual(1, n_available_on)
+        self.assertEqual(0, n_not_available_on)
+        self.assertEqual(1, len(ad_group_sources))
+
+    def test_append_source_not_auto_add(self):
+        additional_source = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        magic_mixer.blend(core.models.DefaultSourceSettings, source=additional_source, credentials=magic_mixer.RANDOM)
+
+        release_source(self.request, self.source)
+        auto_add_new_ad_group_sources(self.source)
+
+        self.account.settings.update_unsafe(self.request, auto_add_new_sources=False)
+        release_source(self.request, additional_source)
+        n_available_on, n_not_available_on = append_source(self.source, additional_source, append_to_all_accounts=False)
+        self.assertEqual(0, n_available_on)
+        self.assertEqual(0, n_not_available_on)
+
+    def test_append_source_all_accounts(self):
+        additional_source = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
+        magic_mixer.blend(core.models.DefaultSourceSettings, source=additional_source, credentials=magic_mixer.RANDOM)
+
+        release_source(self.request, self.source)
+        auto_add_new_ad_group_sources(self.source)
+
+        self.account.settings.update_unsafe(self.request, auto_add_new_sources=False)
+        release_source(self.request, additional_source)
+        n_available_on, n_not_available_on = append_source(self.source, additional_source, append_to_all_accounts=True)
+        ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=additional_source)
+        self.assertEqual(1, n_available_on)
+        self.assertEqual(0, n_not_available_on)
+        self.assertEqual(1, len(ad_group_sources))

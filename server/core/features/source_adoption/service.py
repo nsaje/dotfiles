@@ -96,7 +96,29 @@ def auto_add_new_ad_group_sources(source):
             | Q(settings__b1_sources_group_enabled=True)
         )
     )
+    return _auto_add_new_ad_group_sources(source, ad_groups)
 
+
+def append_source(base_source, additional_source, append_to_all_accounts=False):
+    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=305).filter(settings__archived=False)
+    if not append_to_all_accounts:
+        ad_groups = ad_groups.filter(campaign__account__settings__auto_add_new_sources=True)
+    ad_groups = core.models.AdGroup.objects.filter(
+        pk__in=core.models.AdGroupSource.objects.filter(
+            ad_group__in=ad_groups, source=base_source, settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+        ).values_list("ad_group_id", flat=True)
+    ).exclude(
+        pk__in=core.models.AdGroupSource.objects.exclude(ad_group__campaign__account__id=305)
+        .filter(source=additional_source)
+        .values_list("ad_group_id", flat=True)
+    )
+    accounts = core.models.Account.objects.filter(pk__in=set(ad_groups.values_list("campaign__account_id", flat=True)))
+    for account in accounts:
+        account.allowed_sources.add(additional_source)
+    return _auto_add_new_ad_group_sources(additional_source, ad_groups)
+
+
+def _auto_add_new_ad_group_sources(source, ad_groups):
     count_available = 0
     count_not_allowed = 0
     count_retargeting_not_supported = 0
