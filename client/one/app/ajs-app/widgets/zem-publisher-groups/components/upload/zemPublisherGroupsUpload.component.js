@@ -133,8 +133,12 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
 
         function downloadErrors() {
             zemPublisherGroupsEndpoint.downloadErrors(
-                $ctrl.resolve.account.id,
-                $ctrl.resolve.agency.id,
+                commonHelpers.safeGet($ctrl.resolve.account, function(x) {
+                    return x.id;
+                }),
+                commonHelpers.safeGet($ctrl.resolve.agency, function(x) {
+                    return x.id;
+                }),
                 $ctrl.errors.errors_csv_key
             );
         }
