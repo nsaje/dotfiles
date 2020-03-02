@@ -37,9 +37,10 @@ class PublisherGroupEntry(models.Model):
     id = models.AutoField(primary_key=True)
     publisher_group = models.ForeignKey("PublisherGroup", related_name="entries", on_delete=models.CASCADE)
 
-    publisher = models.CharField(max_length=127, blank=False, null=False, verbose_name="Publisher name or domain")
     source = models.ForeignKey("Source", null=True, blank=True, on_delete=models.PROTECT)
+    publisher = models.CharField(max_length=127, blank=False, null=False, verbose_name="Publisher name or domain")
     include_subdomains = models.BooleanField(default=True)
+    placement = models.CharField(max_length=127, blank=False, null=True)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name="Special Outbrain publisher ID")
     outbrain_section_id = models.CharField(max_length=127, blank=True, verbose_name="Special Outbrain section ID")
