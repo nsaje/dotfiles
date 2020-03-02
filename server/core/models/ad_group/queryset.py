@@ -53,7 +53,7 @@ class AdGroupQuerySet(models.QuerySet):
             date = utils.dates_helper.local_today()
         return self.filter(
             settings__state=dash.constants.AdGroupSettingsState.ACTIVE, settings__start_date__lte=date
-        ).exclude(settings__end_date__isnull=False, settings__end_date__lt=date)
+        ).exclude_end_date_before_date(date)
 
     def filter_active(self):
         """
@@ -122,3 +122,13 @@ class AdGroupQuerySet(models.QuerySet):
             ret += ags.local_b1_sources_group_daily_budget or 0
 
         return ret
+
+    def exclude_end_date_before_date(self, date=None):
+        if not date:
+            date = utils.dates_helper.local_today()
+        return self.exclude(settings__end_date__isnull=False, settings__end_date__lt=date)
+
+    def filter_running_and_has_budget(self):
+        return (
+            self.filter_allowed_to_run().filter_at_least_one_source_running().exclude_end_date_before_date().distinct()
+        )

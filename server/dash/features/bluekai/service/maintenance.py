@@ -1,5 +1,6 @@
 import copy
 
+import core.models
 from dash.features.bluekai import models
 from utils import zlogging
 
@@ -131,3 +132,25 @@ def _get_updated_categories(taxonomy, existing_categories):
         updated_categories.append(category)
 
     return new_categories, updated_categories
+
+
+def _get_ad_group_settings_for_bluekai():
+    def flatten_bluekai_rule(bluekai_rule):
+        return (
+            [bluekai_rule]
+            if not isinstance(bluekai_rule, list)
+            else [
+                category
+                for categories in bluekai_rule
+                for category in flatten_bluekai_rule(categories)
+                if category.startswith("bluekai")
+            ]
+        )
+
+    active_ad_groups = core.models.AdGroup.objects.filter_running_and_has_budget().select_related("settings")
+    return {
+        elem.partition(":")[2]
+        for elem in flatten_bluekai_rule(
+            [elem.settings.bluekai_targeting for elem in active_ad_groups if elem.settings.bluekai_targeting]
+        )
+    }
