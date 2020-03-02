@@ -109,7 +109,7 @@ def _get_source_stats_from_query(query):
 
 def _get_publisher_stats(recipient, date):
     result = []
-    params = [recipient.source.pk, date.date().isoformat()]
+    params = [recipient.source.pk, date.isoformat()]
 
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(publisher_stats_query, params)
