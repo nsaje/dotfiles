@@ -6,14 +6,18 @@ angular
         function reloadInfoboxData(entity) {
             var deferred = $q.defer();
 
-            zemInfoboxEndpoint
-                .getInfoboxData(entity)
-                .then(function(data) {
-                    deferred.resolve(data);
-                })
-                .catch(function(error) {
-                    deferred.reject(error);
-                });
+            if (entity === undefined) {
+                deferred.reject();
+            } else {
+                zemInfoboxEndpoint
+                    .getInfoboxData(entity)
+                    .then(function(data) {
+                        deferred.resolve(data);
+                    })
+                    .catch(function(error) {
+                        deferred.reject(error);
+                    });
+            }
 
             return deferred.promise;
         }

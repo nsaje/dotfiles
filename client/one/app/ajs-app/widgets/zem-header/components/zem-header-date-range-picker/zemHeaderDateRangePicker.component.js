@@ -67,7 +67,6 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
             );
 
             initFromUrlParams();
-            updateInternalState();
         };
 
         $ctrl.$onDestroy = function() {

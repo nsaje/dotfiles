@@ -1,6 +1,5 @@
 var ENTITY_MANAGER_CONFIG = require('../../../../../features/entity-manager/entity-manager.config')
     .ENTITY_MANAGER_CONFIG;
-var commonHelpers = require('../../../../../shared/helpers/common.helpers');
 
 angular.module('one.widgets').component('zemInfoboxHeader', {
     bindings: {
@@ -47,7 +46,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
             $ctrl.isStateSwitchAvailable = false;
             $ctrl.isEntityEnabled = false;
 
-            if (!commonHelpers.isDefined(entity)) {
+            if (entity === null) {
                 // All accounts level
                 $ctrl.level = getLevelFromEntity(entity);
             } else if (entity) {
@@ -62,7 +61,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         }
 
         function getLevelFromEntity(entity) {
-            if (!commonHelpers.isDefined(entity)) {
+            if (!entity) {
                 if (
                     zemPermissions.hasPermission('zemauth.can_see_all_accounts')
                 ) {

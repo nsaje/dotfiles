@@ -49,7 +49,7 @@ describe('zemInfoboxHeader', function() {
         };
 
         $ctrl.$onChanges(changes);
-        expect($ctrl.level).toEqual('My accounts');
+        expect($ctrl.level).toEqual(null);
 
         changes.entity.currentValue = null;
         $ctrl.$onChanges(changes);
