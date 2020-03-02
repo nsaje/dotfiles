@@ -38,9 +38,6 @@ angular.module('one.widgets').component('zemInfobox', {
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
                 reloadInfoboxData
             );
-            activeEntityChangeHandler = zemNavigationNewService.onActiveEntityChange(
-                onEntityUpdated
-            );
             bidModifierUpdateHandler = zemNavigationNewService.onBidModifierUpdate(
                 reloadInfoboxData
             );
