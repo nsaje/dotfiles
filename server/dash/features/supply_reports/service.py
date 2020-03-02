@@ -2,12 +2,12 @@ import datetime
 from collections import defaultdict
 from decimal import Decimal
 
-import pytz
 from django.conf import settings
 from django.db import connections
 
 import backtosql
 import dash.models
+import utils.dates_helper
 from utils import converters
 from utils import csv_utils
 from utils import zlogging
@@ -20,9 +20,7 @@ publisher_stats_query = backtosql.generate_sql("sql/publisher_stats_query.sql", 
 
 
 def send_supply_reports():
-    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.datetime(today.year, today.month, today.day)
+    today = utils.dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
     yesterday_str = yesterday.strftime("%Y-%m-%d")
     month_start = datetime.datetime(yesterday.year, yesterday.month, 1)

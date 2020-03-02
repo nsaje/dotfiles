@@ -1,22 +1,20 @@
 import datetime
 
 import mock
-import pytz
-from django.conf import settings
 from django.test import TestCase
 
 import dash.models
 from dash.features.supply_reports import service
 
-today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-today = datetime.datetime(today.year, today.month, today.day)
-yesterday = today - datetime.timedelta(days=1)
-yesterday_str = yesterday.strftime("%Y-%m-%d")
-month_start = datetime.datetime(yesterday.year, yesterday.month, 1)
+month_start = datetime.datetime(2020, 2, 1)
 month_start_str = month_start.strftime("%Y-%m-%d")
+yesterday = month_start + datetime.timedelta(days=1)
+yesterday_str = yesterday.strftime("%Y-%m-%d")
+today = month_start + datetime.timedelta(days=2)
+today_str = today.strftime("%Y-%m-%d")
 
 
+@mock.patch("utils.dates_helper.local_today", lambda: today)
 class TestSupplyReportsService(TestCase):
 
     fixtures = ["test_api.yaml"]
@@ -80,7 +78,6 @@ class TestSupplyReportsService(TestCase):
     @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)
     @mock.patch("dash.features.supply_reports.service.send_supply_report_email", autospec=True)
     def test_send_supply_reports_mtd_report(self, mock_send_supply_report_email, mock_get_source_stats_from_query):
-
         mock_get_source_stats_from_query.return_value = {
             1: {month_start_str: {"impressions": 1000, "cost": 0.5}, yesterday_str: {"impressions": 1234, "cost": 1.1}}
         }
