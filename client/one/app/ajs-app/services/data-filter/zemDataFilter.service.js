@@ -140,12 +140,24 @@ angular
         }
 
         function setDateRange(newDateRange) {
-            if (newDateRange.startDate && newDateRange.startDate.isValid()) {
+            var updated = false;
+
+            if (
+                newDateRange.startDate &&
+                newDateRange.startDate.isValid() &&
+                !newDateRange.startDate.isSame(dateRange.startDate)
+            ) {
                 dateRange.startDate = newDateRange.startDate;
+                updated = true;
             }
 
-            if (newDateRange.endDate && newDateRange.endDate.isValid()) {
+            if (
+                newDateRange.endDate &&
+                newDateRange.endDate.isValid() &&
+                !newDateRange.endDate.isSame(dateRange.endDate)
+            ) {
                 dateRange.endDate = newDateRange.endDate;
+                updated = true;
             }
 
             var formattedStartDate = dateRange.startDate.format('YYYY-MM-DD');
@@ -172,7 +184,9 @@ angular
                 setUrlParam('end_date', null);
             }
 
-            pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
+            if (updated) {
+                pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE);
+            }
         }
 
         function getAppliedConditions() {
@@ -191,40 +205,52 @@ angular
         }
 
         function applyConditions(conditions) {
+            var updated = false;
             angular.forEach(conditions, function(condition) {
-                setCondition(condition.condition, condition.value);
+                updated =
+                    setCondition(condition.condition, condition.value) ||
+                    updated;
             });
-            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+            if (updated) {
+                pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE);
+            }
+        }
+
+        function resetAllConditions() {
+            var updated = false;
+            var ignoreNotify = true;
+            angular.forEach(CONDITIONS, function(condition) {
+                updated = resetCondition(condition, ignoreNotify) || updated;
+            });
+            if (updated) {
+                pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE);
+            }
         }
 
         function resetCondition(condition, ignoreNotify) {
             if (!condition) return;
 
+            var updated = false;
             switch (condition.type) {
                 case CONDITION_TYPES.value:
-                    setCondition(condition, condition.default || null);
+                    updated = setCondition(
+                        condition,
+                        condition.default || null
+                    );
                     break;
                 case CONDITION_TYPES.list:
-                    setCondition(condition, condition.default || []);
+                    updated = setCondition(condition, condition.default || []);
                     break;
             }
 
-            if (!ignoreNotify) {
-                pubSub.notify(
-                    EVENTS.ON_DATA_FILTER_UPDATE,
-                    getAppliedConditions()
-                );
+            if (updated && !ignoreNotify) {
+                pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE);
             }
+
+            return updated;
         }
 
-        function resetAllConditions() {
-            angular.forEach(CONDITIONS, function(condition) {
-                resetCondition(condition, true);
-            });
-            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
-        }
-
-        function removeValueFromConditionList(condition, value) {
+        function removeValueFromConditionList(condition, value, ignoreNotify) {
             var values = getAppliedCondition(condition);
             if (!values) return;
 
@@ -234,7 +260,9 @@ angular
                 setCondition(condition, values);
             }
 
-            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+            if (!ignoreNotify) {
+                pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE);
+            }
         }
 
         function getFilteredSources() {
@@ -329,44 +357,51 @@ angular
         }
 
         function setCondition(condition, value) {
+            var updated = false;
             switch (condition.type) {
                 case CONDITION_TYPES.value:
-                    setConditionValue(condition, value);
+                    updated = setConditionValue(condition, value);
                     break;
                 case CONDITION_TYPES.list:
                     var list = angular.isArray(value)
                         ? value
                         : value.split(',');
-                    setConditionList(condition, list);
+                    updated = setConditionList(condition, list);
                     break;
             }
+            return updated;
         }
 
         function setConditionValue(condition, value) {
-            if (condition.type !== CONDITION_TYPES.value) return;
+            if (condition.type !== CONDITION_TYPES.value) return false;
             if (
                 condition.permissions &&
                 !zemPermissions.hasPermission(condition.permissions)
-            )
-                return;
-            if (angular.equals(getAppliedCondition(condition), value)) return;
+            ) {
+                return false;
+            }
+            if (angular.equals(getAppliedCondition(condition), value))
+                return false;
 
             appliedConditions[condition.name] = value;
             setUrlParam(condition.urlParam, value);
             pubSub.notify(condition.event, getAppliedCondition(condition));
+            return true;
         }
 
         function setConditionList(condition, list) {
-            if (condition.type !== CONDITION_TYPES.list) return;
+            if (condition.type !== CONDITION_TYPES.list) return false;
             if (
                 condition.permissions &&
                 !zemPermissions.hasPermission(condition.permissions)
-            )
-                return;
-            if (angular.equals(getAppliedCondition(condition), list)) return;
-
+            ) {
+                return false;
+            }
+            if (angular.equals(getAppliedCondition(condition), list))
+                return false;
             appliedConditions[condition.name] = list;
             setUrlParam(condition.urlParam, list.join(','));
             pubSub.notify(condition.event, getAppliedCondition(condition));
+            return true;
         }
     });

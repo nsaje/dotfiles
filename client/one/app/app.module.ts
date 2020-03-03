@@ -23,12 +23,13 @@ import {DashboardView} from './views/dashboard/dashboard.view';
 import {AppRootComponent} from './app-root.component';
 import {LayoutModule} from './layout/layout.module';
 import {AppInitializationModule} from './app-initialization.module';
-import {RouterModule} from '@angular/router';
+import {RouterModule, RouteReuseStrategy} from '@angular/router';
 import {APP_ROUTES} from './app.routes';
 import {ArchivedModule} from './features/archived/archived.module';
 import {NewEntityAnalyticsMockModule} from './features/new-entity-analytics-mock/new-entity-analytics-mock.module';
 import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.guard';
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
+import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -104,6 +105,10 @@ if (APP_CONFIG.env.prod) {
         upgradeProvider('zemNavigationNewService'),
         upgradeProvider('zemDesignHelpersService'),
         upgradeProvider('zemInitializationService'),
+        {
+            provide: RouteReuseStrategy,
+            useClass: CacheRouteReuseStrategy,
+        },
     ],
     bootstrap: [AppRootComponent],
 })
