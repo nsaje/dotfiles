@@ -23,12 +23,16 @@ export const ANALYTICS_ROUTES: Routes = [
             {
                 path: '',
                 pathMatch: 'full',
+                data: {
+                    reuseComponent: true,
+                },
                 component: AnalyticsView,
             },
             {
                 path: ':breakdown',
                 canActivate: [CanActivateBreakdownGuard],
                 data: {
+                    reuseComponent: true,
                     breakdowns: [
                         BreakdownParam.SOURCES,
                         BreakdownParam.PUBLISHERS,
@@ -62,12 +66,16 @@ export const ANALYTICS_ROUTES: Routes = [
                     {
                         path: '',
                         pathMatch: 'full',
+                        data: {
+                            reuseComponent: true,
+                        },
                         component: AnalyticsView,
                     },
                     {
                         path: ':breakdown',
                         canActivate: [CanActivateBreakdownGuard],
                         data: {
+                            reuseComponent: true,
                             breakdowns: [
                                 BreakdownParam.SOURCES,
                                 BreakdownParam.PUBLISHERS,
@@ -103,12 +111,16 @@ export const ANALYTICS_ROUTES: Routes = [
                     {
                         path: '',
                         pathMatch: 'full',
+                        data: {
+                            reuseComponent: true,
+                        },
                         component: AnalyticsView,
                     },
                     {
                         path: ':breakdown',
                         canActivate: [CanActivateBreakdownGuard],
                         data: {
+                            reuseComponent: true,
                             breakdowns: [
                                 BreakdownParam.SOURCES,
                                 BreakdownParam.PUBLISHERS,
@@ -145,12 +157,16 @@ export const ANALYTICS_ROUTES: Routes = [
                     {
                         path: '',
                         pathMatch: 'full',
+                        data: {
+                            reuseComponent: true,
+                        },
                         component: AnalyticsView,
                     },
                     {
                         path: ':breakdown',
                         canActivate: [CanActivateBreakdownGuard],
                         data: {
+                            reuseComponent: true,
                             breakdowns: [
                                 BreakdownParam.SOURCES,
                                 BreakdownParam.PUBLISHERS,

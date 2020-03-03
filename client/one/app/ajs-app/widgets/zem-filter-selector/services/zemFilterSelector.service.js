@@ -207,8 +207,6 @@ angular
             agenciesUpdateHandler,
             dataFilterUpdateHandler;
 
-        var navigateFromSecondaryRouterOutlet, navigateToSecondaryRouterOutlet;
-
         //
         // Public methods
         //
@@ -225,28 +223,15 @@ angular
                 }
             );
 
-            $rootScope.$on('$zemNavigationStart', function() {
-                navigateFromSecondaryRouterOutlet = NgRouter.url.includes(
-                    '(drawer:'
-                );
-            });
-
             $rootScope.$on('$zemNavigationEnd', function() {
-                navigateToSecondaryRouterOutlet = NgRouter.url.includes(
-                    '(drawer:'
-                );
-                if (
-                    navigateFromSecondaryRouterOutlet ||
-                    navigateToSecondaryRouterOutlet
-                ) {
-                    return;
-                }
                 initFromUrlParams();
                 zemFilterSelectorSharedService.setSelectorExpanded(false);
+                pubSub.notify(EVENTS.ON_SECTIONS_UPDATE);
             });
 
             initFromUrlParams();
             zemFilterSelectorSharedService.setSelectorExpanded(false);
+            pubSub.notify(EVENTS.ON_SECTIONS_UPDATE);
         }
 
         function destroy() {
@@ -424,7 +409,7 @@ angular
             if (appliedConditions.length > 0) {
                 zemDataFilterService.applyConditions(appliedConditions);
             } else {
-                resetAllConditions();
+                zemDataFilterService.resetAllConditions();
             }
         }
 

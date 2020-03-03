@@ -23,7 +23,7 @@ export class ChartComponent extends UpgradeComponent
     @Input()
     breakdown: Breakdown;
     @Input()
-    entityId: string;
+    entity: any;
 
     constructor(
         @Inject(ElementRef) elementRef: ElementRef,

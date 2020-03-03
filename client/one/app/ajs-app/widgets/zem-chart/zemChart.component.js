@@ -1,22 +1,22 @@
 require('./zemChart.component.less');
 
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+
 angular.module('one.widgets').component('zemChart', {
     bindings: {
         level: '<',
         breakdown: '<',
-        entityId: '<',
+        entity: '<',
     },
     template: require('./zemChart.component.html'),
     controller: function(
         $scope,
-        $window,
         config,
         zemDataFilterService,
         zemChartService,
         zemChartObject,
         zemChartStorageService,
         zemChartMetricsService,
-        zemGridConstants,
         zemNavigationNewService,
         zemSelectionService,
         zemCostModeService
@@ -30,45 +30,38 @@ angular.module('one.widgets').component('zemChart', {
         $ctrl.metricOptions = [];
 
         $ctrl.$onInit = function() {
-            var entity = zemNavigationNewService.getActiveEntity();
-            if (entity || $ctrl.level === constants.level.ALL_ACCOUNTS) {
-                initialize();
-            } else {
-                var handler = zemNavigationNewService.onActiveEntityChange(
-                    function() {
-                        initialize();
-                        handler();
-                    }
-                );
-            }
+            $ctrl.config = config;
+            subscribeToEvents();
         };
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.breakdown) {
+            if (changes.entity) {
+                $ctrl.chart = zemChartObject.createChart();
+                $ctrl.chartDataService = zemChartService.createDataService(
+                    $ctrl.chart,
+                    $ctrl.level,
+                    $ctrl.breakdown,
+                    commonHelpers.isDefined($ctrl.entity)
+                        ? $ctrl.entity.id
+                        : null
+                );
+                $ctrl.chartDataService.initialize();
+                loadMetrics(true);
+                loadData();
+            } else if (changes.breakdown) {
                 // If breakdown changes we need to replace chartDataService
-                // It is not needed to refresh data immediately, therefor
-                // new one is created when data refresh is requested
-                $ctrl.chartDataService = null;
+                // It is not needed to refresh data immediately
+                $ctrl.chartDataService = zemChartService.createDataService(
+                    $ctrl.chart,
+                    $ctrl.level,
+                    $ctrl.breakdown,
+                    commonHelpers.isDefined($ctrl.entity)
+                        ? $ctrl.entity.id
+                        : null
+                );
+                $ctrl.chartDataService.initialize();
             }
         };
-
-        function initialize() {
-            $ctrl.config = config;
-
-            // Initialize Chart Data Object and Service
-            $ctrl.chart = zemChartObject.createChart();
-            $ctrl.chartDataService = zemChartService.createDataService(
-                $ctrl.chart,
-                $ctrl.level,
-                $ctrl.breakdown,
-                $ctrl.entityId
-            );
-            $ctrl.chartDataService.initialize();
-
-            subscribeToEvents();
-            loadMetrics(true); // Initially use placeholder fallback for dynamic metrics
-            loadData();
-        }
 
         function subscribeToEvents() {
             var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
@@ -102,29 +95,14 @@ angular.module('one.widgets').component('zemChart', {
             zemCostModeService.onCostModeUpdate(onCostModeChanged);
         }
 
-        function updateDataSource() {
-            if (!$ctrl.chartDataService) {
-                $ctrl.chartDataService = zemChartService.createDataService(
-                    $ctrl.chart,
-                    $ctrl.level,
-                    $ctrl.breakdown,
-                    $ctrl.entityId
-                );
-            }
-
+        function loadData() {
             var metrics = [$ctrl.metrics.metric1.value];
-            if ($ctrl.metrics.metric2.value)
+            if ($ctrl.metrics.metric2.value) {
                 metrics.push($ctrl.metrics.metric2.value);
+            }
 
             $ctrl.chartDataService.setMetrics(metrics);
             $ctrl.chartDataService.setSelection(getSelection());
-        }
-
-        function loadData() {
-            updateDataSource();
-
-            // FIXME: chartDataService can become null (proper reinitialization needed on breakdown change)
-            var chartDataService = $ctrl.chartDataService;
 
             $ctrl.chartDataService.getData().then(function() {
                 if (!$ctrl.initialized) {
@@ -133,7 +111,7 @@ angular.module('one.widgets').component('zemChart', {
 
                     // Update Dynamic metrics - re-fetch if metrics are not available anymore (use default metrics)
                     loadMetrics();
-                    var metrics = chartDataService.getMetrics();
+                    var metrics = $ctrl.chartDataService.getMetrics();
                     if (
                         metrics[0] !== $ctrl.metrics.metric1.value ||
                         metrics[1] !== $ctrl.metrics.metric2.value

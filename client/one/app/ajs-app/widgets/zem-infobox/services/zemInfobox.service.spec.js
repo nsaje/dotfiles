@@ -1,6 +1,5 @@
 describe('zemInfoboxService', function() {
     var $injector;
-    var $rootScope;
     var zemInfoboxService;
     var zemInfoboxEndpoint;
 
@@ -9,23 +8,24 @@ describe('zemInfoboxService', function() {
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;
-        $rootScope = $injector.get('$rootScope');
         zemInfoboxService = $injector.get('zemInfoboxService');
         zemInfoboxEndpoint = $injector.get('zemInfoboxEndpoint');
     }));
 
-    it("shouldn't make a request to endpoint when reloading data if entity is not defined", function(done) {
-        var reloadPromise = zemInfoboxService.reloadInfoboxData();
+    it('should make a request to endpoint when reloading data if entity is not defined or null', function() {
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector
+        );
 
-        reloadPromise
-            .then(function() {
-                throw new Error('Promise should not be resolved');
-            })
-            .catch(function() {
-                done();
-            });
+        spyOn(zemInfoboxEndpoint, 'getInfoboxData').and.callFake(
+            mockedAsyncFunction
+        );
 
-        $rootScope.$digest();
+        zemInfoboxService.reloadInfoboxData(undefined);
+        expect(zemInfoboxEndpoint.getInfoboxData).toHaveBeenCalled();
+
+        zemInfoboxService.reloadInfoboxData(null);
+        expect(zemInfoboxEndpoint.getInfoboxData).toHaveBeenCalled();
     });
 
     it('should make a request to endpoint when reloading data if entity is defined', function() {

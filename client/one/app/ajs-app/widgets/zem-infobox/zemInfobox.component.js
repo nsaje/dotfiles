@@ -38,28 +38,26 @@ angular.module('one.widgets').component('zemInfobox', {
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
                 reloadInfoboxData
             );
-            activeEntityChangeHandler = zemNavigationNewService.onActiveEntityChange(
-                onEntityUpdated
-            );
             bidModifierUpdateHandler = zemNavigationNewService.onBidModifierUpdate(
                 reloadInfoboxData
             );
         };
 
         $ctrl.$onChanges = function(changes) {
-            onEntityUpdated();
+            if (changes.entity) {
+                onEntityUpdated();
 
-            if (entityUpdateHandler) entityUpdateHandler();
-            if (actionExecutedHandler) actionExecutedHandler();
+                if (entityUpdateHandler) entityUpdateHandler();
+                if (actionExecutedHandler) actionExecutedHandler();
 
-            var entity = changes.entity.currentValue;
-            if (entity) {
-                entityUpdateHandler = zemEntityService
-                    .getEntityService(entity.type)
-                    .onEntityUpdated(onEntityUpdated);
-                actionExecutedHandler = zemEntityService
-                    .getEntityService(entity.type)
-                    .onActionExecuted(onActionExecuted);
+                if ($ctrl.entity) {
+                    entityUpdateHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
+                        .onEntityUpdated(onEntityUpdated);
+                    actionExecutedHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
+                        .onActionExecuted(onActionExecuted);
+                }
             }
         };
 
@@ -88,10 +86,6 @@ angular.module('one.widgets').component('zemInfobox', {
         }
 
         function updateEntity(updatedEntityState) {
-            $ctrl.entity = angular.copy(
-                zemNavigationNewService.getActiveEntity()
-            );
-
             if (updatedEntityState) {
                 // Update entity's state immediately after action is executed to
                 // show consistent state in infobox even when navigation load is
