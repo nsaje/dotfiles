@@ -13,6 +13,7 @@ class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("base_source_id", type=int)
         parser.add_argument("additional_source_id", type=int)
+        parser.add_argument("--append-everywhere", dest="append_everywhere", action="store_true")
 
     def handle(self, *args, **options):
         try:
@@ -22,4 +23,4 @@ class Command(Z1Command):
         except core.models.Source.DoesNotExist:
             raise utils.exc.MissingDataError("Source does not exist")
 
-        append_source(base_source, additional_source)
+        append_source(base_source, additional_source, append_to_all_accounts=options.get("append_everywhere", False))
