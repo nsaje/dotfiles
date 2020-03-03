@@ -11,18 +11,17 @@ from . import model
 class AdGroupQuerysetTest(TestCase):
     def test_filter_active(self):
         campaign = magic_mixer.blend(core.models.Campaign, settings_archived=True)
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        ad_group_sources = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
+        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign, archived=True)
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
 
-        adgroup.settings.update_unsafe(None, archived=True)
-        ad_group_sources.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
+        ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
 
         groups = model.AdGroup.objects.all().filter_at_least_one_source_running()
         self.assertEqual(len(groups), 0)
 
         campaign.settings.update_unsafe(None, archived=False)
         adgroup.settings.update_unsafe(None, archived=False)
-        ad_group_sources.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
+        ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         groups = model.AdGroup.objects.all().filter_at_least_one_source_running()
         self.assertEqual(len(groups), 1)
@@ -65,11 +64,10 @@ class AdGroupQuerysetTest(TestCase):
         self.assertEqual(len(groups), 0)
 
     def test_all_filters(self):
-        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign, archived=False)
         adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        ad_group_sources = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
 
-        campaign.settings.update_unsafe(None, archived=False)
         adgroup.settings.update_unsafe(
             None,
             archived=False,
@@ -77,7 +75,7 @@ class AdGroupQuerysetTest(TestCase):
             start_date=utils.dates_helper.local_yesterday(),
             end_date=utils.dates_helper.days_after(utils.dates_helper.local_today(), 5),
         )
-        ad_group_sources.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
+        ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
         groups = model.AdGroup.objects.all().filter_running_and_has_budget()
         self.assertEqual(len(groups), 1)
