@@ -13,7 +13,8 @@ from utils.command_helpers import Z1Command
 
 logger = zlogging.getLogger(__name__)
 
-HOT_CLUSTER_MAX_DAYS = settings.STATS_DB_HOT_CLUSTER_MAX_DAYS
+STATS_DB_HOT_CLUSTER = settings.STATS_DB_HOT_CLUSTER
+STATS_DB_HOT_CLUSTER_MAX_DAYS = settings.STATS_DB_HOT_CLUSTER_MAX_DAYS
 RAW_TABLES_CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]
 
 
@@ -21,7 +22,7 @@ class Command(Z1Command):
     @metrics_compat.timer("etl.clean_up_redshift")
     def handle(self, *args, **options):
         for table_name in refresh.get_all_views_table_names():
-            self._clean_up_table(table_name, HOT_CLUSTER_MAX_DAYS)
+            self._clean_up_table(table_name, STATS_DB_HOT_CLUSTER_MAX_DAYS)
         for config in RAW_TABLES_CONFIG:
             table_name = config["table_name"]
             keep_days = config["keep_days"]
@@ -30,8 +31,8 @@ class Command(Z1Command):
     def _clean_up_table(self, table_name, keep_days):
         self._delete_old_data(table_name, keep_days)
         try:
-            maintenance.vacuum(table_name, delete_only=True)
-            maintenance.analyze(table_name)
+            maintenance.vacuum(table_name, delete_only=True, db_name=STATS_DB_HOT_CLUSTER)
+            maintenance.analyze(table_name, db_name=STATS_DB_HOT_CLUSTER)
         except Exception:
             logger.exception("Vacuum after cleanup failed, skipping", table=table_name)
 
