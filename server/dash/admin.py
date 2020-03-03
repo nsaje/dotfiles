@@ -531,9 +531,10 @@ class CampaignInline(admin.TabularInline):
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ("name", "id")
-    list_display = ("id", "name", "created_dt", "modified_dt", "salesforce_url", "uses_bcm_v2")
+    list_display = ("id", "name", "amplify_account_name", "created_dt", "modified_dt", "salesforce_url", "uses_bcm_v2")
     readonly_fields = (
         "name",
+        "amplify_account_name",
         "salesforce_url",
         "currency",
         "allowed_sources",
@@ -550,6 +551,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         "salesforce_id",
         "custom_attributes",
         "is_externally_managed",
+        "amplify_account_name",
     )
     exclude = ("users", "settings")
     filter_horizontal = ("allowed_sources",)
@@ -608,6 +610,13 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
     def view_on_site(self, obj):
         return "/v2/analytics/account/{}?settings".format(obj.id)
+
+    def amplify_account_name(self, obj):
+        if not obj.outbrain_marketer_id:
+            return ""
+        return models.OutbrainAccount.objects.get(marketer_id=obj.outbrain_marketer_id).marketer_name
+
+    amplify_account_name.description = "Amplify account name"
 
 
 # Campaign
