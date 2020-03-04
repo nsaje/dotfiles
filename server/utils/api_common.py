@@ -104,16 +104,22 @@ class BaseApiView(View):
 
     def dispatch(self, request, *args, **kwargs):
         start_time = time.time()
+        status = None
         try:
             response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
+            status = response.status_code
+            return response
+        except Http404:
+            status = 404
+            raise  # django's default 404, will use template found in templates/404.html
+        except Exception as e:
+            response = self.get_exception_response(request, e)
+            status = response.status_code
+            return response
+        finally:
             REQUEST_TIMER.labels(
                 endpoint=self.__class__.__name__,
                 path=influx_helper.clean_path(request.path),
                 method=request.method,
-                status=str(response.status_code),
+                status=str(status),
             ).observe(time.time() - start_time)
-            return response
-        except Http404:
-            raise  # django's default 404, will use template found in templates/404.html
-        except Exception as e:
-            return self.get_exception_response(request, e)
