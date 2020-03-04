@@ -636,7 +636,7 @@ schema_view = drf_yasg.views.get_schema_view(
         title="Zemanta One API",
         default_version="v1",
         contact=drf_yasg.openapi.Contact(email="api-support@zemanta.com"),
-        description="Find more info here http://dev.zemanta.com/one/api/",
+        description="Find more info here http://dev.zemanta.com/one/api/ \n Note that this is a live production API and calls will affect your account(s)",
     ),
     public=False,
     permission_classes=(permissions.IsAuthenticated, CanUseRESTAPIPermission),

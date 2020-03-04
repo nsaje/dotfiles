@@ -12,6 +12,7 @@ In order to use Zemanta REST API, please contact your sales representative.
 
 If you want to be notified of new features and maintenance windows, please join the [Zemanta API Announcements Mailing List](https://groups.google.com/forum/#!forum/zemanta-api-announcements/join).
 
+Try our API by using our [Swagger UI](https://one.zemanta.com/swagger/) to make calls and get a response. Note that this is a live production API and calls will affect your account(s)
 ## Who should read this document?
 
 This document is intended for programmers who are developing an integration with the Zemanta One system.
