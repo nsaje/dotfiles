@@ -1,0 +1,2 @@
+db-migrations: ["**/migrations/*.py"]
+permission: ["server/zemauth/models.py"]
