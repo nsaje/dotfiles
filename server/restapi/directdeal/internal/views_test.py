@@ -89,15 +89,17 @@ class DirectDealViewSetTest(RESTAPITest):
     def test_list_with_account(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account2 = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)
         magic_mixer.cycle(3).blend(core.features.deals.DirectDeal, agency=agency, source=source)
         magic_mixer.cycle(4).blend(core.features.deals.DirectDeal, account=account, source=source)
+        magic_mixer.cycle(5).blend(core.features.deals.DirectDeal, account=account2, source=source)
 
         r = self.client.get(
             reverse("restapi.directdeal.internal:directdeal_list"), {"accountId": account.id, "offset": 0, "limit": 20}
         )
         resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(len(resp_json["data"]), 4)
+        self.assertEqual(len(resp_json["data"]), 7)
 
     def test_list_with_keyword(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])

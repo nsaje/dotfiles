@@ -1,0 +1,42 @@
+@import 'variables';
+
+.zem-sidebar-scope-selector {
+    display: block;
+}
+
+.zem-sidebar-scope-selector__label {
+    color: tint(@color--secondary, 20%);
+    font-size: 11px;
+    padding-bottom: 5px;
+}
+
+.zem-sidebar-scope-selector__item {
+    margin: @spacing--small;
+
+    &:first-child {
+        margin-top: @spacing--default;
+    }
+
+    &:last-child {
+        margin-bottom: @spacing--default;
+    }
+}
+
+.zem-sidebar-scope-selector__icon-container {
+    display: flex;
+    flex: 0 0 45px;
+    height: 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+}
+
+.zem-sidebar-scope-selector__icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.zem-sidebar-scope-selector__icon--dots {
+    background: url('@{images-folder}/dots-sec.svg') no-repeat center;
+}

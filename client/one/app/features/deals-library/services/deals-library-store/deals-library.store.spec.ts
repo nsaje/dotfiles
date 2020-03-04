@@ -1,5 +1,5 @@
 import {fakeAsync, tick} from '@angular/core/testing';
-import {asapScheduler, of} from 'rxjs';
+import {asapScheduler, of, noop} from 'rxjs';
 import * as clone from 'clone';
 import {DealsLibraryStore} from './deals-library.store';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
@@ -9,16 +9,24 @@ import {DealsLibraryStoreState} from './deals-library.store.state';
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {Account} from '../../../../core/entities/types/account/account';
+import * as mockHelpers from '../../../../testing/mock.helpers';
+import {state} from '@angular/animations';
+import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 describe('DealsLibraryStore', () => {
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
+    let accountsServiceStub: jasmine.SpyObj<AccountService>;
+    let zemPermissionsStub: any;
     let store: DealsLibraryStore;
     let mockedDeals: Deal[];
     let mockedSources: Source[];
     let mockedAgencyId: string;
     let mockedConnections: DealConnection[];
     let mockedAccountId: string;
+    let mockedAccounts: Account[];
 
     beforeEach(() => {
         dealsServiceStub = jasmine.createSpyObj(DealsService.name, [
@@ -33,7 +41,18 @@ describe('DealsLibraryStore', () => {
         sourcesServiceStub = jasmine.createSpyObj(SourcesService.name, [
             'list',
         ]);
-        store = new DealsLibraryStore(dealsServiceStub, sourcesServiceStub);
+        accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
+            'list',
+        ]);
+        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+            'hasAgencyScope',
+        ]);
+        store = new DealsLibraryStore(
+            dealsServiceStub,
+            sourcesServiceStub,
+            accountsServiceStub,
+            zemPermissionsStub
+        );
         mockedDeals = [
             {
                 id: '10000000',
@@ -138,6 +157,8 @@ describe('DealsLibraryStore', () => {
 
         mockedAgencyId = '71';
         mockedAccountId = '55';
+
+        mockedAccounts = [mockHelpers.getMockedAccount()];
     });
 
     it('should correctly initialize store', fakeAsync(() => {
@@ -149,7 +170,11 @@ describe('DealsLibraryStore', () => {
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
-        store.initStore(
+
+        accountsServiceStub.list.and
+            .returnValue(of(mockedAccounts, asapScheduler))
+            .calls.reset();
+        store.setStore(
             mockedAgencyId,
             mockedAccountId,
             mockedOffset,
@@ -161,8 +186,10 @@ describe('DealsLibraryStore', () => {
         expect(store.state.entities).toEqual(mockedDeals);
         expect(store.state.accountId).toEqual(mockedAccountId);
         expect(store.state.sources).toEqual(mockedSources);
+        expect(store.state.accounts).toEqual(mockedAccounts);
         expect(dealsServiceStub.list).toHaveBeenCalledTimes(1);
         expect(sourcesServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should list deals via service', fakeAsync(() => {
@@ -220,9 +247,13 @@ describe('DealsLibraryStore', () => {
         expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     }));
 
-    it('should set deal to activeEntity', () => {
+    it('should correctly set existing agency deal to activeEntity', () => {
         const mockedDeal = clone(mockedDeals[0]);
-        store.state.agencyId = mockedDeal.agencyId;
+        mockedDeal.agencyId = mockedAgencyId;
+        mockedDeal.accountId = null;
+        store.state.agencyId = mockedAgencyId;
+        store.state.hasAgencyScope = true;
+
         const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
             .entity;
         store.setActiveEntity(mockedDeal);
@@ -231,6 +262,130 @@ describe('DealsLibraryStore', () => {
             ...mockedEmptyDeal,
             ...mockedDeal,
         });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(false);
+    });
+
+    it('should correctly set existing agencyt deal to activeEntity with read only', () => {
+        const mockedDeal = clone(mockedDeals[0]);
+        mockedDeal.agencyId = mockedAgencyId;
+        mockedDeal.accountId = null;
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = false;
+
+        const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
+            .entity;
+        store.setActiveEntity(mockedDeal);
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...mockedEmptyDeal,
+            ...mockedDeal,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(true);
+    });
+
+    it('should correctly set existing account deal to activeEntity', () => {
+        const mockedDeal = clone(mockedDeals[0]);
+        mockedDeal.agencyId = null;
+        mockedDeal.accountId = mockedAccountId;
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = false;
+
+        const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
+            .entity;
+        store.setActiveEntity(mockedDeal);
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...mockedEmptyDeal,
+            ...mockedDeal,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(false);
+    });
+
+    it('should correctly set new account deal to activeEntity', () => {
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = true;
+
+        store.setActiveEntity({});
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...new DealsLibraryStoreState().activeEntity.entity,
+            accountId: mockedAccountId,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+    });
+
+    it('should correctly set new agency deal to activeEntity', () => {
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = null;
+        store.state.hasAgencyScope = true;
+
+        store.setActiveEntity({});
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...new DealsLibraryStoreState().activeEntity.entity,
+            agencyId: mockedAgencyId,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+    });
+
+    it('should set account to activeEntity', () => {
+        store.state.activeEntity.entity = clone(mockedDeals[0]);
+        store.setActiveEntityAccount(mockedAccountId);
+
+        expect(store.state.activeEntity.entity.accountId).toEqual(
+            mockedAccountId
+        );
+    });
+
+    it('should set activeEntity scope to account scope', () => {
+        store.state.accounts = clone(mockedAccounts);
+        store.state.activeEntity.entity = clone(mockedDeals[0]);
+        store.state.activeEntity.scopeState = ScopeSelectorState.AGENCY_SCOPE;
+        store.state.accountId = mockedAccountId;
+
+        store.setActiveEntityScope(ScopeSelectorState.ACCOUNT_SCOPE);
+
+        expect(store.state.activeEntity.entity.accountId).toEqual(
+            mockedAccountId
+        );
+        expect(store.state.activeEntity.entity.agencyId).toEqual(null);
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+    });
+
+    it('should set activeEntity scope to agency scope', () => {
+        store.state.activeEntity.entity = clone(mockedDeals[0]);
+        store.state.activeEntity.entity.agencyId = null;
+        store.state.activeEntity.entity.accountId = mockedAccountId;
+        store.state.activeEntity.scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+        store.state.agencyId = mockedAgencyId;
+
+        store.setActiveEntityScope(ScopeSelectorState.AGENCY_SCOPE);
+
+        expect(store.state.activeEntity.entity.agencyId).toEqual(
+            mockedAgencyId
+        );
+        expect(store.state.activeEntity.entity.accountId).toEqual(null);
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
     });
 
     it('should load active entity connections', fakeAsync(() => {

@@ -42,6 +42,22 @@
         </ul>
         <ul
             class="zem-header-menu__group"
+            ng-if="$ctrl.getActions('managementConsole').length"
+        >
+            <li class="zem-header-menu__group-title">Management console:</li>
+            <li ng-repeat="action in $ctrl.getActions('managementConsole')">
+                <a
+                    class="zem-header-menu__link"
+                    href
+                    ng-click="$ctrl.execute(action)"
+                    is-internal="{{ action.isInternalFeature }}"
+                >
+                    {{ action.text }}
+                </a>
+            </li>
+        </ul>
+        <ul
+            class="zem-header-menu__group"
             ng-if="$ctrl.getActions('utility').length"
         >
             <li class="zem-header-menu__group-title">Utilities:</li>

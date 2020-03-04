@@ -200,7 +200,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                 id: null,
                 dealId: null,
                 agencyId: null,
-                accountId: null,
+                accountId: this.state.entity.id,
                 description: null,
                 name: null,
                 source: null,

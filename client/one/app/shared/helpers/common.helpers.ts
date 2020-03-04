@@ -68,6 +68,31 @@ export function getValueWithoutProps<T>(value: T, props: string[]): Partial<T> {
     return formattedValue;
 }
 
+export function getValueWithOnlyProps<T>(
+    value: T,
+    props: string[]
+): Partial<T> {
+    if (!isDefined(value)) {
+        return value;
+    }
+    if (Array.isArray(value)) {
+        return value;
+    }
+    if (typeof value !== 'object') {
+        return value;
+    }
+
+    const formattedValue: any = {...value};
+    const newFormattedValue: any = {};
+    props.forEach(prop => {
+        if (Object.keys(formattedValue).includes(prop)) {
+            newFormattedValue[prop] = formattedValue[prop];
+        }
+    });
+
+    return newFormattedValue;
+}
+
 export function safeGet<T, S>(
     object: T | null | undefined,
     getter: (t: T) => S | undefined

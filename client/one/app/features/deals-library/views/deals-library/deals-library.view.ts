@@ -3,15 +3,20 @@ import './deals-library.view.less';
 import {
     Component,
     ChangeDetectionStrategy,
-    Inject,
     OnInit,
     OnDestroy,
     ViewChild,
     HostBinding,
 } from '@angular/core';
 import {merge, Subject, Observable} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged, tap, take} from 'rxjs/operators';
-import {ColDef} from 'ag-grid-community';
+import {
+    takeUntil,
+    map,
+    distinctUntilChanged,
+    tap,
+    filter,
+} from 'rxjs/operators';
+import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import * as moment from 'moment';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {FieldErrors} from 'one/app/shared/types/field-errors';
@@ -23,12 +28,6 @@ import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
-import {
-    LEVEL_TO_ENTITY_TYPE_MAP,
-    LevelParam,
-    Level,
-    LEVEL_PARAM_TO_LEVEL_MAP,
-} from '../../../../app.constants';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -46,9 +45,6 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     @ViewChild('connectionsModal', {static: false})
     connectionsModal: ModalComponent;
 
-    agencyId: string;
-    accountId: string;
-
     context: any;
 
     DEFAULT_PAGINATION = {
@@ -56,8 +52,10 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         pageSize: 20,
     };
 
+    keyword: string;
     paginationOptions: PaginationOptions = {
         type: 'server',
+        ...this.DEFAULT_PAGINATION,
     };
 
     columnDefs: ColDef[] = [
@@ -83,7 +81,9 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         {
             headerName: 'Accounts',
             field: 'numOfAccounts',
-            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
+            cellClassRules: {
+                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+            },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
                     this.openConnectionsModal($event.data, 'account');
@@ -93,7 +93,9 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         {
             headerName: 'Campaigns',
             field: 'numOfCampaigns',
-            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
+            cellClassRules: {
+                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+            },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
                     this.openConnectionsModal($event.data, 'campaign');
@@ -103,7 +105,9 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         {
             headerName: 'Ad Groups',
             field: 'numOfAdgroups',
-            cellClassRules: {'zem-deals-library__grid-cell--clickable': 'x>=1'},
+            cellClassRules: {
+                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+            },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
                     this.openConnectionsModal($event.data, 'adgroup');
@@ -124,13 +128,13 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     connectionType: string;
     canSaveActiveEntity = false;
 
+    private gridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         public store: DealsLibraryStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,
@@ -138,15 +142,16 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.accountId = this.route.snapshot.params.id;
-        const level = this.getLevel(this.route.snapshot.data.level);
-
-        this.zemNavigationNewService
-            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], this.accountId)
-            .then((account: any) => {
-                this.agencyId = account.data.agencyId;
-                this.accountId = account.data.id;
-                this.updateInternalState();
+        this.subscribeToStoreStateUpdates();
+        this.route.queryParams
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe(
+                filter(queryParams =>
+                    commonHelpers.isDefined(queryParams.agencyId)
+                )
+            )
+            .subscribe(queryParams => {
+                this.updateInternalState(queryParams);
             });
     }
 
@@ -156,12 +161,16 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     onPaginationChange($event: PaginationChangeEvent) {
-        const keyword = this.getPreselectedKeyword();
-        this.store
-            .loadEntities($event.page, $event.pageSize, keyword)
-            .then(() => {
-                this.updateUrlParamsWithSelectedPagination($event);
-            });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: $event,
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
+    }
+
+    onGridReady($event: DetailGridInfo) {
+        this.gridApi = $event.api;
     }
 
     openEditDealModal(deal: Partial<Deal>) {
@@ -170,8 +179,6 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     removeDeal(deal: Deal) {
-        const pagination = this.getPreselectedPagination();
-        const keyword = this.getPreselectedKeyword();
         if (
             confirm(
                 `Are you sure you wish to delete ${deal.name} for ${
@@ -179,38 +186,36 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                 } media source?`
             )
         ) {
-            this.store
-                .deleteEntity(deal.id)
-                .then(() =>
-                    this.store.loadEntities(
-                        pagination.page,
-                        pagination.pageSize,
-                        keyword
-                    )
+            this.store.deleteEntity(deal.id).then(() => {
+                this.gridApi.showLoadingOverlay();
+                this.store.loadEntities(
+                    this.paginationOptions.page,
+                    this.paginationOptions.pageSize,
+                    this.keyword
                 );
+            });
         }
     }
 
     saveDeal() {
-        const pagination = this.getPreselectedPagination();
-        const keyword = this.getPreselectedKeyword();
         this.store.saveActiveEntity().then(() => {
             this.editDealModal.close();
+            this.gridApi.showLoadingOverlay();
             this.store.loadEntities(
-                pagination.page,
-                pagination.pageSize,
-                keyword
+                this.paginationOptions.page,
+                this.paginationOptions.pageSize,
+                this.keyword
             );
         });
     }
 
     searchDeals(keyword: string) {
-        const pagination = this.getPreselectedPagination();
-        this.store
-            .loadEntities(pagination.page, pagination.pageSize, keyword)
-            .then(() => {
-                this.updateUrlParamsWithKeyword(keyword);
-            });
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {keyword: keyword},
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
     }
 
     openConnectionsModal(deal: Partial<Deal>, type: string) {
@@ -221,9 +226,11 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     }
 
     closeConnectionsModal() {
-        const pagination = this.getPreselectedPagination();
-        const keyword = this.getPreselectedKeyword();
-        this.store.loadEntities(pagination.page, pagination.pageSize, keyword);
+        this.store.loadEntities(
+            this.paginationOptions.page,
+            this.paginationOptions.pageSize,
+            this.keyword
+        );
     }
 
     removeConnection(connectionId: string) {
@@ -232,34 +239,40 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         });
     }
 
-    private getLevel(levelParam: LevelParam): Level {
-        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
-    }
-
-    private updateInternalState() {
-        this.subscribeToStateUpdates();
-        const preselectedPagination = this.getPreselectedPagination();
-        const keyword = this.getPreselectedKeyword();
+    private updateInternalState(queryParams: any) {
+        const agencyId = queryParams.agencyId;
+        const accountId = queryParams.accountId || null;
+        this.keyword = queryParams.keyword || null;
         this.paginationOptions = {
             ...this.paginationOptions,
-            ...preselectedPagination,
+            ...this.getPreselectedPagination(),
         };
-        this.store
-            .initStore(
-                this.agencyId,
-                null, // this.accountId
-                preselectedPagination.page,
-                preselectedPagination.pageSize,
-                keyword
-            )
-            .then(() => {
-                this.updateUrlParamsWithSelectedPagination(
-                    preselectedPagination
-                );
-            });
+
+        if (commonHelpers.isDefined(this.gridApi)) {
+            this.gridApi.showLoadingOverlay();
+        }
+
+        if (
+            agencyId !== this.store.state.agencyId ||
+            accountId !== this.store.state.accountId
+        ) {
+            this.store.setStore(
+                agencyId,
+                accountId,
+                this.paginationOptions.page,
+                this.paginationOptions.pageSize,
+                this.keyword
+            );
+        } else {
+            this.store.loadEntities(
+                this.paginationOptions.page,
+                this.paginationOptions.pageSize,
+                this.keyword
+            );
+        }
     }
 
-    private subscribeToStateUpdates() {
+    private subscribeToStoreStateUpdates() {
         merge(this.createActiveEntityErrorUpdater$())
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
@@ -270,30 +283,12 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             map(state => state.activeEntity.fieldsErrors),
             distinctUntilChanged(),
             tap(fieldsErrors => {
-                // @ts-ignore
                 this.canSaveActiveEntity = Object.values(fieldsErrors).every(
                     (fieldValue: FieldErrors) =>
                         arrayHelpers.isEmpty(fieldValue)
                 );
             })
         );
-    }
-
-    private updateUrlParamsWithSelectedPagination(selectedPagination: {
-        page: number;
-        pageSize: number;
-    }): void {
-        const queryParams = {};
-        PAGINATION_URL_PARAMS.forEach(paramName => {
-            const paramValue = selectedPagination[paramName];
-            queryParams[paramName] = paramValue;
-        });
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: queryParams,
-            queryParamsHandling: 'merge',
-            replaceUrl: true,
-        });
     }
 
     private getPreselectedPagination(): {page: number; pageSize: number} {
@@ -307,21 +302,6 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             }
         });
         return pagination;
-    }
-
-    private updateUrlParamsWithKeyword(keyword: string | null): void {
-        keyword = keyword ? keyword : null;
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: {keyword: keyword},
-            queryParamsHandling: 'merge',
-            replaceUrl: true,
-        });
-    }
-
-    private getPreselectedKeyword(): string | null {
-        const keyword = this.route.snapshot.queryParamMap.get('keyword');
-        return commonHelpers.isDefined(keyword) ? keyword : null;
     }
 
     private formatDate(date: Date): string {

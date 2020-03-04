@@ -1,12 +1,12 @@
 <zem-text-form-group
-    class="zem-deal-edit-form__item zem-text-form-group"
+    class="zem-deal-edit-form__item zem-text-form-group zem-deal-edit-form__text-form-group"
     *ngIf="!!deal.id"
     [isDisabled]="true"
     [label]="'Created by'"
     [value]="deal.createdBy"
 ></zem-text-form-group>
 <zem-text-form-group
-    class="zem-deal-edit-form__item zem-text-form-group"
+    class="zem-deal-edit-form__item zem-text-form-group zem-deal-edit-form__text-form-group"
     [isDisabled]="isDisabled"
     [label]="'Deal name'"
     [value]="deal.name"
@@ -15,7 +15,7 @@
     (valueChange)="onNameChange($event)"
 ></zem-text-form-group>
 <zem-text-form-group
-    class="zem-deal-edit-form__item zem-text-form-group"
+    class="zem-deal-edit-form__item zem-text-form-group zem-deal-edit-form__text-form-group"
     [isDisabled]="isDisabled"
     [label]="'Deal ID'"
     [value]="deal.dealId"
@@ -24,7 +24,7 @@
     (valueChange)="onDealIdChange($event)"
 ></zem-text-form-group>
 <zem-select-form-group
-    class="zem-deal-edit-form__item zem-select-form-group"
+    class="zem-deal-edit-form__item zem-select-form-group zem-deal-edit-form__select-form-group"
     [isDisabled]="!!deal.id || isDisabled"
     [label]="'Source'"
     [value]="deal.source"
@@ -39,7 +39,7 @@
     (valueChange)="onSourceChange($event)"
 ></zem-select-form-group>
 <zem-decimal-form-group
-    class="zem-deal-edit-form__item zem-decimal-form-group"
+    class="zem-deal-edit-form__item zem-decimal-form-group zem-deal-edit-form__decimal-form-group"
     [isDisabled]="isDisabled"
     [label]="'Floor price'"
     [helpMessage]="
@@ -52,7 +52,7 @@
     (valueChange)="onFloorPriceChange($event)"
 ></zem-decimal-form-group>
 <zem-date-form-group
-    class="zem-deal-edit-form__item zem-date-form-group"
+    class="zem-deal-edit-form__item zem-date-form-group zem-deal-edit-form__date-form-group"
     [isDisabled]="isDisabled"
     [label]="'Valid from'"
     [helpMessage]="
@@ -63,7 +63,7 @@
     (valueChange)="onValidFromDateChange($event)"
 ></zem-date-form-group>
 <zem-date-form-group
-    class="zem-deal-edit-form__item zem-date-form-group"
+    class="zem-deal-edit-form__item zem-date-form-group zem-deal-edit-form__date-form-group"
     [isDisabled]="isDisabled"
     [label]="'Valid to'"
     [helpMessage]="
@@ -74,12 +74,14 @@
     (valueChange)="onValidToDateChange($event)"
 ></zem-date-form-group>
 <zem-textarea-form-group
-    class="zem-deal-edit-form__item zem-textarea-form-group"
+    class="zem-deal-edit-form__item zem-textarea-form-group zem-deal-edit-form__textarea-form-group"
     [isDisabled]="isDisabled"
     [label]="'Notes'"
     [value]="deal.description"
-    [rows]="'10'"
+    [rows]="'5'"
     [maxLength]="256"
     [errors]="dealErrors?.description"
     (valueChange)="onDescriptionChange($event)"
 ></zem-textarea-form-group>
+
+<ng-content></ng-content>

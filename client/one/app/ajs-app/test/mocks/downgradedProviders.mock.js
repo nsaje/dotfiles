@@ -53,6 +53,7 @@ angular
             },
         };
         this.events = of('/');
+        this.browserUrlTree = {};
 
         this.createUrlTree = function(commands) {
             return {

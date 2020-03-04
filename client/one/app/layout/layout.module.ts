@@ -7,6 +7,7 @@ import {SidebarContainerComponent} from './sidebar-container/sidebar-container.c
 import {MainContainerComponent} from './main-container/main-container.component';
 import {HistoryComponent} from './history/history.component';
 import {SharedModule} from '../shared/shared.module';
+import {SidebarContentModule} from '../features/sidebar-content/sidebar-content.module';
 
 const EXPORTED_DECLARATIONS = [
     HeaderComponent,
@@ -20,7 +21,7 @@ const EXPORTED_DECLARATIONS = [
 
 @NgModule({
     declarations: [EXPORTED_DECLARATIONS],
-    imports: [SharedModule],
+    imports: [SharedModule, SidebarContentModule],
     exports: [EXPORTED_DECLARATIONS],
 })
 export class LayoutModule {

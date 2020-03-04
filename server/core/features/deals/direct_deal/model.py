@@ -15,7 +15,16 @@ class DirectDeal(instance.DirectDealMixin, validation.DirectDealValidatorMixin, 
 
     objects = manager.DirectDealManager.from_queryset(queryset.DirectDealQuerySet)()
 
-    _settings_fields = ["deal_id", "description", "name", "floor_price", "valid_from_date", "valid_to_date"]
+    _settings_fields = [
+        "deal_id",
+        "agency_id",
+        "account_id",
+        "description",
+        "name",
+        "floor_price",
+        "valid_from_date",
+        "valid_to_date",
+    ]
     _permissioned_fields = {}
 
     id = models.AutoField(primary_key=True)

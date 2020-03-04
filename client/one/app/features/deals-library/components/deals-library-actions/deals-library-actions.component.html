@@ -3,6 +3,7 @@
 >
     <zem-text-input
         class="zem-text-input zem-prefixed-input__input"
+        [value]="value"
         [isDisabled]="isDisabled"
         [placeholder]="'Search by name, media source or deal id'"
         (valueChange)="onSearchChange($event)"

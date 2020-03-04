@@ -240,7 +240,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 id: null,
                 dealId: null,
                 agencyId: null,
-                accountId: null,
+                accountId: this.state.extras.accountId,
                 description: null,
                 name: null,
                 source: null,

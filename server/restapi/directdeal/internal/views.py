@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Q
 
 import core.features.deals
+import core.models
 import restapi.access
 import utils.exc
 from restapi.common.pagination import StandardPagination
@@ -26,23 +27,18 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def list(self, request):
-        agency = (
-            restapi.access.get_agency(request.user, request.query_params["agencyId"])
-            if request.query_params.get("agencyId")
-            else None
-        )
-        account = (
-            restapi.access.get_account(request.user, request.query_params["accountId"])
-            if request.query_params.get("accountId")
-            else None
-        )
-        if account is not None:
+        agency_id = request.query_params.get("agencyId")
+        account_id = request.query_params.get("accountId")
+
+        if account_id is not None:
+            account = restapi.access.get_account(request.user, account_id)
             deal_items = (
-                core.features.deals.DirectDeal.objects.filter_by_account(account)
+                core.features.deals.DirectDeal.objects.filter(Q(account=account) | Q(agency=account.agency))
                 .select_related("source", "account")
                 .order_by("-created_dt")
             )
-        elif agency is not None:
+        elif agency_id is not None:
+            agency = restapi.access.get_agency(request.user, agency_id)
             deal_items = (
                 core.features.deals.DirectDeal.objects.filter(Q(agency=agency) | Q(account__agency=agency))
                 .select_related("source", "agency")

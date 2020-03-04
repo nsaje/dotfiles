@@ -12,16 +12,25 @@ import {ConnectionsListComponent} from '../../components/connections-list/connec
 import {DealsLibraryActionsComponent} from '../../components/deals-library-actions/deals-library-actions.component';
 import {noop} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
+import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
 
 describe('DealsLibraryView', () => {
     let component: DealsLibraryView;
     let fixture: ComponentFixture<DealsLibraryView>;
+
+    let zemPermissionsStub: any;
     let zemNavigationNewServiceStub: any;
 
     beforeEach(() => {
         zemNavigationNewServiceStub = {
             getEntityById: () => noop,
         };
+        zemPermissionsStub = {
+            hasAgencyScope: () => noop,
+        };
+
         TestBed.configureTestingModule({
             declarations: [
                 DealsLibraryView,
@@ -41,6 +50,10 @@ describe('DealsLibraryView', () => {
                     provide: 'zemNavigationNewService',
                     useValue: zemNavigationNewServiceStub,
                 },
+                {
+                    provide: 'zemPermissions',
+                    useValue: zemPermissionsStub,
+                },
                 SourcesService,
                 SourcesEndpoint,
                 {
@@ -52,6 +65,10 @@ describe('DealsLibraryView', () => {
                         },
                     },
                 },
+
+                AccountService,
+                AccountEndpoint,
+                EntitiesUpdatesService,
             ],
         });
     });

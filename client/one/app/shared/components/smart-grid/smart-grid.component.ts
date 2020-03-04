@@ -142,12 +142,6 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
         this.gridReady.emit(params);
     }
 
-    onRowDataChanged(params: DetailGridInfo) {
-        if (this.isGridReady) {
-            this.gridApi.hideOverlay();
-        }
-    }
-
     onPageChange(page: number) {
         this.paginationPage = page;
         switch (this.paginationOptions.type) {
@@ -155,7 +149,6 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.gridApi.paginationGoToPage(page - 1);
                 break;
             case 'server':
-                this.gridApi.showLoadingOverlay();
                 this.paginationChange.emit({
                     page: page,
                     pageSize: this.paginationPageSize,

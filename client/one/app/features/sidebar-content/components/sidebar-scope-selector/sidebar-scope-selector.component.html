@@ -1,0 +1,34 @@
+<div class="zem-sidebar-scope-selector__item" *ngIf="isOpen">
+    <div class="zem-sidebar-scope-selector__label">Agency</div>
+    <zem-select-input
+        *ngIf="isOpen"
+        class="zem-select-input"
+        [items]="agencies"
+        [value]="selectedAgencyId"
+        [bindValue]="'id'"
+        [bindLabel]="'name'"
+        [isClearable]="false"
+        [isSearchable]="true"
+        [isDisabled]="!canChangeAgency"
+        (valueChange)="onAgencyChange($event)"
+    ></zem-select-input>
+</div>
+<div class="zem-sidebar-scope-selector__item" *ngIf="isOpen">
+    <div class="zem-sidebar-scope-selector__label">Account</div>
+    <zem-select-input
+        class="zem-select-input"
+        [items]="accounts"
+        [value]="selectedAccountId"
+        [bindValue]="'id'"
+        [bindLabel]="'name'"
+        [isClearable]="hasAgencyScope"
+        [isSearchable]="true"
+        (valueChange)="onAccountChange($event)"
+    ></zem-select-input>
+</div>
+
+<div class="zem-sidebar-scope-selector__icon-container" *ngIf="!isOpen">
+    <div
+        class="zem-sidebar-scope-selector__icon zem-sidebar-scope-selector__icon--dots"
+    ></div>
+</div>

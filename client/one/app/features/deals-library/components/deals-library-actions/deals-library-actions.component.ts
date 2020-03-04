@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import {Subject} from 'rxjs';
 import {takeUntil, distinctUntilChanged, debounceTime} from 'rxjs/operators';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-deals-library-actions',
@@ -18,6 +19,8 @@ import {takeUntil, distinctUntilChanged, debounceTime} from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DealsLibraryActionsComponent implements OnInit, OnDestroy {
+    @Input()
+    value: string;
     @Input()
     isDisabled: boolean = false;
     @Output()
@@ -46,6 +49,10 @@ export class DealsLibraryActionsComponent implements OnInit, OnDestroy {
     }
 
     onSearchChange($event: string) {
-        this.searchDebouncer$.next($event);
+        if (commonHelpers.isNotEmpty($event)) {
+            this.searchDebouncer$.next($event);
+        } else {
+            this.searchDebouncer$.next(null);
+        }
     }
 }

@@ -10,7 +10,10 @@
     >
         <div class="zem-main-container__sidebar" *ngIf="isSidebarVisible">
             <div class="zem-main-container__sidebar-content">
-                <!--TODO: add content components-->
+                <zem-sidebar-content-view
+                    class="zem-sidebar-content-view"
+                    [isOpen]="opened"
+                ></zem-sidebar-content-view>
             </div>
             <div class="zem-main-container__sidebar-footer">
                 <div

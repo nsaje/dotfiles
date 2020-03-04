@@ -1,4 +1,4 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
 import {Store} from 'rxjs-observable-store';
@@ -12,6 +12,11 @@ import {DealsService} from '../../../../core/deals/services/deals.service';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {Account} from '../../../../core/entities/types/account/account';
+import {Source} from '../../../../core/sources/types/source';
+import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 @Injectable()
 export class DealsLibraryStore extends Store<DealsLibraryStoreState>
@@ -19,10 +24,13 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private sourcesRequestStateUpdater: RequestStateUpdater;
+    private accountsRequestStateUpdater: RequestStateUpdater;
 
     constructor(
         private dealsService: DealsService,
-        private sourcesService: SourcesService
+        private sourcesService: SourcesService,
+        private accountsService: AccountService,
+        @Inject('zemPermissions') private zemPermissions: any
     ) {
         super(new DealsLibraryStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -32,27 +40,40 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             this,
             'sourcesRequests'
         );
+        this.accountsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'accountsRequests'
+        );
     }
 
-    initStore(
+    setStore(
         agencyId: string | null,
         accountId: string | null,
         page: number,
         pageSize: number,
         keyword: string | null
-    ): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.setState({
-                ...this.state,
-                agencyId: agencyId,
-                accountId: accountId,
-            });
+    ): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
             Promise.all([
-                this.loadEntities(page, pageSize, keyword),
-                this.loadSources(),
+                this.loadDeals(agencyId, accountId, page, pageSize, keyword),
+                this.loadSources(agencyId),
+                this.loadAccounts(agencyId),
             ])
-                .then(() => resolve())
-                .catch(() => reject());
+                .then((values: [Deal[], Source[], Account[]]) => {
+                    this.setState({
+                        ...this.state,
+                        agencyId: agencyId,
+                        accountId: accountId,
+                        hasAgencyScope: this.zemPermissions.hasAgencyScope(
+                            agencyId
+                        ),
+                        entities: values[0],
+                        sources: values[1],
+                        accounts: values[2],
+                    });
+                    resolve(true);
+                })
+                .catch(() => resolve(false));
         });
     }
 
@@ -62,26 +83,21 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         keyword: string | null = null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const offset = this.getOffset(page, pageSize);
-            this.dealsService
-                .list(
-                    this.state.agencyId,
-                    this.state.accountId,
-                    offset,
-                    pageSize,
-                    keyword,
-                    this.requestStateUpdater
-                )
-                .pipe(takeUntil(this.ngUnsubscribe$))
-                .subscribe(
-                    (deals: Deal[]) => {
-                        this.patchState(deals, 'entities');
-                        resolve();
-                    },
-                    error => {
-                        reject();
-                    }
-                );
+            this.loadDeals(
+                this.state.agencyId,
+                this.state.accountId,
+                page,
+                pageSize,
+                keyword
+            ).then(
+                (deals: Deal[]) => {
+                    this.patchState(deals, 'entities');
+                    resolve();
+                },
+                () => {
+                    reject();
+                }
+            );
         });
     }
 
@@ -205,17 +221,75 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     }
 
     setActiveEntity(entity: Partial<Deal>): void {
-        const emptyActiveEntity = new DealsLibraryStoreState().activeEntity;
-        // TODO @Katrca remove setting agencyID on entity once
-        // deals edit form has scope selector added which will handle this
+        const newActiveEntity = new DealsLibraryStoreState().activeEntity;
+        let scopeState = null;
+
+        if (!commonHelpers.isDefined(entity.id)) {
+            if (
+                this.state.accountId === null &&
+                this.state.hasAgencyScope === true
+            ) {
+                newActiveEntity.entity.agencyId = this.state.agencyId;
+                scopeState = ScopeSelectorState.AGENCY_SCOPE;
+            } else {
+                newActiveEntity.entity.accountId = this.state.accountId;
+                scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+            }
+        } else {
+            if (commonHelpers.isDefined(entity.agencyId)) {
+                scopeState = ScopeSelectorState.AGENCY_SCOPE;
+            } else {
+                scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+            }
+        }
+
         this.setState({
             ...this.state,
             activeEntity: {
-                ...emptyActiveEntity,
-                entity: {
-                    ...emptyActiveEntity.entity,
+                ...newActiveEntity,
+                scopeState: scopeState,
+                isReadOnly: this.isDealReadOnly({
+                    ...newActiveEntity.entity,
                     ...entity,
-                    agencyId: this.state.agencyId,
+                }),
+                entity: {
+                    ...newActiveEntity.entity,
+                    ...entity,
+                },
+            },
+        });
+    }
+
+    setActiveEntityAccount(accountId: string) {
+        this.patchState(
+            {
+                ...this.state.activeEntity.entity,
+                accountId: accountId,
+            },
+            'activeEntity',
+            'entity'
+        );
+    }
+
+    setActiveEntityScope(scopeState: ScopeSelectorState) {
+        this.setState({
+            ...this.state,
+            activeEntity: {
+                ...this.state.activeEntity,
+                scopeState: scopeState,
+                entity: {
+                    ...this.state.activeEntity.entity,
+                    agencyId:
+                        scopeState === ScopeSelectorState.AGENCY_SCOPE
+                            ? this.state.agencyId
+                            : null,
+                    accountId:
+                        scopeState === ScopeSelectorState.ACCOUNT_SCOPE
+                            ? commonHelpers.getValueOrDefault(
+                                  this.state.accountId,
+                                  this.state.accounts[0].id
+                              )
+                            : null,
                 },
             },
         });
@@ -230,15 +304,73 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         this.validateActiveEntity();
     }
 
-    private loadSources(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    ngOnDestroy() {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
+    }
+
+    private isDealReadOnly(deal: Deal): boolean {
+        if (!this.state.hasAgencyScope && deal.agencyId) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private loadDeals(
+        agencyId: string | null,
+        accountId: string | null,
+        page: number,
+        pageSize: number,
+        keyword: string | null = null
+    ): Promise<Deal[]> {
+        return new Promise<Deal[]>((resolve, reject) => {
+            const offset = this.getOffset(page, pageSize);
+            this.dealsService
+                .list(
+                    agencyId,
+                    accountId,
+                    offset,
+                    pageSize,
+                    keyword,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (deals: Deal[]) => {
+                        resolve(deals);
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private loadSources(agencyId: string): Promise<Source[]> {
+        return new Promise<Source[]>((resolve, reject) => {
             this.sourcesService
-                .list(this.state.agencyId, this.sourcesRequestStateUpdater)
+                .list(agencyId, this.sourcesRequestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     sources => {
-                        this.patchState(sources, 'sources');
-                        resolve();
+                        resolve(sources);
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private loadAccounts(agencyId: string): Promise<Account[]> {
+        return new Promise<Account[]>((resolve, reject) => {
+            this.accountsService
+                .list(agencyId, this.accountsRequestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    accounts => {
+                        resolve(accounts);
                     },
                     () => {
                         reject();
@@ -249,10 +381,5 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
 
     private getOffset(page: number, pageSize: number): number {
         return (page - 1) * pageSize;
-    }
-
-    ngOnDestroy() {
-        this.ngUnsubscribe$.next();
-        this.ngUnsubscribe$.complete();
     }
 }

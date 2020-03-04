@@ -13,4 +13,4 @@ class AgencyViewSetTest(RESTAPITest):
         r = self.client.get(reverse("restapi.agency.internal:agencies_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertGreater(len(resp_json["data"]), 1)
-        self.assertEqual(resp_json["data"][0]["name"], agency.name)
+        self.assertTrue(any(item.get("name") == agency.name for item in resp_json["data"]))

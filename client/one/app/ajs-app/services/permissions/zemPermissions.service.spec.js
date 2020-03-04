@@ -141,13 +141,18 @@ describe('zemPermissions', function() {
 
     describe('hasAgencyScope:', function() {
         it("should return false if user doesn't have agency scope for specified agency", function() {
-            mockedUser.agencies = ['5', '7'];
+            mockedUser.agencies = [5, 7];
             expect(zemPermissions.hasAgencyScope('9')).toBe(false);
         });
 
         it('should return true if user has agency scope for specified agency', function() {
-            mockedUser.agencies = ['5', '7'];
+            mockedUser.agencies = [5, 7];
             expect(zemPermissions.hasAgencyScope('5')).toBe(true);
+        });
+
+        it('should return true if user has agency scope for specified agency with number input', function() {
+            mockedUser.agencies = [5, 7];
+            expect(zemPermissions.hasAgencyScope(5)).toBe(true);
         });
     });
 });

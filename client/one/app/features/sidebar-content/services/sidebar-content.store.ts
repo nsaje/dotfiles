@@ -36,18 +36,14 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
         );
     }
 
-    init(agencyId: string | null, accountId: string | null) {
-        this.loadAgencies().then((agencies: Agency[]) => {
-            if (
-                !commonHelpers.isDefined(agencyId) &&
-                !arrayHelpers.isEmpty(this.state.agencies)
-            ) {
-                agencyId = this.state.agencies[0].id;
-            }
+    setStore(agencyId: string | null, accountId: string | null) {
+        if (arrayHelpers.isEmpty(this.state.agencies)) {
+            this.initStore(agencyId, accountId);
+        } else {
+            agencyId = agencyId || this.state.agencies[0].id;
             this.loadAccounts(agencyId).then((accounts: Account[]) => {
                 this.setState({
                     ...this.state,
-                    agencies: agencies,
                     accounts: accounts,
                     selectedAgencyId: agencyId,
                     selectedAccountId: this.getSelectedAccountId(
@@ -57,7 +53,7 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
                     ),
                 });
             });
-        });
+        }
     }
 
     setSelectedAgency(agencyId: string) {
@@ -77,6 +73,30 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
 
     setSelectedAccount(accountId: string) {
         this.patchState(accountId, 'selectedAccountId');
+    }
+
+    private initStore(agencyId: string | null, accountId: string | null) {
+        this.loadAgencies().then((agencies: Agency[]) => {
+            if (
+                !commonHelpers.isDefined(agencyId) &&
+                !arrayHelpers.isEmpty(agencies)
+            ) {
+                agencyId = agencies[0].id;
+            }
+            this.loadAccounts(agencyId).then((accounts: Account[]) => {
+                this.setState({
+                    ...this.state,
+                    agencies: agencies,
+                    accounts: accounts,
+                    selectedAgencyId: agencyId,
+                    selectedAccountId: this.getSelectedAccountId(
+                        agencyId,
+                        accountId,
+                        accounts
+                    ),
+                });
+            });
+        });
     }
 
     private getSelectedAccountId(

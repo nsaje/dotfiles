@@ -29,7 +29,9 @@ angular
             }
 
             return permissions.every(function(permission) {
-                return Object.keys(user.permissions).indexOf(permission) >= 0;
+                return (
+                    Object.keys(user.permissions || {}).indexOf(permission) >= 0
+                );
             });
         }
 
@@ -99,7 +101,10 @@ angular
         }
 
         function hasAgencyScope(agencyId) {
+            if (hasPermission('zemauth.can_see_all_accounts')) {
+                return true;
+            }
             var user = zemUserService.current();
-            return user.agencies.includes(agencyId);
+            return user.agencies.includes(Number(agencyId));
         }
     });

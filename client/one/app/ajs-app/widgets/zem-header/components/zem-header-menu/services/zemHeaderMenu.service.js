@@ -58,14 +58,6 @@ angular
                 ),
             },
             {
-                text: 'Deals Library',
-                callback: navigateToDealsLibraryView,
-                isAvailable: isDealsLibraryViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
-                    'zemauth.can_see_deals_library'
-                ),
-            },
-            {
                 text: 'Scheduled reports',
                 callback: navigateToScheduledReportsView,
                 isAvailable: zemPermissions.hasPermission(
@@ -81,6 +73,17 @@ angular
                 isAvailable: isUserPermissionsAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.account_agency_access_permissions'
+                ),
+            },
+        ];
+
+        var MANAGEMENT_CONSOLE_ACTIONS = [
+            {
+                text: 'Deals Library',
+                callback: navigateToDealsLibraryView,
+                isAvailable: isDealsLibraryViewAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_deals_library'
                 ),
             },
         ];
@@ -103,6 +106,8 @@ angular
                 return USER_ACTIONS.filter(filterActions);
             } else if (navigationGroup === 'account') {
                 return ACCOUNT_ACTIONS.filter(filterActions);
+            } else if (navigationGroup === 'managementConsole') {
+                return MANAGEMENT_CONSOLE_ACTIONS.filter(filterActions);
             } else if (navigationGroup === 'utility') {
                 return UTILITY_ACTIONS.filter(filterActions);
             }
@@ -241,21 +246,30 @@ angular
         }
 
         function isDealsLibraryViewAvailable() {
-            if (!zemPermissions.hasPermission('zemauth.can_see_deals_library'))
-                return false;
-            return commonHelpers.isDefined(
-                zemNavigationNewService.getActiveAccount()
+            return zemPermissions.hasPermission(
+                'zemauth.can_see_deals_library'
             );
         }
 
         function navigateToDealsLibraryView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            NgRouter.navigate([
-                RoutePathName.APP_BASE,
-                RoutePathName.DEALS_LIBRARY,
-                LevelParam.ACCOUNT,
-                activeAccount.id,
-            ]);
+
+            if (commonHelpers.isDefined(activeAccount)) {
+                NgRouter.navigate(
+                    [RoutePathName.APP_BASE, RoutePathName.DEALS_LIBRARY],
+                    {
+                        queryParams: {
+                            agencyId: activeAccount.data.agencyId,
+                            accountId: activeAccount.id,
+                        },
+                    }
+                );
+            } else {
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.DEALS_LIBRARY,
+                ]);
+            }
         }
 
         function navigateToInventoryPlanning() {

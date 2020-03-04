@@ -6,6 +6,7 @@
     >
         <zem-deals-library-actions
             class="zem-deals-library-actions zem-deals-library-view__item"
+            [value]="keyword"
             [isDisabled]="!state.agencyId"
             (search)="searchDeals($event)"
             (dealCreate)="openEditDealModal({})"
@@ -19,6 +20,7 @@
             [paginationOptions]="paginationOptions"
             [paginationCount]="state.requests.list.count"
             (paginationChange)="onPaginationChange($event)"
+            (gridReady)="onGridReady($event)"
         >
         </zem-smart-grid>
     </div>
@@ -41,11 +43,70 @@
             <div class="zem-modal__body">
                 <zem-deal-edit-form
                     class="zem-deal-edit-form"
+                    [isDisabled]="state.activeEntity.isReadOnly"
                     [deal]="state.activeEntity.entity"
                     [dealErrors]="state.activeEntity.fieldsErrors"
                     [sources]="state.sources"
                     (dealChange)="store.changeActiveEntity($event)"
                 >
+                    <div class="zem-deals-library-view__splitter"></div>
+                    <div class="zem-deal-edit-form__item">
+                        <label>
+                            Scope selector
+                            <zem-help-popover
+                                class="zem-help-popover"
+                                content="Use scope to control where your deal can be used."
+                                placement="bottom"
+                            ></zem-help-popover>
+                        </label>
+                    </div>
+                    <zem-scope-selector
+                        class="zem-deal-edit-form__item zem-scope-selector"
+                        [scopeState]="state.activeEntity.scopeState"
+                        [isAgencyScopeDisabled]="
+                            !state.hasAgencyScope ||
+                            state.activeEntity.isReadOnly
+                        "
+                        [isAccountScopeDisabled]="state.activeEntity.isReadOnly"
+                        (scopeStateChange)="store.setActiveEntityScope($event)"
+                    >
+                        <ng-template #agencyScopeHeaderTemplate>
+                            <strong>Agency</strong><br />
+                            <span
+                                class="zem-radio-input__deemphasized-label-text"
+                                >You will be able to use the deal on the entire
+                                agency and all accounts, campaigns and ad
+                                groups.</span
+                            >
+                        </ng-template>
+                        <ng-template #accountScopeHeaderTemplate>
+                            <strong>Account</strong><br />
+                            <span
+                                class="zem-radio-input__deemphasized-label-text"
+                                >You will be able to use the deal on the
+                                selected account and all campaigns and ad groups
+                                belonging to the selected account.</span
+                            >
+                        </ng-template>
+                        <ng-template #accountScopeContentTemplate>
+                            <zem-select-input
+                                class="zem-select-input"
+                                [items]="state.accounts"
+                                [placeholder]="'Select account'"
+                                [value]="state.activeEntity.entity.accountId"
+                                [bindLabel]="'name'"
+                                [bindValue]="'id'"
+                                [appendTo]="'body'"
+                                [isClearable]="false"
+                                [isSearchable]="true"
+                                [isDisabled]="state.activeEntity.isReadOnly"
+                                (valueChange)="
+                                    store.setActiveEntityAccount($event)
+                                "
+                            >
+                            </zem-select-input>
+                        </ng-template>
+                    </zem-scope-selector>
                 </zem-deal-edit-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
@@ -63,7 +124,9 @@
                         !state.requests.create.inProgress
                     "
                     class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
-                    [disabled]="!canSaveActiveEntity"
+                    [disabled]="
+                        !canSaveActiveEntity || state.activeEntity.isReadOnly
+                    "
                     (click)="saveDeal()"
                 >
                     Save

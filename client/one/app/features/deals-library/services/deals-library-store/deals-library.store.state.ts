@@ -1,13 +1,15 @@
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
+import {Account} from '../../../../core/entities/types/account/account';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {RequestState} from '../../../../shared/types/request-state';
 import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
-import {NonFieldErrors} from '../../../../shared/types/non-field-errors';
+import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 export class DealsLibraryStoreState {
     agencyId: string = null;
     accountId: string = null;
+    hasAgencyScope: boolean = null;
     entities: Deal[] = [];
     fieldsErrors: DealsLibraryStoreFieldsErrorsState[] = [];
     activeEntity = {
@@ -29,8 +31,14 @@ export class DealsLibraryStoreState {
             numOfCampaigns: null,
             numOfAdgroups: null,
         } as Deal,
+        scopeState: null as ScopeSelectorState,
+        isReadOnly: null as boolean,
         connections: [] as DealConnection[],
         fieldsErrors: new DealsLibraryStoreFieldsErrorsState(),
+    };
+    accounts: Account[] = [];
+    accountsRequests = {
+        list: {} as RequestState,
     };
     sources: Source[] = [];
     sourcesRequests = {

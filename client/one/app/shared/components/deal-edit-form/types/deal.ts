@@ -1,5 +1,7 @@
 export interface Deal {
     id: string;
+    agencyId: string | null;
+    accountId: string | null;
     dealId: string;
     description: string;
     name: string;

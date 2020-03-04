@@ -1,0 +1,20 @@
+<ng-container *ngIf="(store.state$ | async) as state">
+    <zem-sidebar-scope-selector
+        class="zem-sidebar-scope-selector"
+        [agencies]="state.agencies"
+        [selectedAgencyId]="state.selectedAgencyId"
+        [hasAgencyScope]="hasAgencyScope"
+        [accounts]="state.accounts"
+        [selectedAccountId]="state.selectedAccountId"
+        (agencyChange)="store.setSelectedAgency($event)"
+        (accountChange)="store.setSelectedAccount($event)"
+        [isOpen]="isOpen"
+    ></zem-sidebar-scope-selector>
+    <zem-list-group
+        class="zem-list-group"
+        [items]="items"
+        [value]="selectedItem"
+        [isDisplayValueVisible]="isOpen"
+        (valueChange)="onRoutePathChange($event)"
+    ></zem-list-group>
+</ng-container>

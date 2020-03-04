@@ -108,6 +108,47 @@ describe('commonHelpers', () => {
         ).toEqual([value]);
     });
 
+    it('should correctly remove everything but props from object', () => {
+        expect(commonHelpers.getValueWithOnlyProps(null, [])).toEqual(null);
+        expect(commonHelpers.getValueWithOnlyProps(undefined, [])).toEqual(
+            undefined
+        );
+        expect(commonHelpers.getValueWithOnlyProps({}, [])).toEqual({});
+
+        const value = {
+            name: 'test',
+            surname: 'test',
+            email: 'test@test.com',
+        };
+        expect(commonHelpers.getValueWithOnlyProps(value, [])).toEqual({});
+        expect(commonHelpers.getValueWithOnlyProps(value, ['name'])).toEqual({
+            name: 'test',
+        });
+        expect(
+            commonHelpers.getValueWithOnlyProps(value, ['name', 'surname'])
+        ).toEqual({
+            name: 'test',
+            surname: 'test',
+        });
+        expect(
+            commonHelpers.getValueWithOnlyProps(value, [
+                'name',
+                'surname',
+                'email',
+            ])
+        ).toEqual({
+            name: 'test',
+            surname: 'test',
+            email: 'test@test.com',
+        });
+        expect(
+            commonHelpers.getValueWithOnlyProps(
+                [value],
+                ['name', 'surname', 'email']
+            )
+        ).toEqual([value]);
+    });
+
     it('should retrieve value if object is defined', () => {
         let testObject: any;
         expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(undefined);

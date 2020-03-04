@@ -222,7 +222,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 id: null,
                 dealId: null,
                 agencyId: null,
-                accountId: null,
+                accountId: this.state.entity.accountId,
                 description: null,
                 name: null,
                 source: null,

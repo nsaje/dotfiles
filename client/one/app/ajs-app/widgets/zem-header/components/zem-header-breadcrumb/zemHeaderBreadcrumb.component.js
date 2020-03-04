@@ -123,7 +123,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                       ENTITY_TYPE_TO_LEVEL_MAP[entity.type]
                   ]
                 : null;
-
+            var queryParams = NgRouter.browserUrlTree.queryParams;
             var urlTree = [];
             if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USERS_LIBRARY)) {
                 urlTree = [
@@ -139,7 +139,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 return {
                     typeName: 'Account settings',
                     name: 'User permissions',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS_LIBRARY)) {
                 urlTree = [
@@ -155,7 +155,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 return {
                     typeName: 'Account settings',
                     name: 'Account credit',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.REPORTS_LIBRARY)) {
                 urlTree = [
@@ -171,7 +171,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 return {
                     typeName: 'Account settings',
                     name: 'Scheduled reports',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PIXELS_LIBRARY)) {
                 urlTree = [
@@ -187,23 +187,17 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 return {
                     typeName: 'Account settings',
                     name: 'Pixels & Audiences',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.DEALS_LIBRARY)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
                     RoutePathName.DEALS_LIBRARY
                 ];
-                if (levelParam) {
-                    urlTree.push(levelParam);
-                }
-                if (entityId) {
-                    urlTree.push(entityId);
-                }
                 return {
-                    typeName: 'Account settings',
+                    typeName: 'Management console',
                     name: 'Deals library',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS_LIBRARY)) {
                 urlTree = [
@@ -219,7 +213,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 return {
                     typeName: 'Account settings',
                     name: 'Publisher groups',
-                    href: NgRouter.createUrlTree(urlTree).toString(),
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {
                 urlTree = [

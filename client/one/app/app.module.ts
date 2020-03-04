@@ -29,6 +29,7 @@ import {ArchivedModule} from './features/archived/archived.module';
 import {NewEntityAnalyticsMockModule} from './features/new-entity-analytics-mock/new-entity-analytics-mock.module';
 import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.guard';
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
+import {SidebarContentModule} from './features/sidebar-content/sidebar-content.module';
 import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
 
 // Raven (Sentry) configuration
@@ -86,6 +87,7 @@ if (APP_CONFIG.env.prod) {
         UsersLibraryModule,
         ReportsLibraryModule,
         PublisherGroupsLibraryModule,
+        SidebarContentModule,
         NewEntityAnalyticsMockModule,
 
         // App router

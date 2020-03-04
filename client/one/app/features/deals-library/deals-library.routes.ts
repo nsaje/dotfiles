@@ -8,24 +8,7 @@ export const DEALS_LIBRARY_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: REDIRECT_TO_URL,
-    },
-    {
-        path: LevelParam.ACCOUNT,
-        data: {
-            level: LevelParam.ACCOUNT,
-        },
-        children: [
-            {
-                path: '',
-                pathMatch: 'full',
-                redirectTo: REDIRECT_TO_URL,
-            },
-            {
-                path: ':id',
-                component: DealsLibraryView,
-            },
-        ],
+        component: DealsLibraryView,
     },
     {
         path: '**',
