@@ -367,7 +367,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             else:
                 new_deal = core.features.deals.DirectDeal.objects.create(
                     request,
-                    agency=campaign.account.agency,
+                    account=campaign.account,
                     source=item.get("source"),
                     deal_id=item.get("deal_id"),
                     name=item.get("name"),

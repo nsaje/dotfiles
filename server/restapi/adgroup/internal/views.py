@@ -115,7 +115,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             else:
                 new_deal = core.features.deals.DirectDeal.objects.create(
                     request,
-                    agency=ad_group.campaign.account.agency,
+                    account=ad_group.campaign.account,
                     source=item.get("source"),
                     deal_id=item.get("deal_id"),
                     name=item.get("name"),

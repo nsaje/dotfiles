@@ -160,7 +160,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             else:
                 new_deal = core.features.deals.DirectDeal.objects.create(
                     request,
-                    agency=account.agency,
+                    account=account,
                     source=item.get("source"),
                     deal_id=item.get("deal_id"),
                     name=item.get("name"),

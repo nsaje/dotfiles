@@ -17,8 +17,8 @@ class DirectDeal(instance.DirectDealMixin, validation.DirectDealValidatorMixin, 
 
     _settings_fields = [
         "deal_id",
-        "agency_id",
-        "account_id",
+        "agency",
+        "account",
         "description",
         "name",
         "floor_price",
