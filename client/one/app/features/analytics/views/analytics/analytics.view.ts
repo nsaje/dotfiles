@@ -70,8 +70,8 @@ export class AnalyticsView implements OnInit, OnDestroy {
 
     updateInternalState(
         levelParam: LevelParam,
-        entityId: string,
-        breakdownParam: BreakdownParam
+        entityId: string | null,
+        breakdownParam: BreakdownParam | null
     ) {
         this.level = this.getLevel(levelParam);
         this.breakdown = this.getBreakdown(this.level, breakdownParam);
@@ -79,6 +79,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
             this.level,
             this.breakdown
         );
+
         if (!commonHelpers.isDefined(entityId)) {
             this.entity = null;
             this.isInitialized = true;
@@ -89,7 +90,13 @@ export class AnalyticsView implements OnInit, OnDestroy {
         this.zemNavigationNewService
             .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[this.level], entityId)
             .then((entity: any) => {
-                this.entity = entity;
+                if (
+                    !commonHelpers.isDefined(this.entity) ||
+                    this.entity.id !== entity.id
+                ) {
+                    this.entity = entity;
+                }
+
                 this.isInitialized = true;
                 this.changeDetectorRef.markForCheck();
             });
@@ -101,7 +108,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
 
     private getBreakdown(
         level: Level,
-        breakdownParam: BreakdownParam
+        breakdownParam: BreakdownParam | null
     ): Breakdown {
         const breakdown =
             BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP[breakdownParam];

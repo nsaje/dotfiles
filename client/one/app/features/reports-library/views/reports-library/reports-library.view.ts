@@ -54,7 +54,7 @@ export class ReportsLibraryView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState(levelParam: LevelParam, entityId: string) {
+    updateInternalState(levelParam: LevelParam, entityId: string | null) {
         const level = this.getLevel(levelParam);
         if (!commonHelpers.isDefined(entityId)) {
             this.entity = null;
