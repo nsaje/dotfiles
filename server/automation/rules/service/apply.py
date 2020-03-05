@@ -1,6 +1,8 @@
 import dataclasses
 import datetime
+import decimal
 import traceback
+from typing import Any
 from typing import DefaultDict
 from typing import Dict
 from typing import Optional
@@ -52,6 +54,7 @@ def apply_rule(
     ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
+    campaign_budget: Dict[str, Any],
 ) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
     changes, errors = [], []
 
@@ -59,7 +62,7 @@ def apply_rule(
         if _is_on_cooldown(target, rule, ad_group):
             continue
 
-        settings_dict = _get_settings_dict(rule, ad_group, ad_group_settings, content_ads_settings)
+        settings_dict = _get_settings_dict(rule, ad_group, campaign_budget, ad_group_settings, content_ads_settings)
         if _meets_all_conditions(rule, target_stats, settings_dict):
             with transaction.atomic():
                 try:
@@ -88,10 +91,12 @@ def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> b
 def _get_settings_dict(
     rule: Rule,
     ad_group: core.models.AdGroup,
+    campaign_budget: Dict[str, Any],
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
 ) -> Dict[str, Union[int, str]]:
-    settings_dict = ad_group_settings
+    settings_dict = dict(ad_group_settings)
+    settings_dict.update(campaign_budget)
     if rule.target_type == constants.TargetType.AD:
         settings_dict = dict(content_ads_settings.get(ad_group.id, {}))
         settings_dict.update(ad_group_settings)
@@ -118,14 +123,20 @@ def _prepare_operands(
     _validate_condition(condition)
     if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
         return _prepare_stats_operands(condition, target_stats)
-    elif condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING:
+    elif (
+        condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING
+        or condition.left_operand_type in constants.METRIC_BUDGETS_MAPPING
+    ):
         return _prepare_settings_operands(condition, settings_dict)
 
     raise ValueError("Invalid condition type")
 
 
 def _validate_condition(condition):
-    if condition.operator not in config.VALID_OPERATORS:
+    if (
+        condition.left_operand_type not in config.VALID_OPERATORS
+        or condition.operator not in config.VALID_OPERATORS[condition.left_operand_type]
+    ):
         raise ValueError("Invalid operator for left operand")
 
 
@@ -174,6 +185,8 @@ def _prepare_settings_operands(condition, settings_dict: Dict[str, Union[int, st
         value = float(value)
     elif condition.left_operand_type in config.DATE_OPERANDS:
         value = datetime.date.fromisoformat(value)
+    elif condition.left_operand_type in config.DECIMAL_OPERANDS:
+        value = decimal.Decimal(value)
     return settings_dict[field_name], value
 
 

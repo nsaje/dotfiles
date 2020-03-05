@@ -50,6 +50,7 @@ def execute_rules() -> None:
         raw_stats = redshiftapi.api_rules.query(target_type, ad_groups)
         stats = _format_stats(target_type, raw_stats)
         ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
+        campaign_budgets_map = fetch.prepare_budgets(ad_groups)
         content_ad_settings_map = {}
         if target_type == constants.TargetType.AD:
             content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
@@ -64,6 +65,7 @@ def execute_rules() -> None:
                     stats.get(ad_group.id, {}),
                     ad_group_settings_map.get(ad_group.id, {}),
                     content_ad_settings_map.get(ad_group.id, {}),
+                    campaign_budgets_map.get(ad_group.campaign_id, {}),
                 )
 
                 if changes:

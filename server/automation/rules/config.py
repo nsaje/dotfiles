@@ -192,6 +192,8 @@ INT_OPERANDS = {
     constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED,
     constants.MetricType.DAYS_SINCE_AD_GROUP_CREATED,
     constants.MetricType.DAYS_SINCE_AD_CREATED,
+    constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START,
+    constants.MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END,
 }
 
 FLOAT_OPERANDS = {
@@ -231,6 +233,8 @@ FLOAT_OPERANDS = {
     constants.MetricType.AD_GROUP_DAILY_CAP,
 }
 
+DECIMAL_OPERANDS = {constants.MetricType.CAMPAIGN_BUDGET_MARGIN, constants.MetricType.CAMPAIGN_REMAINING_BUDGET}
+
 STRING_OPERANDS = {
     constants.MetricType.ACCOUNT_NAME,
     constants.MetricType.CAMPAIGN_NAME,
@@ -247,6 +251,8 @@ DATE_OPERANDS = {
     constants.MetricType.AD_GROUP_START_DATE,
     constants.MetricType.AD_GROUP_END_DATE,
     constants.MetricType.AD_CREATED_DATE,
+    constants.MetricType.CAMPAIGN_BUDGET_START_DATE,
+    constants.MetricType.CAMPAIGN_BUDGET_END_DATE,
 }
 
 VALID_NUMBER_OPERATORS = [constants.Operator.GREATER_THAN, constants.Operator.LESS_THAN]

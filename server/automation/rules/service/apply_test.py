@@ -27,7 +27,7 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = True
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(errors)
 
@@ -47,7 +47,7 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = False
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(errors)
 
@@ -69,7 +69,7 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(errors)
 
@@ -88,7 +88,7 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertEqual(1, len(changes))
         self.assertEqual(2, len(errors))
         for error in errors:
@@ -112,7 +112,7 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=1.0)
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(errors)
 
@@ -133,7 +133,7 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=2.0)
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {})
+        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertEqual(3, len(changes))
         self.assertFalse(errors)
 
@@ -225,6 +225,33 @@ class ApplyTest(TestCase):
             "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+
+    def test_meet_all_conditions_invalid_operator(self):
+        rule = magic_mixer.blend(Rule)
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LAST_3_DAYS,
+            left_operand_type=constants.MetricType.CLICKS,
+            left_operand_modifier=2.0,
+            operator=constants.Operator.GREATER_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="10",
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            operator=constants.Operator.CONTAINS,
+            right_operand_window=constants.MetricWindow.LAST_DAY,
+            right_operand_type=constants.ValueType.TOTAL_SPEND,
+            right_operand_value="11.0",
+        )
+
+        with self.assertRaisesRegexp(ValueError, "Invalid operator for left operand"):
+            apply._meets_all_conditions(rule, {}, {})
 
     def test_meets_condition(self):
         test_cases = [

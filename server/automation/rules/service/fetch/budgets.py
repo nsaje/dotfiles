@@ -1,7 +1,6 @@
 from typing import Any
 from typing import Dict
 from typing import Sequence
-from typing import Union
 
 import core.models
 from utils import dates_helper
@@ -10,13 +9,15 @@ from ... import constants
 from . import helpers
 
 
-def prepare_budgets(ad_groups: Sequence[core.models.AdGroup],) -> Dict[int, Dict[str, Union[Any]]]:
+def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[str, Any]]:
     local_today = dates_helper.local_today()  # NOTE: using local today since budget dates are in local timezone
     campaigns = core.models.Campaign.objects.filter(adgroup__in=ad_groups)
     budgets_by_campaign = _fetch_bugets(campaigns)
 
     budgets_data = {}
     for campaign in core.models.Campaign.objects.filter(adgroup__in=ad_groups):
+        if campaign.id not in budgets_by_campaign:
+            continue
         campaign_budgets = budgets_by_campaign[campaign.id]
         (start_date, end_date, remaining_budget, margin) = _calculate_budget_data_for_campaign(
             campaign, campaign_budgets
