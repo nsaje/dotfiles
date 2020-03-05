@@ -130,7 +130,7 @@ services:
 
     einsworker_reports:
         extends: eins-base
-        scale: 5
+        scale: 10
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
         mem_reservation: 1g
