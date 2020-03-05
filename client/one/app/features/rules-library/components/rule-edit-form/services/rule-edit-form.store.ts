@@ -335,59 +335,55 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BounceRate],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.RemainingCampaignBudget
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.CampaignBudgetMargin
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.CampaignBudgetStartDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.CampaignBudgetEndDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysSinceCampaignBudgetStart
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysUntilCampaignBudgetEnd
-            // ],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.AccountCreationDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysSinceAccountCreation
-            // ],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignName],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.CampaignCreationDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysSinceCampaignCreation
-            // ],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignManager],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupName],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.AdGroupCreationDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysSinceAdGroupCreation
-            // ],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupStartDate],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupEndDate],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.AdGroupDailyBudget
-            // ],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CreativeName],
-            // RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CreativeLabel],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.CreativeCreationDate
-            // ],
-            // RULE_CONDITIONS_OPTIONS[
-            //     RuleConditionOperandType.DaysSinceCreativeCreation
-            // ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.RemainingCampaignBudget
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetMargin
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetStartDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetEndDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCampaignBudgetStart
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysUntilCampaignBudgetEnd
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AccountCreatedDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceAccountCreated
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignCreatedDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCampaignCreated
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignManager],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AdGroupCreatedDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceAdGroupCreated
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupStartDate],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupEndDate],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupDailyCap],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdTitle],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdLabel],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdCreatedDate],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceAdCreated
+            ],
         ];
     }
 

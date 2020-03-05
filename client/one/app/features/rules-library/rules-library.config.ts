@@ -470,20 +470,15 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         label: 'Account name',
         group: RuleConditionOperandGroup.Settings,
     },
-    [RuleConditionOperandType.AccountManager]: {
-        type: RuleConditionOperandType.AccountManager,
-        label: 'Account manager',
-        group: RuleConditionOperandGroup.Settings,
-    },
-    [RuleConditionOperandType.AccountCreationDate]: {
-        type: RuleConditionOperandType.AccountCreationDate,
-        label: 'Account creation date',
+    [RuleConditionOperandType.AccountCreatedDate]: {
+        type: RuleConditionOperandType.AccountCreatedDate,
+        label: 'Account created date',
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Integer, unit: Unit.Day},
     },
-    [RuleConditionOperandType.DaysSinceAccountCreation]: {
-        type: RuleConditionOperandType.DaysSinceAccountCreation,
-        label: 'Days since account creation',
+    [RuleConditionOperandType.DaysSinceAccountCreated]: {
+        type: RuleConditionOperandType.DaysSinceAccountCreated,
+        label: 'Days since account created',
         group: RuleConditionOperandGroup.Settings,
     },
     [RuleConditionOperandType.CampaignName]: {
@@ -491,15 +486,15 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         label: 'Campaign name',
         group: RuleConditionOperandGroup.Settings,
     },
-    [RuleConditionOperandType.CampaignCreationDate]: {
-        type: RuleConditionOperandType.CampaignCreationDate,
-        label: 'Campaign creation date',
+    [RuleConditionOperandType.CampaignCreatedDate]: {
+        type: RuleConditionOperandType.CampaignCreatedDate,
+        label: 'Campaign created date',
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Integer, unit: Unit.Day},
     },
-    [RuleConditionOperandType.DaysSinceCampaignCreation]: {
-        type: RuleConditionOperandType.DaysSinceCampaignCreation,
-        label: 'Days since campaign creation',
+    [RuleConditionOperandType.DaysSinceCampaignCreated]: {
+        type: RuleConditionOperandType.DaysSinceCampaignCreated,
+        label: 'Days since campaign created',
         group: RuleConditionOperandGroup.Settings,
     },
     [RuleConditionOperandType.CampaignManager]: {
@@ -512,15 +507,15 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         label: 'Ad group name',
         group: RuleConditionOperandGroup.Settings,
     },
-    [RuleConditionOperandType.AdGroupCreationDate]: {
-        type: RuleConditionOperandType.AdGroupCreationDate,
-        label: 'Ad group creation date',
+    [RuleConditionOperandType.AdGroupCreatedDate]: {
+        type: RuleConditionOperandType.AdGroupCreatedDate,
+        label: 'Ad group created date',
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Integer, unit: Unit.Day},
     },
-    [RuleConditionOperandType.DaysSinceAdGroupCreation]: {
-        type: RuleConditionOperandType.DaysSinceAdGroupCreation,
-        label: 'Days since ad group creation',
+    [RuleConditionOperandType.DaysSinceAdGroupCreated]: {
+        type: RuleConditionOperandType.DaysSinceAdGroupCreated,
+        label: 'Days since ad group created',
         group: RuleConditionOperandGroup.Settings,
     },
     [RuleConditionOperandType.AdGroupStartDate]: {
@@ -535,37 +530,31 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Integer, unit: Unit.Day},
     },
-    [RuleConditionOperandType.AdGroupDailyBudget]: {
-        type: RuleConditionOperandType.AdGroupDailyBudget,
-        label: 'Ad group daily budget',
+    [RuleConditionOperandType.AdGroupDailyCap]: {
+        type: RuleConditionOperandType.AdGroupDailyCap,
+        label: 'Ad group daily cap',
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
-    [RuleConditionOperandType.AdGroupDailyClickCap]: {
-        type: RuleConditionOperandType.AdGroupDailyClickCap,
-        label: 'Ad group daily click cap',
-        group: RuleConditionOperandGroup.Settings,
-        valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
-    },
-    [RuleConditionOperandType.CreativeName]: {
-        type: RuleConditionOperandType.CreativeName,
-        label: 'Creative name',
+    [RuleConditionOperandType.AdTitle]: {
+        type: RuleConditionOperandType.AdTitle,
+        label: 'Ad title',
         group: RuleConditionOperandGroup.Settings,
     },
-    [RuleConditionOperandType.CreativeLabel]: {
-        type: RuleConditionOperandType.CreativeLabel,
-        label: 'Creative label',
+    [RuleConditionOperandType.AdLabel]: {
+        type: RuleConditionOperandType.AdLabel,
+        label: 'Ad label',
         group: RuleConditionOperandGroup.Settings,
     },
-    [RuleConditionOperandType.CreativeCreationDate]: {
-        type: RuleConditionOperandType.CreativeCreationDate,
-        label: 'Creative creation date',
+    [RuleConditionOperandType.AdCreatedDate]: {
+        type: RuleConditionOperandType.AdCreatedDate,
+        label: 'Ad created date',
         group: RuleConditionOperandGroup.Settings,
         valueModifier: {dataType: DataType.Integer, unit: Unit.Day},
     },
-    [RuleConditionOperandType.DaysSinceCreativeCreation]: {
-        type: RuleConditionOperandType.DaysSinceCreativeCreation,
-        label: 'Days since creative creation',
+    [RuleConditionOperandType.DaysSinceAdCreated]: {
+        type: RuleConditionOperandType.DaysSinceAdCreated,
+        label: 'Days since ad created',
         group: RuleConditionOperandGroup.Settings,
     },
 };
@@ -1090,10 +1079,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.AccountCreationDate]: {
+    [RuleConditionOperandType.AccountCreatedDate]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AccountCreationDate
+                RuleConditionOperandType.AccountCreatedDate
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1111,10 +1100,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.DaysSinceAccountCreation]: {
+    [RuleConditionOperandType.DaysSinceAccountCreated]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.DaysSinceAccountCreation
+                RuleConditionOperandType.DaysSinceAccountCreated
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1149,10 +1138,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.CampaignCreationDate]: {
+    [RuleConditionOperandType.CampaignCreatedDate]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CampaignCreationDate
+                RuleConditionOperandType.CampaignCreatedDate
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1170,10 +1159,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.DaysSinceCampaignCreation]: {
+    [RuleConditionOperandType.DaysSinceCampaignCreated]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.DaysSinceCampaignCreation
+                RuleConditionOperandType.DaysSinceCampaignCreated
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1231,10 +1220,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.AdGroupCreationDate]: {
+    [RuleConditionOperandType.AdGroupCreatedDate]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AdGroupCreationDate
+                RuleConditionOperandType.AdGroupCreatedDate
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1252,10 +1241,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.DaysSinceAdGroupCreation]: {
+    [RuleConditionOperandType.DaysSinceAdGroupCreated]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.DaysSinceAdGroupCreation
+                RuleConditionOperandType.DaysSinceAdGroupCreated
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1312,10 +1301,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.AdGroupDailyBudget]: {
+    [RuleConditionOperandType.AdGroupDailyCap]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AdGroupDailyBudget
+                RuleConditionOperandType.AdGroupDailyCap
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1335,11 +1324,9 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.CreativeName]: {
+    [RuleConditionOperandType.AdTitle]: {
         metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CreativeName
-            ],
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.AdTitle],
         availableOperators: [
             RuleConditionOperator.Equals,
             RuleConditionOperator.NotEquals,
@@ -1355,11 +1342,9 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.CreativeLabel]: {
+    [RuleConditionOperandType.AdLabel]: {
         metric:
-            RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CreativeLabel
-            ],
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.AdLabel],
         availableOperators: [
             RuleConditionOperator.Equals,
             RuleConditionOperator.NotEquals,
@@ -1375,10 +1360,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.CreativeCreationDate]: {
+    [RuleConditionOperandType.AdCreatedDate]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.CreativeCreationDate
+                RuleConditionOperandType.AdCreatedDate
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
@@ -1396,10 +1381,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             // ],
         ],
     },
-    [RuleConditionOperandType.DaysSinceCreativeCreation]: {
+    [RuleConditionOperandType.DaysSinceAdCreated]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.DaysSinceCreativeCreation
+                RuleConditionOperandType.DaysSinceAdCreated
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,
