@@ -179,7 +179,7 @@ class AdGroupSettingsValidatorMixin(object):
         if self.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
             msg = "To manage Daily Spend Cap for All RTB as one, ad group must be paused first."
             if not new_settings.b1_sources_group_enabled:
-                "To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first."
+                msg = "To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first."
             raise exceptions.AdGroupNotPaused(msg)
 
     def _validate_bluekai_tageting(self, bluekai_targeting):
@@ -255,7 +255,7 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpc_cc(
-            new_settings.b1_sources_group_cpc_cc, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_cpc_cc, new_settings, self.ad_group.campaign.get_bcm_modifiers()
         )
 
     def _validate_b1_sources_group_cpm(self, new_settings):
@@ -268,7 +268,7 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_cpm, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpm(
-            new_settings.b1_sources_group_cpm, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_cpm, new_settings, self.ad_group.campaign.get_bcm_modifiers()
         )
 
     def _validate_b1_sources_group_daily_budget(self, new_settings):
@@ -276,5 +276,5 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_daily_budget, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_daily_budget(
-            new_settings.b1_sources_group_daily_budget, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_daily_budget, new_settings, self.ad_group.campaign.get_bcm_modifiers()
         )

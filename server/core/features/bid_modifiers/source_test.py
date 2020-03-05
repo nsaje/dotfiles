@@ -1420,8 +1420,8 @@ class AllRTBUpdateTestCase(TestCase):
         self.ad_group_source_1.settings.update_unsafe(None, **ad_group_source_settings_1)
         self.ad_group_source_2.settings.update_unsafe(None, **ad_group_source_settings_2)
 
-    def _initial_ad_group_settings(self):
-        return {
+    def _initial_ad_group_settings(self, **updates):
+        settings = {
             "cpc_cc": None,
             "local_cpc_cc": None,
             "max_cpm": None,
@@ -1436,14 +1436,18 @@ class AllRTBUpdateTestCase(TestCase):
             "local_b1_sources_group_cpm": decimal.Decimal("0.0086"),
             "b1_sources_group_enabled": True,
         }
+        settings.update(updates)
+        return settings
 
-    def _initial_ad_group_source_settings(self):
-        return {
+    def _initial_ad_group_source_settings(self, **updates):
+        settings = {
             "cpc_cc": decimal.Decimal("0.2230"),
             "local_cpc_cc": decimal.Decimal("0.2000"),
             "cpm": decimal.Decimal("0.9852"),
             "local_cpm": decimal.Decimal("0.8835"),
         }
+        settings.update(updates)
+        return settings
 
     def _assert_ad_group_state(self, settings):
         for k, v in settings.items():
@@ -1568,6 +1572,35 @@ class AllRTBUpdateTestCase(TestCase):
             {"cpc_cc": decimal.Decimal("0.1673"), "local_cpc_cc": decimal.Decimal("0.1500")},
             float(decimal.Decimal("0.1673") / decimal.Decimal("15.0000")),
         )
+
+    def test_manual_b1_sources_group_bid_update_outside_limits(self):
+        ad_group_settings = self._initial_ad_group_settings(b1_sources_group_enabled=False)
+        ad_group_settings.update({"autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE})
+        ad_group_source_settings = self._initial_ad_group_source_settings()
+        self._setup_ad_group_and_sources(ad_group_settings, ad_group_source_settings, ad_group_source_settings)
+
+        with self.assertRaises(ags_exceptions.MaximalCPCTooHigh):
+            self.ad_group.settings.update(
+                None, b1_sources_group_enabled=True, local_b1_sources_group_cpc_cc=decimal.Decimal("91.0000")
+            )
+
+        with self.assertRaises(ags_exceptions.MinimalCPCTooLow):
+            self.ad_group.settings.update(
+                None, b1_sources_group_enabled=True, local_b1_sources_group_cpc_cc=decimal.Decimal("0.0010")
+            )
+
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(None)
+
+        with self.assertRaises(ags_exceptions.MaximalCPMTooHigh):
+            self.ad_group.settings.update(
+                None, b1_sources_group_enabled=True, local_b1_sources_group_cpm=decimal.Decimal("91.0000")
+            )
+
+        with self.assertRaises(ags_exceptions.MinimalCPMTooLow):
+            self.ad_group.settings.update(
+                None, b1_sources_group_enabled=True, local_b1_sources_group_cpm=decimal.Decimal("0.0010")
+            )
 
 
 class MulticurrencyUpdateTestCase(TestCase):
