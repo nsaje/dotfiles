@@ -5,15 +5,15 @@
 <zem-chart-metric-selector
     class="zem-chart-metrics-selector"
     ng-if="$ctrl.initialized"
-    chart="$ctrl.chart"
     metric="$ctrl.metrics.metric1"
+    metric-options="$ctrl.chart.metrics.options"
     on-metric-changed="$ctrl.onMetricsChanged(value, $ctrl.metrics.metric2)"
 ></zem-chart-metric-selector>
 <zem-chart-metric-selector
     class="zem-chart-metrics-selector zem-chart-metrics-selector--second"
     ng-if="$ctrl.initialized"
-    chart="$ctrl.chart"
     metric="$ctrl.metrics.metric2"
+    metric-options="$ctrl.chart.metrics.options"
     on-metric-changed="$ctrl.onMetricsChanged($ctrl.metrics.metric1, value)"
     nullable="true"
 ></zem-chart-metric-selector>

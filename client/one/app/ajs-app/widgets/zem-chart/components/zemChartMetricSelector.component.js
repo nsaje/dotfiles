@@ -1,7 +1,9 @@
+var arrayHelpers = require('../../../../shared/helpers/array.helpers');
+
 angular.module('one.widgets').component('zemChartMetricSelector', {
     bindings: {
-        chart: '<',
         metric: '<',
+        metricOptions: '<',
         nullable: '<',
         onMetricChanged: '&',
     },
@@ -15,10 +17,18 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.$onInit = function() {
-            initializeCategories();
-            zemCostModeService.onCostModeUpdate(initializeCategories);
-            zemNavigationNewService.onUsesBCMv2Update(initializeCategories);
-            $ctrl.chart.metrics.metaData.onMetricsUpdated(initializeCategories);
+            zemCostModeService.onCostModeUpdate(function() {
+                $ctrl.categories = getCategories($ctrl.metricOptions);
+            });
+            zemNavigationNewService.onUsesBCMv2Update(function() {
+                $ctrl.categories = getCategories($ctrl.metricOptions);
+            });
+        };
+
+        $ctrl.$onChanges = function(changes) {
+            if (changes.metricOptions) {
+                $ctrl.categories = getCategories($ctrl.metricOptions);
+            }
         };
 
         function getCategoryColumns(category) {
@@ -51,17 +61,20 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
             };
         }
 
-        function initializeCategories() {
-            $ctrl.categories = [];
-            $ctrl.chart.metrics.options.forEach(function(category) {
-                var newCategory = getCategory(category);
-                if (
-                    newCategory.metrics.length > 0 ||
-                    newCategory.subcategories.length > 0
-                ) {
-                    $ctrl.categories.push(newCategory);
-                }
-            });
+        function getCategories(metricOptions) {
+            var categories = [];
+            if (!arrayHelpers.isEmpty(metricOptions)) {
+                metricOptions.forEach(function(metricOption) {
+                    var category = getCategory(metricOption);
+                    if (
+                        category.metrics.length > 0 ||
+                        category.subcategories.length > 0
+                    ) {
+                        categories.push(category);
+                    }
+                });
+            }
+            return categories;
         }
 
         $ctrl.onChanged = function(metric) {

@@ -54,7 +54,6 @@ angular
                             }
                             metaData.setCurrency(data.currency);
                             metaData.insertDynamicMetrics(
-                                metaData.metrics,
                                 data.pixels,
                                 data.conversion_goals
                             );

@@ -56,7 +56,6 @@ angular.module('one.widgets').directive('zemGridCellExternalLink', function() {
             }
 
             function openUrl($event) {
-                $event.stopPropagation();
                 $event.preventDefault();
                 $window.open(vm.redirectorUrl || vm.url, '_blank');
             }

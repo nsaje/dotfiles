@@ -1,15 +1,11 @@
+var clone = require('clone');
+
 angular
     .module('one.widgets')
-    .factory('zemChartMetaDataService', function(
-        zemChartMetricsService,
-        zemPubSubService
-    ) {
+    .factory('zemChartMetaDataService', function(zemChartMetricsService) {
         // eslint-disable-line max-len
 
         function MetaData(level, id, breakdown, url) {
-            var METRICS_UPDATED = 'zem-chart-metrics-updated';
-            var pubsub = zemPubSubService.createInstance();
-
             this.id = id;
             this.level = level;
             this.breakdown = breakdown;
@@ -19,20 +15,14 @@ angular
             this.insertDynamicMetrics = insertDynamicMetrics;
             this.setCurrency = setCurrency;
 
-            // Listeners - pubsub rewiring
-            this.onMetricsUpdated = onMetricsUpdated;
-
-            function onMetricsUpdated(callback) {
-                pubsub.register(METRICS_UPDATED, callback);
-            }
-
-            function insertDynamicMetrics(categories, pixels, conversionGoals) {
+            function insertDynamicMetrics(pixels, conversionGoals) {
+                var clonedMetrics = clone(this.metrics);
                 zemChartMetricsService.insertDynamicMetrics(
-                    categories,
+                    clonedMetrics,
                     pixels,
                     conversionGoals
                 );
-                pubsub.notify(METRICS_UPDATED);
+                this.metrics = clonedMetrics;
             }
 
             function setCurrency(currency) {

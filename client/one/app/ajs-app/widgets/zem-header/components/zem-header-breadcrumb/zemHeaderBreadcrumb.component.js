@@ -13,7 +13,8 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $window,
         config,
         zemPermissions,
-        zemNavigationNewService
+        zemNavigationNewService,
+        zemUtils
     ) {
         // eslint-disable-line max-len
         var $ctrl = this;
@@ -246,8 +247,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             return null;
         }
 
-        function openUrl(href) {
-            NgRouter.navigateByUrl(href);
+        function openUrl($event, href) {
+            $event.preventDefault();
+            if (zemUtils.shouldOpenInNewTab($event)) {
+                $window.open(href, '_blank');
+            } else {
+                NgRouter.navigateByUrl(href);
+            }
         }
     },
 });

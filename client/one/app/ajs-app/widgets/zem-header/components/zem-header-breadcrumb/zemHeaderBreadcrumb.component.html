@@ -6,7 +6,7 @@
     <a
         class="zem-header-breadcrumb__link"
         href="{{ item.href }}"
-        ng-click="$ctrl.openUrl(item.href)"
+        ng-click="$ctrl.openUrl($event, item.href)"
         title="{{ item.name }}"
     >
         <span class="zem-header-breadcrumb__type-name"

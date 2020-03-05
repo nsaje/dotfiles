@@ -13,7 +13,12 @@ angular
                 grid: '=',
             },
             template: require('./zemGridCellInternalLink.component.html'),
-            controller: function($scope, zemNavigationNewService) {
+            controller: function(
+                $scope,
+                zemNavigationNewService,
+                zemUtils,
+                $window
+            ) {
                 var vm = this;
                 vm.openUrl = openUrl;
 
@@ -32,11 +37,14 @@ angular
                 }
 
                 function openUrl($event) {
-                    $event.stopPropagation();
                     $event.preventDefault();
-                    NgZone.run(function() {
-                        NgRouter.navigateByUrl(vm.href);
-                    });
+                    if (zemUtils.shouldOpenInNewTab($event)) {
+                        $window.open(vm.href, '_blank');
+                    } else {
+                        NgZone.run(function() {
+                            NgRouter.navigateByUrl(vm.href);
+                        });
+                    }
                 }
             },
         };
