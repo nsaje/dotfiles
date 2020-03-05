@@ -3,7 +3,6 @@ from typing import Sequence
 from typing import Union
 
 from django.db.models import Case
-from django.db.models import DateField
 from django.db.models import DecimalField
 from django.db.models import F
 from django.db.models import OuterRef
@@ -11,15 +10,13 @@ from django.db.models import Q
 from django.db.models import Subquery
 from django.db.models import Sum
 from django.db.models import When
-from django.db.models.functions import Cast
 from django.db.models.functions import Coalesce
-from django.db.models.functions import ExtractDay
-from django.db.models.functions import Now
 
 import core.models
 import dash.constants
 
-from .. import constants
+from ... import constants
+from . import helpers
 
 
 def prepare_ad_group_settings(
@@ -38,48 +35,23 @@ def prepare_ad_group_settings(
     return {el["ad_group_id"]: el for el in ad_group_settings_qs}
 
 
-def prepare_content_ad_settings(
-    ad_groups: Sequence[core.models.AdGroup]
-) -> Dict[int, Dict[int, Dict[str, Union[int, str]]]]:
-    content_ad_annotate_mappings = _prepare_content_ad_annotations()
-    content_ad_settings_qs = (
-        core.models.ContentAd.objects.filter(ad_group__in=ad_groups)
-        .annotate(content_ad_id=F("id"), **content_ad_annotate_mappings)
-        .values("ad_group_id", "content_ad_id", *content_ad_annotate_mappings.keys())
-    )
-    settings_by_ad_group_by_content_ad: Dict[int, Dict[int, Dict[str, Union[int, str]]]] = {}
-    for el in content_ad_settings_qs:
-        settings_by_ad_group_by_content_ad.setdefault(el["ad_group_id"], {})
-        settings_by_ad_group_by_content_ad[el["ad_group_id"]][el["content_ad_id"]] = el
-    return settings_by_ad_group_by_content_ad
-
-
-def _prepare_content_ad_annotations():
-    metric_mappings = {
-        constants.MetricType.AD_TITLE: F("title"),
-        constants.MetricType.AD_LABEL: F("label"),
-        constants.MetricType.AD_CREATED_DATE: _cast_datetime_field_to_date("created_dt"),
-        constants.MetricType.DAYS_SINCE_AD_CREATED: _get_days_since_created_field("created_dt"),
-    }
-    annotate_mappings = _map_keys_from_constant_to_qs_string_representation(metric_mappings)
-    return annotate_mappings
-
-
 def _prepare_ad_group_settings_annotations(*, include_campaign_goals: bool, include_ad_group_daily_cap: bool):
     metric_mappings = {
         constants.MetricType.ACCOUNT_NAME: F("campaign__account__name"),
-        constants.MetricType.ACCOUNT_CREATED_DATE: _cast_datetime_field_to_date("campaign__account__created_dt"),
-        constants.MetricType.DAYS_SINCE_ACCOUNT_CREATED: _get_days_since_created_field("campaign__account__created_dt"),
+        constants.MetricType.ACCOUNT_CREATED_DATE: helpers.cast_datetime_field_to_date("campaign__account__created_dt"),
+        constants.MetricType.DAYS_SINCE_ACCOUNT_CREATED: helpers.get_days_since_created_field(
+            "campaign__account__created_dt"
+        ),
         constants.MetricType.CAMPAIGN_NAME: F("campaign__name"),
-        constants.MetricType.CAMPAIGN_CREATED_DATE: _cast_datetime_field_to_date("campaign__created_dt"),
-        constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED: _get_days_since_created_field("campaign__created_dt"),
+        constants.MetricType.CAMPAIGN_CREATED_DATE: helpers.cast_datetime_field_to_date("campaign__created_dt"),
+        constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED: helpers.get_days_since_created_field("campaign__created_dt"),
         constants.MetricType.CAMPAIGN_TYPE: F("campaign__type"),
         constants.MetricType.CAMPAIGN_MANAGER: F("campaign__settings__campaign_manager__email"),
         constants.MetricType.CAMPAIGN_CATEGORY: F("campaign__settings__iab_category"),
         constants.MetricType.CAMPAIGN_LANGUAGE: F("campaign__settings__language"),
         constants.MetricType.AD_GROUP_NAME: F("name"),
-        constants.MetricType.AD_GROUP_CREATED_DATE: _cast_datetime_field_to_date("created_dt"),
-        constants.MetricType.DAYS_SINCE_AD_GROUP_CREATED: _get_days_since_created_field("created_dt"),
+        constants.MetricType.AD_GROUP_CREATED_DATE: helpers.cast_datetime_field_to_date("created_dt"),
+        constants.MetricType.DAYS_SINCE_AD_GROUP_CREATED: helpers.get_days_since_created_field("created_dt"),
         constants.MetricType.AD_GROUP_START_DATE: F("settings__start_date"),
         constants.MetricType.AD_GROUP_END_DATE: F("settings__end_date"),
         constants.MetricType.AD_GROUP_BIDDING_TYPE: F("bidding_type"),
@@ -90,7 +62,7 @@ def _prepare_ad_group_settings_annotations(*, include_campaign_goals: bool, incl
         metric_mappings.update(_constuct_campaign_goals_annotations())
     if include_ad_group_daily_cap:
         metric_mappings.update(_construct_ad_group_daily_cap_annotations())
-    annotate_mappings = _map_keys_from_constant_to_qs_string_representation(metric_mappings)
+    annotate_mappings = helpers.map_keys_from_constant_to_qs_string_representation(metric_mappings)
     return annotate_mappings
 
 
@@ -136,17 +108,3 @@ def _get_ad_group_bid_field():
         When(bidding_type=dash.constants.BiddingType.CPC, then=F("settings__local_cpc")),
         When(bidding_type=dash.constants.BiddingType.CPM, then=F("settings__local_cpm")),
     )
-
-
-def _get_days_since_created_field(field):
-    return ExtractDay(Cast(Now(), DateField()) - _cast_datetime_field_to_date(field))
-
-
-def _cast_datetime_field_to_date(field):
-    return Cast(field, DateField())
-
-
-def _map_keys_from_constant_to_qs_string_representation(metric_mappings):
-    # NOTE: django expects strings as keys in annotations.
-    # They are mapped to descriptive names for clarity.
-    return {constants.METRIC_SETTINGS_MAPPING[metric]: field for metric, field in metric_mappings.items()}

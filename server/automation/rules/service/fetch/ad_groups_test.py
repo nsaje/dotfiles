@@ -11,10 +11,10 @@ from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
-from . import fetch
+from . import ad_groups
 
 
-class PrepareSettingsTestCase(TestCase):
+class PrepareAdGroupSettingsTestCase(TestCase):
     def setUp(self):
         # NOTE: patching the class with a decorator doesn't work because of import timing
         patcher = mock.patch("automation.autopilot.recalculate_budgets_ad_group")
@@ -48,7 +48,7 @@ class PrepareSettingsTestCase(TestCase):
 
     def test_prepare_ad_group_settings(self):
         self.assertEqual(
-            fetch.prepare_ad_group_settings([self.ad_group]),
+            ad_groups.prepare_ad_group_settings([self.ad_group]),
             {
                 self.ad_group.id: {
                     "account_created_date": self.utc_today - datetime.timedelta(days=3),
@@ -74,24 +74,6 @@ class PrepareSettingsTestCase(TestCase):
             },
         )
 
-    def test_prepare_content_ad_settings(self):
-        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group, label="test")
-        self.assertEqual(
-            fetch.prepare_content_ad_settings([self.ad_group]),
-            {
-                self.ad_group.id: {
-                    content_ad.id: {
-                        "ad_created_date": self.utc_today,
-                        "ad_group_id": self.ad_group.id,
-                        "ad_label": content_ad.label,
-                        "ad_title": content_ad.title,
-                        "content_ad_id": content_ad.id,
-                        "days_since_ad_created": 0,
-                    }
-                }
-            },
-        )
-
     def test_primary_campaign_goal(self):
         core.features.goals.CampaignGoal.objects.create(
             self.request, self.campaign, dash.constants.CampaignGoalKPI.TIME_ON_SITE, 30, primary=False
@@ -101,7 +83,7 @@ class PrepareSettingsTestCase(TestCase):
         )
         primary_goal.update(self.request, value=decimal.Decimal("0.7"))
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group], include_campaign_goals=True)[
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_campaign_goals=True)[
             self.ad_group.id
         ]
         self.assertEqual(dash.constants.CampaignGoalKPI.CPC, ad_group_settings["campaign_primary_goal"])
@@ -116,7 +98,7 @@ class PrepareSettingsTestCase(TestCase):
         )
         non_primary_goal.update(self.request, primary=True)
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group], include_campaign_goals=True)[
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_campaign_goals=True)[
             self.ad_group.id
         ]
         self.assertEqual(dash.constants.CampaignGoalKPI.TIME_ON_SITE, ad_group_settings["campaign_primary_goal"])
@@ -126,14 +108,14 @@ class PrepareSettingsTestCase(TestCase):
         self.ad_group.update(None, bidding_type=dash.constants.BiddingType.CPC)
         self.ad_group.settings.update(None, cpc=decimal.Decimal("0.7"))
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group])[self.ad_group.id]
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group])[self.ad_group.id]
         self.assertEqual(decimal.Decimal("0.7"), ad_group_settings["ad_group_bid"])
 
     def test_ad_group_bid_cpm(self):
         self.ad_group.update(None, bidding_type=dash.constants.BiddingType.CPM)
         self.ad_group.settings.update(None, cpm=decimal.Decimal("1.2"))
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group])[self.ad_group.id]
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group])[self.ad_group.id]
         self.assertEqual(decimal.Decimal("1.2"), ad_group_settings["ad_group_bid"])
 
     def test_ad_group_daily_caps_manual_rtb(self):
@@ -141,13 +123,13 @@ class PrepareSettingsTestCase(TestCase):
             None, b1_sources_group_enabled=False, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         )
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
             self.ad_group.id
         ]
         self.assertEqual(decimal.Decimal("30"), ad_group_settings["ad_group_daily_cap"])
 
     def test_ad_group_daily_caps_all_rtb(self):
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
             self.ad_group.id
         ]
         self.assertEqual(decimal.Decimal("50"), ad_group_settings["ad_group_daily_cap"])
@@ -162,7 +144,7 @@ class PrepareSettingsTestCase(TestCase):
                 None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE, daily_budget_cc=decimal.Decimal("10")
             )
 
-        ad_group_settings = fetch.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
+        ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[
             self.ad_group.id
         ]
         self.assertEqual(decimal.Decimal("70"), ad_group_settings["ad_group_daily_cap"])

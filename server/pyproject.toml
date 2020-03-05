@@ -1,0 +1,4 @@
+[tool.black]
+line-length = 120
+target-version = ['py37']
+exclude = 'build/|buck-out/|dist/|_build/|\.git/|\.hg/|\.mypy_cache/|\.tox/|\.venv/|.*\/migrations\/.*'

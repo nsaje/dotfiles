@@ -559,6 +559,7 @@ class FetchSettingsTest(TestCase):
 
         self.basic_metric_types = (
             set(constants.METRIC_SETTINGS_MAPPING)
+            - set(constants.METRIC_BUDGETS_MAPPING)
             - {
                 constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
                 constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,

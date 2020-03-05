@@ -175,6 +175,12 @@ class MetricType(ConstantBase):
     AD_LABEL = 55
     AD_CREATED_DATE = 56
     DAYS_SINCE_AD_CREATED = 57
+    CAMPAIGN_BUDGET_START_DATE = 58
+    DAYS_SINCE_CAMPAIGN_BUDGET_START = 59
+    CAMPAIGN_BUDGET_END_DATE = 60
+    DAYS_UNTIL_CAMPAIGN_BUDGET_END = 61
+    CAMPAIGN_BUDGET_MARGIN = 62
+    CAMPAIGN_REMAINING_BUDGET = 63
 
     _VALUES = {
         TOTAL_SPEND: "Total spend",
@@ -234,6 +240,12 @@ class MetricType(ConstantBase):
         AD_LABEL: "Ad label",
         AD_CREATED_DATE: "Ad created date",
         DAYS_SINCE_AD_CREATED: "Days since ad created",
+        CAMPAIGN_BUDGET_START_DATE: "Budget start date",
+        DAYS_SINCE_CAMPAIGN_BUDGET_START: "Days since budget start",
+        CAMPAIGN_BUDGET_END_DATE: "Budget end date",
+        DAYS_UNTIL_CAMPAIGN_BUDGET_END: "Days until budget end",
+        CAMPAIGN_BUDGET_MARGIN: "Budget margin",
+        CAMPAIGN_REMAINING_BUDGET: "Remaining budget",
     }
 
 
@@ -299,6 +311,22 @@ METRIC_SETTINGS_MAPPING = {
     MetricType.AD_LABEL: "ad_label",
     MetricType.AD_CREATED_DATE: "ad_created_date",
     MetricType.DAYS_SINCE_AD_CREATED: "days_since_ad_created",
+    MetricType.CAMPAIGN_BUDGET_START_DATE: "campaign_budget_start_date",
+    MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: "days_since_campaign_budget_start",
+    MetricType.CAMPAIGN_BUDGET_END_DATE: "campaign_budget_end_date",
+    MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: "days_since_campaign_budget_end_date",
+    MetricType.CAMPAIGN_BUDGET_MARGIN: "campaign_budget_margin",
+    MetricType.CAMPAIGN_REMAINING_BUDGET: "campaign_remaining_budget",
+}
+
+
+METRIC_BUDGETS_MAPPING = {
+    MetricType.CAMPAIGN_BUDGET_START_DATE: "campaign_budget_start_date",
+    MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: "days_since_campaign_budget_start",
+    MetricType.CAMPAIGN_BUDGET_END_DATE: "campaign_budget_end_date",
+    MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: "days_until_campaign_budget_end",
+    MetricType.CAMPAIGN_BUDGET_MARGIN: "campaign_budget_margin",
+    MetricType.CAMPAIGN_REMAINING_BUDGET: "campaign_remaining_budget",
 }
 
 
