@@ -8,16 +8,22 @@ import {
     EventEmitter,
     OnChanges,
     SimpleChanges,
+    OnInit,
 } from '@angular/core';
 import {
     RuleActionType,
     RuleActionFrequency,
     Macro,
+    RuleTargetType,
 } from '../../../../core/rules/rules.constants';
 import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {FieldErrors} from '../../../../shared/types/field-errors';
-import {EMAIL_MACROS} from '../../rules-library.config';
+import {
+    EMAIL_MACROS,
+    RULE_TARGET_TYPES,
+    RULE_ACTIONS_OPTIONS,
+} from '../../rules-library.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 
 @Component({
@@ -25,9 +31,11 @@ import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-
     templateUrl: './rule-edit-form-action.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RuleEditFormActionComponent implements OnChanges {
+export class RuleEditFormActionComponent implements OnChanges, OnInit {
     @Input()
     actionType: RuleActionType;
+    @Input()
+    targetType: RuleTargetType;
     @Input()
     actionFrequency: RuleActionFrequency;
     @Input()
@@ -63,7 +71,10 @@ export class RuleEditFormActionComponent implements OnChanges {
     @Input()
     publisherGroupIdErrors: FieldErrors;
     @Output()
-    actionTypeChange = new EventEmitter<RuleActionType>();
+    targetActionChange = new EventEmitter<{
+        targetType: RuleTargetType;
+        actionType: RuleActionType;
+    }>();
     @Output()
     actionFrequencyChange = new EventEmitter<number>();
     @Output()
@@ -83,23 +94,35 @@ export class RuleEditFormActionComponent implements OnChanges {
     @Output()
     publisherGroupsOpen = new EventEmitter<void>();
 
+    selectedTargetAndActionType: string;
     selectedActionConfig: RuleActionConfig;
     selectedMacro: Macro;
     shouldAppendMacroToSubject = true;
     availableActionFrequencies: {label: string; value: number}[];
     availablePublisherGroupsItems: {label: string; value: string}[];
+    availableTargetAndActionTypes: {
+        label: string;
+        value: string;
+        actionType: RuleActionType;
+        targetType: RuleTargetType;
+    }[];
     RuleActionType = RuleActionType;
     EMAIL_MACROS = EMAIL_MACROS;
 
     // TODO (automation-rules): Return correct currency symbol
     getUnitText = unitsHelpers.getUnitText;
 
+    ngOnInit(): void {
+        this.availableTargetAndActionTypes = this.constructAvailableTargetAndActionTypes();
+    }
+
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.actionType) {
-            this.selectedActionConfig = this.getSelectedActionConfig(
-                this.availableActions,
+        if (changes.actionType || changes.targetType) {
+            this.selectedTargetAndActionType = this.prepareSelectedTArgetAndActionType(
+                this.targetType,
                 this.actionType
             );
+            this.selectedActionConfig = this.getActionConfig(this.actionType);
             this.availableActionFrequencies = this.getAvailableActionFrequencies(
                 this.selectedActionConfig
             );
@@ -112,8 +135,14 @@ export class RuleEditFormActionComponent implements OnChanges {
         }
     }
 
-    selectActionType(actionType: RuleActionType) {
-        this.actionTypeChange.emit(actionType);
+    selectTargetAndActionType(targetActionType: string) {
+        const selectedTargetAndActionType = this.getSelectedTargetAndActionType(
+            targetActionType
+        );
+        this.targetActionChange.emit({
+            targetType: selectedTargetAndActionType.targetType,
+            actionType: selectedTargetAndActionType.actionType,
+        });
     }
 
     selectActionFrequency(actionFrequency: number) {
@@ -196,14 +225,64 @@ export class RuleEditFormActionComponent implements OnChanges {
         return changeLimit;
     }
 
-    private getSelectedActionConfig(
-        availableActions: RuleActionConfig[],
-        actionType: RuleActionType
-    ): RuleActionConfig {
+    private getSelectedTargetAndActionType(
+        selectedTargetAndActionType: string
+    ) {
         return (
-            availableActions.find(action => {
-                return action.type === actionType;
-            }) || {label: null, type: null, frequencies: []}
+            this.availableTargetAndActionTypes.find(targetAction => {
+                return targetAction.value === selectedTargetAndActionType;
+            }) || {
+                label: '',
+                value: '',
+                targetType: this.targetType,
+                actionType: this.actionType,
+            }
+        );
+    }
+
+    private constructAvailableTargetAndActionTypes(): {
+        label: string;
+        value: string;
+        targetType: RuleTargetType;
+        actionType: RuleActionType;
+    }[] {
+        const availableActions: {
+            label: string;
+            value: string;
+            targetType: RuleTargetType;
+            actionType: RuleActionType;
+        }[] = [];
+        RULE_TARGET_TYPES.forEach(target => {
+            target.availableActions.forEach(action => {
+                const actionConfig = this.getActionConfig(action);
+                availableActions.push({
+                    label: target.label + ' - ' + actionConfig.label,
+                    value: this.prepareSelectedTArgetAndActionType(
+                        target.value,
+                        actionConfig.type
+                    ),
+                    targetType: target.value,
+                    actionType: actionConfig.type,
+                });
+            });
+        });
+        return availableActions;
+    }
+
+    private prepareSelectedTArgetAndActionType(
+        targetType: RuleTargetType,
+        actionType: RuleActionType
+    ): string {
+        return targetType + ':' + actionType;
+    }
+
+    private getActionConfig(actionType: RuleActionType): RuleActionConfig {
+        return (
+            RULE_ACTIONS_OPTIONS[actionType] || {
+                label: null,
+                type: null,
+                frequencies: [],
+            }
         );
     }
 

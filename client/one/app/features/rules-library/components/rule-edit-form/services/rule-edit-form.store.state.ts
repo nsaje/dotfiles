@@ -11,7 +11,6 @@ import {PublisherGroup} from '../../../../../core/publisher-groups/types/publish
 
 export class RuleEditFormStoreState {
     agencyId: string = null;
-    availableActions: RuleActionConfig[] = [];
     availableConditions: RuleConditionConfig[] = [];
     availablePublisherGroups: PublisherGroup[] = [];
     fieldsErrors: RulesEditFormStoreFieldsErrorsState = null;

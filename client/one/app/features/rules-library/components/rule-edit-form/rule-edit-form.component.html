@@ -29,24 +29,6 @@
             (valueChange)="store.setRuleName($event)"
         >
         </zem-text-form-group>
-        <zem-select-form-group
-            class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
-            label="Apply rule action on"
-            [value]="state.rule.targetType"
-            bindLabel="label"
-            bindValue="value"
-            [items]="availableTargetTypes"
-            [isSearchable]="false"
-            [isClearable]="false"
-            [errors]="state.fieldsErrors?.targetType"
-            (valueChange)="store.selectRuleTarget($event)"
-        ></zem-select-form-group>
-        <div
-            class="zem-rule-edit-form__section-item zem-rule-edit-form__section-description"
-        >
-            Rule can perform an action on ad, ad group or ad group / breakdown
-            combination.
-        </div>
     </div>
     <div class="zem-rule-edit-form__section">
         <div class="zem-rule-edit-form__section-title">
@@ -55,13 +37,13 @@
         <zem-rule-edit-form-action
             class="zem-rule-edit-form__section-item zem-rule-edit-form-action"
             [actionType]="state.rule.actionType"
+            [targetType]="state.rule.targetType"
             [actionFrequency]="state.rule.actionFrequency"
             [changeStep]="state.rule.changeStep"
             [changeLimit]="state.rule.changeLimit"
             [sendEmailRecipients]="state.rule.sendEmailRecipients"
             [sendEmailSubject]="state.rule.sendEmailSubject"
             [sendEmailBody]="state.rule.sendEmailBody"
-            [availableActions]="state.availableActions"
             [availablePublisherGroups]="state.availablePublisherGroups"
             [isSearchLoading]="state.publisherGroupsRequests.search.inProgress"
             [actionTypeErrors]="state.fieldsErrors?.actionType"
@@ -74,7 +56,7 @@
             [sendEmailSubjectErrors]="state.fieldsErrors?.sendEmailSubject"
             [sendEmailBodyErrors]="state.fieldsErrors?.sendEmailBody"
             [publisherGroupIdErrors]="state.fieldsErrors?.publisherGroupId"
-            (actionTypeChange)="store.setRuleActionType($event)"
+            (targetActionChange)="store.setRuleTargetAction($event)"
             (actionFrequencyChange)="store.setRuleActionFrequency($event)"
             (changeStepChange)="store.setRuleChangeStep($event)"
             (changeLimitChange)="store.setRuleChangeLimit($event)"

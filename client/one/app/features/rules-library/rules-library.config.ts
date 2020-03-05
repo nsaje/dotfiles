@@ -11,39 +11,95 @@ import {
 import {DataType, Unit} from '../../app.constants';
 
 export const RULE_TARGET_TYPES = [
-    {label: 'Ad', value: RuleTargetType.Ad},
-    {label: 'Ad group', value: RuleTargetType.AdGroup},
+    {
+        label: 'Ad',
+        value: RuleTargetType.Ad,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+            RuleActionType.TurnOff,
+        ],
+    },
+    {
+        label: 'Ad group',
+        value: RuleTargetType.AdGroup,
+        availableActions: [
+            RuleActionType.IncreaseBid,
+            RuleActionType.DecreaseBid,
+            RuleActionType.IncreaseDailyBudget,
+            RuleActionType.DecreaseDailyBudget,
+            RuleActionType.TurnOff,
+            RuleActionType.SendEmail,
+        ],
+    },
     {
         label: 'Ad group / publishers',
         value: RuleTargetType.AdGroupPublisher,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+            RuleActionType.Blacklist,
+            RuleActionType.AddToPublisherGroup,
+        ],
     },
     {
         label: 'Ad group / devices',
         value: RuleTargetType.AdGroupDevice,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+        ],
     },
     {
         label: 'Ad group / countries',
         value: RuleTargetType.AdGroupCountry,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+        ],
     },
     {
         label: 'Ad group / regions',
         value: RuleTargetType.AdGroupRegion,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+        ],
     },
     {
         label: 'Ad group / DMAs',
         value: RuleTargetType.AdGroupDma,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+        ],
     },
     {
         label: 'Ad group / operating systems',
         value: RuleTargetType.AdGroupOs,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+        ],
     },
     {
         label: 'Ad group / environments',
         value: RuleTargetType.AdGroupEnvironment,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+            RuleActionType.Blacklist,
+            RuleActionType.AddToPublisherGroup,
+        ],
     },
     {
         label: 'Ad group / sources',
         value: RuleTargetType.AdGroupSource,
+        availableActions: [
+            RuleActionType.IncreaseBidModifier,
+            RuleActionType.DecreaseBidModifier,
+            RuleActionType.TurnOff,
+        ],
     },
 ];
 

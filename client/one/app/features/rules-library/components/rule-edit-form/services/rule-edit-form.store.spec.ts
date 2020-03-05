@@ -77,7 +77,6 @@ describe('RulesLibraryStore', () => {
 
         expect(store.state.agencyId).toEqual(mockedAgencyId);
         expect(store.state.rule).toEqual(mockedNewRule);
-        expect(store.state.availableActions).toEqual([]);
         expect(store.state.availableConditions).toEqual([]);
         expect(store.state.fieldsErrors).toEqual(null);
         expect(store.state.requests).toEqual({save: {}});

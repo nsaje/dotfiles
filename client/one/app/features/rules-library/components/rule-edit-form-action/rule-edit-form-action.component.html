@@ -1,15 +1,14 @@
 <zem-select-form-group
     class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"
     label="Action"
-    [value]="actionType"
+    [value]="selectedTargetAndActionType"
     bindLabel="label"
-    bindValue="type"
-    [items]="availableActions"
-    [isDisabled]="availableActions.length === 0"
+    bindValue="value"
+    [items]="availableTargetAndActionTypes"
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="actionTypeErrors"
-    (valueChange)="selectActionType($event)"
+    (valueChange)="selectTargetAndActionType($event)"
 ></zem-select-form-group>
 
 <zem-currency-form-group

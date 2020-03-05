@@ -95,27 +95,19 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         this.patchState(name, 'rule', 'name');
     }
 
-    selectRuleTarget(target: RuleTargetType) {
-        this.setState({
-            ...this.state,
-            availableActions: this.getActionsForTarget(target),
-            availableConditions: this.getConditionsForTarget(target),
-            rule: {
-                ...this.state.rule,
-                targetType: target,
-                actionType: null,
-                actionFrequency: null,
-                conditions: [],
-            },
-        });
-    }
-
-    setRuleActionType(actionType: RuleActionType) {
+    setRuleTargetAction(targetActionType: {
+        targetType: RuleTargetType;
+        actionType: RuleActionType;
+    }) {
         // reset fields that depend on action type
         this.setState({
             ...this.state,
             rule: {
                 ...this.state.rule,
+                targetType: targetActionType.targetType,
+                actionType: null,
+                actionFrequency: null,
+                conditions: [],
                 changeStep: null,
                 changeLimit: null,
                 sendEmailRecipients: [],
@@ -124,17 +116,19 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 publisherGroupId: null,
             },
         });
-        if (!actionType) {
+        if (!targetActionType.actionType) {
             this.setState({
                 ...this.state,
                 rule: {
                     ...this.state.rule,
-                    actionType: actionType,
+                    targetType: targetActionType.targetType,
+                    actionType: targetActionType.actionType,
                     actionFrequency: null,
+                    conditions: [],
                 },
             });
         } else {
-            this.patchState(actionType, 'rule', 'actionType');
+            this.patchState(targetActionType.actionType, 'rule', 'actionType');
         }
     }
 
