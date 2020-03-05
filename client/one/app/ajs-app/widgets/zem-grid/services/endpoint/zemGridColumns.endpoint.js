@@ -251,7 +251,7 @@ angular
                 shown: 'zemauth.can_see_managers_in_accounts_table',
             },
             obAccountManager: {
-                name: 'OB Account manager',
+                name: 'OB account manager',
                 field: 'ob_account_manager',
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 totalRow: false,
