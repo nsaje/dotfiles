@@ -3,8 +3,13 @@ from mixer.backend.django import mixer
 from mock import ANY
 from mock import patch
 
+import core.models
+import dash.constants
+import utils.dates_helper
 from dash.features.bluekai import constants
 from dash.features.bluekai import models
+from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 from . import maintenance
 
@@ -192,3 +197,65 @@ class AddCategoryTestCase(TestCase):
         mock_get_audience.return_value = self.test_audience
         maintenance.add_category_to_audience(1234)
         self.assertFalse(mock_update_audience.called)
+
+
+class UpdateDynamicAudienceTestCase(TestCase):
+    def setUp(self):
+        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
+        self.ad_group.settings.update_unsafe(
+            None,
+            archived=False,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            start_date=utils.dates_helper.local_yesterday(),
+            end_date=utils.dates_helper.days_after(utils.dates_helper.local_today(), 5),
+            bluekai_targeting=[
+                "and",
+                ["or", "bluekai:111", "bluekai:222", "bluekai:333", "bluekai:444", "category_888"],
+                ["not", ["or", "bluekai:555", "bluekai:666", "category_999"]],
+            ],
+        )
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        self.active_ad_groups = core.models.AdGroup.objects.filter_running_and_has_budget().select_related("settings")
+
+    @patch("dash.features.bluekai.service.bluekaiapi.update_audience")
+    @patch("dash.features.bluekai.service.bluekaiapi.get_audience")
+    def test_update_dynamic_audience(self, mock_get_audience, mock_update_audience):
+        mock_get_audience.return_value = {
+            "name": "Test Audience",
+            "prospecting": True,
+            "retargeting": False,
+            "segments": {
+                "AND": [{"AND": [{"OR": [{"cat": 1234, "freq": [1, None]}, {"cat": 4321, "freq": [1, None]}]}]}]
+            },
+        }
+        maintenance.update_dynamic_audience()
+        mock_update_audience.assert_called_with(
+            maintenance.NEW_AUDIENCE_ID,
+            {
+                "name": "Test Audience",
+                "prospecting": True,
+                "retargeting": False,
+                "segments": {
+                    "AND": [
+                        {
+                            "AND": [
+                                {
+                                    "OR": test_helper.ListMatcher(
+                                        [
+                                            {"cat": 111, "freq": [1, None]},
+                                            {"cat": 222, "freq": [1, None]},
+                                            {"cat": 333, "freq": [1, None]},
+                                            {"cat": 444, "freq": [1, None]},
+                                            {"cat": 555, "freq": [1, None]},
+                                            {"cat": 666, "freq": [1, None]},
+                                        ],
+                                        key=lambda x: x["cat"],
+                                    )
+                                }
+                            ]
+                        }
+                    ]
+                },
+            },
+        )

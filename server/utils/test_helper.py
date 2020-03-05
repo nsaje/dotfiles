@@ -70,15 +70,19 @@ class ListMatcher:
     """Checks if both lists (or list like objects) contain the same elements.
     For use with Mock.assert_called_with()."""
 
-    def __init__(self, obj):
+    def __init__(self, obj, key=None):
         self.obj = obj
+        self.key = key
 
     def __eq__(self, other):
-        return sorted(self.obj) == sorted(other)
+        return sorted(self.obj, key=self.key) == sorted(other, key=self.key)
 
     def __iter__(self):
         for i in self.obj:
             yield i
+
+    def __repr__(self):
+        return f"{type(self).__name__}({repr(self.obj)})"
 
 
 class TypeMatcher:

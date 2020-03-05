@@ -11,11 +11,13 @@ logger = zlogging.getLogger(__name__)
 
 AUDIENCE_ID = 202305
 CAMPAIGN_ID = 383218
+NEW_AUDIENCE_ID = 545340
+NEW_CAMPAIGN_ID = 452382
 STATUS_ACTIVE = "active"
 
 
-def is_bluekai_campaign_running():
-    bluekai_campaign = bluekaiapi.get_campaign(CAMPAIGN_ID)
+def is_bluekai_campaign_running(campaign_id=CAMPAIGN_ID):
+    bluekai_campaign = bluekaiapi.get_campaign(campaign_id)
     return bluekai_campaign["status"] == STATUS_ACTIVE, bluekai_campaign
 
 
@@ -97,6 +99,21 @@ def cross_check_audience_categories():
         ] + messages
 
     return "\n".join(messages)
+
+
+def update_dynamic_audience():
+    audience = bluekaiapi.get_audience(NEW_AUDIENCE_ID)
+    segments_categories = []
+    for category in _get_ad_group_settings_for_bluekai():
+        segments_categories.append({"cat": int(category), "freq": [1, None]})
+    segments = {"AND": [{"AND": [{"OR": segments_categories}]}]}
+    data = {
+        "name": audience["name"],
+        "prospecting": audience["prospecting"],
+        "retargeting": audience["retargeting"],
+        "segments": segments,
+    }
+    bluekaiapi.update_audience(NEW_AUDIENCE_ID, data)
 
 
 def _get_existing_categories():
