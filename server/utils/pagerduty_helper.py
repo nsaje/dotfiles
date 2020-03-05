@@ -62,7 +62,7 @@ def resolve(event_type, incident_key, description, event_severity=None, details=
     )
 
 
-def catch_and_report_exception(event_type, event_severity=None):
+def catch_and_report_exception(event_type, event_severity=None, summary="", links=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -71,8 +71,10 @@ def catch_and_report_exception(event_type, event_severity=None):
             except Exception as ex:
                 func_name = func.__qualname__
                 incident_key = "exc:{}".format(func_name)
-                description = "Exception in function {}\n{}".format(func_name, traceback.format_exc())
-                trigger(event_type, incident_key, description, event_severity=event_severity)
+                description = " ".join(
+                    [summary, "Exception in function {}\n{}".format(func_name, traceback.format_exc())]
+                )
+                trigger(event_type, incident_key, description, event_severity=event_severity, links=links)
                 raise ex
 
         return wrapper
@@ -110,6 +112,9 @@ def _post_event(command, event_type, incident_key, description, event_severity=N
             "custom_details": details,
         },
     }
+    links = kwargs.get("links")
+    if links:
+        data["links"] = [{"href": url, "text": text} for url, text in links.items()]
 
     try:
         response = requests.post(settings.PAGER_DUTY_URL, json=data, timeout=timeout)

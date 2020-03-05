@@ -58,7 +58,10 @@ class Command(Z1Command):
             pagerduty_helper.trigger(
                 pagerduty_helper.PagerDutyEventType.PRODOPS,
                 incident_key,
-                "Job encountered {} errors. Please investigate!".format(error_count),
+                "Z1 Free Allocated Assets job encountered {} errors. Please investigate!".format(error_count),
+                links={
+                    "https://confluence.outbrain.com/display/ZemantaProdops/ProdOps%3A+Exception+in+Z1+job+-+Free+inactive+allocated+asses": "Playbook"
+                },
             )
         else:
             pagerduty_helper.resolve(

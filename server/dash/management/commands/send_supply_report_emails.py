@@ -7,7 +7,13 @@ logger = zlogging.getLogger(__name__)
 
 
 class Command(Z1Command):
-    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
+    @pgdh.catch_and_report_exception(
+        pgdh.PagerDutyEventType.PRODOPS,
+        summary="Z1 Suppply reports issue",
+        links={
+            "https://confluence.outbrain.com/display/ZemantaProdops/ProdOps%3A+Exception+in+Z1+Job+-+Send+supply+report+emails": "Playbook"
+        },
+    )
     def handle(self, *args, **options):
         logger.info("Sending Supply Reports")
         send_supply_reports()
