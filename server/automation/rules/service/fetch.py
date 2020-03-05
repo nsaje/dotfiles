@@ -22,18 +22,6 @@ import dash.constants
 from .. import constants
 
 
-def prepare_content_ad_settings(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[str, Union[int, str]]]:
-    settings_by_ad_group = prepare_ad_group_settings(ad_groups)
-    content_ad_annotate_mappings = _prepare_content_ad_annotations()
-    content_ad_settings_qs = (
-        core.models.ContentAd.objects.filter(ad_group__in=settings_by_ad_group.keys())
-        .annotate(content_ad_id=F("id"), **content_ad_annotate_mappings)
-        .values("content_ad_id", "ad_group_id", *content_ad_annotate_mappings.keys())
-    )
-    settings_by_content_ad = {el["content_ad_id"]: el for el in content_ad_settings_qs}
-    return _merge_content_ad_with_ad_group_settings(settings_by_ad_group, settings_by_content_ad)
-
-
 def prepare_ad_group_settings(
     ad_groups: Sequence[core.models.AdGroup],
     include_campaign_goals: bool = False,
@@ -50,6 +38,22 @@ def prepare_ad_group_settings(
     return {el["ad_group_id"]: el for el in ad_group_settings_qs}
 
 
+def prepare_content_ad_settings(
+    ad_groups: Sequence[core.models.AdGroup]
+) -> Dict[int, Dict[int, Dict[str, Union[int, str]]]]:
+    content_ad_annotate_mappings = _prepare_content_ad_annotations()
+    content_ad_settings_qs = (
+        core.models.ContentAd.objects.filter(ad_group__in=ad_groups)
+        .annotate(content_ad_id=F("id"), **content_ad_annotate_mappings)
+        .values("ad_group_id", "content_ad_id", *content_ad_annotate_mappings.keys())
+    )
+    settings_by_ad_group_by_content_ad: Dict[int, Dict[int, Dict[str, Union[int, str]]]] = {}
+    for el in content_ad_settings_qs:
+        settings_by_ad_group_by_content_ad.setdefault(el["ad_group_id"], {})
+        settings_by_ad_group_by_content_ad[el["ad_group_id"]][el["content_ad_id"]] = el
+    return settings_by_ad_group_by_content_ad
+
+
 def _prepare_content_ad_annotations():
     metric_mappings = {
         constants.MetricType.AD_TITLE: F("title"),
@@ -59,24 +63,6 @@ def _prepare_content_ad_annotations():
     }
     annotate_mappings = _map_keys_from_constant_to_qs_string_representation(metric_mappings)
     return annotate_mappings
-
-
-def _merge_content_ad_with_ad_group_settings(settings_by_ad_group, settings_by_content_ad):
-    updated_settings_by_content_ad = {}
-    for content_ad_id, content_ad_settings in settings_by_content_ad.items():
-        updated_settings_by_content_ad[content_ad_id] = _get_merged_content_ad_settings(
-            settings_by_ad_group, content_ad_settings
-        )
-    return updated_settings_by_content_ad
-
-
-def _get_merged_content_ad_settings(settings_by_ad_group, content_ad_settings):
-    ad_group_id = content_ad_settings["ad_group_id"]
-    ad_group_settings = settings_by_ad_group[ad_group_id]
-
-    updated_content_ad_settings = dict(content_ad_settings.items())
-    updated_content_ad_settings.update(ad_group_settings)
-    return updated_content_ad_settings
 
 
 def _prepare_ad_group_settings_annotations(*, include_campaign_goals: bool, include_ad_group_daily_cap: bool):

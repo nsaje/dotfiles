@@ -35,11 +35,23 @@ class RuleConditionValidationTest(TestCase):
                 {"operator": constants.Operator.CONTAINS, "left_operand_type": constants.MetricType.TOTAL_SPEND}
             )
 
+    def test_validate_operator_days_since_type(self):
+        # NOTE: this test handles an edge case where "days since" settings use date operators but have number
+        # values and makes sure that those settings don't get assigned "number" operators by accident
+        for left_operand_type in [
+            constants.MetricType.DAYS_SINCE_ACCOUNT_CREATED,
+            constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED,
+            constants.MetricType.DAYS_SINCE_AD_GROUP_CREATED,
+            constants.MetricType.DAYS_SINCE_AD_CREATED,
+        ]:
+            self.rule_condition.clean({"operator": constants.Operator.EQUALS, "left_operand_type": left_operand_type})
+        with self._assert_multiple_validation_error([exceptions.InvalidOperator]):
+            self.rule_condition.clean(
+                {"operator": constants.Operator.EQUALS, "left_operand_type": constants.MetricType.CLICKS}
+            )
+
     def test_validate_left_operand_type(self):
         self.rule_condition.clean({"left_operand_type": constants.MetricType.CLICKS})
-        self.assertFalse(constants.MetricType.VIDEO_START in config.VALID_LEFT_OPERAND_TYPES)
-        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType]):
-            self.rule_condition.clean({"left_operand_type": constants.MetricType.VIDEO_START})
         with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType, exceptions.InvalidOperator]):
             self.rule_condition.clean({"left_operand_type": 999})
 

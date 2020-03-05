@@ -17,6 +17,7 @@ import utils.exc
 
 from .. import Rule
 from .. import RuleTriggerHistory
+from .. import config
 from .. import constants
 from . import actions
 from .actions import ValueChangeData
@@ -49,6 +50,8 @@ def apply_rule(
     rule: Rule,
     ad_group: core.models.AdGroup,
     ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
+    ad_group_settings: Dict[str, Union[int, str]],
+    content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
 ) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
     changes, errors = [], []
 
@@ -56,7 +59,8 @@ def apply_rule(
         if _is_on_cooldown(target, rule, ad_group):
             continue
 
-        if _meets_all_conditions(rule, target_stats):
+        settings_dict = _get_settings_dict(rule, ad_group, ad_group_settings, content_ads_settings)
+        if _meets_all_conditions(rule, target_stats, settings_dict):
             with transaction.atomic():
                 try:
                     update = _apply_action(target, rule, ad_group, target_stats)
@@ -81,21 +85,48 @@ def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> b
     ).exists()
 
 
-def _meets_all_conditions(rule: Rule, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]) -> bool:
+def _get_settings_dict(
+    rule: Rule,
+    ad_group: core.models.AdGroup,
+    ad_group_settings: Dict[str, Union[int, str]],
+    content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
+) -> Dict[str, Union[int, str]]:
+    settings_dict = ad_group_settings
+    if rule.target_type == constants.TargetType.AD:
+        settings_dict = dict(content_ads_settings.get(ad_group.id, {}))
+        settings_dict.update(ad_group_settings)
+    return settings_dict
+
+
+def _meets_all_conditions(
+    rule: Rule,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    settings_dict: Dict[str, Union[int, str]],
+) -> bool:
     for condition in rule.conditions.all():
-        left_operand_value, right_operand_value = _prepare_operands(condition, target_stats)
+        left_operand_value, right_operand_value = _prepare_operands(condition, target_stats, settings_dict)
         if not _meets_condition(condition.operator, left_operand_value, right_operand_value):
             return False
     return True
 
 
-def _prepare_operands(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+def _prepare_operands(
+    condition,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    settings_dict: Dict[str, Union[int, str]],
+):
+    _validate_condition(condition)
     if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
         return _prepare_stats_operands(condition, target_stats)
     elif condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING:
-        pass
+        return _prepare_settings_operands(condition, settings_dict)
 
     raise ValueError("Invalid condition type")
+
+
+def _validate_condition(condition):
+    if condition.operator not in config.VALID_OPERATORS:
+        raise ValueError("Invalid operator for left operand")
 
 
 def _prepare_stats_operands(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
@@ -128,6 +159,22 @@ def _prepare_right_stat_operand(condition, target_stats: DefaultDict[str, Defaul
             right_operand_modifier = 1.0
         return right_operand_stat_value * right_operand_modifier
     raise ValueError("Invalid right operand")
+
+
+def _prepare_settings_operands(condition, settings_dict: Dict[str, Union[int, str]]):
+    assert condition.right_operand_type in [
+        constants.ValueType.ABSOLUTE,
+        constants.ValueType.CONSTANT,
+    ]  # TODO: support remaining right operand types
+    field_name = constants.METRIC_SETTINGS_MAPPING[condition.left_operand_type]
+    value = condition.right_operand_value
+    if condition.left_operand_type in config.INT_OPERANDS:
+        value = int(value)
+    if condition.left_operand_type in config.FLOAT_OPERANDS:
+        value = float(value)
+    elif condition.left_operand_type in config.DATE_OPERANDS:
+        value = datetime.date.fromisoformat(value)
+    return settings_dict[field_name], value
 
 
 def _meets_condition(operator: int, left_value, right_value) -> bool:

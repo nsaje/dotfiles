@@ -79,31 +79,15 @@ class PrepareSettingsTestCase(TestCase):
         self.assertEqual(
             fetch.prepare_content_ad_settings([self.ad_group]),
             {
-                content_ad.id: {
-                    "account_created_date": self.utc_today - datetime.timedelta(days=3),
-                    "account_name": self.account.name,
-                    "ad_created_date": self.utc_today,
-                    "ad_group_bid": decimal.Decimal("0.4500"),
-                    "ad_group_bidding_type": dash.constants.BiddingType.CPC,
-                    "ad_group_created_date": self.utc_today - datetime.timedelta(days=1),
-                    "ad_group_delivery_type": dash.constants.AdGroupDeliveryType.STANDARD,
-                    "ad_group_end_date": self.utc_today + datetime.timedelta(days=7),
-                    "ad_group_id": self.ad_group.id,
-                    "ad_group_name": self.ad_group.name,
-                    "ad_group_start_date": self.utc_today,
-                    "ad_title": content_ad.title,
-                    "ad_label": content_ad.label,
-                    "campaign_category": dash.constants.IABCategory.IAB24,
-                    "campaign_created_date": self.utc_today - datetime.timedelta(days=2),
-                    "campaign_language": dash.constants.Language.ENGLISH,
-                    "campaign_manager": self.user.email,
-                    "campaign_name": self.campaign.name,
-                    "campaign_type": dash.constants.CampaignType.CONTENT,
-                    "content_ad_id": content_ad.id,
-                    "days_since_account_created": 3,
-                    "days_since_ad_created": 0,
-                    "days_since_ad_group_created": 1,
-                    "days_since_campaign_created": 2,
+                self.ad_group.id: {
+                    content_ad.id: {
+                        "ad_created_date": self.utc_today,
+                        "ad_group_id": self.ad_group.id,
+                        "ad_label": content_ad.label,
+                        "ad_title": content_ad.title,
+                        "content_ad_id": content_ad.id,
+                        "days_since_ad_created": 0,
+                    }
                 }
             },
         )

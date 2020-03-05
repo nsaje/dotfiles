@@ -83,27 +83,7 @@ ADJUSTEMENT_ACTION_TYPES = {
     ),
 }
 
-VALID_LEFT_OPERAND_TYPES = {
-    constants.MetricType.TOTAL_SPEND,
-    constants.MetricType.IMPRESSIONS,
-    constants.MetricType.CLICKS,
-    constants.MetricType.CTR,
-    constants.MetricType.AVG_CPC,
-    constants.MetricType.AVG_CPM,
-    constants.MetricType.VISITS,
-    constants.MetricType.UNIQUE_USERS,
-    constants.MetricType.NEW_USERS,
-    constants.MetricType.RETURNING_USERS,
-    constants.MetricType.NEW_USERS_RATIO,
-    constants.MetricType.CLICK_DISCREPANCY,
-    constants.MetricType.PAGEVIEWS,
-    constants.MetricType.PAGEVIEWS_PER_VISIT,
-    constants.MetricType.BOUNCED_VISITS,
-    constants.MetricType.NON_BOUNCED_VISITS,
-    constants.MetricType.BOUNCE_RATE,
-    constants.MetricType.TOTAL_SECONDS,
-    constants.MetricType.AVG_TIME_ON_SITE,
-}
+VALID_LEFT_OPERAND_TYPES = set(constants.METRIC_STATS_MAPPING.keys()) | set(constants.METRIC_SETTINGS_MAPPING.keys())
 
 VALID_RIGTH_OPERAND_TYPES = {constants.ValueType.ABSOLUTE}
 
@@ -202,6 +182,72 @@ EMAIL_ACTION_MACROS_VALID_WINDOWS = {
     constants.MetricWindow.LAST_30_DAYS,
 }
 
+INT_OPERANDS = {
+    constants.MetricType.CAMPAIGN_TYPE,
+    constants.MetricType.CAMPAIGN_CATEGORY,
+    constants.MetricType.CAMPAIGN_LANGUAGE,
+    constants.MetricType.AD_GROUP_BIDDING_TYPE,
+    constants.MetricType.AD_GROUP_DELIVERY_TYPE,
+    constants.MetricType.DAYS_SINCE_ACCOUNT_CREATED,
+    constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED,
+    constants.MetricType.DAYS_SINCE_AD_GROUP_CREATED,
+    constants.MetricType.DAYS_SINCE_AD_CREATED,
+}
+
+FLOAT_OPERANDS = {
+    constants.MetricType.TOTAL_SPEND,
+    constants.MetricType.IMPRESSIONS,
+    constants.MetricType.CLICKS,
+    constants.MetricType.CTR,
+    constants.MetricType.AVG_CPC,
+    constants.MetricType.AVG_CPM,
+    constants.MetricType.VISITS,
+    constants.MetricType.NEW_VISITS,
+    constants.MetricType.UNIQUE_USERS,
+    constants.MetricType.NEW_USERS,
+    constants.MetricType.RETURNING_USERS,
+    constants.MetricType.NEW_USERS_RATIO,
+    constants.MetricType.CLICK_DISCREPANCY,
+    constants.MetricType.PAGEVIEWS,
+    constants.MetricType.PAGEVIEWS_PER_VISIT,
+    constants.MetricType.BOUNCED_VISITS,
+    constants.MetricType.NON_BOUNCED_VISITS,
+    constants.MetricType.BOUNCE_RATE,
+    constants.MetricType.TOTAL_SECONDS,
+    constants.MetricType.AVG_TIME_ON_SITE,
+    constants.MetricType.AVG_COST_PER_VISIT,
+    constants.MetricType.AVG_COST_PER_NEW_VISITOR,
+    constants.MetricType.AVG_COST_PER_PAGEVIEW,
+    constants.MetricType.AVG_COST_PER_NON_BOUNCED_VISIT,
+    constants.MetricType.AVG_COST_PER_MINUTE,
+    constants.MetricType.VIDEO_START,
+    constants.MetricType.VIDEO_FIRST_QUARTILE,
+    constants.MetricType.VIDEO_MIDPOINT,
+    constants.MetricType.VIDEO_THIRD_QUARTILE,
+    constants.MetricType.VIDEO_COMPLETE,
+    constants.MetricType.AVG_CPV,
+    constants.MetricType.AVG_CPCV,
+    constants.MetricType.AD_GROUP_BID,
+    constants.MetricType.AD_GROUP_DAILY_CAP,
+}
+
+STRING_OPERANDS = {
+    constants.MetricType.ACCOUNT_NAME,
+    constants.MetricType.CAMPAIGN_NAME,
+    constants.MetricType.CAMPAIGN_MANAGER,
+    constants.MetricType.AD_GROUP_NAME,
+    constants.MetricType.AD_TITLE,
+    constants.MetricType.AD_LABEL,
+}
+
+DATE_OPERANDS = {
+    constants.MetricType.ACCOUNT_CREATED_DATE,
+    constants.MetricType.CAMPAIGN_CREATED_DATE,
+    constants.MetricType.AD_GROUP_CREATED_DATE,
+    constants.MetricType.AD_GROUP_START_DATE,
+    constants.MetricType.AD_GROUP_END_DATE,
+    constants.MetricType.AD_CREATED_DATE,
+}
 
 VALID_NUMBER_OPERATORS = [constants.Operator.GREATER_THAN, constants.Operator.LESS_THAN]
 VALID_STRING_OPERATORS = [

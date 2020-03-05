@@ -10,6 +10,7 @@ import etl.models
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
+from .. import RuleCondition
 from .. import RuleHistory
 from .. import constants
 from . import exceptions
@@ -545,3 +546,111 @@ class ServiceTest(TestCase):
             },
             formatted_stats,
         )
+
+
+@mock.patch("automation.rules.service.service.apply_rule", return_value=([], []))
+@mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+@mock.patch("redshiftapi.api_rules.query", mock.MagicMock(return_value={}))
+class FetchSettingsTest(TestCase):
+    def setUp(self):
+        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+        self.content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+
+        self.basic_metric_types = (
+            set(constants.METRIC_SETTINGS_MAPPING)
+            - {
+                constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+                constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+                constants.MetricType.AD_GROUP_DAILY_CAP,
+            }
+            - constants.CONTENT_AD_SETTINGS
+        )
+
+    def test_fetch_ad_group_settings(self, mock_apply):
+        self._prepare_ad_group_rule()
+
+        service.execute_rules()
+        self.assertEqual(1, mock_apply.call_count)
+        self.assertEqual(
+            self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
+        )
+
+    def test_fetch_ad_group_settings_primary_campaign_goal(self, mock_apply):
+        rule = self._prepare_ad_group_rule()
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_type=constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+        )
+
+        service.execute_rules()
+        self.assertEqual(1, mock_apply.call_count)
+        additional_metric_types = {
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+        }
+        self.assertEqual(
+            self._get_settings_fields(self.basic_metric_types | additional_metric_types) | {"ad_group_id"},
+            set(mock_apply.call_args[0][3]),
+        )
+
+    def test_fetch_ad_group_settings_primary_campaign_goal_value(self, mock_apply):
+        rule = self._prepare_ad_group_rule()
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_type=constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+        )
+
+        service.execute_rules()
+        self.assertEqual(1, mock_apply.call_count)
+        additional_metric_types = {
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+        }
+        self.assertEqual(
+            self._get_settings_fields(self.basic_metric_types | additional_metric_types) | {"ad_group_id"},
+            set(mock_apply.call_args[0][3]),
+        )
+
+    def test_fetch_ad_group_settings_daily_caps(self, mock_apply):
+        rule = self._prepare_ad_group_rule()
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_type=constants.MetricType.AD_GROUP_DAILY_CAP,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+        )
+
+        service.execute_rules()
+        self.assertEqual(1, mock_apply.call_count)
+        additional_metric_types = {constants.MetricType.AD_GROUP_DAILY_CAP}
+        self.assertEqual(
+            self._get_settings_fields(self.basic_metric_types | additional_metric_types) | {"ad_group_id"},
+            set(mock_apply.call_args[0][3]),
+        )
+
+    def test_fetch_content_ad_settings(self, mock_apply):
+        self._prepare_content_ad_rule()
+
+        service.execute_rules()
+        self.assertEqual(1, mock_apply.call_count)
+        self.assertEqual(
+            self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
+        )
+        self.assertEqual(
+            self._get_settings_fields(constants.CONTENT_AD_SETTINGS) | {"ad_group_id", "content_ad_id"},
+            set(mock_apply.call_args[0][4][self.content_ad.id]),
+        )
+
+    def _get_settings_fields(self, metric_types):
+        return {constants.METRIC_SETTINGS_MAPPING[metric] for metric in metric_types}
+
+    def _prepare_ad_group_rule(self):
+        return magic_mixer.blend(Rule, target_type=constants.TargetType.AD_GROUP, ad_groups_included=[self.ad_group])
+
+    def _prepare_content_ad_rule(self):
+        return magic_mixer.blend(Rule, target_type=constants.TargetType.AD, ad_groups_included=[self.ad_group])

@@ -1,4 +1,3 @@
-import datetime
 from collections import ChainMap
 from collections import defaultdict
 from typing import Callable
@@ -7,12 +6,14 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Sequence
+from typing import Union
 
 import automation.models
 import automation.rules.constants
 import core.features.bid_modifiers.constants
+import core.features.goals
 import core.models
-import etl.models
+import etl.materialization_run
 import redshiftapi.api_rules
 from utils import dates_helper
 from utils import zlogging
@@ -21,6 +22,7 @@ from .. import Rule
 from .. import RuleHistory
 from .. import constants
 from . import exceptions
+from . import fetch
 from .actions import ValueChangeData
 from .apply import ErrorData
 from .apply import apply_rule
@@ -33,10 +35,7 @@ def execute_rules() -> None:
         logger.info("Execution of rules was aborted since the daily run was already completed.")
         return
 
-    # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
-    from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
-
-    if not etl.models.MaterializationRun.objects.filter(finished_dt__gte=from_date_time).exists():
+    if not etl.materialization_run.materialization_completed_for_local_today():
         logger.info("Execution of rules was aborted since materialized data is not yet available.")
         return
 
@@ -50,12 +49,22 @@ def execute_rules() -> None:
         ad_groups = list(rules_map.keys())
         raw_stats = redshiftapi.api_rules.query(target_type, ad_groups)
         stats = _format_stats(target_type, raw_stats)
+        ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
+        content_ad_settings_map = {}
+        if target_type == constants.TargetType.AD:
+            content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
 
         for ad_group in ad_groups:
             relevant_rules = rules_map[ad_group]
 
             for rule in relevant_rules:
-                changes, errors = apply_rule(rule, ad_group, stats.get(ad_group.id, {}))
+                changes, errors = apply_rule(
+                    rule,
+                    ad_group,
+                    stats.get(ad_group.id, {}),
+                    ad_group_settings_map.get(ad_group.id, {}),
+                    content_ad_settings_map.get(ad_group.id, {}),
+                )
 
                 if changes:
                     _write_history(rule, ad_group, changes)
@@ -108,6 +117,38 @@ def _format_stats(
             formatted_stats[ad_group_id][target_key][metric][window_key] = value
 
     return formatted_stats
+
+
+def _fetch_ad_group_settings(
+    target_type: int, ad_groups: Sequence[core.models.AdGroup], rules_map: DefaultDict[core.models.AdGroup, List[Rule]]
+) -> Dict[int, Dict[str, Union[int, str]]]:
+    include_campaign_goals = _any_condition_of_types(
+        [
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+            constants.ValueType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+        ],
+        ad_groups,
+        rules_map,
+    )
+    include_ad_group_daily_cap = _any_condition_of_types(
+        [constants.MetricType.AD_GROUP_DAILY_CAP, constants.ValueType.AD_GROUP_DAILY_CAP], ad_groups, rules_map
+    )
+    return fetch.prepare_ad_group_settings(
+        ad_groups, include_campaign_goals=include_campaign_goals, include_ad_group_daily_cap=include_ad_group_daily_cap
+    )
+
+
+def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
+    for ad_group in ad_groups:
+        for rule in rules_map[ad_group]:
+            for rule_condition in rule.conditions.all():
+                if (
+                    rule_condition.left_operand_type in target_types
+                    or rule_condition.right_operand_type in target_types
+                ):
+                    return True
+    return False
 
 
 def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]) -> RuleHistory:

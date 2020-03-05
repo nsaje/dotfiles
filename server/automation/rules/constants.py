@@ -219,8 +219,8 @@ class MetricType(ConstantBase):
         CAMPAIGN_MANAGER: "Campaign manager",
         CAMPAIGN_CATEGORY: "Campaign category",
         CAMPAIGN_LANGUAGE: "Campaign language",
-        CAMPAIGN_PRIMARY_GOAL: "Campaign primary goal",
-        CAMPAIGN_PRIMARY_GOAL_VALUE: "Campaign primary goal value",
+        CAMPAIGN_PRIMARY_GOAL: "Primary campaign goal",
+        CAMPAIGN_PRIMARY_GOAL_VALUE: "Primary campaign goal value",
         AD_GROUP_NAME: "Ad group name",
         AD_GROUP_CREATED_DATE: "Ad group created date",
         DAYS_SINCE_AD_GROUP_CREATED: "Days since ad group created",
@@ -316,7 +316,7 @@ class ValueType(ConstantBase):
     CONSTANT = 2
     CURRENT_DATE = 3
     ACCOUNT_MANAGER = 4
-    CAMPAIGN_GOAL = 5
+    CAMPAIGN_PRIMARY_GOAL_VALUE = 5
     CAMPAIGN_BUDGET = 6
     REMAINING_CAMPAIGN_BUDGET = 7
     AD_GROUP_BID = 8
@@ -331,7 +331,7 @@ class ValueType(ConstantBase):
         CONSTANT: "Constant",
         CURRENT_DATE: "Current date",
         ACCOUNT_MANAGER: "Account manager",
-        CAMPAIGN_GOAL: "Campaign goal",
+        CAMPAIGN_PRIMARY_GOAL_VALUE: "Primary campaign goal value",
         CAMPAIGN_BUDGET: "Campaign budget",
         REMAINING_CAMPAIGN_BUDGET: "Remaining campaign budget",
         AD_GROUP_BID: "Ad group bid",

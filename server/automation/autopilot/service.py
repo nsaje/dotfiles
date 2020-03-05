@@ -7,10 +7,10 @@ from django.db import transaction
 
 import dash.constants
 import dash.models
+import etl.materialization_run
 import prodops.hacks.constants as hack_constants
 import redshiftapi.api_breakdowns
 from automation import models
-from etl import models as etl_models
 from utils import dates_helper
 from utils import k1_helper
 from utils import metrics_compat
@@ -46,7 +46,7 @@ def run_autopilot(
         # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
         from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
 
-        if not etl_models.MaterializationRun.objects.filter(finished_dt__gte=from_date_time).exists():
+        if not etl.materialization_run.materialization_completed_for_local_today():
             logger.info("Autopilot daily run was aborted since materialized data is not yet available.")
             return
 

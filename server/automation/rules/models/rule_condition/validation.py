@@ -1,3 +1,5 @@
+import datetime
+
 import utils.validation_helper
 
 from ... import config
@@ -68,3 +70,19 @@ class RuleConditionValidationMixin:
         right_operand_value = changes.get("right_operand_value", self.right_operand_value)
         if not right_operand_value:
             raise exceptions.InvalidRightOperandValue("Invalid value")
+        left_operand_type = changes.get("left_operand_type", self.left_operand_type)
+        if left_operand_type in config.INT_OPERANDS:
+            try:
+                int(right_operand_value)
+            except ValueError:
+                raise exceptions.InvalidRightOperandValue("Invalid value")
+        elif left_operand_type in config.FLOAT_OPERANDS:
+            try:
+                float(right_operand_value)
+            except ValueError:
+                raise exceptions.InvalidRightOperandValue("Invalid value")
+        elif left_operand_type in config.DATE_OPERANDS:
+            try:
+                datetime.date.fromisoformat(right_operand_value)
+            except ValueError:
+                raise exceptions.InvalidRightOperandValue("Invalid value")
