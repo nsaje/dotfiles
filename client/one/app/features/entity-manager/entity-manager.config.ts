@@ -1472,4 +1472,18 @@ export const OPERATING_SYSTEMS: {[key: string]: OperatingSystem} = {
             {name: 'WINPHONE_10', displayName: '10'},
         ],
     },
+    WINRT: {
+        deviceTypes: ['MOBILE', 'TABLET'],
+        name: 'WINRT',
+        displayName: 'Windows RT',
+        icon: OperatingSystemIcon.WINDOWS,
+        versions: null,
+    },
+    CHROMEOS: {
+        deviceTypes: ['DESKTOP'],
+        name: 'CHROMEOS',
+        displayName: 'Chrome OS',
+        icon: OperatingSystemIcon.CHROME,
+        versions: null,
+    },
 };

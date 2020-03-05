@@ -39,6 +39,7 @@ describe('OperatingSystemListComponent', () => {
         component.ngOnChanges();
 
         expect(component.filteredOses.map(os => os.name).sort()).toEqual([
+            'CHROMEOS',
             'LINUX',
             'MACOSX',
             'WINDOWS',
@@ -54,6 +55,7 @@ describe('OperatingSystemListComponent', () => {
             'ANDROID',
             'IOS',
             'WINPHONE', // Formally speaking this isn't correct because there are no Windows Phone tablets
+            'WINRT',
         ]);
     });
 
@@ -66,6 +68,7 @@ describe('OperatingSystemListComponent', () => {
             'ANDROID',
             'IOS',
             'WINPHONE',
+            'WINRT', // Formally speaking this isn't correct because there are no Windows RT phones
         ]);
     });
 
@@ -76,11 +79,13 @@ describe('OperatingSystemListComponent', () => {
 
         expect(component.filteredOses.map(os => os.name).sort()).toEqual([
             'ANDROID',
+            'CHROMEOS',
             'IOS',
             'LINUX',
             'MACOSX',
             'WINDOWS',
             'WINPHONE',
+            'WINRT',
         ]);
     });
 
@@ -95,6 +100,7 @@ describe('OperatingSystemListComponent', () => {
         component.ngOnChanges();
 
         expect(component.filteredOses.map(os => os.name).sort()).toEqual([
+            'CHROMEOS',
             'LINUX',
             'MACOSX',
         ]);
