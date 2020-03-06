@@ -53,6 +53,7 @@ def set(
     write_history=True,
     propagate_to_k1=True,
     skip_source_settings_update=False,
+    skip_validation=False,
 ):
     instance, created = _set(
         ad_group,
@@ -63,6 +64,7 @@ def set(
         user,
         write_history,
         skip_source_settings_update=skip_source_settings_update,
+        skip_validation=skip_validation,
     )
     if propagate_to_k1:
         k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
@@ -92,7 +94,15 @@ def set_bulk(
 
 
 def _set(
-    ad_group, modifier_type, target, source, modifier, user, write_history=True, skip_source_settings_update=False
+    ad_group,
+    modifier_type,
+    target,
+    source,
+    modifier,
+    user,
+    write_history=True,
+    skip_source_settings_update=False,
+    skip_validation=False,
 ):
     if (modifier == 1.0 and modifier_type != constants.BidModifierType.PUBLISHER) or not modifier:
         # TODO publisher modifiers with value of 1 are currently needed to correctly support publisher hierarchy in bidder
@@ -107,7 +117,7 @@ def _set(
     )
 
     if modifier_type == constants.BidModifierType.SOURCE and not skip_source_settings_update:
-        _update_ad_group_source_settings(ad_group, target, modifier, user)
+        _update_ad_group_source_settings(ad_group, target, modifier, user, skip_validation=skip_validation)
 
     return instance, created
 
@@ -157,7 +167,9 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
     return instance, created
 
 
-def _update_ad_group_source_settings(ad_group, target, modifier, user, write_history=True, propagate_to_k1=False):
+def _update_ad_group_source_settings(
+    ad_group, target, modifier, user, write_history=True, propagate_to_k1=False, skip_validation=False
+):
     ad_group_source = ad_group.adgroupsource_set.select_related("settings").get(source__id=int(target))
 
     updates = {}
@@ -166,7 +178,9 @@ def _update_ad_group_source_settings(ad_group, target, modifier, user, write_his
     else:
         updates["cpm"] = decimal_helpers.multiply_as_decimals(ad_group.settings.cpm, modifier)
 
-    ad_group_source.settings.update(k1_sync=propagate_to_k1, write_history=write_history, **updates)
+    ad_group_source.settings.update(
+        k1_sync=propagate_to_k1, write_history=write_history, skip_validation=skip_validation, **updates
+    )
 
 
 @transaction.atomic

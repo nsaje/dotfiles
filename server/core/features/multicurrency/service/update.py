@@ -109,6 +109,8 @@ def _sanity_check(changes, multicurrency_fields):
     changes.pop("local_cpc_cc", None)
     changes.pop("max_cpm", None)
     changes.pop("local_max_cpm", None)
+    # TODO temporary fix due to prodops hacks on arhived ad groups
+    changes.pop("delivery_type", None)
     if any(field not in multicurrency_fields for field in changes):
         invalid_field_set = set(changes) - set(multicurrency_fields)
         logger.error("Attempted to change non-multicurrency fields!", fields=invalid_field_set)

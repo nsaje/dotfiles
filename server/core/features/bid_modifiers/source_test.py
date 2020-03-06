@@ -1806,6 +1806,92 @@ class MulticurrencyUpdateTestCase(TestCase):
         self.assertEqual(ad_group_2.settings.local_cpm, decimal.Decimal("11.2100"))
 
 
+class SkipSourceValidationTestCase(TestCase):
+    def test_minimal_cpc_too_low(self):
+        source_type = magic_mixer.blend(models.SourceType, max_cpc="3.0000", min_cpc="0.500")
+        source = magic_mixer.blend(models.Source, source_type=source_type)
+
+        ad_group = magic_mixer.blend(models.AdGroup, bidding_type=constants.BiddingType.CPC)
+        ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source, ad_group=ad_group)
+
+        ad_group.settings.update_unsafe(
+            None,
+            cpc_cc=None,
+            local_cpc_cc=None,
+            max_cpm=None,
+            local_max_cpm=None,
+            cpc=decimal.Decimal("2.0000"),
+            local_cpc=decimal.Decimal("1.0000"),
+            cpm=decimal.Decimal("2.0000"),
+            local_cpm=decimal.Decimal("1.0000"),
+            autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        )
+
+        ad_group_source.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal("0.5000"),
+            local_cpc_cc=decimal.Decimal("0.2500"),
+            cpm=decimal.Decimal("0.5000"),
+            local_cpm=decimal.Decimal("0.2500"),
+        )
+
+        target_source_cpc = decimal.Decimal("0.1000")
+        # must not raise MinimaCPCTooLow
+        bid_modifiers.create_source_bid_modifier(ad_group, source, ad_group.settings.cpc, target_source_cpc)
+
+        ad_group_source.refresh_from_db()
+
+        self.assertEqual(ad_group_source.settings.cpc_cc, target_source_cpc)
+        self.assertEqual(
+            ad_group.bidmodifier_set.filter(type=bid_modifiers.BidModifierType.SOURCE, target=str(source.id))
+            .get()
+            .modifier,
+            float(target_source_cpc / ad_group.settings.cpc),
+        )
+
+    def test_minimal_cpc_too_high(self):
+        source_type = magic_mixer.blend(models.SourceType, max_cpc="3.0000", min_cpc="0.500")
+        source = magic_mixer.blend(models.Source, source_type=source_type)
+
+        ad_group = magic_mixer.blend(models.AdGroup, bidding_type=constants.BiddingType.CPC)
+        ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source, ad_group=ad_group)
+
+        ad_group.settings.update_unsafe(
+            None,
+            cpc_cc=None,
+            local_cpc_cc=None,
+            max_cpm=None,
+            local_max_cpm=None,
+            cpc=decimal.Decimal("2.0000"),
+            local_cpc=decimal.Decimal("1.0000"),
+            cpm=decimal.Decimal("2.0000"),
+            local_cpm=decimal.Decimal("1.0000"),
+            autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        )
+
+        ad_group_source.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal("0.5000"),
+            local_cpc_cc=decimal.Decimal("0.2500"),
+            cpm=decimal.Decimal("0.5000"),
+            local_cpm=decimal.Decimal("0.2500"),
+        )
+
+        target_source_cpc = decimal.Decimal("4.0000")
+        # must not raise MinimaCPCTooHigh
+        bid_modifiers.create_source_bid_modifier(ad_group, source, ad_group.settings.cpc, target_source_cpc)
+
+        ad_group_source.refresh_from_db()
+
+        self.assertEqual(ad_group_source.settings.cpc_cc, target_source_cpc)
+        self.assertEqual(
+            ad_group.bidmodifier_set.filter(type=bid_modifiers.BidModifierType.SOURCE, target=str(source.id))
+            .get()
+            .modifier,
+            float(target_source_cpc / ad_group.settings.cpc),
+        )
+
+
 class MaxAutopilotBidTestCase(TestCase):
     def setUp(self):
         self.source_type_1 = magic_mixer.blend(

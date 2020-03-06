@@ -66,4 +66,5 @@ def create_source_bid_modifier(ad_group, source, ad_group_bid_value, ad_group_so
         user=None,
         write_history=False,
         propagate_to_k1=False,
+        skip_validation=True,
     )
