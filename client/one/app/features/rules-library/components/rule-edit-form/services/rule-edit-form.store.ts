@@ -102,7 +102,9 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         // reset fields that depend on action type
         this.setState({
             ...this.state,
-            availableConditions: this.getConditionsForTarget(target),
+            availableConditions: this.getConditionsForTarget(
+                targetActionType.targetType
+            ),
             rule: {
                 ...this.state.rule,
                 targetType: targetActionType.targetType,
