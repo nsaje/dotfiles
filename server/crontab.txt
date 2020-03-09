@@ -68,4 +68,4 @@
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
 30 6,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
-#0 * * * *        /home/ubuntu/docker-manage.py.sh bluekai_update_dynamic_audience
+0 * * * *        /home/ubuntu/docker-manage.py.sh bluekai_update_dynamic_audience

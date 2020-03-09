@@ -8,7 +8,7 @@ from . import bluekaiapi
 
 logger = zlogging.getLogger(__name__)
 
-
+OEN_ACCOUNT_ID = 305
 AUDIENCE_ID = 202305
 CAMPAIGN_ID = 383218
 NEW_AUDIENCE_ID = 545340
@@ -164,7 +164,13 @@ def _get_ad_group_settings_for_bluekai():
             ]
         )
 
-    active_ad_groups = core.models.AdGroup.objects.filter_running_and_has_budget().select_related("settings")
+    active_ad_groups = (
+        core.models.AdGroup.objects.filter_running_and_has_budget()
+        .select_related("settings")
+        .exclude(campaign__account_id=OEN_ACCOUNT_ID)
+        .exclude(settings__bluekai_targeting="")
+        .exclude(settings__bluekai_targeting=[])
+    )
     return {
         elem.partition(":")[2]
         for elem in flatten_bluekai_rule(
