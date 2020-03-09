@@ -52,6 +52,16 @@ class ContentAdsView(K1APIView):
                 .only("campaign_id", "language")
             )
         }
+        account_settings_map = {
+            account_settings.account_id: account_settings
+            for account_settings in (
+                dash.models.AccountSettings.objects.filter(
+                    account_id__in=set([ca.ad_group.campaign.account_id for ca in content_ads])
+                )
+                .group_current_settings()
+                .only("account_id", "default_icon")
+            )
+        }
 
         response = []
         for item in content_ads:
@@ -98,7 +108,7 @@ class ContentAdsView(K1APIView):
             }
 
             if content_ad["icon_id"] is None:
-                default_icon = item.ad_group.campaign.account.settings.default_icon
+                default_icon = account_settings_map[item.ad_group.campaign.account_id].default_icon
 
                 if default_icon:
                     content_ad["icon_id"] = default_icon.image_id
