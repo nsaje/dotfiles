@@ -68,6 +68,7 @@ class PublisherGroupsEntriesView(K1APIView):
                     "outbrain_amplify_publisher_id",
                     "outbrain_engage_publisher_id",
                     "publisher",
+                    "placement",
                     "account_id",
                 )
             )
