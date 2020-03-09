@@ -17,6 +17,7 @@ class PublisherGroupEntryTest(RESTAPITest):
             "can_edit_publisher_groups",
             "can_use_restapi",
             "can_access_additional_outbrain_publisher_settings",
+            "can_use_placement_targeting",
         ]
         test_helper.add_permissions(self.user, permissions)
 
@@ -25,9 +26,10 @@ class PublisherGroupEntryTest(RESTAPITest):
     def publishergroupentry_repr(self, pg, check_outbrain_pub_id):
         d = {
             "id": str(pg.pk),
-            "publisher": pg.publisher,
             "source": pg.source.bidder_slug if pg.source else None,
+            "publisher": pg.publisher,
             "includeSubdomains": pg.include_subdomains,
+            "placement": pg.placement,
             "publisherGroupId": str(pg.publisher_group_id),
         }
 
@@ -89,14 +91,37 @@ class PublisherGroupEntryTest(RESTAPITest):
         )
         response = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(response["data"])
+        self.assertIsNone(response["data"]["placement"])
 
-    def test_create_new_now_allowed(self):
+    def test_create_new_placement(self):
+        r = self.client.post(
+            reverse("restapi.publishergroupentry.v1:publisher_group_entry_list", kwargs={"publisher_group_id": 1}),
+            data={"publisher": "test", "source": "adsnative", "includeSubdomains": False, "placement": "best_plac"},
+            format="json",
+        )
+        response = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_against_db(response["data"])
+        self.assertEqual("best_plac", response["data"]["placement"])
+
+    def test_create_new_not_allowed(self):
         r = self.client.post(
             reverse("restapi.publishergroupentry.v1:publisher_group_entry_list", kwargs={"publisher_group_id": 2}),
             data={"publisher": "test", "source": "adsnative"},
             format="json",
         )
         self.assertEqual(r.status_code, 404)
+
+    def test_create_new_no_placement_permission(self):
+        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
+        r = self.client.post(
+            reverse("restapi.publishergroupentry.v1:publisher_group_entry_list", kwargs={"publisher_group_id": 1}),
+            data={"publisher": "test", "source": "adsnative", "includeSubdomains": False, "placement": "best_plac"},
+            format="json",
+        )
+        response = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.assertNotIn("placement", response["data"])
+        response["data"]["placement"] = None
+        self.validate_against_db(response["data"])
 
     def test_bulk_create_new(self):
         r = self.client.post(
@@ -128,17 +153,33 @@ class PublisherGroupEntryTest(RESTAPITest):
         )
         self.assertEqual(r.status_code, 404)
 
+    def test_get_no_placement_permission(self):
+        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
+        r = self.client.get(
+            reverse(
+                "restapi.publishergroupentry.v1:publisher_group_entry_details",
+                kwargs={"publisher_group_id": 1, "entry_id": 1},
+            )
+        )
+        response = self.assertResponseValid(r, data_type=dict, status_code=200)
+        self.assertNotIn("placement", response["data"])
+        response["data"]["placement"] = core.features.publisher_groups.PublisherGroupEntry.objects.get(
+            pk=response["data"]["id"]
+        ).placement
+        self.validate_against_db(response["data"])
+
     def test_update(self):
         r = self.client.put(
             reverse(
                 "restapi.publishergroupentry.v1:publisher_group_entry_details",
                 kwargs={"publisher_group_id": 1, "entry_id": 1},
             ),
-            data={"publisher": "cnn", "source": "gravity", "outbrainPublisherId": "123"},
+            data={"publisher": "cnn", "source": "gravity", "outbrainPublisherId": "123", "placement": "new_plac"},
             format="json",
         )
         response = self.assertResponseValid(r, data_type=dict, status_code=200)
         self.validate_against_db(response["data"])
+        self.assertEqual("new_plac", response["data"]["placement"])
 
     def test_update_not_allowed(self):
         r = self.client.put(
@@ -150,6 +191,24 @@ class PublisherGroupEntryTest(RESTAPITest):
             format="json",
         )
         self.assertEqual(r.status_code, 404)
+
+    def test_update_no_placement_permission(self):
+        test_helper.remove_permissions(self.user, ["can_use_placement_targeting"])
+        old_placement = core.features.publisher_groups.PublisherGroupEntry.objects.get(pk=1).placement
+        new_placement = old_placement + "_new"
+
+        r = self.client.put(
+            reverse(
+                "restapi.publishergroupentry.v1:publisher_group_entry_details",
+                kwargs={"publisher_group_id": 1, "entry_id": 1},
+            ),
+            data={"publisher": "cnn", "source": "gravity", "outbrainPublisherId": "123", "placement": new_placement},
+            format="json",
+        )
+        response = self.assertResponseValid(r, data_type=dict, status_code=200)
+        self.assertNotIn("placement", response["data"])
+        response["data"]["placement"] = old_placement
+        self.validate_against_db(response["data"])
 
     def test_delete(self):
         r = self.client.delete(

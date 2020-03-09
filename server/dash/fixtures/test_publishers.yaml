@@ -326,6 +326,7 @@
     publisher_group: 1
     publisher: 'pub1'
     source: 1
+    placement: 'plac1'
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
