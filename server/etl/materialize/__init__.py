@@ -4,6 +4,7 @@ available for the whole range.
 """
 
 from .materialized_views import MATERIALIZED_VIEWS
+from .mv_adgroup_placement import MVAdGroupPlacementView
 from .mv_conversions import MVConversions
 from .mv_derived_view import ConversionsDerivedView
 from .mv_derived_view import MasterDerivedView

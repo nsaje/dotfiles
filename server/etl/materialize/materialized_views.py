@@ -1,3 +1,4 @@
+from .mv_adgroup_placement import MVAdGroupPlacementView
 from .mv_conversions import MVConversions
 from .mv_derived_view import ConversionsDerivedView
 from .mv_derived_view import MasterDerivedView
@@ -23,6 +24,8 @@ MATERIALIZED_VIEWS = [
     MVHelpersAdGroupStructure,
     MVHelpersCampaignFactors,
     MVHelpersCurrencyExchangeRates,
+    # Placement view
+    MVAdGroupPlacementView,
     MVHelpersNormalizedStats,
     # Must be done before master, it is used there to generate empty rows for conversions
     MVTouchpointConversions,

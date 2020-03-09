@@ -35,7 +35,7 @@ def process_cpc_billing(from_date, to_date, agency_id):
 
     ad_groups_cpc_micro = [(i["ad_group_id"], _calculate_cpc_micro(i["cpc_cc"], license_fee)) for i in ad_groups_w_cpc]
     _update_mvh_ad_groups_cpc(ad_groups_cpc_micro)
-    _insert_stats_diff(from_date, to_date)
+    _insert_stats_diffs(from_date, to_date)
 
 
 def check_discrepancy(from_date, to_date):
@@ -64,14 +64,29 @@ def _update_mvh_ad_groups_cpc(ad_groups_cpc_micro):
         logger.info("Data inserted into table mvh_ad_groups_cpc.")
 
 
-def _insert_stats_diff(from_date, to_date):
+def _insert_stats_diffs(from_date, to_date):
     context = helpers.get_local_multiday_date_context(from_date, to_date)
-    delete_query = backtosql.generate_sql("delete_stats_diff_with_tz.sql", context)
-    insert_query = backtosql.generate_sql("insert_cpc_billing_stats_diff.sql", context)
+    _insert_stats_diff(
+        context, from_date, to_date, "stats_diff", "delete_stats_diff_with_tz.sql", "insert_cpc_billing_stats_diff.sql"
+    )
+    _insert_stats_diff(
+        context,
+        from_date,
+        to_date,
+        "stats_placement_diff",
+        "delete_stats_diff_with_tz.sql",
+        "insert_cpc_billing_stats_placement_diff.sql",
+    )
+
+
+def _insert_stats_diff(context, from_date, to_date, table_name, delete_sql_template, insert_sql_template):
+    delete_query = backtosql.generate_sql(delete_sql_template, {**context, "table_name": table_name})
+    insert_query = backtosql.generate_sql(insert_sql_template, context)
+
     with redshiftapi.db.get_write_stats_cursor() as cur:
-        logger.info("Will remove data in stats_diff between dates.", from_date=from_date, to_date=to_date)
+        logger.info("Will remove data in {} between dates.".format(table_name), from_date=from_date, to_date=to_date)
         cur.execute(delete_query)
         logger.info("Done with removal.")
-        logger.info("Will insert data into table stats_diff.")
+        logger.info("Will insert data into table {}.".format(table_name))
         cur.execute(insert_query)
-        logger.info("Data inserted into stats_diff.")
+        logger.info("Data inserted into {}.".format(table_name))
