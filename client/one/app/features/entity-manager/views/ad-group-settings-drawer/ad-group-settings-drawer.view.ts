@@ -61,19 +61,17 @@ export class AdGroupSettingsDrawerView
 
     ngOnInit() {
         this.isNewEntity = !this.entityId;
-
         this.subscribeToStateUpdates();
     }
 
     ngAfterViewInit() {
-        if (this.isNewEntity) {
-            this.store.loadEntityDefaults(this.newEntityParentId);
-        } else {
-            this.store.loadEntity(this.entityId);
-        }
-
         setTimeout(() => {
             this.open();
+            if (this.isNewEntity) {
+                this.store.loadEntityDefaults(this.newEntityParentId);
+            } else {
+                this.store.loadEntity(this.entityId);
+            }
         });
     }
 
