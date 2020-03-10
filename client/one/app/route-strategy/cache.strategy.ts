@@ -18,12 +18,12 @@ interface RouteCache {
 
 export class CacheRouteReuseStrategy implements RouteReuseStrategy {
     private routesToCache: string[] = [
-        `${RoutePathName.APP_BASE}/${RoutePathName.ANALYTICS}`,
-        `${RoutePathName.APP_BASE}/${RoutePathName.CREDITS_LIBRARY}`,
-        `${RoutePathName.APP_BASE}/${RoutePathName.PIXELS_LIBRARY}`,
-        `${RoutePathName.APP_BASE}/${RoutePathName.REPORTS_LIBRARY}`,
-        `${RoutePathName.APP_BASE}/${RoutePathName.USERS_LIBRARY}`,
-        `${RoutePathName.APP_BASE}/${RoutePathName.INVENTORY_PLANNING}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.ANALYTICS}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.CREDITS_LIBRARY}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.PIXELS_LIBRARY}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.REPORTS_LIBRARY}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.USERS_LIBRARY}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.INVENTORY_PLANNING}`,
     ];
     private routeCacheMap = new Map<string, RouteCache>();
 
