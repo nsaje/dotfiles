@@ -236,6 +236,7 @@ class UpdateDynamicAudienceTestCase(TestCase):
                 "name": "Test Audience",
                 "prospecting": True,
                 "retargeting": False,
+                "recency": 500,
                 "segments": {
                     "AND": [
                         {

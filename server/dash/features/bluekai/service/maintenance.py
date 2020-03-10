@@ -8,11 +8,12 @@ from . import bluekaiapi
 
 logger = zlogging.getLogger(__name__)
 
+RECENCY_ALL = 500
 OEN_ACCOUNT_ID = 305
 AUDIENCE_ID = 202305
 CAMPAIGN_ID = 383218
-NEW_AUDIENCE_ID = 545340
-NEW_CAMPAIGN_ID = 452382
+NEW_AUDIENCE_ID = 549424
+NEW_CAMPAIGN_ID = 456928
 STATUS_ACTIVE = "active"
 
 
@@ -111,6 +112,7 @@ def update_dynamic_audience():
         "name": audience["name"],
         "prospecting": audience["prospecting"],
         "retargeting": audience["retargeting"],
+        "recency": RECENCY_ALL,
         "segments": segments,
     }
     bluekaiapi.update_audience(NEW_AUDIENCE_ID, data)
