@@ -9,7 +9,7 @@ import {RoutePathName} from '../app.constants';
 import {ComponentRef} from '@angular/core';
 
 const ROUTE_CACHE_TTL_MINUTES = 4;
-const MAX_ROUTE_CACHE_MAP_SIZE = 5;
+const MAX_ROUTE_CACHE_MAP_SIZE = 4;
 
 interface RouteCache {
     routeHandle: DetachedRouteHandle;
