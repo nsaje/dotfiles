@@ -282,7 +282,9 @@ class TestBudgetLineItemManager(TestCase):
         )
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = t0 + datetime.timedelta(days=2)
-            self.assertEqual(list(BudgetLineItem.objects.all().filter_present_and_future()), [item2, item3])
+            self.assertEqual(
+                list(BudgetLineItem.objects.all().filter_present_and_future().order_by("id")), [item2, item3]
+            )
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
