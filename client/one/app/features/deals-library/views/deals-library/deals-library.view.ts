@@ -59,17 +59,43 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     };
 
     columnDefs: ColDef[] = [
-        {headerName: 'Id', field: 'id'},
-        {headerName: 'Deal name', field: 'name'},
-        {headerName: 'Deal Id', field: 'dealId'},
-        {headerName: 'Source', field: 'source'},
-        {headerName: 'Floor price', field: 'floorPrice'},
+        {
+            headerName: 'Id',
+            field: 'id',
+            width: 80,
+            suppressSizeToFit: true,
+        },
+        {
+            headerName: 'Deal name',
+            field: 'name',
+            width: 130,
+            minWidth: 80,
+        },
+        {
+            headerName: 'Deal Id',
+            field: 'dealId',
+            width: 130,
+            minWidth: 90,
+        },
+        {
+            headerName: 'Source',
+            field: 'source',
+            minWidth: 90,
+        },
+        {
+            headerName: 'Floor price',
+            field: 'floorPrice',
+            width: 90,
+            suppressSizeToFit: true,
+        },
         {
             headerName: 'Valid from',
             field: 'validFromDate',
             valueFormatter: data => {
                 return this.formatDate(data.value);
             },
+            width: 110,
+            suppressSizeToFit: true,
         },
         {
             headerName: 'Valid to',
@@ -77,6 +103,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             valueFormatter: data => {
                 return this.formatDate(data.value);
             },
+            width: 110,
+            suppressSizeToFit: true,
         },
         {
             headerName: 'Accounts',
@@ -89,6 +117,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                     this.openConnectionsModal($event.data, 'account');
                 }
             },
+            width: 70,
+            suppressSizeToFit: true,
         },
         {
             headerName: 'Campaigns',
@@ -101,6 +131,8 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                     this.openConnectionsModal($event.data, 'campaign');
                 }
             },
+            width: 80,
+            suppressSizeToFit: true,
         },
         {
             headerName: 'Ad Groups',
@@ -113,15 +145,26 @@ export class DealsLibraryView implements OnInit, OnDestroy {
                     this.openConnectionsModal($event.data, 'adgroup');
                 }
             },
-        },
-        {headerName: 'Notes', field: 'description'},
-        {headerName: 'Created by', field: 'createdBy'},
-        {
-            headerName: '',
             width: 80,
             suppressSizeToFit: true,
+        },
+        {
+            headerName: 'Notes',
+            field: 'description',
+            minWidth: 90,
+        },
+        {
+            headerName: 'Created by',
+            field: 'createdBy',
+            width: 100,
+            minWidth: 80,
+        },
+        {
+            headerName: '',
             cellRendererFramework: DealActionsCellComponent,
             pinned: 'right',
+            width: 80,
+            suppressSizeToFit: true,
         },
     ];
 
