@@ -80,8 +80,8 @@
                         (valueChange)="store.setDeliveryType($event)"
                     ></zem-delivery-type-setting>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
+                <zem-expandable-section
+                    class="zem-expandable-section"
                     *ngIf="
                         zemPermissions.hasPermission(
                             'zemauth.can_manage_ad_group_dayparting'
@@ -90,7 +90,8 @@
                     [expandedByDefault]="
                         doesAnySettingHaveValue(state.entity.dayparting)
                     "
-                    [overviewText]="'Dayparting'"
+                    [expandLabel]="'Show advanced settings (Dayparting)'"
+                    [collapseLabel]="'Hide advanced settings (Dayparting)'"
                 >
                     <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
@@ -117,7 +118,7 @@
                             (valueChange)="store.setDayparting($event)"
                         ></zem-dayparting-setting>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">
@@ -190,8 +191,8 @@
                         </div>
                     </div>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
+                <zem-expandable-section
+                    class="zem-expandable-section"
                     *ngIf="
                         zemPermissions.hasPermission(
                             'zemauth.can_set_click_capping'
@@ -207,8 +208,11 @@
                             store.state.entity.frequencyCapping
                         )
                     "
-                    [overviewText]="
-                        'Daily click cap, Daily impression frequency cap'
+                    [expandLabel]="
+                        'Show advanced settings (Daily click cap, Daily impression frequency cap)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (Daily click cap, Daily impression frequency cap)'
                     "
                 >
                     <div class="zem-settings-section">
@@ -257,7 +261,7 @@
                             (valueChange)="store.setFrequencyCapping($event)"
                         ></zem-integer-form-group>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div
@@ -294,9 +298,14 @@
                         </div>
                     </div>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
-                    [overviewText]="'Manage RTB sources'"
+                <zem-expandable-section
+                    class="zem-expandable-section"
+                    [expandLabel]="
+                        'Show advanced settings (Manage RTB sources)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (Manage RTB sources)'
+                    "
                 >
                     <div class="zem-settings-section">
                         <zem-ad-group-rtb-sources-management-setting
@@ -324,7 +333,7 @@
                             </div>
                         </div>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">
@@ -370,7 +379,7 @@
                     </zem-image-checkbox-input-group>
                 </div>
 
-                <zem-advanced-settings-section
+                <zem-expandable-section
                     *ngIf="
                         zemPermissions.hasPermission(
                             'zemauth.can_set_advanced_device_targeting'
@@ -380,7 +389,12 @@
                         doesAnySettingHaveValue(state.entity.targeting.os) ||
                         state.entity.targeting.environments.length === 1
                     "
-                    [overviewText]="'Advanced device targeting options'"
+                    [expandLabel]="
+                        'Show advanced settings (Advanced device targeting options)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (Advanced device targeting options)'
+                    "
                 >
                     <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
@@ -455,7 +469,7 @@
                             </zem-image-checkbox-input-group>
                         </div>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">
@@ -495,16 +509,19 @@
                         (onUpdate)="store.setLocationTargeting($event.$event)"
                     ></zem-geo-targeting>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
+                <zem-expandable-section
+                    class="zem-expandable-section"
                     [expandedByDefault]="
                         doesAnySettingHaveValue(
                             state.entity.targeting.geo.included.postalCodes,
                             state.entity.targeting.geo.excluded.postalCodes
                         )
                     "
-                    [overviewText]="
-                        'ZIP / Postal code targeting, Language matching'
+                    [expandLabel]="
+                        'Show advanced settings (ZIP / Postal code targeting, Language matching)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (ZIP / Postal code targeting, Language matching)'
                     "
                 >
                     <div class="zem-settings-section">
@@ -539,7 +556,7 @@
                             Enable language matching
                         </zem-checkbox-form-group>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div
@@ -559,15 +576,20 @@
                         (valueChange)="store.setTrackingCode($event)"
                     ></zem-tracking-code-setting>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
+                <zem-expandable-section
+                    class="zem-expandable-section"
                     [expandedByDefault]="
                         doesAnySettingHaveValue(
                             state.entity.redirectPixelUrls,
                             state.entity.redirectJavascript
                         )
                     "
-                    [overviewText]="'3rd party pixel tracking'"
+                    [expandLabel]="
+                        'Show advanced settings (3rd party pixel tracking)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (3rd party pixel tracking)'
+                    "
                 >
                     <div class="zem-settings-section">
                         <zem-tracking-pixel-setting
@@ -578,7 +600,7 @@
                             "
                         ></zem-tracking-pixel-setting>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">
@@ -676,8 +698,8 @@
                         No special notes.
                     </div>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
+                <zem-expandable-section
+                    class="zem-expandable-section"
                     *ngIf="
                         (zemPermissions.hasPermission(
                             'zemauth.can_target_custom_audiences'
@@ -698,7 +720,12 @@
                             state.entity.targeting.audience
                         )
                     "
-                    [overviewText]="'Retargeting, BlueKai targeting'"
+                    [expandLabel]="
+                        'Show advanced settings (Retargeting, BlueKai targeting)'
+                    "
+                    [collapseLabel]="
+                        'Hide advanced settings (Retargeting, BlueKai targeting)'
+                    "
                 >
                     <div
                         class="zem-settings-section"
@@ -784,7 +811,7 @@
                             "
                         ></zem-demographic-targeting>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div

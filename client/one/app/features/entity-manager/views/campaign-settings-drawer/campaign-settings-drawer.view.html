@@ -402,10 +402,10 @@
                         </button>
                     </div>
                 </div>
-                <zem-advanced-settings-section
-                    class="zem-advanced-settings-section"
-                    [customLabelCollapsed]="'Show depleted budget items'"
-                    [customLabelExpanded]="'Hide depleted budget items'"
+                <zem-expandable-section
+                    class="zem-expandable-section"
+                    [expandLabel]="'Show depleted budget items'"
+                    [collapseLabel]="'Hide depleted budget items'"
                 >
                     <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
@@ -425,7 +425,7 @@
                             ></zem-campaign-budgets-list>
                         </div>
                     </div>
-                </zem-advanced-settings-section>
+                </zem-expandable-section>
             </div>
 
             <div

@@ -1,0 +1,17 @@
+<div class="zem-expandable-section__content" *ngIf="expanded">
+    <ng-content></ng-content>
+</div>
+<button
+    class="zem-expandable-section__toggle"
+    [class.zem-expandable-section__toggle--section-expanded]="expanded"
+    (click)="toggle()"
+>
+    <span
+        class="zem-expandable-section__toggle-text"
+        [class.zem-expandable-section__toggle-text--section-expanded]="expanded"
+    >
+        <ng-container *ngIf="!expanded"> {{ expandLabel }} </ng-container>
+
+        <ng-container *ngIf="expanded"> {{ collapseLabel }} </ng-container>
+    </span>
+</button>

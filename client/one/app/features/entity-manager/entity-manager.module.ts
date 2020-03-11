@@ -21,7 +21,6 @@ import {InterestTargetingComponent} from './components/interest-targeting/intere
 import {PublisherGroupTargetingComponent} from './components/publisher-groups-targeting/publisher-groups-targeting.component';
 import {RetargetingComponent} from './components/retargeting/retargeting.component';
 import {BiddingTypeSettingComponent} from './components/bidding-type-setting/bidding-type-setting.component';
-import {AdvancedSettingsSectionComponent} from './components/advanced-settings-section/advanced-settings-section.component';
 import {AdGroupAutopilotStateSettingComponent} from './components/ad-group-autopilot-state-setting/ad-group-autopilot-state-setting.component';
 import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group-rtb-sources-management-setting/ad-group-rtb-sources-management-setting.component';
 import {HacksComponent} from './components/hacks/hacks.component';
@@ -65,7 +64,6 @@ import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySe
         InterestTargetingComponent,
         PublisherGroupTargetingComponent,
         RetargetingComponent,
-        AdvancedSettingsSectionComponent,
         AdGroupAutopilotStateSettingComponent,
         AdGroupRTBSourcesManagementSettingComponent,
         HacksComponent,

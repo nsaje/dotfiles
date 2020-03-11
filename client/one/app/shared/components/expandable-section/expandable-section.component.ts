@@ -1,4 +1,4 @@
-import './advanced-settings-section.component.less';
+import './expandable-section.component.less';
 
 import {
     Component,
@@ -9,19 +9,17 @@ import {
 } from '@angular/core';
 
 @Component({
-    selector: 'zem-advanced-settings-section',
-    templateUrl: './advanced-settings-section.component.html',
+    selector: 'zem-expandable-section',
+    templateUrl: './expandable-section.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdvancedSettingsSectionComponent implements OnChanges {
+export class ExpandableSectionComponent implements OnChanges {
     @Input()
     expandedByDefault: boolean;
     @Input()
-    overviewText: string;
+    expandLabel: string = 'Show';
     @Input()
-    customLabelCollapsed: string;
-    @Input()
-    customLabelExpanded: string;
+    collapseLabel: string = 'Hide';
 
     expanded = false;
 

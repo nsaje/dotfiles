@@ -1,10 +1,10 @@
 @import 'variables';
 
-.zem-advanced-settings-section__content {
+.zem-expandable-section__content {
     background: @color--lightest-neutral;
 }
 
-.zem-advanced-settings-section__toggle {
+.zem-expandable-section__toggle {
     width: 100%;
     padding: 10px @spacing--default;
     background: @color--lightest-neutral;
@@ -22,13 +22,13 @@
     }
 }
 
-.zem-advanced-settings-section__toggle-text {
+.zem-expandable-section__toggle-text {
     position: relative;
     max-width: 200px;
     padding-left: 15px;
 }
 
-.zem-advanced-settings-section__toggle-text::before {
+.zem-expandable-section__toggle-text::before {
     content: '';
     position: absolute;
     transform: translateY(-50%) rotate(90deg);
@@ -40,10 +40,10 @@
     left: 0;
 }
 
-.zem-advanced-settings-section__toggle-text--section-expanded::before {
+.zem-expandable-section__toggle-text--section-expanded::before {
     transform: translateY(-50%) rotate(-90deg);
 }
 
-.zem-advanced-settings-section__toggle--section-expanded {
+.zem-expandable-section__toggle--section-expanded {
     background: @color--lighter-neutral;
 }

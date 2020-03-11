@@ -62,6 +62,7 @@ import {BidModifierTypesGridComponent} from './components/bid-modifier-types-gri
 import {ListGroupComponent} from './components/list-group/list-group.component';
 import {ImageCheckboxInputComponent} from './components/image-checkbox-input/image-checkbox-input.component';
 import {ImageCheckboxInputGroupComponent} from './components/image-checkbox-input-group/image-checkbox-input-group.component';
+import {ExpandableSectionComponent} from './components/expandable-section/expandable-section.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -117,6 +118,7 @@ const EXPORTED_DECLARATIONS = [
     ListGroupComponent,
     ImageCheckboxInputComponent,
     ImageCheckboxInputGroupComponent,
+    ExpandableSectionComponent,
 ];
 
 @NgModule({
