@@ -48,6 +48,48 @@ class DirectDealViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["source"], source.bidder_slug)
 
+    def test_put_account(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        source = magic_mixer.blend(core.models.Source)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, account=None, source=source)
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency.id))
+        self.assertEqual(resp_json["data"]["accountId"], None)
+        put_data = resp_json["data"].copy()
+        put_data["agencyId"] = None
+        put_data["accountId"] = str(account.id)
+        r = self.client.put(
+            reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["agencyId"], None)
+        self.assertEqual(resp_json["data"]["accountId"], str(account.id))
+
+    def test_put_agency(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        source = magic_mixer.blend(core.models.Source)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=None, account=account, source=source)
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["agencyId"], None)
+        self.assertEqual(resp_json["data"]["accountId"], str(account.id))
+        put_data = resp_json["data"].copy()
+        put_data["agencyId"] = str(agency.id)
+        put_data["accountId"] = None
+        r = self.client.put(
+            reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency.id))
+        self.assertEqual(resp_json["data"]["accountId"], None)
+
     def test_list_pagination(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)

@@ -53,12 +53,15 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
 
-        agency_id = value.get("agency_id")
-        if agency_id:
-            value["agency"] = restapi.access.get_agency(self.context["request"].user, agency_id)
-
-        account_id = value.get("account_id")
-        if account_id:
-            value["account"] = restapi.access.get_account(self.context["request"].user, account_id)
+        value["agency"] = (
+            restapi.access.get_agency(self.context["request"].user, value.get("agency_id"))
+            if value.get("agency_id")
+            else None
+        )
+        value["account"] = (
+            restapi.access.get_account(self.context["request"].user, value.get("account_id"))
+            if value.get("account_id")
+            else None
+        )
 
         return value
