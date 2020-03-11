@@ -107,6 +107,19 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             suppressSizeToFit: true,
         },
         {
+            headerName: 'Scope',
+            field: 'agencyId',
+            valueFormatter: data => {
+                if (commonHelpers.isDefined(data.value)) {
+                    return 'Agency';
+                } else {
+                    return 'Account';
+                }
+            },
+            width: 90,
+            suppressSizeToFit: true,
+        },
+        {
             headerName: 'Accounts',
             field: 'numOfAccounts',
             cellClassRules: {
