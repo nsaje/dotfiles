@@ -35,6 +35,14 @@ CREATE TABLE mv_adgroup_placement (
     local_effective_cost_nano bigint encode AZ64,
     local_effective_data_cost_nano bigint encode AZ64,
     local_license_fee_nano bigint encode AZ64,
-    local_margin_nano bigint encode AZ64
+    local_margin_nano bigint encode AZ64,
+
+    visits integer encode AZ64,
+    new_visits integer encode AZ64,
+    bounced_visits integer encode AZ64,
+    pageviews integer encode AZ64,
+    total_time_on_site integer encode AZ64,
+    users integer encode AZ64,
+    returning_users integer encode AZ64
 -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement);

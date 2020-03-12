@@ -70,7 +70,15 @@ INSERT INTO mv_adgroup_placement (
                     ) * cf.pct_license_fee::decimal(10, 8)
                 ) * cf.pct_margin::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
-        ) as local_margin_nano
+        ) as local_margin_nano,
+
+        null as visits,
+        null as new_visits,
+        null as bounced_visits,
+        null as pageviews,
+        null as total_time_on_site,
+        null as users,
+        null as returning_users
     FROM
         (
             (
