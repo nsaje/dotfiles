@@ -88,6 +88,7 @@ describe('DealsService', () => {
         const limit = 10;
         const offset = 0;
         const keyword = 'blue';
+        const agencyOnly = true;
         dealsEndpointStub.list.and
             .returnValue(of(mockedDeals, asapScheduler))
             .calls.reset();
@@ -99,6 +100,7 @@ describe('DealsService', () => {
                 offset,
                 limit,
                 keyword,
+                agencyOnly,
                 requestStateUpdater
             )
             .subscribe(deals => {
@@ -111,6 +113,7 @@ describe('DealsService', () => {
             offset,
             limit,
             keyword,
+            agencyOnly,
             requestStateUpdater
         );
     });

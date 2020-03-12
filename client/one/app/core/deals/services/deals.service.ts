@@ -16,6 +16,7 @@ export class DealsService {
         offset: number | null,
         limit: number | null,
         keyword: string | null,
+        agencyOnly: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal[]> {
         return this.endpoint.list(
@@ -24,6 +25,7 @@ export class DealsService {
             offset,
             limit,
             keyword,
+            agencyOnly,
             requestStateUpdater
         );
     }

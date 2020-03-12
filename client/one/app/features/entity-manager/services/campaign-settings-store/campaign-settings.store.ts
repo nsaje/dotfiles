@@ -195,11 +195,12 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             const isKeywordDefined = commonHelpers.isDefined(keyword);
             this.dealsService
                 .list(
-                    this.state.extras.agencyId,
                     null,
+                    this.state.entity.accountId,
                     !isKeywordDefined ? 0 : null,
                     !isKeywordDefined ? 10 : null,
                     !isKeywordDefined ? null : keyword.trim(),
+                    null,
                     this.dealsRequestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

@@ -174,10 +174,11 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             this.dealsService
                 .list(
                     this.state.entity.agencyId,
-                    null,
+                    this.state.entity.id,
                     !isKeywordDefined ? 0 : null,
                     !isKeywordDefined ? 10 : null,
                     !isKeywordDefined ? null : keyword.trim(),
+                    !this.state.entity.id ? true : null,
                     this.dealsRequestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

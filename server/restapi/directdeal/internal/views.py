@@ -29,6 +29,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
     def list(self, request):
         agency_id = request.query_params.get("agencyId")
         account_id = request.query_params.get("accountId")
+        agency_only = request.query_params.get("agencyOnly")
 
         if account_id is not None:
             account = restapi.access.get_account(request.user, account_id)
@@ -39,11 +40,19 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             )
         elif agency_id is not None:
             agency = restapi.access.get_agency(request.user, agency_id)
-            deal_items = (
-                core.features.deals.DirectDeal.objects.filter(Q(agency=agency) | Q(account__agency=agency))
-                .select_related("source", "agency")
-                .order_by("-created_dt")
-            )
+            if agency_only is not None and agency_only.lower() == "true":
+                deal_items = (
+                    core.features.deals.DirectDeal.objects.filter_by_agency(agency)
+                    .select_related("source", "agency")
+                    .order_by("-created_dt")
+                )
+            else:
+                deal_items = (
+                    core.features.deals.DirectDeal.objects.filter(Q(agency=agency) | Q(account__agency=agency))
+                    .select_related("source", "agency")
+                    .order_by("-created_dt")
+                )
+
         else:
             raise utils.exc.ValidationError(
                 errors={"non_field_errors": "Either agency id or account id must be provided."}

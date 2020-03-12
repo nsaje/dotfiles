@@ -333,6 +333,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                     offset,
                     pageSize,
                     keyword,
+                    null,
                     this.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

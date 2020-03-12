@@ -20,6 +20,7 @@ export class DealsEndpoint {
         offset: number | null,
         limit: number | null,
         keyword: string | null,
+        agencyOnly: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal[]> {
         const request = DEALS_CONFIG.requests.deals.list;
@@ -29,6 +30,9 @@ export class DealsEndpoint {
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
             ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(keyword) && {keyword}),
+            ...(commonHelpers.isDefined(agencyOnly) && {
+                agencyOnly: `${agencyOnly}`,
+            }),
         };
 
         requestStateUpdater(request.name, {
