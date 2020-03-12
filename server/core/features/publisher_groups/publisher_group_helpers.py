@@ -478,8 +478,9 @@ def _prepare_entries(entry_dicts, publisher_group):
 
         entries.append(
             models.PublisherGroupEntry(
-                publisher=entry["publisher"],
-                source=entry["source"],
+                publisher=entry.get("publisher"),
+                source=entry.get("source"),
+                placement=entry.get("placement"),
                 include_subdomains=entry["include_subdomains"],
                 outbrain_publisher_id=entry.get("outbrain_publisher_id", ""),
                 outbrain_section_id=entry.get("outbrain_section_id", ""),

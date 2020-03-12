@@ -14,22 +14,38 @@ logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_AGENCY = 55
 
-EXAMPLE_CSV_CONTENT = [{"Publisher": "example.com"}, {"Publisher": "some.example.com"}]
+
+def get_example_csv_content(include_placement=False):
+    if include_placement:
+        columns = ["Publisher", "Placement", "Source"]
+        content = [
+            {"Publisher": "example.com", "Placement": None, "Source": None},
+            {"Publisher": "example.com", "Placement": None, "Source": "somesource"},
+            {"Publisher": "example.com", "Placement": "someplacement", "Source": "somesource"},
+            {"Publisher": "example.com", "Placement": "someplacement", "Source": None},
+        ]
+    else:
+        columns = ["Publisher", "Source"]
+        content = [{"Publisher": "example.com", "Source": None}, {"Publisher": "example.com", "Source": "somesource"}]
+
+    return csv_utils.dictlist_to_csv(columns, content)
 
 
-def get_example_csv_content():
-    return csv_utils.dictlist_to_csv(["Publisher"], EXAMPLE_CSV_CONTENT)
+def get_csv_content(account, publisher_group_entries, include_placement=False):
+    return csv_utils.tuplelist_to_csv(
+        _get_rows_generator(account, publisher_group_entries, include_placement=include_placement)
+    )
 
 
-def get_csv_content(account, publisher_group_entries):
-    return csv_utils.tuplelist_to_csv(_get_rows_generator(account, publisher_group_entries))
+def get_entries_errors_csv_content(account, entry_dicts, include_placement=False):
+    return csv_utils.tuplelist_to_csv(
+        _get_error_rows_generator(account, entry_dicts, include_placement=include_placement)
+    )
 
 
-def get_entries_errors_csv_content(account, entry_dicts):
-    return csv_utils.tuplelist_to_csv(_get_error_rows_generator(account, entry_dicts))
+def _get_rows_generator(account, publisher_group_entries, include_placement=False):
+    entries_list = list(publisher_group_entries.order_by("publisher"))
 
-
-def _get_rows_generator(account, publisher_group_entries):
     is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any(
         (
@@ -38,10 +54,14 @@ def _get_rows_generator(account, publisher_group_entries):
             or entry.outbrain_amplify_publisher_id
             or entry.outbrain_engage_publisher_id
         )
-        for entry in publisher_group_entries
+        for entry in entries_list
     )
+    include_placement = include_placement or any(entry.placement for entry in entries_list)
 
     headers = ["Publisher", "Source"]
+    if include_placement:
+        headers.insert(1, "Placement")
+
     if add_outbrain_publisher_id:
         headers.append("Outbrain Publisher Id")
         headers.append("Outbrain Section Id")
@@ -49,8 +69,11 @@ def _get_rows_generator(account, publisher_group_entries):
         headers.append("Outbrain Engage Publisher Id")
     yield headers
 
-    for entry in publisher_group_entries.order_by("publisher"):
+    for entry in entries_list:
         row = [entry.publisher, entry.source.get_clean_slug() if entry.source else None]
+        if include_placement:
+            row.insert(1, entry.placement if entry.placement else None)
+
         if add_outbrain_publisher_id:
             row.append(entry.outbrain_publisher_id)
             row.append(entry.outbrain_section_id)
@@ -59,7 +82,7 @@ def _get_rows_generator(account, publisher_group_entries):
         yield row
 
 
-def _get_error_rows_generator(account, entry_dicts):
+def _get_error_rows_generator(account, entry_dicts, include_placement=False):
     is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any(
         (
@@ -72,6 +95,9 @@ def _get_error_rows_generator(account, entry_dicts):
     )
 
     headers = ["Publisher", "Source", "Error"]
+    if include_placement:
+        headers.insert(1, "Placement")
+
     if add_outbrain_publisher_id:
         headers.insert(-1, "Outbrain Publisher Id")
         headers.insert(-1, "Outbrain Section Id")
@@ -80,7 +106,9 @@ def _get_error_rows_generator(account, entry_dicts):
     yield headers
 
     for entry in entry_dicts:
-        row = [entry["publisher"], entry["source"], entry.get("error")]
+        row = [entry.get("publisher"), entry.get("source"), entry.get("error")]
+        if include_placement:
+            row.insert(1, entry.get("placement"))
         if add_outbrain_publisher_id:
             row.insert(-1, entry.get("outbrain_publisher_id"))
             row.insert(-1, entry.get("outbrain_section_id"))
@@ -89,27 +117,35 @@ def _get_error_rows_generator(account, entry_dicts):
         yield row
 
 
-def validate_entries(entry_dicts):
+def validate_entries(entry_dicts, include_placement=False):
     validated_entry_dicts = []
     sources_by_slug = {x.get_clean_slug(): x for x in models.Source.objects.all()}
 
     for entry in entry_dicts:
+        if entry.get("publisher") == "":
+            entry.update({"publisher": None})
+        if entry.get("placement") == "":
+            entry.update({"placement": None})
+
         # these two will get modified for validation purposes
-        publisher = entry["publisher"]
+        publisher = entry.get("publisher")
         source_slug = entry.get("source")
 
         error = []
 
-        prefixes = ("http://", "https://")
-        if any(publisher.startswith(x) for x in prefixes):
-            error.append("Remove the following prefixes: http, https")
+        if publisher:
+            prefixes = ("http://", "https://")
+            if any(publisher.startswith(x) for x in prefixes):
+                error.append("Remove the following prefixes: http, https")
 
-        # these were already validated, remove so they won't cause false errors in further validation
-        for prefix in ("http://", "https://"):
-            publisher = publisher.replace(prefix, "")
+            # these were already validated, remove so they won't cause false errors in further validation
+            for prefix in prefixes:
+                publisher = publisher.replace(prefix, "")
 
-        if "/" in publisher:
-            error.append("'/' should not be used")
+            if "/" in publisher:
+                error.append("'/' should not be used")
+        else:
+            error.append("Publisher is required")
 
         validated_entry = copy.copy(entry)
         if "error" in validated_entry:
@@ -135,8 +171,9 @@ def clean_entry_sources(entry_dicts):
         entry["source"] = sources_by_slug.get(entry["source"].lower())
 
 
-def save_entries_errors_csv(account, entry_dicts):
+def save_entries_errors_csv(account, entry_dicts, include_placement=False):
     csv_content = get_entries_errors_csv_content(account, entry_dicts)
+    csv_content = get_entries_errors_csv_content(account, entry_dicts, include_placement=include_placement)
     csv_key = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
     s3_helper.put(

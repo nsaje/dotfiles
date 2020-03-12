@@ -1,3 +1,5 @@
+import csv
+import io
 import textwrap
 
 import mock
@@ -508,9 +510,9 @@ class PublisherGroupCSVHelpersTest(TestCase):
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent(
                 """\
-            "Publisher","Source"\r
-            "pub1","adsnative"\r
-            "pub2",""\r
+            "Publisher","Placement","Source"\r
+            "pub1","plac1","adsnative"\r
+            "pub2","",""\r
             """
             ),
         )
@@ -522,23 +524,158 @@ class PublisherGroupCSVHelpersTest(TestCase):
             publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
             textwrap.dedent(
                 """\
-            "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id"\r
-            "pub1","adsnative","","","",""\r
-            "pub2","","asd123","asd1234","asd12345","df164"\r
+            "Publisher","Placement","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id"\r
+            "pub1","plac1","adsnative","","","",""\r
+            "pub2","","","asd123","asd1234","asd12345","df164"\r
             """
             ),
         )
 
-    def test_get_example_csv_content(self):
-        self.assertEqual(
-            publisher_group_csv_helpers.get_example_csv_content(),
-            textwrap.dedent(
-                """\
-            "Publisher"\r
-            "example.com"\r
-            "some.example.com"\r
-            """
+    def test_get_csv_content_all_cases_without_placement(self):
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        source = magic_mixer.blend(models.Source, bidder_slug="somesource")
+        publisher_group = magic_mixer.blend(models.PublisherGroup, account=account)
+        publisher_group_entries = [
+            magic_mixer.blend(models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com"),
+            magic_mixer.blend(
+                models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com", source=source
             ),
+        ]
+
+        rows = [
+            row
+            for row in csv.DictReader(
+                io.StringIO(
+                    publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all())
+                )
+            )
+        ]
+        self.assertEqual(
+            set(tuple(row.items()) for row in rows),
+            {
+                (
+                    ("Publisher", e.publisher if e.publisher is not None else ""),
+                    ("Source", e.source.bidder_slug if e.source is not None else ""),
+                )
+                for e in publisher_group_entries
+            },
+        )
+
+    def test_get_csv_content_all_cases_without_placement_existing_placement_entry(self):
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        source = magic_mixer.blend(models.Source, bidder_slug="somesource")
+        publisher_group = magic_mixer.blend(models.PublisherGroup, account=account)
+        publisher_group_entries = [
+            magic_mixer.blend(models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com"),
+            magic_mixer.blend(
+                models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com", source=source
+            ),
+            magic_mixer.blend(
+                models.PublisherGroupEntry,
+                publisher_group=publisher_group,
+                publisher="example.com",
+                source=source,
+                placement="someplacement",
+            ),
+            magic_mixer.blend(
+                models.PublisherGroupEntry,
+                publisher_group=publisher_group,
+                publisher="example.com",
+                placement="someplacement",
+            ),
+        ]
+
+        rows = [
+            row
+            for row in csv.DictReader(
+                io.StringIO(
+                    publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all())
+                )
+            )
+        ]
+        self.assertEqual(
+            set(tuple(row.items()) for row in rows),
+            {
+                (
+                    ("Publisher", e.publisher if e.publisher is not None else ""),
+                    ("Placement", e.placement if e.placement is not None else ""),
+                    ("Source", e.source.bidder_slug if e.source is not None else ""),
+                )
+                for e in publisher_group_entries
+            },
+        )
+
+    def test_get_csv_content_all_cases_with_placement(self):
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        source = magic_mixer.blend(models.Source, bidder_slug="somesource")
+        publisher_group = magic_mixer.blend(models.PublisherGroup, account=account)
+        publisher_group_entries = [
+            magic_mixer.blend(models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com"),
+            magic_mixer.blend(
+                models.PublisherGroupEntry, publisher_group=publisher_group, publisher="example.com", source=source
+            ),
+            magic_mixer.blend(
+                models.PublisherGroupEntry,
+                publisher_group=publisher_group,
+                publisher="example.com",
+                source=source,
+                placement="someplacement",
+            ),
+            magic_mixer.blend(
+                models.PublisherGroupEntry,
+                publisher_group=publisher_group,
+                publisher="example.com",
+                placement="someplacement",
+            ),
+        ]
+
+        rows = [
+            row
+            for row in csv.DictReader(
+                io.StringIO(
+                    publisher_group_csv_helpers.get_csv_content(
+                        publisher_group.account, publisher_group.entries.all(), include_placement=True
+                    )
+                )
+            )
+        ]
+        self.assertEqual(
+            set(tuple(row.items()) for row in rows),
+            {
+                (
+                    ("Publisher", e.publisher if e.publisher is not None else ""),
+                    ("Placement", e.placement if e.placement is not None else ""),
+                    ("Source", e.source.bidder_slug if e.source is not None else ""),
+                )
+                for e in publisher_group_entries
+            },
+        )
+
+    def test_get_example_csv_content_without_placement(self):
+        rows = [row for row in csv.DictReader(io.StringIO(publisher_group_csv_helpers.get_example_csv_content()))]
+        self.assertEqual(
+            set(tuple(row.items()) for row in rows),
+            {(("Publisher", "example.com"), ("Source", "")), (("Publisher", "example.com"), ("Source", "somesource"))},
+        )
+
+    def test_get_example_csv_content_with_placement(self):
+        rows = [
+            row
+            for row in csv.DictReader(
+                io.StringIO(publisher_group_csv_helpers.get_example_csv_content(include_placement=True))
+            )
+        ]
+        self.assertEqual(
+            set(tuple(row.items()) for row in rows),
+            {
+                (("Publisher", "example.com"), ("Placement", ""), ("Source", "")),
+                (("Publisher", "example.com"), ("Placement", ""), ("Source", "somesource")),
+                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "somesource")),
+                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "")),
+            },
         )
 
     def test_validate_entries(self):

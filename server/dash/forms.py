@@ -2009,7 +2009,26 @@ class AudienceUpdateForm(forms.Form):
 class PublisherGroupEntryForm(forms.Form):
     publisher = PlainCharField(required=True, max_length=127)
     source = forms.ModelChoiceField(queryset=models.Source.objects.all(), required=False)
+    placement = PlainCharField(required=False, max_length=127)
     include_subdomains = forms.BooleanField(required=False)
+    user = None
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super(PublisherGroupEntryForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user is None or not self.user.has_perm("zemauth.can_use_placement_targeting"):
+            self.cleaned_data.pop("placement", None)
+
+        return self.cleaned_data
+
+    def clean_placement(self):
+        if self.user is None or not self.user.has_perm("zemauth.can_use_placement_targeting"):
+            if self.cleaned_data["placement"]:
+                raise exceptions.ValidationError("Invalid field: placement")
+
+        return self.cleaned_data["placement"]
 
 
 class PublisherTargetingForm(forms.Form):
@@ -2023,6 +2042,8 @@ class PublisherTargetingForm(forms.Form):
 
     enforce_cpc = forms.BooleanField(required=False)
 
+    user = None
+
     # bulk selection fields
     start_date = forms.DateField(required=False)
     end_date = forms.DateField(required=False)
@@ -2031,6 +2052,7 @@ class PublisherTargetingForm(forms.Form):
     filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
 
     def __init__(self, user, *args, **kwargs):
+        self.user = user
         super(PublisherTargetingForm, self).__init__(*args, **kwargs)
         self.fields["ad_group"].queryset = models.AdGroup.objects.all().filter_by_user(user)
         self.fields["campaign"].queryset = models.Campaign.objects.all().filter_by_user(user)
@@ -2039,7 +2061,7 @@ class PublisherTargetingForm(forms.Form):
     def _clean_entries(self, entries):
         clean_entries = []
         for entry in entries if entries else []:
-            entry_form = PublisherGroupEntryForm(entry)
+            entry_form = PublisherGroupEntryForm(entry, user=self.user)
             if not entry_form.is_valid():
                 for key, error in entry_form.errors.items():
                     raise forms.ValidationError(error, code=key)
@@ -2113,17 +2135,38 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
     )
     include_subdomains = forms.BooleanField(required=False)
     entries = forms.FileField(required=False)
+    user = None
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super(PublisherGroupUploadForm, self).__init__(*args, **kwargs)
 
     def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
         column_names = [col.strip(" _").lower().replace(" ", "_") for col in header]
 
-        if len(column_names) < 1 or column_names[0] != "publisher":
-            raise forms.ValidationError("First column in header should be Publisher.")
+        if "publisher" not in column_names:
+            raise forms.ValidationError("Publisher column is required")
 
-        if len(column_names) >= 2 and column_names[1] != "source":
-            raise forms.ValidationError("Second column in header should be Source.")
+        include_placement = self.user is not None and self.user.has_perm("zemauth.can_use_placement_targeting")
+        allowed_columns = {"publisher", "source"}
+        if include_placement:
+            allowed_columns.add("placement")
+
+        extra_columns = []
+        for column in header:
+            column_name = column.strip(" _").lower().replace(" ", "_")
+            if column_name not in allowed_columns:
+                extra_columns.append(column)
+
+        if extra_columns:
+            if len(extra_columns) == 1:
+                message = "Column {} is not supported"
+            else:
+                message = "Columns {} are not supported"
+
+            raise forms.ValidationError(message.format(", ".join('"{}"'.format(e) for e in extra_columns)))
 
         return column_names
 

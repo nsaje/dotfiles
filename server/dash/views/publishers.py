@@ -148,15 +148,20 @@ class PublisherGroupsUpload(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        form = forms.PublisherGroupUploadForm(request.POST, request.FILES)
+        form = forms.PublisherGroupUploadForm(request.POST, request.FILES, user=request.user)
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
         entries = form.cleaned_data.get("entries")
         if entries:
-            validated_entries = publisher_group_csv_helpers.validate_entries(entries)
+            include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
+            validated_entries = publisher_group_csv_helpers.validate_entries(
+                entries, include_placement=include_placement
+            )
             if any("error" in entry for entry in validated_entries):
-                errors_csv_key = publisher_group_csv_helpers.save_entries_errors_csv(account, validated_entries)
+                errors_csv_key = publisher_group_csv_helpers.save_entries_errors_csv(
+                    account, validated_entries, include_placement=include_placement
+                )
                 raise exc.ValidationError(errors={"errors_csv_key": errors_csv_key})
 
             publisher_group_csv_helpers.clean_entry_sources(entries)
@@ -178,10 +183,11 @@ class PublisherGroupsDownload(api_common.BaseApiView):
         if not publisher_group:
             raise exc.MissingDataError()
 
+        include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
         return self.create_csv_response(
             "publisher_group_{}".format(slugify.slugify(publisher_group.name)),
             content=publisher_group_csv_helpers.get_csv_content(
-                account, publisher_group.entries.all().select_related("source")
+                account, publisher_group.entries.all().select_related("source"), include_placement=include_placement
             ),
         )
 
@@ -191,6 +197,8 @@ class PublisherGroupsExampleDownload(api_common.BaseApiView):
         if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
             raise exc.MissingDataError()
 
+        include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
         return self.create_csv_response(
-            "publisher_group_example", content=publisher_group_csv_helpers.get_example_csv_content()
+            "publisher_group_example",
+            content=publisher_group_csv_helpers.get_example_csv_content(include_placement=include_placement),
         )
