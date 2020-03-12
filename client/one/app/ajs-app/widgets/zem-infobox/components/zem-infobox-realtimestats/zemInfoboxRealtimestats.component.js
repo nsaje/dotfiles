@@ -1,19 +1,16 @@
 var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
+var clone = require('clone');
 
 angular.module('one.widgets').component('zemInfoboxRealtimestats', {
-    bindings: {},
+    bindings: {
+        entity: '<',
+    },
     template: require('./zemInfoboxRealtimestats.component.html'),
-    controller: function(
-        zemNavigationNewService,
-        zemRealtimestatsService,
-        $filter,
-        $interval,
-        $timeout
-    ) {
+    controller: function(zemRealtimestatsService, $interval, $timeout) {
         // eslint-disable-line max-len
         var $ctrl = this;
 
-        var spendRow = {
+        var spendRowDefaults = {
             name: "Today's spend:",
             warning:
                 "Today's spend is calculated in real-time and represents the amount of money spent on media and data costs today. Today's spend does not include fees that might apply. The final amount might be different due to post-processing. Outbrain and Yahoo today's spend is delayed by 15 minutes. Yahoo data is offset because of the time zone difference and will not be displayed for the first 3 hours of the day.", // eslint-disable-line max-len
@@ -21,56 +18,59 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
 
         $ctrl.spendRow = null;
 
-        var pollInterval, entity;
-        $ctrl.$onInit = function() {
-            entity = zemNavigationNewService.getActiveEntity();
-            if (entity && entity.type === constants.entityType.AD_GROUP) {
-                update();
-                pollInterval = $interval(update, 10000);
-                $ctrl.spendRow = spendRow;
-            } else {
-                $ctrl.spendRow = null;
+        var pollInterval;
+
+        $ctrl.$onChanges = function(changes) {
+            if (changes.entity) {
+                if (pollInterval) $interval.cancel(pollInterval);
+                if (
+                    $ctrl.entity &&
+                    $ctrl.entity.type === constants.entityType.AD_GROUP
+                ) {
+                    $ctrl.spendRow = clone(spendRowDefaults);
+                    update();
+                    pollInterval = $interval(update, 10000);
+                } else {
+                    $ctrl.spendRow = null;
+                }
             }
         };
 
         $ctrl.$onDestroy = function() {
-            if (pollInterval) {
-                $interval.cancel(pollInterval);
-            }
+            if (pollInterval) $interval.cancel(pollInterval);
         };
 
         function update() {
             zemRealtimestatsService
-                .getAdGroupSourcesStats(entity.id)
+                .getAdGroupSourcesStats($ctrl.entity.id)
                 .then(function(sourceStats) {
-                    var oldValue = spendRow.value;
+                    var oldValue = clone($ctrl.spendRow.value);
 
-                    spendRow.value = formatSpend(
+                    $ctrl.spendRow.value = formatSpend(
                         sourceStats.reduce(function(sum, stat) {
                             return sum + parseFloat(stat.spend);
                         }, 0)
                     );
-                    spendRow.detailsContent = sourceStats
+                    $ctrl.spendRow.detailsContent = sourceStats
                         .map(function(stat) {
                             return stat.source + ': ' + formatSpend(stat.spend);
                         })
                         .join('<br />');
 
-                    if (oldValue !== spendRow.value) {
-                        spendRow.class = 'zem-infobox-data-row--update';
+                    if (oldValue !== $ctrl.spendRow.value) {
+                        $ctrl.spendRow.class = 'zem-infobox-data-row--update';
                         $timeout(function() {
-                            spendRow.class = '';
+                            $ctrl.spendRow.class = '';
                         }, 1000);
                     }
                 });
         }
 
         function formatSpend(spend) {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
+            // adgroup.campaign.account
+            var account = $ctrl.entity.parent.parent;
             var currency =
-                activeAccount && activeAccount.data
-                    ? activeAccount.data.currency
-                    : null;
+                account && account.data ? account.data.currency : null;
             return currencyHelpers.getValueInCurrency(spend, currency, 4);
         }
     },
