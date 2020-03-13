@@ -1599,8 +1599,14 @@ class SystemUserType(ConstantBase):
     CAMPAIGN_STOP = 1
     AUTOPILOT = 2
     K1_USER = 3
+    RULES = 4
 
-    _VALUES = {CAMPAIGN_STOP: "Campaign Stop", AUTOPILOT: "Zemanta Autopilot", K1_USER: "System User "}
+    _VALUES = {
+        CAMPAIGN_STOP: "Campaign Stop",
+        AUTOPILOT: "Zemanta Autopilot",
+        K1_USER: "System User ",
+        RULES: "Automation Rules",
+    }
 
 
 class FacebookPageRequestType(ConstantBase):
@@ -1906,6 +1912,7 @@ class HistoryActionType(ConstantBase):
     DEAL_CONNECTION_DELETE = 30
     BID_MODIFIER_UPDATE = 31
     BID_MODIFIER_DELETE = 32
+    RULE_RUN = 33
 
     _VALUES = {
         GOAL_CHANGE: "Change Campaign Goal",
@@ -1941,6 +1948,7 @@ class HistoryActionType(ConstantBase):
         DEAL_CONNECTION_DELETE: "Delete deal connection",
         BID_MODIFIER_UPDATE: "Update bid modifier",
         BID_MODIFIER_DELETE: "Delete bid modifier",
+        RULE_RUN: "Automation rule run",
     }
 
 

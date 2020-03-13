@@ -13,6 +13,7 @@ import automation.rules.constants
 import core.features.bid_modifiers.constants
 import core.features.goals
 import core.models
+import dash.constants
 import etl.materialization_run
 import redshiftapi.api_rules
 from utils import dates_helper
@@ -153,23 +154,37 @@ def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
     return False
 
 
-def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]) -> RuleHistory:
-    if rule.target_type != constants.TargetType.AD_GROUP:
+def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]):
+    dashboard_targets = _get_changes_dashboard_targets(rule, ad_group, changes)
+    changes_dict = dict(ChainMap(*[c.to_dict() for c in changes]))
+    changes_text = "Updated targets: {}".format(", ".join(dashboard_targets))
+
+    ad_group.write_history(
+        changes_text,
+        changes=changes_dict,
+        system_user=dash.constants.SystemUserType.RULES,
+        action_type=dash.constants.HistoryActionType.RULE_RUN,
+    )
+    RuleHistory.objects.create(
+        rule=rule,
+        ad_group=ad_group,
+        status=constants.ApplyStatus.SUCCESS,
+        changes=changes_dict,
+        changes_text=changes_text,
+    )
+
+
+def _get_changes_dashboard_targets(
+    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]
+) -> List[str]:
+    if rule.target_type in constants.TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING:
         bid_modifier_type = constants.TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING[rule.target_type]
-        dashboard_targets = [
+        return [
             str(core.features.bid_modifiers.converters.TargetConverter.from_target(bid_modifier_type, c.target))
             for c in changes
         ]
     else:
-        dashboard_targets = [str(c.target) for c in changes]
-
-    return RuleHistory.objects.create(
-        rule=rule,
-        ad_group=ad_group,
-        status=constants.ApplyStatus.SUCCESS,
-        changes=dict(ChainMap(*[c.to_dict() for c in changes])),
-        changes_text="Updated targets: {}".format(", ".join(dashboard_targets)),
-    )
+        return [str(c.target) for c in changes]
 
 
 def _write_fail_history(rule: Rule, ad_group: core.models.AdGroup, errors: Sequence[ErrorData]) -> RuleHistory:

@@ -20,12 +20,12 @@ from .apply import ErrorData
 
 
 class ServiceTest(TestCase):
-    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
+    @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("core.features.bid_modifiers.converters.TargetConverter.from_target")
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.service._format_stats")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_execute_rules(self, mock_stats, mock_format, mock_apply, mock_from_target, mock_time):
+    def test_execute_rules(self, mock_stats, mock_format, mock_apply, mock_from_target):
         ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
             ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
@@ -172,6 +172,46 @@ class ServiceTest(TestCase):
                 + "An error has occured.",
                 fail_history.changes_text,
             )
+
+    @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
+    @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_history(self, mock_stats, mock_format, mock_apply):
+        ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+        mock_stats.return_value = [123]
+        mock_format.return_value = {ad_group.id: {}}
+        mock_apply.return_value = (
+            [
+                ValueChangeData(target="pub1.com__12", old_value=1.0, new_value=2.0),
+                ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
+            ],
+            [],
+        )
+
+        publisher_rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=[ad_group]
+        )
+
+        service.execute_rules()
+
+        latest_ad_group_history = ad_group.history.latest("created_dt")
+        latest_rule_history = RuleHistory.objects.get(rule=publisher_rule, status=constants.ApplyStatus.SUCCESS)
+        expected_history_text = "Updated targets: pub1.com__12, pub2.com__21"
+        expected_history_changes = {
+            "pub2.com__21": {"old_value": 2.0, "new_value": 1.0},
+            "pub1.com__12": {"old_value": 1.0, "new_value": 2.0},
+        }
+
+        self.assertEqual(expected_history_text, latest_ad_group_history.changes_text)
+        self.assertEqual(expected_history_changes, latest_ad_group_history.changes)
+        self.assertEqual(dash.constants.SystemUserType.RULES, latest_ad_group_history.system_user)
+        self.assertEqual(None, latest_ad_group_history.created_by)
+
+        self.assertEqual(expected_history_text, latest_rule_history.changes_text)
+        self.assertEqual(expected_history_changes, latest_ad_group_history.changes)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
