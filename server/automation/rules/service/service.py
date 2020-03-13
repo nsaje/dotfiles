@@ -8,6 +8,8 @@ from typing import Optional
 from typing import Sequence
 from typing import Union
 
+from django.conf import settings
+
 import automation.models
 import automation.rules.constants
 import core.features.bid_modifiers.constants
@@ -17,6 +19,7 @@ import dash.constants
 import etl.materialization_run
 import redshiftapi.api_rules
 from utils import dates_helper
+from utils import email_helper
 from utils import zlogging
 
 from .. import Rule
@@ -80,6 +83,8 @@ def execute_rules() -> None:
                         ad_group_id=str(ad_group),
                         fail_history_id=str(fail_history),
                     )
+
+                _send_notification_email_if_enabled(rule, ad_group, changes, errors)
 
     automation.models.RulesDailyJobLog.objects.create()
 
@@ -155,9 +160,8 @@ def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
 
 
 def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]):
-    dashboard_targets = _get_changes_dashboard_targets(rule, ad_group, changes)
     changes_dict = dict(ChainMap(*[c.to_dict() for c in changes]))
-    changes_text = "Updated targets: {}".format(", ".join(dashboard_targets))
+    changes_text = _get_changes_text(rule, ad_group, changes)
 
     ad_group.write_history(
         changes_text,
@@ -172,6 +176,85 @@ def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[
         changes=changes_dict,
         changes_text=changes_text,
     )
+
+
+def _send_notification_email_if_enabled(
+    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData], errors: Sequence[ErrorData]
+):
+    if rule.notification_type == constants.NotificationType.NONE:
+        return
+
+    if changes:
+        _send_changes_email(rule, ad_group, changes, errors)
+    elif errors:
+        _send_errors_email(rule, ad_group, errors)
+    elif rule.notification_type == constants.NotificationType.ON_RULE_ACTION_TRIGGERED:
+        _send_no_action_email(rule, ad_group)
+
+
+def _send_changes_email(
+    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData], errors: Sequence[ErrorData]
+):
+    changes_text = _get_changes_text(rule, ad_group, changes)
+    errors_text = _get_errors_text(errors)
+
+    _send_email_from_template(
+        ad_group.campaign.account.agency,
+        rule.notification_recipients,
+        dash.constants.EmailTemplateType.AUTOMATION_RULE_RUN,
+        {
+            "rule_name": rule.name,
+            "ad_group_name": ad_group.name,
+            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
+            "changes_text": changes_text,
+            "errors_text": errors_text,
+        },
+    )
+
+
+def _send_errors_email(rule: Rule, ad_group: core.models.AdGroup, errors: Sequence[ErrorData]):
+    errors_text = _get_errors_text(errors)
+
+    _send_email_from_template(
+        ad_group.campaign.account.agency,
+        rule.notification_recipients,
+        dash.constants.EmailTemplateType.AUTOMATION_RULE_ERRORS,
+        {
+            "rule_name": rule.name,
+            "ad_group_name": ad_group.name,
+            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
+            "errors_text": errors_text,
+        },
+    )
+
+
+def _send_no_action_email(rule: Rule, ad_group: core.models.AdGroup):
+    _send_email_from_template(
+        ad_group.campaign.account.agency,
+        rule.notification_recipients,
+        dash.constants.EmailTemplateType.AUTOMATION_RULE_NO_CHANGES,
+        {
+            "rule_name": rule.name,
+            "ad_group_name": ad_group.name,
+            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
+        },
+    )
+
+
+def _send_email_from_template(
+    agency: core.models.Agency, recipient_list: List[str], template_type: int, template_params: Dict[str, str]
+):
+    for recipient in recipient_list:
+        email_helper.send_official_email(
+            agency_or_user=agency,
+            recipient_list=[recipient],
+            **email_helper.params_from_template(template_type, **template_params),
+        )
+
+
+def _get_changes_text(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]) -> str:
+    dashboard_targets = _get_changes_dashboard_targets(rule, ad_group, changes)
+    return "Updated targets: {}".format(", ".join(dashboard_targets))
 
 
 def _get_changes_dashboard_targets(
@@ -193,11 +276,11 @@ def _write_fail_history(rule: Rule, ad_group: core.models.AdGroup, errors: Seque
         ad_group=ad_group,
         status=constants.ApplyStatus.FAILURE,
         changes=dict(ChainMap(*[e.to_dict() for e in errors])),
-        changes_text=_get_fail_history_message(errors),
+        changes_text=_get_errors_text(errors),
     )
 
 
-def _get_fail_history_message(errors: Sequence[ErrorData]) -> str:
+def _get_errors_text(errors: Sequence[ErrorData], include_generic_error=True) -> str:
     has_campaign_autopilot_errors = has_budget_autopilot_errors = has_generic_errors = False
     autopilot_error_count = 0
 
@@ -224,7 +307,7 @@ def _get_fail_history_message(errors: Sequence[ErrorData]) -> str:
                 "not be active; rule failed to make changes on {count} source{suffix}."
             ).format(count=autopilot_error_count, suffix="" if autopilot_error_count == 1 else "s")
         )
-    if has_generic_errors:
+    if has_generic_errors and include_generic_error:
         messages.append("An error has occured.")
 
     return " ".join(messages)

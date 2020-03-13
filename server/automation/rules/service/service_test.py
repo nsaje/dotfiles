@@ -1,4 +1,5 @@
 import datetime
+import textwrap
 
 import mock
 from django.test import TestCase
@@ -586,6 +587,189 @@ class ServiceTest(TestCase):
             },
             formatted_stats,
         )
+
+
+@mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
+@mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+@mock.patch("utils.email_helper.send_official_email")
+class NotificationEmailTestCase(TestCase):
+    def setUp(self):
+        self.maxDiff = None
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, archived=False, name="Test ad group")
+        self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+        self.rule = magic_mixer.blend(
+            Rule,
+            name="Test rule",
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            ad_groups_included=[self.ad_group],
+            notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+            notification_recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+        )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_changes(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [123]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.return_value = (
+            [
+                ValueChangeData(target="pub1.com__12", old_value=1.0, new_value=2.0),
+                ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
+            ],
+            [],
+        )
+
+        service.execute_rules()
+
+        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
+        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
+
+        for call_args in mock_send_email.call_args_list:
+            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” performed actions on ad group Test ad group")
+            self.assertEqual(
+                call_args[1]["body"],
+                textwrap.dedent(
+                    f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} with message:
+
+                        Updated targets: pub1.com__12, pub2.com__21
+
+                        Yours truly,
+                        Zemanta"""
+                ),
+            )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_changes_with_error(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [123]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.return_value = (
+            [
+                ValueChangeData(target="pub1.com__12", old_value=1.0, new_value=2.0),
+                ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
+            ],
+            [
+                ErrorData(
+                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
+                ),
+                ErrorData(
+                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
+                ),
+            ],
+        )
+
+        service.execute_rules()
+
+        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
+        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
+
+        for call_args in mock_send_email.call_args_list:
+            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” performed actions on ad group Test ad group")
+            self.assertEqual(
+                call_args[1]["body"],
+                textwrap.dedent(
+                    f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} with message:
+
+                        Updated targets: pub1.com__12, pub2.com__21
+
+                        The following errors were encountered during rule execution:
+
+                        To change the autopilot daily budget the campaign budget optimization must not be active. To change the autopilot daily budget the autopilot goal optimization must be active.
+
+                        Yours truly,
+                        Zemanta"""
+                ),
+            )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_only_error(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [123]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.return_value = (
+            [],
+            [
+                ErrorData(
+                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
+                ),
+                ErrorData(
+                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
+                ),
+            ],
+        )
+
+        service.execute_rules()
+
+        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
+        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
+
+        for call_args in mock_send_email.call_args_list:
+            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” encountered errors on ad group Test ad group")
+            self.assertEqual(
+                call_args[1]["body"],
+                textwrap.dedent(
+                    f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
+
+                        To change the autopilot daily budget the campaign budget optimization must not be active. To change the autopilot daily budget the autopilot goal optimization must be active.
+
+                        Yours truly,
+                        Zemanta"""
+                ),
+            )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_no_changes(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [123]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.return_value = ([], [])
+
+        service.execute_rules()
+
+        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
+        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
+
+        for call_args in mock_send_email.call_args_list:
+            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” ran on ad group Test ad group")
+            self.assertEqual(
+                call_args[1]["body"],
+                textwrap.dedent(
+                    f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} without doing any changes.
+
+                        Yours truly,
+                        Zemanta"""
+                ),
+            )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_no_changes_on_rule_run(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        self.rule.update(None, notification_type=constants.NotificationType.ON_RULE_RUN)
+        mock_stats.return_value = [123]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.return_value = ([], [])
+
+        service.execute_rules()
+
+        self.assertFalse(mock_send_email.called)
 
 
 @mock.patch("automation.rules.service.service.apply_rule", return_value=([], []))

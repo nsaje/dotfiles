@@ -33,6 +33,10 @@ class InvalidMacros(ValidationError):
     pass
 
 
+class InvalidNotificationType(ValidationError):
+    pass
+
+
 class InvalidNotificationRecipients(ValidationError):
     pass
 

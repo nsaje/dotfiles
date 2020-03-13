@@ -30,6 +30,8 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "change_limit"),
             partial(self._validate_if_present, "publisher_group_id"),
             partial(self._validate_if_present, "conditions"),
+            partial(self._validate_if_present, "notification_type"),
+            partial(self._validate_if_present, "notification_recipients"),
             changes=changes,
         )
 
@@ -150,6 +152,11 @@ class RuleValidationMixin:
             self._validate_email_list(send_email_recipients)
         except ValidationError:
             raise exceptions.InvalidSendEmailRecipients("Invalid format.")
+
+    def _validate_notification_type(self, changes, notification_type):
+        action_type = changes.get("action_type", self.action_type)
+        if notification_type != constants.NotificationType.NONE and action_type == constants.ActionType.SEND_EMAIL:
+            raise exceptions.InvalidNotificationType('Notification cannot be sent for "Send email" action')
 
     def _validate_notification_recipients(self, changes, notification_recipients):
         notification_type = changes.get("notification_type", self.notification_type)

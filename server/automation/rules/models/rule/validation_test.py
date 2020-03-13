@@ -257,6 +257,17 @@ class RuleValidationTest(test.TestCase):
                 }
             )
 
+    def test_validate_notification_type(self):
+        self.rule.clean({"notification_type": constants.NotificationType.NONE})
+        with self._assert_multiple_validation_error([exceptions.InvalidNotificationType]):
+            self.rule.clean(
+                {
+                    "notification_type": constants.NotificationType.ON_RULE_RUN,
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                    "target_type": constants.TargetType.AD_GROUP,
+                }
+            )
+
     def test_validate_notification_recipients(self):
         self.rule.clean({"notification_recipients": [], "notification_type": constants.NotificationType.NONE})
         self.rule.clean(

@@ -1800,6 +1800,9 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGNSTOP_DEPLETING = 32
     USER_ENABLE_RESTAPI = 33
     CAMPAIGN_CREATED = 34
+    AUTOMATION_RULE_RUN = 35
+    AUTOMATION_RULE_NO_CHANGES = 36
+    AUTOMATION_RULE_ERRORS = 37
 
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
@@ -1834,6 +1837,9 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGNSTOP_DEPLETING: "Real-time campaign stop budget depleting",
         USER_ENABLE_RESTAPI: "User was granted REST API access",
         CAMPAIGN_CREATED: "Campaign created",
+        AUTOMATION_RULE_RUN: "Automation rule run",
+        AUTOMATION_RULE_NO_CHANGES: "Automation rule run without changes",
+        AUTOMATION_RULE_ERRORS: "Automation rule run with errors",
     }
 
 
