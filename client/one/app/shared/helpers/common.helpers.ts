@@ -1,6 +1,7 @@
 import * as clone from 'clone';
 import * as deepEqual from 'fast-deep-equal';
 import * as arrayHelpers from './array.helpers';
+import {Path} from 'Object/Path';
 
 export function getValueOrDefault<T>(value: T, defaultValue: T): T {
     if (isDefined(value)) {
@@ -44,7 +45,10 @@ export function isPrimitive(value: any) {
     return value !== Object(value);
 }
 
-export function getValueWithoutProps<T>(value: T, props: string[]): Partial<T> {
+export function getValueWithoutProps<
+    T extends Object,
+    S extends keyof Path<T, []> & string
+>(value: T, props: S[]): Partial<T> {
     if (!isDefined(value)) {
         return value;
     }
@@ -68,10 +72,10 @@ export function getValueWithoutProps<T>(value: T, props: string[]): Partial<T> {
     return formattedValue;
 }
 
-export function getValueWithOnlyProps<T>(
-    value: T,
-    props: string[]
-): Partial<T> {
+export function getValueWithOnlyProps<
+    T extends Object,
+    S extends keyof Path<T, []> & string
+>(value: T, props: S[]): Partial<T> {
     if (!isDefined(value)) {
         return value;
     }

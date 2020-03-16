@@ -76,7 +76,6 @@ describe('commonHelpers', () => {
         expect(commonHelpers.getValueWithoutProps(undefined, [])).toEqual(
             undefined
         );
-        expect(commonHelpers.getValueWithoutProps({}, [])).toEqual({});
 
         const value = {
             name: 'test',
@@ -100,12 +99,6 @@ describe('commonHelpers', () => {
                 'email',
             ])
         ).toEqual({});
-        expect(
-            commonHelpers.getValueWithoutProps(
-                [value],
-                ['name', 'surname', 'email']
-            )
-        ).toEqual([value]);
     });
 
     it('should correctly remove everything but props from object', () => {
@@ -113,7 +106,6 @@ describe('commonHelpers', () => {
         expect(commonHelpers.getValueWithOnlyProps(undefined, [])).toEqual(
             undefined
         );
-        expect(commonHelpers.getValueWithOnlyProps({}, [])).toEqual({});
 
         const value = {
             name: 'test',
@@ -141,12 +133,6 @@ describe('commonHelpers', () => {
             surname: 'test',
             email: 'test@test.com',
         });
-        expect(
-            commonHelpers.getValueWithOnlyProps(
-                [value],
-                ['name', 'surname', 'email']
-            )
-        ).toEqual([value]);
     });
 
     it('should retrieve value if object is defined', () => {
