@@ -9,8 +9,9 @@ class StructureDimension:
     CONTENT_AD = "content_ad_id"
     SOURCE = "source_id"
     PUBLISHER = "publisher_id"
+    PLACEMENT = "placement"
 
-    _ALL = [ACCOUNT, CAMPAIGN, AD_GROUP, CONTENT_AD, SOURCE, PUBLISHER]
+    _ALL = [ACCOUNT, CAMPAIGN, AD_GROUP, CONTENT_AD, SOURCE, PUBLISHER, PLACEMENT]
 
 
 class DeliveryDimension:
@@ -20,6 +21,7 @@ class DeliveryDimension:
 
     ENVIRONMENT = "environment"
     ZEM_PLACEMENT_TYPE = "zem_placement_type"
+    PLACEMENT_TYPE = "placement_type"
     VIDEO_PLAYBACK_METHOD = "video_playback_method"
 
     COUNTRY = "country"
@@ -36,6 +38,7 @@ class DeliveryDimension:
         DEVICE_OS_VERSION,
         ENVIRONMENT,
         ZEM_PLACEMENT_TYPE,
+        PLACEMENT_TYPE,
         VIDEO_PLAYBACK_METHOD,
         COUNTRY,
         REGION,
@@ -46,6 +49,7 @@ class DeliveryDimension:
     ]
 
     _EXTENDED = [DEVICE_OS_VERSION, ZEM_PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD, AGE, GENDER, AGE_GENDER]
+    _PLACEMENT = [PLACEMENT_TYPE]
 
 
 class TimeDimension:
@@ -63,7 +67,7 @@ AD_GROUP = StructureDimension.AD_GROUP
 CONTENT_AD = StructureDimension.CONTENT_AD
 SOURCE = StructureDimension.SOURCE
 PUBLISHER = StructureDimension.PUBLISHER
-
+PLACEMENT = StructureDimension.PLACEMENT
 
 DEVICE = DeliveryDimension.DEVICE
 DEVICE_OS = DeliveryDimension.DEVICE_OS
@@ -71,6 +75,7 @@ DEVICE_OS_VERSION = DeliveryDimension.DEVICE_OS_VERSION
 
 ENVIRONMENT = DeliveryDimension.ENVIRONMENT
 ZEM_PLACEMENT_TYPE = DeliveryDimension.ZEM_PLACEMENT_TYPE
+PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
 VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 COUNTRY = DeliveryDimension.COUNTRY
@@ -81,10 +86,11 @@ AGE = DeliveryDimension.AGE
 GENDER = DeliveryDimension.GENDER
 AGE_GENDER = DeliveryDimension.AGE_GENDER
 
-
 DAY = TimeDimension.DAY
 WEEK = TimeDimension.WEEK
 MONTH = TimeDimension.MONTH
+
+PLACEMENT_DIMENSIONS = [StructureDimension.PLACEMENT] + DeliveryDimension._PLACEMENT
 
 
 class TimeLimits:
@@ -156,11 +162,21 @@ def is_extended_delivery_dimension(dimension):
 
 
 def is_top_level_delivery_dimension(dimension):
-    return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED)
+    return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED) - set(
+        DeliveryDimension._PLACEMENT
+    )
+
+
+def is_placement_breakdown(breakdown):
+    return any(dimension in breakdown for dimension in PLACEMENT_DIMENSIONS)
 
 
 def get_top_level_delivery_dimensions():
-    return [dimension for dimension in DeliveryDimension._ALL if dimension not in DeliveryDimension._EXTENDED]
+    return [
+        dimension
+        for dimension in DeliveryDimension._ALL
+        if dimension not in DeliveryDimension._EXTENDED + DeliveryDimension._PLACEMENT
+    ]
 
 
 def get_time_dimension(breakdown):

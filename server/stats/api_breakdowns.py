@@ -30,7 +30,9 @@ def validate_breakdown_allowed(level, user, breakdown):
 
 
 def should_use_publishers_view(breakdown):
-    return "publisher_id" in breakdown and "content_ad_id" not in breakdown
+    return ("publisher_id" in breakdown and "content_ad_id" not in breakdown) or constants.is_placement_breakdown(
+        breakdown
+    )
 
 
 @newrelic.agent.function_trace()

@@ -8,6 +8,7 @@ from dash import models
 from dash.constants import CampaignType
 from dash.constants import Level
 from stats import api_breakdowns
+from stats import constants
 from utils import test_helper
 from utils import threads
 from zemauth.models import User
@@ -172,4 +173,29 @@ class ApiBreakdownQueryTest(TestCase):
                     "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
                 },
             ],
+        )
+
+    def test_should_use_publishers_view(self):
+        self.assertFalse(api_breakdowns.should_use_publishers_view([constants.AD_GROUP]))
+        self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PUBLISHER]))
+        self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PLACEMENT]))
+        self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PLACEMENT_TYPE]))
+        self.assertFalse(api_breakdowns.should_use_publishers_view([constants.CONTENT_AD, constants.PUBLISHER]))
+        self.assertTrue(
+            api_breakdowns.should_use_publishers_view(
+                [constants.AD_GROUP, constants.PUBLISHER, constants.PLACEMENT, constants.PLACEMENT_TYPE]
+            )
+        )
+
+        # Breakdown by content_ad_id when querying placements is currently not supported.
+        self.assertTrue(
+            api_breakdowns.should_use_publishers_view(
+                [
+                    constants.AD_GROUP,
+                    constants.CONTENT_AD,
+                    constants.PUBLISHER,
+                    constants.PLACEMENT,
+                    constants.PLACEMENT_TYPE,
+                ]
+            )
         )

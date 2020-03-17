@@ -2,6 +2,7 @@ import stats.constants as sc
 
 DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 ENVIRONMENT = {sc.ENVIRONMENT, sc.ZEM_PLACEMENT_TYPE, sc.VIDEO_PLAYBACK_METHOD}
+PLACEMENT = {sc.PLACEMENT, sc.PLACEMENT_TYPE}
 GEO = {sc.COUNTRY, sc.REGION, sc.DMA}
 DEMO = {sc.AGE, sc.GENDER, sc.AGE_GENDER}
 OTHER = {"device_os_version"}
@@ -10,7 +11,6 @@ ACCOUNT = {sc.ACCOUNT, sc.SOURCE}
 CAMPAIGN_N_ABOVE = {sc.CAMPAIGN} | ACCOUNT
 AD_GROUP_N_ABOVE = {sc.AD_GROUP} | CAMPAIGN_N_ABOVE
 CONTENT_AD_N_ABOVE = {sc.CONTENT_AD} | AD_GROUP_N_ABOVE
-PUBLISHER_N_ABOVE = {sc.PUBLISHER} | AD_GROUP_N_ABOVE
 
 BASE_VIEWS = [
     ["mv_account", ACCOUNT],
@@ -38,6 +38,7 @@ PUBLISHER_VIEWS = [
     ["mv_campaign_pubs", CAMPAIGN_N_ABOVE | {sc.PUBLISHER}],
     ["mv_adgroup_pubs", AD_GROUP_N_ABOVE | {sc.PUBLISHER}],
     ["mv_master_pubs", AD_GROUP_N_ABOVE | {sc.PUBLISHER} | DEVICE | ENVIRONMENT | GEO | DEMO | OTHER],
+    ["mv_adgroup_placement", AD_GROUP_N_ABOVE | {sc.PUBLISHER} | PLACEMENT],
 ]
 
 

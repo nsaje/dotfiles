@@ -76,6 +76,7 @@ class BreakdownsBase(backtosql.Model):
     content_ad_id = backtosql.Column("content_ad_id", BREAKDOWN)
     source_id = backtosql.Column("source_id", BREAKDOWN)
     publisher = backtosql.Column("publisher", BREAKDOWN)
+    placement = backtosql.Column("placement", BREAKDOWN)
 
     publisher_id = backtosql.TemplateColumn("part_publisher_id.sql")
     external_id = backtosql.TemplateColumn("part_max.sql", {"column_name": "external_id"})
@@ -231,6 +232,7 @@ class MVMaster(BreakdownsBase):
     environment = backtosql.Column("environment", BREAKDOWN, null=True)
 
     zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN, null=True)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
     video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN, null=True)
 
     country = backtosql.Column("country", BREAKDOWN, null=True)

@@ -15,6 +15,7 @@ DIMENSION_FIELDS |= set(
         "content_ad",
         "source",
         "publisher",
+        "placement",
         "account_status",
         "campaign_status",
         "ad_group_status",

@@ -158,6 +158,8 @@ FIELD_PERMISSION_MAPPING = {
     "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
     "sspd_url": ("zemauth.can_see_sspd_url",),
     "campaign_type": ("zemauth.can_see_campaign_type_in_breakdowns",),
+    "placement": ("zemauth.can_use_placement_targeting",),
+    "placement_type": ("zemauth.can_use_placement_targeting",),
     # entity tags
     "agency_tags": ("zemauth.can_include_tags_in_reports",),
     "account_tags": ("zemauth.can_include_tags_in_reports",),
@@ -368,7 +370,12 @@ def validate_breakdown_by_permissions(level, user, breakdown):
             raise exc.MissingDataError()
 
     elif level == Level.CAMPAIGNS:
-        if base_dimension not in (StructureDimension.SOURCE, StructureDimension.AD_GROUP, StructureDimension.PUBLISHER):
+        if base_dimension not in (
+            StructureDimension.SOURCE,
+            StructureDimension.AD_GROUP,
+            StructureDimension.PUBLISHER,
+            StructureDimension.PLACEMENT,
+        ):
             raise exc.MissingDataError()
 
     elif level == Level.AD_GROUPS:
@@ -376,10 +383,14 @@ def validate_breakdown_by_permissions(level, user, breakdown):
             StructureDimension.SOURCE,
             StructureDimension.CONTENT_AD,
             StructureDimension.PUBLISHER,
+            StructureDimension.PLACEMENT,
         ):
             raise exc.MissingDataError()
 
     if StructureDimension.PUBLISHER in breakdown and not user.has_perm("zemauth.can_see_publishers"):
+        raise exc.MissingDataError()
+
+    if constants.is_placement_breakdown(breakdown) and not user.has_perm("zemauth.can_use_placement_targeting"):
         raise exc.MissingDataError()
 
     delivery_dimension = constants.get_delivery_dimension(breakdown)
@@ -415,6 +426,20 @@ def validate_breakdown_by_structure(breakdown):
 
     if "publisher_id" in breakdown and "source_id" in breakdown:
         raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
+
+    if constants.is_placement_breakdown(breakdown) and "content_ad_id" in breakdown:
+        raise exc.InvalidBreakdownError(
+            "Unsupported breakdown - content ads can not be broken down by placement/placement type"
+        )
+
+    if (
+        delivery
+        and constants.is_placement_breakdown(breakdown)
+        and delivery != constants.DeliveryDimension.PLACEMENT_TYPE
+    ):
+        raise exc.InvalidBreakdownError(
+            "Unsupported breakdown - placements/placement types can not be broken down by {}".format(delivery)
+        )
 
     unsupported_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupported_breakdowns:
