@@ -689,3 +689,24 @@ class ContentAdsTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         data = data["response"]
         self.assertEqual(set([obj["id"] for obj in data]), set([obj.id for obj in content_ad_sources_native]))
+
+    def test_get_content_ad_sources_include_deprecated(self):
+        ad = magic_mixer.blend(dash.models.ContentAd)
+        cas_nondeprecated = magic_mixer.blend(dash.models.ContentAdSource, content_ad=ad, source__deprecated=False)
+        cas_deprecated = magic_mixer.blend(dash.models.ContentAdSource, content_ad=ad, source__deprecated=True)
+
+        # no flag
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"content_ad_ids": str(ad.id)})
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+        self.assertEqual(set([obj["id"] for obj in data]), set([cas_nondeprecated.id]))
+
+        # flag set to true
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": str(ad.id), "include_deprecated": True}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+        self.assertEqual(set([obj["id"] for obj in data]), set([cas_nondeprecated.id, cas_deprecated.id]))

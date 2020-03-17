@@ -153,13 +153,14 @@ class ContentAdSourcesView(K1APIView):
         include_state = request.GET.get("include_state", "true").lower() == "true"
         include_blocked = request.GET.get("include_blocked", "true").lower() == "true"
         exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
+        include_deprecated = request.GET.get("include_deprecated", "false").lower() == "true"
 
         should_get_review_information = include_state or not include_blocked
 
-        content_ad_sources = dash.models.ContentAdSource.objects.filter(source__deprecated=False)
+        content_ad_sources = dash.models.ContentAdSource.objects.all()
 
         if not content_ad_ids:  # exclude archived if not querying by id explicitly
-            content_ad_sources.filter(content_ad__archived=False)
+            content_ad_sources = content_ad_sources.filter(content_ad__archived=False)
         if content_ad_ids:
             content_ad_sources = content_ad_sources.filter(content_ad_id__in=content_ad_ids.split(","))
         if ad_group_ids:
@@ -173,6 +174,8 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(","))
         if exclude_display:
             content_ad_sources = content_ad_sources.exclude_display()
+        if not include_deprecated:
+            content_ad_sources = content_ad_sources.filter(source__deprecated=False)
 
         if modified_dt_from:
             try:
