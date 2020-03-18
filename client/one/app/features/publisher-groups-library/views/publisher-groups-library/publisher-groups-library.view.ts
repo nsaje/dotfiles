@@ -4,48 +4,142 @@ import {
     Component,
     ChangeDetectionStrategy,
     OnInit,
-    Inject,
     HostBinding,
     ChangeDetectorRef,
     OnDestroy,
+    ViewChild,
 } from '@angular/core';
-import {LevelParam, Level} from '../../../../app.constants';
-import {
-    LEVEL_PARAM_TO_LEVEL_MAP,
-    LEVEL_TO_ENTITY_TYPE_MAP,
-} from '../../../../app.constants';
-import {ActivatedRoute, Params} from '@angular/router';
+import {Level} from '../../../../app.constants';
+import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
+import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {PublisherGroupsLibraryStore} from '../../services/publisher-groups-library-store/publisher-groups-library.store';
+import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
+import {PublisherGroupActionsCellComponent} from '../../components/publisher-group-actions-cell/publisher-group-actions-cell.component';
+import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
+import {ModalComponent} from '../../../../shared/components/modal/modal.component';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {
+    booleanFormatter,
+    dateTimeFormatter,
+} from '../../../../shared/helpers/grid.helpers';
 
 @Component({
     selector: 'zem-publisher-groups-library-view',
     templateUrl: './publisher-groups-library.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [PublisherGroupsLibraryStore],
 })
 export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-publisher-groups-library-view';
+    @ViewChild('editPublisherGroupModal', {static: false})
+    editPublisherGroupModal: ModalComponent;
 
-    account: any;
-    agency: any;
+    columnDefs: ColDef[] = [
+        {headerName: 'ID', field: 'id', width: 120, minWidth: 80},
+        {headerName: 'Name', field: 'name', width: 180, minWidth: 110},
+        {
+            headerName: 'Subdomains included',
+            field: 'includeSubdomains',
+            width: 220,
+            minWidth: 134,
+            valueFormatter: booleanFormatter,
+        },
+        {
+            headerName: 'Number of publishers',
+            field: 'size',
+            width: 220,
+            minWidth: 134,
+        },
+        {
+            headerName: 'Modified',
+            field: 'modified',
+            width: 220,
+            minWidth: 134,
+            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+        },
+        {
+            headerName: 'Created',
+            field: 'created',
+            width: 220,
+            minWidth: 134,
+            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+        },
+        {
+            headerName: '',
+            maxWidth: 140,
+            minWidth: 140,
+            suppressSizeToFit: true,
+            cellRendererFramework: PublisherGroupActionsCellComponent,
+            pinned: 'right',
+        },
+    ];
 
+    systemColumnDefs: ColDef[] = [
+        {headerName: 'ID', field: 'id', width: 60, minWidth: 60},
+        {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
+        {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
+        {headerName: 'Type', field: 'type', width: 66, minWidth: 66},
+        {
+            headerName: 'Subdomains included',
+            field: 'includeSubdomains',
+            width: 134,
+            minWidth: 134,
+            valueFormatter: booleanFormatter,
+        },
+        {
+            headerName: 'Number of publishers',
+            field: 'size',
+            width: 134,
+            minWidth: 134,
+        },
+        {
+            headerName: 'Modified',
+            field: 'modified',
+            width: 134,
+            minWidth: 134,
+            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+        },
+        {
+            headerName: 'Created',
+            field: 'created',
+            width: 134,
+            minWidth: 134,
+            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+        },
+        {headerName: '', width: 160},
+        {
+            headerName: '',
+            maxWidth: 100,
+            minWidth: 100,
+            cellRendererFramework: PublisherGroupActionsCellComponent,
+        },
+    ];
+    context: any;
+
+    private gridApi: GridApi;
+    private systemGridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
-    ) {}
+        private store: PublisherGroupsLibraryStore,
+        private service: PublisherGroupsService
+    ) {
+        this.context = {
+            componentParent: this,
+        };
+    }
 
     ngOnInit(): void {
         this.route.params
             .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe((params: Params) => {
-                this.updateInternalState(
-                    this.route.snapshot.data.level,
-                    params.id
-                );
+            .pipe(filter(params => isDefined(params.id)))
+            .subscribe(params => {
+                this.updateInternalState(params);
             });
     }
 
@@ -54,18 +148,66 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState(levelParam: LevelParam, accountId: string) {
-        const level = this.getLevel(levelParam);
-
-        this.zemNavigationNewService
-            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], accountId)
-            .then((account: any) => {
-                this.account = account;
-                this.changeDetectorRef.markForCheck();
-            });
+    onGridReady($event: DetailGridInfo) {
+        this.gridApi = $event.api;
     }
 
-    private getLevel(levelParam: LevelParam): Level {
-        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
+    onSystemGridReady($event: DetailGridInfo) {
+        this.systemGridApi = $event.api;
+    }
+
+    download(publisherGroup: PublisherGroup) {
+        this.service.download(publisherGroup);
+    }
+
+    downloadErrors() {
+        const activeEntity = this.store.state.activeEntity;
+        const csvKey: string = activeEntity.fieldErrors.errorsCsvKey;
+        const publisherGroup: PublisherGroup = activeEntity.entity;
+        this.service.downloadErrors(publisherGroup, csvKey);
+    }
+
+    downloadExample() {
+        this.service.downloadExample();
+    }
+
+    openEditPublisherGroupModal(publisherGroup: Partial<PublisherGroup>) {
+        this.store.setActiveEntity(publisherGroup);
+        this.editPublisherGroupModal.open();
+    }
+
+    savePublisherGroup() {
+        this.store.saveActiveEntity().then(() => {
+            this.editPublisherGroupModal.close();
+            this.showGridLoadingOverlays();
+            this.store.loadEntities();
+        });
+    }
+
+    addPublisherGroup() {
+        this.openEditPublisherGroupModal({
+            accountId: this.store.state.accountId,
+            includeSubdomains: true,
+        });
+    }
+
+    private updateInternalState(params: any) {
+        const accountId: string = params.id;
+
+        this.showGridLoadingOverlays();
+
+        this.store.setStore(accountId);
+        this.store.loadEntities().then(() => {
+            this.changeDetectorRef.markForCheck();
+        });
+    }
+
+    private showGridLoadingOverlays() {
+        if (isDefined(this.gridApi)) {
+            this.gridApi.showLoadingOverlay();
+        }
+        if (isDefined(this.systemGridApi)) {
+            this.systemGridApi.showLoadingOverlay();
+        }
     }
 }

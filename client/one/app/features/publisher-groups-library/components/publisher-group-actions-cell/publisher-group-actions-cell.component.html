@@ -1,0 +1,15 @@
+<div class="zem-publisher-group-actions-cell">
+    <button
+        class="zem-button zem-button--small zem-button--with-icon zem-button--download-icon zem-publisher-group-actions-cell__item"
+        (click)="download()"
+    >
+        Download
+    </button>
+    <button
+        [hidden]="this.publisherGroup.implicit"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--edit-icon zem-publisher-group-actions-cell__item"
+        (click)="openEditPublisherGroupModal()"
+    >
+        Edit
+    </button>
+</div>

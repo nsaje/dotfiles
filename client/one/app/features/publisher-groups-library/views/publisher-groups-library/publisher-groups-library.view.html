@@ -1,8 +1,100 @@
 <h1 class="zem-main-container__view-title">Publisher Groups</h1>
+<ng-container *ngIf="(store.state$ | async) as state">
+    <div
+        class="zem-panel zem-panel--with-padding zem-publisher-groups-library-view__panel"
+    >
+        <div class="zem-publisher-groups-library-view__top-bar">
+            <div class="zem-publisher-groups-library-view__description">
+                Publisher groups allow you to upload lists of publishers and
+                blacklist or whitelist them in account, campaign or ad group
+                settings.
+            </div>
+            <button
+                class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
+                (click)="addPublisherGroup()"
+            >
+                Add new publisher group
+            </button>
+        </div>
+        <zem-smart-grid
+            class="zem-smart-grid zem-publisher-groups-library-view__item"
+            [rowData]="store.state.entities"
+            [columnDefs]="columnDefs"
+            [context]="context"
+            (gridReady)="onGridReady($event)"
+        >
+        </zem-smart-grid>
+    </div>
 
-<zem-publisher-groups
-    class="zem-publisher-groups"
-    *ngIf="!!account"
-    [account]="account"
-    [agency]="agency"
-></zem-publisher-groups>
+    <zem-expandable-section
+        #systemPublisherGroupsSection
+        [expandLabel]="'Show system publisher groups'"
+        [collapseLabel]="'Hide system publisher groups'"
+    >
+        <div class="zem-publisher-groups-library-view__expandable-section">
+            <div class="zem-publisher-groups-library-view__section-title">
+                System publisher groups
+            </div>
+            <zem-smart-grid
+                class="zem-smart-grid zem-publisher-groups-library-view__item"
+                *ngIf="systemPublisherGroupsSection.expanded"
+                [rowData]="store.state.systemEntities"
+                [columnDefs]="systemColumnDefs"
+                [context]="context"
+                (gridReady)="onSystemGridReady($event)"
+            >
+            </zem-smart-grid>
+        </div>
+    </zem-expandable-section>
+
+    <zem-modal
+        #editPublisherGroupModal
+        class="zem-modal zem-publisher-groups-library-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="editPublisherGroupModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{
+                        !state.activeEntity.entity.id
+                            ? 'Add new publisher group'
+                            : 'Edit publisher group'
+                    }}
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <zem-publisher-group-edit-form
+                    class="zem-publisher-group-edit-form"
+                    [publisherGroup]="state.activeEntity.entity"
+                    [publisherGroupErrors]="state.activeEntity.fieldErrors"
+                    (publisherGroupChange)="store.changeActiveEntity($event)"
+                    (downloadErrors)="downloadErrors()"
+                    (downloadExample)="downloadExample()"
+                >
+                </zem-publisher-group-edit-form>
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    *ngIf="state.requests.upload.inProgress"
+                    class="zem-button zem-button--highlighted zem-button--loading"
+                    disabled
+                ></button>
+                <button
+                    *ngIf="!state.requests.upload.inProgress"
+                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                    (click)="savePublisherGroup()"
+                >
+                    Save
+                </button>
+                <button
+                    class="zem-button zem-button--outlined"
+                    [disabled]="state.requests.upload.inProgress"
+                    (click)="editPublisherGroupModal.close()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
+</ng-container>

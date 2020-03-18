@@ -1,0 +1,63 @@
+<zem-text-form-group
+    class="zem-text-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__text-form-group"
+    [label]="'Publisher group name'"
+    [value]="publisherGroup.name"
+    [placeholder]="'Publisher group name'"
+    [errors]="publisherGroupErrors?.name"
+    (valueChange)="onNameChange($event)"
+></zem-text-form-group>
+<zem-checkbox-form-group
+    class="zem-checkbox-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__checkbox-form-group"
+    [label]="'Include subdomains'"
+    [value]="publisherGroup.includeSubdomains"
+    (valueChange)="onIncludeSubdomainsChange($event)"
+>
+</zem-checkbox-form-group>
+<zem-content-form-group
+    class="zem-content-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__content-form-group"
+>
+    <div
+        class="zem-message zem-message--bubble zem-message--help zem-message--with-icon"
+        *ngIf="publisherGroup.includeSubdomains"
+    >
+        The domains should be listed without prefixes http://, https:// or www.
+    </div>
+</zem-content-form-group>
+<zem-content-form-group
+    class="zem-content-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__content-form-group"
+    [label]="'CSV file with publishers'"
+>
+    <zem-file-selector
+        class="zem-file-selector zem-publisher-group-edit-form__item "
+        [dropZoneLabel]="'Drop your file here to upload or'"
+        [accept]="'text/csv'"
+        [isMultiple]="false"
+        [showBrowseButton]="true"
+        [browseButtonLabel]="'Choose file'"
+        (filesChange)="onEntriesChange($event)"
+    ></zem-file-selector>
+    <div
+        class="zem-message zem-message--error"
+        *ngFor="let error of publisherGroupErrors?.entries"
+    >
+        {{ error }}
+    </div>
+
+    <div
+        *ngIf="publisherGroupErrors?.errorsCsvKey"
+        class="zem-message zem-message--error"
+    >
+        <p>There were some errors in the attached file.</p>
+        <a (click)="downloadErrors.emit()">Download the report</a>
+    </div>
+
+    <div
+        class="zem-message zem-message--bubble zem-message--help zem-message--with-icon"
+    >
+        <p>
+            If you have trouble with the file structure, you can download our
+            example file and start from there.
+        </p>
+        <a (click)="downloadExample.emit()">Download CSV example file</a><br />
+    </div>
+</zem-content-form-group>
