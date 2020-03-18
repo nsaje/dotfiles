@@ -1,5 +1,6 @@
 <zem-scope-selector-card
     class="zem-scope-selector-card zem-scope-selector__item"
+    [class.zem-scope-selector-card--error]="agencyErrors?.length > 0"
     [scopeState]="scopeState"
     [value]="ScopeSelectorState.AGENCY_SCOPE"
     [isDisabled]="isAgencyScopeDisabled"
@@ -22,6 +23,7 @@
 </zem-scope-selector-card>
 <zem-scope-selector-card
     class="zem-scope-selector-card zem-scope-selector__item"
+    [class.zem-scope-selector-card--error]="accountErrors?.length > 0"
     [scopeState]="scopeState"
     [value]="ScopeSelectorState.ACCOUNT_SCOPE"
     [isDisabled]="isAccountScopeDisabled"
@@ -42,3 +44,9 @@
         </ng-template>
     </ng-container>
 </zem-scope-selector-card>
+<div
+    class="zem-message zem-message--error zem-scope-selector__item"
+    *ngFor="let error of errors"
+>
+    {{ error }}
+</div>

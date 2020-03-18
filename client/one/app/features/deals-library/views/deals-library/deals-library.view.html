@@ -63,6 +63,12 @@
                     <zem-scope-selector
                         class="zem-deal-edit-form__item zem-scope-selector"
                         [scopeState]="state.activeEntity.scopeState"
+                        [agencyErrors]="
+                            state.activeEntity.fieldsErrors?.agencyId
+                        "
+                        [accountErrors]="
+                            state.activeEntity.fieldsErrors?.accountId
+                        "
                         [isAgencyScopeDisabled]="
                             !state.hasAgencyScope ||
                             state.activeEntity.isReadOnly
