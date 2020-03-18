@@ -10,9 +10,10 @@ from . import helpers
 class RESTAPIHelpersTest(TestCase):
     def test_get_applied_deals_dict(self):
         source = magic_mixer.blend(core.models.Source)
+        account = magic_mixer.blend(core.models.Account)
         ad_group = magic_mixer.blend(core.models.AdGroup)
 
-        deal_1 = magic_mixer.blend(core.features.deals.DirectDeal, source=source)
+        deal_1 = magic_mixer.blend(core.features.deals.DirectDeal, source=source, account=account)
 
         deal_connection_1 = magic_mixer.blend(
             core.features.deals.DirectDealConnection, adgroup=ad_group, exclusive=True, deal=deal_1

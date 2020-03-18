@@ -73,7 +73,7 @@ class TestCampaignManager(TestCase):
         magic_mixer.blend(
             core.features.goals.CampaignGoalValue, campaign_goal=campaign_goal, value="0.30", local_value="0.30"
         )
-        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1)
+        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1, account=self.account)
         magic_mixer.cycle(5).blend(core.features.deals.DirectDealConnection, deal=direct_deal, campaign=campaign)
 
         cloned_campaign = Campaign.objects.clone(self.request, campaign, "Cloned Campaign", clone_budget=True)

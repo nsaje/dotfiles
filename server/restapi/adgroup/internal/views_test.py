@@ -288,7 +288,7 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)
 
     def test_put_deals(self):
-        agency = magic_mixer.blend(core.models.Agency)
+        agency = magic_mixer.blend(core.models.Agency, id=1)
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
@@ -323,8 +323,15 @@ class AdGroupViewSetTest(RESTAPITest):
                 "dealId": deal_to_be_added.deal_id,
                 "source": deal_to_be_added.source.bidder_slug,
                 "name": deal_to_be_added.name,
+                "agencyId": str(agency.id),
             },
-            {"id": None, "dealId": "NEW_DEAL", "source": source.bidder_slug, "name": "NEW DEAL NAME"},
+            {
+                "id": None,
+                "dealId": "NEW_DEAL",
+                "source": source.bidder_slug,
+                "name": "NEW DEAL NAME",
+                "accountId": str(account.id),
+            },
         ]
 
         r = self.client.put(
@@ -339,10 +346,14 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["agencyId"], str(agency.id))
+        self.assertEqual(resp_json["data"]["deals"][0]["accountId"], None)
         self.assertEqual(resp_json["data"]["deals"][1]["dealId"], "NEW_DEAL")
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfCampaigns"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 1)
+        self.assertEqual(resp_json["data"]["deals"][1]["agencyId"], None)
+        self.assertEqual(resp_json["data"]["deals"][1]["accountId"], str(account.id))
 
     def test_get_bid_modifier_type_summaries(self):
         test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])

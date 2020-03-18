@@ -53,10 +53,14 @@ class AdGroupAdmin(TestCase):
 class DirectDealConnectionAdminTestCase(TestCase):
     def setUp(self):
         self.source = magic_mixer.blend(core.models.Source, pk=1, bidder_slug="test_exchange_1")
-        self.deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1", source=self.source)
-        self.deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2", source=self.source)
-        self.adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
         self.agency = magic_mixer.blend(core.models.Agency, pk=2000)
+        self.deal1 = magic_mixer.blend(
+            core.features.deals.DirectDeal, deal_id="test_1", source=self.source, agency=self.agency
+        )
+        self.deal2 = magic_mixer.blend(
+            core.features.deals.DirectDeal, deal_id="test_2", source=self.source, agency=self.agency
+        )
+        self.adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
         self.ddc = magic_mixer.blend(core.features.deals.DirectDealConnection, pk=1, deal=self.deal1)
         self.ddc.save()
 

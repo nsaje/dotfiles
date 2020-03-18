@@ -12,14 +12,14 @@ from .base_test import K1APIBaseTest
 class DirectDealsTest(K1APIBaseTest):
     @classmethod
     def setUpTestData(cls):
-        source = magic_mixer.blend(core.models.Source, bidder_slug="test_exchange_1")
-        deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1", source=source)
-        deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2", source=source)
-        adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
-        adgroup2 = magic_mixer.blend(core.models.AdGroup, pk=1001)
         agency = magic_mixer.blend(core.models.Agency, pk=2000)
         account = magic_mixer.blend(core.models.Account, pk=3000)
         campaign = magic_mixer.blend(core.models.Campaign, pk=4000)
+        source = magic_mixer.blend(core.models.Source, bidder_slug="test_exchange_1")
+        deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1", source=source, agency=agency)
+        deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2", source=source, agency=agency)
+        adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
+        adgroup2 = magic_mixer.blend(core.models.AdGroup, pk=1001)
 
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1, adgroup=adgroup, exclusive=False)

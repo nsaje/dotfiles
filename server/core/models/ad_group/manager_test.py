@@ -128,8 +128,9 @@ class AdGroupClone(TestCase):
             core.models.AdGroup, campaign=source_campaign, bidding_type=dash.constants.BiddingType.CPM
         )
 
+        agency = magic_mixer.blend(core.models.Agency)
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.MOBILE)
-        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1)
+        direct_deal = magic_mixer.blend(core.features.deals.DirectDeal, id=1, agency=agency)
 
         magic_mixer.cycle(5).blend(core.features.deals.DirectDealConnection, deal=direct_deal, adgroup=source_ad_group)
 

@@ -269,6 +269,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             'activeEntity',
             'entity'
         );
+        this.validateActiveEntity();
     }
 
     setActiveEntityScope(scopeState: ScopeSelectorState) {
@@ -293,6 +294,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                 },
             },
         });
+        this.validateActiveEntity();
     }
 
     changeActiveEntity(event: ChangeEvent<Deal>): void {

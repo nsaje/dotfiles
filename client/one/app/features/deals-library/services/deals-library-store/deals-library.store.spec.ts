@@ -346,11 +346,16 @@ describe('DealsLibraryStore', () => {
 
     it('should set account to activeEntity', () => {
         store.state.activeEntity.entity = clone(mockedDeals[0]);
+        dealsServiceStub.validate.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+
         store.setActiveEntityAccount(mockedAccountId);
 
         expect(store.state.activeEntity.entity.accountId).toEqual(
             mockedAccountId
         );
+        expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     });
 
     it('should set activeEntity scope to account scope', () => {
@@ -358,6 +363,9 @@ describe('DealsLibraryStore', () => {
         store.state.activeEntity.entity = clone(mockedDeals[0]);
         store.state.activeEntity.scopeState = ScopeSelectorState.AGENCY_SCOPE;
         store.state.accountId = mockedAccountId;
+        dealsServiceStub.validate.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
 
         store.setActiveEntityScope(ScopeSelectorState.ACCOUNT_SCOPE);
 
@@ -368,6 +376,7 @@ describe('DealsLibraryStore', () => {
         expect(store.state.activeEntity.scopeState).toEqual(
             ScopeSelectorState.ACCOUNT_SCOPE
         );
+        expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     });
 
     it('should set activeEntity scope to agency scope', () => {
@@ -376,6 +385,9 @@ describe('DealsLibraryStore', () => {
         store.state.activeEntity.entity.accountId = mockedAccountId;
         store.state.activeEntity.scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
         store.state.agencyId = mockedAgencyId;
+        dealsServiceStub.validate.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
 
         store.setActiveEntityScope(ScopeSelectorState.AGENCY_SCOPE);
 
@@ -386,6 +398,7 @@ describe('DealsLibraryStore', () => {
         expect(store.state.activeEntity.scopeState).toEqual(
             ScopeSelectorState.AGENCY_SCOPE
         );
+        expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     });
 
     it('should load active entity connections', fakeAsync(() => {
