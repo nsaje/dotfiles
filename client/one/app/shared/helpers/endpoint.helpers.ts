@@ -2,6 +2,7 @@ import {HttpParams} from '@angular/common/http';
 import {APP_CONFIG} from '../../app.config';
 import {RequestPayload} from '../types/request-payload';
 import {RequestProperties} from '../types/request-properties';
+import {isDefined} from './common.helpers';
 
 export function buildRequestProperties(
     payload: RequestPayload
@@ -17,4 +18,34 @@ export function buildRequestProperties(
     } else {
         return {method: 'POST', params: null, body: payload};
     }
+}
+
+export function replaceUrl(
+    request: HttpRequestInfo,
+    replacements: {[key: string]: string}
+): HttpRequestInfo {
+    let newUrl: string = request.url;
+    Object.keys(replacements).forEach(key => {
+        newUrl = newUrl.replace('{' + key + '}', replacements[key]);
+    });
+
+    const newRequest: HttpRequestInfo = {
+        ...request,
+        url: newUrl,
+    };
+
+    return newRequest;
+}
+
+export function convertToFormData<T>(object: T): FormData {
+    const formData: FormData = new FormData();
+
+    Object.keys(object).forEach(key => {
+        const value: any = object[key];
+        if (isDefined(value)) {
+            formData.append(key, value);
+        }
+    });
+
+    return formData;
 }

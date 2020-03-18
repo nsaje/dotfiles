@@ -23,4 +23,30 @@ export class PublisherGroupsService {
             requestStateUpdater
         );
     }
+
+    list(
+        accountId: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroup[]> {
+        return this.endpoint.list(accountId, requestStateUpdater);
+    }
+
+    upload(
+        publisherGroup: PublisherGroup,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroup> {
+        return this.endpoint.upload(publisherGroup, requestStateUpdater);
+    }
+
+    download(publisherGroup: PublisherGroup) {
+        this.endpoint.download(publisherGroup);
+    }
+
+    downloadErrors(publisherGroup: PublisherGroup, csvKey: string) {
+        this.endpoint.downloadErrors(publisherGroup, csvKey);
+    }
+
+    downloadExample() {
+        this.endpoint.downloadExample();
+    }
 }

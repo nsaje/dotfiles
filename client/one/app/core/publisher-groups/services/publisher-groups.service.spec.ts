@@ -9,26 +9,38 @@ describe('PublisherGroupsService', () => {
     let publisherGroupsEndpointStub: jasmine.SpyObj<PublisherGroupsEndpoint>;
     let requestStateUpdater: RequestStateUpdater;
 
+    let mockedPublisherGroup: PublisherGroup;
     let mockedPublisherGroups: PublisherGroup[];
     let mockedAgencyId: string;
+    let mockedAccountId: string;
 
     beforeEach(() => {
         publisherGroupsEndpointStub = jasmine.createSpyObj(
             PublisherGroupsEndpoint.name,
-            ['search']
+            ['search', 'list', 'upload']
         );
         service = new PublisherGroupsService(publisherGroupsEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
 
         mockedAgencyId = '71';
-        mockedPublisherGroups = [
-            {
-                id: '10000000',
-                name: 'Test publisher group',
-                agencyId: mockedAgencyId,
-                accountId: null,
-            },
-        ];
+        mockedAccountId = '525';
+        mockedPublisherGroup = {
+            id: '10000000',
+            name: 'Test publisher group',
+            agencyId: mockedAgencyId,
+            accountId: mockedAccountId,
+            includeSubdomains: null,
+            implicit: null,
+            size: null,
+            modified: null,
+            created: null,
+            type: null,
+            level: null,
+            levelName: null,
+            levelId: null,
+            entries: null,
+        };
+        mockedPublisherGroups = [mockedPublisherGroup];
     });
 
     it('should allow to search publisher groups via endpoint', () => {
@@ -50,6 +62,38 @@ describe('PublisherGroupsService', () => {
             keyword,
             offset,
             limit,
+            requestStateUpdater
+        );
+    });
+
+    it('should allow to read list of publisher groups via endpoint', () => {
+        publisherGroupsEndpointStub.list.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+
+        service.list(mockedAccountId, requestStateUpdater).subscribe(deals => {
+            expect(deals).toEqual(mockedPublisherGroups);
+        });
+        expect(publisherGroupsEndpointStub.list).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsEndpointStub.list).toHaveBeenCalledWith(
+            mockedAccountId,
+            requestStateUpdater
+        );
+    });
+
+    it('should allow to save a publisher group via endpoint', () => {
+        publisherGroupsEndpointStub.upload.and
+            .returnValue(of(mockedPublisherGroup, asapScheduler))
+            .calls.reset();
+
+        service
+            .upload(mockedPublisherGroup, requestStateUpdater)
+            .subscribe(deals => {
+                expect(deals).toEqual(mockedPublisherGroup);
+            });
+        expect(publisherGroupsEndpointStub.upload).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsEndpointStub.upload).toHaveBeenCalledWith(
+            mockedPublisherGroup,
             requestStateUpdater
         );
     });

@@ -60,6 +60,16 @@ describe('RulesLibraryStore', () => {
                 name: 'Test publisher group',
                 agencyId: mockedAgencyId,
                 accountId: null,
+                includeSubdomains: null,
+                size: null,
+                implicit: null,
+                modified: null,
+                created: null,
+                type: null,
+                level: null,
+                levelName: null,
+                levelId: null,
+                entries: null,
             },
         ];
     });
