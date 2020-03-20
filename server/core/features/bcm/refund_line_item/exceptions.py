@@ -15,3 +15,7 @@ class CreditAvailableAmountNegative(ValidationError):
 
 class EffectiveMarginAmountOutOfBounds(ValidationError):
     pass
+
+
+class AccountInvalid(ValidationError):
+    pass

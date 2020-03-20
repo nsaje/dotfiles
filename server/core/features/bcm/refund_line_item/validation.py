@@ -3,9 +3,22 @@ from . import exceptions
 
 class RefundLineItemValidatorMixin(object):
     def clean(self):
+        self._validate_account()
         self._validate_start_date()
         self._validate_amount()
         self._validate_effective_margin()
+
+    def _validate_account(self):
+        if self.credit.account is not None and self.credit.account.id != self.account.id:
+            raise exceptions.AccountInvalid(
+                "Refund account {account_name} is not the same as credit account.".format(
+                    account_name=self.account.name
+                )
+            )
+        elif self.credit.agency is not None and self.credit.agency.id != self.account.agency.id:
+            raise exceptions.AccountInvalid(
+                "Refund account {account_name} is not part of credit agency.".format(account_name=self.account.name)
+            )
 
     def _validate_start_date(self):
         is_valid = self.start_date >= self.credit.start_date.replace(day=1) and self.start_date <= self.credit.end_date

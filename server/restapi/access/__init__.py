@@ -148,11 +148,13 @@ def get_direct_deal(user, deal_id) -> core.features.deals.DirectDeal:
         raise utils.exc.MissingDataError("Deal does not exist")
 
 
-def get_direct_deal_connection(user, deal_connection_id, deal=None) -> core.features.deals.DirectDealConnection:
+def get_direct_deal_connection(user, deal_connection_id, deal) -> core.features.deals.DirectDealConnection:
     try:
-        deal_connection_qs = core.features.deals.DirectDealConnection.objects.filter(id=int(deal_connection_id))
-        if deal is not None:
-            deal_connection_qs = deal_connection_qs.filter_by_deal(deal)
+        deal_connection_qs = (
+            core.features.deals.DirectDealConnection.objects.select_related("deal", "account", "campaign", "adgroup")
+            .filter_by_deal(deal)
+            .filter(id=int(deal_connection_id))
+        )
         return deal_connection_qs.get()
     except core.features.deals.DirectDealConnection.DoesNotExist:
         raise utils.exc.MissingDataError("Deal connection does not exist")
@@ -181,3 +183,16 @@ def get_credit_line_item(user, credit_id) -> core.features.bcm.CreditLineItem:
 
     except core.features.bcm.CreditLineItem.DoesNotExist:
         raise utils.exc.MissingDataError("Credit does not exist")
+
+
+def get_refund_line_item(user, refund_id, credit) -> core.features.bcm.RefundLineItem:
+    try:
+        refund_qs = (
+            core.features.bcm.RefundLineItem.objects.select_related("credit", "account")
+            .filter_by_credit(credit)
+            .filter(id=int(refund_id))
+        )
+        return refund_qs.get()
+
+    except core.features.bcm.RefundLineItem.DoesNotExist:
+        raise utils.exc.MissingDataError("Refund does not exist")

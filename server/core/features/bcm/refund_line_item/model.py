@@ -9,6 +9,7 @@ import utils.demo_anonymizer
 
 from . import instance
 from . import manager
+from . import queryset
 from . import validation
 
 
@@ -44,4 +45,4 @@ class RefundLineItem(
         blank=True,
     )
 
-    objects = manager.RefundLineItemManager()
+    objects = manager.RefundLineItemManager.from_queryset(queryset.RefundLineItemQuerySet)()
