@@ -63,7 +63,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     budgets_depleted = rest_framework.serializers.ListSerializer(
         child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
     )
-    account_credits = rest_framework.serializers.ListSerializer(
+    credits = rest_framework.serializers.ListSerializer(
         child=restapi.credit.internal.serializers.CreditSerializer(), default=[], allow_empty=True
     )
 

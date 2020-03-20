@@ -39,7 +39,7 @@
                 <tbody>
                     <ng-container
                         *ngFor="
-                            let credit of formattedAccountCredits;
+                            let credit of formattedCredits;
                             let index = index;
                             trackBy: trackByIndex
                         "
@@ -76,7 +76,9 @@
                                 <ng-template #creditCommentTemplate>
                                     <!--TODO: ask about formatting comment link-->
                                     {{
-                                        credit.isAgency ? 'Agency credit: ' : ''
+                                        !!credit.agencyId
+                                            ? 'Agency credit: '
+                                            : ''
                                     }}
                                     <a
                                         target="_blank"
@@ -88,7 +90,7 @@
                             </td>
                         </tr>
                     </ng-container>
-                    <tr *ngIf="formattedAccountCredits.length === 0">
+                    <tr *ngIf="formattedCredits.length === 0">
                         <td colspan="7" class="zem-table__no-data">
                             No credit items.
                         </td>

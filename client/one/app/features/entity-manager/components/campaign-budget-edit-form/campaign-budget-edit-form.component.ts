@@ -17,8 +17,8 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import * as moment from 'moment';
-import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
-import {FormattedAccountCredit} from '../../types/formatted-account-credit';
+import {Credit} from '../../../../core/entities/types/common/credit';
+import {FormattedCredit} from '../../types/formatted-credit';
 
 @Component({
     selector: 'zem-campaign-budget-edit-form',
@@ -37,11 +37,11 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     @Input()
     showMargin: boolean;
     @Input()
-    accountCredits: AccountCredit[];
+    credits: Credit[];
     @Output()
     budgetChange = new EventEmitter<ChangeEvent<CampaignBudget>>();
 
-    formattedAccountCredits: FormattedAccountCredit[] = [];
+    formattedCredits: FormattedCredit[] = [];
     createdDate: string;
     currencySymbol: string;
     minDate: Date;
@@ -56,12 +56,12 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                 );
             }
             if (this.budget.creditId) {
-                const accountCredit = this.accountCredits.find(item => {
+                const credit = this.credits.find(item => {
                     return item.id === this.budget.creditId;
                 });
-                if (commonHelpers.isDefined(accountCredit)) {
-                    this.minDate = accountCredit.startDate;
-                    this.maxDate = accountCredit.endDate;
+                if (commonHelpers.isDefined(credit)) {
+                    this.minDate = credit.startDate;
+                    this.maxDate = credit.endDate;
                 }
             }
             this.margin = numericHelpers.convertToPercentValue(
@@ -69,13 +69,11 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                 false
             );
         }
-        if (changes.accountCredits || changes.currency) {
+        if (changes.credits || changes.currency) {
             this.currencySymbol = currencyHelpers.getCurrencySymbol(
                 this.currency
             );
-            this.formattedAccountCredits = this.getFormattedAccountCredits(
-                this.accountCredits
-            );
+            this.formattedCredits = this.getFormattedCredits(this.credits);
         }
     }
 
@@ -84,7 +82,7 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     }
 
     onCreditIdSelected(creditId: string) {
-        const selectedAccountCredit = this.accountCredits.find(item => {
+        const selectedCredit = this.credits.find(item => {
             return item.id === creditId;
         });
         const todayDate = moment().toDate();
@@ -93,8 +91,8 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
             changes: {
                 creditId: creditId,
                 startDate:
-                    selectedAccountCredit.startDate > todayDate
-                        ? selectedAccountCredit.startDate
+                    selectedCredit.startDate > todayDate
+                        ? selectedCredit.startDate
                         : todayDate,
                 endDate: null,
             },
@@ -146,18 +144,16 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
         });
     }
 
-    private getFormattedAccountCredits(
-        accountCredits: AccountCredit[]
-    ): FormattedAccountCredit[] {
-        const formattedAccountCredits: FormattedAccountCredit[] = [];
-        accountCredits.forEach(credit => {
+    private getFormattedCredits(credits: Credit[]): FormattedCredit[] {
+        const formattedCredits: FormattedCredit[] = [];
+        credits.forEach(credit => {
             if (
                 (!commonHelpers.isDefined(this.budget.id) &&
                     credit.isAvailable) ||
                 (commonHelpers.isDefined(this.budget.id) &&
                     this.budget.creditId === credit.id)
             ) {
-                formattedAccountCredits.push({
+                formattedCredits.push({
                     ...credit,
                     createdOn: commonHelpers.isDefined(credit.createdOn)
                         ? moment(credit.createdOn).format('MM/DD/YYYY')
@@ -194,6 +190,6 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                 });
             }
         });
-        return formattedAccountCredits;
+        return formattedCredits;
     }
 }

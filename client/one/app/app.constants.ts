@@ -294,7 +294,7 @@ export enum GaTrackingType {
     API = 'API',
 }
 
-export enum AccountCreditStatus {
+export enum CreditStatus {
     SIGNED = 'SIGNED',
     PENDING = 'PENDING',
     CANCELED = 'CANCELED',

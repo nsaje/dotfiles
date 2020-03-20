@@ -562,9 +562,9 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
      * Start: Campaign budget
      */
 
-    isAnyAccountCreditAvailable(): boolean {
+    isAnyCreditAvailable(): boolean {
         return (
-            this.state.extras.accountCredits.filter(item => {
+            this.state.extras.credits.filter(item => {
                 return item.isAvailable;
             }).length > 0
         );
@@ -573,7 +573,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     createBudget() {
         this.validateEntity();
         const availableCredits =
-            this.state.extras.accountCredits.filter(item => {
+            this.state.extras.credits.filter(item => {
                 return item.isAvailable;
             }) || [];
         if (availableCredits.length === 0) {

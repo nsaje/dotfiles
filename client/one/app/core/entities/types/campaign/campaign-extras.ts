@@ -4,7 +4,7 @@ import {Deal} from '../common/deal';
 import {CampaignGoalsDefaults} from './campaign-goals-defaults';
 import {CampaignBudgetsOverview} from './campaign-budgets-overview';
 import {CampaignBudget} from './campaign-budget';
-import {AccountCredit} from '../account/account-credit';
+import {Credit} from '../common/credit';
 import {User} from '../common/user';
 
 export interface CampaignExtras {
@@ -18,7 +18,7 @@ export interface CampaignExtras {
     goalsDefaults: CampaignGoalsDefaults;
     budgetsOverview: CampaignBudgetsOverview;
     budgetsDepleted: CampaignBudget[];
-    accountCredits: AccountCredit[];
+    credits: Credit[];
     hacks: Hack[];
     deals: Deal[];
 }

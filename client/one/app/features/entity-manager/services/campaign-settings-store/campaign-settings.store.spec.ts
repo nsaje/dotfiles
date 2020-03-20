@@ -8,7 +8,7 @@ import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-go
 import {
     CampaignGoalKPI,
     CampaignConversionGoalType,
-    AccountCreditStatus,
+    CreditStatus,
     Currency,
     CampaignType,
     IabCategory,
@@ -21,7 +21,7 @@ import {ConversionPixelsService} from '../../../../core/conversion-pixels/servic
 import {fakeAsync, tick} from '@angular/core/testing';
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
-import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
+import {Credit} from '../../../../core/entities/types/common/credit';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 import {DealsService} from '../../../../core/deals/services/deals.service';
@@ -676,31 +676,36 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.conversionPixelsErrors).toEqual([]);
     });
 
-    it('should correctly check if any account credit is available', () => {
-        const accountCredits: AccountCredit[] = [
+    it('should correctly check if any credit is available', () => {
+        const credits: Credit[] = [
             {
                 id: '100',
                 createdOn: new Date(1970, 1, 21),
+                status: CreditStatus.SIGNED,
+                agencyId: '123',
+                accountId: null,
                 startDate: new Date(1970, 2, 21),
                 endDate: new Date(1970, 3, 21),
+                licenseFee: '0.1305',
+                amount: 5000000,
                 total: '5000000',
                 allocated: '3000000',
                 available: '2000000',
-                licenseFee: '200',
-                status: AccountCreditStatus.SIGNED,
                 currency: Currency.USD,
+                contractId: null,
+                contractNumber: null,
                 comment: 'A generic credit',
+                salesforceUrl: null,
                 isAvailable: true,
-                isAgency: true,
             },
         ];
 
-        store.patchState(accountCredits, 'extras', 'accountCredits');
-        expect(store.isAnyAccountCreditAvailable()).toEqual(true);
+        store.patchState(credits, 'extras', 'credits');
+        expect(store.isAnyCreditAvailable()).toEqual(true);
 
-        accountCredits[0].isAvailable = false;
-        store.patchState(accountCredits, 'extras', 'accountCredits');
-        expect(store.isAnyAccountCreditAvailable()).toEqual(false);
+        credits[0].isAvailable = false;
+        store.patchState(credits, 'extras', 'credits');
+        expect(store.isAnyCreditAvailable()).toEqual(false);
     });
 
     it('should correctly create campaign budget', () => {
@@ -708,33 +713,36 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        const accountCredits: AccountCredit[] = [
+        const credits: Credit[] = [
             {
                 id: '100',
                 createdOn: new Date(1970, 1, 21),
+                status: CreditStatus.SIGNED,
+                agencyId: '123',
+                accountId: null,
                 startDate: new Date(1970, 2, 21),
                 endDate: new Date(1970, 3, 21),
+                licenseFee: '0.1305',
+                amount: 5000000,
                 total: '5000000',
                 allocated: '3000000',
                 available: '2000000',
-                licenseFee: '200',
-                status: AccountCreditStatus.SIGNED,
                 currency: Currency.USD,
+                contractId: null,
+                contractNumber: null,
                 comment: 'A generic credit',
+                salesforceUrl: null,
                 isAvailable: true,
-                isAgency: true,
             },
         ];
 
         expect(store.state.entity.budgets).toEqual([]);
 
-        store.patchState(accountCredits, 'extras', 'accountCredits');
+        store.patchState(credits, 'extras', 'credits');
         store.createBudget();
 
         expect(store.state.entity.budgets.length).toEqual(1);
-        expect(store.state.entity.budgets[0].creditId).toEqual(
-            accountCredits[0].id
-        );
+        expect(store.state.entity.budgets[0].creditId).toEqual(credits[0].id);
     });
 
     it('should correctly update campaign budget', () => {

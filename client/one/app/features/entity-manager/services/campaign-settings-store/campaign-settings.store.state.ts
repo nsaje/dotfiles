@@ -73,7 +73,7 @@ export class CampaignSettingsStoreState {
             unallocatedCredit: null,
         },
         budgetsDepleted: [],
-        accountCredits: [],
+        credits: [],
         hacks: [],
         deals: [],
     };

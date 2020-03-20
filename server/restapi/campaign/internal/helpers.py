@@ -40,7 +40,7 @@ def get_extra_data(user, campaign):
             user, campaign, active_budget_items, budget_items, credit_items
         )
         extra["budgets_depleted"] = get_depleted_budgets(budget_items)
-        extra["account_credits"] = credit_items
+        extra["credits"] = credit_items
 
     return extra
 

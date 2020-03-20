@@ -18,7 +18,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
 import {FormattedCampaignBudget} from '../../types/formatted-campaign-budget';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
-import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
+import {Credit} from '../../../../core/entities/types/common/credit';
 
 @Component({
     selector: 'zem-campaign-budgets-list',
@@ -39,7 +39,7 @@ export class CampaignBudgetsListComponent implements OnChanges {
     @Input()
     isEditingEnabled: boolean = false;
     @Input()
-    accountCredits: AccountCredit[];
+    credits: Credit[];
     @Input()
     editFormTemplate: TemplateRef<any>;
     @Output()

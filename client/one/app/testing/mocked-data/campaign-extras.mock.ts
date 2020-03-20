@@ -33,7 +33,7 @@ export const campaignExtrasMock: CampaignExtras = {
         unallocatedCredit: null,
     },
     budgetsDepleted: [],
-    accountCredits: [],
+    credits: [],
     hacks: [],
     deals: [],
 };

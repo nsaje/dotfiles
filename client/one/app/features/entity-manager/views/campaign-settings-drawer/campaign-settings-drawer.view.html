@@ -357,7 +357,7 @@
                                     'zemauth.disable_budget_management'
                                 )
                             "
-                            [accountCredits]="state.extras.accountCredits"
+                            [credits]="state.extras.credits"
                             [editFormTemplate]="campaignBudgetEditFormTemplate"
                             (budgetDelete)="store.deleteBudget($event)"
                             (budgetEditFormClose)="store.validateEntity()"
@@ -371,7 +371,7 @@
                         let-budgetErrors="budgetErrors"
                         let-showLicenseFee="showLicenseFee"
                         let-showMargin="showMargin"
-                        let-accountCredits="accountCredits"
+                        let-credits="credits"
                     >
                         <zem-campaign-budget-edit-form
                             class="zem-campaign-budget-edit-form"
@@ -380,7 +380,7 @@
                             [budgetErrors]="budgetErrors"
                             [showLicenseFee]="showLicenseFee"
                             [showMargin]="showMargin"
-                            [accountCredits]="accountCredits"
+                            [credits]="credits"
                             (budgetChange)="store.updateBudget($event)"
                         ></zem-campaign-budget-edit-form>
                     </ng-template>
@@ -396,7 +396,7 @@
                             type="button"
                             class="zem-button zem-button--with-icon zem-button--add-icon zem-campaign-goals__button"
                             (click)="store.createBudget()"
-                            [disabled]="!store.isAnyAccountCreditAvailable()"
+                            [disabled]="!store.isAnyCreditAvailable()"
                         >
                             Add new budget item
                         </button>

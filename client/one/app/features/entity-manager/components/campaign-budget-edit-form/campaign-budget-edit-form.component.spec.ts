@@ -2,9 +2,9 @@ import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
 import {CampaignBudgetEditFormComponent} from './campaign-budget-edit-form.component';
-import {Currency, AccountCreditStatus} from '../../../../app.constants';
+import {Currency, CreditStatus} from '../../../../app.constants';
 import {SimpleChange} from '@angular/core';
-import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
+import {Credit} from '../../../../core/entities/types/common/credit';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {APP_CONFIG} from '../../../../app.config';
 
@@ -24,21 +24,26 @@ describe('CampaignBudgetEditFormComponent', () => {
         canEditEndDate: false,
         canEditAmount: true,
     };
-    const mockedCredits: AccountCredit[] = [
+    const mockedCredits: Credit[] = [
         {
             id: '100',
             createdOn: new Date(1970, 1, 21),
+            status: CreditStatus.SIGNED,
+            agencyId: '123',
+            accountId: null,
             startDate: new Date(1970, 2, 21),
             endDate: new Date(1970, 3, 21),
+            licenseFee: '0.1305',
+            amount: 5000000,
             total: '5000000',
             allocated: '3000000',
             available: '2000000',
-            licenseFee: '0.1305',
-            status: AccountCreditStatus.SIGNED,
             currency: Currency.USD,
+            contractId: null,
+            contractNumber: null,
             comment: 'A generic credit',
+            salesforceUrl: null,
             isAvailable: true,
-            isAgency: true,
         },
     ];
 
@@ -61,14 +66,14 @@ describe('CampaignBudgetEditFormComponent', () => {
     it("should correctly format credits' data on change", () => {
         component.budget = mockedBudget;
         component.currency = Currency.EUR;
-        component.accountCredits = mockedCredits;
+        component.credits = mockedCredits;
         component.ngOnChanges({
-            accountCredits: new SimpleChange(null, mockedCredits, false),
+            credits: new SimpleChange(null, mockedCredits, false),
         });
         expect(component.currencySymbol).toEqual(
             APP_CONFIG.currencySymbols[Currency.EUR]
         );
-        expect(component.formattedAccountCredits).toEqual([
+        expect(component.formattedCredits).toEqual([
             {
                 ...mockedCredits[0],
                 createdOn: '02/21/1970',
@@ -85,14 +90,14 @@ describe('CampaignBudgetEditFormComponent', () => {
     it("should correctly format credits' data on currency change", () => {
         component.budget = mockedBudget;
         component.currency = Currency.USD;
-        component.accountCredits = mockedCredits;
+        component.credits = mockedCredits;
         component.ngOnChanges({
             currency: new SimpleChange(null, Currency.USD, false),
         });
         expect(component.currencySymbol).toEqual(
             APP_CONFIG.currencySymbols[Currency.USD]
         );
-        expect(component.formattedAccountCredits).toEqual([
+        expect(component.formattedCredits).toEqual([
             {
                 ...mockedCredits[0],
                 createdOn: '02/21/1970',
