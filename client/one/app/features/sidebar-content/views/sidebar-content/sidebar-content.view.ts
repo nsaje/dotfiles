@@ -16,7 +16,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {Subject, Observable, merge} from 'rxjs';
 import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
-import {Router, UrlSerializer, NavigationEnd} from '@angular/router';
+import {Router, UrlSerializer} from '@angular/router';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -66,12 +66,6 @@ export class SidebarContentView implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.subscribeToStoreStateUpdates();
         this.updateInternalState();
-        this.router.events
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .pipe(filter(event => event instanceof NavigationEnd))
-            .subscribe(() => {
-                this.updateInternalState();
-            });
     }
 
     ngOnDestroy() {
@@ -118,6 +112,11 @@ export class SidebarContentView implements OnInit, OnDestroy {
 
     private stateUpdater$(): Observable<any> {
         return this.store.state$.pipe(
+            filter(
+                state =>
+                    commonHelpers.isDefined(state.selectedAgencyId) ||
+                    commonHelpers.isDefined(state.selectedAccountId)
+            ),
             distinctUntilChanged(),
             tap(state => {
                 const route = routerHelpers.getActivatedRoute(this.router);
