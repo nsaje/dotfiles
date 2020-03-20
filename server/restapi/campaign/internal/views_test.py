@@ -160,7 +160,6 @@ class CampaignViewSetTest(RESTAPITest):
         comment=None,
         salesforceUrl=None,
         isAvailable=None,
-        budgets=[],
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -183,7 +182,6 @@ class CampaignViewSetTest(RESTAPITest):
             "comment": comment,
             "salesforceUrl": salesforceUrl,
             "isAvailable": isAvailable,
-            "budgets": budgets,
         }
         return cls.normalize(representation)
 
@@ -524,29 +522,6 @@ class CampaignViewSetTest(RESTAPITest):
                         comment=credit.comment,
                         salesforceUrl=credit.get_salesforce_url(),
                         isAvailable=credit.is_available(),
-                        budgets=[
-                            self.campaign_budget_repr(
-                                id=budget.id,
-                                creditId=budget.credit.id,
-                                amount=budget.amount,
-                                margin=dash.views.helpers.format_decimal_to_percent(budget.margin),
-                                comment=budget.comment,
-                                startDate=budget.start_date,
-                                endDate=budget.end_date,
-                                state=budget.state(),
-                                spend=budget.get_local_spend_data_bcm(),
-                                available=budget.get_local_available_data_bcm(),
-                                canEditStartDate=budget.can_edit_start_date(),
-                                canEditEndDate=budget.can_edit_end_date(),
-                                canEditAmount=budget.can_edit_amount(),
-                                createdBy=budget.created_by,
-                                createdDt=budget.created_dt,
-                                licenseFee=dash.views.helpers.format_decimal_to_percent(budget.credit.license_fee),
-                                total=budget.allocated_amount(),
-                                campaignName=budget.campaign.name,
-                            )
-                            for budget in credit.budgets.all()
-                        ],
                     )
                 ],
             },

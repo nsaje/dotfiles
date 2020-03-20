@@ -40,6 +40,12 @@ class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSer
     )
 
 
+class ExtraDataCreditSerializer(restapi.credit.internal.serializers.CreditSerializer):
+    def __init__(self, *args, **kwargs):
+        super(ExtraDataCreditSerializer, self).__init__(*args, **kwargs)
+        self.fields.pop("budgets")
+
+
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     archived = rest_framework.serializers.BooleanField(default=False, required=False)
     language = restapi.serializers.fields.DashConstantField(dash.constants.Language, required=False)
@@ -63,9 +69,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     budgets_depleted = rest_framework.serializers.ListSerializer(
         child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
     )
-    credits = rest_framework.serializers.ListSerializer(
-        child=restapi.credit.internal.serializers.CreditSerializer(), default=[], allow_empty=True
-    )
+    credits = rest_framework.serializers.ListSerializer(child=ExtraDataCreditSerializer(), default=[], allow_empty=True)
 
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):

@@ -55,10 +55,8 @@ def get_budget_items(campaign):
 
 
 def get_credit_items(campaign):
-    return (
-        core.features.bcm.CreditLineItem.objects.filter_by_account(campaign.account)
-        .filter(currency=campaign.account.currency)
-        .prefetch_related("budgets")
+    return core.features.bcm.CreditLineItem.objects.filter_by_account(campaign.account).filter(
+        currency=campaign.account.currency
     )
 
 
