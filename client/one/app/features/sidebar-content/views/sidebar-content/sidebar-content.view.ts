@@ -7,6 +7,8 @@ import {
     Inject,
     OnInit,
     OnDestroy,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 import {SidebarContentStore} from '../../services/sidebar-content.store';
 import {ListGroupItem} from '../../../../shared/components/list-group/types/list-group-item';
@@ -16,7 +18,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {Subject, Observable, merge} from 'rxjs';
 import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
-import {Router, UrlSerializer} from '@angular/router';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -24,7 +26,9 @@ import {Router, UrlSerializer} from '@angular/router';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SidebarContentStore],
 })
-export class SidebarContentView implements OnInit, OnDestroy {
+export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
+    @Input()
+    routePathName: RoutePathName;
     @Input()
     isOpen: boolean;
 
@@ -51,7 +55,6 @@ export class SidebarContentView implements OnInit, OnDestroy {
         },
     ];
 
-    selectedItem: RoutePathName | string;
     hasAgencyScope: boolean;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
@@ -59,13 +62,29 @@ export class SidebarContentView implements OnInit, OnDestroy {
     constructor(
         public store: SidebarContentStore,
         private router: Router,
-        private serializer: UrlSerializer,
         @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
     ngOnInit(): void {
         this.subscribeToStoreStateUpdates();
-        this.updateInternalState();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.routePathName) {
+            const route = routerHelpers.getActivatedRoute(this.router);
+            const agencyId = route.snapshot.queryParamMap.get('agencyId');
+            const accountId = route.snapshot.queryParamMap.get('accountId');
+            if (
+                agencyId !== this.store.state.selectedAgencyId ||
+                accountId !== this.store.state.selectedAccountId ||
+                (accountId === null && agencyId === null)
+            ) {
+                this.hasAgencyScope = this.zemPermissions.hasAgencyScope(
+                    agencyId
+                );
+                this.store.setStore(agencyId, accountId);
+            }
+        }
     }
 
     ngOnDestroy() {
@@ -73,29 +92,10 @@ export class SidebarContentView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    updateInternalState() {
-        const route = routerHelpers.getActivatedRoute(this.router);
-        const currentUrlTree = this.serializer.parse(this.router.url);
-        this.selectedItem =
-            currentUrlTree.root.children.primary.segments[1].path;
-
-        const agencyId = route.snapshot.queryParamMap.get('agencyId');
-        const accountId = route.snapshot.queryParamMap.get('accountId');
-        if (
-            agencyId !== this.store.state.selectedAgencyId ||
-            accountId !== this.store.state.selectedAccountId ||
-            (accountId === null && agencyId === null)
-        ) {
-            this.hasAgencyScope = this.zemPermissions.hasAgencyScope(agencyId);
-            this.store.setStore(agencyId, accountId);
-        }
-    }
-
-    onRoutePathChange(routePathName: RoutePathName) {
-        if (routePathName !== this.selectedItem) {
-            this.selectedItem = routePathName;
+    onRoutePathChange($event: RoutePathName) {
+        if (this.routePathName !== $event) {
             const route = routerHelpers.getActivatedRoute(this.router);
-            this.router.navigate([RoutePathName.APP_BASE, routePathName], {
+            this.router.navigate([RoutePathName.APP_BASE, $event], {
                 queryParams: commonHelpers.getValueWithOnlyProps(
                     route.snapshot.queryParams,
                     ['agencyId', 'accountId']

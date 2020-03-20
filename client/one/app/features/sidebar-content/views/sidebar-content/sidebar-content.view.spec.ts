@@ -10,25 +10,25 @@ import {AccountEndpoint} from '../../../../core/entities/services/account/accoun
 import {SidebarScopeSelectorComponent} from '../../components/sidebar-scope-selector/sidebar-scope-selector.component';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
 import {noop} from 'rxjs';
-import {Router, UrlSerializer} from '@angular/router';
+import {RouterTestingModule} from '@angular/router/testing';
 
 describe('SidebarContentView', () => {
     let component: SidebarContentView;
     let fixture: ComponentFixture<SidebarContentView>;
     let zemPermissionsStub: any;
-    let mockRouter: any;
-    let mockUrlSerializer: any;
 
     beforeEach(() => {
         zemPermissionsStub = {
             hasAgencyScope: () => noop,
         };
-        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-        mockUrlSerializer = jasmine.createSpyObj('UrlSerializer', ['parse']);
 
         TestBed.configureTestingModule({
             declarations: [SidebarContentView, SidebarScopeSelectorComponent],
-            imports: [FormsModule, SharedModule],
+            imports: [
+                FormsModule,
+                SharedModule,
+                RouterTestingModule.withRoutes([]),
+            ],
             providers: [
                 SidebarContentStore,
                 AgencyService,
@@ -40,8 +40,6 @@ describe('SidebarContentView', () => {
                     provide: 'zemPermissions',
                     useValue: zemPermissionsStub,
                 },
-                {provide: Router, useValue: mockRouter},
-                {provide: UrlSerializer, useValue: mockUrlSerializer},
             ],
         });
     });
