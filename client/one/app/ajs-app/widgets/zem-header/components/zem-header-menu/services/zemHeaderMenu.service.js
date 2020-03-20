@@ -34,14 +34,6 @@ angular
 
         var ACCOUNT_ACTIONS = [
             {
-                text: 'Account credit',
-                callback: navigateToAccountCreditView,
-                isAvailable: isAccountCreditActionAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
-                    'zemauth.account_credit_view'
-                ),
-            },
-            {
                 text: 'Pixels & Audiences',
                 callback: navigateToPixelsView,
                 isAvailable: isPixelsViewAvailable,
@@ -78,6 +70,14 @@ angular
         ];
 
         var MANAGEMENT_CONSOLE_ACTIONS = [
+            {
+                text: 'Credits Library',
+                callback: navigateToCreditsLibraryView,
+                isAvailable: isCreditsLibraryViewAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.account_credit_view'
+                ),
+            },
             {
                 text: 'Deals Library',
                 callback: navigateToDealsLibraryView,
@@ -132,17 +132,6 @@ angular
             $window.location.href = params.href;
         }
 
-        function isAccountCreditActionAvailable() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-            return (
-                activeAccount &&
-                zemPermissions.hasPermission(
-                    'zemauth.can_see_new_account_credit'
-                ) &&
-                zemPermissions.hasPermission('zemauth.account_credit_view')
-            );
-        }
-
         function isPublisherGroupsActionAvailable() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
             return (
@@ -166,14 +155,29 @@ angular
             ]);
         }
 
-        function navigateToAccountCreditView() {
+        function isCreditsLibraryViewAvailable() {
+            return zemPermissions.hasPermission('zemauth.account_credit_view');
+        }
+
+        function navigateToCreditsLibraryView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            NgRouter.navigate([
-                RoutePathName.APP_BASE,
-                RoutePathName.CREDITS_LIBRARY,
-                LevelParam.ACCOUNT,
-                activeAccount.id,
-            ]);
+
+            if (commonHelpers.isDefined(activeAccount)) {
+                NgRouter.navigate(
+                    [RoutePathName.APP_BASE, RoutePathName.CREDITS_LIBRARY],
+                    {
+                        queryParams: {
+                            agencyId: activeAccount.data.agencyId,
+                            accountId: activeAccount.id,
+                        },
+                    }
+                );
+            } else {
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.CREDITS_LIBRARY,
+                ]);
+            }
         }
 
         function navigateToScheduledReportsView() {

@@ -7,6 +7,7 @@ angular
         this.isPermissionInternalBCMv2 = isPermissionInternal;
         this.setMockedPermissions = setMockedPermissions;
         this.setMockedInternalPermissions = setMockedInternalPermissions;
+        this.hasAgencyScope = hasAgencyScope;
 
         var ALL_PERMISSIONS = 'allPermissions';
         this.ALL_PERMISSIONS = ALL_PERMISSIONS;
@@ -38,5 +39,9 @@ angular
 
         function setMockedInternalPermissions(permissions) {
             internalPermissions = permissions;
+        }
+
+        function hasAgencyScope() {
+            return false;
         }
     });

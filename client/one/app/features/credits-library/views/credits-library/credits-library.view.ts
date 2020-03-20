@@ -4,19 +4,14 @@ import {
     Component,
     ChangeDetectionStrategy,
     OnInit,
-    Inject,
     HostBinding,
     ChangeDetectorRef,
     OnDestroy,
 } from '@angular/core';
-import {LevelParam, Level} from '../../../../app.constants';
-import {
-    LEVEL_PARAM_TO_LEVEL_MAP,
-    LEVEL_TO_ENTITY_TYPE_MAP,
-} from '../../../../app.constants';
-import {ActivatedRoute, Params} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {takeUntil, filter} from 'rxjs/operators';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-credits-library-view',
@@ -27,44 +22,37 @@ export class CreditsLibraryView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-credits-library-view';
 
-    entity: any;
+    agencyId: string;
+    accountId: string;
+    isInitialized: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         private route: ActivatedRoute,
-        private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+        private changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit(): void {
-        this.route.params
+        this.route.queryParams
             .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe((params: Params) => {
-                this.updateInternalState(
-                    this.route.snapshot.data.level,
-                    params.id
-                );
+            .pipe(
+                filter(queryParams =>
+                    commonHelpers.isDefined(queryParams.agencyId)
+                )
+            )
+            .subscribe(queryParams => {
+                this.agencyId = queryParams.agencyId;
+                this.accountId = queryParams.accountId;
+                this.isInitialized =
+                    commonHelpers.isDefined(this.agencyId) ||
+                    commonHelpers.isDefined(this.accountId);
+                this.changeDetectorRef.markForCheck();
             });
     }
 
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
-    }
-
-    updateInternalState(levelParam: LevelParam, entityId: string) {
-        const level = this.getLevel(levelParam);
-
-        this.zemNavigationNewService
-            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], entityId)
-            .then((entity: any) => {
-                this.entity = entity;
-                this.changeDetectorRef.markForCheck();
-            });
-    }
-
-    private getLevel(levelParam: LevelParam): Level {
-        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
     }
 }

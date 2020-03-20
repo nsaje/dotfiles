@@ -14,9 +14,9 @@ import {ListGroupIcon} from '../../../../shared/components/list-group/list-group
 import * as routerHelpers from '../../../../shared/helpers/router.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {Subject, Observable, merge} from 'rxjs';
-import {takeUntil, distinctUntilChanged, tap} from 'rxjs/operators';
+import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
-import {Router, UrlSerializer} from '@angular/router';
+import {Router, UrlSerializer, NavigationEnd} from '@angular/router';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -30,9 +30,24 @@ export class SidebarContentView implements OnInit, OnDestroy {
 
     items: ListGroupItem[] = [
         {
+            value: RoutePathName.CREDITS_LIBRARY,
+            displayValue: 'Credits Library',
+            icon: ListGroupIcon.Credit,
+            isVisible: () => {
+                return this.zemPermissions.hasPermission(
+                    'zemauth.account_credit_view'
+                );
+            },
+        },
+        {
             value: RoutePathName.DEALS_LIBRARY,
             displayValue: 'Deals Library',
             icon: ListGroupIcon.Folder,
+            isVisible: () => {
+                return this.zemPermissions.hasPermission(
+                    'zemauth.can_see_deals_library'
+                );
+            },
         },
     ];
 
@@ -50,7 +65,21 @@ export class SidebarContentView implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.subscribeToStoreStateUpdates();
+        this.updateInternalState();
+        this.router.events
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe(filter(event => event instanceof NavigationEnd))
+            .subscribe(() => {
+                this.updateInternalState();
+            });
+    }
 
+    ngOnDestroy() {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
+    }
+
+    updateInternalState() {
         const route = routerHelpers.getActivatedRoute(this.router);
         const currentUrlTree = this.serializer.parse(this.router.url);
         this.selectedItem =
@@ -66,11 +95,6 @@ export class SidebarContentView implements OnInit, OnDestroy {
             this.hasAgencyScope = this.zemPermissions.hasAgencyScope(agencyId);
             this.store.setStore(agencyId, accountId);
         }
-    }
-
-    ngOnDestroy() {
-        this.ngUnsubscribe$.next();
-        this.ngUnsubscribe$.complete();
     }
 
     onRoutePathChange(routePathName: RoutePathName) {

@@ -12,6 +12,7 @@ import restapi.common.views_base
 import restapi.credit.v1.views
 import utils.exc
 from restapi.common.pagination import StandardPagination
+from utils import dates_helper
 
 from . import helpers
 from . import serializers
@@ -38,10 +39,11 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
         credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id)
         if active is not None:
+            date = dates_helper.local_today()
             if active.lower() == "true":
-                credits_qs = credits_qs.filter_active()
+                credits_qs = credits_qs.filter(start_date__lte=date, end_date__gte=date)
             elif active.lower() == "false":
-                credits_qs = credits_qs.filter_past()
+                credits_qs = credits_qs.filter(end_date__lte=date)
 
         paginator = StandardPagination()
         credits_paginated = paginator.paginate_queryset(credits_qs, request)

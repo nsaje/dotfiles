@@ -4,6 +4,7 @@ from django.urls import reverse
 
 import dash.constants
 import dash.models
+import dash.views.helpers
 from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
@@ -48,4 +49,6 @@ class CampaignBudgetViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["canEditAmount"], budget.can_edit_amount())
         self.assertEqual(resp_json["data"]["createdBy"], str(budget.created_by))
         self.assertEqual(resp_json["data"]["createdDt"], self.normalize(budget.created_dt))
-        self.assertEqual(resp_json["data"]["licenseFee"], self.normalize(budget.credit.license_fee))
+        self.assertEqual(
+            resp_json["data"]["licenseFee"], dash.views.helpers.format_decimal_to_percent(budget.credit.license_fee)
+        )

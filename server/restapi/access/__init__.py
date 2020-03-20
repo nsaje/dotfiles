@@ -124,20 +124,20 @@ def get_direct_deal(user, deal_id) -> core.features.deals.DirectDeal:
             .get()
         )
 
-        agency = deal.agency
-        account = deal.account
-
-        if agency is not None:
-            has_access = agency.users.filter(pk=user.pk).exists()
-            if not has_access:
-                raise utils.exc.AuthorizationError()
-        elif account is not None:
-            has_access_qs = account.users.filter(pk=user.pk)
-            if account.agency is not None:
-                has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
-            has_access = has_access_qs.exists()
-            if not has_access:
-                raise utils.exc.AuthorizationError()
+        if not user.has_perm("zemauth.can_see_all_accounts"):
+            agency = deal.agency
+            account = deal.account
+            if agency is not None:
+                has_access = agency.users.filter(pk=user.pk).exists()
+                if not has_access:
+                    raise utils.exc.AuthorizationError()
+            elif account is not None:
+                has_access_qs = account.users.filter(pk=user.pk)
+                if account.agency is not None:
+                    has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
+                has_access = has_access_qs.exists()
+                if not has_access:
+                    raise utils.exc.AuthorizationError()
 
         if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
             raise utils.exc.AuthorizationError()
@@ -164,20 +164,20 @@ def get_credit_line_item(user, credit_id) -> core.features.bcm.CreditLineItem:
     try:
         credit = core.features.bcm.CreditLineItem.objects.prefetch_related("budgets").filter(id=int(credit_id)).get()
 
-        agency = credit.agency
-        account = credit.account
-
-        if agency is not None:
-            has_access = agency.users.filter(pk=user.pk).exists()
-            if not has_access:
-                raise utils.exc.AuthorizationError()
-        elif account is not None:
-            has_access_qs = account.users.filter(pk=user.pk)
-            if account.agency is not None:
-                has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
-            has_access = has_access_qs.exists()
-            if not has_access:
-                raise utils.exc.AuthorizationError()
+        if not user.has_perm("zemauth.can_see_all_accounts"):
+            agency = credit.agency
+            account = credit.account
+            if agency is not None:
+                has_access = agency.users.filter(pk=user.pk).exists()
+                if not has_access:
+                    raise utils.exc.AuthorizationError()
+            elif account is not None:
+                has_access_qs = account.users.filter(pk=user.pk)
+                if account.agency is not None:
+                    has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
+                has_access = has_access_qs.exists()
+                if not has_access:
+                    raise utils.exc.AuthorizationError()
 
         return credit
 

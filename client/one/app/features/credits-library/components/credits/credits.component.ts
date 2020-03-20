@@ -13,18 +13,20 @@ import {
 import {UpgradeComponent} from '@angular/upgrade/static';
 
 @Directive({
-    selector: 'zem-account-credit', // tslint:disable-line directive-selector
+    selector: 'zem-credits', // tslint:disable-line directive-selector
 })
-export class AccountCreditComponent extends UpgradeComponent
+export class CreditsComponent extends UpgradeComponent
     implements OnInit, OnChanges, DoCheck, OnDestroy {
     @Input()
-    account: any;
+    agencyId: string;
+    @Input()
+    accountId: string;
 
     constructor(
         @Inject(ElementRef) elementRef: ElementRef,
         @Inject(Injector) injector: Injector
     ) {
-        super('zemAccountCredit', elementRef, injector);
+        super('zemCredits', elementRef, injector);
     }
 
     ngOnInit() {

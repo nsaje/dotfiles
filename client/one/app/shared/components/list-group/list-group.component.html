@@ -1,5 +1,5 @@
 <div
-    *ngFor="let item of items; trackBy: trackByIndex"
+    *ngFor="let item of filteredItems; trackBy: trackByIndex"
     class="zem-list-group__item"
     [class.zem-list-group__item--selected]="item.value === value"
     (click)="valueChange.emit(item.value)"

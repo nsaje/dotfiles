@@ -12,10 +12,10 @@ import {
 } from '@angular/core';
 import * as moment from 'moment';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
-import {Currency} from '../../../../app.constants';
+import {Currency, Unit} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
+import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {FormattedCampaignBudget} from '../../types/formatted-campaign-budget';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import {Credit} from '../../../../core/entities/types/common/credit';
@@ -134,10 +134,14 @@ export class CampaignBudgetsListComponent implements OnChanges {
                       )
                     : 'N/A',
                 margin: commonHelpers.isDefined(budget.margin)
-                    ? numericHelpers.convertToPercentValue(budget.margin)
+                    ? `${budget.margin}${unitsHelpers.getUnitText(
+                          Unit.Percent
+                      )}`
                     : 'N/A',
                 licenseFee: commonHelpers.isDefined(budget.licenseFee)
-                    ? numericHelpers.convertToPercentValue(budget.licenseFee)
+                    ? `${budget.licenseFee}${unitsHelpers.getUnitText(
+                          Unit.Percent
+                      )}`
                     : 'N/A',
             });
         });

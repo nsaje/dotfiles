@@ -10,9 +10,9 @@ import {
 } from '@angular/core';
 import {
     ACCOUNT_TYPES,
-    CURRENCIES,
     ENTITY_MANAGER_CONFIG,
 } from '../../entity-manager.config';
+import {CURRENCIES} from '../../../../app.config';
 import {AccountSettingsStore} from '../../services/account-settings-store/account-settings.store';
 import {Subject, merge, Observable} from 'rxjs';
 import * as messagesHelpers from '../../helpers/messages.helpers';

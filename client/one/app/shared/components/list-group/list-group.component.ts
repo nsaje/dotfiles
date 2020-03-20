@@ -6,6 +6,8 @@ import {
     Input,
     Output,
     EventEmitter,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 import {ListGroupItem} from './types/list-group-item';
 
@@ -14,7 +16,7 @@ import {ListGroupItem} from './types/list-group-item';
     templateUrl: './list-group.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListGroupComponent {
+export class ListGroupComponent implements OnChanges {
     @Input()
     items: ListGroupItem[];
     @Input()
@@ -25,6 +27,16 @@ export class ListGroupComponent {
     isDisplayValueVisible: boolean = true;
     @Output()
     valueChange = new EventEmitter<string>();
+
+    filteredItems: ListGroupItem[] = [];
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.items) {
+            this.filteredItems = (this.items || []).filter(item =>
+                item.isVisible()
+            );
+        }
+    }
 
     trackByIndex(index: number): string {
         return index.toString();

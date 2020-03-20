@@ -10,11 +10,7 @@
         <strong>{{ $ctrl.state.creditItem.createdOn }}</strong>
     </p>
     <hr />
-    <div
-        class="form"
-        id="form-account-credit-refund-item"
-        ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress"
-    >
+    <div class="form" id="form-credits-refund-item">
         <div
             class="form__group"
             ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.startDate}"
@@ -42,6 +38,40 @@
                 {{ error }}
             </div>
         </div>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.accountId}"
+        >
+            <label class="form__label" for="account-id-select"
+                >Refunded Account</label
+            >
+            <ui-select
+                class="button button--plain button--narrow button--dropdown-toggle-icon"
+                theme="select2"
+                id="account-id-select"
+                ng-model="$ctrl.selectedAccount"
+                ng-change="$ctrl.onSelectedAccountChange()"
+                ng-disabled="$ctrl.isAccountSelectDisabled"
+                search-enabled="true"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="account in $ctrl.accounts | filter: $select.search"
+                    class="ui-select-choices"
+                >
+                    <span
+                        ng-bind-html="account.name | highlight: $select.search"
+                    ></span>
+                </ui-select-choices>
+            </ui-select>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.licenseFee"
+                for="account-id-select"
+            >
+                {{ error }}
+            </div>
+        </div>
         <div class="form__group">
             <label class="form__label" for="media-amount-input"
                 >Refunded Media Amount</label
@@ -65,7 +95,7 @@
         <div class="form__group form__group--informative">
             <label class="form__label">Credit License Fee</label>
             <div class="form__information">
-                {{ $ctrl.state.creditItem.licenseFee }}
+                {{ $ctrl.state.creditItem.licenseFee }}%
             </div>
         </div>
         <div
@@ -126,7 +156,7 @@
             <div
                 class="message message--error"
                 ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.comment"
-                for="comment"
+                for="comment-input"
             >
                 {{ error }}
             </div>
@@ -149,20 +179,15 @@
         ng-click="$ctrl.discardCreditRefundItem()"
         ng-disabled="$ctrl.state.requests.saveCreditRefundItem.inProgress"
     >
-        Discard
+        Cancel
     </button>
     <div
         class="loader"
         ng-show="$ctrl.state.requests.saveCreditRefundItem.inProgress"
     ></div>
-    <span ng-show="$ctrl.saved" class="message message--success"
-        >Your updates have been saved.</span
-    >
-    <span ng-show="$ctrl.saved === false" class="message message--error"
-        >An error occurred while saving. Please correct the marked fields and
-        save again.</span
-    >
-    <span ng-show="$ctrl.discarded" class="message"
-        >Your updates have been discarded.</span
+    <span
+        ng-show="!!$ctrl.state.requests.saveCreditRefundItem.errors"
+        class="message message--error"
+        >An error occurred while saving.</span
     >
 </div>

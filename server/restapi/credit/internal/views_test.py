@@ -505,7 +505,7 @@ class CreditViewSetTest(RESTAPITest):
             "startDate": self.normalize(datetime.date.today()),
             "endDate": self.normalize(datetime.date.today() + datetime.timedelta(30)),
             "amount": "100",
-            "licenseFee": "0.3",
+            "licenseFee": "30",
             "currency": dash.constants.Currency.get_name(dash.constants.Currency.EUR),
             "comment": "Extra credit",
         }
@@ -523,7 +523,10 @@ class CreditViewSetTest(RESTAPITest):
         self.assertIsNone(resp_json["data"]["accountId"])
         self.assertIsNotNone(resp_json["data"]["startDate"])
         self.assertIsNotNone(resp_json["data"]["endDate"])
+        self.assertIsNotNone(resp_json["data"]["createdBy"])
         self.assertEqual(resp_json["data"]["currency"], dash.constants.Currency.get_name(dash.constants.Currency.EUR))
+        self.assertEqual(resp_json["data"]["licenseFee"], "30")
+        self.assertIsNotNone(resp_json["data"]["flatFee"])
         self.assertEqual(resp_json["data"]["comment"], "Extra credit")
         self.assertEqual(resp_json["data"]["isAvailable"], True)
         self.assertEqual(resp_json["data"]["budgets"], [])

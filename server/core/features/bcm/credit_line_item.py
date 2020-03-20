@@ -125,6 +125,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         months = dates_helper.count_months(self.flat_fee_start_date, self.flat_fee_end_date) + 1
         return self.flat_fee() / Decimal(months)
 
+    def get_flat_fee(self):
+        return self.get_flat_fee_on_date_range(self.start_date, self.end_date)
+
     def get_flat_fee_on_date_range(self, start_date, end_date):
         if not (self.flat_fee_start_date and self.flat_fee_end_date):
             return Decimal("0.0")
@@ -393,11 +396,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             if date is None:
                 date = dates_helper.local_today()
             return self.filter(start_date__lte=date, end_date__gte=date, status=constants.CreditLineItemStatus.SIGNED)
-
-        def filter_past(self, date=None):
-            if date is None:
-                date = dates_helper.local_today()
-            return self.filter(end_date__lte=date, status=constants.CreditLineItemStatus.SIGNED)
 
         def filter_overlapping(self, start_date, end_date):
             return self.filter(

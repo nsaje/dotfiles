@@ -26,12 +26,18 @@ class CampaignBudgetSerializer(
     can_edit_amount = rest_framework.serializers.BooleanField(read_only=True)
     created_by = rest_framework.serializers.EmailField(read_only=True)
     created_dt = rest_framework.serializers.DateTimeField(read_only=True)
-    license_fee = rest_framework.serializers.DecimalField(
+    margin = restapi.serializers.fields.PercentToDecimalField(
+        max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
+    )
+    license_fee = restapi.serializers.fields.PercentToDecimalField(
         source="credit.license_fee",
         decimal_places=4,
         max_digits=5,
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
         read_only=True,
+    )
+    total = rest_framework.serializers.DecimalField(
+        source="allocated_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     campaign_name = restapi.serializers.fields.PlainCharField(source="campaign.name", read_only=True)

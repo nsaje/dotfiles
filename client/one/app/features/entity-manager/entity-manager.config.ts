@@ -6,7 +6,6 @@ import {
     IabCategory,
     Language,
     AccountType,
-    Currency,
 } from '../../app.constants';
 import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
@@ -15,7 +14,6 @@ import {CampaignTypeConfig} from './types/campaign-type-config';
 import {IabCategoryConfig} from './types/iabcategory-config';
 import {LanguageConfig} from './types/language-config';
 import {AccountTypeConfig} from './types/account-type-config';
-import {CurrencyConfig} from './types/currency-config';
 import {OperatingSystem} from './components/operating-system/types/operating-system';
 import {OperatingSystemIcon} from './components/operating-system/operating-system.constants';
 import {ImageCheckboxInputGroupItem} from '../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
@@ -1295,24 +1293,6 @@ export const ACCOUNT_TYPES: AccountTypeConfig[] = [
     {name: 'Activated', value: AccountType.ACTIVATED},
     {name: 'Managed', value: AccountType.MANAGED},
     {name: 'PAAS', value: AccountType.PAAS},
-];
-
-export const CURRENCIES: CurrencyConfig[] = [
-    {name: 'US Dollar', value: Currency.USD},
-    {name: 'Euro', value: Currency.EUR},
-    {name: 'British Pound', value: Currency.GBP},
-    {name: 'Australian Dollar', value: Currency.AUD},
-    {name: 'Singapore Dollar', value: Currency.SGD},
-    {name: 'Brazilian Real', value: Currency.BRL},
-    {name: 'Malaysian Ringgit', value: Currency.MYR},
-    {name: 'Swiss Franc', value: Currency.CHF},
-    {name: 'South African Rand', value: Currency.ZAR},
-    {name: 'Israeli New Shekel', value: Currency.ILS},
-    {name: 'Indian Rupee', value: Currency.INR},
-    {name: 'Japanese Yen', value: Currency.JPY},
-    {name: 'Canadian Dollar', value: Currency.CAD},
-    {name: 'New Zealand Dollar', value: Currency.NZD},
-    {name: 'Turkish Lira', value: Currency.TRY},
 ];
 
 export const TARGETING_DEVICE_OPTIONS: ImageCheckboxInputGroupItem[] = [

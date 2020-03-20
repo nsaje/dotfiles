@@ -1,11 +1,11 @@
 @import 'variables';
 @import '../../styles/utilities.less';
 
-.zem-account-credit {
+.zem-credits {
     display: block;
 }
 
-.zem-account-credit__credit-overview {
+.zem-credits__credit-overview {
     padding: @spacing--default 0 0 0;
     border-top: 1px solid @color--lighter-neutral;
     display: table;
@@ -14,7 +14,7 @@
     .clearfix();
 }
 
-.zem-account-credit__credit-overview-box {
+.zem-credits__credit-overview-box {
     display: table-cell;
     border-right: 1px solid @color--lighter-neutral;
     text-align: center;
@@ -27,18 +27,18 @@
     }
 }
 
-.zem-account-credit__credit-overview-name {
+.zem-credits__credit-overview-name {
     font-size: @font-size--default;
 }
 
-.zem-account-credit__credit-overview-value {
+.zem-credits__credit-overview-value {
     display: block;
 }
 
-.zem-account-credit__credit-overview-box--exposed {
+.zem-credits__credit-overview-box--exposed {
     color: @color--secondary;
 
-    .zem-account-credit__credit-overview-value {
+    .zem-credits__credit-overview-value {
         font-weight: 500;
         font-size: 18px;
     }
@@ -49,26 +49,26 @@
 ///////////////////////////
 
 @media only screen and (max-width: @tablet-breakpoint) {
-    .zem-account-credit__credit-overview {
+    .zem-credits__credit-overview {
         display: block;
     }
 
-    .zem-account-credit__credit-overview-box {
+    .zem-credits__credit-overview-box {
         display: block;
         text-align: left;
         border-right: none;
         width: 100%;
     }
 
-    .zem-account-credit__credit-overview-name::after {
+    .zem-credits__credit-overview-name::after {
         content: ':';
     }
 
-    .zem-account-credit__credit-overview-value {
+    .zem-credits__credit-overview-value {
         display: inline;
     }
 
-    .zem-account-credit__credit-overview-box--exposed {
+    .zem-credits__credit-overview-box--exposed {
         margin-top: 5px;
     }
 }

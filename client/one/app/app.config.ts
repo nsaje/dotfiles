@@ -1,6 +1,7 @@
 import {environment} from '../environments/environment';
 import {Currency, ConversionWindow} from './app.constants';
 import {ConversionWindowConfig} from './core/conversion-pixels/types/conversion-windows-config';
+import {CurrencyConfig} from './types/currency-config';
 
 export const CONVERSION_WINDOWS: ConversionWindowConfig[] = [
     {name: '1 day', value: ConversionWindow.LEQ_1_DAY},
@@ -43,3 +44,21 @@ export const APP_CONFIG = {
     httpErrorPopupIncludeHttpMethods: ['PUT', 'POST'],
     httpErrorPopupExcludeUrlRegexes: [/.*(\/breakdown\/).*/],
 };
+
+export const CURRENCIES: CurrencyConfig[] = [
+    {name: 'US Dollar', value: Currency.USD},
+    {name: 'Euro', value: Currency.EUR},
+    {name: 'British Pound', value: Currency.GBP},
+    {name: 'Australian Dollar', value: Currency.AUD},
+    {name: 'Singapore Dollar', value: Currency.SGD},
+    {name: 'Brazilian Real', value: Currency.BRL},
+    {name: 'Malaysian Ringgit', value: Currency.MYR},
+    {name: 'Swiss Franc', value: Currency.CHF},
+    {name: 'South African Rand', value: Currency.ZAR},
+    {name: 'Israeli New Shekel', value: Currency.ILS},
+    {name: 'Indian Rupee', value: Currency.INR},
+    {name: 'Japanese Yen', value: Currency.JPY},
+    {name: 'Canadian Dollar', value: Currency.CAD},
+    {name: 'New Zealand Dollar', value: Currency.NZD},
+    {name: 'Turkish Lira', value: Currency.TRY},
+];

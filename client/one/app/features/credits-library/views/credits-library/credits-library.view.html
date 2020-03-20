@@ -1,7 +1,8 @@
-<h1 class="zem-main-container__view-title">Account credit</h1>
+<h1 class="zem-main-container__view-title">Credits Library</h1>
 
-<zem-account-credit
-    class="zem-account-credit"
-    *ngIf="!!entity"
-    [account]="entity"
-></zem-account-credit>
+<zem-credits
+    class="zem-credits"
+    *ngIf="isInitialized"
+    [agencyId]="agencyId"
+    [accountId]="accountId"
+></zem-credits>

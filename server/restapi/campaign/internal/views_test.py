@@ -9,6 +9,7 @@ import dash.constants
 import dash.features.clonecampaign.exceptions
 import dash.features.clonecampaign.service
 import dash.models
+import dash.views.helpers
 import restapi.serializers.targeting
 from restapi.common.views_base_test import RESTAPITest
 from utils import test_helper
@@ -111,6 +112,7 @@ class CampaignViewSetTest(RESTAPITest):
         createdBy=None,
         createdDt=None,
         licenseFee=None,
+        total=None,
         campaignName=None,
     ):
         representation = {
@@ -130,6 +132,7 @@ class CampaignViewSetTest(RESTAPITest):
             "createdBy": str(createdBy),
             "createdDt": createdDt,
             "licenseFee": licenseFee,
+            "total": str(total) if total is not None else None,
             "campaignName": campaignName,
         }
         return cls.normalize(representation)
@@ -139,12 +142,14 @@ class CampaignViewSetTest(RESTAPITest):
         cls,
         id=None,
         createdOn=None,
+        createdBy=None,
         status=None,
         agencyId=None,
         accountId=None,
         startDate=None,
         endDate=None,
         licenseFee=None,
+        flatFee=None,
         amount=None,
         total=None,
         allocated=None,
@@ -160,12 +165,14 @@ class CampaignViewSetTest(RESTAPITest):
         representation = {
             "id": str(id) if id is not None else None,
             "createdOn": createdOn,
+            "createdBy": createdBy,
             "status": dash.constants.CreditLineItemStatus.get_name(status),
             "agencyId": str(agencyId) if agencyId is not None else None,
             "accountId": str(accountId) if accountId is not None else None,
             "startDate": startDate,
             "endDate": endDate,
             "licenseFee": str(licenseFee),
+            "flatFee": str(flatFee),
             "amount": amount,
             "total": str(total),
             "allocated": str(allocated),
@@ -421,7 +428,7 @@ class CampaignViewSetTest(RESTAPITest):
                     id=active_budget.id,
                     creditId=active_budget.credit.id,
                     amount=active_budget.amount,
-                    margin=active_budget.margin,
+                    margin=dash.views.helpers.format_decimal_to_percent(active_budget.margin),
                     comment=active_budget.comment,
                     startDate=active_budget.start_date,
                     endDate=active_budget.end_date,
@@ -433,7 +440,8 @@ class CampaignViewSetTest(RESTAPITest):
                     canEditAmount=active_budget.can_edit_amount(),
                     createdBy=active_budget.created_by,
                     createdDt=active_budget.created_dt,
-                    licenseFee=active_budget.credit.license_fee,
+                    licenseFee=dash.views.helpers.format_decimal_to_percent(active_budget.credit.license_fee),
+                    total=active_budget.allocated_amount(),
                     campaignName=active_budget.campaign.name,
                 )
             ],
@@ -477,7 +485,7 @@ class CampaignViewSetTest(RESTAPITest):
                         id=inactive_budget.id,
                         creditId=inactive_budget.credit.id,
                         amount=inactive_budget.amount,
-                        margin=inactive_budget.margin,
+                        margin=dash.views.helpers.format_decimal_to_percent(inactive_budget.margin),
                         comment=inactive_budget.comment,
                         startDate=inactive_budget.start_date,
                         endDate=inactive_budget.end_date,
@@ -489,7 +497,8 @@ class CampaignViewSetTest(RESTAPITest):
                         canEditAmount=inactive_budget.can_edit_amount(),
                         createdBy=inactive_budget.created_by,
                         createdDt=inactive_budget.created_dt,
-                        licenseFee=inactive_budget.credit.license_fee,
+                        licenseFee=dash.views.helpers.format_decimal_to_percent(inactive_budget.credit.license_fee),
+                        total=inactive_budget.allocated_amount(),
                         campaignName=inactive_budget.campaign.name,
                     )
                 ],
@@ -497,12 +506,14 @@ class CampaignViewSetTest(RESTAPITest):
                     self.credit_item_repr(
                         id=credit.pk,
                         createdOn=credit.get_creation_date(),
+                        createdBy=credit.created_by,
                         status=credit.status,
                         agencyId=credit.agency_id,
                         accountId=credit.account_id,
                         startDate=credit.start_date,
                         endDate=credit.end_date,
-                        licenseFee=credit.license_fee,
+                        licenseFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
+                        flatFee=credit.get_flat_fee().quantize(decimal.Decimal("0.0001")),
                         amount=credit.amount,
                         total=credit.effective_amount(),
                         allocated=credit.get_allocated_amount(),
@@ -518,7 +529,7 @@ class CampaignViewSetTest(RESTAPITest):
                                 id=budget.id,
                                 creditId=budget.credit.id,
                                 amount=budget.amount,
-                                margin=budget.margin,
+                                margin=dash.views.helpers.format_decimal_to_percent(budget.margin),
                                 comment=budget.comment,
                                 startDate=budget.start_date,
                                 endDate=budget.end_date,
@@ -530,7 +541,8 @@ class CampaignViewSetTest(RESTAPITest):
                                 canEditAmount=budget.can_edit_amount(),
                                 createdBy=budget.created_by,
                                 createdDt=budget.created_dt,
-                                licenseFee=budget.credit.license_fee,
+                                licenseFee=dash.views.helpers.format_decimal_to_percent(budget.credit.license_fee),
+                                total=budget.allocated_amount(),
                                 campaignName=budget.campaign.name,
                             )
                             for budget in credit.budgets.all()

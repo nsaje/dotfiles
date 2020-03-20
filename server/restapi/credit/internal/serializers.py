@@ -33,6 +33,8 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
     class Meta(restapi.credit.v1.serializers.CreditSerializer.Meta):
         pass
 
+    created_by = rest_framework.serializers.EmailField(read_only=True)
+
     status = restapi.serializers.fields.DashConstantField(
         dash.constants.CreditLineItemStatus, default=dash.constants.CreditLineItemStatus.PENDING
     )
@@ -46,8 +48,12 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField(allow_null=True)
 
-    license_fee = rest_framework.serializers.DecimalField(
+    license_fee = restapi.serializers.fields.PercentToDecimalField(
         max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
+    )
+
+    flat_fee = rest_framework.serializers.DecimalField(
+        source="get_flat_fee", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
 
     amount = rest_framework.serializers.IntegerField()

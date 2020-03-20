@@ -147,15 +147,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     RoutePathName.APP_BASE,
                     RoutePathName.CREDITS_LIBRARY
                 ];
-                if (levelParam) {
-                    urlTree.push(levelParam);
-                }
-                if (entityId) {
-                    urlTree.push(entityId);
-                }
                 return {
-                    typeName: 'Account settings',
-                    name: 'Account credit',
+                    typeName: 'Management Console',
+                    name: 'Credits Library',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.REPORTS_LIBRARY)) {
@@ -196,8 +190,8 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     RoutePathName.DEALS_LIBRARY
                 ];
                 return {
-                    typeName: 'Management console',
-                    name: 'Deals library',
+                    typeName: 'Management Console',
+                    name: 'Deals Library',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS_LIBRARY)) {

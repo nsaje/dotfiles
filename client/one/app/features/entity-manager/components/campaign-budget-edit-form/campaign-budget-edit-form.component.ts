@@ -11,10 +11,10 @@ import {
 } from '@angular/core';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {ChangeEvent} from '../../../../shared/types/change-event';
-import {Currency} from '../../../../app.constants';
+import {Currency, Unit} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
+import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import * as moment from 'moment';
 import {Credit} from '../../../../core/entities/types/common/credit';
@@ -46,7 +46,6 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     currencySymbol: string;
     minDate: Date;
     maxDate: Date;
-    margin: string;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.budget) {
@@ -64,10 +63,6 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                     this.maxDate = credit.endDate;
                 }
             }
-            this.margin = numericHelpers.convertToPercentValue(
-                this.budget.margin,
-                false
-            );
         }
         if (changes.credits || changes.currency) {
             this.currencySymbol = currencyHelpers.getCurrencySymbol(
@@ -130,7 +125,7 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
         this.budgetChange.emit({
             target: this.budget,
             changes: {
-                margin: numericHelpers.convertFromPercentValue($event),
+                margin: $event,
             },
         });
     }
@@ -183,9 +178,9 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                           )
                         : 'N/A',
                     licenseFee: commonHelpers.isDefined(credit.licenseFee)
-                        ? numericHelpers.convertToPercentValue(
-                              credit.licenseFee
-                          )
+                        ? `${credit.licenseFee}${unitsHelpers.getUnitText(
+                              Unit.Percent
+                          )}`
                         : 'N/A',
                 });
             }

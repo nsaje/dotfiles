@@ -837,6 +837,24 @@ h4 {
     }
 }
 
+.magnifier-icon {
+    &::before {
+        background-image: url('@{images-folder}/magnifier-sec.svg');
+    }
+
+    &.button--highlight::before {
+        background-image: url('images/magnifier-white.svg');
+    }
+
+    &.button--outline::before {
+        background-image: url('@{images-folder}/magnifier-sec.svg');
+    }
+
+    &.button--dark-backgrounds::before {
+        background-image: url('images/magnifier-white.svg');
+    }
+}
+
 .send-icon {
     &::before {
         background-image: url('@{images-folder}/send-sec.svg');
@@ -1209,7 +1227,7 @@ h4 {
 // RESPONSIVE - Buttons holder //
 ///////////////////////////
 
-@media only screen and (max-width: @desktop-breakpoint) {
+@media only screen and (max-width: @tablet-breakpoint) {
     .buttons-panel {
         .message {
             padding: 7px 0;

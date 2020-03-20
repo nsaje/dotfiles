@@ -1,4 +1,4 @@
-import {Currency} from '../../../app.constants';
+import {Currency} from '../app.constants';
 
 export interface CurrencyConfig {
     name: string;
