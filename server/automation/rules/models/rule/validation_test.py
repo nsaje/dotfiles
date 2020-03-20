@@ -269,6 +269,9 @@ class RuleValidationTest(test.TestCase):
             )
 
     def test_validate_notification_recipients(self):
+        self.rule.action_type = (
+            constants.ActionType.INCREASE_BID_MODIFIER
+        )  # fixed action type to avoid SEND_EMAIL being set
         self.rule.clean({"notification_recipients": [], "notification_type": constants.NotificationType.NONE})
         self.rule.clean(
             {"notification_recipients": ["user@test.com"], "notification_type": constants.NotificationType.ON_RULE_RUN}
