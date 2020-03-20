@@ -34,7 +34,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         if account_id is not None:
             account = restapi.access.get_account(request.user, account_id)
             deal_items = (
-                core.features.deals.DirectDeal.objects.filter(Q(account=account) | Q(agency=account.agency))
+                core.features.deals.DirectDeal.objects.filter_by_account(account)
                 .select_related("source", "account")
                 .order_by("-created_dt")
             )

@@ -24,10 +24,10 @@ from utils import dates_helper
 from utils import lc_helper
 from utils import validation_helper
 
-from . import bcm_slack
 from . import credit_line_item
 from . import dailystatement
 from . import exceptions
+from . import helpers
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305, 490)
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
@@ -49,20 +49,6 @@ class BudgetLineItemManager(core.common.QuerySetManager):
         item.clean_start_date()
         item.clean_end_date()
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-
-        bcm_slack.log_to_slack(
-            campaign.account_id,
-            bcm_slack.SLACK_NEW_BUDGET_MSG.format(
-                budget_id=item.pk,
-                url=bcm_slack.CAMPAIGN_URL.format(campaign.id),
-                campaign_id=campaign.id,
-                campaign_name=campaign.get_long_name(),
-                amount=item.amount,
-                margin=item.margin * 100,
-                currency_symbol=core.features.multicurrency.get_currency_symbol(item.credit.currency),
-                end_date=item.end_date,
-            ),
-        )
 
         return item
 
@@ -194,6 +180,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             created_by=request.user if request else user or None, snapshot=model_to_dict(self), budget=self
         )
         self.add_to_history(request and request.user or user or None, action_type)
+        helpers.notify_budget_to_slack(self, action_type=action_type)
 
     def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(model_to_dict(self))

@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from rest_framework.serializers import ValidationError
 
-import core.features.bcm.bcm_slack
 import core.features.bcm.credit_line_item
 import core.features.multicurrency
 import core.models.account
@@ -60,31 +59,6 @@ def create_credit_line_item(request, data):
     item = core.features.bcm.credit_line_item.CreditLineItem.objects.create(
         request, start_date, end_date, amount, **cli
     )
-
-    if item.account:
-        core.features.bcm.bcm_slack.log_to_slack(
-            item.account.pk,
-            core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
-                credit_id=item.pk,
-                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(item.account.pk),
-                account_id=item.account.pk,
-                account_name=item.account.get_long_name(),
-                amount=item.amount,
-                currency_symbol=core.features.multicurrency.get_currency_symbol(item.currency),
-                end_date=item.end_date,
-            ),
-        )
-    elif item.agency:
-        core.features.bcm.bcm_slack.log_to_slack(
-            None,
-            core.features.bcm.bcm_slack.SLACK_NEW_AGENCY_CREDIT_MSG.format(
-                credit_id=item.pk,
-                agency=item.agency.name,
-                amount=item.amount,
-                currency_symbol=core.features.multicurrency.get_currency_symbol(item.currency),
-                end_date=item.end_date,
-            ),
-        )
 
     return item
 

@@ -34,3 +34,4 @@ class CampaignBudgetSerializer(
         rounding=decimal.ROUND_HALF_DOWN,
         read_only=True,
     )
+    campaign_name = restapi.serializers.fields.PlainCharField(source="campaign.name", read_only=True)

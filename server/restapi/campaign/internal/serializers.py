@@ -3,10 +3,10 @@ import decimal
 import rest_framework.serializers
 
 import dash.constants
-import restapi.accountcredit.internal.serializers
 import restapi.campaign.v1.serializers
 import restapi.campaignbudget.internal.serializers
 import restapi.campaigngoal.v1.serializers
+import restapi.credit.internal.serializers
 import restapi.directdeal.internal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
@@ -64,7 +64,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
     )
     account_credits = rest_framework.serializers.ListSerializer(
-        child=restapi.accountcredit.internal.serializers.AccountCreditSerializer(), default=[], allow_empty=True
+        child=restapi.credit.internal.serializers.CreditSerializer(), default=[], allow_empty=True
     )
 
 

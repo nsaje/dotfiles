@@ -5,26 +5,31 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db import transaction
 from django.db.models import Q
 from django.forms.models import model_to_dict
 
 import core.common
+import core.features.bcm.bcm_slack
 import core.features.history
 import core.features.multicurrency
 import utils.demo_anonymizer
+import utils.slack
 import utils.string_helper
 from dash import constants
 from utils import converters
 from utils import dates_helper
 from utils import lc_helper
 
+from . import helpers
+
 
 class CreditLineItemManager(core.common.QuerySetManager):
     def create(self, request, start_date, end_date, amount, **kwargs):
-        cli = CreditLineItem(start_date=start_date, end_date=end_date, amount=amount, **kwargs)
-        cli.created_by = request.user
-        cli.save(request=request, action_type=constants.HistoryActionType.CREATE)
-        return cli
+        item = CreditLineItem(start_date=start_date, end_date=end_date, amount=amount, **kwargs)
+        item.created_by = request.user
+        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
+        return item
 
 
 class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMixinOld):
@@ -41,6 +46,20 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         "flat_fee_end_date",
         "status",
         "comment",
+    ]
+
+    _settings_fields = [
+        "account",
+        "agency",
+        "start_date",
+        "end_date",
+        "amount",
+        "license_fee",
+        "status",
+        "comment",
+        "currency",
+        "contract_id",
+        "contract_number",
     ]
 
     _demo_fields = {"comment": utils.demo_anonymizer.fake_io}
@@ -124,6 +143,19 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             raise AssertionError("Credit item is not pending")
         super(CreditLineItem, self).delete()
 
+    @transaction.atomic
+    def update(self, request, **updates) -> bool:
+        has_changes = False
+        for field, new_value in updates.items():
+            if field not in self._settings_fields:
+                continue
+            if new_value != getattr(self, field):
+                has_changes = True
+                setattr(self, field, new_value)
+        if has_changes:
+            self.save(request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
+        return has_changes
+
     def get_salesforce_url(self):
         if not self.contract_id:
             return None
@@ -167,6 +199,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def get_settings_dict(self):
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
+    @transaction.atomic
     def save(self, request=None, action_type=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -176,6 +209,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             created_by=request.user if request else None, snapshot=model_to_dict(self), credit=self
         )
         self.add_to_history(request and request.user, action_type)
+        helpers.notify_credit_to_slack(self, action_type=action_type)
 
     def add_to_history(self, user, action_type):
         changes = self.get_model_state_changes(model_to_dict(self))
@@ -232,16 +266,16 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if self.account is not None and self.agency is not None:
             raise ValidationError(
                 {
-                    "account": ["Only one of either account or agency must be set."],
-                    "agency": ["Only one of either account or agency must be set."],
+                    "account_id": ["Only one of either account or agency must be set."],
+                    "agency_id": ["Only one of either account or agency must be set."],
                 }
             )
 
         if self.account is None and self.agency is None:
             raise ValidationError(
                 {
-                    "account": ["One of either account or agency must be set."],
-                    "agency": ["One of either account or agency must be set."],
+                    "account_id": ["One of either account or agency must be set."],
+                    "agency_id": ["One of either account or agency must be set."],
                 }
             )
 
@@ -256,6 +290,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             self.validate_status,
             self.validate_amount,
             self.validate_flat_fee_cc,
+            self.validate_account_id,
         )
 
         if not self.pk or self.previous_value("status") != constants.CreditLineItemStatus.SIGNED:
@@ -319,6 +354,36 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if not self.start_date or not self.end_date:
             return
 
+    def validate_account_id(self):
+        if not self.has_changed("account"):
+            return
+
+        if self.account is None:
+            return
+
+        budgets = self.budgets.all()
+        if len(budgets) == 0:
+            return
+
+        accounts = []
+        for budget in budgets:
+            account_id = budget.campaign.account_id
+            if account_id not in accounts:
+                accounts.append(account_id)
+
+        if len(accounts) > 1:
+            raise ValidationError(
+                "Credit line item is used on different accounts. Account cannot be changed to {account_name}.".format(
+                    account_name=self.account.name
+                )
+            )
+        if len(accounts) == 1 and accounts[0] != self.account_id:
+            raise ValidationError(
+                "Credit line item is used on a different account. Account cannot be changed to {account_name}.".format(
+                    account_name=self.account.name
+                )
+            )
+
     @classmethod
     def get_defaults_dict(cls):
         return {}
@@ -328,6 +393,11 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             if date is None:
                 date = dates_helper.local_today()
             return self.filter(start_date__lte=date, end_date__gte=date, status=constants.CreditLineItemStatus.SIGNED)
+
+        def filter_past(self, date=None):
+            if date is None:
+                date = dates_helper.local_today()
+            return self.filter(end_date__lte=date, status=constants.CreditLineItemStatus.SIGNED)
 
         def filter_overlapping(self, start_date, end_date):
             return self.filter(
@@ -341,11 +411,14 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 raise AssertionError("Some credit items are not pending")
             super(CreditLineItem.QuerySet, self).delete()
 
+        def filter_by_agency(self, agency):
+            return self.filter(Q(agency=agency))
+
         def filter_by_account(self, account):
-            credit_items = CreditLineItem.objects.filter(account=account)
+            credit_qs = self.filter(Q(account=account))
             if account.agency is not None:
-                credit_items |= CreditLineItem.objects.filter(agency=account.agency)
-            return credit_items
+                credit_qs |= self.filter_by_agency(account.agency)
+            return credit_qs
 
         def get_any_for_budget_creation(self, account):
             credit_items = self.filter_by_account(account).filter_active()

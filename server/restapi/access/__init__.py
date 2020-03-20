@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+import core.features.bcm
 import core.features.deals
 import core.models
 import utils.exc
@@ -115,18 +116,28 @@ def get_upload_batch(user, batch_id):
         raise utils.exc.MissingDataError("Upload batch does not exist")
 
 
-def get_direct_deal(user, deal_id, agency=None, account=None) -> core.features.deals.DirectDeal:
+def get_direct_deal(user, deal_id) -> core.features.deals.DirectDeal:
     try:
-        deal_qs = (
-            core.features.deals.DirectDeal.objects.filter(id=int(deal_id))
-            .select_related("source", "agency", "account")
+        deal = (
+            core.features.deals.DirectDeal.objects.select_related("source", "agency", "account")
             .filter(id=int(deal_id))
+            .get()
         )
+
+        agency = deal.agency
+        account = deal.account
+
         if agency is not None:
-            deal_qs = deal_qs.filter_by_agency(agency)
-        if account is not None:
-            deal_qs = deal_qs.filter_by_account(account)
-        deal = deal_qs.get()
+            has_access = agency.users.filter(pk=user.pk).exists()
+            if not has_access:
+                raise utils.exc.AuthorizationError()
+        elif account is not None:
+            has_access_qs = account.users.filter(pk=user.pk)
+            if account.agency is not None:
+                has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
+            has_access = has_access_qs.exists()
+            if not has_access:
+                raise utils.exc.AuthorizationError()
 
         if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
             raise utils.exc.AuthorizationError()
@@ -145,3 +156,28 @@ def get_direct_deal_connection(user, deal_connection_id, deal=None) -> core.feat
         return deal_connection_qs.get()
     except core.features.deals.DirectDealConnection.DoesNotExist:
         raise utils.exc.MissingDataError("Deal connection does not exist")
+
+
+def get_credit_line_item(user, credit_id) -> core.features.bcm.CreditLineItem:
+    try:
+        credit = core.features.bcm.CreditLineItem.objects.prefetch_related("budgets").filter(id=int(credit_id)).get()
+
+        agency = credit.agency
+        account = credit.account
+
+        if agency is not None:
+            has_access = agency.users.filter(pk=user.pk).exists()
+            if not has_access:
+                raise utils.exc.AuthorizationError()
+        elif account is not None:
+            has_access_qs = account.users.filter(pk=user.pk)
+            if account.agency is not None:
+                has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
+            has_access = has_access_qs.exists()
+            if not has_access:
+                raise utils.exc.AuthorizationError()
+
+        return credit
+
+    except core.features.bcm.CreditLineItem.DoesNotExist:
+        raise utils.exc.MissingDataError("Credit does not exist")

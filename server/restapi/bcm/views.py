@@ -1,10 +1,7 @@
 import json
 from decimal import Decimal
 
-from django.forms.models import model_to_dict
-
 import core.features.bcm
-import core.features.bcm.bcm_slack
 import core.features.multicurrency
 from core.features.bcm import exceptions
 from dash import constants
@@ -13,7 +10,6 @@ from dash import models
 from dash.views import helpers
 from utils import api_common
 from utils import exc
-from utils import slack
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
@@ -89,7 +85,6 @@ class AccountCreditView(api_common.BaseApiView):
 
         cli = core.features.bcm.CreditLineItem.objects.create(request, **item.cleaned_data)
 
-        self._post_on_slack(cli, account_id, account)
         return self.create_api_response(cli.pk)
 
     def _prepare_credit(self, credit):
@@ -148,32 +143,6 @@ class AccountCreditView(api_common.BaseApiView):
             "currency": account.currency,
         }
 
-    def _post_on_slack(self, cli, account_id, account):
-        slack_msg = core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
-            credit_id=cli.pk,
-            url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
-            account_id=account_id,
-            account_name=account.get_long_name(),
-            amount=cli.amount,
-            currency_symbol=core.features.multicurrency.get_currency_symbol(cli.currency),
-            end_date=cli.end_date,
-        )
-        msg_type = slack.MESSAGE_TYPE_INFO
-        if not (cli.contract_id or cli.contract_number):
-            slack_msg = core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG.format(
-                credit_id=cli.pk,
-                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
-                account_id=account_id,
-                account_name=account.get_long_name(),
-                amount=cli.amount,
-                currency_symbol=core.features.multicurrency.get_currency_symbol(cli.currency),
-                end_date=cli.end_date,
-                comment="Comments: _{}_".format(cli.comment) if cli.comment else "",
-            )
-            msg_type = slack.MESSAGE_TYPE_WARNING
-
-        core.features.bcm.bcm_slack.log_to_slack(account_id, slack_msg, msg_type=msg_type)
-
 
 class AccountCreditItemView(api_common.BaseApiView):
     def get(self, request, account_id, credit_id):
@@ -193,9 +162,6 @@ class AccountCreditItemView(api_common.BaseApiView):
         item = models.CreditLineItem.objects.filter_by_account(account).get(pk=credit_id)
         item.delete()
 
-        account.write_history(
-            "Deleted credit", action_type=constants.HistoryActionType.CREDIT_CHANGE, user=request.user
-        )
         return self.create_api_response()
 
     def post(self, request, account_id, credit_id):
@@ -228,17 +194,6 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=item_form.errors)
 
         item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
-        changes = item_form.instance.get_model_state_changes(model_to_dict(item_form.instance))
-        core.features.bcm.bcm_slack.log_to_slack(
-            account_id,
-            core.features.bcm.bcm_slack.SLACK_UPDATED_CREDIT_MSG.format(
-                credit_id=credit_id,
-                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
-                account_id=account_id,
-                account_name=account.get_long_name(),
-                history=item_form.instance.get_history_changes_text(changes),
-            ),
-        )
         return self.create_api_response(credit_id)
 
     def _get_response(self, account, item):
@@ -538,17 +493,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         except exceptions.EndDateInThePast as err:
             raise exc.ValidationError(errors={"end_date": [str(err)]})
 
-        changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
-        core.features.bcm.bcm_slack.log_to_slack(
-            campaign.account_id,
-            core.features.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
-                budget_id=budget_id,
-                url=core.features.bcm.bcm_slack.CAMPAIGN_URL.format(campaign_id),
-                campaign_id=campaign_id,
-                campaign_name=campaign.get_long_name(),
-                history=item.instance.get_history_changes_text(changes),
-            ),
-        )
         return self.create_api_response({"id": item.instance.pk})
 
     def delete(self, request, campaign_id, budget_id):

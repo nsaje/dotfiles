@@ -1,0 +1,98 @@
+import rest_framework.permissions
+import rest_framework.response
+from django.db.models import Q
+from rest_framework import permissions
+
+import core.features.bcm
+import core.features.bcm.bcm_slack
+import core.features.multicurrency
+import dash.constants
+import restapi.access
+import restapi.common.views_base
+import restapi.credit.v1.views
+import utils.exc
+from restapi.common.pagination import StandardPagination
+
+from . import helpers
+from . import serializers
+
+
+class CanUseCreditView(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.has_perm("zemauth.account_credit_view"))
+
+
+class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
+    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreditView)
+    serializer = serializers.CreditSerializer
+    serializer_totals = serializers.CreditTotalsSerializer
+
+    def get(self, request, credit_id):
+        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        return self.response_ok(self.serializer(credit, context={"request": request}).data)
+
+    def list(self, request):
+        agency_id = request.query_params.get("agencyId")
+        account_id = request.query_params.get("accountId")
+        active = request.query_params.get("active")
+
+        credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id)
+        if active is not None:
+            if active.lower() == "true":
+                credits_qs = credits_qs.filter_active()
+            elif active.lower() == "false":
+                credits_qs = credits_qs.filter_past()
+
+        paginator = StandardPagination()
+        credits_paginated = paginator.paginate_queryset(credits_qs, request)
+        return paginator.get_paginated_response(
+            self.serializer(credits_paginated, many=True, context={"request": request}).data
+        )
+
+    def totals(self, request):
+        agency_id = request.query_params.get("agencyId")
+        account_id = request.query_params.get("accountId")
+
+        credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id).exclude(
+            status=dash.constants.CreditLineItemStatus.PENDING
+        )
+        totals = helpers.get_totals_for_credits(credits_qs.all())
+
+        return self.response_ok(self.serializer_totals(totals, many=True, context={"request": request}).data)
+
+    def create(self, request):
+        serializer = self.serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        credit = core.features.bcm.CreditLineItem.objects.create(request, **data)
+        return self.response_ok(self.serializer(credit, context={"request": request}).data, status=201)
+
+    def put(self, request, credit_id):
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        credit.update(request, **data)
+        return self.response_ok(self.serializer(credit, context={"request": request}).data)
+
+    @staticmethod
+    def _get_credits_qs(request, account_id=None, agency_id=None):
+        if account_id is not None:
+            account = restapi.access.get_account(request.user, account_id)
+            credits_qs = (
+                core.features.bcm.CreditLineItem.objects.filter_by_account(account)
+                .prefetch_related("budgets")
+                .order_by("-start_date", "-end_date", "-created_dt")
+            )
+        elif agency_id is not None:
+            agency = restapi.access.get_agency(request.user, agency_id)
+            credits_qs = (
+                core.features.bcm.CreditLineItem.objects.filter(Q(agency=agency) | Q(account__agency=agency))
+                .prefetch_related("budgets")
+                .order_by("-start_date", "-end_date", "-created_dt")
+            )
+        else:
+            raise utils.exc.ValidationError(
+                errors={"non_field_errors": "Either agency id or account id must be provided."}
+            )
+        return credits_qs

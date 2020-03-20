@@ -7,9 +7,7 @@ import restapi.serializers.fields
 import restapi.serializers.serializers
 
 
-class AccountCreditSerializer(
-    restapi.serializers.serializers.PermissionedFieldsMixin, rest_framework.serializers.Serializer
-):
+class CreditSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, rest_framework.serializers.Serializer):
     class Meta:
         permissioned_fields = {"license_fee": "zemauth.can_view_platform_cost_breakdown"}
 

@@ -8,8 +8,8 @@ from restapi.common.views_base import RESTAPIBaseViewSet
 from . import serializers
 
 
-class AccountCreditViewSet(RESTAPIBaseViewSet):
-    serializer = serializers.AccountCreditSerializer
+class CreditViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.CreditSerializer
 
     def get(self, request, account_id, credit_id):
         account = restapi.access.get_account(request.user, account_id)

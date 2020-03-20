@@ -80,7 +80,8 @@ class ObjectAccess(TestCase):
 
     def test_has_internal_deal_access_no_permission(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account)
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[request.user])
         deal = magic_mixer.blend(core.features.deals.DirectDeal, is_internal=True, account=account)
 
         with self.assertRaises(utils.exc.AuthorizationError):
@@ -88,7 +89,8 @@ class ObjectAccess(TestCase):
 
     def test_has_internal_deal_access_permission(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account)
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[request.user])
         deal = magic_mixer.blend(core.features.deals.DirectDeal, is_internal=True, account=account)
 
         test_helper.add_permissions(request.user, ["can_see_internal_deals"])

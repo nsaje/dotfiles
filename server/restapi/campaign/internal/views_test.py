@@ -111,6 +111,7 @@ class CampaignViewSetTest(RESTAPITest):
         createdBy=None,
         createdDt=None,
         licenseFee=None,
+        campaignName=None,
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -129,6 +130,7 @@ class CampaignViewSetTest(RESTAPITest):
             "createdBy": str(createdBy),
             "createdDt": createdDt,
             "licenseFee": licenseFee,
+            "campaignName": campaignName,
         }
         return cls.normalize(representation)
 
@@ -136,33 +138,45 @@ class CampaignViewSetTest(RESTAPITest):
     def credit_item_repr(
         cls,
         id=None,
-        totalAmount=None,
-        allocatedAmount=None,
-        availableAmount=None,
         createdOn=None,
+        status=None,
+        agencyId=None,
+        accountId=None,
         startDate=None,
         endDate=None,
-        comment=None,
-        status=None,
-        currency=dash.constants.Currency.USD,
-        isAvailable=None,
-        isAgency=None,
         licenseFee=None,
+        amount=None,
+        total=None,
+        allocated=None,
+        available=None,
+        currency=dash.constants.Currency.USD,
+        contractId=None,
+        contractNumber=None,
+        comment=None,
+        salesforceUrl=None,
+        isAvailable=None,
+        budgets=[],
     ):
         representation = {
             "id": str(id) if id is not None else None,
-            "total": str(totalAmount),
-            "allocated": str(allocatedAmount),
-            "available": str(availableAmount),
             "createdOn": createdOn,
+            "status": dash.constants.CreditLineItemStatus.get_name(status),
+            "agencyId": str(agencyId) if agencyId is not None else None,
+            "accountId": str(accountId) if accountId is not None else None,
             "startDate": startDate,
             "endDate": endDate,
-            "comment": comment,
-            "status": dash.constants.CreditLineItemStatus.get_name(status),
-            "currency": dash.constants.Currency.get_name(currency),
-            "isAvailable": isAvailable,
-            "isAgency": isAgency,
             "licenseFee": str(licenseFee),
+            "amount": amount,
+            "total": str(total),
+            "allocated": str(allocated),
+            "available": str(available),
+            "currency": dash.constants.Currency.get_name(currency),
+            "contractId": contractId,
+            "contractNumber": contractNumber,
+            "comment": comment,
+            "salesforceUrl": salesforceUrl,
+            "isAvailable": isAvailable,
+            "budgets": budgets,
         }
         return cls.normalize(representation)
 
@@ -301,6 +315,7 @@ class CampaignViewSetTest(RESTAPITest):
 
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
+            agency=None,
             account=account,
             start_date=datetime.date.today() - datetime.timedelta(30),
             end_date=datetime.date.today() + datetime.timedelta(30),
@@ -419,6 +434,7 @@ class CampaignViewSetTest(RESTAPITest):
                     createdBy=active_budget.created_by,
                     createdDt=active_budget.created_dt,
                     licenseFee=active_budget.credit.license_fee,
+                    campaignName=active_budget.campaign.name,
                 )
             ],
         )
@@ -474,23 +490,51 @@ class CampaignViewSetTest(RESTAPITest):
                         createdBy=inactive_budget.created_by,
                         createdDt=inactive_budget.created_dt,
                         licenseFee=inactive_budget.credit.license_fee,
+                        campaignName=inactive_budget.campaign.name,
                     )
                 ],
                 "accountCredits": [
                     self.credit_item_repr(
                         id=credit.pk,
-                        totalAmount=credit.effective_amount(),
-                        allocatedAmount=credit.get_allocated_amount(),
-                        availableAmount=credit.get_available_amount(),
                         createdOn=credit.get_creation_date(),
+                        status=credit.status,
+                        agencyId=credit.agency_id,
+                        accountId=credit.account_id,
                         startDate=credit.start_date,
                         endDate=credit.end_date,
-                        comment=credit.comment,
-                        status=credit.status,
-                        currency=credit.currency,
-                        isAvailable=credit.is_available(),
-                        isAgency=credit.is_agency(),
                         licenseFee=credit.license_fee,
+                        amount=credit.amount,
+                        total=credit.effective_amount(),
+                        allocated=credit.get_allocated_amount(),
+                        available=credit.get_available_amount(),
+                        currency=credit.currency,
+                        contractId=credit.contract_id,
+                        contractNumber=credit.contract_number,
+                        comment=credit.comment,
+                        salesforceUrl=credit.get_salesforce_url(),
+                        isAvailable=credit.is_available(),
+                        budgets=[
+                            self.campaign_budget_repr(
+                                id=budget.id,
+                                creditId=budget.credit.id,
+                                amount=budget.amount,
+                                margin=budget.margin,
+                                comment=budget.comment,
+                                startDate=budget.start_date,
+                                endDate=budget.end_date,
+                                state=budget.state(),
+                                spend=budget.get_local_spend_data_bcm(),
+                                available=budget.get_local_available_data_bcm(),
+                                canEditStartDate=budget.can_edit_start_date(),
+                                canEditEndDate=budget.can_edit_end_date(),
+                                canEditAmount=budget.can_edit_amount(),
+                                createdBy=budget.created_by,
+                                createdDt=budget.created_dt,
+                                licenseFee=budget.credit.license_fee,
+                                campaignName=budget.campaign.name,
+                            )
+                            for budget in credit.budgets.all()
+                        ],
                     )
                 ],
             },
@@ -584,7 +628,7 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post(self, mock_send, mock_autopilot):
-        agency = magic_mixer.blend(core.models.Agency, id=1)
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
@@ -707,7 +751,7 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_put(self, mock_send, mock_autopilot):
-        agency = magic_mixer.blend(core.models.Agency, id=1)
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT

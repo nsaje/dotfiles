@@ -3,14 +3,29 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
+# TODO (msuber): change urls when MC credits library is in production
+# AGENCY_URL = "https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}"
+# ACCOUNT_URL = "https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}"
 ACCOUNT_URL = "https://one.zemanta.com/v2/credit/account/{}"
-CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{}?settings"
+CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{campaign_id}(drawer:settings)?settingsEntityType=campaign&settingsEntityId={campaign_id}"
 
 SLACK_SKIP_LOG_ACCOUNTS = (305,)
+
 SLACK_NEW_CREDIT_MSG = "New credit #{credit_id} added on account <{url}|{account_name}> with amount {currency_symbol}{amount} and end date {end_date}."
 SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG = "New credit #{credit_id} added on account <{url}|{account_name}> with amount {currency_symbol}{amount} and end date {end_date} *has been created without contract ID or contract Number!* {comment}"
-SLACK_NEW_AGENCY_CREDIT_MSG = "New agency credit #{credit_id} added to agency {agency} with amount {currency_symbol}{amount} and end date {end_date}."
+
+# TODO (msuber): change messages when MC credits library is in production
+# SLACK_NEW_AGENCY_CREDIT_MSG = "New agency credit #{credit_id} added to agency <{url}|{agency_name}> with amount {currency_symbol}{amount} and end date {end_date}."
+# SLACK_NEW_AGENCY_CREDIT_WITHOUT_CONTRACT_MSG = "New credit #{credit_id} added to agency <{url}|{agency_name}> with amount {currency_symbol}{amount} and end date {end_date} *has been created without contract ID or contract Number!* {comment}"
+SLACK_NEW_AGENCY_CREDIT_MSG = "New agency credit #{credit_id} added to agency {agency_name} with amount {currency_symbol}{amount} and end date {end_date}."
+SLACK_NEW_AGENCY_CREDIT_WITHOUT_CONTRACT_MSG = "New credit #{credit_id} added to agency {agency_name} with amount {currency_symbol}{amount} and end date {end_date} *has been created without contract ID or contract Number!* {comment}"
+
+
 SLACK_UPDATED_CREDIT_MSG = "Credit #{credit_id} on account <{url}|{account_name}> updated: {history}"
+SLACK_UPDATED_AGENCY_CREDIT_MSG = "Credit #{credit_id} on agency {agency_name} updated: {history}"
+# TODO (msuber): change messages when MC credits library is in production
+# SLACK_UPDATED_AGENCY_CREDIT_MSG = "Credit #{credit_id} on agency <{url}|{agency_name}> updated: {history}"
+
 SLACK_NEW_BUDGET_MSG = "New budget #{budget_id} added on campaign <{url}|{campaign_name}> with amount {currency_symbol}{amount} (including {margin}% of margin) and end date {end_date}."
 SLACK_UPDATED_BUDGET_MSG = "Budget #{budget_id} on campaign <{url}|{campaign_name}> updated: {history}"
 

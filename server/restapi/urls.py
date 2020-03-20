@@ -1,7 +1,6 @@
 import core.features.videoassets.urls
 import dash.features.bluekai.urls
 import restapi.account.urls
-import restapi.accountcredit.urls
 import restapi.accountcreditrefund.urls
 import restapi.adgroup.urls
 import restapi.adgroupsource.urls
@@ -20,6 +19,7 @@ import restapi.campaigngoal.urls
 import restapi.campaignstats.urls
 import restapi.contentad.urls
 import restapi.conversion_pixel.urls
+import restapi.credit.urls
 import restapi.directdeal.urls
 import restapi.geolocation.urls
 import restapi.inventory_planning.urls
@@ -34,7 +34,7 @@ from dash.features.bulkactions import clonecontent
 
 urlpatterns = []
 urlpatterns += restapi.account.urls.urlpatterns
-urlpatterns += restapi.accountcredit.urls.urlpatterns
+urlpatterns += restapi.credit.urls.urlpatterns
 urlpatterns += restapi.accountcreditrefund.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns
 urlpatterns += restapi.adgroupstats.urls.urlpatterns
