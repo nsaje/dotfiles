@@ -40,7 +40,7 @@ class CreditViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["currency"], dash.constants.Currency.get_name(credit.currency))
         self.assertEqual(resp_json["data"]["comment"], credit.comment)
         self.assertEqual(resp_json["data"]["isAvailable"], credit.is_available())
-        self.assertEqual(resp_json["data"]["budgets"], [])
+        self.assertEqual(resp_json["data"]["numOfBudgets"], 0)
 
     def test_get_no_access(self):
         agency = magic_mixer.blend(core.models.Agency)
@@ -529,4 +529,41 @@ class CreditViewSetTest(RESTAPITest):
         self.assertIsNotNone(resp_json["data"]["flatFee"])
         self.assertEqual(resp_json["data"]["comment"], "Extra credit")
         self.assertEqual(resp_json["data"]["isAvailable"], True)
-        self.assertEqual(resp_json["data"]["budgets"], [])
+        self.assertEqual(resp_json["data"]["numOfBudgets"], 0)
+
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
+    def test_list_budgets(self, mock_log_to_slack):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+        credit = magic_mixer.blend(
+            core.features.bcm.CreditLineItem,
+            account=account,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+
+        budgets = magic_mixer.cycle(10).blend(
+            core.features.bcm.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() + datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+        )
+
+        r = self.client.get(reverse("restapi.credit.internal:credit_budgets_list", kwargs={"credit_id": credit.id}))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 10)
+
+        budgets_ids = sorted([item.id for item in budgets])
+        resp_json_budgets_ids = sorted([int(item.get("id")) for item in resp_json["data"]])
+        self.assertEqual(budgets_ids, resp_json_budgets_ids)

@@ -40,10 +40,18 @@ class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSer
     )
 
 
-class ExtraDataCreditSerializer(restapi.credit.internal.serializers.CreditSerializer):
+class CreditSerializer(restapi.credit.internal.serializers.CreditSerializer):
     def __init__(self, *args, **kwargs):
-        super(ExtraDataCreditSerializer, self).__init__(*args, **kwargs)
-        self.fields.pop("budgets")
+        super(CreditSerializer, self).__init__(*args, **kwargs)
+        self.fields.pop("flat_fee")
+        self.fields.pop("num_of_budgets")
+
+
+class CampaignBudgetSerializer(restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer):
+    def __init__(self, *args, **kwargs):
+        super(CampaignBudgetSerializer, self).__init__(*args, **kwargs)
+        self.fields.pop("allocated_amount")
+        self.fields.pop("campaign_name")
 
 
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -67,9 +75,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     budgets_overview = ExtraDataBudgetsOverviewSerializer(required=False)
     budgets_depleted = rest_framework.serializers.ListSerializer(
-        child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
+        child=CampaignBudgetSerializer(), default=[], allow_empty=True
     )
-    credits = rest_framework.serializers.ListSerializer(child=ExtraDataCreditSerializer(), default=[], allow_empty=True)
+    credits = rest_framework.serializers.ListSerializer(child=CreditSerializer(), default=[], allow_empty=True)
 
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
@@ -87,9 +95,7 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     goals = rest_framework.serializers.ListSerializer(
         child=restapi.campaigngoal.v1.serializers.CampaignGoalSerializer(), default=[], allow_empty=True
     )
-    budgets = rest_framework.serializers.ListSerializer(
-        child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
-    )
+    budgets = rest_framework.serializers.ListSerializer(child=CampaignBudgetSerializer(), default=[], allow_empty=True)
     deals = rest_framework.serializers.ListSerializer(
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )

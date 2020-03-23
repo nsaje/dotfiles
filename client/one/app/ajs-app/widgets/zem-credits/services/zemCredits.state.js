@@ -26,6 +26,7 @@ angular
             this.reloadTotals = reloadTotals;
             this.reloadCredits = reloadCredits;
             this.reloadPastCredits = reloadPastCredits;
+            this.reloadCreditItemBudgets = reloadCreditItemBudgets;
             this.saveCreditItem = saveCreditItem;
             this.cancelCreditItem = cancelCreditItem;
             this.clearCreditItem = clearCreditItem;
@@ -39,13 +40,14 @@ angular
             var state = {
                 agencyId: null,
                 accountId: null,
+                accounts: [],
                 totals: [],
                 credits: [],
                 pastCredits: [],
-                accounts: [],
                 creditItem: {},
                 creditItemScopeState: null,
                 hasAgencyScope: false,
+                creditItemBudgets: [],
                 creditRefunds: {},
                 creditRefundTotals: {},
                 creditRefundItem: {},
@@ -65,6 +67,40 @@ angular
                 state.accountId = accountId;
                 state.hasAgencyScope = hasAgencyScope(state.agencyId);
                 reloadAccounts();
+            }
+
+            function reloadAccounts() {
+                state.accounts = [];
+                state.requests.reloadAccounts = {};
+
+                var subscription = null;
+                if (commonHelpers.isDefined(state.agencyId)) {
+                    state.requests.reloadAccounts.inProgress = true;
+                    subscription = zemAccountService
+                        .list(state.agencyId, function() {})
+                        .subscribe(function(data) {
+                            state.accounts = data;
+                            state.requests.reloadAccounts.inProgress = false;
+                            if (commonHelpers.isDefined(subscription)) {
+                                subscription.unsubscribe();
+                            }
+                        });
+                } else if (commonHelpers.isDefined(state.accountId)) {
+                    subscription = zemAccountService
+                        .get(state.accountId, function() {})
+                        .subscribe(function(data) {
+                            if (
+                                commonHelpers.isNotEmpty(data) &&
+                                commonHelpers.isNotEmpty(data.account)
+                            ) {
+                                state.accounts = [data.account];
+                            }
+                            state.requests.reloadAccounts.inProgress = false;
+                            if (commonHelpers.isDefined(subscription)) {
+                                subscription.unsubscribe();
+                            }
+                        });
+                }
             }
 
             function getState() {
@@ -101,7 +137,7 @@ angular
             }
 
             function reloadCredits() {
-                state.credit = [];
+                state.credits = [];
                 state.requests.reloadCredits = {};
 
                 if (!state.agencyId && !state.accountId) {
@@ -141,44 +177,38 @@ angular
                     });
             }
 
-            function reloadAccounts() {
-                state.accounts = [];
-                state.requests.reloadAccounts = {};
+            function reloadCreditItemBudgets() {
+                state.creditItemBudgets = [];
+                state.requests.reloadCreditItemBudgets = {};
 
-                var subscription = null;
-                if (commonHelpers.isDefined(state.agencyId)) {
-                    state.requests.reloadAccounts.inProgress = true;
-                    subscription = zemAccountService
-                        .list(state.agencyId, function() {})
-                        .subscribe(function(data) {
-                            state.accounts = data;
-                            state.requests.reloadAccounts.inProgress = false;
-                            if (commonHelpers.isDefined(subscription)) {
-                                subscription.unsubscribe();
-                            }
-                        });
-                } else if (commonHelpers.isDefined(state.accountId)) {
-                    subscription = zemAccountService
-                        .get(state.accountId, function() {})
-                        .subscribe(function(data) {
-                            if (
-                                commonHelpers.isNotEmpty(data) &&
-                                commonHelpers.isNotEmpty(data.account)
-                            ) {
-                                state.accounts = [data.account];
-                            }
-                            state.requests.reloadAccounts.inProgress = false;
-                            if (commonHelpers.isDefined(subscription)) {
-                                subscription.unsubscribe();
-                            }
-                        });
+                if (
+                    !commonHelpers.isDefined(state.creditItem) &&
+                    !commonHelpers.isDefined(state.creditItem.id)
+                ) {
+                    return $q.reject();
                 }
+
+                state.requests.reloadCreditItemBudgets.inProgress = true;
+                return zemCreditsEndpoint
+                    .listBudgets(state.creditItem.id)
+                    .then(function(data) {
+                        state.creditItemBudgets = data.map(function(
+                            budgetItem
+                        ) {
+                            budgetItem.currencySymbol =
+                                state.creditItem.currencySymbol;
+                            return budgetItem;
+                        });
+                    })
+                    .finally(function() {
+                        state.requests.reloadCreditItemBudgets.inProgress = false;
+                    });
             }
 
             function clearCreditItem() {
                 state.creditItem = {};
-                (state.creditItemScopeState = null),
-                    (state.requests.saveCreditItem = {});
+                state.creditItemBudgets = [];
+                state.creditItemScopeState = null;
             }
 
             function saveCreditItem() {
@@ -195,6 +225,11 @@ angular
 
                 state.requests.saveCreditItem.inProgress = true;
                 return action(state.creditItem)
+                    .then(function() {
+                        state.creditItem = {};
+                        state.creditItemBudgets = [];
+                        state.creditItemScopeState = null;
+                    })
                     .then(reloadCredits)
                     .catch(function(errors) {
                         state.requests.saveCreditItem.errors = (
@@ -323,7 +358,6 @@ angular
                 state.creditItem = {};
                 state.creditItemScopeState = null;
                 state.creditRefundItem = {};
-                state.requests.saveCreditRefundItem = {};
             }
 
             function setCreditRefundItem(creditRefundItem) {
@@ -349,6 +383,11 @@ angular
                 var action = zemCreditsRefundEndpoint.create;
                 state.requests.saveCreditRefundItem.inProgress = true;
                 return action(state.creditItem.id, state.creditRefundItem)
+                    .then(function() {
+                        state.creditItem = {};
+                        state.creditItemScopeState = null;
+                        state.creditRefundItem = {};
+                    })
                     .then(reloadCreditRefunds)
                     .catch(function(errors) {
                         state.requests.saveCreditRefundItem.errors = (

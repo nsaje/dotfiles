@@ -112,8 +112,6 @@ class CampaignViewSetTest(RESTAPITest):
         createdBy=None,
         createdDt=None,
         licenseFee=None,
-        total=None,
-        campaignName=None,
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -132,8 +130,6 @@ class CampaignViewSetTest(RESTAPITest):
             "createdBy": str(createdBy),
             "createdDt": createdDt,
             "licenseFee": licenseFee,
-            "total": str(total) if total is not None else None,
-            "campaignName": campaignName,
         }
         return cls.normalize(representation)
 
@@ -149,7 +145,6 @@ class CampaignViewSetTest(RESTAPITest):
         startDate=None,
         endDate=None,
         licenseFee=None,
-        flatFee=None,
         amount=None,
         total=None,
         allocated=None,
@@ -171,7 +166,6 @@ class CampaignViewSetTest(RESTAPITest):
             "startDate": startDate,
             "endDate": endDate,
             "licenseFee": str(licenseFee),
-            "flatFee": str(flatFee),
             "amount": amount,
             "total": str(total),
             "allocated": str(allocated),
@@ -439,8 +433,6 @@ class CampaignViewSetTest(RESTAPITest):
                     createdBy=active_budget.created_by,
                     createdDt=active_budget.created_dt,
                     licenseFee=dash.views.helpers.format_decimal_to_percent(active_budget.credit.license_fee),
-                    total=active_budget.allocated_amount(),
-                    campaignName=active_budget.campaign.name,
                 )
             ],
         )
@@ -496,8 +488,6 @@ class CampaignViewSetTest(RESTAPITest):
                         createdBy=inactive_budget.created_by,
                         createdDt=inactive_budget.created_dt,
                         licenseFee=dash.views.helpers.format_decimal_to_percent(inactive_budget.credit.license_fee),
-                        total=inactive_budget.allocated_amount(),
-                        campaignName=inactive_budget.campaign.name,
                     )
                 ],
                 "credits": [
@@ -511,7 +501,6 @@ class CampaignViewSetTest(RESTAPITest):
                         startDate=credit.start_date,
                         endDate=credit.end_date,
                         licenseFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
-                        flatFee=credit.get_flat_fee().quantize(decimal.Decimal("0.0001")),
                         amount=credit.amount,
                         total=credit.effective_amount(),
                         allocated=credit.get_allocated_amount(),

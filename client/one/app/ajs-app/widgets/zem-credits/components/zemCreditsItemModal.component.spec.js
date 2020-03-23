@@ -51,6 +51,9 @@ describe('component: zemCreditsItemModal', function() {
                             },
                         };
                     },
+                    reloadCreditItemBudgets: function() {
+                        return [];
+                    },
                 },
             },
         };
@@ -113,6 +116,9 @@ describe('component: zemCreditsItemModal', function() {
                                 saveCreditItem: {},
                             },
                         };
+                    },
+                    reloadCreditItemBudgets: function() {
+                        return [];
                     },
                 },
             },

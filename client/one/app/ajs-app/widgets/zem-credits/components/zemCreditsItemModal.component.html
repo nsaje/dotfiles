@@ -260,7 +260,7 @@
         <hr />
         <p>
             By signing the credit line item, no more future changes to the
-            amount, fee and start date will be possible.
+            amount, fee, start date and scope will be possible.
         </p>
         <div
             class="form__checkbox"
@@ -288,25 +288,27 @@
     <div ng-if="!$ctrl.createMode">
         <hr />
         <h3>Allocated budget items</h3>
-        <p>Only the latest 100 budgets are shown.</p>
         <table class="custom-table">
             <thead>
                 <tr>
                     <th>Campaign</th>
-                    <th>Budget</th>
+                    <th>Total budget</th>
                     <th>Total spend</th>
                     <th>Flight dates</th>
                     <th>Notes</th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="budget in $ctrl.state.creditItem.budgets">
+                <tr
+                    ng-if="!$ctrl.state.requests.reloadCreditItemBudgets.inProgress"
+                    ng-repeat="budget in $ctrl.state.creditItemBudgets"
+                >
                     <td class="custom-table__break-word">
                         {{ budget.campaignName }}
                     </td>
                     <td>
                         {{
-                            budget.total
+                            budget.allocatedAmount
                                 | decimalCurrency: budget.currencySymbol:2
                         }}
                     </td>
@@ -325,9 +327,18 @@
                         ></zem-note-popover>
                     </td>
                 </tr>
-                <tr ng-show="!$ctrl.state.creditItem.numOfBudgets">
+                <tr
+                    ng-if="$ctrl.state.creditItemBudgets.length === 0 && !$ctrl.state.requests.reloadCreditItemBudgets.inProgress"
+                >
                     <td colspan="5" class="custom-table__no-data">
                         No allocated budget items.
+                    </td>
+                </tr>
+                <tr
+                    ng-if="$ctrl.state.requests.reloadCreditItemBudgets.inProgress"
+                >
+                    <td colspan="5">
+                        <div class="loader loader--full-width"></div>
                     </td>
                 </tr>
             </tbody>

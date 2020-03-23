@@ -324,6 +324,78 @@ describe('zemCreditsStateService', function() {
 
         expect(state.creditItem).toEqual({});
         expect(state.creditItemScopeState).toEqual(null);
-        expect(state.requests.saveCreditItem).toEqual({});
+        expect(state.creditItemBudgets).toEqual([]);
+    });
+
+    it('should correctly reload credit budgets', function() {
+        var agencyId = mockedAgency.id;
+        var accountId = mockedAccount.id;
+
+        var mockedCredit = {
+            id: '123',
+            agencyId: mockedAgency.id,
+            accountId: null,
+            status: CreditStatus.SIGNED,
+            isReadOnly: false,
+            currencySymbol: '$',
+        };
+
+        var mockedBudgets = [
+            {
+                id: '123',
+                creditId: mockedCredit.id,
+                startDate: '2019-07-03',
+                endDate: '2019-07-29',
+                allocatedAmount: '999.00',
+                campaignName: 'Test Campaign',
+            },
+            {
+                id: '456',
+                creditId: mockedCredit.id,
+                startDate: '2019-06-03',
+                endDate: '2019-06-29',
+                allocatedAmount: '333.00',
+                campaignName: 'Test Campaign',
+            },
+        ];
+
+        spyOn(zemCreditsEndpoint, 'listBudgets').and.callFake(function() {
+            return $q.resolve(mockedBudgets);
+        });
+
+        var stateService = zemCreditsStateService.createInstance(
+            agencyId,
+            accountId
+        );
+
+        stateService.setCreditItem(mockedCredit);
+        stateService.reloadCreditItemBudgets();
+        $scope.$digest();
+
+        var state = stateService.getState();
+
+        expect(state.creditItemBudgets).toEqual([
+            {
+                id: '123',
+                creditId: mockedCredit.id,
+                startDate: '2019-07-03',
+                endDate: '2019-07-29',
+                allocatedAmount: '999.00',
+                campaignName: 'Test Campaign',
+                currencySymbol: '$',
+            },
+            {
+                id: '456',
+                creditId: mockedCredit.id,
+                startDate: '2019-06-03',
+                endDate: '2019-06-29',
+                allocatedAmount: '333.00',
+                campaignName: 'Test Campaign',
+                currencySymbol: '$',
+            },
+        ]);
+        expect(state.requests.reloadCreditItemBudgets.inProgress).toEqual(
+            false
+        );
     });
 });

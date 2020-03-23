@@ -50,10 +50,10 @@ angular.module('one').component('zemCreditsItemModal', {
                 $ctrl.currency
             );
 
+            $ctrl.wasSigned = $ctrl.state.creditItem.isSigned;
             $ctrl.createMode = !commonHelpers.isDefined(
                 $ctrl.state.creditItem.id
             );
-            $ctrl.wasSigned = $ctrl.state.creditItem.isSigned;
 
             $ctrl.startDatePickerOptions = {minDate: moment().toDate()};
             $ctrl.isStartDatePickerOpen = false;
@@ -64,6 +64,10 @@ angular.module('one').component('zemCreditsItemModal', {
                     : moment().toDate(),
             };
             $ctrl.isEndDatePickerOpen = false;
+
+            if (!$ctrl.createMode) {
+                $ctrl.stateService.reloadCreditItemBudgets();
+            }
         };
 
         $ctrl.$onDestroy = function() {

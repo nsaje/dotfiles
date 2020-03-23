@@ -37,7 +37,7 @@ class CampaignBudgetSerializer(
         rounding=decimal.ROUND_HALF_DOWN,
         read_only=True,
     )
-    total = rest_framework.serializers.DecimalField(
-        source="allocated_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    allocated_amount = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     campaign_name = restapi.serializers.fields.PlainCharField(source="campaign.name", read_only=True)

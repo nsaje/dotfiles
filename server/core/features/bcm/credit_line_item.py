@@ -137,6 +137,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         effective_months = dates_helper.count_months(*overlap) + 1
         return min(self.get_monthly_flat_fee() * effective_months, self.flat_fee())
 
+    def get_number_of_budgets(self):
+        return len(self.budgets.all())
+
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
         self.save()

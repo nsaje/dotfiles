@@ -233,7 +233,7 @@
                 </tr>
             </tbody>
             <tbody
-                ng-show="$ctrl.state.credits.length === 0 && !$ctrl.state.requests.reloadCredits.inProgress"
+                ng-if="$ctrl.state.credits.length === 0 && !$ctrl.state.requests.reloadCredits.inProgress"
             >
                 <tr>
                     <td colspan="15" class="custom-table__no-data">
@@ -241,7 +241,7 @@
                     </td>
                 </tr>
             </tbody>
-            <tbody ng-show="$ctrl.state.requests.reloadCredits.inProgress">
+            <tbody ng-if="$ctrl.state.requests.reloadCredits.inProgress">
                 <tr>
                     <td colspan="15">
                         <div class="loader loader--full-width"></div>
@@ -414,7 +414,7 @@
                 </tr>
             </tbody>
             <tbody
-                ng-show="$ctrl.state.pastCredits.length === 0 && !$ctrl.state.requests.reloadPastCredits.inProgress"
+                ng-if="$ctrl.state.pastCredits.length === 0 && !$ctrl.state.requests.reloadPastCredits.inProgress"
             >
                 <tr>
                     <td colspan="14" class="custom-table__no-data">
@@ -422,7 +422,7 @@
                     </td>
                 </tr>
             </tbody>
-            <tbody ng-show="$ctrl.state.requests.reloadPastCredits.inProgress">
+            <tbody ng-if="$ctrl.state.requests.reloadPastCredits.inProgress">
                 <tr>
                     <td colspan="14">
                         <div class="loader loader--full-width"></div>

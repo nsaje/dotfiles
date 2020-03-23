@@ -2358,25 +2358,23 @@ h4 {
 // RESPONSIVE //
 ///////////////////////////
 
-@media only screen and (max-width: @desktop-breakpoint) {
-    .custom-table__mobile-container {
-        overflow: auto;
-        margin-bottom: @spacing--default;
+.custom-table__mobile-container {
+    overflow-x: auto;
+    margin-bottom: @spacing--default;
 
-        .custom-table {
-            margin-bottom: 0px;
+    .custom-table {
+        margin-bottom: 0px;
 
-            thead {
-                tr {
-                    th {
-                        white-space: nowrap;
-                    }
+        thead {
+            tr {
+                th {
+                    white-space: nowrap;
                 }
             }
+        }
 
-            .custom-table__break-word {
-                min-width: 250px;
-            }
+        .custom-table__break-word {
+            min-width: 250px;
         }
     }
 }

@@ -4,7 +4,6 @@ import rest_framework.serializers
 
 import dash.constants
 import restapi.access
-import restapi.campaignbudget.internal.serializers
 import restapi.credit.v1.serializers
 import restapi.serializers.base
 import restapi.serializers.fields
@@ -73,9 +72,7 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
 
     is_available = rest_framework.serializers.BooleanField(read_only=True)
 
-    budgets = rest_framework.serializers.ListSerializer(
-        child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], read_only=True
-    )
+    num_of_budgets = rest_framework.serializers.IntegerField(read_only=True, source="get_number_of_budgets")
 
     def to_internal_value(self, data):
         value = super().to_internal_value(data)

@@ -4,10 +4,11 @@ var CreditStatus = require('../../../../app.constants').CreditStatus;
 
 angular
     .module('one.widgets')
-    .service('zemCreditsEndpoint', function($q, $http, $filter, config) {
+    .service('zemCreditsEndpoint', function($q, $http, config) {
         this.totals = totals;
         this.listActive = listActive;
         this.listPast = listPast;
+        this.listBudgets = listBudgets;
         this.create = create;
         this.update = update;
 
@@ -48,6 +49,28 @@ angular
                 .then(function(data) {
                     deferred.resolve(
                         data.data.data.map(convertCreditItemFromApi)
+                    );
+                })
+                .catch(function(error) {
+                    deferred.reject(error);
+                });
+
+            return deferred.promise;
+        }
+
+        function listBudgets(creditId) {
+            var url =
+                APP_CONFIG.apiRestInternalUrl +
+                '/credits/' +
+                creditId +
+                '/budgets/';
+
+            var deferred = $q.defer();
+            $http
+                .get(url)
+                .then(function(data) {
+                    deferred.resolve(
+                        data.data.data.map(convertBudgetItemFromApi)
                     );
                 })
                 .catch(function(error) {
@@ -121,24 +144,9 @@ angular
             item.endDate = item.endDate
                 ? moment(item.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
                 : null;
-            item.currencySymbol = config.currencySymbols[item.currency];
+            item.currencySymbol = APP_CONFIG.currencySymbols[item.currency];
             item.isSigned = item.status === CreditStatus.SIGNED;
             item.isCanceled = item.status === CreditStatus.CANCELED;
-
-            item.budgets = (item.budgets || []).map(function(budget) {
-                budget.startDate = budget.startDate
-                    ? moment(budget.startDate, 'YYYY-MM-DD').format(
-                          'MM/DD/YYYY'
-                      )
-                    : null;
-                budget.endDate = budget.endDate
-                    ? moment(budget.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
-                    : null;
-                budget.currencySymbol = item.currencySymbol;
-                return budget;
-            });
-            item.numOfBudgets = (item.budgets || []).length;
-
             return item;
         }
 
@@ -155,6 +163,16 @@ angular
                 item.status = CreditStatus.SIGNED;
             }
 
+            return item;
+        }
+
+        function convertBudgetItemFromApi(item) {
+            item.startDate = item.startDate
+                ? moment(item.startDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
+                : null;
+            item.endDate = item.endDate
+                ? moment(item.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
+                : null;
             return item;
         }
     });

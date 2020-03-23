@@ -8,6 +8,7 @@ import core.features.bcm.bcm_slack
 import core.features.multicurrency
 import dash.constants
 import restapi.access
+import restapi.campaignbudget.internal.serializers
 import restapi.common.views_base
 import restapi.credit.v1.views
 import utils.exc
@@ -27,6 +28,7 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseCreditView)
     serializer = serializers.CreditSerializer
     serializer_totals = serializers.CreditTotalsSerializer
+    serializer_budgets = restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer
 
     def get(self, request, credit_id):
         credit = restapi.access.get_credit_line_item(request.user, credit_id)
@@ -76,6 +78,15 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         credit = restapi.access.get_credit_line_item(request.user, credit_id)
         credit.update(request, **data)
         return self.response_ok(self.serializer(credit, context={"request": request}).data)
+
+    def list_budgets(self, request, credit_id):
+        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        budgets_qs = (
+            core.features.bcm.BudgetLineItem.objects.filter(credit=credit)
+            .select_related("credit", "campaign")
+            .order_by("-created_dt")
+        )
+        return self.response_ok(self.serializer_budgets(budgets_qs, many=True, context={"request": request}).data)
 
     @staticmethod
     def _get_credits_qs(request, account_id=None, agency_id=None):
