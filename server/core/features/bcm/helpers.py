@@ -38,12 +38,9 @@ def notify_credit_to_slack(credit, action_type=None):
                     credit.account_id,
                     core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG.format(
                         credit_id=credit.pk,
-                        # TODO (msuber): change url when MC credits library is in production
-                        # url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
-                        #     agency_id=credit.account.agency_id,
-                        #     account_id=credit.account_id
-                        # ),
-                        url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(credit.account_id),
+                        url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
+                            agency_id=credit.account.agency_id, account_id=credit.account_id
+                        ),
                         account_name=credit.account.get_long_name(),
                         amount=credit.amount,
                         currency_symbol=core.features.multicurrency.get_currency_symbol(credit.currency),
@@ -57,12 +54,9 @@ def notify_credit_to_slack(credit, action_type=None):
                 credit.account_id,
                 core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
                     credit_id=credit.pk,
-                    # TODO (msuber): change url when MC credits library is in production
-                    # url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
-                    #     agency_id=credit.account.agency_id,
-                    #     account_id=credit.account_id
-                    # ),
-                    url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(credit.account_id),
+                    url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
+                        agency_id=credit.account.agency_id, account_id=credit.account_id
+                    ),
                     account_name=credit.account.get_long_name(),
                     amount=credit.amount,
                     currency_symbol=core.features.multicurrency.get_currency_symbol(credit.currency),
@@ -75,8 +69,7 @@ def notify_credit_to_slack(credit, action_type=None):
                     None,
                     core.features.bcm.bcm_slack.SLACK_NEW_AGENCY_CREDIT_WITHOUT_CONTRACT_MSG.format(
                         credit_id=credit.pk,
-                        # TODO (msuber): change url when MC credits library is in production
-                        # url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
+                        url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
                         agency_name=credit.agency.name,
                         amount=credit.amount,
                         currency_symbol=core.features.multicurrency.get_currency_symbol(credit.currency),
@@ -90,8 +83,7 @@ def notify_credit_to_slack(credit, action_type=None):
                 None,
                 core.features.bcm.bcm_slack.SLACK_NEW_AGENCY_CREDIT_MSG.format(
                     credit_id=credit.pk,
-                    # TODO (msuber): change url when MC credits library is in production
-                    # url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
+                    url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
                     agency_name=credit.agency.name,
                     amount=credit.amount,
                     currency_symbol=core.features.multicurrency.get_currency_symbol(credit.currency),
@@ -105,12 +97,9 @@ def notify_credit_to_slack(credit, action_type=None):
                 credit.account_id,
                 core.features.bcm.bcm_slack.SLACK_UPDATED_CREDIT_MSG.format(
                     credit_id=credit.id,
-                    # TODO (msuber): change url when MC credits library is in production
-                    # url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
-                    #     agency_id=credit.account.agency_id,
-                    #     account_id=credit.account_id
-                    # ),
-                    url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(credit.account_id),
+                    url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(
+                        agency_id=credit.account.agency_id, account_id=credit.account_id
+                    ),
                     account_name=credit.account.get_long_name(),
                     history=credit.get_history_changes_text(changes),
                 ),
@@ -120,8 +109,7 @@ def notify_credit_to_slack(credit, action_type=None):
                 None,
                 core.features.bcm.bcm_slack.SLACK_UPDATED_AGENCY_CREDIT_MSG.format(
                     credit_id=credit.id,
-                    # TODO (msuber): change url when MC credits library is in production
-                    # url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
+                    url=core.features.bcm.bcm_slack.AGENCY_URL.format(agency_id=credit.agency_id),
                     agency_name=credit.agency.name,
                     history=credit.get_history_changes_text(changes),
                 ),

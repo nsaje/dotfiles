@@ -92,8 +92,8 @@ class CreateCreditTestCase(TestCase):
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
 
-        self.account = magic_mixer.blend(core.models.account.Account, id=1)
         self.agency = magic_mixer.blend(core.models.Agency, id=1)
+        self.account = magic_mixer.blend(core.models.account.Account, id=1, agency=self.agency)
 
     def test_missing_fields(self):
         url = reverse("service.salesforce.credit")
@@ -218,8 +218,8 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             None,
-            "New agency credit #{} added to agency {} with amount €500 and end date 2017-06-20.".format(
-                cli.pk, self.agency.name
+            "New agency credit #{credit_id} added to agency <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}|{agency_name}> with amount €500 and end date 2017-06-20.".format(
+                credit_id=cli.pk, agency_id=self.agency.id, agency_name=self.agency.name
             ),
         )
         self.assertEqual(cli.currency, dash.constants.Currency.EUR)
@@ -263,8 +263,11 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.".format(
-                cli.pk, self.account.get_long_name()
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+                credit_id=cli.pk,
+                agency_id=self.account.agency_id,
+                account_id=self.account.id,
+                account_name=self.account.get_long_name(),
             ),
         )
 
@@ -307,8 +310,11 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.".format(
-                cli.pk, self.account.get_long_name()
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+                credit_id=cli.pk,
+                agency_id=self.account.agency_id,
+                account_id=self.account.id,
+                account_name=self.account.get_long_name(),
             ),
         )
 
@@ -351,8 +357,11 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{} added on account <https://one.zemanta.com/v2/credit/account/1|{}> with amount $500 and end date 2017-06-20.".format(
-                cli.pk, self.account.get_long_name()
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+                credit_id=cli.pk,
+                agency_id=self.account.agency_id,
+                account_id=self.account.id,
+                account_name=self.account.get_long_name(),
             ),
         )
 
