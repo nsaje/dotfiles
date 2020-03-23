@@ -15,9 +15,16 @@ angular
                 creditId +
                 '/refunds/';
 
+            // TODO (msuber): remove hack when credits
+            // will use proper pagination solution!
+            var params = {
+                offset: '0',
+                limit: '1000',
+            };
+
             var deferred = $q.defer();
             $http
-                .get(url)
+                .get(url, {params: params})
                 .then(function(data) {
                     deferred.resolve(
                         data.data.data.map(convertCreditItemFromApi)
@@ -33,6 +40,11 @@ angular
         function listAll(agencyId, accountId) {
             var url = APP_CONFIG.apiRestInternalUrl + '/credits/refunds/';
             var params = getParams(agencyId, accountId);
+
+            // TODO (msuber): remove hack when credits
+            // will use proper pagination solution!
+            params.offset = '0';
+            params.limit = '1000';
 
             var deferred = $q.defer();
             $http

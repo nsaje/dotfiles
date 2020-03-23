@@ -43,6 +43,11 @@ angular
             var url = APP_CONFIG.apiRestInternalUrl + '/credits/';
             var params = getParams(agencyId, accountId, active);
 
+            // TODO (msuber): remove hack when credits
+            // will use proper pagination solution!
+            params.offset = '0';
+            params.limit = '1000';
+
             var deferred = $q.defer();
             $http
                 .get(url, {params: params})

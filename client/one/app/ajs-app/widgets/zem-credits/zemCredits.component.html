@@ -50,6 +50,15 @@
 </div>
 <div class="custom-panel">
     <h2 class="custom-panel__title">Active Credit Items</h2>
+    <div class="zem-credit__actions">
+        <button
+            type="button"
+            class="button button--highlight button--with-icon add-icon"
+            ng-click="$ctrl.openCreditItemModal({})"
+        >
+            Add Credit Item
+        </button>
+    </div>
     <div class="custom-table__mobile-container">
         <table class="custom-table">
             <thead>
@@ -250,13 +259,6 @@
             </tbody>
         </table>
     </div>
-    <button
-        type="button"
-        class="button button--with-icon add-icon"
-        ng-click="$ctrl.openCreditItemModal({})"
-    >
-        Add Credit Item
-    </button>
 </div>
 <div class="custom-panel">
     <h2 class="custom-panel__title">Past Credit Items</h2>
