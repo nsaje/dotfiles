@@ -5,13 +5,13 @@
         (click)="openEditDealModal()"
     ></button>
     <button
-        [hidden]="isReadOnlyDeal"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-deal-actions-cell__item"
-        (click)="removeDeal()"
-    ></button>
-    <button
         [hidden]="!isReadOnlyDeal"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--magnifier-icon zem-deal-actions-cell__item"
         (click)="openEditDealModal()"
+    ></button>
+    <button
+        [disabled]="isReadOnlyDeal"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-deal-actions-cell__item"
+        (click)="removeDeal()"
     ></button>
 </div>

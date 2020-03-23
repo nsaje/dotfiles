@@ -63,19 +63,18 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             headerName: 'Id',
             field: 'id',
             width: 80,
+            resizable: false,
             suppressSizeToFit: true,
         },
         {
             headerName: 'Deal name',
             field: 'name',
-            width: 130,
-            minWidth: 80,
+            minWidth: 250,
         },
         {
             headerName: 'Deal Id',
             field: 'dealId',
-            width: 130,
-            minWidth: 90,
+            minWidth: 150,
         },
         {
             headerName: 'Source',
@@ -87,6 +86,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             field: 'floorPrice',
             width: 90,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Valid from',
@@ -96,6 +96,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 110,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Valid to',
@@ -105,6 +106,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 110,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Scope',
@@ -118,6 +120,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 90,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Accounts',
@@ -132,6 +135,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 70,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Campaigns',
@@ -146,6 +150,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 80,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Ad Groups',
@@ -160,6 +165,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             },
             width: 80,
             suppressSizeToFit: true,
+            resizable: false,
         },
         {
             headerName: 'Notes',
@@ -169,15 +175,15 @@ export class DealsLibraryView implements OnInit, OnDestroy {
         {
             headerName: 'Created by',
             field: 'createdBy',
-            width: 100,
-            minWidth: 80,
+            minWidth: 180,
         },
         {
             headerName: '',
             cellRendererFramework: DealActionsCellComponent,
             pinned: 'right',
-            width: 80,
+            width: 75,
             suppressSizeToFit: true,
+            resizable: false,
         },
     ];
 
