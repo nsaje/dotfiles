@@ -28,7 +28,6 @@ import dash.views.navigation
 import dash.views.publishers
 import dash.views.views
 import etl.crossvalidation.views
-import restapi.bcm.urls
 import stats.constants
 import zemauth.views
 from restapi.common.views_base import CanUseRESTAPIPermission
@@ -601,9 +600,6 @@ urlpatterns += [
         name="scheduled_reports_delete",
     ),
 ]
-
-# FIXME: change bcm urls to rest/ and sync on frontend
-urlpatterns += restapi.bcm.urls.urlpatterns
 
 # Lambdas
 urlpatterns += [
