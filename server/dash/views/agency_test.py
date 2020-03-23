@@ -389,7 +389,12 @@ class AdGroupSettingsTest(TestCase):
 
             hist = (
                 history_helpers.get_ad_group_history(ad_group)
-                .exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
+                .exclude(
+                    action_type__in=[
+                        constants.HistoryActionType.BID_MODIFIER_UPDATE,
+                        constants.HistoryActionType.BID_MODIFIER_DELETE,
+                    ]
+                )
                 .first()
             )
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
@@ -521,7 +526,12 @@ class AdGroupSettingsTest(TestCase):
 
             hist = (
                 history_helpers.get_ad_group_history(ad_group)
-                .exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
+                .exclude(
+                    action_type__in=[
+                        constants.HistoryActionType.BID_MODIFIER_UPDATE,
+                        constants.HistoryActionType.BID_MODIFIER_DELETE,
+                    ]
+                )
                 .first()
             )
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
