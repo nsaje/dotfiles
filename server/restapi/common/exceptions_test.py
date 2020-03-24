@@ -19,6 +19,15 @@ class AddContentAdSources(TestCase):
         self.assertEqual(response.data, {"errorCode": "ValidationError", "details": "test errors"})
         self.assertEqual(response.status_code, exception.http_status_code)
 
+    def test_client_validation_exception_subclass(self):
+        class MyException(exc.ValidationError):
+            pass
+
+        exception = MyException(errors="test errors")
+        response = custom_exception_handler(exception, None)
+        self.assertEqual(response.data, {"errorCode": "MyException", "details": "test errors"})
+        self.assertEqual(response.status_code, exception.http_status_code)
+
     def test_drf_exception(self):
         exception = rest_framework.exceptions.AuthenticationFailed("not authenticated")
         response = custom_exception_handler(exception, None)

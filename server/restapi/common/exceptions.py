@@ -51,7 +51,7 @@ def custom_exception_handler(exception, context):
 def _handle_client_api_exceptions(exception, context):
     error_data = {}
 
-    if type(exception) in exc.custom_errors:
+    if any(isinstance(exception, custom_error_cls) for custom_error_cls in exc.custom_errors):
         error_data["errorCode"] = exception.error_code
         error_data["details"] = exception.pretty_message or str(exception)
 
