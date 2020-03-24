@@ -1,6 +1,5 @@
 from rest_framework import permissions
 
-import core.features.bcm
 import core.features.deals
 import core.models
 import utils.exc
@@ -116,28 +115,18 @@ def get_upload_batch(user, batch_id):
         raise utils.exc.MissingDataError("Upload batch does not exist")
 
 
-def get_direct_deal(user, deal_id) -> core.features.deals.DirectDeal:
+def get_direct_deal(user, deal_id, agency=None, account=None) -> core.features.deals.DirectDeal:
     try:
-        deal = (
-            core.features.deals.DirectDeal.objects.select_related("source", "agency", "account")
+        deal_qs = (
+            core.features.deals.DirectDeal.objects.filter(id=int(deal_id))
+            .select_related("source", "agency", "account")
             .filter(id=int(deal_id))
-            .get()
         )
-
-        if not user.has_perm("zemauth.can_see_all_accounts"):
-            agency = deal.agency
-            account = deal.account
-            if agency is not None:
-                has_access = agency.users.filter(pk=user.pk).exists()
-                if not has_access:
-                    raise utils.exc.AuthorizationError()
-            elif account is not None:
-                has_access_qs = account.users.filter(pk=user.pk)
-                if account.agency is not None:
-                    has_access_qs = has_access_qs | account.agency.users.filter(pk=user.pk)
-                has_access = has_access_qs.exists()
-                if not has_access:
-                    raise utils.exc.AuthorizationError()
+        if agency is not None:
+            deal_qs = deal_qs.filter_by_agency(agency)
+        if account is not None:
+            deal_qs = deal_qs.filter_by_account(account)
+        deal = deal_qs.get()
 
         if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
             raise utils.exc.AuthorizationError()
@@ -148,13 +137,11 @@ def get_direct_deal(user, deal_id) -> core.features.deals.DirectDeal:
         raise utils.exc.MissingDataError("Deal does not exist")
 
 
-def get_direct_deal_connection(user, deal_connection_id, deal) -> core.features.deals.DirectDealConnection:
+def get_direct_deal_connection(user, deal_connection_id, deal=None) -> core.features.deals.DirectDealConnection:
     try:
-        deal_connection_qs = (
-            core.features.deals.DirectDealConnection.objects.select_related("deal", "account", "campaign", "adgroup")
-            .filter_by_deal(deal)
-            .filter(id=int(deal_connection_id))
-        )
+        deal_connection_qs = core.features.deals.DirectDealConnection.objects.filter(id=int(deal_connection_id))
+        if deal is not None:
+            deal_connection_qs = deal_connection_qs.filter_by_deal(deal)
         return deal_connection_qs.get()
     except core.features.deals.DirectDealConnection.DoesNotExist:
         raise utils.exc.MissingDataError("Deal connection does not exist")
@@ -196,3 +183,19 @@ def get_refund_line_item(user, refund_id, credit) -> core.features.bcm.RefundLin
 
     except core.features.bcm.RefundLineItem.DoesNotExist:
         raise utils.exc.MissingDataError("Refund does not exist")
+
+
+def get_publisher_group(user, publisher_group_id):
+    try:
+        publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(id=int(publisher_group_id))
+
+        if publisher_group.agency is not None:
+            get_agency(user, publisher_group.agency.id)
+        elif publisher_group.account is not None:
+            get_account(user, publisher_group.account.id)
+        else:
+            raise utils.exc.MissingDataError("Publisher group does not exist")
+
+        return publisher_group
+    except core.features.publisher_groups.PublisherGroup.DoesNotExist:
+        raise utils.exc.MissingDataError("Publisher group does not exist")

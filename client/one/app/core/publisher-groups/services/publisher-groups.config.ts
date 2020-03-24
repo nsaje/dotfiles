@@ -1,8 +1,8 @@
 import {APP_CONFIG} from '../../../app.config';
 
-const publisherGroupsSearchApiUrl = `${
+const publisherGroupsInternalApiUrl = `${
     APP_CONFIG.apiRestInternalUrl
-}/agencies/{agencyId}/publishergroups`;
+}/publishergroups`;
 const publisherGroupsApiUrl = `${
     APP_CONFIG.apiLegacyUrl
 }/accounts/{accountId}/publisher_groups`;
@@ -14,7 +14,7 @@ export const PUBLISHER_GROUPS_CONFIG: {
         publisherGroups: {
             search: {
                 name: 'search',
-                url: `${publisherGroupsSearchApiUrl}/search/`,
+                url: `${publisherGroupsInternalApiUrl}/agencies/{agencyId}/search/`,
             },
             list: {
                 name: 'list',

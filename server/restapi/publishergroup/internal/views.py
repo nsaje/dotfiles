@@ -1,3 +1,4 @@
+import rest_framework.response
 from rest_framework import permissions
 
 import core.features.publisher_groups
@@ -27,3 +28,12 @@ class PublisherGroupSearchViewSet(RESTAPIBaseViewSet):
         return paginator.get_paginated_response(
             serializers.PublisherGroupSerializer(paginated_publisher_groups, many=True).data
         )
+
+
+class PublisherGroupViewSet(RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def delete(self, request, publisher_group_id):
+        publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+        publisher_group.delete()
+        return rest_framework.response.Response(None, status=204)
