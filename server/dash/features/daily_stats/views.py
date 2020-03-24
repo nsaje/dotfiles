@@ -79,7 +79,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         constraints = self.prepare_constraints(request)
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
-
         query_results = stats.api_dailystats.query(
             request.user,
             self.level,
@@ -539,6 +538,37 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         )
 
 
+class CampaignPlacementsDailyStats(CampaignPublishersDailyStats):
+    def get(self, request, campaign_id):
+        if not request.user.has_perm("zemauth.can_use_placement_targeting"):
+            raise exc.MissingDataError()
+
+        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+
+        conversion_goals = self.campaign.conversiongoal_set.all()
+        pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(
+            request.GET.getlist("metrics"),
+            pixels=pixels,
+            conversion_goals=conversion_goals,
+            uses_bcm_v2=self.campaign.account.uses_bcm_v2,
+        )
+
+        self.selected_objects = request.GET.getlist("selected_ids")
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(
+                    request,
+                    "placement",
+                    object_mapping_fn=partial(helpers.get_delivery_mapping, None),
+                    should_use_publishers_view=True,
+                ),
+                self.get_goals(request, conversion_goals=conversion_goals, campaign=self.campaign, pixels=pixels),
+            )
+        )
+
+
 class CampaignDeliveryDailyStats(CampaignDailyStatsView):
     def get(self, request, campaign_id, delivery_dimension):
         if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
@@ -687,6 +717,39 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
                     request,
                     "publisher",
                     object_mapping_fn=helpers.get_publisher_mapping,
+                    should_use_publishers_view=True,
+                ),
+                self.get_goals(
+                    request, conversion_goals=conversion_goals, campaign=self.ad_group.campaign, pixels=pixels
+                ),
+            )
+        )
+
+
+class AdGroupPlacementsDailyStats(AdGroupPublishersDailyStats):
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm("zemauth.can_use_placement_targeting"):
+            raise exc.MissingDataError()
+
+        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+
+        conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
+        pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(
+            request.GET.getlist("metrics"),
+            pixels=pixels,
+            conversion_goals=conversion_goals,
+            uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2,
+        )
+
+        self.selected_objects = request.GET.getlist("selected_ids")
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(
+                    request,
+                    "placement",
+                    object_mapping_fn=partial(helpers.get_delivery_mapping, None),
                     should_use_publishers_view=True,
                 ),
                 self.get_goals(

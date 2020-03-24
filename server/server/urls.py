@@ -321,6 +321,11 @@ urlpatterns += [
         name="ad_group_publishers_daily_stats",
     ),
     url(
+        r"^api/ad_groups/(?P<ad_group_id>\d+)/placements/daily_stats/$",
+        login_required(dash.features.daily_stats.views.AdGroupPlacementsDailyStats.as_view()),
+        name="ad_group_placements_daily_stats",
+    ),
+    url(
         r"^api/ad_groups/(?P<ad_group_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
             "|".join(stats.constants.get_top_level_delivery_dimensions())
         ),
@@ -341,6 +346,11 @@ urlpatterns += [
         r"^api/campaigns/(?P<campaign_id>\d+)/publishers/daily_stats/$",
         login_required(dash.features.daily_stats.views.CampaignPublishersDailyStats.as_view()),
         name="campaign_publishers_daily_stats",
+    ),
+    url(
+        r"^api/campaigns/(?P<campaign_id>\d+)/placements/daily_stats/$",
+        login_required(dash.features.daily_stats.views.CampaignPlacementsDailyStats.as_view()),
+        name="campaign_placements_daily_stats",
     ),
     url(
         r"^api/campaigns/(?P<campaign_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(

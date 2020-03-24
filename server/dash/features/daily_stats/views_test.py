@@ -1008,6 +1008,145 @@ class AdGroupPublishersDailyStatsTest(TestCase):
 
 
 @patch("stats.api_dailystats.query")
+class AdGroupPlacementsDailyStatsTest(TestCase):
+    fixtures = ["test_views"]
+
+    def setUp(self):
+        password = "secret"
+        self.user = User.objects.get(pk=1)
+
+        self.client.login(username=self.user.email, password=password)
+
+    def test_get(self, mock_query):
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [
+            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+        ]
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        params = {
+            "metrics": ["cpc", "clicks"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "totals": "true",
+        }
+
+        response = self.client.get(
+            reverse("ad_group_placements_daily_stats", kwargs={"ad_group_id": 987}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "goal_fields": {
+                        "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
+                        "avg_cost_per_pixel_1_168": {
+                            "id": "avg_cost_per_pixel_1_168",
+                            "name": "$CPA - test conversion goal",
+                        },
+                        "avg_cost_per_conversion_goal_2": {
+                            "id": "avg_cost_per_conversion_goal_2",
+                            "name": "$CPA - test conversion goal 2",
+                        },
+                        "avg_cost_per_conversion_goal_3": {
+                            "id": "avg_cost_per_conversion_goal_3",
+                            "name": "$CPA - test conversion goal 3",
+                        },
+                        "avg_cost_per_conversion_goal_4": {
+                            "id": "avg_cost_per_conversion_goal_4",
+                            "name": "$CPA - test conversion goal 4",
+                        },
+                        "avg_cost_per_conversion_goal_5": {
+                            "id": "avg_cost_per_conversion_goal_5",
+                            "name": "$CPA - test conversion goal 5",
+                        },
+                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
+                        "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
+                        "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
+                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_cost_per_non_bounced_visit": {
+                            "id": "Cost per Non-Bounced Visit",
+                            "name": "Cost per Non-Bounced Visit",
+                        },
+                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                    },
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.USD,
+                    "conversion_goals": [
+                        {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                        {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                        {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                        {"id": "conversion_goal_5", "name": "test conversion goal 5"},
+                    ],
+                    "campaign_goals": {},
+                    "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                },
+                "success": True,
+            },
+        )
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        response = self.client.get(
+            reverse("ad_group_placements_daily_stats", kwargs={"ad_group_id": 876}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "goal_fields": {
+                        "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
+                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
+                        "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
+                        "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
+                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_cost_per_non_bounced_visit": {
+                            "id": "Cost per Non-Bounced Visit",
+                            "name": "Cost per Non-Bounced Visit",
+                        },
+                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                    },
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.EUR,
+                    "conversion_goals": [],
+                    "campaign_goals": {},
+                },
+                "success": True,
+            },
+        )
+
+
+@patch("stats.api_dailystats.query")
 class CampaignPublishersDailyStatsTest(TestCase):
     fixtures = ["test_views"]
 
@@ -1106,6 +1245,145 @@ class CampaignPublishersDailyStatsTest(TestCase):
 
         response = self.client.get(
             reverse("campaign_publishers_daily_stats", kwargs={"campaign_id": 87}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "goal_fields": {
+                        "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
+                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
+                        "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
+                        "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
+                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_cost_per_non_bounced_visit": {
+                            "id": "Cost per Non-Bounced Visit",
+                            "name": "Cost per Non-Bounced Visit",
+                        },
+                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                    },
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.EUR,
+                    "campaign_goals": {},
+                    "conversion_goals": [],
+                },
+                "success": True,
+            },
+        )
+
+
+@patch("stats.api_dailystats.query")
+class CampaignPlacementDailyStatsTest(TestCase):
+    fixtures = ["test_views"]
+
+    def setUp(self):
+        password = "secret"
+        self.user = User.objects.get(pk=1)
+
+        self.client.login(username=self.user.email, password=password)
+
+    def test_get(self, mock_query):
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [
+            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+        ]
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        params = {
+            "metrics": ["cpc", "clicks"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "totals": "true",
+        }
+
+        response = self.client.get(
+            reverse("campaign_placements_daily_stats", kwargs={"campaign_id": 1}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "goal_fields": {
+                        "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
+                        "avg_cost_per_pixel_1_168": {
+                            "id": "avg_cost_per_pixel_1_168",
+                            "name": "$CPA - test conversion goal",
+                        },
+                        "avg_cost_per_conversion_goal_2": {
+                            "id": "avg_cost_per_conversion_goal_2",
+                            "name": "$CPA - test conversion goal 2",
+                        },
+                        "avg_cost_per_conversion_goal_3": {
+                            "id": "avg_cost_per_conversion_goal_3",
+                            "name": "$CPA - test conversion goal 3",
+                        },
+                        "avg_cost_per_conversion_goal_4": {
+                            "id": "avg_cost_per_conversion_goal_4",
+                            "name": "$CPA - test conversion goal 4",
+                        },
+                        "avg_cost_per_conversion_goal_5": {
+                            "id": "avg_cost_per_conversion_goal_5",
+                            "name": "$CPA - test conversion goal 5",
+                        },
+                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
+                        "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
+                        "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
+                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_cost_per_non_bounced_visit": {
+                            "id": "Cost per Non-Bounced Visit",
+                            "name": "Cost per Non-Bounced Visit",
+                        },
+                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                    },
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.USD,
+                    "conversion_goals": [
+                        {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                        {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                        {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                        {"id": "conversion_goal_5", "name": "test conversion goal 5"},
+                    ],
+                    "campaign_goals": {},
+                    "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                },
+                "success": True,
+            },
+        )
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+
+        response = self.client.get(
+            reverse("campaign_placements_daily_stats", kwargs={"campaign_id": 87}), params, follow=True
         )
 
         self.assertJSONEqual(
