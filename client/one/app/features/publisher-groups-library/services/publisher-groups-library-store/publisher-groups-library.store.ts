@@ -96,7 +96,7 @@ export class PublisherGroupsLibraryStore
                             error
                         );
                         if (error.status === 413) {
-                            fieldErrors.entries = ['File too large (max 1MB).'];
+                            fieldErrors.entries = ['File too large.'];
                         }
                         this.patchState(
                             fieldErrors,

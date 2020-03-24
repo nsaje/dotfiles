@@ -24,28 +24,29 @@
             (gridReady)="onGridReady($event)"
         >
         </zem-smart-grid>
-    </div>
-
-    <zem-expandable-section
-        #systemPublisherGroupsSection
-        [expandLabel]="'Show system publisher groups'"
-        [collapseLabel]="'Hide system publisher groups'"
-    >
-        <div class="zem-publisher-groups-library-view__expandable-section">
-            <div class="zem-publisher-groups-library-view__section-title">
-                System publisher groups
+        <zem-expandable-section
+            #systemPublisherGroupsSection
+            [expandLabel]="'Show system publisher groups'"
+            [collapseLabel]="'Hide system publisher groups'"
+        >
+            <div class="zem-publisher-groups-library-view__expandable-section">
+                <div
+                    class="zem-publisher-groups-library-view__item zem-publisher-groups-library-view__section-title"
+                >
+                    System publisher groups
+                </div>
+                <zem-smart-grid
+                    class="zem-smart-grid zem-publisher-groups-library-view__item"
+                    *ngIf="systemPublisherGroupsSection.expanded"
+                    [rowData]="store.state.systemEntities"
+                    [columnDefs]="systemColumnDefs"
+                    [context]="context"
+                    (gridReady)="onSystemGridReady($event)"
+                >
+                </zem-smart-grid>
             </div>
-            <zem-smart-grid
-                class="zem-smart-grid zem-publisher-groups-library-view__item"
-                *ngIf="systemPublisherGroupsSection.expanded"
-                [rowData]="store.state.systemEntities"
-                [columnDefs]="systemColumnDefs"
-                [context]="context"
-                (gridReady)="onSystemGridReady($event)"
-            >
-            </zem-smart-grid>
-        </div>
-    </zem-expandable-section>
+        </zem-expandable-section>
+    </div>
 
     <zem-modal
         #editPublisherGroupModal
