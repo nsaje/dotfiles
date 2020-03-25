@@ -1,7 +1,9 @@
 var commonHelpers = require('../../../../shared/helpers/common.helpers');
+var arrayHelpers = require('../../../../shared/helpers/array.helpers');
 var ScopeSelectorState = require('../../../../shared/components/scope-selector/scope-selector.constants')
     .ScopeSelectorState;
 var CreditStatus = require('../../../../app.constants').CreditStatus;
+var Currency = require('../../../../app.constants').Currency;
 
 angular
     .module('one.widgets')
@@ -209,6 +211,8 @@ angular
                 state.creditItem = {};
                 state.creditItemBudgets = [];
                 state.creditItemScopeState = null;
+                state.requests.saveCreditItem = {};
+                state.requests.reloadCreditRefunds = {};
             }
 
             function saveCreditItem() {
@@ -275,6 +279,7 @@ angular
                         status: CreditStatus.PENDING,
                         isSigned: false,
                         isCanceled: false,
+                        currency: getCurrency(state.accounts, state.accountId),
                     };
                 } else {
                     creditItem = angular.copy(creditItem);
@@ -310,6 +315,18 @@ angular
                     state.creditItemScopeState =
                         ScopeSelectorState.ACCOUNT_SCOPE;
                 }
+            }
+
+            function getCurrency(accounts, accountId) {
+                if (
+                    !arrayHelpers.isEmpty(accounts) &&
+                    commonHelpers.isDefined(accountId)
+                ) {
+                    return accounts.filter(function(account) {
+                        return account.id === accountId;
+                    })[0].currency;
+                }
+                return Currency.USD;
             }
 
             function hasAgencyScope(agencyId) {
@@ -358,6 +375,7 @@ angular
                 state.creditItem = {};
                 state.creditItemScopeState = null;
                 state.creditRefundItem = {};
+                state.requests.saveCreditRefundItem = {};
             }
 
             function setCreditRefundItem(creditRefundItem) {

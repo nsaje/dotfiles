@@ -246,6 +246,7 @@ describe('zemCreditsStateService', function() {
         expect(state.creditItem.agencyId).toEqual(undefined);
         expect(state.creditItem.accountId).toEqual(accountId);
         expect(state.creditItem.isReadOnly).toEqual(undefined);
+        expect(state.creditItem.currency).toEqual(Currency.USD);
     });
 
     it('should correctly set existing credit item', function() {
@@ -270,6 +271,7 @@ describe('zemCreditsStateService', function() {
             accountId: null,
             status: CreditStatus.SIGNED,
             isReadOnly: false,
+            currency: Currency.USD,
         };
 
         stateService.setCreditItem(mockedCredit);
@@ -282,6 +284,7 @@ describe('zemCreditsStateService', function() {
         expect(state.creditItem.agencyId).toEqual(mockedAgency.id);
         expect(state.creditItem.accountId).toEqual(null);
         expect(state.creditItem.isReadOnly).toEqual(false);
+        expect(state.creditItem.currency).toEqual(Currency.USD);
     });
 
     it('should correctly clear credit item', function() {
@@ -325,6 +328,8 @@ describe('zemCreditsStateService', function() {
         expect(state.creditItem).toEqual({});
         expect(state.creditItemScopeState).toEqual(null);
         expect(state.creditItemBudgets).toEqual([]);
+        expect(state.requests.saveCreditItem).toEqual({});
+        expect(state.requests.reloadCreditRefunds).toEqual({});
     });
 
     it('should correctly reload credit budgets', function() {

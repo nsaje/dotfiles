@@ -1,7 +1,6 @@
 var commonHelpers = require('../../../../shared/helpers/common.helpers');
 var arrayHelpers = require('../../../../shared/helpers/array.helpers');
 var currencyHelpers = require('../../../../shared/helpers/currency.helpers');
-var Currency = require('../../../../app.constants').Currency;
 var CURRENCIES = require('../../../../app.config').CURRENCIES;
 var ScopeSelectorState = require('../../../../shared/components/scope-selector/scope-selector.constants')
     .ScopeSelectorState;
@@ -28,26 +27,19 @@ angular.module('one').component('zemCreditsItemModal', {
             $ctrl.stateService = $ctrl.resolve.stateService;
             $ctrl.state = $ctrl.stateService.getState();
 
-            $ctrl.currency =
-                $ctrl.state.creditItem.currency ||
-                getCurrencyFromAccount(
-                    $ctrl.state.accounts,
-                    $ctrl.state.creditItem.accountId
-                );
-
             $ctrl.CURRENCIES = CURRENCIES;
             $ctrl.selectedCurrency = getSelectedCurrency(
                 $ctrl.CURRENCIES,
-                $ctrl.currency
+                $ctrl.state.creditItem.currency
             );
 
             $ctrl.currencySymbol = currencyHelpers.getCurrencySymbol(
-                $ctrl.currency
+                $ctrl.state.creditItem.currency
             );
 
             $ctrl.accounts = getAccountsForCurrency(
                 $ctrl.state.accounts,
-                $ctrl.currency
+                $ctrl.state.creditItem.currency
             );
 
             $ctrl.wasSigned = $ctrl.state.creditItem.isSigned;
@@ -145,18 +137,6 @@ angular.module('one').component('zemCreditsItemModal', {
 
         function onAccountChange($event) {
             $ctrl.state.creditItem.accountId = $event;
-        }
-
-        function getCurrencyFromAccount(accounts, accountId) {
-            if (
-                !arrayHelpers.isEmpty(accounts) &&
-                commonHelpers.isDefined(accountId)
-            ) {
-                return accounts.filter(function(account) {
-                    return account.id === accountId;
-                })[0].currency;
-            }
-            return Currency.USD;
         }
 
         function getAccountsForCurrency(accounts, currency) {

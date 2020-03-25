@@ -45,6 +45,7 @@ describe('component: zemCreditsItemModal', function() {
                                 status: CreditStatus.PENDING,
                                 isSigned: false,
                                 isCanceled: false,
+                                currency: Currency.USD,
                             },
                             requests: {
                                 saveCreditItem: {},
@@ -61,14 +62,13 @@ describe('component: zemCreditsItemModal', function() {
         $ctrl = $componentController('zemCreditsItemModal', {}, bindings);
         $ctrl.$onInit();
 
-        expect($ctrl.currency).toEqual(Currency.USD);
         expect($ctrl.CURRENCIES).toEqual(CURRENCIES);
         expect($ctrl.selectedCurrency).toEqual({
             name: 'US Dollar',
             value: Currency.USD,
         });
         expect($ctrl.currencySymbol).toEqual(
-            currencyHelpers.getCurrencySymbol($ctrl.currency)
+            currencyHelpers.getCurrencySymbol(Currency.USD)
         );
         expect($ctrl.accounts).toEqual([
             {
@@ -111,6 +111,7 @@ describe('component: zemCreditsItemModal', function() {
                                 status: CreditStatus.PENDING,
                                 isSigned: false,
                                 isCanceled: false,
+                                currency: Currency.EUR,
                             },
                             requests: {
                                 saveCreditItem: {},
@@ -127,14 +128,13 @@ describe('component: zemCreditsItemModal', function() {
         $ctrl = $componentController('zemCreditsItemModal', {}, bindings);
         $ctrl.$onInit();
 
-        expect($ctrl.currency).toEqual(Currency.EUR);
         expect($ctrl.CURRENCIES).toEqual(CURRENCIES);
         expect($ctrl.selectedCurrency).toEqual({
             name: 'Euro',
             value: Currency.EUR,
         });
         expect($ctrl.currencySymbol).toEqual(
-            currencyHelpers.getCurrencySymbol($ctrl.currency)
+            currencyHelpers.getCurrencySymbol(Currency.EUR)
         );
         expect($ctrl.accounts).toEqual([
             {
