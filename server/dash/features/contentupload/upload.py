@@ -598,6 +598,8 @@ def _process_impression_trackers(candidate, cleaned_urls, callback_data):
 def _handle_auto_save(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         return
+    elif not batch.auto_save:
+        return
 
     should_fail = False
     _, errors = get_clean_candidates_and_errors(batch.contentadcandidate_set.all())
