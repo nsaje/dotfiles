@@ -89,6 +89,7 @@ class ContentAdCandidateSerializer(
             "brand_name",
             "description",
             "call_to_action",
+            "state",
             "label",
             "image_crop",
             "additional_data",
@@ -111,6 +112,7 @@ class ContentAdCandidateSerializer(
     image_crop = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     video_asset_id = rest_framework.serializers.UUIDField(required=False)
+    state = restapi.serializers.fields.DashConstantField(dash.constants.ContentAdSourceState, required=False)
 
     def to_internal_value(self, external_data):
         internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)

@@ -1473,6 +1473,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             "url",
             "title",
             "type",
+            "state",
             "image_url",
             "image_crop",
             "icon_url",
@@ -1555,6 +1556,9 @@ class ContentAdForm(ContentAdCandidateForm):
     url_status = forms.IntegerField(required=False)
     primary_tracker_url_status = forms.IntegerField(required=False)
     secondary_tracker_url_status = forms.IntegerField(required=False)
+    state = forms.TypedChoiceField(
+        choices=dash.constants.ContentAdSourceState.get_choices(), coerce=int, required=False, empty_value=None
+    )
 
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000

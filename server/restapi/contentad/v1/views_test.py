@@ -222,9 +222,9 @@ class TestBatchUpload(TestCase):
         )
 
     @staticmethod
-    def _mock_content_ad(title):
+    def _mock_content_ad(title, state="ACTIVE"):
         return {
-            "state": "ACTIVE",
+            "state": state,
             "url": "https://www.example.com/p/83895c0e-3bbe-4ad7-a0f6-c1917788ceb9",
             "title": title,
             "imageUrl": "http://example.com/p/srv/9018/e5d6adb68f1d404f82541e335c50bbd3.jpg?w=1024&h=768&fit=crop&crop=center&fm=jpg",
@@ -289,8 +289,9 @@ class TestBatchUpload(TestCase):
     def test_content_batch_upload_success(self):
         ad1 = self._mock_content_ad("test1")
         ad2 = self._mock_content_ad("test2")
+        paused_ad = self._mock_content_ad("test3", "INACTIVE")
         del ad2["iconUrl"]
-        to_upload = [ad1, ad2]
+        to_upload = [ad1, ad2, paused_ad]
         r = self.client.post(
             reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
         )

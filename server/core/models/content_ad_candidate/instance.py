@@ -8,6 +8,7 @@ class ContentAdCandidateMixin:
         return {
             "id": self.id,
             "label": self.label,
+            "state": self.state,
             "url": self.url,
             "title": self.title,
             "type": self.type,

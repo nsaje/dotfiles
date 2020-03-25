@@ -58,6 +58,11 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
     )
     can_append_tracking_codes = models.BooleanField(default=False)
 
+    state = models.IntegerField(
+        null=True,
+        default=dash.constants.ContentAdSourceState.ACTIVE,
+        choices=dash.constants.ContentAdSourceState.get_choices(),
+    )
     image_id = models.CharField(max_length=256, null=True)
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)

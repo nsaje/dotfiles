@@ -510,6 +510,16 @@
   model: dash.uploadbatch
   pk: 11
 
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 12'
+    status: 3  # in progress
+    ad_group: 3
+    original_filename: 'test_upload.csv'
+    state_override: null
+  model: dash.uploadbatch
+  pk: 12
+
 # Content ads
 - fields:
     ad_group: 5
@@ -882,6 +892,40 @@
   model: dash.contentadcandidate
   pk: 9
 
+
+- fields:
+    ad_group: 3
+    batch_id: 12
+    image_status: 3  # ok
+    icon_status: 3  # ok
+    url_status: 3  # ok
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 12'
+    state: 2
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog čšž'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    image_width: 500
+    image_height: 500
+    image_file_size: 120000
+    image_hash: '54321cba'
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'
+    primary_tracker_url: 'https://t.zemanta.com/px1.png'
+    secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    image_id: 'abc12345'
+    video_asset: '12345678-abcd-1234-abcd-123abcd12345'
+  model: dash.contentadcandidate
+  pk: 10
 
 # video assets
 - fields:

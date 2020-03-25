@@ -398,6 +398,7 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.icon_file_size, content_ad.icon.file_size)
         self.assertEqual(candidate.icon_url, content_ad.icon.origin_url)
         self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+        self.assertEqual(candidate.state, content_ad.state)
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
@@ -444,8 +445,75 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate2.icon_height, content_ad2.icon.height)
         self.assertEqual(candidate2.icon_hash, content_ad2.icon.image_hash)
         self.assertEqual(candidate2.icon_file_size, content_ad2.icon.file_size)
+        self.assertEqual(candidate2.state, content_ad2.state)
         self.assertEqual(candidate.icon_url, content_ad2.icon.origin_url)
 
+        self.assertEqual(1, models.ImageAsset.objects.all().count())
+
+    @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
+    @patch("utils.sspd_client.sync_batch", Mock())
+    @patch("utils.redirector_helper.insert_redirects")
+    def test_valid_candidates_with_inactive_state(self, mock_insert_redirects):
+        def redirector_response(content_ads, clickthrough_resolve):
+            return {
+                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
+                for content_ad in content_ads
+            }
+
+        mock_insert_redirects.side_effect = redirector_response
+
+        batch = models.UploadBatch.objects.get(id=12)
+
+        candidate = batch.contentadcandidate_set.get()
+        candidate.type = constants.AdType.VIDEO
+        candidate.save()
+        candidate.ad_group.campaign.type = constants.CampaignType.VIDEO
+        candidate.ad_group.campaign.save()
+
+        contentupload.upload.persist_batch(batch)
+
+        self.assertEqual(constants.ContentAdSourceState.INACTIVE, candidate.state)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertTrue(mock_insert_redirects.called)
+
+        ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
+        batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+        candidate2 = magic_mixer.blend(
+            models.ContentAdCandidate,
+            batch=batch2,
+            ad_group=ad_group,
+            type=constants.AdType.VIDEO,
+            url_status=constants.AsyncUploadJobStatus.OK,
+            image_status=constants.AsyncUploadJobStatus.OK,
+            icon_status=constants.AsyncUploadJobStatus.OK,
+            state=constants.ContentAdSourceState.INACTIVE,
+            url="http://url.com",
+            title="test",
+            image_url="https://image.url",
+            display_url="https://display.url",
+            brand_name="test",
+            description="test",
+            image_id=candidate.image_id,
+            image_hash=candidate.image_hash,
+            image_width=candidate.image_width,
+            image_height=candidate.image_height,
+            image_file_size=candidate.image_file_size,
+            icon_id=candidate.icon_id,
+            icon_hash=candidate.icon_hash,
+            icon_width=candidate.icon_width,
+            icon_height=candidate.icon_height,
+            icon_file_size=candidate.icon_file_size,
+            icon_url="https://test2.com",
+            original_content_ad=None,
+            video_asset_id="12345678-abcd-1234-abcd-123abcd12345",
+        )
+
+        contentupload.upload.persist_batch(batch2)
+
+        content_ad2 = batch2.contentad_set.get()
+        self.assertEqual(candidate2.state, content_ad2.state)
         self.assertEqual(1, models.ImageAsset.objects.all().count())
 
     @patch("utils.redirector_helper.insert_redirects")
@@ -490,6 +558,7 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.image_hash, content_ad.image_hash)
         self.assertEqual(candidate.image_file_size, content_ad.image_file_size)
         self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+        self.assertEqual(candidate.state, content_ad.state)
         self.assertFalse(candidate.ad_tag)
         self.assertIsNone(content_ad.icon)
 
@@ -539,6 +608,7 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.image_hash, content_ad.image_hash)
         self.assertEqual(candidate.image_file_size, content_ad.image_file_size)
         self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+        self.assertEqual(candidate.state, content_ad.state)
         self.assertTrue(candidate.ad_tag)
 
         batch.refresh_from_db()
@@ -642,7 +712,7 @@ class PersistEditBatchTestCase(TestCase):
             self.assertEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
         for field in set(forms.ContentAdCandidateForm.Meta.fields) - contentupload.upload.VALID_UPDATE_FIELDS:
-            if field in ["image_url", "icon_url"]:
+            if field in ["image_url", "icon_url", "state"]:
                 continue
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             if field != "type":
@@ -730,6 +800,7 @@ class AddCandidateTestCase(TestCase):
             {
                 "id": candidate.id,
                 "label": "",
+                "state": constants.ContentAdSourceState.ACTIVE,
                 "url": "",
                 "title": "",
                 "type": constants.AdType.CONTENT,
@@ -786,6 +857,7 @@ class AddCandidateTestCase(TestCase):
             {
                 "id": candidate.id,
                 "label": "",
+                "state": constants.ContentAdSourceState.ACTIVE,
                 "url": "",
                 "title": "",
                 "type": constants.AdType.CONTENT,
@@ -847,6 +919,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url": "http://zemanta.com/test-content-ad",
                     "title": "test content ad",
                     "type": constants.AdType.CONTENT,
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "image_url": "http://zemanta.com/test-image.jpg",
                     "image_crop": "faces",
                     "icon_url": None,
@@ -907,6 +980,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "landscape_hosted_image_url": None,
                     "display_hosted_image_url": None,
                     "image_crop": "landscape",
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
                     "description": "",
@@ -979,6 +1053,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url": "http://zemanta.com/test-content-ad",
                     "title": "test content ad",
                     "type": constants.AdType.IMAGE,
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "image_url": "http://zemanta.com/test-image.jpg",
                     "image_crop": "center",
                     "display_url": "zemanta.com",
@@ -1042,6 +1117,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
                     "description": "",
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "call_to_action": "Read more",
                     "title": "",
                     "type": constants.AdType.IMAGE,
@@ -1106,6 +1182,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "label": "test",
                     "url": "http://zemanta.com/test-content-ad",
                     "title": "Ad tag test",
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "type": constants.AdType.AD_TAG,
                     "image_url": "",
                     "image_crop": "center",
@@ -1169,6 +1246,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "image_crop": "center",
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
+                    "state": constants.ContentAdSourceState.ACTIVE,
                     "description": "",
                     "call_to_action": "Read more",
                     "title": "",
@@ -1228,6 +1306,7 @@ class UpdateCandidateTest(TestCase):
         self.new_candidate = {
             "id": candidate_id,
             "label": "new label",
+            "state": constants.ContentAdSourceState.ACTIVE,
             "url": "http://zemanta.com/blog",
             "title": "New title",
             "image_url": "http://zemanta.com/img.jpg",
@@ -1256,6 +1335,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.call_to_action, self.new_candidate["call_to_action"])
         self.assertEqual(self.candidate.primary_tracker_url, self.new_candidate["primary_tracker_url"])
         self.assertEqual(self.candidate.secondary_tracker_url, self.new_candidate["secondary_tracker_url"])
+        self.assertEqual(self.candidate.state, self.new_candidate["state"])
 
         self.other_candidate.refresh_from_db()
         self.assertNotEqual(self.other_candidate.image_crop, self.new_candidate["image_crop"])
@@ -1271,6 +1351,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.label, self.new_candidate["label"])
         self.assertEqual(self.candidate.url, self.new_candidate["url"])
         self.assertEqual(self.candidate.title, self.new_candidate["title"])
+        self.assertEqual(self.candidate.state, self.new_candidate["state"])
 
         self.assertEqual(self.candidate.image_url, self.new_candidate["image_url"])
         self.assertEqual(self.candidate.image_crop, self.new_candidate["image_crop"])
@@ -1310,6 +1391,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.call_to_action, self.new_candidate["call_to_action"])
         self.assertEqual(self.candidate.primary_tracker_url, self.new_candidate["primary_tracker_url"])
         self.assertEqual(self.candidate.secondary_tracker_url, self.new_candidate["secondary_tracker_url"])
+        self.assertEqual(self.candidate.state, self.new_candidate["state"])
 
         self.other_candidate.refresh_from_db()
         self.assertNotEqual(self.other_candidate.label, self.new_candidate["label"])
