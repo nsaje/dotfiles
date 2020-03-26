@@ -56,16 +56,12 @@ def apply_campaign_change_hacks_form_data(request, campaign, goal_changes):
     if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
         if not (goal_changes["modified"] or goal_changes["added"]):
             return
-        for ad_group in campaign.adgroup_set.all():
-            _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
+        _apply_goal_bid_cpc(request, campaign)
 
 
 def apply_campaign_goals_change_hacks(request, campaign):
     if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
-        for ad_group in campaign.adgroup_set.all():
-            new_cpc = _get_cpc_goal_value(ad_group.campaign).value
-            ad_group.settings.update(request, skip_validation=True, b1_sources_group_cpc_cc=new_cpc)
-            _update_ad_group_sources_cpc(request, ad_group, new_cpc)
+        _apply_goal_bid_cpc(request, campaign)
 
 
 def filter_campaign_goals_form_data(campaign, goal_changes):
@@ -139,6 +135,13 @@ def _get_cpc_goal_value(campaign):
     if not cpc_goal:
         raise Exception("No CPC goal on the RCS campaign.")
     return cpc_goal.get_current_value()
+
+
+def _apply_goal_bid_cpc(request, campaign):
+    new_cpc = _get_cpc_goal_value(campaign).value
+    for ad_group in campaign.adgroup_set.all():
+        ad_group.settings.update(request, skip_validation=True, b1_sources_group_cpc_cc=new_cpc)
+        _update_ad_group_sources_cpc(request, ad_group, new_cpc)
 
 
 def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
