@@ -20,15 +20,15 @@ export class PublisherGroupActionsCellComponent
     }
 
     openEditPublisherGroupModal() {
-        this.parent.openEditPublisherGroupModal(this.publisherGroup);
+        // this.parent.openEditPublisherGroupModal(this.publisherGroup);
     }
 
     download() {
-        this.parent.download(this.publisherGroup);
+        // this.parent.download(this.publisherGroup);
     }
 
     delete() {
-        this.parent.delete(this.publisherGroup);
+        // this.parent.delete(this.publisherGroup);
     }
 
     refresh(): boolean {
