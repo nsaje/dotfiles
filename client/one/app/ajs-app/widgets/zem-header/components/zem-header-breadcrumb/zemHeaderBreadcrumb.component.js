@@ -207,7 +207,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 }
                 return {
                     typeName: 'Account settings',
-                    name: 'Publishers & Placements',
+                    name: 'Publisher groups',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {

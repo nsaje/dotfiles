@@ -1,5 +1,12 @@
 <h1 class="zem-main-container__view-title">Publishers & Placements</h1>
-<ng-container *ngIf="(store.state$ | async) as state">
+<zem-publisher-groups
+    class="zem-publisher-groups"
+    *ngIf="!!account"
+    [account]="account"
+    [agency]="agency"
+>
+</zem-publisher-groups>
+<!--ng-container *ngIf="(store.state$ | async) as state">
     <div
         class="zem-panel zem-panel--with-padding zem-publisher-groups-library-view__panel"
     >
@@ -103,4 +110,4 @@
             </div>
         </ng-container>
     </zem-modal>
-</ng-container>
+</ng-container-->

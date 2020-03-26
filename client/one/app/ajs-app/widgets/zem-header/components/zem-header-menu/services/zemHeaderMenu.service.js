@@ -42,7 +42,7 @@ angular
                 ),
             },
             {
-                text: 'Publishers & Placements',
+                text: 'Publisher groups',
                 callback: navigateToPublisherGroupsView,
                 isAvailable: isPublisherGroupsActionAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
