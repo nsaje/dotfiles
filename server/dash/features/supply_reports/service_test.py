@@ -28,6 +28,9 @@ class TestSupplyReportsService(TestCase):
         }
 
         service.send_supply_reports()
+        random_recipient = dash.models.SupplyReportRecipient.objects.get(pk=3)
+        self.assertEquals(random_recipient.last_sent_dt.date(), datetime.date.today())
+
         mock_get_source_stats_from_query.assert_called_once_with(
             service.all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
         )
@@ -40,6 +43,89 @@ class TestSupplyReportsService(TestCase):
             ],
             any_order=True,
         )
+
+    @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)
+    @mock.patch("dash.features.supply_reports.service.send_supply_report_email", autospec=True)
+    def test_send_supply_reports_skip_sent(self, mock_send_supply_report_email, mock_get_source_stats_from_query):
+
+        mock_get_source_stats_from_query.return_value = {
+            1: {month_start_str: {"impressions": 1000, "cost": 0.5}, yesterday_str: {"impressions": 1234, "cost": 1.1}}
+        }
+
+        dash.models.SupplyReportRecipient.objects.filter(pk__in=[2, 3]).update(last_sent_dt=datetime.datetime.now())
+        dash.models.SupplyReportRecipient.objects.filter(pk=1).update(
+            last_sent_dt=datetime.datetime.now() - datetime.timedelta(1)
+        )
+
+        service.send_supply_reports(skip_already_sent=True)
+
+        mock_get_source_stats_from_query.assert_called_once_with(
+            service.all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
+        )
+
+        mock_send_supply_report_email.assert_called_once_with(
+            "example.a@source.one", yesterday, 1234, 1.1, "Subject", None, None, None, None
+        )
+
+    @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)
+    @mock.patch("dash.features.supply_reports.service.send_supply_report_email", autospec=True)
+    def test_send_supply_filter_recipients(self, mock_send_supply_report_email, mock_get_source_stats_from_query):
+
+        mock_get_source_stats_from_query.return_value = {
+            1: {month_start_str: {"impressions": 1000, "cost": 0.5}, yesterday_str: {"impressions": 1234, "cost": 1.1}},
+            2: {month_start_str: {"impressions": 500, "cost": 0.2}, yesterday_str: {"impressions": 321, "cost": 0.15}},
+        }
+
+        service.send_supply_reports(recipient_ids=[3])
+        first_recipient = dash.models.SupplyReportRecipient.objects.get(pk=3)
+        self.assertEquals(first_recipient.last_sent_dt.date(), datetime.date.today())
+        skipped_recipient = dash.models.SupplyReportRecipient.objects.get(pk=1)
+        self.assertEquals(skipped_recipient.last_sent_dt, None)
+
+        mock_get_source_stats_from_query.assert_called_once_with(
+            service.all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
+        )
+        mock_send_supply_report_email.assert_has_calls(
+            [mock.call("example.c@source.two", yesterday, 321, 0.15, "Subject", None, None, None, None)], any_order=True
+        )
+
+    @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)
+    @mock.patch("dash.features.supply_reports.service.send_supply_report_email", autospec=True)
+    def test_send_supply_reports_overwrite_recipients(
+        self, mock_send_supply_report_email, mock_get_source_stats_from_query
+    ):
+
+        mock_get_source_stats_from_query.return_value = {
+            1: {month_start_str: {"impressions": 1000, "cost": 0.5}, yesterday_str: {"impressions": 1234, "cost": 1.1}}
+        }
+
+        service.send_supply_reports(overwrite_recipients_email="example@outbrain.com")
+        mock_get_source_stats_from_query.assert_called_once_with(
+            service.all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
+        )
+        mock_send_supply_report_email.assert_has_calls(
+            [
+                mock.call("example@outbrain.com", yesterday, 1234, 1.1, "Subject", None, None, None, None),
+                mock.call("example@outbrain.com", yesterday, 1234, 1.1, "", None, None, None, None),
+                mock.call("example@outbrain.com", yesterday, 0, 0, "Subject", None, None, None, None),
+            ],
+            any_order=True,
+        )
+
+    @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)
+    @mock.patch("dash.features.supply_reports.service.send_supply_report_email", autospec=True)
+    def test_send_supply_reports_dryrun(self, mock_send_supply_report_email, mock_get_source_stats_from_query):
+
+        mock_get_source_stats_from_query.return_value = {
+            1: {month_start_str: {"impressions": 1000, "cost": 0.5}, yesterday_str: {"impressions": 1234, "cost": 1.1}}
+        }
+
+        service.send_supply_reports(dry_run=True)
+
+        mock_get_source_stats_from_query.assert_called_once_with(
+            service.all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
+        )
+        self.assertFalse(mock_send_supply_report_email.called)
 
     @mock.patch("dash.features.supply_reports.service._get_publisher_stats", autospec=True)
     @mock.patch("dash.features.supply_reports.service._get_source_stats_from_query", autospec=True)

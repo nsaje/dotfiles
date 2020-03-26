@@ -19,7 +19,7 @@ all_sources_query = backtosql.generate_sql("sql/all_sources_stats_query.sql", No
 publisher_stats_query = backtosql.generate_sql("sql/publisher_stats_query.sql", None)
 
 
-def send_supply_reports():
+def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False, overwrite_recipients_email=None):
     today = utils.dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
     yesterday_str = yesterday.strftime("%Y-%m-%d")
@@ -27,6 +27,12 @@ def send_supply_reports():
     month_start_str = month_start.strftime("%Y-%m-%d")
 
     recipients = dash.models.SupplyReportRecipient.objects.all().prefetch_related("source")
+    if recipient_ids:
+        recipients = recipients.filter(id__in=recipient_ids)
+
+    if skip_already_sent:
+        recipients = recipients.filter(last_sent_dt__lt=datetime.date.today())
+
     if len(recipients) == 0:
         logger.info("No recipients.")
         return
@@ -80,8 +86,11 @@ def send_supply_reports():
             if daily_breakdown_stats[source_id]:
                 daily_breakdown_report = _create_csv(["Date", "Impressions", "Spend"], daily_breakdown_stats[source_id])
 
+        if dry_run:
+            continue
+
         send_supply_report_email(
-            recipient.email,
+            overwrite_recipients_email or recipient.email,
             yesterday,
             impressions,
             cost,
@@ -91,6 +100,8 @@ def send_supply_reports():
             mtd_cost=mtd_cost,
             daily_breakdown_report=daily_breakdown_report,
         )
+        recipient.last_sent_dt = datetime.datetime.now()
+        recipient.save()
 
 
 def _get_source_stats_from_query(query):
