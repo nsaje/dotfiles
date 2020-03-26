@@ -1,19 +1,19 @@
-<h1 class="zem-main-container__view-title">Publisher Groups</h1>
+<h1 class="zem-main-container__view-title">Publishers & Placements</h1>
 <ng-container *ngIf="(store.state$ | async) as state">
     <div
         class="zem-panel zem-panel--with-padding zem-publisher-groups-library-view__panel"
     >
         <div class="zem-publisher-groups-library-view__top-bar">
             <div class="zem-publisher-groups-library-view__description">
-                Publisher groups allow you to upload lists of publishers and
-                blacklist or whitelist them in account, campaign or ad group
-                settings.
+                Publisher groups allow you to upload lists of publishers or
+                placements and blacklist or whitelist them in account, campaign
+                or ad group settings.
             </div>
             <button
-                class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
+                class="zem-publisher-groups-library-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
                 (click)="addPublisherGroup()"
             >
-                Add new publisher group
+                Add new list
             </button>
         </div>
         <zem-smart-grid
@@ -26,14 +26,19 @@
         </zem-smart-grid>
         <zem-expandable-section
             #systemPublisherGroupsSection
-            [expandLabel]="'Show system publisher groups'"
-            [collapseLabel]="'Hide system publisher groups'"
+            [expandLabel]="'Show system placements file preview data'"
+            [collapseLabel]="'Hide system placements file preview data'"
         >
             <div class="zem-publisher-groups-library-view__expandable-section">
                 <div
                     class="zem-publisher-groups-library-view__item zem-publisher-groups-library-view__section-title"
                 >
-                    System publisher groups
+                    System Publisher Groups & Placements
+                </div>
+                <div class="zem-publisher-groups-library-view__description">
+                    Publishers and Placements that you blacklist in the
+                    dashboard are added to one of the system blacklist listed
+                    below.
                 </div>
                 <zem-smart-grid
                     class="zem-smart-grid zem-publisher-groups-library-view__item"
@@ -59,8 +64,8 @@
                 <div class="zem-modal__title">
                     {{
                         !state.activeEntity.entity.id
-                            ? 'Add new publisher group'
-                            : 'Edit publisher group'
+                            ? 'Create Publishers & Placement list'
+                            : 'Edit Publishers & Placement list'
                     }}
                 </div>
             </div>

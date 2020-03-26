@@ -10,8 +10,15 @@
 
 .zem-publisher-groups-library-view__top-bar {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     margin-bottom: @zem-form-group__items-spacing--default;
+}
+
+@media only screen and (min-width: 400px) {
+    .zem-publisher-groups-library-view__top-bar {
+        flex-direction: row;
+    }
 }
 
 .zem-publisher-groups-library-view__description {
@@ -31,7 +38,15 @@
     padding: @spacing--default;
 }
 
+.zem-publisher-groups-library-view__expandable-section .ag-root {
+    background-color: white;
+}
+
 .zem-publisher-groups-library-view__section-title {
     font-size: 17px;
     color: @color--secondary;
+}
+
+.zem-publisher-groups-library-view__action_button {
+    flex-shrink: 0;
 }

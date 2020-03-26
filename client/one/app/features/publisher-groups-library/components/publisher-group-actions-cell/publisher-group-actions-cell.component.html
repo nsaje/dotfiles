@@ -1,15 +1,15 @@
 <div class="zem-publisher-group-actions-cell">
     <button
-        class="zem-button zem-button--small zem-button--with-icon zem-button--download-icon zem-publisher-group-actions-cell__item"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only  zem-button--download-icon zem-publisher-group-actions-cell__item"
         (click)="download()"
-    >
-        Download
-    </button>
+    ></button>
     <button
         [hidden]="this.publisherGroup.implicit"
-        class="zem-button zem-button--small zem-button--with-icon zem-button--edit-icon zem-publisher-group-actions-cell__item"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only  zem-button--edit-icon zem-publisher-group-actions-cell__item"
         (click)="openEditPublisherGroupModal()"
-    >
-        Edit
-    </button>
+    ></button>
+    <button
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only  zem-button--remove-icon zem-button--danger zem-publisher-group-actions-cell__item"
+        (click)="delete()"
+    ></button>
 </div>

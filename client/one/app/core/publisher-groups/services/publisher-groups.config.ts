@@ -16,6 +16,10 @@ export const PUBLISHER_GROUPS_CONFIG: {
                 name: 'search',
                 url: `${publisherGroupsInternalApiUrl}/agencies/{agencyId}/search/`,
             },
+            remove: {
+                name: 'remove',
+                url: `${publisherGroupsInternalApiUrl}/{publisherGroupId}/`,
+            },
             list: {
                 name: 'list',
                 url: `${publisherGroupsApiUrl}/`,

@@ -160,6 +160,32 @@ export class PublisherGroupsEndpoint {
             );
     }
 
+    remove(
+        publisherGroupId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = replaceUrl(
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.remove,
+            {publisherGroupId: publisherGroupId}
+        );
+
+        return this.http.delete(`${request.url}`).pipe(
+            map(() => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
     download(publisherGroup: PublisherGroup) {
         const request = replaceUrl(
             PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.download,

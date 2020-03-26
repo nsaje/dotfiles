@@ -25,10 +25,24 @@ export class PublisherGroupsLibraryStore
         );
     }
 
-    setStore(accountId: string | null): void {
-        this.setState({
-            ...this.state,
-            accountId: accountId,
+    setStore(accountId: string | null): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            Promise.all([this.loadPublisherGroups(accountId)])
+                .then((values: [PublisherGroup[]]) => {
+                    const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
+                        values[0],
+                        accountId
+                    );
+
+                    this.setState({
+                        ...this.state,
+                        accountId: accountId,
+                        entities: splitRows[0],
+                        systemEntities: splitRows[1],
+                    });
+                    resolve(true);
+                })
+                .catch(() => resolve(false));
         });
     }
 
@@ -36,17 +50,13 @@ export class PublisherGroupsLibraryStore
         return new Promise<void>((resolve, reject) => {
             this.loadPublisherGroups(this.state.accountId).then(
                 (publisherGroups: PublisherGroup[]) => {
-                    publisherGroups.forEach(
-                        pg => (pg.accountId = this.state.accountId) // TODO: remove this after backend is updated
+                    const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
+                        publisherGroups,
+                        this.state.accountId
                     );
-                    this.patchState(
-                        publisherGroups.filter(pg => pg.implicit === false),
-                        'entities'
-                    );
-                    this.patchState(
-                        publisherGroups.filter(pg => pg.implicit === true),
-                        'systemEntities'
-                    );
+
+                    this.patchState(splitRows[0], 'entities');
+                    this.patchState(splitRows[1], 'systemEntities');
                     resolve();
                 },
                 () => {
@@ -117,6 +127,22 @@ export class PublisherGroupsLibraryStore
         );
     }
 
+    deleteEntity(publisherGroupId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.publisherGroupsService
+                .remove(publisherGroupId, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -138,5 +164,21 @@ export class PublisherGroupsLibraryStore
                     }
                 );
         });
+    }
+
+    /*This method is temporary and will be removed after the backend is updated. It simulates some aspects of the new service's responses:
+     * - accountId is set on every publisherGroup
+     * - the list of publisher groups is split into user and system publishers*/
+    private postProcessLegacyServiceResponse(
+        publisherGroups: PublisherGroup[],
+        accountId: string
+    ): PublisherGroup[][] {
+        const splitRows: PublisherGroup[][] = [[], []];
+        publisherGroups.forEach(pg => (pg.accountId = accountId));
+
+        splitRows[0] = publisherGroups.filter(pg => pg.implicit === false);
+        splitRows[1] = publisherGroups.filter(pg => pg.implicit === true);
+
+        return splitRows;
     }
 }

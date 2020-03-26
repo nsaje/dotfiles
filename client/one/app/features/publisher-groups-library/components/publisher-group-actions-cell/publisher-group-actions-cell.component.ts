@@ -3,6 +3,8 @@ import './publisher-group-actions-cell.component.less';
 import {Component} from '@angular/core';
 import {ICellRendererAngularComp} from 'ag-grid-angular';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
+import {PublisherGroupRendererParams} from '../../types/publisher-group-renderer-params';
+import {PublisherGroupsLibraryView} from '../../views/publisher-groups-library/publisher-groups-library.view';
 
 @Component({
     templateUrl: './publisher-group-actions-cell.component.html',
@@ -10,21 +12,23 @@ import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-
 export class PublisherGroupActionsCellComponent
     implements ICellRendererAngularComp {
     publisherGroup: PublisherGroup;
-    params: any;
+    parent: PublisherGroupsLibraryView;
 
-    agInit(params: any) {
-        this.params = params;
+    agInit(params: PublisherGroupRendererParams) {
+        this.parent = params.context.componentParent;
         this.publisherGroup = params.data;
     }
 
     openEditPublisherGroupModal() {
-        this.params.context.componentParent.openEditPublisherGroupModal(
-            this.publisherGroup
-        );
+        this.parent.openEditPublisherGroupModal(this.publisherGroup);
     }
 
     download() {
-        this.params.context.componentParent.download(this.publisherGroup);
+        this.parent.download(this.publisherGroup);
+    }
+
+    delete() {
+        this.parent.delete(this.publisherGroup);
     }
 
     refresh(): boolean {

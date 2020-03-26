@@ -38,6 +38,13 @@ export class PublisherGroupsService {
         return this.endpoint.upload(publisherGroup, requestStateUpdater);
     }
 
+    remove(
+        publisherGroupId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.remove(publisherGroupId, requestStateUpdater);
+    }
+
     download(publisherGroup: PublisherGroup) {
         this.endpoint.download(publisherGroup);
     }

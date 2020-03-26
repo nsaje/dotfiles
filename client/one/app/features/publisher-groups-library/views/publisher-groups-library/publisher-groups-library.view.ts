@@ -48,10 +48,10 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
             valueFormatter: booleanFormatter,
         },
         {
-            headerName: 'Number of publishers',
+            headerName: 'Number of publishers/placements',
             field: 'size',
             width: 220,
-            minWidth: 134,
+            minWidth: 200,
         },
         {
             headerName: 'Modified',
@@ -69,9 +69,8 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         },
         {
             headerName: '',
-            maxWidth: 140,
-            minWidth: 140,
-            suppressSizeToFit: true,
+            width: 100,
+            minWidth: 100,
             cellRendererFramework: PublisherGroupActionsCellComponent,
             pinned: 'right',
         },
@@ -79,9 +78,9 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
 
     systemColumnDefs: ColDef[] = [
         {headerName: 'ID', field: 'id', width: 60, minWidth: 60},
-        {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
         {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
-        {headerName: 'Type', field: 'type', width: 66, minWidth: 66},
+        {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
+        {headerName: 'Status', field: 'type', width: 66, minWidth: 66},
         {
             headerName: 'Subdomains included',
             field: 'includeSubdomains',
@@ -90,7 +89,7 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
             valueFormatter: booleanFormatter,
         },
         {
-            headerName: 'Number of publishers',
+            headerName: 'Number of placements',
             field: 'size',
             width: 134,
             minWidth: 134,
@@ -112,9 +111,10 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         {headerName: '', width: 160},
         {
             headerName: '',
-            maxWidth: 100,
-            minWidth: 100,
+            maxWidth: 70,
+            minWidth: 70,
             cellRendererFramework: PublisherGroupActionsCellComponent,
+            pinned: 'right',
         },
     ];
     context: any;
@@ -126,7 +126,7 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
-        private store: PublisherGroupsLibraryStore,
+        public store: PublisherGroupsLibraryStore,
         private service: PublisherGroupsService
     ) {
         this.context = {
@@ -154,6 +154,17 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
 
     onSystemGridReady($event: DetailGridInfo) {
         this.systemGridApi = $event.api;
+    }
+
+    delete(publisherGroup: PublisherGroup) {
+        if (
+            confirm(`Are you sure you wish to delete ${publisherGroup.name}?`)
+        ) {
+            this.store.deleteEntity(publisherGroup.id).then(() => {
+                this.gridApi.showLoadingOverlay();
+                this.store.loadEntities();
+            });
+        }
     }
 
     download(publisherGroup: PublisherGroup) {
@@ -197,9 +208,6 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         this.showGridLoadingOverlays();
 
         this.store.setStore(accountId);
-        this.store.loadEntities().then(() => {
-            this.changeDetectorRef.markForCheck();
-        });
     }
 
     private showGridLoadingOverlays() {
