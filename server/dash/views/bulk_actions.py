@@ -14,7 +14,6 @@ from dash import constants
 from dash import forms
 from dash import legacy
 from dash import models
-from dash import retargeting_helper
 from dash.dashapi import data_helper
 from dash.features import contentupload
 from dash.views import breakdown_helpers
@@ -252,16 +251,6 @@ class AdGroupSourceState(BaseBulkActionView):
             enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, ad_group_sources)
             if not enabling_autopilot_sources_allowed:
                 raise exc.ValidationError("Please increase Autopilot Daily Spend Cap to enable these sources.")
-            for ad_group_source in ad_group_sources:
-                if not retargeting_helper.can_add_source_with_retargeting(ad_group_source.source, ad_group_settings):
-                    raise exc.ValidationError(
-                        "Cannot enable media source that does not support"
-                        "retargeting on adgroup with retargeting enabled."
-                    )
-                if not helpers.check_facebook_source(ad_group_source):
-                    raise exc.ValidationError(
-                        "Cannot enable Facebook media source that isn't connected to a Facebook page."
-                    )
 
 
 class AdGroupContentAdEdit(BaseBulkActionView):

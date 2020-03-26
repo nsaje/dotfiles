@@ -688,37 +688,11 @@ class AdGroupSourcesTest(TestCase):
 
         self.assertEqual(name, "ONE:  /  /  / 123 / Outbrain")
 
-    def test_get_dma_targeting_compatible(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
-
-        ad_group_source = models.AdGroupSource.objects.get(id=3)
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
-        ]
-        ad_group_source.source.source_type.save()
-
-        response = self.client.get(reverse("ad_group_sources", kwargs={"ad_group_id": 2}), follow=True)
-
-        response_dict = json.loads(response.content)
-        self.assertCountEqual(
-            response_dict["data"]["sources"],
-            [
-                {
-                    "id": 2,
-                    "name": "Gravity",
-                    "can_target_existing_regions": False,
-                    "can_retarget": True,
-                },  # should return False when DMAs used
-                {"id": 3, "name": "Outbrain", "can_target_existing_regions": True, "can_retarget": True},
-                {"id": 9, "name": "Sharethrough", "can_target_existing_regions": False, "can_retarget": True},
-            ],
-        )
-
     def test_available_sources(self):
         response = self.client.get(reverse("ad_group_sources", kwargs={"ad_group_id": 1}), follow=True)
         # Expected sources - 9 (Sharethrough)
         # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+
         response_dict = json.loads(response.content)
         self.assertEqual(len(response_dict["data"]["sources"]), 1)
         self.assertEqual(response_dict["data"]["sources"][0]["id"], 9)
@@ -784,29 +758,6 @@ class AdGroupSourcesTest(TestCase):
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad__ad_group=ad_group, source=source)
         self.assertTrue(content_ad_sources.exists())
         self.assertEqual(len(content_ads), len(content_ad_sources))
-
-    def test_put_with_retargeting(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        request = RequestFactory()
-        request.user = User(id=1)
-
-        current_settings = ad_group.get_current_settings()
-        new_settings = current_settings.copy_settings()
-        new_settings.retargeting_ad_groups = [2]
-        new_settings.save(request)
-
-        source = models.Source.objects.get(pk=9)
-        source.supports_retargeting = False
-        source.save()
-
-        response = self.client.put(
-            reverse("ad_group_sources", kwargs={"ad_group_id": "1"}), data=json.dumps({"source_id": "9"})
-        )
-        self.assertEqual(response.status_code, 400)
-
-        ad_group_sources = ad_group.sources.all()
-        self.assertNotIn(source, ad_group_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(

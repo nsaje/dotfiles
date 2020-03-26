@@ -9,7 +9,6 @@ import core.models
 import core.signals
 import prodops.hacks
 from dash import constants
-from dash import retargeting_helper
 from utils import email_helper
 from utils import exc
 from utils import k1_helper
@@ -112,7 +111,6 @@ class AdGroupSettingsMixin(object):
             self.ad_group.save(request)
 
     def _filter_and_remap_input(self, request, updates, skip_permission_check):
-        updates = self._remove_unsupported_fields(updates)
         updates = self._remap_fields_for_compatibility(updates)
         updates = self._remove_disallowed_fields(request, updates, skip_permission_check)
         return updates
@@ -128,15 +126,6 @@ class AdGroupSettingsMixin(object):
         ):
             updates["cpm"] = self.DEFAULT_CPM_VALUE
             updates.pop("local_cpm", None)
-        return updates
-
-    def _remove_unsupported_fields(self, updates):
-        ad_group_sources = self.ad_group.adgroupsource_set.all().select_related("source", "settings")
-        if not retargeting_helper.supports_retargeting(ad_group_sources):
-            updates.pop("retargeting_ad_groups", None)
-            updates.pop("exclusion_retargeting_ad_groups", None)
-            updates.pop("audience_targeting", None)
-            updates.pop("exclusion_audience_targeting", None)
         return updates
 
     def _remap_fields_for_compatibility(self, updates):

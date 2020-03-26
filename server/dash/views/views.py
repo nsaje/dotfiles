@@ -34,8 +34,6 @@ from dash import constants
 from dash import forms
 from dash import infobox_helpers
 from dash import models
-from dash import region_targeting_helper
-from dash import retargeting_helper
 from dash.views import helpers
 from prodops import hacks
 from utils import api_common
@@ -667,7 +665,6 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group_settings = ad_group.get_current_settings()
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
         existing_ad_group_sources = ad_group.adgroupsource_set.exclude(ad_review_only=True)
@@ -688,16 +685,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         sources = []
         for source in available_sources:
-            sources.append(
-                {
-                    "id": source.id,
-                    "name": source.name,
-                    "can_target_existing_regions": region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings
-                    ),
-                    "can_retarget": retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings),
-                }
-            )
+            sources.append({"id": source.id, "name": source.name})
 
         return self.create_api_response(
             {"sources": sorted(sources, key=lambda source: source["name"]), "sources_waiting": []}

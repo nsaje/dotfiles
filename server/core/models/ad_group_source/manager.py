@@ -58,18 +58,15 @@ class AdGroupSourceManager(core.common.BaseManager):
             and not ad_review_only
             and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists()
         ):
-            raise exceptions.SourceNotAllowed("{} media source can not be added to this account.".format(source.name))
+            raise exceptions.SourceNotAllowed(
+                "{} media source can not be added because it is not allowed on this account. Please go to account settings and allow it first.".format(
+                    source.name
+                )
+            )
 
         if not skip_validation and ad_group_source and not ad_group_source.ad_review_only:
             raise exceptions.SourceAlreadyExists(
                 "{} media source for ad group {} already exists.".format(source.name, ad_group.id)
-            )
-
-        if not skip_validation and not dash.retargeting_helper.can_add_source_with_retargeting(
-            source, ad_group.settings
-        ):
-            raise exceptions.RetargetingNotSupported(
-                "{} media source can not be added because it does not support retargeting.".format(source.name)
             )
 
         if (
@@ -134,12 +131,6 @@ class AdGroupSourceManager(core.common.BaseManager):
             "source_type", "defaultsourcesettings__credentials"
         )
         added_ad_group_sources = []
-
-        for source in sources:
-            if not dash.retargeting_helper.can_add_source_with_retargeting(source, ad_group.settings):
-                raise utils.exc.ValidationError(
-                    "Media sources can not be added because some do not support retargeting."
-                )
 
         updates = {}
         if apply_ad_group_bids:

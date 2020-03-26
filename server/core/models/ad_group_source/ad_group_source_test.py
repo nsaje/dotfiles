@@ -95,17 +95,6 @@ class AdGroupSourceCreate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
 
-    @patch("dash.retargeting_helper.can_add_source_with_retargeting")
-    def test_create_retargeting(self, mock_retargeting, mock_k1):
-        mock_retargeting.return_value = False
-
-        with self.assertRaises(utils.exc.ValidationError):
-            core.models.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
-
-        mock_retargeting.assert_called_once_with(
-            self.default_source_settings.source, self.ad_group.get_current_settings()
-        )
-
     def test_bulk_create_on_allowed_sources(self, mock_k1):
         ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
             self.request, self.ad_group, write_history=False

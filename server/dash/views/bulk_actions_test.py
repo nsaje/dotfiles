@@ -97,9 +97,7 @@ class AdGroupSourceStateTest(TestCase):
         mock_k1_ping.assert_called_once_with(adg, msg="AdGroupSourceState.post")
 
     @patch("dash.views.helpers.enabling_autopilot_sources_allowed")
-    @patch("dash.views.helpers.check_facebook_source")
-    @patch("dash.retargeting_helper.can_add_source_with_retargeting")
-    def test_check_can_set_state(self, retargeting_mock, facebook_mock, autopilot_check_mock):
+    def test_check_can_set_state(self, autopilot_check_mock):
         view = bulk_actions.AdGroupSourceState()
         campaign_settings = models.CampaignSettings()
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -109,8 +107,6 @@ class AdGroupSourceStateTest(TestCase):
 
         view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
 
-        self.assertEqual(len(ad_group_sources), retargeting_mock.call_count)
-        self.assertEqual(len(ad_group_sources), facebook_mock.call_count)
         autopilot_check_mock.assert_called_once_with(ad_group, ad_group_sources)
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
