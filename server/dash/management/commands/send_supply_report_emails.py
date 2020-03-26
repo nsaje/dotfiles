@@ -8,7 +8,7 @@ logger = zlogging.getLogger(__name__)
 
 class Command(Z1Command):
     def add_arguments(self, parser):
-        parser.add_argument("recipients", type=str, nargs="*", dest="recipients", help="List of recipients")
+        parser.add_argument("recipients", type=str, nargs="*", help="List of recipients")
 
         parser.add_argument(
             "--dry-run", dest="dry_run", action="store_true", help="Skip sending emails and updating last sent times."
@@ -26,7 +26,7 @@ class Command(Z1Command):
 
     @pgdh.catch_and_report_exception(
         pgdh.PagerDutyEventType.PRODOPS,
-        summary="Z1 Suppply reports issue",
+        summary="Z1 Supply Reports Issue",
         links={
             "https://confluence.outbrain.com/display/ZemantaProdops/ProdOps%3A+Exception+in+Z1+Job+-+Send+supply+report+emails": "Playbook"
         },

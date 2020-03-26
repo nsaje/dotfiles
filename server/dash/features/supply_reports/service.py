@@ -100,8 +100,9 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
             mtd_cost=mtd_cost,
             daily_breakdown_report=daily_breakdown_report,
         )
-        recipient.last_sent_dt = datetime.datetime.now()
-        recipient.save()
+        if not overwrite_recipients_email:
+            recipient.last_sent_dt = datetime.datetime.now()
+            recipient.save()
 
 
 def _get_source_stats_from_query(query):
