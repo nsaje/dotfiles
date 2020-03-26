@@ -175,3 +175,5 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+export PATH=$PATH:/usr/local/go/bin:/home/nsaje/go/bin
+export GOPRIVATE=github.com/Zemanta/,*.outbrain.com
