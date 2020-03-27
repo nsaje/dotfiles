@@ -6,6 +6,7 @@ import {
     Input,
     Output,
     EventEmitter,
+    Inject,
 } from '@angular/core';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {ChangeEvent} from '../../../../shared/types/change-event';
@@ -21,6 +22,8 @@ export class PublisherGroupEditFormComponent {
     publisherGroup: PublisherGroup;
     @Input()
     publisherGroupErrors: PublisherGroupsLibraryStoreFieldsErrorsState;
+    @Input()
+    showNewLabels: boolean = false;
     @Output()
     publisherGroupChange = new EventEmitter<ChangeEvent<PublisherGroup>>();
     @Output()

@@ -14,6 +14,10 @@ angular
         // eslint-disable-line max-len
         this.getAvailableActions = getAvailableActions;
 
+        var canUserSeeNewPublisherLibrary = zemPermissions.hasPermission(
+            'zemauth.can_see_new_publisher_library'
+        );
+
         var USER_ACTIONS = [
             {
                 text: 'Request demo',
@@ -42,7 +46,9 @@ angular
                 ),
             },
             {
-                text: 'Publisher groups',
+                text: canUserSeeNewPublisherLibrary
+                    ? 'Publishers & Placements'
+                    : 'Publisher groups',
                 callback: navigateToPublisherGroupsView,
                 isAvailable: isPublisherGroupsActionAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(

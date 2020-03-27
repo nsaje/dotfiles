@@ -9,6 +9,7 @@
         (click)="openEditPublisherGroupModal()"
     ></button>
     <button
+        [hidden]="this.publisherGroup.implicit"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only  zem-button--remove-icon zem-button--danger zem-publisher-group-actions-cell__item"
         (click)="delete()"
     ></button>

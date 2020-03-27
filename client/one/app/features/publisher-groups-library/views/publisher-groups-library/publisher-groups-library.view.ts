@@ -4,82 +4,11 @@ import {
     Component,
     ChangeDetectionStrategy,
     OnInit,
-    Inject,
-    HostBinding,
-    ChangeDetectorRef,
-    OnDestroy,
-} from '@angular/core';
-import {LevelParam, Level} from '../../../../app.constants';
-import {
-    LEVEL_PARAM_TO_LEVEL_MAP,
-    LEVEL_TO_ENTITY_TYPE_MAP,
-} from '../../../../app.constants';
-import {ActivatedRoute, Params} from '@angular/router';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-
-@Component({
-    selector: 'zem-publisher-groups-library-view',
-    templateUrl: './publisher-groups-library.view.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
-    @HostBinding('class')
-    cssClass = 'zem-publisher-groups-library-view';
-
-    account: any;
-    agency: any;
-
-    private ngUnsubscribe$: Subject<void> = new Subject();
-
-    constructor(
-        private route: ActivatedRoute,
-        private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
-    ) {}
-
-    ngOnInit(): void {
-        this.route.params
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe((params: Params) => {
-                this.updateInternalState(
-                    this.route.snapshot.data.level,
-                    params.id
-                );
-            });
-    }
-
-    ngOnDestroy(): void {
-        this.ngUnsubscribe$.next();
-        this.ngUnsubscribe$.complete();
-    }
-
-    updateInternalState(levelParam: LevelParam, accountId: string) {
-        const level = this.getLevel(levelParam);
-
-        this.zemNavigationNewService
-            .getEntityById(LEVEL_TO_ENTITY_TYPE_MAP[level], accountId)
-            .then((account: any) => {
-                this.account = account;
-                this.changeDetectorRef.markForCheck();
-            });
-    }
-
-    private getLevel(levelParam: LevelParam): Level {
-        return LEVEL_PARAM_TO_LEVEL_MAP[levelParam];
-    }
-}
-
-/*import './publisher-groups-library.view.less';
-
-import {
-    Component,
-    ChangeDetectionStrategy,
-    OnInit,
     HostBinding,
     ChangeDetectorRef,
     OnDestroy,
     ViewChild,
+    Inject,
 } from '@angular/core';
 import {Level} from '../../../../app.constants';
 import {ActivatedRoute} from '@angular/router';
@@ -109,88 +38,15 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     @ViewChild('editPublisherGroupModal', {static: false})
     editPublisherGroupModal: ModalComponent;
 
-    columnDefs: ColDef[] = [
-        {headerName: 'ID', field: 'id', width: 120, minWidth: 80},
-        {headerName: 'Name', field: 'name', width: 180, minWidth: 110},
-        {
-            headerName: 'Subdomains included',
-            field: 'includeSubdomains',
-            width: 220,
-            minWidth: 134,
-            valueFormatter: booleanFormatter,
-        },
-        {
-            headerName: 'Number of publishers/placements',
-            field: 'size',
-            width: 220,
-            minWidth: 200,
-        },
-        {
-            headerName: 'Modified',
-            field: 'modified',
-            width: 220,
-            minWidth: 134,
-            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
-        },
-        {
-            headerName: 'Created',
-            field: 'created',
-            width: 220,
-            minWidth: 134,
-            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
-        },
-        {
-            headerName: '',
-            width: 100,
-            minWidth: 100,
-            cellRendererFramework: PublisherGroupActionsCellComponent,
-            pinned: 'right',
-        },
-    ];
+    columnDefs: ColDef[] = [];
 
-    systemColumnDefs: ColDef[] = [
-        {headerName: 'ID', field: 'id', width: 60, minWidth: 60},
-        {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
-        {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
-        {headerName: 'Status', field: 'type', width: 66, minWidth: 66},
-        {
-            headerName: 'Subdomains included',
-            field: 'includeSubdomains',
-            width: 134,
-            minWidth: 134,
-            valueFormatter: booleanFormatter,
-        },
-        {
-            headerName: 'Number of placements',
-            field: 'size',
-            width: 134,
-            minWidth: 134,
-        },
-        {
-            headerName: 'Modified',
-            field: 'modified',
-            width: 134,
-            minWidth: 134,
-            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
-        },
-        {
-            headerName: 'Created',
-            field: 'created',
-            width: 134,
-            minWidth: 134,
-            valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
-        },
-        {headerName: '', width: 160},
-        {
-            headerName: '',
-            maxWidth: 70,
-            minWidth: 70,
-            cellRendererFramework: PublisherGroupActionsCellComponent,
-            pinned: 'right',
-        },
-    ];
+    systemColumnDefs: ColDef[] = [];
+
     context: any;
 
+    showNewLabels: boolean = false;
+    addPublisherGroupModalTitle: string;
+    editPublisherGroupModalTitle: string;
     private gridApi: GridApi;
     private systemGridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
@@ -199,7 +55,8 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
         public store: PublisherGroupsLibraryStore,
-        private service: PublisherGroupsService
+        private service: PublisherGroupsService,
+        @Inject('zemPermissions') private zemPermissions: any
     ) {
         this.context = {
             componentParent: this,
@@ -207,6 +64,18 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.showNewLabels = this.zemPermissions.hasPermission(
+            'zemauth.can_see_new_publisher_library'
+        );
+
+        this.initColumnDefs();
+        this.addPublisherGroupModalTitle = this.showNewLabels
+            ? 'Create Publishers & Placement list'
+            : 'Add new publisher group';
+        this.editPublisherGroupModalTitle = this.showNewLabels
+            ? 'Edit Publishers & Placement list'
+            : 'Edit publisher group';
+
         this.route.params
             .pipe(takeUntil(this.ngUnsubscribe$))
             .pipe(filter(params => isDefined(params.id)))
@@ -290,4 +159,96 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
             this.systemGridApi.showLoadingOverlay();
         }
     }
-}*/
+
+    private initColumnDefs() {
+        this.columnDefs = [
+            {headerName: 'ID', field: 'id', width: 120, minWidth: 80},
+            {headerName: 'Name', field: 'name', width: 180, minWidth: 110},
+            {
+                headerName: 'Subdomains included',
+                field: 'includeSubdomains',
+                width: 220,
+                minWidth: 134,
+                valueFormatter: booleanFormatter,
+            },
+            {
+                headerName: this.showNewLabels
+                    ? 'Number of publishers/placements'
+                    : 'Number of publishers',
+                field: 'size',
+                width: 220,
+                minWidth: this.showNewLabels ? 200 : 134,
+            },
+            {
+                headerName: 'Modified',
+                field: 'modified',
+                width: 220,
+                minWidth: 134,
+                valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+            },
+            {
+                headerName: 'Created',
+                field: 'created',
+                width: 220,
+                minWidth: 134,
+                valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+            },
+            {
+                headerName: '',
+                width: 100,
+                minWidth: 100,
+                cellRendererFramework: PublisherGroupActionsCellComponent,
+                pinned: 'right',
+            },
+        ];
+
+        this.systemColumnDefs = [
+            {headerName: 'ID', field: 'id', width: 60, minWidth: 60},
+            {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
+            {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
+            {
+                headerName: this.showNewLabels ? 'Status' : 'Type',
+                field: 'type',
+                width: 66,
+                minWidth: 66,
+            },
+            {
+                headerName: 'Subdomains included',
+                field: 'includeSubdomains',
+                width: 134,
+                minWidth: 134,
+                valueFormatter: booleanFormatter,
+            },
+            {
+                headerName: this.showNewLabels
+                    ? 'Number of placements'
+                    : 'Number of publishers',
+                field: 'size',
+                width: 134,
+                minWidth: 134,
+            },
+            {
+                headerName: 'Modified',
+                field: 'modified',
+                width: 134,
+                minWidth: 134,
+                valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+            },
+            {
+                headerName: 'Created',
+                field: 'created',
+                width: 134,
+                minWidth: 134,
+                valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
+            },
+            {headerName: '', width: 160},
+            {
+                headerName: '',
+                maxWidth: 70,
+                minWidth: 70,
+                cellRendererFramework: PublisherGroupActionsCellComponent,
+                pinned: 'right',
+            },
+        ];
+    }
+}

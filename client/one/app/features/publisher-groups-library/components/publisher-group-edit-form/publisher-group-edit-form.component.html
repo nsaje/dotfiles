@@ -1,8 +1,8 @@
 <zem-text-form-group
     class="zem-text-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__text-form-group"
-    [label]="'List name'"
+    [label]="showNewLabels ? 'List name' : 'Publisher group name'"
     [value]="publisherGroup.name"
-    [placeholder]="'List name'"
+    [placeholder]="showNewLabels ? 'List name' : 'Publisher group name'"
     [errors]="publisherGroupErrors?.name"
     (valueChange)="onNameChange($event)"
 ></zem-text-form-group>
@@ -25,7 +25,7 @@
 </zem-content-form-group>
 <zem-content-form-group
     class="zem-content-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__content-form-group"
-    [label]="'CSV file with publishers'"
+    [label]="showNewLabels ? 'CSV file' : 'CSV file with publishers'"
 >
     <zem-file-selector
         class="zem-file-selector zem-publisher-group-edit-form__item "
