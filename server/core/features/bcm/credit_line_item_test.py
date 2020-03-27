@@ -1,10 +1,11 @@
 import datetime
 from decimal import Decimal
 
-# from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 import core.models
+import dash.constants
 import zemauth
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -140,3 +141,141 @@ class TestCreditLineItemAmounts(TestCase):
             amount=self.base_amount,
         )
         self.assertEqual(self.item.get_available_amount(), self.base_amount + refund.amount)
+
+
+class TestCreditLineItemAgency(TestCase):
+    def setUp(self):
+        self.request = magic_mixer.blend_request_user()
+
+    def test_update_valid_agency(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, users=[self.request.user])
+
+        credit = magic_mixer.blend(
+            CreditLineItem,
+            agency=None,
+            account=account,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+        magic_mixer.blend(
+            core.features.bcm.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() + datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.request.user,
+            amount=10,
+            margin=Decimal("0.2500"),
+        )
+
+        self.assertEqual(credit.agency, None)
+        self.assertEqual(credit.account, account)
+
+        credit.update(self.request, agency=agency, account=None)
+
+        self.assertEqual(credit.agency, agency)
+        self.assertEqual(credit.account, None)
+
+    def test_update_invalid_agency(self):
+        agency_one = magic_mixer.blend(core.models.Agency, users=[self.request.user])
+        agency_two = magic_mixer.blend(core.models.Agency, users=[self.request.user])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency_one, users=[self.request.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account_one, users=[self.request.user])
+
+        credit = magic_mixer.blend(
+            CreditLineItem,
+            agency=None,
+            account=account_one,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+        magic_mixer.blend(
+            core.features.bcm.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() + datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.request.user,
+            amount=10,
+            margin=Decimal("0.2500"),
+        )
+
+        self.assertEqual(credit.agency, None)
+        self.assertEqual(credit.account, account_one)
+
+        with self.assertRaises(ValidationError):
+            credit.update(self.request, agency=agency_two, account=None)
+
+
+class TestCreditLineItemAccount(TestCase):
+    def setUp(self):
+        self.request = magic_mixer.blend_request_user()
+
+    def test_update_valid_account(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+
+        credit = magic_mixer.blend(
+            CreditLineItem,
+            agency=None,
+            account=account_one,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+
+        self.assertEqual(credit.agency, None)
+        self.assertEqual(credit.account, account_one)
+
+        credit.update(self.request, agency=None, account=account_two)
+
+        self.assertEqual(credit.agency, None)
+        self.assertEqual(credit.account, account_two)
+
+    def test_update_invalid_account(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account_one, users=[self.request.user])
+
+        credit = magic_mixer.blend(
+            CreditLineItem,
+            agency=None,
+            account=account_one,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+        magic_mixer.blend(
+            core.features.bcm.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() + datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.request.user,
+            amount=10,
+            margin=Decimal("0.2500"),
+        )
+
+        self.assertEqual(credit.agency, None)
+        self.assertEqual(credit.account, account_one)
+
+        with self.assertRaises(ValidationError):
+            credit.update(self.request, agency=None, account=account_two)

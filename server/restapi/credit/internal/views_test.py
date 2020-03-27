@@ -57,7 +57,7 @@ class CreditViewSetTest(RESTAPITest):
         )
 
         r = self.client.get(reverse("restapi.credit.internal:credits_details", kwargs={"credit_id": credit.id}))
-        self.assertResponseError(r, "AuthorizationError")
+        self.assertResponseError(r, "MissingDataError")
 
     def test_get_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["account_credit_view"])
@@ -490,10 +490,59 @@ class CreditViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseError(r, "ValidationError")
 
-        error_message = "Credit line item is used on a different account. Account cannot be changed to {account_name}.".format(
+        error_message = "Credit line item is used on the current account. Account cannot be changed to {account_name}.".format(
             account_name=account_two.name
         )
         self.assertIn(error_message, resp_json["details"]["accountId"])
+
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
+    def test_put_agency_error(self, mock_log_to_slack):
+        agency_one = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency_two = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency_one, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        credit = magic_mixer.blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency_one,
+            account=None,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            comment="Credit comment",
+        )
+        magic_mixer.blend(
+            core.features.bcm.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() + datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.user,
+            amount=10,
+            margin=decimal.Decimal("0.2500"),
+        )
+
+        r = self.client.get(reverse("restapi.credit.internal:credits_details", kwargs={"credit_id": credit.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency_one.id))
+        self.assertEqual(resp_json["data"]["accountId"], None)
+
+        put_data = resp_json["data"].copy()
+        put_data["agencyId"] = str(agency_two.id)
+
+        r = self.client.put(
+            reverse("restapi.credit.internal:credits_details", kwargs={"credit_id": credit.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+
+        error_message = "Credit line item is used on the current agency. Agency cannot be changed to {agency_name}.".format(
+            agency_name=agency_two.name
+        )
+        self.assertIn(error_message, resp_json["details"]["agencyId"])
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_post(self, mock_log_to_slack):

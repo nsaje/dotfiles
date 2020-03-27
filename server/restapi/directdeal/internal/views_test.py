@@ -92,8 +92,8 @@ class DirectDealViewSetTest(RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
-        error_message = "Deal is used on a different account. Account cannot be changed to {account_name}.".format(
-            account_name=account2
+        error_message = "Deal is used on the current account. Account cannot be changed to {account_name}.".format(
+            account_name=account2.name
         )
         self.assertIn(error_message, resp_json["details"]["accountId"])
 
@@ -117,6 +117,33 @@ class DirectDealViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(resp_json["data"]["agencyId"], str(agency.id))
         self.assertEqual(resp_json["data"]["accountId"], None)
+
+    def test_put_agency_validation_error(self):
+        agency1 = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency2 = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency1, users=[self.user])
+        source = magic_mixer.blend(core.models.Source)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency1, account=None, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
+
+        r = self.client.get(reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency1.id))
+        self.assertEqual(resp_json["data"]["accountId"], None)
+        put_data = resp_json["data"].copy()
+        put_data["agencyId"] = str(agency2.id)
+
+        r = self.client.put(
+            reverse("restapi.directdeal.internal:directdeal_details", kwargs={"deal_id": deal.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        error_message = "Deal is used on the current agency. Agency cannot be changed to {agency_name}.".format(
+            agency_name=agency2.name
+        )
+        self.assertIn(error_message, resp_json["details"]["agencyId"])
 
     def test_list_pagination(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])

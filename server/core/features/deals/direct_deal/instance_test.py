@@ -157,3 +157,19 @@ class InstanceTestCase(TestCase):
 
         with self.assertRaises(ValidationError):
             deal.update(request, account=account2)
+
+    def test_update_invalid_agency(self):
+        request = magic_mixer.blend_request_user()
+        agency1 = magic_mixer.blend(core.models.Agency, users=[request.user])
+        account1 = magic_mixer.blend(core.models.Account, agency=agency1, users=[request.user])
+        agency2 = magic_mixer.blend(core.models.Agency, users=[request.user])
+        source = magic_mixer.blend(core.models.Source)
+
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency1, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account1)
+
+        self.assertEqual(deal.agency, agency1)
+        self.assertEqual(deal.account, None)
+
+        with self.assertRaises(ValidationError):
+            deal.update(request, agency=agency2, account=None)

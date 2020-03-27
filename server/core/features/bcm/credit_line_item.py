@@ -297,6 +297,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             self.validate_amount,
             self.validate_flat_fee_cc,
             self.validate_account_id,
+            self.validate_agency_id,
         )
 
         if not self.pk or self.previous_value("status") != constants.CreditLineItemStatus.SIGNED:
@@ -361,32 +362,50 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             return
 
     def validate_account_id(self):
-        if not self.has_changed("account"):
+        if not self.has_changed("account") or self.id is None:
             return
 
         if self.account is None:
             return
 
-        budgets = self.budgets.all()
+        budgets = self.budgets.all().select_related("campaign")
         if len(budgets) == 0:
             return
 
-        accounts = []
+        accounts = set()
         for budget in budgets:
             account_id = budget.campaign.account_id
             if account_id not in accounts:
-                accounts.append(account_id)
+                accounts.add(account_id)
 
-        if len(accounts) > 1:
+        if self.account.id not in accounts:
             raise ValidationError(
-                "Credit line item is used on different accounts. Account cannot be changed to {account_name}.".format(
+                "Credit line item is used on the current account. Account cannot be changed to {account_name}.".format(
                     account_name=self.account.name
                 )
             )
-        if len(accounts) == 1 and accounts[0] != self.account_id:
+
+    def validate_agency_id(self):
+        if not self.has_changed("agency") or self.id is None:
+            return
+
+        if self.agency is None:
+            return
+
+        budgets = self.budgets.all().select_related("campaign__account")
+        if len(budgets) == 0:
+            return
+
+        agencies = set()
+        for budget in budgets:
+            agency_id = budget.campaign.account.agency_id
+            if agency_id is not None:
+                agencies.add(agency_id)
+
+        if self.agency.id not in agencies:
             raise ValidationError(
-                "Credit line item is used on a different account. Account cannot be changed to {account_name}.".format(
-                    account_name=self.account.name
+                "Credit line item is used on the current agency. Agency cannot be changed to {agency_name}.".format(
+                    agency_name=self.agency.name
                 )
             )
 

@@ -176,7 +176,7 @@ class CreditRefundViewSetTest(RESTAPITest):
                 kwargs={"credit_id": credit.id, "refund_id": refund.id},
             )
         )
-        self.assertResponseError(r, "AuthorizationError")
+        self.assertResponseError(r, "MissingDataError")
 
     def test_get_refund_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["can_manage_credit_refunds"])
