@@ -7,6 +7,7 @@ import stats.constants
 from utils import cache_helper
 from utils import dates_helper
 from utils import db_router
+from utils import metrics_compat
 from utils import sort_helper
 from utils import threads
 
@@ -117,7 +118,9 @@ def query(
         if breakdown_for_name is None:
             breakdown_for_name = breakdown
 
+        db_alias = db.stats_db_router.db_for_read(None)
         if query_all or should_query_all(breakdown, is_reports):
+            metrics_compat.incr("redshiftapi.api_breakdowns.query_type", 1, type="query_all", db_alias=db_alias)
 
             all_rows = _query_all(
                 breakdown,
@@ -140,6 +143,7 @@ def query(
             )
         else:
             if len(breakdown) == 1 or is_reports:
+                metrics_compat.incr("redshiftapi.api_breakdowns.query_type", 1, type="query_joint", db_alias=db_alias)
                 sql, params, temp_tables = queries.prepare_query_joint_base(
                     breakdown,
                     constraints,
@@ -152,6 +156,9 @@ def query(
                     skip_performance_columns=is_reports,
                 )
             else:
+                metrics_compat.incr(
+                    "redshiftapi.api_breakdowns.query_type", 1, type="query_joint_levels", db_alias=db_alias
+                )
                 sql, params, temp_tables = queries.prepare_query_joint_levels(
                     breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view
                 )
