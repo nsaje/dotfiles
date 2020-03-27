@@ -1,3 +1,4 @@
+import time
 from functools import partial
 
 from django.conf import settings
@@ -119,9 +120,10 @@ def query(
             breakdown_for_name = breakdown
 
         db_alias = db.stats_db_router.db_for_read(None)
+        t0 = time.time()
+        query_type = None
         if query_all or should_query_all(breakdown, is_reports):
-            metrics_compat.incr("redshiftapi.api_breakdowns.query_type", 1, type="query_all", db_alias=db_alias)
-
+            query_type = "query_all"
             all_rows = _query_all(
                 breakdown,
                 constraints,
@@ -143,7 +145,7 @@ def query(
             )
         else:
             if len(breakdown) == 1 or is_reports:
-                metrics_compat.incr("redshiftapi.api_breakdowns.query_type", 1, type="query_joint", db_alias=db_alias)
+                query_type = "query_joint"
                 sql, params, temp_tables = queries.prepare_query_joint_base(
                     breakdown,
                     constraints,
@@ -156,9 +158,7 @@ def query(
                     skip_performance_columns=is_reports,
                 )
             else:
-                metrics_compat.incr(
-                    "redshiftapi.api_breakdowns.query_type", 1, type="query_joint_levels", db_alias=db_alias
-                )
+                query_type = "query_joint_levels"
                 sql, params, temp_tables = queries.prepare_query_joint_levels(
                     breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view
                 )
@@ -168,6 +168,12 @@ def query(
             postprocess.postprocess_joint_query_rows(rows)
             if not is_reports:
                 rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
+
+        metrics_compat.incr("redshiftapi.api_breakdowns.query_type", 1, type=query_type, db_alias=db_alias)
+        metrics_compat.timing(
+            "redshiftapi.api_breakdowns.query_type_timer", (time.time() - t0), type=query_type, db_alias=db_alias
+        )
+
         postprocess.set_default_values(breakdown, rows)
         postprocess.remove_empty_rows_delivery_dimension(breakdown, rows)
 
