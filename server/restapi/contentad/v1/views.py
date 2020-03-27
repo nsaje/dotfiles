@@ -2,6 +2,7 @@ import rest_framework.serializers
 
 import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
+import dash.constants
 import dash.models
 from dash.features import contentupload
 from dash.views import helpers
@@ -18,7 +19,7 @@ class ContentAdViewList(RESTAPIBaseView):
     def get(self, request):
         ad_group_id = request.query_params.get("adGroupId")
         if not ad_group_id:
-            raise serializers.ValidationError("Must pass adGroupId parameter")
+            raise rest_framework.serializers.ValidationError("Must pass adGroupId parameter")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content_ads = (
             dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related("ad_group")
@@ -59,7 +60,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
     def post(self, request):
         ad_group_id = request.query_params.get("adGroupId")
         if not ad_group_id:
-            raise serializers.ValidationError("Must pass adGroupId parameter")
+            raise rest_framework.serializers.ValidationError("Must pass adGroupId parameter")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         candidates_data = []

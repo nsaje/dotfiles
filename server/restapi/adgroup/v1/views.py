@@ -85,7 +85,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
     @staticmethod
     def _remap_error_fields_if_needed(settings, exception):
-        if ("bid" in settings or "local_bid" in settings) and hasattr(exception, "errors"):
+        if ("bid" in settings or "local_bid" in settings) and getattr(exception, "errors", None):
             max_cpm_error = exception.errors.pop("max_cpm", None)
             if max_cpm_error:
                 exception.errors["bid"] = max_cpm_error
