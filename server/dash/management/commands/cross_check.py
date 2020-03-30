@@ -83,23 +83,25 @@ class Command(Z1Command):
                 num_running_ads,
             )
         if options.get("emit_metrics"):
-            metrics_compat.gauge("consistency_cross_check.running_ad_groups", num_running_ad_groups, account=account.id)
+            metrics_compat.gauge(
+                "consistency_cross_check.running_ad_groups", num_running_ad_groups, account=str(account.id)
+            )
             metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_b1_sources,
-                account=account.id,
-                source=constants.SourceType.B1,
+                account=str(account.id),
+                source=str(constants.SourceType.B1),
             )
             metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_ob_sources,
-                account=account.id,
-                source=constants.SourceType.OUTBRAIN,
+                account=str(account.id),
+                source=str(constants.SourceType.OUTBRAIN),
             )
             metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_y_sources,
-                account=account.id,
-                source=constants.SourceType.YAHOO,
+                account=str(account.id),
+                source=str(constants.SourceType.YAHOO),
             )
-            metrics_compat.gauge("consistency_cross_check.running_ads", num_running_ads, account=account.id)
+            metrics_compat.gauge("consistency_cross_check.running_ads", num_running_ads, account=str(account.id))
