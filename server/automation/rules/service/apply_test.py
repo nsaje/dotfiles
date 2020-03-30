@@ -192,37 +192,37 @@ class ApplyTest(TestCase):
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LIFETIME: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 

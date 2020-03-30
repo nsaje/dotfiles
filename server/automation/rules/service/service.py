@@ -1,10 +1,7 @@
 from collections import ChainMap
-from collections import defaultdict
-from typing import Callable
 from typing import DefaultDict
 from typing import Dict
 from typing import List
-from typing import Optional
 from typing import Sequence
 from typing import Union
 
@@ -17,7 +14,6 @@ import core.features.goals
 import core.models
 import dash.constants
 import etl.materialization_run
-import redshiftapi.api_rules
 from utils import dates_helper
 from utils import email_helper
 from utils import zlogging
@@ -27,6 +23,7 @@ from .. import RuleHistory
 from .. import constants
 from . import exceptions
 from . import fetch
+from . import helpers
 from .actions import ValueChangeData
 from .apply import ErrorData
 from .apply import apply_rule
@@ -48,11 +45,10 @@ def execute_rules() -> None:
             "ad_groups_included", "conditions"
         )
 
-        rules_map = _get_rules_by_ad_group_map(rules)
+        rules_map = helpers.get_rules_by_ad_group_map(rules)
 
         ad_groups = list(rules_map.keys())
-        raw_stats = redshiftapi.api_rules.query(target_type, ad_groups)
-        stats = _format_stats(target_type, raw_stats)
+        stats = fetch.query_stats(target_type, rules_map)
         ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
         campaign_budgets_map = fetch.prepare_budgets(ad_groups)
         content_ad_settings_map = {}
@@ -87,44 +83,6 @@ def execute_rules() -> None:
                 _send_notification_email_if_enabled(rule, ad_group, changes, errors)
 
     automation.models.RulesDailyJobLog.objects.create()
-
-
-def _get_rules_by_ad_group_map(rules: Sequence[Rule]) -> DefaultDict[core.models.AdGroup, List[Rule]]:
-    rules_map: DefaultDict[core.models.AdGroup, List[Rule]] = defaultdict(list)
-    for rule in rules:
-        for ad_group in rule.ad_groups_included.filter_active().exclude_archived():
-            rules_map[ad_group].append(rule)
-
-    return rules_map
-
-
-def _format_stats(
-    target_type: int, stats: Sequence[Dict]
-) -> DefaultDict[int, DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]]]:
-
-    dict_tree: Callable[[], DefaultDict] = lambda: defaultdict(dict_tree)  # noqa
-    formatted_stats = dict_tree()
-
-    target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
-
-    for row in stats:
-        ad_group_id = row.pop("ad_group_id", None)
-        default_key = ad_group_id if target_type == constants.TargetType.AD_GROUP else None
-        target_key_group = tuple(row.pop(t, default_key) for t in target_column_keys)
-        window_key = row.pop("window_key", None)
-
-        if (
-            not all([ad_group_id, all(target_key_group), window_key])
-            or target_key_group[0] in core.features.bid_modifiers.constants.UNSUPPORTED_TARGETS
-        ):
-            continue
-
-        target_key = "__".join(map(str, target_key_group))
-
-        for metric, value in row.items():
-            formatted_stats[ad_group_id][target_key][metric][window_key] = value
-
-    return formatted_stats
 
 
 def _fetch_ad_group_settings(

@@ -384,6 +384,24 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.AudienceMetrics,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
+    [RuleConditionOperandType.AvgCostPerConversion]: {
+        type: RuleConditionOperandType.AvgCostPerConversion,
+        label: 'Avg. cost per conversion - click attribution',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
+    },
+    [RuleConditionOperandType.AvgCostPerConversionView]: {
+        type: RuleConditionOperandType.AvgCostPerConversionView,
+        label: 'Avg. cost per conversion - view attribution',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
+    },
+    [RuleConditionOperandType.AvgCostPerConversionTotal]: {
+        type: RuleConditionOperandType.AvgCostPerConversionTotal,
+        label: 'Avg. cost per conversion - total',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
+    },
     [RuleConditionOperandType.CampaignBudget]: {
         type: RuleConditionOperandType.CampaignBudget,
         label: 'Campaign budget',
@@ -933,6 +951,66 @@ export const RULE_CONDITIONS_OPTIONS = {
             // RULE_CONDITION_OPERANDS_OPTIONS[
             //     RuleConditionOperandType.TimeOnSiteCampaignGoal
             // ],
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerConversion]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversion
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerConversionView]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversionView
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerConversionTotal]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversionTotal
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
         ],
     },
     [RuleConditionOperandType.RemainingCampaignBudget]: {
@@ -1650,5 +1728,53 @@ export const EMAIL_MACROS = [
     {
         label: 'Avg. cost per minute (last 30 days)',
         value: Macro.AvgCostPerMinuteThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion (last day)',
+        value: Macro.AvgCostPerConversionLastDay,
+    },
+    {
+        label: 'Avg. cost per conversion (last 3 days)',
+        value: Macro.AvgCostPerConversionLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per conversion (last 7 days)',
+        value: Macro.AvgCostPerConversionLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per conversion (last 30 days)',
+        value: Macro.AvgCostPerConversionThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion - view attribution (last day)',
+        value: Macro.AvgCostPerConversionViewLastDay,
+    },
+    {
+        label: 'Avg. cost per conversion - view attribution (last 3 days)',
+        value: Macro.AvgCostPerConversionViewLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per conversion - view attribution (last 7 days)',
+        value: Macro.AvgCostPerConversionViewLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per conversion - view attribution (last 30 days)',
+        value: Macro.AvgCostPerConversionViewThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion - total (last day)',
+        value: Macro.AvgCostPerConversionTotalLastDay,
+    },
+    {
+        label: 'Avg. cost per conversion - total (last 3 days)',
+        value: Macro.AvgCostPerConversionTotalLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per conversion - total (last 7 days)',
+        value: Macro.AvgCostPerConversionTotalLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per conversion - total (last 30 days)',
+        value: Macro.AvgCostPerConversionTotalThirtyDays,
     },
 ];

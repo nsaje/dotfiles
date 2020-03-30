@@ -107,14 +107,17 @@ class ExpandTestCase(TestCase):
             AVG_COT_PER_NEW_VISITOR_LAST_30_DAYS: {AVG_COT_PER_NEW_VISITOR_LAST_30_DAYS}
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: {AVG_COST_PER_PAGEVIEW_LAST_30_DAYS}
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: {AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS}
-            AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}"""
+            AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}
+            AVG_COST_PER_CONVERSION_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_LAST_30_DAYS}
+            AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS}
+            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS}"""
         )
         self.target_stats = {
-            "etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
+            "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
             "clicks": {constants.MetricWindow.LAST_30_DAYS: 2000},
             "impressions": {constants.MetricWindow.LAST_30_DAYS: 200000},
-            "etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
-            "etfm_cpm": {constants.MetricWindow.LAST_30_DAYS: 0.7},
+            "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
+            "local_etfm_cpm": {constants.MetricWindow.LAST_30_DAYS: 0.7},
             "visits": {constants.MetricWindow.LAST_30_DAYS: 300},
             "unique_users": {constants.MetricWindow.LAST_30_DAYS: 202},
             "new_users": {constants.MetricWindow.LAST_30_DAYS: 15},
@@ -128,11 +131,14 @@ class ExpandTestCase(TestCase):
             "bounce_rate": {constants.MetricWindow.LAST_30_DAYS: 0.89},
             "total_seconds": {constants.MetricWindow.LAST_30_DAYS: 30200},
             "avg_tos": {constants.MetricWindow.LAST_30_DAYS: 25.2},
-            "avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
-            "avg_etfm_cost_for_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
-            "avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
-            "avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
-            "avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
+            "local_avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
+            "local_avg_etfm_cost_for_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
+            "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
+            "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
+            "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
+            "local_avg_etfm_cost_per_conversion": {constants.MetricWindow.LAST_30_DAYS: 0.12},
+            "local_avg_etfm_cost_per_conversion_view": {constants.MetricWindow.LAST_30_DAYS: 0.23},
+            "local_avg_etfm_cost_per_conversion_total": {constants.MetricWindow.LAST_30_DAYS: 0.34},
         }
 
     def test_expand_macros(self):
@@ -171,7 +177,10 @@ class ExpandTestCase(TestCase):
             AVG_COT_PER_NEW_VISITOR_LAST_30_DAYS: $0.55
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: $0.11
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: $0.44
-            AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22"""
+            AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22
+            AVG_COST_PER_CONVERSION_LAST_30_DAYS: $0.12
+            AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: $0.23
+            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: $0.34"""
         )
         self.assertEqual(expected, expanded)
         self.assertTrue(all(macro in expanded for macro in constants.EmailActionMacro.get_all()))

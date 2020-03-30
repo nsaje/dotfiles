@@ -133,6 +133,18 @@ export enum Macro {
     AvgCostPerMinuteLastThreeDays = 'AVG_COST_PER_MINUTE_LAST_3_DAYS',
     AvgCostPerMinuteLastSevenDays = 'AVG_COST_PER_MINUTE_LAST_7_DAYS',
     AvgCostPerMinuteThirtyDays = 'AVG_COST_PER_MINUTE_LAST_30_DAYS',
+    AvgCostPerConversionLastDay = 'AVG_COST_PER_CONVERSION_LAST_DAY',
+    AvgCostPerConversionLastThreeDays = 'AVG_COST_PER_CONVERSION_LAST_3_DAYS',
+    AvgCostPerConversionLastSevenDays = 'AVG_COST_PER_CONVERSION_LAST_7_DAYS',
+    AvgCostPerConversionThirtyDays = 'AVG_COST_PER_CONVERSION_LAST_30_DAYS',
+    AvgCostPerConversionViewLastDay = 'AVG_COST_PER_CONVERSION_VIEW_LAST_DAY',
+    AvgCostPerConversionViewLastThreeDays = 'AVG_COST_PER_CONVERSION_VIEW_LAST_3_DAYS',
+    AvgCostPerConversionViewLastSevenDays = 'AVG_COST_PER_CONVERSION_VIEW_LAST_7_DAYS',
+    AvgCostPerConversionViewThirtyDays = 'AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS',
+    AvgCostPerConversionTotalLastDay = 'AVG_COST_PER_CONVERSION_TOTAL_LAST_DAY',
+    AvgCostPerConversionTotalLastThreeDays = 'AVG_COST_PER_CONVERSION_TOTAL_LAST_3_DAYS',
+    AvgCostPerConversionTotalLastSevenDays = 'AVG_COST_PER_CONVERSION_TOTAL_LAST_7_DAYS',
+    AvgCostPerConversionTotalThirtyDays = 'AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS',
 }
 
 export enum RuleConditionOperandType {
@@ -158,6 +170,9 @@ export enum RuleConditionOperandType {
     BounceRate = 'BOUNCE_RATE',
     TotalSeconds = 'TOTAL_SECONDS',
     TimeOnSite = 'AVG_TIME_ON_SITE',
+    AvgCostPerConversion = 'AVG_COST_PER_CONVERSION',
+    AvgCostPerConversionView = 'AVG_COST_PER_CONVERSION_VIEW',
+    AvgCostPerConversionTotal = 'AVG_COST_PER_CONVERSION_TOTAL',
     CampaignBudget = 'CAMPAIGN_BUDGET',
     RemainingCampaignBudget = 'REMAINING_CAMPAIGN_BUDGET',
     CampaignBudgetMargin = 'CAMPAIGN_BUDGET_MARGIN',

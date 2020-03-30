@@ -42,13 +42,12 @@ def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs)
     else:
         raise Exception("Invalid bid action type")
 
-    bid_field = "cpm" if ad_group.bidding_type == dash.constants.BiddingType.CPM else "cpc"
-    base_bid = getattr(ad_group.settings, bid_field)
-    bid = limiter(base_bid + Decimal(str(change)), Decimal(str(rule.change_limit)))
+    old_value = ad_group.settings.local_bid
+    new_value = limiter(old_value + Decimal(str(change)), Decimal(str(rule.change_limit)))
 
-    ad_group.settings.update(None, **{bid_field: bid})
+    ad_group.settings.update(None, local_bid=new_value)
 
-    return ValueChangeData(target=target, old_value=float(base_bid), new_value=float(bid))
+    return ValueChangeData(target=target, old_value=float(old_value), new_value=float(new_value))
 
 
 def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:
@@ -68,10 +67,10 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     else:
         raise Exception("Invalid budget action type")
 
-    base_budget = ad_group.settings.autopilot_daily_budget
+    base_budget = ad_group.settings.local_autopilot_daily_budget
     budget = limiter(base_budget + Decimal(change), Decimal(rule.change_limit))
 
-    ad_group.settings.update(None, autopilot_daily_budget=budget)
+    ad_group.settings.update(None, local_autopilot_daily_budget=budget)
 
     return ValueChangeData(target=target, old_value=float(base_budget), new_value=float(budget))
 

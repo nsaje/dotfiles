@@ -24,13 +24,13 @@ class ServiceTest(TestCase):
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("core.features.bid_modifiers.converters.TargetConverter.from_target")
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rules(self, mock_stats, mock_format, mock_apply, mock_from_target):
         ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
             ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {ag.id: {} for ag in ad_groups}
         mock_apply.return_value = (
             [
@@ -104,7 +104,7 @@ class ServiceTest(TestCase):
 
         # format stats
         self.assertEqual(
-            [mock.call(target_type, [123]) for target_type in constants.TargetType.get_all()],
+            [mock.call(target_type, [{"ad_group_id": 123}]) for target_type in constants.TargetType.get_all()],
             mock_format.call_args_list,
         )
 
@@ -177,12 +177,12 @@ class ServiceTest(TestCase):
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_history(self, mock_stats, mock_format, mock_apply):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {ad_group.id: {}}
         mock_apply.return_value = (
             [
@@ -216,12 +216,12 @@ class ServiceTest(TestCase):
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rules_fail(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {ad_group.id: {}}
         mock_apply.return_value = (
             [],
@@ -248,12 +248,12 @@ class ServiceTest(TestCase):
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rules_no_changes(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {ad_group.id: {}}
         mock_apply.return_value = ([], [])
         for target_type in constants.TargetType.get_all():
@@ -282,7 +282,7 @@ class ServiceTest(TestCase):
         mock_stats.assert_not_called()
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
-    @mock.patch("redshiftapi.api_rules.query")
+    @mock.patch("redshiftapi.api_rules.query", return_value=[])
     def test_execute_rules_no_materialized_data(self, mock_stats, mock_time):
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
         self.assertFalse(etl.models.MaterializationRun.objects.exists())
@@ -306,295 +306,12 @@ class ServiceTest(TestCase):
         self.assertEqual(10, mock_stats.call_count)
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
-    def test_get_rules_by_ad_group_map(self):
-        ad_groups_archived = magic_mixer.cycle(5).blend(core.models.AdGroup, archived=True)
-        ad_groups = magic_mixer.cycle(5).blend(core.models.AdGroup, archived=False)
-        for ag in ad_groups + ad_groups_archived:
-            ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        ad_groups_inactive = magic_mixer.cycle(5).blend(core.models.AdGroup, archived=False)
-        for ag in ad_groups_inactive:
-            ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-
-        rule_1 = magic_mixer.blend(
-            Rule, ad_groups_included=ad_groups[:3] + ad_groups_inactive[:3] + ad_groups_archived[:3]
-        )
-        rule_2 = magic_mixer.blend(
-            Rule, ad_groups_included=ad_groups[3:5] + ad_groups_inactive[3:5] + ad_groups_archived[3:5]
-        )
-        rule_3 = magic_mixer.blend(
-            Rule, ad_groups_included=ad_groups[1:4] + ad_groups_inactive[1:4] + ad_groups_archived[1:4]
-        )
-
-        rules_map = service._get_rules_by_ad_group_map([rule_1, rule_2, rule_3])
-        self.assertEqual(
-            {
-                ad_groups[0]: [rule_1],
-                ad_groups[1]: [rule_1, rule_3],
-                ad_groups[2]: [rule_1, rule_3],
-                ad_groups[3]: [rule_2, rule_3],
-                ad_groups[4]: [rule_2],
-            },
-            rules_map,
-        )
-
-    def test_format_publisher_stats(self):
-        target_type = constants.TargetType.PUBLISHER
-        stats = [
-            {
-                "ad_group_id": 123,
-                "source_id": 12,
-                "publisher": "pub1.com",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.5,
-                "cpm": 0.7,
-            },
-            {
-                "ad_group_id": 123,
-                "source_id": 12,
-                "publisher": "pub1.com",
-                "window_key": constants.MetricWindow.LAST_30_DAYS,
-                "cpc": 0.3,
-                "cpm": 0.1,
-            },
-            {
-                "ad_group_id": 123,
-                "source_id": 12,
-                "publisher": "pub2.com",
-                "window_key": constants.MetricWindow.LAST_DAY,
-                "cpc": 0.5,
-                "cpm": 0.2,
-            },
-            {
-                "ad_group_id": 123,
-                "source_id": 12,
-                "publisher": "pub2.com",
-                "window_key": constants.MetricWindow.LIFETIME,
-                "cpc": None,
-                "cpm": 0.8,
-            },
-            {
-                "ad_group_id": 321,
-                "source_id": 32,
-                "publisher": "pub1.com",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.1,
-                "cpm": 0.2,
-            },
-            {
-                "ad_group_id": 321,
-                "source_id": 21,
-                "publisher": "pub3.com",
-                "window_key": constants.MetricWindow.LAST_DAY,
-                "cpc": 0.2,
-                "cpm": 0.1,
-            },
-            {
-                "ad_group_id": None,
-                "source_id": 12,
-                "publisher": "pub4.com",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {
-                "ad_group_id": 123,
-                "source_id": 12,
-                "publisher": None,
-                "window_key": constants.MetricWindow.LAST_30_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {
-                "ad_group_id": 123,
-                "source_id": None,
-                "publisher": "pub4.com",
-                "window_key": constants.MetricWindow.LAST_7_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {"ad_group_id": 321, "source_id": 12, "publisher": "pub5", "window_key": None, "cpc": 0.7, "cpm": 0.9},
-            {
-                "ad_group_id": 321,
-                "publisher": "pub5",
-                "window_key": constants.MetricWindow.LAST_DAY,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-        ]
-        formatted_stats = service._format_stats(target_type, stats)
-        self.assertEqual(
-            {
-                123: {
-                    "pub1.com__12": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.5, constants.MetricWindow.LAST_30_DAYS: 0.3},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.7, constants.MetricWindow.LAST_30_DAYS: 0.1},
-                    },
-                    "pub2.com__12": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
-                    },
-                },
-                321: {
-                    "pub1.com__32": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.1},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.2},
-                    },
-                    "pub3.com__21": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.2},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.1},
-                    },
-                },
-            },
-            formatted_stats,
-        )
-
-    def test_format_ad_group_stats(self):
-        target_type = constants.TargetType.AD_GROUP
-        stats = [
-            {"ad_group_id": 123, "window_key": constants.MetricWindow.LAST_3_DAYS, "cpc": 0.5, "cpm": 0.7},
-            {"ad_group_id": 123, "window_key": constants.MetricWindow.LAST_30_DAYS, "cpc": 0.3, "cpm": 0.1},
-            {"ad_group_id": 111, "window_key": constants.MetricWindow.LAST_DAY, "cpc": 0.5, "cpm": 0.2},
-            {"ad_group_id": 111, "window_key": constants.MetricWindow.LIFETIME, "cpc": None, "cpm": 0.8},
-            {"ad_group_id": 321, "window_key": constants.MetricWindow.LAST_3_DAYS, "cpc": 0.1, "cpm": 0.2},
-            {"ad_group_id": 222, "window_key": constants.MetricWindow.LAST_DAY, "cpc": 0.2, "cpm": 0.1},
-            {"ad_group_id": None, "window_key": constants.MetricWindow.LAST_3_DAYS, "cpc": 0.7, "cpm": 0.9},
-            {"ad_group_id": 333, "window_key": None, "cpc": 0.7, "cpm": 0.9},
-        ]
-        formatted_stats = service._format_stats(target_type, stats)
-        self.assertEqual(
-            {
-                123: {
-                    "123": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.5, constants.MetricWindow.LAST_30_DAYS: 0.3},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.7, constants.MetricWindow.LAST_30_DAYS: 0.1},
-                    }
-                },
-                111: {
-                    "111": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
-                    }
-                },
-                321: {
-                    "321": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.1},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.2},
-                    }
-                },
-                222: {
-                    "222": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.2},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.1},
-                    }
-                },
-            },
-            formatted_stats,
-        )
-
-    def test_format_stats(self):
-        test_cases = {
-            target_type: constants.TARGET_TYPE_STATS_MAPPING[target_type][0]
-            for target_type in [
-                constants.TargetType.AD,
-                constants.TargetType.DEVICE,
-                constants.TargetType.COUNTRY,
-                constants.TargetType.STATE,
-                constants.TargetType.DMA,
-                constants.TargetType.OS,
-                constants.TargetType.ENVIRONMENT,
-                constants.TargetType.SOURCE,
-            ]
-        }
-
-        for target_type, mv_column in test_cases.items():
-            self._test_format_stats(target_type, mv_column)
-
-    def _test_format_stats(self, target_type, mv_column):
-        stats = [
-            {
-                "ad_group_id": 123,
-                mv_column: "12",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.5,
-                "cpm": 0.7,
-            },
-            {
-                "ad_group_id": 123,
-                mv_column: "12",
-                "window_key": constants.MetricWindow.LAST_30_DAYS,
-                "cpc": 0.3,
-                "cpm": 0.1,
-            },
-            {"ad_group_id": 111, mv_column: 12, "window_key": constants.MetricWindow.LAST_DAY, "cpc": 0.5, "cpm": 0.2},
-            {"ad_group_id": 111, mv_column: 12, "window_key": constants.MetricWindow.LIFETIME, "cpc": None, "cpm": 0.8},
-            {
-                "ad_group_id": 321,
-                mv_column: "32",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.1,
-                "cpm": 0.2,
-            },
-            {"ad_group_id": 321, mv_column: 21, "window_key": constants.MetricWindow.LAST_DAY, "cpc": 0.2, "cpm": 0.1},
-            {
-                "ad_group_id": None,
-                mv_column: "12",
-                "window_key": constants.MetricWindow.LAST_3_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {
-                "ad_group_id": 123,
-                mv_column: None,
-                "window_key": constants.MetricWindow.LAST_7_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {
-                "ad_group_id": 222,
-                mv_column: "Other",
-                "window_key": constants.MetricWindow.LAST_7_DAYS,
-                "cpc": 0.7,
-                "cpm": 0.9,
-            },
-            {"ad_group_id": 321, mv_column: "12", "window_key": None, "cpc": 0.7, "cpm": 0.9},
-            {"ad_group_id": 321, "window_key": constants.MetricWindow.LAST_DAY, "cpc": 0.7, "cpm": 0.9},
-        ]
-        formatted_stats = service._format_stats(target_type, stats)
-        self.assertEqual(
-            {
-                123: {
-                    "12": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.5, constants.MetricWindow.LAST_30_DAYS: 0.3},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.7, constants.MetricWindow.LAST_30_DAYS: 0.1},
-                    }
-                },
-                111: {
-                    "12": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
-                    }
-                },
-                321: {
-                    "32": {
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.1},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.2},
-                    },
-                    "21": {
-                        "cpc": {constants.MetricWindow.LAST_DAY: 0.2},
-                        "cpm": {constants.MetricWindow.LAST_DAY: 0.1},
-                    },
-                },
-            },
-            formatted_stats,
-        )
-
 
 @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
 @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
 @mock.patch("utils.email_helper.send_official_email")
 class NotificationEmailTestCase(TestCase):
     def setUp(self):
-        self.maxDiff = None
         self.ad_group = magic_mixer.blend(core.models.AdGroup, archived=False, name="Test ad group")
         self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         self.rule = magic_mixer.blend(
@@ -608,10 +325,10 @@ class NotificationEmailTestCase(TestCase):
         )
 
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_send_email_changes(self, mock_stats, mock_format, mock_apply, mock_send_email):
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = (
             [
@@ -644,10 +361,10 @@ class NotificationEmailTestCase(TestCase):
             )
 
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_send_email_changes_with_error(self, mock_stats, mock_format, mock_apply, mock_send_email):
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = (
             [
@@ -691,10 +408,10 @@ class NotificationEmailTestCase(TestCase):
             )
 
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_send_email_only_error(self, mock_stats, mock_format, mock_apply, mock_send_email):
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = (
             [],
@@ -731,10 +448,10 @@ class NotificationEmailTestCase(TestCase):
             )
 
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_send_email_no_changes(self, mock_stats, mock_format, mock_apply, mock_send_email):
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = ([], [])
 
@@ -759,11 +476,11 @@ class NotificationEmailTestCase(TestCase):
             )
 
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.service._format_stats")
+    @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
     def test_execute_rule_send_email_no_changes_on_rule_run(self, mock_stats, mock_format, mock_apply, mock_send_email):
         self.rule.update(None, notification_type=constants.NotificationType.ON_RULE_RUN)
-        mock_stats.return_value = [123]
+        mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = ([], [])
 

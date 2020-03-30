@@ -51,28 +51,29 @@ CONVERSION_VIEWS = [
 ]
 
 
+TOUCH_BASE = {"slug", "window"}
 TOUCH_DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 TOUCH_ENVIRONMENT = {sc.ENVIRONMENT}
 TOUCH_GEO = {sc.COUNTRY, sc.REGION, sc.DMA}
 
 TOUCHPOINT_VIEWS = [
-    ["mv_account_touch", ACCOUNT],
-    ["mv_account_touch_device", ACCOUNT | TOUCH_DEVICE],
-    ["mv_account_touch_environment", ACCOUNT | TOUCH_ENVIRONMENT],
-    ["mv_account_touch_geo", ACCOUNT | TOUCH_GEO],
-    ["mv_campaign_touch", CAMPAIGN_N_ABOVE],
-    ["mv_campaign_touch_device", CAMPAIGN_N_ABOVE | TOUCH_DEVICE],
-    ["mv_campaign_touch_environment", CAMPAIGN_N_ABOVE | TOUCH_ENVIRONMENT],
-    ["mv_campaign_touch_geo", CAMPAIGN_N_ABOVE | TOUCH_GEO],
-    ["mv_adgroup_touch", AD_GROUP_N_ABOVE],
-    ["mv_adgroup_touch_device", AD_GROUP_N_ABOVE | TOUCH_DEVICE],
-    ["mv_adgroup_touch_environment", AD_GROUP_N_ABOVE | TOUCH_ENVIRONMENT],
-    ["mv_adgroup_touch_geo", AD_GROUP_N_ABOVE | TOUCH_GEO],
-    ["mv_contentad_touch", CONTENT_AD_N_ABOVE],
-    ["mv_contentad_touch_device", CONTENT_AD_N_ABOVE | TOUCH_DEVICE],
-    ["mv_contentad_touch_environment", CONTENT_AD_N_ABOVE | TOUCH_ENVIRONMENT],
-    ["mv_contentad_touch_geo", CONTENT_AD_N_ABOVE | TOUCH_GEO],
-    ["mv_touchpointconversions", CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.ENVIRONMENT} | GEO],
+    ["mv_account_touch", TOUCH_BASE | ACCOUNT],
+    ["mv_account_touch_device", TOUCH_BASE | ACCOUNT | TOUCH_DEVICE],
+    ["mv_account_touch_environment", TOUCH_BASE | ACCOUNT | TOUCH_ENVIRONMENT],
+    ["mv_account_touch_geo", TOUCH_BASE | ACCOUNT | TOUCH_GEO],
+    ["mv_campaign_touch", TOUCH_BASE | CAMPAIGN_N_ABOVE],
+    ["mv_campaign_touch_device", TOUCH_BASE | CAMPAIGN_N_ABOVE | TOUCH_DEVICE],
+    ["mv_campaign_touch_environment", TOUCH_BASE | CAMPAIGN_N_ABOVE | TOUCH_ENVIRONMENT],
+    ["mv_campaign_touch_geo", TOUCH_BASE | CAMPAIGN_N_ABOVE | TOUCH_GEO],
+    ["mv_adgroup_touch", TOUCH_BASE | AD_GROUP_N_ABOVE],
+    ["mv_adgroup_touch_device", TOUCH_BASE | AD_GROUP_N_ABOVE | TOUCH_DEVICE],
+    ["mv_adgroup_touch_environment", TOUCH_BASE | AD_GROUP_N_ABOVE | TOUCH_ENVIRONMENT],
+    ["mv_adgroup_touch_geo", TOUCH_BASE | AD_GROUP_N_ABOVE | TOUCH_GEO],
+    ["mv_contentad_touch", TOUCH_BASE | CONTENT_AD_N_ABOVE],
+    ["mv_contentad_touch_device", TOUCH_BASE | CONTENT_AD_N_ABOVE | TOUCH_DEVICE],
+    ["mv_contentad_touch_environment", TOUCH_BASE | CONTENT_AD_N_ABOVE | TOUCH_ENVIRONMENT],
+    ["mv_contentad_touch_geo", TOUCH_BASE | CONTENT_AD_N_ABOVE | TOUCH_GEO],
+    ["mv_touchpointconversions", TOUCH_BASE | CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.ENVIRONMENT} | GEO],
 ]
 
 

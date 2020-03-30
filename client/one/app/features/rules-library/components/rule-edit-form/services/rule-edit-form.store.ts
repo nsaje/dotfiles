@@ -339,6 +339,15 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite],
             RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversion
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversionView
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerConversionTotal
+            ],
+            RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.RemainingCampaignBudget
             ],
             RULE_CONDITIONS_OPTIONS[
