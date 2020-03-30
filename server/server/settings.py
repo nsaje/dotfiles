@@ -412,6 +412,7 @@ DCRON = {
         "campaignstop_simple": 1500,  # 25 min
         "campaignstop_handle_updates": 600,  # 10 min
         "refresh_etl": 600,  # 10 min
+        "cross_ceck": 1800,  # 30 min
     },
     # Maximum duration of a job before alerting.
     "default_max_duration": 3600,  # 1h
