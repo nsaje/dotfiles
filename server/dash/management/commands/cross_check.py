@@ -12,7 +12,7 @@ logger = zlogging.getLogger(__name__)
 class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--emit-metrics", action="store_true", default=False, help="Emit metrics")
-        parser.add_argument("--verbose", action="store_true", default=False, help="Emit metrics")
+        parser.add_argument("--verbose", action="store_true", default=False, help="Verbose logging")
 
     def handle(self, *args, **options):
         running_ad_groups = models.AdGroup.objects.filter_running().select_related("campaign__account", "settings")
