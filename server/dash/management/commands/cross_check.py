@@ -12,6 +12,7 @@ logger = zlogging.getLogger(__name__)
 class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--emit-metrics", action="store_true", default=False, help="Emit metrics")
+        parser.add_argument("--verbose", action="store_true", default=False, help="Emit metrics")
 
     def handle(self, *args, **options):
         running_ad_groups = models.AdGroup.objects.filter_running().select_related("campaign__account", "settings")
@@ -70,7 +71,7 @@ class Command(Z1Command):
         num_running_y_sources,
         num_running_ads,
     ):
-        if options.get("verbosity"):
+        if options.get("verbose"):
             logger.info(
                 "Account: %s (id: %s): Running ad groups: %s, b1 sources: %s, ob sources: %s, yahoo sources: %s, ads: %s",
                 account.name,
@@ -81,7 +82,7 @@ class Command(Z1Command):
                 num_running_y_sources,
                 num_running_ads,
             )
-        if options.get("emit-metrics"):
+        if options.get("emit_metrics"):
             metrics_compat.gauge("consistency_cross_check.running_ad_groups", num_running_ad_groups, account=account.id)
             metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
