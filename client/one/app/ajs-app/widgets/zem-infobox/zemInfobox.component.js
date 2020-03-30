@@ -41,6 +41,9 @@ angular.module('one.widgets').component('zemInfobox', {
             bidModifierUpdateHandler = zemNavigationNewService.onBidModifierUpdate(
                 reloadInfoboxData
             );
+            entityUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
+                reloadInfoboxData
+            );
         };
 
         $ctrl.$onChanges = function(changes) {
