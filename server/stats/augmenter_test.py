@@ -354,7 +354,6 @@ class AugmenterTestCase(TestCase):
         ]
 
         augmenter.augment(["month"], rows)
-
         self.assertCountEqual(
             rows,
             [
@@ -363,8 +362,8 @@ class AugmenterTestCase(TestCase):
                     "week": datetime.date(2016, 5, 1),
                     "month": datetime.date(2016, 5, 1),
                     "clicks": 10,
-                    "breakdown_name": "Month 5/2016",
-                    "name": "Month 5/2016",
+                    "breakdown_name": "May/2016",
+                    "name": "May/2016",
                     "breakdown_id": "2016-05-01",
                     "parent_breakdown_id": "",
                 },
@@ -373,8 +372,8 @@ class AugmenterTestCase(TestCase):
                     "week": datetime.date(2016, 5, 5),
                     "month": datetime.date(2016, 5, 5),
                     "clicks": 20,
-                    "breakdown_name": "Month 5/2016",
-                    "name": "Month 5/2016",
+                    "breakdown_name": "May/2016",
+                    "name": "May/2016",
                     "breakdown_id": "2016-05-05",
                     "parent_breakdown_id": "",
                 },

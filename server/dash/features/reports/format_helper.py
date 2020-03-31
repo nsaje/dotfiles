@@ -132,16 +132,16 @@ def format_values(rows, columns, csv_decimal_separator):
                 pass
 
 
-def format_date(value):
+def format_date(value: datetime.date) -> str:
     return value.strftime("%Y-%m-%d")
 
 
-def format_week(value):
+def format_week(value: datetime.date) -> str:
     return "Week {} - {}".format(value.isoformat(), (value + datetime.timedelta(days=6)).isoformat())
 
 
-def format_month(value):
-    return "Month {}/{}".format(value.month, value.year)
+def format_month(value: datetime.date) -> str:
+    return value.strftime("%Y-%m-01")
 
 
 def format_1_decimal(value):

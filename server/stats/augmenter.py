@@ -117,7 +117,7 @@ def _augment_row_time(row, target_dimension):
 
     if target_dimension == constants.TimeDimension.MONTH:
         date = row[constants.TimeDimension.MONTH]
-        row["name"] = "Month {}/{}".format(date.month, date.year)
+        row["name"] = date.strftime("%B/%Y")
 
 
 def _has_traffic_data(row):
