@@ -3,6 +3,7 @@ from rest_framework import serializers
 import dash.constants
 import dash.views.publishers
 import restapi.serializers.fields
+from utils import exc
 
 
 class PublisherListSerializer(serializers.ListSerializer):
@@ -31,3 +32,10 @@ class PublisherSerializer(serializers.Serializer):
     status = restapi.serializers.fields.DashConstantField(dash.constants.PublisherStatus)
     level = restapi.serializers.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label="level")
     modifier = serializers.FloatField(min_value=0.01, max_value=11.0, required=False, allow_null=True)
+
+    def validate(self, data):
+        if data.get("level") == dash.constants.PublisherBlacklistLevel.ADGROUP:
+            if data.get("source") is None and data.get("modifier") is not None:
+                raise exc.ValidationError("Modifier can only be set if source is defined")
+
+        return data

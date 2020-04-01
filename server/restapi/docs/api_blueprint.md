@@ -2176,9 +2176,7 @@ This endpoint supports creating multiple entries at once that are all appended t
 
 This endpoint allows you to manage publisher status on different levels.
 
-Optionally, you can assign a bid modifier to a publisher to modify the
-bidding price for that publisher. Publisher bid modifiers are currently
-only supported on `ADGROUP` level.
+Optionally, you can assign a bid modifier to a publisher and source combination to modify the bidding price. Publisher bid modifiers are currently only supported on `ADGROUP` level. In case `modifier` is specified, the `source` has to be specified as well or a validation error will be returned. *Note: this way of setting bid modifiers on publishers has been deprecated - please use [bid modifiers API](#bid-modifiers) instead.*
 
 *NOTE: Publisher bid modifiers are currently only supported on RTB sources*
 

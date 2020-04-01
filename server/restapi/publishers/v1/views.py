@@ -119,19 +119,19 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                 )
 
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
-                bid_modifier = entry.get("modifier")
-                try:
-                    core.features.bid_modifiers.set(
-                        ad_group,
-                        core.features.bid_modifiers.BidModifierType.PUBLISHER,
-                        entry["name"],
-                        entry["source"],
-                        bid_modifier,
-                        user=request.user,
-                        propagate_to_k1=False,
-                    )
-                except core.features.bid_modifiers.BidModifierInvalid:
-                    raise exc.ValidationError({"modifier": "Bid modifier invalid!"})
+                if entry.get("source") is not None and "modifier" in entry:
+                    try:
+                        core.features.bid_modifiers.set(
+                            ad_group,
+                            core.features.bid_modifiers.BidModifierType.PUBLISHER,
+                            entry["name"],
+                            entry["source"],
+                            entry.get("modifier"),
+                            user=request.user,
+                            propagate_to_k1=False,
+                        )
+                    except core.features.bid_modifiers.BidModifierInvalid as e:
+                        raise exc.ValidationError({"modifier": str(e)})
 
     @staticmethod
     def _get_level_entity(ad_group, entry):

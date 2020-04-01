@@ -228,7 +228,35 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
         self.assertEqual(r.status_code, 400)
         resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(resp_json["details"], "{'modifier': 'Bid modifier invalid!'}")
+        self.assertEqual(resp_json["details"], "Modifier can only be set if source is defined")
+
+    def test_modifiers_set_no_source_no_modifier(self):
+        test_put = [{"level": "ADGROUP", "name": "testpub1", "source": None, "status": "BLACKLISTED"}]
+        r = self.client.put(
+            reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
+            data=test_put,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        # The modifier attribute is always present on output.
+        for elm in test_put:
+            elm["modifier"] = None
+        self.assertEqual(resp_json["data"], test_put)
+
+        self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_put)
+
+    def test_modifiers_set_no_source_null_modifier(self):
+        test_put = [{"level": "ADGROUP", "name": "testpub1", "source": None, "status": "BLACKLISTED", "modifier": None}]
+        r = self.client.put(
+            reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
+            data=test_put,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(resp_json["data"], test_put)
+        self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_put)
 
     def _convert_bid_modifiers_service_get_result(self, bm_list):
         new_bm_list = []
