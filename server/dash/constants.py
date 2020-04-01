@@ -2379,6 +2379,22 @@ class Environment(ConstantBase):
     _VALUES.update({UNKNOWN: "Unknown"})
 
 
+class PlacementType(ConstantBase):
+    UNDEFINED = None
+    IN_FEED = 1
+    IN_ARTICLE_PAGE = 2
+    ADS_SECTION = 3
+    RECOMMENDATION_WIDGET = 4
+
+    _VALUES = {
+        UNDEFINED: "Undefined",
+        IN_FEED: "In feed",
+        IN_ARTICLE_PAGE: "In article page",
+        ADS_SECTION: "Ads section",
+        RECOMMENDATION_WIDGET: "Recommendation widget",
+    }
+
+
 class ZemPlacementType(ConstantBase):
     UNKNOWN = None
     IN_APP = 1

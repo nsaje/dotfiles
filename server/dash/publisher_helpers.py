@@ -1,6 +1,11 @@
 import re
 
 OUTBRAIN_SOURCE_ID = 3
+PLACEMENT_SEPARATOR = "__"
+
+
+class InvalidLookupKeyFormat(ValueError):
+    pass
 
 
 def publisher_exchange(source):
@@ -34,7 +39,11 @@ def dissect_publisher_id(publisher_id):
     publisher, source_id = publisher_id.rsplit("__", 1)
     if source_id == "all":
         return publisher, source_id
-    return publisher, int(source_id) if source_id else None
+
+    try:
+        return publisher, int(source_id) if source_id else None
+    except ValueError:
+        raise InvalidLookupKeyFormat("PublisherId: {}".format(publisher_id))
 
 
 def inflate_publisher_id_source(publisher_id, source_ids):
@@ -43,6 +52,26 @@ def inflate_publisher_id_source(publisher_id, source_ids):
         return [publisher_id]
 
     return [create_publisher_id(publisher, x) for x in source_ids]
+
+
+def create_placement_id(publisher, source_id, placement):
+    publisher_source_id = create_publisher_id(publisher, source_id)
+    return publisher_source_id + PLACEMENT_SEPARATOR + (placement or "")
+
+
+def dissect_placement_id(publisher_source_placement_id):
+    if PLACEMENT_SEPARATOR not in publisher_source_placement_id:
+        raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
+
+    publisher_source_id, placement = publisher_source_placement_id.rsplit(PLACEMENT_SEPARATOR, 1)
+
+    if "__" not in publisher_source_id:
+        raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
+
+    publisher, source_id = dissect_publisher_id(publisher_source_id)
+    if source_id == "all":
+        return publisher, source_id, placement or None
+    return publisher, int(source_id) if source_id else None, placement or None
 
 
 def strip_prefix(publisher, prefixes=("http://", "https://")):
@@ -74,13 +103,19 @@ def all_subdomains(publisher):
 
 
 class PublisherIdLookupMap(object):
+    def _filter_publisher_group_entries(self, entries):
+        return entries.filter(placement=None)
+
+    def _add_entry_to_map(self, entry):
+        publisher_name = entry.publisher.strip().lower()
+        if entry.source_id:
+            self._map[create_publisher_id(publisher_name, entry.source_id)] = entry
+        else:
+            self._map[create_publisher_id(publisher_name, "all")] = entry
+
     def _add_to_map(self, entries):
-        for entry in entries:
-            publisher_name = entry.publisher.strip().lower()
-            if entry.source_id:
-                self._map[create_publisher_id(publisher_name, entry.source_id)] = entry
-            else:
-                self._map[create_publisher_id(publisher_name, "all")] = entry
+        for entry in self._filter_publisher_group_entries(entries):
+            self._add_entry_to_map(entry)
 
     def __init__(self, dominant_entries_qs, secondary_entries_qs=None):
         self._map = {}
@@ -126,3 +161,31 @@ class PublisherIdLookupMap(object):
 
     def __contains__(self, publisher_id):
         return self[publisher_id] is not None
+
+
+class PublisherPlacementLookupMap(PublisherIdLookupMap):
+    def _filter_publisher_group_entries(self, entries):
+        return entries.exclude(placement=None)
+
+    def _add_entry_to_map(self, entry):
+        publisher_name = entry.publisher.strip().lower()
+        if entry.source_id:
+            self._map[create_placement_id(publisher_name, entry.source_id, entry.placement)] = entry
+        else:
+            self._map[create_placement_id(publisher_name, "all", entry.placement)] = entry
+
+    def __getitem__(self, publisher_id):
+        publisher, source_id, placement = dissect_placement_id(publisher_id)
+        publisher = publisher.strip().lower()
+
+        publisher_source_placement = create_placement_id(publisher, source_id, placement)
+        entry = self._find_publisher_group_entry_subdomains(publisher_source_placement)
+        if entry is not None:
+            return entry
+
+        publisher_all_placement = create_placement_id(publisher, "all", placement)
+        entry = self._find_publisher_group_entry_subdomains(publisher_all_placement)
+        if entry is not None:
+            return entry
+
+        return None

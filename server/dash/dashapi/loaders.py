@@ -62,6 +62,8 @@ def get_loader_for_dimension(target_dimension, level):
         if level == constants.Level.AD_GROUPS:
             return PublisherBidModifierLoader
         return PublisherBlacklistLoader
+    elif target_dimension == "placement_id":
+        return PlacementLoader
     elif stats.constants.is_top_level_delivery_dimension(target_dimension):
         return DeliveryLoader
     return None
@@ -687,7 +689,7 @@ class PublisherBlacklistLoader(Loader):
     def publisher_group_entry_map(self):
         return publisher_helpers.PublisherIdLookupMap(self.blacklist_qs, self.whitelist_qs)
 
-    def find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
+    def _find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
         targeting = self.publisher_group_targeting[level].get(
             row.get(level + "_id"),  # for reports there can be multiple entities per level
             self.publisher_group_targeting[level],  # default is used for grid
@@ -701,18 +703,18 @@ class PublisherBlacklistLoader(Loader):
 
         return None
 
-    def find_blacklisted_status(self, row, publisher_group_entry):
-        status = self.find_blacklisted_status_for_level(row, "ad_group", publisher_group_entry)
+    def _find_blacklisted_status(self, row, publisher_group_entry):
+        status = self._find_blacklisted_status_for_level(row, "ad_group", publisher_group_entry)
         if status is not None:
             status["blacklisted_level"] = constants.PublisherBlacklistLevel.ADGROUP
             return status
 
-        status = self.find_blacklisted_status_for_level(row, "campaign", publisher_group_entry)
+        status = self._find_blacklisted_status_for_level(row, "campaign", publisher_group_entry)
         if status is not None:
             status["blacklisted_level"] = constants.PublisherBlacklistLevel.CAMPAIGN
             return status
 
-        status = self.find_blacklisted_status_for_level(row, "account", publisher_group_entry)
+        status = self._find_blacklisted_status_for_level(row, "account", publisher_group_entry)
         if status is not None:
             status["blacklisted_level"] = constants.PublisherBlacklistLevel.ACCOUNT
             return status
@@ -726,31 +728,19 @@ class PublisherBlacklistLoader(Loader):
         return self.default
 
     def find_blacklisted_status_by_subdomain(self, row):
-        publisher_group_entry = self.publisher_group_entry_map[row["publisher_id"]]
+        publisher_group_entry = self.publisher_group_entry_map[self._get_publisher_group_entry_map_key(row)]
         if publisher_group_entry is not None:
-            return self.find_blacklisted_status(row, publisher_group_entry)
+            return self._find_blacklisted_status(row, publisher_group_entry)
 
         # nothing matched, return the default value
         return self.default
 
+    def _get_publisher_group_entry_map_key(self, row):
+        return row["publisher_id"]
+
     @cached_property
     def source_map(self):
         return {x.id: x for x in self.filtered_sources_qs}
-
-    @cached_property
-    def can_blacklist_source_map(self):
-        d = collections.defaultdict(lambda: False)
-
-        for source_id, source in list(self.source_map.items()):
-            can_blacklist_outbrain_publisher = (
-                source.source_type.type == constants.SourceType.OUTBRAIN
-                and self.user.has_perm("zemauth.can_modify_outbrain_account_publisher_blacklist_status")
-            )
-
-            d[source_id] = source.can_modify_publisher_blacklist_automatically() and (
-                source.source_type.type != constants.SourceType.OUTBRAIN or can_blacklist_outbrain_publisher
-            )
-        return d
 
 
 class SourcesLoader(Loader):
@@ -1002,3 +992,16 @@ class DeliveryLoader(Loader):
             end_date=constraints.get("date__lte"),
             **kwargs,
         )
+
+
+class PlacementLoader(PublisherBlacklistLoader):
+    @classmethod
+    def _get_obj_id(cls, obj):
+        return publisher_helpers.create_placement_id(obj.publisher, obj.source_id, obj.placement)
+
+    @cached_property
+    def publisher_group_entry_map(self):
+        return publisher_helpers.PublisherPlacementLookupMap(self.blacklist_qs, self.whitelist_qs)
+
+    def _get_publisher_group_entry_map_key(self, row):
+        return row["placement_id"]

@@ -9,7 +9,7 @@ class StructureDimension:
     CONTENT_AD = "content_ad_id"
     SOURCE = "source_id"
     PUBLISHER = "publisher_id"
-    PLACEMENT = "placement"
+    PLACEMENT = "placement_id"
 
     _ALL = [ACCOUNT, CAMPAIGN, AD_GROUP, CONTENT_AD, SOURCE, PUBLISHER, PLACEMENT]
 
@@ -106,6 +106,7 @@ class DimensionIdentifier:
     CONTENT_AD = "content_ad"
     SOURCE = "source"
     PUBLISHER = "publisher"
+    PLACEMENT = "placement"
 
 
 DimensionIdentifierMapping = {
@@ -115,6 +116,7 @@ DimensionIdentifierMapping = {
     DimensionIdentifier.CONTENT_AD: "content_ad_id",
     DimensionIdentifier.SOURCE: "source_id",
     DimensionIdentifier.PUBLISHER: "publisher_id",
+    DimensionIdentifier.PLACEMENT: "placement_id",
 }
 
 

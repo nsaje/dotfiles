@@ -1054,6 +1054,83 @@ class AdGroupBreakdownTestCase(TestCase):
             },
         )
 
+    @patch("stats.api_breakdowns.totals")
+    def test_post_base_level_placement(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature_on_ad_group_level", "can_use_placement_targeting"]
+        )
+
+        mock_query.return_value = {}
+
+        mock_totals.return_value = {"clicks": 123}
+
+        params = {
+            "limit": 5,
+            "offset": 33,
+            "order": "-clicks",
+            "start_date": "2016-01-01",
+            "end_date": "2016-02-03",
+            "filtered_sources": ["1", "3", "4"],
+            "show_archived": "true",
+            "parents": [],
+        }
+
+        response = self.client.post(
+            reverse("breakdown_ad_groups", kwargs={"ad_group_id": 1, "breakdown": "/placement"}),
+            data=json.dumps({"params": params}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        mock_query.assert_called_with(
+            Level.AD_GROUPS,
+            self.user,
+            ["placement_id"],
+            {
+                "allowed_content_ads": test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
+                "ad_group": models.AdGroup.objects.get(pk=1),
+                "campaign": models.Campaign.objects.get(pk=1),
+                "account": models.Account.objects.get(pk=1),
+                "date__gte": datetime.date(2016, 1, 1),
+                "date__lte": datetime.date(2016, 2, 3),
+                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                "show_archived": True,
+                "publisher_blacklist_filter": constants.PublisherBlacklistFilter.SHOW_ALL,
+                "publisher_blacklist": test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                "publisher_whitelist": test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                "publisher_group_targeting": get_publisher_group_targeting_dict(),
+            },
+            ANY,
+            [],
+            "-clicks",
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
+        )
+
+        self.assertDictEqual(
+            json.loads(response.content),
+            {
+                "data": [
+                    {
+                        "currency": "USD",
+                        "pagination": {"count": 33, "limit": 0, "offset": 33},
+                        "rows": {},
+                        "breakdown_id": None,
+                        "totals": {"clicks": 123},
+                        "conversion_goals": [
+                            {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                            {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                            {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                            {"id": "conversion_goal_5", "name": "test conversion goal 5"},
+                        ],
+                        "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                    }
+                ],
+                "success": True,
+            },
+        )
+
 
 class RequestOverflowTest(TestCase):
     def create_test_data(self):

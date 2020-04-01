@@ -81,3 +81,130 @@ class PublisherIdLookupMapTest(TestCase):
 
         m = publisher_helpers.PublisherIdLookupMap(blacklist)
         self.assertIsNone(m[publisher_id_subdomain])
+
+
+class PublisherIdVsPlacementLookupMapTest(TestCase):
+    def setUp(self):
+        self.source = magic_mixer.blend(core.models.Source)
+        self.pge_1 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry, publisher="example.com", placement=None, source=None
+        )
+        self.pge_2 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry, publisher="sub.example.com", placement=None, source=None
+        )
+        self.pge_3 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="example.com",
+            placement=None,
+            source=self.source,
+        )
+        self.pge_4 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement=None,
+            source=self.source,
+        )
+        self.pge_5 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="example.com",
+            placement="someplacement",
+            source=None,
+        )
+        self.pge_6 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement="someplacement",
+            source=None,
+        )
+        self.pge_7 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="example.com",
+            placement="someplacement",
+            source=self.source,
+        )
+        self.pge_8 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement="someplacement",
+            source=self.source,
+        )
+
+    def test_filter_publisher(self):
+        blacklist = core.features.publisher_groups.PublisherGroupEntry.objects.filter(
+            pk__in=[
+                self.pge_1.id,
+                self.pge_2.id,
+                self.pge_3.id,
+                self.pge_4.id,
+                self.pge_5.id,
+                self.pge_6.id,
+                self.pge_7.id,
+                self.pge_8.id,
+            ]
+        )
+        lookup_map = publisher_helpers.PublisherIdLookupMap(blacklist)
+
+        self.assertEquals(lookup_map["example.com__all"], self.pge_1)
+        self.assertEquals(lookup_map["sub.example.com__all"], self.pge_2)
+        self.assertEquals(lookup_map["example.com__{}".format(self.source.id)], self.pge_3)
+        self.assertEquals(lookup_map["sub.example.com__{}".format(self.source.id)], self.pge_4)
+
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["example.com__all{}someplacement".format(publisher_helpers.PLACEMENT_SEPARATOR)]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["sub.example.com__all{}someplacement".format(publisher_helpers.PLACEMENT_SEPARATOR)]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["example.com__{}{}someplacement".format(self.source.id, publisher_helpers.PLACEMENT_SEPARATOR)]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map[
+                "sub.example.com__{}{}someplacement".format(self.source.id, publisher_helpers.PLACEMENT_SEPARATOR)
+            ]
+
+        self.assertEquals(
+            {e.id for e in lookup_map._map.values()}, {self.pge_1.id, self.pge_2.id, self.pge_3.id, self.pge_4.id}
+        )
+
+    def test_filter_placement(self):
+        blacklist = core.features.publisher_groups.PublisherGroupEntry.objects.filter(
+            pk__in=[
+                self.pge_1.id,
+                self.pge_2.id,
+                self.pge_3.id,
+                self.pge_4.id,
+                self.pge_5.id,
+                self.pge_6.id,
+                self.pge_7.id,
+                self.pge_8.id,
+            ]
+        )
+        lookup_map = publisher_helpers.PublisherPlacementLookupMap(blacklist)
+
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["example.com__all"]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["sub.example.com__all"]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["example.com__{}".format(self.source.id)]
+        with self.assertRaises(publisher_helpers.InvalidLookupKeyFormat):
+            lookup_map["sub.example.com__{}".format(self.source.id)]
+
+        self.assertEquals(
+            lookup_map["example.com__all{}someplacement".format(publisher_helpers.PLACEMENT_SEPARATOR)], self.pge_5
+        )
+        self.assertEquals(
+            lookup_map["sub.example.com__all{}someplacement".format(publisher_helpers.PLACEMENT_SEPARATOR)], self.pge_6
+        )
+        self.assertEquals(
+            lookup_map["example.com__{}{}someplacement".format(self.source.id, publisher_helpers.PLACEMENT_SEPARATOR)],
+            self.pge_7,
+        )
+        self.assertEquals(
+            lookup_map[
+                "sub.example.com__{}{}someplacement".format(self.source.id, publisher_helpers.PLACEMENT_SEPARATOR)
+            ],
+            self.pge_8,
+        )
+
+        self.assertEquals(
+            {e.id for e in lookup_map._map.values()}, {self.pge_5.id, self.pge_6.id, self.pge_7.id, self.pge_8.id}
+        )

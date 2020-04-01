@@ -111,10 +111,9 @@ def extract_stats_constraints(constraints, breakdown):
             constraints["allowed_content_ads"].values_list("pk", flat=True).order_by("pk")
         )
 
-    if (
-        "publisher_id" in breakdown
-        and constraints["publisher_blacklist_filter"] != dash.constants.PublisherBlacklistFilter.SHOW_ALL
-    ):
+    if ("publisher_id" in breakdown or "placement_id" in breakdown) and constraints[
+        "publisher_blacklist_filter"
+    ] != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
         if constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
             new_constraints["publisher_id__neq"] = list(
                 constraints["publisher_blacklist"].annotate_publisher_id().values_list("publisher_id", flat=True)
@@ -360,6 +359,9 @@ def update_with_refunds(row, refunds):
 def should_query_dashapi_first(order, target_dimension):
 
     if target_dimension == "publisher_id":
+        return False
+
+    if target_dimension == "placement_id":
         return False
 
     _, order_field = sort_helper.dissect_order(order)

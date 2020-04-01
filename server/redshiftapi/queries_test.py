@@ -91,10 +91,12 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
-    @mock.patch.object(models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks])
+    @mock.patch.object(
+        models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks, models.MVMaster.placement_id]
+    )
     def test_query_all_base_placement(self, _):
         sql, params, _ = queries.prepare_query_all_base(
-            ["account_id", "source_id", "placement", "placement_type"],
+            ["account_id", "source_id", "placement_id", "placement_type"],
             {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             [{"account_id": 1, "source_id": 2}],
             True,
@@ -106,18 +108,20 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
+            base_table.publisher AS publisher,
             base_table.placement AS placement,
             base_table.placement_type AS placement_type,
-            SUM(base_table.clicks) clicks
+            SUM(base_table.clicks) clicks,
+            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
         FROM mv_adgroup_placement base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
-        GROUP BY 1, 2, 3, 4
+        GROUP BY 1, 2, 3, 4, 5
         ORDER BY
             clicks DESC NULLS LAST,
             account_id ASC NULLS LAST,
             source_id ASC NULLS LAST,
-            placement ASC NULLS LAST,
+            placement_id ASC NULLS LAST,
             placement_type ASC NULLS LAST
         """,
         )
@@ -200,7 +204,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 10, 3))
     def test_query_all_yesterday_placements(self, _):
         sql, params, _ = queries.prepare_query_all_yesterday(
-            ["publisher_id", "placement", "day"],
+            ["publisher_id", "placement_id", "day"],
             {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             [{"account_id": 1, "source_id": 2}],
             True,
@@ -213,6 +217,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
             base_table.placement AS placement,
+            base_table.placement_type AS placement_type,
             base_table.date AS day,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
@@ -224,12 +229,13 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
             (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
             (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
-            MAX(base_table.publisher_source_id) publisher_id
+            MAX(base_table.publisher_source_id) publisher_id,
+            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
         FROM mv_adgroup_placement base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
-        GROUP BY 1, 2, 3, 4
-        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, placement ASC NULLS LAST, day ASC NULLS LAST
+        GROUP BY 1, 2, 3, 4, 5
+        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, placement_id ASC NULLS LAST, day ASC NULLS LAST
         """,
         )
 
@@ -289,7 +295,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
     def test_query_all_conversions_placement(self):
         with self.assertRaises(exceptions.ViewNotAvailable):
             queries.prepare_query_all_conversions(
-                ["publisher_id", "placement", "placement_type"],
+                ["publisher_id", "placement_id", "placement_type"],
                 {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
                 [{"account_id": 1, "source_id": 2}],
             )
@@ -356,7 +362,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
     def test_query_all_touchpoints_placement(self):
         with self.assertRaises(exceptions.ViewNotAvailable):
             queries.prepare_query_all_touchpoints(
-                ["publisher_id", "placement", "placement_type"],
+                ["publisher_id", "placement_id", "placement_type"],
                 {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
                 [{"account_id": 1, "source_id": 2}],
             )
@@ -385,7 +391,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
     def test_query_structure_with_stats_placement(self):
         sql, params, _ = queries.prepare_query_structure_with_stats(
-            ["account_id", "source_id", "placement", "placement_type"],
+            ["account_id", "source_id", "placement_id", "placement_type"],
             {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             use_publishers_view=True,
         )
@@ -396,11 +402,12 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
+            base_table.publisher AS publisher,
             base_table.placement AS placement,
             base_table.placement_type AS placement_type
         FROM mv_adgroup_placement base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
-        GROUP BY 1, 2, 3, 4;
+        GROUP BY 1, 2, 3, 4, 5;
         """,
         )
 
@@ -473,7 +480,12 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+        return_value=[
+            models.MVJointMaster.clicks,
+            models.MVJointMaster.total_seconds,
+            models.MVJointMaster.publisher_id,
+            models.MVJointMaster.external_id,
+        ],
     )
     def test_query_joint_base_publishers(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -491,6 +503,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                temp_base.source_id,
                temp_base.clicks,
                temp_base.total_seconds,
+               temp_base.publisher_id,
+               temp_base.external_id,
                temp_yesterday.e_yesterday_cost,
                temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
@@ -505,7 +519,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
           (SELECT a.publisher AS publisher,
                   a.source_id AS source_id,
                   sum(a.clicks) clicks,
-                  sum(a.total_time_on_site) total_seconds
+                  sum(a.total_time_on_site) total_seconds,
+                  max(a.publisher_source_id) publisher_id,
+                  max(a.external_id) AS external_id
            FROM mv_account_pubs a
            WHERE (a.date>=%s
                   AND a.date<=%s)
@@ -540,7 +556,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+        return_value=[
+            models.MVJointMaster.clicks,
+            models.MVJointMaster.total_seconds,
+            models.MVJointMaster.placement_id,
+        ],
     )
     def test_query_joint_base_placements(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -548,15 +568,19 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         goals = Goals(None, None, None, None, None)
 
         sql, params, _ = queries.prepare_query_joint_base(
-            ["placement"], constraints, None, ["total_seconds"], 5, 10, goals, True
+            ["placement_id"], constraints, None, ["total_seconds"], 5, 10, goals, True
         )
 
         self.assertSQLEquals(
             sql,
             """
-        SELECT temp_base.placement,
+        SELECT temp_base.publisher,
+               temp_base.placement,
+               temp_base.source_id,
+               temp_base.placement_type,
                temp_base.clicks,
                temp_base.total_seconds,
+               temp_base.placement_id,
                temp_yesterday.e_yesterday_cost,
                temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
@@ -568,15 +592,22 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                temp_yesterday.yesterday_et_cost,
                temp_yesterday.yesterday_etfm_cost
         FROM
-          (SELECT a.placement AS placement,
+          (SELECT a.publisher AS publisher,
+                  a.placement AS placement,
+                  a.source_id AS source_id,
+                  a.placement_type AS placement_type,
                   sum(a.clicks) clicks,
-                  sum(a.total_time_on_site) total_seconds
+                  sum(a.total_time_on_site) total_seconds,
+                  max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
            FROM mv_adgroup_placement a
            WHERE (a.date>=%s
                   AND a.date<=%s)
-           GROUP BY 1) temp_base
+           GROUP BY 1, 2, 3, 4) temp_base
         LEFT OUTER JOIN
-          (SELECT a.placement AS placement,
+          (SELECT a.publisher AS publisher,
+                  a.placement AS placement,
+                  a.source_id AS source_id,
+                  a.placement_type AS placement_type,
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
                   (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                   (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
@@ -589,7 +620,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_adgroup_placement a
            WHERE (a.date=%s)
-           GROUP BY 1) temp_yesterday ON temp_base.placement = temp_yesterday.placement
+           GROUP BY 1, 2, 3, 4) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
+        AND temp_base.placement = temp_yesterday.placement
+        AND temp_base.source_id = temp_yesterday.source_id
+        AND (temp_base.placement_type = temp_yesterday.placement_type OR temp_base.placement_type IS NULL AND temp_yesterday.placement_type IS NULL)
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -708,7 +742,12 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+        return_value=[
+            models.MVJointMaster.clicks,
+            models.MVJointMaster.total_seconds,
+            models.MVJointMaster.publisher_id,
+            models.MVJointMaster.external_id,
+        ],
     )
     def test_query_joint_levels_publishers(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -727,6 +766,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.dma,
                b.clicks,
                b.total_seconds,
+               b.publisher_id,
+               b.external_id,
                b.e_yesterday_cost,
                b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
@@ -743,6 +784,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.dma,
                   a.clicks,
                   a.total_seconds,
+                  a.publisher_id,
+                  a.external_id,
                   a.e_yesterday_cost,
                   a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
@@ -761,6 +804,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.dma,
                      temp_base.clicks,
                      temp_base.total_seconds,
+                     temp_base.publisher_id,
+                     temp_base.external_id,
                      temp_yesterday.e_yesterday_cost,
                      temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
@@ -776,7 +821,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         a.source_id AS source_id,
                         a.dma AS dma,
                         sum(a.clicks) clicks,
-                        sum(a.total_time_on_site) total_seconds
+                        sum(a.total_time_on_site) total_seconds,
+                        max(a.publisher_source_id) publisher_id,
+                        max(a.external_id) AS external_id
                  FROM mv_master_pubs a
                  WHERE (a.date>=%s
                         AND a.date<=%s)
@@ -817,7 +864,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch.object(
         models.MVJointMaster,
         "get_aggregates",
-        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+        return_value=[
+            models.MVJointMaster.clicks,
+            models.MVJointMaster.total_seconds,
+            models.MVJointMaster.placement_id,
+        ],
     )
     def test_query_joint_levels_placements(self, _a, _b):
         constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
@@ -836,6 +887,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.placement_type,
                b.clicks,
                b.total_seconds,
+               b.placement_id,
                b.e_yesterday_cost,
                b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
@@ -852,6 +904,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.placement_type,
                   a.clicks,
                   a.total_seconds,
+                  a.placement_id,
                   a.e_yesterday_cost,
                   a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
@@ -870,6 +923,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.placement_type,
                      temp_base.clicks,
                      temp_base.total_seconds,
+                     temp_base.placement_id,
                      temp_yesterday.e_yesterday_cost,
                      temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
@@ -885,7 +939,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         a.source_id AS source_id,
                         a.placement_type AS placement_type,
                         sum(a.clicks) clicks,
-                        sum(a.total_time_on_site) total_seconds
+                        sum(a.total_time_on_site) total_seconds,
+                        max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
                  FROM mv_adgroup_placement a
                  WHERE (a.date>=%s
                         AND a.date<=%s)

@@ -158,14 +158,16 @@ FIELD_PERMISSION_MAPPING = {
     "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
     "sspd_url": ("zemauth.can_see_sspd_url",),
     "campaign_type": ("zemauth.can_see_campaign_type_in_breakdowns",),
-    "placement": ("zemauth.can_use_placement_targeting",),
-    "placement_type": ("zemauth.can_use_placement_targeting",),
     # entity tags
     "agency_tags": ("zemauth.can_include_tags_in_reports",),
     "account_tags": ("zemauth.can_include_tags_in_reports",),
     "campaign_tags": ("zemauth.can_include_tags_in_reports",),
     "ad_group_tags": ("zemauth.can_include_tags_in_reports",),
     "source_tags": ("zemauth.can_include_tags_in_reports",),
+    # placement fields
+    "placement_id": ("zemauth.can_use_placement_targeting",),
+    "placement": ("zemauth.can_use_placement_targeting",),
+    "placement_type": ("zemauth.can_use_placement_targeting",),
 }
 
 

@@ -560,7 +560,7 @@ class CampaignPlacementsDailyStats(CampaignPublishersDailyStats):
             helpers.merge(
                 self.get_stats(
                     request,
-                    "placement",
+                    "placement_id",
                     object_mapping_fn=partial(helpers.get_delivery_mapping, None),
                     should_use_publishers_view=True,
                 ),
@@ -748,7 +748,7 @@ class AdGroupPlacementsDailyStats(AdGroupPublishersDailyStats):
             helpers.merge(
                 self.get_stats(
                     request,
-                    "placement",
+                    "placement_id",
                     object_mapping_fn=partial(helpers.get_delivery_mapping, None),
                     should_use_publishers_view=True,
                 ),

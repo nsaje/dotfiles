@@ -64,6 +64,105 @@ class PublisherAugmenterTest(TestCase):
         self.assertEqual(row["bid_modifier"], 0.5)
 
 
+class PlacementAugmenterTest(TestCase):
+    def setUp(self):
+        self.user = magic_mixer.blend_user()
+
+        self.source = magic_mixer.blend(models.Source, id=1, name="Some Source", bidder_slug="somesource")
+
+        self.pg = magic_mixer.blend(models.PublisherGroup)
+
+        self.pge_1 = magic_mixer.blend(
+            models.PublisherGroupEntry, publisher="example.com", placement=None, source=None, publisher_group=self.pg
+        )
+        self.pge_2 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement=None,
+            source=self.source,
+            publisher_group=self.pg,
+        )
+        self.pge_3 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            publisher="example.com",
+            placement="someplacement",
+            source=None,
+            publisher_group=self.pg,
+        )
+        self.pge_4 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            publisher="sub.example.com",
+            placement="someplacement",
+            source=self.source,
+            publisher_group=self.pg,
+        )
+
+        self.loader = loaders.PlacementLoader(
+            models.PublisherGroupEntry.objects.filter(
+                id__in=[self.pge_1.id, self.pge_2.id, self.pge_3.id, self.pge_4.id]
+            ),
+            models.PublisherGroupEntry.objects.none(),
+            {},
+            models.Source.objects.all(),
+            {"account": {"excluded": {self.pg.id}}},
+            self.user,
+        )
+
+        self.augmenter = augmenter.get_augmenter_for_dimension("placement_id")
+
+    def test_augment_placement(self):
+        rows = [
+            {
+                "placement_id": "pub1.com__1__someplacement",
+                "publisher": "pub1.com",
+                "source_id": 1,
+                "placement": "someplacement",
+            },
+            {
+                "placement_id": "sub.pub1.com__1__someplacement",
+                "publisher": "sub.pub1.com",
+                "source_id": 1,
+                "placement": "someplacement",
+            },
+        ]
+        for row in rows:
+            self.augmenter([row], self.loader)
+
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "placement_id": "pub1.com__1__someplacement",
+                    "publisher": "pub1.com",
+                    "source_id": 1,
+                    "placement": "someplacement",
+                    "name": "someplacement",
+                    "source_name": "Some Source",
+                    "source_slug": "somesource",
+                    "exchange": "Some Source",
+                    "domain": "pub1.com",
+                    "domain_link": "http://pub1.com",
+                    "status": 3,
+                    "blacklisted": "Active",
+                },
+                {
+                    "placement_id": "sub.pub1.com__1__someplacement",
+                    "publisher": "sub.pub1.com",
+                    "source_id": 1,
+                    "placement": "someplacement",
+                    "name": "someplacement",
+                    "source_name": "Some Source",
+                    "source_slug": "somesource",
+                    "exchange": "Some Source",
+                    "domain": "sub.pub1.com",
+                    "domain_link": "http://sub.pub1.com",
+                    "status": 3,
+                    "blacklisted": "Active",
+                },
+            ],
+        )
+
+
 class DeliveryAugmenterTest(TestCase):
     def setUp(self):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)

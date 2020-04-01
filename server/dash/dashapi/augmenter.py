@@ -25,6 +25,8 @@ def get_augmenter_for_dimension(target_dimension):
         return generate_loop_function(augment_source)
     elif target_dimension == "publisher_id":
         return generate_loop_function(augment_publisher)
+    elif target_dimension == "placement_id":
+        return generate_loop_function(augment_placement)
     elif stats.constants.is_top_level_delivery_dimension(target_dimension):
         return generate_loop_function(augment_delivery)
 
@@ -42,6 +44,8 @@ def get_report_augmenter_for_dimension(target_dimension, level):
         return generate_loop_function(augment_source, augment_source_for_report)
     elif target_dimension == "publisher_id":
         return generate_loop_function(augment_publisher, augment_publisher_for_report)
+    elif target_dimension == "placement_id":
+        return generate_loop_function(augment_placement)
     elif stats.constants.is_top_level_delivery_dimension(target_dimension):
         return generate_loop_function(augment_delivery, augment_delivery_for_report)
 
@@ -453,7 +457,6 @@ def augment_publisher(row, loader, is_base_level=False):
     source_id = row["source_id"]
     source = loader.source_map[source_id]
     entry_status = loader.find_blacklisted_status_by_subdomain(row)
-    can_blacklist_source = loader.can_blacklist_source_map[source_id]
 
     row.update(
         {
@@ -464,7 +467,6 @@ def augment_publisher(row, loader, is_base_level=False):
             "exchange": source.name,
             "domain": domain,
             "domain_link": publisher_helpers.get_publisher_domain_link(domain),
-            "can_blacklist_publisher": can_blacklist_source,
             "status": entry_status["status"],
             "blacklisted": constants.PublisherTargetingStatus.get_text(entry_status["status"]),
         }
@@ -548,6 +550,42 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
         row.update({"bid_modifier": modifier.modifier if modifier else None})
 
 
+def augment_placement(row, loader, is_base_level=False):
+    domain, _, _ = publisher_helpers.dissect_placement_id(row["placement_id"])
+    source_id = row["source_id"]
+    source = loader.source_map[source_id]
+    entry_status = loader.find_blacklisted_status_by_subdomain(row)
+
+    row.update(
+        {
+            "name": row["placement"],
+            "source_id": source.id,
+            "source_name": source.name,
+            "source_slug": source.bidder_slug,
+            "exchange": source.name,
+            "domain": domain,
+            "domain_link": publisher_helpers.get_publisher_domain_link(domain),
+            "status": entry_status["status"],
+            "blacklisted": constants.PublisherTargetingStatus.get_text(entry_status["status"]),
+        }
+    )
+
+    if entry_status.get("blacklisted_level"):
+        row.update(
+            {
+                "blacklisted_level": entry_status["blacklisted_level"],
+                "blacklisted_level_description": constants.PublisherBlacklistLevel.verbose(
+                    entry_status["blacklisted_level"], entry_status["status"]
+                ),
+                "notifications": {
+                    "message": constants.PublisherBlacklistLevel.verbose(
+                        entry_status["blacklisted_level"], entry_status["status"]
+                    )
+                },
+            }
+        )
+
+
 def augment_delivery(row, loader, is_base_level=True):
     if not loader.ad_group:
         return
@@ -618,13 +656,15 @@ def augment_parent_ids(rows, loader_map, dimension):
 
 def make_dash_rows(target_dimension, loader, parent):
     if target_dimension == "publisher_id":
-        return make_publisher_dash_rows(loader.objs_ids, parent)
+        return make_publisher_dash_rows(loader.objs_ids)
+    if target_dimension == "placement_id":
+        return make_placement_dash_rows(loader.objs_ids)
     if stats.constants.is_top_level_delivery_dimension(target_dimension):
         return make_delivery_dash_rows(target_dimension, loader.objs_map)
     return [make_row(target_dimension, obj_id, parent) for obj_id in loader.objs_ids]
 
 
-def make_publisher_dash_rows(objs_ids, parent):
+def make_publisher_dash_rows(objs_ids):
     rows = []
     for obj_id in objs_ids:
         publisher, source_id = publisher_helpers.dissect_publisher_id(obj_id)
@@ -634,6 +674,24 @@ def make_publisher_dash_rows(objs_ids, parent):
             rows.append({"publisher_id": obj_id, "publisher": publisher, "source_id": source_id})
 
     return rows
+
+
+def make_placement_dash_rows(objs_ids):
+    rows = []
+    for obj_id in objs_ids:
+        publisher, source_id, placement = publisher_helpers.dissect_placement_id(obj_id)
+        publisher_id = publisher_helpers.create_publisher_id(publisher, source_id)
+
+        # dont include rows without source_id
+        if source_id:
+            rows.append(make_placement_dash_row(publisher_id, publisher, placement, source_id))
+
+    return rows
+
+
+def make_placement_dash_row(publisher_id, publisher, placement, source_id):
+    placement_id = publisher_helpers.create_placement_id(publisher, source_id, placement)
+    return {"placement_id": placement_id, "publisher": publisher, "placement": placement, "source_id": source_id}
 
 
 def make_delivery_dash_rows(delivery_dimension, objs_map):
@@ -651,6 +709,9 @@ def make_row(target_dimension, target_id, parent):
     if target_dimension == "publisher_id":
         publisher, source_id = publisher_helpers.dissect_publisher_id(target_id)
         row.update({"publisher": publisher, "source_id": source_id})
+    if target_dimension == "placement_id":
+        publisher, source_id, placement = publisher_helpers.dissect_placement_id(target_id)
+        row.update({"publisher": publisher, "placement": placement, "source_id": source_id})
 
     return row
 

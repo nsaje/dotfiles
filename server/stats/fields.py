@@ -86,7 +86,6 @@ PUBLISHER_FIELDS = {
     "domain",
     "external_id",
     "domain_link",
-    "can_blacklist_publisher",
     "blacklisted",
     "blacklisted_level",
     "blacklisted_level_description",

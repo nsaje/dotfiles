@@ -451,3 +451,63 @@ class AugmenterTestCase(TestCase):
                 },
             ],
         )
+
+    def test_augment_placement_type(self):
+        rows = [
+            {"name": "placement", "placement_type": None},
+            {"name": "placement", "placement_type": 1},
+            {"name": "placement", "placement_type": 2},
+            {"name": "placement", "placement_type": 3},
+            {"name": "placement", "placement_type": 4},
+            {"name": "placement", "placement_type": 5},
+        ]
+
+        augmenter.augment([], rows)
+
+        self.assertCountEqual(
+            rows,
+            [
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "Undefined",
+                },
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "In feed",
+                },
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "In article page",
+                },
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "Ads section",
+                },
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "Recommendation widget",
+                },
+                {
+                    "name": "placement",
+                    "breakdown_name": "placement",
+                    "breakdown_id": "",
+                    "parent_breakdown_id": None,
+                    "placement_type": "Unknown",
+                },
+            ],
+        )

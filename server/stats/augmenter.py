@@ -7,6 +7,7 @@ from stats import fields
 from stats import helpers
 
 UNKNOWN = "Not reported"
+PLACEMENT_TYPE_UNKNOWN = "Unknown"
 
 
 def augment(breakdown, rows):
@@ -29,6 +30,9 @@ def augment(breakdown, rows):
 
         if target_dimension in constants.TimeDimension._ALL:
             _augment_row_time(row, target_dimension)
+
+        if "placement_type" in row:
+            _augment_placement_type(row)
 
         row["breakdown_name"] = row["name"]
 
@@ -104,6 +108,10 @@ def _augment_row_delivery(row, target_dimension, target_dimension_mapping):
 
     else:
         row["name"] = row.get(target_dimension) or UNKNOWN  # when we don't have a designated mapping
+
+
+def _augment_placement_type(row):
+    row["placement_type"] = dash_constants.PlacementType.get_text(row["placement_type"]) or PLACEMENT_TYPE_UNKNOWN
 
 
 def _augment_row_time(row, target_dimension):

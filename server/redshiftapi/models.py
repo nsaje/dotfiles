@@ -79,6 +79,7 @@ class BreakdownsBase(backtosql.Model):
     placement = backtosql.Column("placement", BREAKDOWN)
 
     publisher_id = backtosql.TemplateColumn("part_publisher_id.sql")
+    placement_id = backtosql.TemplateColumn("part_placement_id.sql")
     external_id = backtosql.TemplateColumn("part_max.sql", {"column_name": "external_id"})
 
     def get_breakdown(self, breakdown):
@@ -87,6 +88,9 @@ class BreakdownsBase(backtosql.Model):
         if "publisher_id" in breakdown:
             publisher_id_idx = breakdown.index("publisher_id")
             breakdown = breakdown[:publisher_id_idx] + ["publisher", "source_id"] + breakdown[publisher_id_idx + 1 :]
+        if "placement_id" in breakdown:
+            placement = breakdown.index("placement_id")
+            breakdown = breakdown[:placement] + ["publisher", "placement", "source_id"] + breakdown[placement + 1 :]
 
         # remove duplicated dimensions
         breakdown = list(collections.OrderedDict(list(zip(breakdown, breakdown))).keys())
@@ -105,6 +109,9 @@ class BreakdownsBase(backtosql.Model):
 
             if view_selector.supports_external_id(view):
                 columns.append(self.external_id)
+
+        if "placement_id" in breakdown:
+            columns.append(self.placement_id)
 
         return columns
 
@@ -213,6 +220,8 @@ class BreakdownsBase(backtosql.Model):
 
         if "publisher_id" in breakdown:
             aggregates.append("publisher_id")
+        if "placement_id" in breakdown:
+            aggregates.append("placement_id")
 
         return {
             "breakdown": self.get_breakdown(breakdown),
@@ -482,6 +491,13 @@ class MVMaster(BreakdownsBase):
     # FIXME: Remove the following columns after new margins are completely migrated to
     video_cpcv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
     local_video_cpcv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
+
+    def get_breakdown(self, breakdown):
+        if "placement_id" in breakdown:
+            placement_idx = breakdown.index("placement_id")
+            breakdown = breakdown[: placement_idx + 1] + ["placement_type"] + breakdown[placement_idx + 1 :]
+
+        return super().get_breakdown(breakdown)
 
 
 class MVTouchpointConversions(BreakdownsBase):

@@ -827,10 +827,6 @@ class PublisherBlacklistLoaderTest(TestCase):
         self.assertCountEqual(loader.publisher_group_targeting, self.loader.publisher_group_targeting)
         self.assertCountEqual(loader.filtered_sources_qs, self.loader.filtered_sources_qs)
 
-    def test_can_blacklist_source(self):
-        self.assertTrue(self.loader.can_blacklist_source_map[1])
-        self.assertFalse(self.loader.can_blacklist_source_map[2])
-
     def test_status_global_unlisted(self):
         row = {"publisher_id": "pubtest.com__1"}
         self.assertEqual(

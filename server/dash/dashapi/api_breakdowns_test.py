@@ -11,6 +11,7 @@ from mock import patch
 import core.features.bid_modifiers
 import core.models
 from dash import models
+from dash import publisher_helpers
 from dash.constants import CampaignType
 from dash.constants import DeviceType
 from dash.constants import Level
@@ -377,7 +378,6 @@ PUBLISHER_1__SOURCE_1 = {
     "blacklisted": "Blacklisted",
     "blacklisted_level": "global",
     "blacklisted_level_description": "Blacklisted globally",
-    "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
     "bid_modifier": {
         "id": None,
@@ -402,7 +402,6 @@ PUBLISHER_2__SOURCE_1 = {
     "source_slug": "adsnative",
     "status": 3,
     "blacklisted": "Active",
-    "can_blacklist_publisher": True,
     "bid_modifier": {
         "id": None,
         "type": core.features.bid_modifiers.BidModifierType.get_name(
@@ -428,7 +427,6 @@ PUBLISHER_2__SOURCE_2 = {
     "blacklisted": "Whitelisted",
     "blacklisted_level": "adgroup",
     "blacklisted_level_description": "Whitelisted in this ad group",
-    "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
     "bid_modifier": {
         "id": None,
@@ -455,7 +453,6 @@ PUBLISHER_3__SOURCE_2 = {
     "blacklisted": "Blacklisted",
     "blacklisted_level": "adgroup",
     "blacklisted_level_description": "Blacklisted in this ad group",
-    "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this ad group"},
     "bid_modifier": {
         "id": None,
@@ -482,7 +479,6 @@ PUBLISHER_4__SOURCE_2 = {
     "blacklisted": "Whitelisted",
     "blacklisted_level": "campaign",
     "blacklisted_level_description": "Whitelisted in this campaign",
-    "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this campaign"},
     "bid_modifier": {
         "id": None,
@@ -509,7 +505,6 @@ PUBLISHER_5__SOURCE_2 = {
     "blacklisted": "Blacklisted",
     "blacklisted_level": PublisherBlacklistLevel.ACCOUNT,
     "blacklisted_level_description": "Blacklisted in this account",
-    "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this account"},
     "bid_modifier": {
         "id": None,
@@ -1013,6 +1008,56 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_5__SOURCE_2])
+
+    def test_query_ad_groups_break_placements(self):
+        # for the purpose of testing we reuse and slightly modify
+        # the existing publisher group entries and constants
+        models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 2, 3, 4, 5]).update(
+            placement="someplacement"
+        )
+
+        def create_publisher_source_for_placement(publisher_source):
+            publisher_source = publisher_source.copy()
+            del publisher_source["editable_fields"]
+            del publisher_source["bid_modifier"]
+            del publisher_source["publisher_id"]
+            placement_id = publisher_helpers.create_placement_id(
+                publisher_source["publisher"], publisher_source["source_id"], "someplacement"
+            )
+            publisher_source.update(
+                {"placement_id": placement_id, "name": "someplacement", "placement": "someplacement"}
+            )
+            return publisher_source
+
+        p1_s1 = create_publisher_source_for_placement(PUBLISHER_1__SOURCE_1)
+        p2_s2 = create_publisher_source_for_placement(PUBLISHER_2__SOURCE_2)
+        p5_s2 = create_publisher_source_for_placement(PUBLISHER_5__SOURCE_2)
+
+        rows = api_breakdowns.query(
+            Level.AD_GROUPS,
+            User.objects.get(pk=1),
+            ["placement_id"],
+            {
+                "ad_group": models.AdGroup.objects.get(pk=1),
+                "allowed_content_ads": models.ContentAd.objects.filter(ad_group=1),
+                "show_archived": True,
+                "filtered_sources": models.Source.objects.all(),
+                "publisher_blacklist": models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5]),
+                "publisher_whitelist": models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4]),
+                "publisher_group_targeting": {
+                    "ad_group": {"included": set([2]), "excluded": set([3])},
+                    "campaign": {"included": set([4]), "excluded": set()},
+                    "account": {"included": set(), "excluded": set([5])},
+                    "global": {"excluded": set([1])},
+                },
+            },
+            None,
+            "name",
+            0,
+            4,
+        )
+
+        self.assertEqual(rows, [p1_s1, p2_s2, p5_s2])
 
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
