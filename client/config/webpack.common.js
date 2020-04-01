@@ -62,20 +62,6 @@ function generateMainConfig(appEnvironment) {
             use: [{loader: 'ng-annotate-loader'}],
         },
         {
-            // Angular TypeScript and template loaders
-            test: /\.tsx?$/,
-            exclude: /node_modules/,
-            use: [
-                {
-                    loader: 'awesome-typescript-loader',
-                    options: {
-                        transpileOnly: true,
-                    },
-                },
-                {loader: 'angular2-template-loader'},
-            ],
-        },
-        {
             // https://github.com/angular/universal-starter/pull/593/commits/644c5f6f28a760f94ef111f5a611e2c9ed679b6a
             // Mark files inside `@angular/core` as using SystemJS style dynamic imports.
             // Removing this will cause deprecation warnings to appear.
@@ -87,6 +73,7 @@ function generateMainConfig(appEnvironment) {
             test: /\.html$/,
             exclude: /node_modules/,
             loader: 'html-loader',
+            options: {minimize: false},
         },
         {
             test: /\.css$/,
@@ -212,6 +199,7 @@ function generateAppEnvironment(env) {
         analyze: env.npm_config_analyze === 'true' || false,
         sentryToken: env.npm_config_sentry_token || '',
         buildWhitelabels: env.npm_config_build_whitelabels === 'true' || false,
+        aot: env.npm_config_aot === 'true' || false,
     };
 
     config.staticUrl = getStaticUrl(config);

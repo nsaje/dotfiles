@@ -5,12 +5,10 @@ import {
     ChangeDetectionStrategy,
     OnInit,
     HostBinding,
-    ChangeDetectorRef,
     OnDestroy,
     ViewChild,
     Inject,
 } from '@angular/core';
-import {Level} from '../../../../app.constants';
 import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
@@ -52,9 +50,8 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
-        private route: ActivatedRoute,
-        private changeDetectorRef: ChangeDetectorRef,
         public store: PublisherGroupsLibraryStore,
+        private route: ActivatedRoute,
         private service: PublisherGroupsService,
         @Inject('zemPermissions') private zemPermissions: any
     ) {

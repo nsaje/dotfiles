@@ -1,6 +1,6 @@
 {
     "include": ["one/**/*"],
-    "exclude": ["one/main.aot.ts", "one/tests.ts", "one/**/*.spec.ts", "one/app/testing/**/*"],
+    "exclude": ["one/main.aot.ts", "one/main.ts"],
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": ".",

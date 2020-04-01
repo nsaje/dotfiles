@@ -6,4 +6,5 @@ export interface CampaignBudgetErrors {
     amount: FieldErrors;
     margin: FieldErrors;
     comment: FieldErrors;
+    creditId: FieldErrors;
 }

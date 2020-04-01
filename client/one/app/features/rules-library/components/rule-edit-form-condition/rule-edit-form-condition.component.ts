@@ -22,7 +22,7 @@ import {RuleConditionConfig} from '../../../../core/rules/types/rule-condition-c
 import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-condition-operand-config';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {ChangeEvent} from '../../../../shared/types/change-event';
-import {FieldErrors} from '../../../../shared/types/field-errors';
+import {RuleConditionError} from '../rule-edit-form/types/rule-condition-error';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -35,7 +35,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
     @Input()
     availableConditions: RuleConditionConfig[];
     @Input()
-    conditionErrors: FieldErrors[];
+    conditionErrors: RuleConditionError;
     @Output()
     conditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()

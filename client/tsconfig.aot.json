@@ -1,6 +1,6 @@
 {
-    "include": ["one/**/*"],
-    "exclude": ["one/main.aot.ts", "one/tests.ts", "one/**/*.spec.ts", "one/app/testing/**/*"],
+    "include": ["one/**/*.ts"],
+    "exclude": ["one/main.ts", "one/tests.ts", "one/**/*.spec.ts", "one/app/testing/**/*"],
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": ".",
@@ -23,5 +23,8 @@
         ],
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true
+    },
+    "angularCompilerOptions": {
+        "fullTemplateTypeCheck": true
     }
 }

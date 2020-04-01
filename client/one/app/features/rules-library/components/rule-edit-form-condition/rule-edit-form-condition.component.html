@@ -29,8 +29,7 @@
         class="zem-rule-edit-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="metricModifierPopoverTemplate"
         [disabled]="!areModifiersAvailable(selectedMetricConfig)"
-        [stayOpenOnHover]="true"
-        triggers="mouseenter:mouseleave"
+        [autoClose]="'outside'"
         placement="bottom"
     ></button>
 </div>
@@ -158,8 +157,7 @@
         class="zem-rule-edit-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="valuePopoverTemplate"
         [disabled]="!areModifiersAvailable(selectedValueConfig)"
-        [stayOpenOnHover]="true"
-        triggers="mouseenter:mouseleave"
+        [autoClose]="'outside'"
         placement="bottom"
     ></button>
 </div>

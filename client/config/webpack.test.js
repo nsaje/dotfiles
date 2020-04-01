@@ -15,6 +15,7 @@ config.module.rules = [
                 loader: 'awesome-typescript-loader',
                 options: {
                     transpileOnly: true,
+                    configFileName: 'tsconfig.test.json',
                 },
             },
             {loader: 'angular2-template-loader'},

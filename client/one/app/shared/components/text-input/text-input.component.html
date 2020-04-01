@@ -6,7 +6,7 @@
     maxlength="{{ maxLength }}"
     [(ngModel)]="model"
     (ngModelChange)="onModelChange($event)"
-    (blur)="onBlur($event)"
+    (blur)="onBlur()"
     [disabled]="isDisabled"
     [zemFocus]="isFocused"
 />

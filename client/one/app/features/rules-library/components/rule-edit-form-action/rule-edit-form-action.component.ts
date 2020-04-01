@@ -98,6 +98,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     selectedActionConfig: RuleActionConfig;
     selectedMacro: Macro;
     shouldAppendMacroToSubject = true;
+    publisherGroupId: string;
     availableActionFrequencies: {label: string; value: number}[];
     availablePublisherGroupsItems: {label: string; value: string}[];
     availableTargetAndActionTypes: {

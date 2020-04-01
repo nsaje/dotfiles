@@ -3,6 +3,7 @@ import {APP_CONFIG} from '../../app.config';
 import {RequestPayload} from '../types/request-payload';
 import {RequestProperties} from '../types/request-properties';
 import {isDefined} from './common.helpers';
+import {HttpRequestInfo} from '../types/http-request-info';
 
 export function buildRequestProperties(
     payload: RequestPayload

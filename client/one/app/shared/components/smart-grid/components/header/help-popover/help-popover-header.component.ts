@@ -1,8 +1,8 @@
 import './help-popover-header.component.less';
 
-import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
-import {IHeaderParams} from 'ag-grid-community';
+import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {IHeaderAngularComp} from 'ag-grid-angular';
+import {HelpPopoverHeaderParams} from './types/help-popover-header-params';
 
 @Component({
     selector: 'zem-help-popover-header',
@@ -10,9 +10,9 @@ import {IHeaderAngularComp} from 'ag-grid-angular';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HelpPopoverHeaderComponent implements IHeaderAngularComp {
-    params: IHeaderParams = null;
+    params: HelpPopoverHeaderParams = null;
 
-    agInit(params: IHeaderParams): void {
+    agInit(params: HelpPopoverHeaderParams): void {
         this.params = params;
     }
 }

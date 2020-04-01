@@ -190,7 +190,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             );
     }
 
-    loadAvailableDeals(keyword: string | null): Promise<void> {
+    loadAvailableDeals(keyword: string = null): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
             this.dealsService
@@ -216,7 +216,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         });
     }
 
-    addDeal(deal: Deal | null) {
+    addDeal(deal: Deal = null) {
         this.validateEntity();
         if (!commonHelpers.isDefined(deal)) {
             deal = {

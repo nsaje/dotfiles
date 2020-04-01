@@ -3,6 +3,7 @@ var merge = require('webpack-merge');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
     .BundleAnalyzerPlugin;
 var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
@@ -19,13 +20,23 @@ module.exports = configs;
 function generateMainConfig(appEnvironment) {
     var config = common.generateMainConfig(appEnvironment);
 
-    config.entry = {
-        'zemanta-one': [
-            common.root('./one/polyfills.ts'),
-            common.root('./one/vendor.ts'),
-            common.root('./one/main.ts'),
-        ],
-    };
+    if (appEnvironment.aot) {
+        config.entry = {
+            'zemanta-one': [
+                common.root('./one/polyfills.ts'),
+                common.root('./one/vendor.ts'),
+                common.root('./one/main.aot.ts'),
+            ],
+        };
+    } else {
+        config.entry = {
+            'zemanta-one': [
+                common.root('./one/polyfills.ts'),
+                common.root('./one/vendor.ts'),
+                common.root('./one/main.ts'),
+            ],
+        };
+    }
 
     config.output = {
         path: common.root('./dist/one'),
@@ -62,11 +73,43 @@ function generateMainConfig(appEnvironment) {
         loader: 'null-loader',
     });
 
-    config.plugins = config.plugins.concat([
-        // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
-        // Runs typescript type checking in a separate process.
-        new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
-    ]);
+    if (appEnvironment.aot) {
+        config.module.rules.push({
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.tsx?)$/,
+            exclude: /node_modules/,
+            loader: '@ngtools/webpack',
+        });
+
+        config.plugins = config.plugins.concat([
+            // https://www.npmjs.com/package/@ngtools/webpack
+            // Webpack plugin that AOT compiles Angular components and modules.
+            new AngularCompilerPlugin({
+                tsConfigPath: common.root('./tsconfig.aot.json'),
+                entryModule: common.root('./one/app/app.module.ts#AppModule'),
+            }),
+        ]);
+    } else {
+        config.module.rules.push({
+            // Angular TypeScript and template loaders
+            test: /\.tsx?$/,
+            exclude: /node_modules/,
+            use: [
+                {
+                    loader: 'awesome-typescript-loader',
+                    options: {
+                        transpileOnly: true,
+                    },
+                },
+                {loader: 'angular2-template-loader'},
+            ],
+        });
+
+        config.plugins = config.plugins.concat([
+            // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
+            // Runs typescript type checking in a separate process.
+            new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
+        ]);
+    }
 
     if (appEnvironment.analyze) {
         config.plugins = config.plugins.concat([
@@ -112,6 +155,21 @@ function generateStyleConfig(appEnvironment, theme) {
         path: common.root('./dist/one'),
         publicPath: 'one/',
     };
+
+    config.module.rules.push({
+        // Angular TypeScript and template loaders
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'awesome-typescript-loader',
+                options: {
+                    transpileOnly: true,
+                },
+            },
+            {loader: 'angular2-template-loader'},
+        ],
+    });
 
     config.devtool = 'none';
     config.mode = 'development';

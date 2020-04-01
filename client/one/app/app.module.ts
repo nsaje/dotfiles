@@ -1,7 +1,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {HttpClientXsrfModule} from '@angular/common/http';
 import {UpgradeModule} from '@angular/upgrade/static';
-import {ErrorHandler, NgModule, DoBootstrap} from '@angular/core';
+import {ErrorHandler, NgModule} from '@angular/core';
 
 import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
@@ -99,14 +99,34 @@ if (APP_CONFIG.env.prod) {
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         {
             provide: '$scope',
-            useFactory: (i: any) => i.get('$rootScope'),
+            useFactory: ajs$scope,
             deps: ['$injector'],
         },
-        upgradeProvider('zemPermissions'),
-        upgradeProvider('zemNavigationService'),
-        upgradeProvider('zemNavigationNewService'),
-        upgradeProvider('zemDesignHelpersService'),
-        upgradeProvider('zemInitializationService'),
+        {
+            provide: 'zemPermissions',
+            useFactory: ajs$zemPermissions,
+            deps: ['$injector'],
+        },
+        {
+            provide: 'zemNavigationService',
+            useFactory: ajs$zemNavigationService,
+            deps: ['$injector'],
+        },
+        {
+            provide: 'zemNavigationNewService',
+            useFactory: ajs$zemNavigationNewService,
+            deps: ['$injector'],
+        },
+        {
+            provide: 'zemDesignHelpersService',
+            useFactory: ajs$zemDesignHelpersService,
+            deps: ['$injector'],
+        },
+        {
+            provide: 'zemInitializationService',
+            useFactory: ajs$zemInitializationService,
+            deps: ['$injector'],
+        },
         {
             provide: RouteReuseStrategy,
             useClass: CacheRouteReuseStrategy,
@@ -116,10 +136,26 @@ if (APP_CONFIG.env.prod) {
 })
 export class AppModule {}
 
-function upgradeProvider(ajsName: string, name?: string): any {
-    return {
-        provide: name || ajsName,
-        useFactory: (i: any) => i.get(ajsName),
-        deps: ['$injector'],
-    };
+function ajs$scope($injector: any) {
+    return $injector.get('$rootScope');
+}
+
+function ajs$zemPermissions($injector: any) {
+    return $injector.get('zemPermissions');
+}
+
+function ajs$zemNavigationService($injector: any) {
+    return $injector.get('zemNavigationService');
+}
+
+function ajs$zemNavigationNewService($injector: any) {
+    return $injector.get('zemNavigationNewService');
+}
+
+function ajs$zemDesignHelpersService($injector: any) {
+    return $injector.get('zemDesignHelpersService');
+}
+
+function ajs$zemInitializationService($injector: any) {
+    return $injector.get('zemInitializationService');
 }
