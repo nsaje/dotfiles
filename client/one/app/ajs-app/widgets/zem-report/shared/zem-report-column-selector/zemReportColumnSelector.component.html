@@ -9,7 +9,10 @@
     Manage columns
 </button>
 
-<div class="zem-report-column-selector" ng-show="$ctrl.showCollapsed">
+<div
+    class="collapsable zem-report-column-selector"
+    ng-show="$ctrl.showCollapsed"
+>
     <zem-column-selector
         on-column-toggled="$ctrl.onColumnToggled({field: field})"
         on-columns-toggled="$ctrl.onColumnsToggled({fields: fields})"

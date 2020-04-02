@@ -1,0 +1,159 @@
+<div class="custom-panel">
+    <div class="custom-panel__description">
+        Publisher groups allow you to upload lists of publishers and blacklist
+        or whitelist them in account, campaign or ad group settings.
+    </div>
+    <div class="custom-table__mobile-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Subdomains included</th>
+                    <th>Number of publishers</th>
+                    <th>Modified</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    ng-repeat="item in notImplicitGroups = ($ctrl.publisherGroups | filter: {implicit: false})"
+                >
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
+                    <td>{{ item.size }}</td>
+                    <td>
+                        {{ (item.modified | date: 'M/d/yyyy h:mm a') || 'N/A' }}
+                    </td>
+                    <td>
+                        {{ (item.created | date: 'M/d/yyyy h:mm a') || 'N/A' }}
+                    </td>
+                    <td class="custom-table__action-buttons">
+                        <a
+                            class="button button--small button--with-icon download-icon"
+                            ng-click="$ctrl.download(item.id)"
+                            >Download</a
+                        >
+                        <a
+                            ng-if="!item.isReadOnly"
+                            class="button button--small button--with-icon edit-icon"
+                            ng-click="$ctrl.openPublisherGroupModal(item)"
+                            >Edit</a
+                        >
+                        <a
+                            ng-if="item.isReadOnly"
+                            class="button button--small button--with-icon copy-icon"
+                            ng-click="$ctrl.openPublisherGroupModal(item)"
+                            >View</a
+                        >
+                    </td>
+                </tr>
+                <tr ng-if="$ctrl.loading">
+                    <td colspan="7">
+                        <div class="loader loader--full-width"></div>
+                    </td>
+                </tr>
+                <tr ng-hide="notImplicitGroups.length || $ctrl.loading">
+                    <td colspan="7" class="custom-table__no-data">No data</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="m-b-l">
+        <button
+            type="button"
+            class="button button--with-icon add-icon"
+            ng-click="$ctrl.createNew()"
+        >
+            Add Publisher Group
+        </button>
+    </div>
+
+    <a
+        href=""
+        class="collapsable__show-collapsed"
+        ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
+        ng-hide="$ctrl.showCollapsed"
+        >Show system publisher groups</a
+    >
+
+    <div
+        class="collapsable zem-publisher-groups-component__collapsable"
+        ng-show="$ctrl.showCollapsed"
+    >
+        <h2 class="custom-panel__title">System Publisher Groups</h2>
+        <div class="custom-panel__description">
+            Publishers that you blacklist in the dashboard are added to one of
+            the system blacklist publisher groups listed below.
+        </div>
+        <div class="custom-table__mobile-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Level</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Subdomains included</th>
+                        <th>Number of publishers</th>
+                        <th>Modified</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        ng-repeat="item in implicitGroups = ($ctrl.publisherGroups | filter: {implicit: true})"
+                    >
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.level }}</td>
+                        <td>{{ item.level_name }}</td>
+                        <td>{{ item.type }}</td>
+                        <td>{{ item.include_subdomains ? 'Yes' : 'No' }}</td>
+                        <td>{{ item.size }}</td>
+                        <td>
+                            {{
+                                (item.modified | date: 'M/d/yyyy h:mm a') ||
+                                    'N/A'
+                            }}
+                        </td>
+                        <td>
+                            {{
+                                (item.created | date: 'M/d/yyyy h:mm a') ||
+                                    'N/A'
+                            }}
+                        </td>
+                        <td class="custom-table__action-buttons">
+                            <a
+                                class="button button--small button--with-icon download-icon"
+                                ng-click="$ctrl.download(item.id)"
+                                >Download</a
+                            >
+                        </td>
+                    </tr>
+                    <tr ng-if="$ctrl.loading">
+                        <td colspan="9">
+                            <div class="loader loader--full-width"></div>
+                        </td>
+                    </tr>
+                    <tr ng-hide="implicitGroups.length || $ctrl.loading">
+                        <td colspan="9" class="custom-table__no-data">
+                            No data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a
+        href=""
+        class="collapsable__hide-collapsed"
+        ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
+        ng-hide="!$ctrl.showCollapsed"
+        >Hide system publisher groups</a
+    >
+</div>

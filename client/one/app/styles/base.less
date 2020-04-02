@@ -3592,3 +3592,35 @@ h4 {
     margin-bottom: @spacing--default;
     color: @text-color--lighter;
 }
+
+////////////////////////////
+// Collapsable element //
+////////////////////////////
+
+.collapsable {
+    padding: @spacing--default @spacing--default 20px @spacing--default;
+    background-color: @color--lightest-neutral;
+}
+
+.collapsable__show-collapsed {
+    display: block;
+    text-align: center;
+    margin: 20px -@spacing--default -@spacing--default -@spacing--default;
+    padding: 10px @spacing--default;
+    background-color: @color--lightest-neutral;
+    color: @color--secondary;
+
+    &:hover {
+        color: @color--secondary;
+    }
+}
+
+.collapsable__hide-collapsed {
+    &:extend(.collapsable__show-collapsed);
+    margin-top: 0;
+    background-color: darken(@color--lightest-neutral, 3%);
+
+    &:hover {
+        color: @color--secondary;
+    }
+}
