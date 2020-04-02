@@ -10,7 +10,7 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         onUpdate: '&',
     },
     template: require('./zemPublisherGroupTargeting.component.html'), // eslint-disable-line max-len
-    controller: function(zemPublisherGroupsEndpoint) {
+    controller: function(zemPublisherGroupTargetingEndpoint) {
         var $ctrl = this;
 
         $ctrl.texts = {
@@ -41,7 +41,7 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
             if (changes.accountId) {
                 $ctrl.accountPublisherGroups = null;
                 if ($ctrl.accountId) {
-                    zemPublisherGroupsEndpoint
+                    zemPublisherGroupTargetingEndpoint
                         .list($ctrl.accountId, null, true)
                         .then(function(data) {
                             $ctrl.accountPublisherGroups = data;
