@@ -29,7 +29,7 @@ class ContentAdQuerySet(models.QuerySet):
     def exclude_archived(self, show_archived=False):
         if show_archived:
             return self
-        return self.filter(archived=False)
+        return self.filter(archived=False).filter(ad_group__archived=False)
 
     def exclude_display(self, show_display=False):
         if show_display:
