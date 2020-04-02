@@ -8,15 +8,15 @@ from django.db import connections
 import backtosql
 import dash.models
 import utils.dates_helper
-from utils import converters
 from utils import csv_utils
+from utils import metrics_compat
 from utils import zlogging
 from utils.email_helper import send_supply_report_email
 
 logger = zlogging.getLogger(__name__)
 
-all_sources_query = backtosql.generate_sql("sql/all_sources_stats_query.sql", None)
-publisher_stats_query = backtosql.generate_sql("sql/publisher_stats_query.sql", None)
+ALL_SOURCES_QUERY = backtosql.generate_sql("sql/all_sources_stats_query.sql", None)
+TIMEZONE = "EST"
 
 
 def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False, overwrite_recipients_email=None):
@@ -41,95 +41,145 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
     mtd_stats = {}
     daily_breakdown_stats = {}
 
-    all_sources_stats = _get_source_stats_from_query(
-        all_sources_query.format(date_from=month_start_str, date_to=yesterday_str)
-    )
+    all_sources_stats = _get_source_stats_from_query(month_start_str, yesterday_str)
 
     for recipient in recipients:
-        source_id = recipient.source.pk
-        source_stats = all_sources_stats.get(source_id, {yesterday_str: {"impressions": 0, "cost": 0}})
-        dates = source_stats.keys()
-        mtd_impressions = None
-        mtd_cost = None
+        with metrics_compat.block_timer(
+            "supply_reports_timer",
+            exchange=recipient.source.bidder_slug,
+            mtd=str(recipient.mtd_report),
+            publishers=str(recipient.publishers_report),
+            daily=str(recipient.daily_breakdown_report),
+            obpubs=str(bool(recipient.outbrain_publisher_ids)),
+        ):
+            stats_id = (recipient.source.pk,) + tuple(sorted(recipient.outbrain_publisher_ids or []))
+            source_stats = {yesterday_str: _get_stats_obj()}
+            if stats_id in all_sources_stats:
+                source_stats = all_sources_stats[stats_id]
+            elif recipient.outbrain_publisher_ids:
+                source_stats = _get_source_stats_for_outbrain_publishers(recipient, month_start_str, yesterday_str)
+                all_sources_stats[stats_id] = source_stats
 
-        impressions = source_stats.get(yesterday_str, {"impressions": 0})["impressions"]
-        cost = source_stats.get(yesterday_str, {"cost": 0})["cost"]
+            dates = source_stats.keys()
+            mtd_impressions = None
+            mtd_cost = None
 
-        if recipient.mtd_report:
-            if source_id not in mtd_stats:
-                mtd_stats[source_id] = {
-                    "impressions": sum(map(lambda date: source_stats[date]["impressions"], dates)),
-                    "cost": sum(map(lambda date: source_stats[date]["cost"], dates)),
-                }
+            impressions = source_stats.get(yesterday_str, {"impressions": 0})["impressions"]
+            cost = source_stats.get(yesterday_str, {"cost": 0})["cost"]
 
-            if mtd_stats[source_id]:
-                mtd_impressions = mtd_stats[source_id]["impressions"]
-                mtd_cost = mtd_stats[source_id]["cost"]
+            if recipient.mtd_report:
+                if stats_id not in mtd_stats:
+                    mtd_stats[stats_id] = _get_stats_obj(
+                        impressions=sum(map(lambda date: source_stats[date]["impressions"], dates)),
+                        cost=sum(map(lambda date: source_stats[date]["cost"], dates)),
+                    )
 
-        publisher_report = None
-        if recipient.publishers_report:
-            if source_id not in publisher_stats:
-                publisher_stats[source_id] = _get_publisher_stats(recipient, yesterday)
+                if mtd_stats[stats_id]:
+                    mtd_impressions = mtd_stats[stats_id]["impressions"]
+                    mtd_cost = mtd_stats[stats_id]["cost"]
 
-            if publisher_stats[source_id]:
-                publisher_report = _create_csv(
-                    ["Date", "Publisher", "Impressions", "Clicks", "Spend"], publisher_stats[source_id]
-                )
+            publisher_report = None
+            if recipient.publishers_report:
+                if stats_id not in publisher_stats:
+                    publisher_stats[stats_id] = _get_publisher_stats(recipient, yesterday)
 
-        daily_breakdown_report = None
-        if recipient.daily_breakdown_report:
-            if source_id not in daily_breakdown_stats:
-                daily_breakdown_stats[source_id] = list(
-                    map(lambda date: [date, source_stats[date]["impressions"], source_stats[date]["cost"]], dates)
-                )
+                if publisher_stats[stats_id]:
+                    publisher_report = _create_csv(
+                        ["Date", "Publisher", "Impressions", "Clicks", "Spend"], publisher_stats[stats_id]
+                    )
 
-            if daily_breakdown_stats[source_id]:
-                daily_breakdown_report = _create_csv(["Date", "Impressions", "Spend"], daily_breakdown_stats[source_id])
+            daily_breakdown_report = None
+            if recipient.daily_breakdown_report:
+                if stats_id not in daily_breakdown_stats:
+                    daily_breakdown_stats[stats_id] = list(
+                        map(
+                            lambda date: [date, source_stats[date]["impressions"], source_stats[date]["cost"]],
+                            sorted(dates),
+                        )
+                    )
 
-        if dry_run:
-            continue
+                if daily_breakdown_stats[stats_id]:
+                    daily_breakdown_report = _create_csv(
+                        ["Date", "Impressions", "Spend"], daily_breakdown_stats[stats_id]
+                    )
 
-        send_supply_report_email(
-            overwrite_recipients_email or recipient.email,
-            yesterday,
-            impressions,
-            cost,
-            recipient.custom_subject,
-            publisher_report=publisher_report,
-            mtd_impressions=mtd_impressions,
-            mtd_cost=mtd_cost,
-            daily_breakdown_report=daily_breakdown_report,
-        )
-        if not overwrite_recipients_email:
-            recipient.last_sent_dt = datetime.datetime.now()
-            recipient.save()
+            if dry_run:
+                continue
+
+            send_supply_report_email(
+                overwrite_recipients_email or recipient.email,
+                yesterday,
+                impressions,
+                cost,
+                recipient.custom_subject,
+                publisher_report=publisher_report,
+                mtd_impressions=mtd_impressions,
+                mtd_cost=mtd_cost,
+                daily_breakdown_report=daily_breakdown_report,
+            )
+            metrics_compat.incr("supply_reports_counter", 1, exchange=recipient.source.bidder_slug)
+            if not overwrite_recipients_email:
+                recipient.last_sent_dt = datetime.datetime.now()
+                recipient.save()
 
 
-def _get_source_stats_from_query(query):
+def _get_source_stats_from_query(date_from_str, date_to_str):
+    query = ALL_SOURCES_QUERY.format(date_from=date_from_str, date_to=date_to_str)
     source_stats = defaultdict(dict)
 
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
-        for date, source_id_str, impressions, spend in c:
-            source_id = int(source_id_str)
-            source_stats[source_id][date] = {
-                "impressions": int(impressions if impressions else 0),
-                "cost": Decimal(spend if spend else 0) / converters.CURRENCY_TO_NANO,
-            }
+        for date, source_id, impressions, spend in c:
+            stats_id = (source_id,)
+            source_stats[stats_id][date] = _get_stats_obj(impressions, spend)
     return source_stats
 
 
+def _get_source_stats_for_outbrain_publishers(recipient, start_date, end_date):
+    query = _get_custom_stats_query(recipient, "date", start_date, end_date)
+    out = {}
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
+        c.execute(query)
+        for date, impressions, _, spend in c.fetchall():
+            out[str(date)] = _get_stats_obj(impressions, spend)
+        return out
+    return []
+
+
 def _get_publisher_stats(recipient, date):
+    query = (
+        _get_custom_stats_query(recipient, "date,publisher", date, date)
+        if recipient.outbrain_publisher_ids
+        else backtosql.generate_sql(
+            "sql/publisher_stats_query.sql", dict(source_id=recipient.source.pk, date=date.isoformat())
+        )
+    )
     result = []
-    params = [recipient.source.pk, date.isoformat()]
 
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
-        c.execute(publisher_stats_query, params)
-        for date, domain, impressions, clicks, cost_nano in c:
-            cost_formatted = Decimal(cost_nano if cost_nano else 0) / converters.CURRENCY_TO_NANO
-            result.append([date, domain, impressions, clicks, cost_formatted])
+        c.execute(query)
+        for date, domain, impressions, clicks, cost in c.fetchall():
+            result.append([date, domain, impressions, clicks, cost])
 
     return result
+
+
+def _get_custom_stats_query(recipient, breakdown, start_date, end_date):
+    return backtosql.generate_sql(
+        "sql/custom_stats_query.sql",
+        dict(
+            bidder_slug=recipient.source.bidder_slug,
+            breakdown=breakdown,
+            outbrain_publisher_ids=",".join("'{}'".format(pubid) for pubid in recipient.outbrain_publisher_ids),
+            timezone=TIMEZONE,
+            start_date=start_date,
+            end_date=end_date,
+        ),
+    )
+
+
+def _get_stats_obj(impressions=None, cost=None):
+    return {"impressions": int(impressions or 0), "cost": Decimal(cost or 0)}
 
 
 def _create_csv(columns, data):
