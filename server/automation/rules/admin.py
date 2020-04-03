@@ -60,7 +60,7 @@ class RuleAdmin(admin.ModelAdmin):
         "created_dt",
         "created_by",
     )
-    raw_id_fields = ("agency", "created_by")
+    raw_id_fields = ("agency", "publisher_group", "created_by", "modified_by")
     exclude = ("ad_groups_included",)
 
     def ad_groups_included_ids(self, obj=None):
