@@ -75,20 +75,35 @@ class ContentAdInstanceMixin(object):
         for field, value in list(changes.items()):
             if field in VALID_UPDATE_FIELDS:
                 setattr(self, field, value)
+        self.save()
+
+    def save(self, *args, **kwargs):
         try:
             self._handle_oen_document_data()
         except Exception:
             logger.exception("Something went wrong when trying to map OEN's document data")
-        self.save()
+        super().save(*args, **kwargs)
 
     def _handle_oen_document_data(self):
-        if not self.ad_group.campaign.account_id == OEN_ACCOUNT_ID or not self.additional_data:
+        if not self.additional_data:
             return
 
         oen_document_id = self.additional_data.get("document_id")
         if oen_document_id and oen_document_id != self.document_id:
             self.document_id = oen_document_id
-        self.document_features = self._remap_document_feature_fields(self.additional_data)
+
+        document_features_updates = {}
+        if "language" in self.additional_data:
+            document_features_updates["language"] = [
+                {"value": self.additional_data["language"].lower(), "confidence": 1.0}
+            ]
+        if "document_features" in self.additional_data:
+            document_features_updates["categories"] = self.additional_data["document_features"]
+
+        if document_features_updates:
+            if not self.document_features:
+                self.document_features = {}
+            self.document_features.update(document_features_updates)
 
     def _write_change_history(self, request, changes):
         description = "Content ad {id} edited.".format(id=self.pk)
@@ -97,15 +112,6 @@ class ContentAdInstanceMixin(object):
             user=request and request.user or None,
             action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
         )
-
-    @staticmethod
-    def _remap_document_feature_fields(additional_data):
-        document_features = {}
-        if "language" in additional_data:
-            document_features["language"] = [{"value": additional_data["language"].lower(), "confidence": 1.0}]
-        if "document_features" in additional_data:
-            document_features["categories"] = additional_data["document_features"]
-        return document_features
 
     @transaction.atomic()
     def _update_content_ad_sources_state(self, request):

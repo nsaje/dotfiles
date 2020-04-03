@@ -286,3 +286,13 @@ class CreateContentAd(TestCase):
 
         # check redirector sync
         mock_insert_redirects.assert_not_called()
+
+    def test_create_oen_additional_data(self, mock_insert_redirects):
+        account = magic_mixer.blend(core.models.Account, id=305)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
+        sources = magic_mixer.cycle(5).blend(core.models.Source)
+
+        content_ad = core.models.ContentAd.objects.create(batch, sources, additional_data={"document_features": "test"})
+
+        self.assertEqual(content_ad.document_features, {"categories": "test"})

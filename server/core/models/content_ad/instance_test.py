@@ -106,11 +106,19 @@ class InstanceTest(TestCase):
         )
 
     @mock.patch.object(k1_helper, "update_content_ad")
-    def test_oen_document_data_no_change_if_not_present(self, mock_k1_update):
+    def test_oen_document_data_no_change_if_fields_not_present(self, mock_k1_update):
         content_ad = magic_mixer.blend(model.ContentAd, document_id=123, document_features={"a": "b"})
 
-        additional_data = {"language": "EN"}
+        additional_data = {"my": "data"}
         content_ad.update(None, additional_data=additional_data)
+        self.assertEqual(content_ad.document_id, 123)
+        self.assertEqual(content_ad.document_features, {"a": "b"})
+
+    @mock.patch.object(k1_helper, "update_content_ad")
+    def test_oen_document_data_no_change_if_additional_data_not_present(self, mock_k1_update):
+        content_ad = magic_mixer.blend(model.ContentAd, state=1, document_id=123, document_features={"a": "b"})
+
+        content_ad.update(None, state=2, additional_data=None)
         self.assertEqual(content_ad.document_id, 123)
         self.assertEqual(content_ad.document_features, {"a": "b"})
 
