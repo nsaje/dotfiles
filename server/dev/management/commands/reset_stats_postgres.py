@@ -1,10 +1,10 @@
-import datetime
+# import datetime
 import os
 
 from django.conf import settings
 from django.db import connections
 
-from etl import maintenance
+# from etl import maintenance
 from etl import materialize
 from etl import redshift
 from etl.materialize import MATERIALIZED_VIEWS
@@ -25,8 +25,8 @@ class Command(Z1Command):
         logger.info("Loading data from job", job=job_id)
 
         # dates are used for deleting old data
-        date_from = datetime.date(2000, 1, 1)
-        date_to = datetime.date.today()
+        # date_from = datetime.date(2000, 1, 1)
+        # date_to = datetime.date.today()
 
         for db_name in settings.STATS_DB_POSTGRES:
             if settings.DATABASES[db_name]["NAME"] != "one-dev":
@@ -39,11 +39,11 @@ class Command(Z1Command):
                 if mv_class.TABLE_NAME not in existing_tables:
                     self._create_table(db_name, mv_class)
 
-                s3_path = os.path.join(redshift.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX, job_id, mv_class.TABLE_NAME)
-                manifest = self._find_manifest(s3_path)
-                redshift.update_table_from_s3_postgres(db_name, manifest, mv_class.TABLE_NAME, date_from, date_to)
-                maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
-                maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
+                # s3_path = os.path.join(redshift.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX, job_id, mv_class.TABLE_NAME)
+                # manifest = self._find_manifest(s3_path)
+                # redshift.update_table_from_s3_postgres(db_name, manifest, mv_class.TABLE_NAME, date_from, date_to)
+                # maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
+                # maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 
     def _find_manifest(self, s3_path):
         bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
