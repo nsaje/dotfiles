@@ -98,6 +98,13 @@ class RESTAPIBaseView(APIView):
             data["errors"] = errors
         return Response(data, **kwargs)
 
+    def perform_authentication(self, request):
+        super(RESTAPIBaseView, self).perform_authentication(request)
+        if not isinstance(request.successful_authenticator, utils.rest_common.authentication.SessionAuthentication):
+            request.is_api_request = True
+        else:
+            request.is_api_request = False
+
 
 class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
     pass

@@ -4,7 +4,6 @@ from utils import zlogging
 import traceback
 import re
 from decimal import Decimal
-
 from django.db.models import Q
 from django.conf import settings
 from django.urls import reverse
@@ -440,6 +439,8 @@ def should_send_account_notification_mail(account, user, request):
 
 def should_send_notification_mail(campaign, user, request):
     if not settings.SEND_NOTIFICATION_MAIL:
+        return False
+    if request.is_api_request:
         return False
 
     campaign_settings = campaign.get_current_settings()

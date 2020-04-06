@@ -203,6 +203,7 @@ class EmailHelperTestCase(TestCase):
         self.user = User.objects.create_user("test@user.com")
         self.request = request_factory.get("/test")
         self.request.user = self.user
+        self.request.is_api_request = False
 
     def test_generate_password_reset_url(self):
         reset_url = email_helper._generate_password_reset_url(self.user, self.request)
@@ -418,6 +419,19 @@ Zemanta""",
         )
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.SUPPLY_REPORTS_FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, ["testsupply@test.com"])
+
+    def test_dont_send_notification_email(self):
+        self.request.is_api_request = True
+        campaign_manager = User.objects.create_user("manager@user.com")
+        account_manager = User.objects.create_user("accountmanager@user.com")
+
+        ad_group = magic_mixer.blend(dash_models.AdGroup, id=8, name="", campaign__name="", campaign__account__name="")
+
+        ad_group.campaign.settings.update(None, campaign_manager=campaign_manager)
+        ad_group.campaign.account.settings.update(None, default_account_manager=account_manager)
+
+        email_helper.send_ad_group_notification_email(ad_group, self.request, "Something changed, yo")
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class FormatChangesTextTest(TestCase):

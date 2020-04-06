@@ -105,6 +105,7 @@ class BaseApiView(View):
     def dispatch(self, request, *args, **kwargs):
         start_time = time.time()
         status = None
+        request.is_api_request = False
         try:
             response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
             status = response.status_code
