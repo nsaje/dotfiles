@@ -1,27 +1,4 @@
 {
-    "include": ["one/**/*"],
-    "exclude": ["one/main.aot.ts", "one/main.ts"],
-    "compileOnSave": false,
-    "compilerOptions": {
-        "baseUrl": ".",
-        "target": "es5",
-        "sourceMap": true,
-        "declaration": false,
-        "moduleResolution": "node",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "lib": ["es2016", "es2017.object", "dom"],
-        "types": ["angular", "clone", "jasmine", "webpack-env"],
-        "typeRoots": ["node_modules/@types"],
-        "paths": {
-            "moment": ["./lib/components/moment/moment"]
-        },
-        "plugins": [
-            {
-                "name": "@angular/language-service"
-            }
-        ],
-        "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true
-    }
+    "extends": "./tsconfig.json",
+    "exclude": ["one/main.aot.ts", "one/main.ts"]
 }
