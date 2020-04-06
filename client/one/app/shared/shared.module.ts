@@ -64,6 +64,7 @@ import {ImageCheckboxInputComponent} from './components/image-checkbox-input/ima
 import {ImageCheckboxInputGroupComponent} from './components/image-checkbox-input-group/image-checkbox-input-group.component';
 import {ExpandableSectionComponent} from './components/expandable-section/expandable-section.component';
 import {NewFeatureDirective} from './directives/new-feature/new-feature.directive';
+import {LoadingOverlayDirective} from './directives/loading-overlay/loading-overlay.directive';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -76,6 +77,7 @@ const EXPORTED_DECLARATIONS = [
     InternalFeatureDirective,
     NewFeatureDirective,
     TextHighlightDirective,
+    LoadingOverlayDirective,
 
     // Components
     CategorizedSelectComponent,

@@ -2,6 +2,10 @@
     class="zem-drawer zem-account-settings-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
+    [isLoading]="
+        store.state.requests.defaults.inProgress ||
+        store.state.requests.get.inProgress
+    "
     (closeRequest)="cancel()"
 >
     <ng-container *ngIf="(store.state$ | async) as state">

@@ -22,6 +22,8 @@ export class DrawerComponent implements OnChanges {
     isOpen: boolean;
     @Input()
     isClosable: boolean;
+    @Input()
+    isLoading: boolean;
     @Output()
     closeRequest = new EventEmitter<undefined>();
 
