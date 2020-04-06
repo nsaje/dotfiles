@@ -44,9 +44,13 @@ echo "Server opened port"
 
 # Launch testim CLI for Chrome
 testim \
-    --name "User Login" \
+    --name "User Login (Internal)" \
+    --name "User Login (Agency Manager)" \
+    --name "User login (Account manager)" \
+    --name "Credits Library (Agency Manager)" \
+    --name "Credits Library (Account Manager)" \
     --name "Create account" \
-    --name "Create account credit" \
+    --name "Create credit" \
     --name "Create campaign" \
     --name "Create ad group" \
     --token "$TESTIM_TOKEN" \
