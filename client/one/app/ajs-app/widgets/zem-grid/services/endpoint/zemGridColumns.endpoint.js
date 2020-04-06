@@ -10,7 +10,8 @@ angular
         var AVG_COST_PREFIX = 'avg_cost_per_';
         var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
         var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
-        var ROAS_PREFIX = 'roas_';
+        var ROAS_PREFIX = 'roas';
+        var ET_ROAS_PREFIX = 'et_roas_';
         var ETFM_ROAS_PREFIX = 'etfm_roas_';
 
         var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
@@ -2645,78 +2646,99 @@ angular
             angular.forEach(conversionWindows, function(window) {
                 var pixelSuffix =
                     pixel.prefix + '_' + window.value + attributionSuffix;
-                var conversionsField = pixelSuffix;
-                var cpaField = AVG_ETFM_COST_PREFIX + pixelSuffix;
-                var roasField = ROAS_PREFIX + pixelSuffix;
 
-                pixel.fields.push(conversionsField, cpaField, roasField);
+                var conversionsField = pixelSuffix;
+                var cpaField = AVG_COST_PREFIX + pixelSuffix;
+                var etCpaField = AVG_ET_COST_PREFIX + pixelSuffix;
+                var etfmCpaField = AVG_ETFM_COST_PREFIX + pixelSuffix;
+                var roasField = ROAS_PREFIX + pixelSuffix;
+                var etRoasField = ET_ROAS_PREFIX + pixelSuffix;
+                var etfmRoasField = ETFM_ROAS_PREFIX + pixelSuffix;
+
+                pixel.fields.push(
+                    conversionsField,
+                    cpaField,
+                    etCpaField,
+                    etfmCpaField,
+                    roasField,
+                    etRoasField,
+                    etfmRoasField
+                );
 
                 var name = pixel.name + ' ' + window.name + columnSuffix;
+
+                var newColumn = {
+                    window: window.value,
+                    attribution: attribution,
+                    pixel: pixel.prefix,
+                };
+
                 var conversionsNewColumn = Object.assign(
                     {},
                     COLUMNS.conversionCount,
+                    newColumn,
                     {
                         restApiName: name,
                         name:
                             'Conversions / ' +
                             attribution +
-                            '(' +
+                            ' (' +
                             pixel.name +
                             ')',
                         help: conversionsHelp,
-                        window: window.value,
-                        attribution: attribution,
                         performance: 'Conversions',
-                        pixel: pixel.prefix,
                         field: conversionsField,
                         shown: true,
                         goal: false,
                     }
                 );
-                var cpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
-                    restApiName: 'CPA (' + name + ')',
-                    name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
-                    window: window.value,
-                    attribution: attribution,
-                    performance: 'CPA',
-                    pixel: pixel.prefix,
-                    field: cpaField,
-                    shown: true,
-                    goal: true,
-                    costMode: constants.costMode.LEGACY,
-                });
-                var etCpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
-                    restApiName: 'Platform CPA (' + name + ')',
-                    name:
-                        'Platform CPA /' +
-                        attribution +
-                        ' (' +
-                        pixel.name +
-                        ')',
-                    window: window.value,
-                    attribution: attribution,
-                    performance: 'Platform CPA',
-                    pixel: pixel.prefix,
-                    field: AVG_ET_COST_PREFIX + pixelSuffix,
-                    shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                    goal: true,
-                    costMode: constants.costMode.PLATFORM,
-                    internal:
-                        'zemauth.can_view_platform_cost_breakdown_derived',
-                    fieldGroup: cpaField,
-                });
+                var cpaNewColumn = Object.assign(
+                    {},
+                    COLUMNS.conversionCpa,
+                    newColumn,
+                    {
+                        restApiName: 'CPA (' + name + ')',
+                        name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
+                        performance: 'CPA',
+                        field: cpaField,
+                        shown: true,
+                        goal: true,
+                        costMode: constants.costMode.LEGACY,
+                    }
+                );
+                var etCpaNewColumn = Object.assign(
+                    {},
+                    COLUMNS.conversionCpa,
+                    newColumn,
+                    {
+                        restApiName: 'Platform CPA (' + name + ')',
+                        name:
+                            'Platform CPA /' +
+                            attribution +
+                            ' (' +
+                            pixel.name +
+                            ')',
+                        performance: 'Platform CPA',
+                        field: etCpaField,
+                        shown:
+                            'zemauth.can_view_platform_cost_breakdown_derived',
+                        goal: true,
+                        costMode: constants.costMode.PLATFORM,
+                        internal:
+                            'zemauth.can_view_platform_cost_breakdown_derived',
+                        fieldGroup: cpaField,
+                    }
+                );
                 var etfmCpaNewColumn = Object.assign(
                     {},
                     COLUMNS.conversionCpa,
+                    newColumn,
                     {
                         restApiName: 'CPA (' + name + ')',
                         name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
                         help: cpaHelp,
-                        window: window.value,
-                        attribution: attribution,
                         performance: 'CPA',
-                        pixel: pixel.prefix,
-                        field: AVG_ETFM_COST_PREFIX + pixelSuffix,
+                        field: etfmCpaField,
                         shown: 'zemauth.can_view_end_user_cost_breakdown',
                         goal: true,
                         costMode: constants.costMode.PUBLIC,
@@ -2725,55 +2747,54 @@ angular
                     }
                 );
 
-                var roasNewColumn = Object.assign({}, COLUMNS.conversionRoas, {
-                    restApiName: 'ROAS (' + name + ')',
-                    name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
-                    window: window.value,
-                    attribution: attribution,
-                    performance: 'ROAS',
-                    pixel: pixel.prefix,
-                    field: roasField,
-                    shown: 'zemauth.fea_can_see_roas',
-                    costMode: constants.costMode.LEGACY,
-                    internal: 'zemauth.fea_can_see_roas',
-                });
+                var roasNewColumn = Object.assign(
+                    {},
+                    COLUMNS.conversionRoas,
+                    newColumn,
+                    {
+                        restApiName: 'ROAS (' + name + ')',
+                        name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
+                        performance: 'ROAS',
+                        field: roasField,
+                        costMode: constants.costMode.LEGACY,
+                    }
+                );
                 var etRoasNewColumn = Object.assign(
                     {},
                     COLUMNS.conversionRoas,
+                    newColumn,
                     {
                         restApiName: 'Platform ROAS (' + name + ')',
-                        name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
-                        window: window.value,
-                        attribution: attribution,
+                        name:
+                            'Platform ROAS / ' +
+                            attribution +
+                            ' (' +
+                            pixel.name +
+                            ')',
                         performance: 'Platform ROAS',
-                        pixel: pixel.prefix,
-                        field: ROAS_PREFIX + pixelSuffix,
+                        field: etRoasField,
                         shown: [
                             'zemauth.fea_can_see_roas',
                             'zemauth.can_view_platform_cost_breakdown_derived',
                         ],
                         costMode: constants.costMode.PLATFORM,
-                        internal: 'zemauth.fea_can_see_roas',
                         fieldGroup: roasField,
                     }
                 );
                 var etfmRoasNewColumn = Object.assign(
                     {},
                     COLUMNS.conversionRoas,
+                    newColumn,
                     {
                         restApiName: 'ROAS (' + name + ')',
                         name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
-                        window: window.value,
-                        attribution: attribution,
                         performance: 'ROAS',
-                        pixel: pixel.prefix,
-                        field: ETFM_ROAS_PREFIX + pixelSuffix,
+                        field: etfmRoasField,
                         shown: [
                             'zemauth.fea_can_see_roas',
                             'zemauth.can_view_end_user_cost_breakdown',
                         ],
                         costMode: constants.costMode.PUBLIC,
-                        internal: 'zemauth.fea_can_see_roas',
                         fieldGroup: roasField,
                     }
                 );

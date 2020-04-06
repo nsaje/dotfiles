@@ -16,15 +16,37 @@
         </zem-select-input>
     </div>
 
-    <div class="zem-attribution-column-picker__item">
-        <div class="zem-attribution-column-picker__subtitle">Columns:</div>
+    <div
+        *ngIf="METRICS_OPTIONS_CLICK.length > 0"
+        class="zem-attribution-column-picker__item"
+    >
+        <div class="zem-attribution-column-picker__subtitle">
+            Metrics based on click attribution:
+        </div>
         <zem-checkbox-input
-            *ngFor="let metrics of METRICS_OPTIONS"
+            *ngFor="let metrics of METRICS_OPTIONS_CLICK"
             class="zem-checkbox-input"
             [isChecked]="isMetricsSelected(metrics)"
             (toggle)="onMetricToggle($event, metrics)"
         >
-            {{ metrics.performance }} ({{ metrics.attribution }})
+            {{ metrics.performance }}
+        </zem-checkbox-input>
+    </div>
+
+    <div
+        *ngIf="METRICS_OPTIONS_VIEW.length > 0"
+        class="zem-attribution-column-picker__item"
+    >
+        <div class="zem-attribution-column-picker__subtitle">
+            Metrics based on view attribution:
+        </div>
+        <zem-checkbox-input
+            *ngFor="let metrics of METRICS_OPTIONS_VIEW"
+            class="zem-checkbox-input"
+            [isChecked]="isMetricsSelected(metrics)"
+            (toggle)="onMetricToggle($event, metrics)"
+        >
+            {{ metrics.performance }}
         </zem-checkbox-input>
     </div>
 

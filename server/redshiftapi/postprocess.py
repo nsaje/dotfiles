@@ -293,6 +293,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                         )
                     )
                     roas = value - float(local_cost)
+                    et_roas = value - float(local_et_cost)
                     etfm_roas = value - float(local_etfm_cost)
                 else:
                     count = None
@@ -303,6 +304,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                     avg_etfm_cost = None
                     local_avg_etfm_cost = None
                     roas = None
+                    et_roas = None
                     etfm_roas = None
 
                 pixel_key = pixel.get_view_key(conversion_window) + (suffix or "")
@@ -317,6 +319,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                         "avg_etfm_cost_per_" + pixel_key: avg_etfm_cost,
                         "local_avg_etfm_cost_per_" + pixel_key: local_avg_etfm_cost,
                         "roas_" + pixel_key: roas,
+                        "et_roas_" + pixel_key: et_roas,
                         "etfm_roas_" + pixel_key: etfm_roas,
                     }
                 )

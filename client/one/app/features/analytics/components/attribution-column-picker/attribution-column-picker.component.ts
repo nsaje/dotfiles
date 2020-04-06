@@ -43,10 +43,12 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
     CLICK_CONVERSION_WINDOWS: ConversionWindowConfig[] = CLICK_CONVERSION_WINDOWS;
     VIEW_CONVERSION_WINDOWS: ConversionWindowConfig[] = VIEW_CONVERSION_WINDOWS;
 
-    METRICS_OPTIONS: PixelMetric[] = [
+    METRICS_OPTIONS_CLICK: PixelMetric[] = [
         {attribution: 'Click attribution', performance: 'Conversions'},
         {attribution: 'Click attribution', performance: 'CPA'},
     ];
+
+    METRICS_OPTIONS_VIEW: PixelMetric[] = [];
 
     pixelsNames: string[];
 
@@ -66,7 +68,7 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
                 'zemauth.can_see_viewthrough_conversions'
             )
         ) {
-            this.METRICS_OPTIONS.push(
+            this.METRICS_OPTIONS_VIEW.push(
                 {attribution: 'View attribution', performance: 'Conversions'},
                 {attribution: 'View attribution', performance: 'CPA'}
             );
@@ -75,10 +77,14 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
             this.zemPermissions.hasPermission('zemauth.fea_can_see_roas') &&
             pixelsHaveRoas
         ) {
-            this.METRICS_OPTIONS.push(
-                {attribution: 'View attribution', performance: 'ROAS'},
-                {attribution: 'Click attribution', performance: 'ROAS'}
-            );
+            this.METRICS_OPTIONS_CLICK.push({
+                attribution: 'Click attribution',
+                performance: 'ROAS',
+            });
+            this.METRICS_OPTIONS_VIEW.push({
+                attribution: 'View attribution',
+                performance: 'ROAS',
+            });
         }
     }
 
