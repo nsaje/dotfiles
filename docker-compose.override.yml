@@ -29,7 +29,7 @@ services:
           - "telegraf"
           - "client"
         volumes:
-          - "./server/:/app/z1/"
+          - "./server/:/app/z1/:cached"
           - ".:/src:ro"
           - "${HOME}/.aws:/home/ubuntu/.aws:ro"
         environment:
