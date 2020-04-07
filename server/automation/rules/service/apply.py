@@ -63,20 +63,20 @@ def apply_rule(
             continue
 
         settings_dict = _get_settings_dict(rule, ad_group, campaign_budget, ad_group_settings, content_ads_settings)
-        if _meets_all_conditions(rule, target_stats, settings_dict):
+        try:
             with transaction.atomic():
-                try:
-                    update = _apply_action(target, rule, ad_group, target_stats)
-                    if update.has_changes():
-                        _write_trigger_history(target, rule, ad_group)
-                        changes.append(update)
+                if _meets_all_conditions(rule, target_stats, settings_dict):
+                    try:
+                        update = _apply_action(target, rule, ad_group, target_stats)
+                        if update.has_changes():
+                            _write_trigger_history(target, rule, ad_group)
+                            changes.append(update)
 
-                except utils.exc.ForbiddenError:
-                    continue
-
-                except Exception as e:
-                    error_data = ErrorData(target=target, exc=e, stack_trace=traceback.format_exc())
-                    errors.append(error_data)
+                    except utils.exc.ForbiddenError:
+                        continue
+        except Exception as e:
+            error_data = ErrorData(target=target, exc=e, stack_trace=traceback.format_exc())
+            errors.append(error_data)
 
     return changes, errors
 
