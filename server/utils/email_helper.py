@@ -440,7 +440,7 @@ def should_send_account_notification_mail(account, user, request):
 def should_send_notification_mail(campaign, user, request):
     if not settings.SEND_NOTIFICATION_MAIL:
         return False
-    if request.is_api_request:
+    if getattr(request, "is_api_request", False):
         return False
 
     campaign_settings = campaign.get_current_settings()
