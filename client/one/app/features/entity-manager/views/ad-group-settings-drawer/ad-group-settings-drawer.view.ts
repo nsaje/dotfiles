@@ -7,6 +7,7 @@ import {
     Input,
     OnDestroy,
     OnInit,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {
     TARGETING_DEVICE_OPTIONS,
@@ -56,6 +57,7 @@ export class AdGroupSettingsDrawerView
     constructor(
         public store: AdGroupSettingsStore,
         private router: Router,
+        private changeDetectorRef: ChangeDetectorRef,
         @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
@@ -72,7 +74,7 @@ export class AdGroupSettingsDrawerView
             } else {
                 this.store.loadEntity(this.entityId);
             }
-        }, 500);
+        }, 250);
     }
 
     ngOnDestroy(): void {
@@ -82,6 +84,7 @@ export class AdGroupSettingsDrawerView
 
     open() {
         this.isOpen = true;
+        this.changeDetectorRef.detectChanges();
     }
 
     close() {

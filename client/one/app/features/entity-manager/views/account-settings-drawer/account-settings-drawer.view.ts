@@ -7,6 +7,7 @@ import {
     AfterViewInit,
     OnInit,
     OnDestroy,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {
     ACCOUNT_TYPES,
@@ -45,6 +46,7 @@ export class AccountSettingsDrawerView
     constructor(
         public store: AccountSettingsStore,
         private router: Router,
+        private changeDetectorRef: ChangeDetectorRef,
         @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
@@ -61,7 +63,7 @@ export class AccountSettingsDrawerView
             } else {
                 this.store.loadEntity(this.entityId);
             }
-        }, 500);
+        }, 250);
     }
 
     ngOnDestroy(): void {
@@ -71,6 +73,7 @@ export class AccountSettingsDrawerView
 
     open() {
         this.isOpen = true;
+        this.changeDetectorRef.detectChanges();
     }
 
     close() {

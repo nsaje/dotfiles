@@ -7,6 +7,7 @@ import {
     AfterViewInit,
     OnInit,
     OnDestroy,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {
     CAMPAIGN_TYPES,
@@ -47,6 +48,7 @@ export class CampaignSettingsDrawerView
     constructor(
         public store: CampaignSettingsStore,
         private router: Router,
+        private changeDetectorRef: ChangeDetectorRef,
         @Inject('zemPermissions') public zemPermissions: any,
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
@@ -63,7 +65,7 @@ export class CampaignSettingsDrawerView
             } else {
                 this.store.loadEntity(this.entityId);
             }
-        }, 500);
+        }, 250);
     }
 
     ngOnDestroy(): void {
@@ -73,6 +75,7 @@ export class CampaignSettingsDrawerView
 
     open() {
         this.isOpen = true;
+        this.changeDetectorRef.detectChanges();
     }
 
     close() {
