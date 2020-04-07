@@ -72,7 +72,7 @@ export class AdGroupSettingsDrawerView
             } else {
                 this.store.loadEntity(this.entityId);
             }
-        });
+        }, 500);
     }
 
     ngOnDestroy(): void {

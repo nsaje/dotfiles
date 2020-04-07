@@ -63,7 +63,7 @@ export class CampaignSettingsDrawerView
             } else {
                 this.store.loadEntity(this.entityId);
             }
-        });
+        }, 500);
     }
 
     ngOnDestroy(): void {
