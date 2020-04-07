@@ -226,6 +226,39 @@ class ApplyTest(TestCase):
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
+    def test_stats_condition_left_operand_window_none(self):
+        rule = magic_mixer.blend(Rule, window=constants.MetricWindow.LAST_3_DAYS)
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=None,
+            left_operand_type=constants.MetricType.CLICKS,
+            left_operand_modifier=2.0,
+            operator=constants.Operator.GREATER_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="10",
+        )
+
+        stats = {"clicks": {constants.MetricWindow.LAST_3_DAYS: 7}}
+        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+
+    def test_stats_condition_right_operand_window_none(self):
+        rule = magic_mixer.blend(Rule, window=constants.MetricWindow.LAST_3_DAYS)
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.TOTAL_SPEND,
+            right_operand_value="11.0",
+        )
+
+        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+
     def test_meet_all_conditions_invalid_operator(self):
         rule = magic_mixer.blend(Rule)
         magic_mixer.blend(

@@ -17,10 +17,9 @@ import core.models
 import utils.dates_helper
 import utils.exc
 
-from .. import Rule
-from .. import RuleTriggerHistory
 from .. import config
 from .. import constants
+from .. import models
 from . import actions
 from .actions import ValueChangeData
 
@@ -49,7 +48,7 @@ class ErrorData:
 
 
 def apply_rule(
-    rule: Rule,
+    rule: models.Rule,
     ad_group: core.models.AdGroup,
     ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
     ad_group_settings: Dict[str, Union[int, str]],
@@ -81,15 +80,15 @@ def apply_rule(
     return changes, errors
 
 
-def _is_on_cooldown(target: str, rule: Rule, ad_group: core.models.AdGroup) -> bool:
+def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> bool:
     cooldown_window_start = utils.dates_helper.local_now() - datetime.timedelta(hours=rule.cooldown)
-    return RuleTriggerHistory.objects.filter(
+    return models.RuleTriggerHistory.objects.filter(
         target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=cooldown_window_start
     ).exists()
 
 
 def _get_settings_dict(
-    rule: Rule,
+    rule: models.Rule,
     ad_group: core.models.AdGroup,
     campaign_budget: Dict[str, Any],
     ad_group_settings: Dict[str, Union[int, str]],
@@ -104,25 +103,26 @@ def _get_settings_dict(
 
 
 def _meets_all_conditions(
-    rule: Rule,
+    rule: models.Rule,
     target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
     settings_dict: Dict[str, Union[int, str]],
 ) -> bool:
     for condition in rule.conditions.all():
-        left_operand_value, right_operand_value = _prepare_operands(condition, target_stats, settings_dict)
+        left_operand_value, right_operand_value = _prepare_operands(rule, condition, target_stats, settings_dict)
         if not _meets_condition(condition.operator, left_operand_value, right_operand_value):
             return False
     return True
 
 
 def _prepare_operands(
-    condition,
+    rule: models.Rule,
+    condition: models.RuleCondition,
     target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
     settings_dict: Dict[str, Union[int, str]],
 ):
     _validate_condition(condition)
     if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
-        return _prepare_stats_operands(condition, target_stats)
+        return _prepare_stats_operands(rule, condition, target_stats)
     elif (
         condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING
         or condition.left_operand_type in constants.METRIC_BUDGETS_MAPPING
@@ -140,28 +140,42 @@ def _validate_condition(condition):
         raise ValueError("Invalid operator for left operand")
 
 
-def _prepare_stats_operands(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
-    left_operand_value = _prepare_left_stat_operand(condition, target_stats)
-    right_operand_value = _prepare_right_stat_operand(condition, target_stats)
+def _prepare_stats_operands(
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+):
+    left_operand_value = _prepare_left_stat_operand(rule, condition, target_stats)
+    right_operand_value = _prepare_right_stat_operand(rule, condition, target_stats)
     return left_operand_value, right_operand_value
 
 
-def _prepare_left_stat_operand(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+def _prepare_left_stat_operand(
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+):
     left_operand_key = constants.METRIC_STATS_MAPPING[condition.left_operand_type]
-    left_operand_stat_value = target_stats[left_operand_key][condition.left_operand_window]
+    left_operand_window = condition.left_operand_window or rule.window
+    left_operand_stat_value = target_stats[left_operand_key][left_operand_window]
     if left_operand_stat_value is None:
         return left_operand_stat_value
     left_operand_modifier = condition.left_operand_modifier or 1.0
     return left_operand_stat_value * left_operand_modifier
 
 
-def _prepare_right_stat_operand(condition, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]):
+def _prepare_right_stat_operand(
+    rule: models.Rule,
+    condition: models.RuleCondition,
+    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+):
     # TODO: handle constants
     if condition.right_operand_type == constants.ValueType.ABSOLUTE:
         return float(condition.right_operand_value)
     elif condition.right_operand_type in constants.VALUE_STATS_MAPPING:
         right_operand_key = constants.VALUE_STATS_MAPPING[condition.right_operand_type]
-        right_operand_stat_value = target_stats[right_operand_key][condition.right_operand_window]
+        right_operand_window = condition.right_operand_window or rule.window
+        right_operand_stat_value = target_stats[right_operand_key][right_operand_window]
         if right_operand_stat_value is None:
             return right_operand_stat_value
         try:
@@ -213,5 +227,5 @@ def _apply_action(target, rule, ad_group, target_stats):
     return apply_fn(target, rule, ad_group, target_stats=target_stats)
 
 
-def _write_trigger_history(target: str, rule: Rule, ad_group: core.models.AdGroup) -> None:
-    RuleTriggerHistory.objects.create(rule=rule, ad_group=ad_group, target=target)
+def _write_trigger_history(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> None:
+    models.RuleTriggerHistory.objects.create(rule=rule, ad_group=ad_group, target=target)
