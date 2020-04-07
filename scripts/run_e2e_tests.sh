@@ -48,6 +48,7 @@ testim \
     --name "User Login (Agency Manager)" \
     --name "User login (Account manager)" \
     --name "Credits Library (Agency Manager)" \
+    --name "Credits Library (Agency Manager / Clear account)" \
     --name "Credits Library (Account Manager)" \
     --name "Create account" \
     --name "Create credit" \
