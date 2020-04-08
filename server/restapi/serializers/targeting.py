@@ -79,8 +79,9 @@ class AudienceSerializer(rest_framework.serializers.BaseSerializer):
         "obl",
         "videocdn",
         "weborama",
-        "ob_sales_representative-eyeota",
         "ob-eyeota",
+        "ob-nielsen",
+        "neodata",
     )
 
     def __init__(self, *args, **kwargs):
