@@ -32,7 +32,9 @@ logger = zlogging.getLogger(__name__)
 
 
 def execute_rules() -> None:
-    if automation.models.RulesDailyJobLog.objects.filter(created_dt__gte=dates_helper.utc_today()).exists():
+    if automation.models.RulesDailyJobLog.objects.filter(
+        created_dt__gte=dates_helper.local_midnight_to_utc_time()
+    ).exists():
         logger.info("Execution of rules was aborted since the daily run was already completed.")
         return
 
