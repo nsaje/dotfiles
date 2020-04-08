@@ -4,6 +4,7 @@ import rest_framework.serializers
 
 import restapi.serializers.base
 import restapi.serializers.fields
+import restapi.serializers.serializers
 
 
 class DirectDealConnectionAccountSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -65,3 +66,13 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         )
 
         return value
+
+
+class DirectDealQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+    campaign_id = restapi.serializers.fields.IdField(required=False)
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
+    agency_only = restapi.serializers.fields.PlainCharField(required=False)
+    offset = restapi.serializers.fields.IdField(required=False)
+    limit = restapi.serializers.fields.IdField(required=False)
+    keyword = restapi.serializers.fields.PlainCharField(required=False)
