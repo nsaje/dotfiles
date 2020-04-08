@@ -63,6 +63,7 @@ class RuleAdmin(admin.ModelAdmin):
         "notification_recipients",
         "created_dt",
         "created_by",
+        "modified_by",
     )
     raw_id_fields = ("created_by", "modified_by")
     exclude = ("ad_groups_included",)
