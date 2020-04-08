@@ -1,3 +1,5 @@
+require('./zemInclusionTargetingList.component.less');
+
 angular.module('one.common').component('zemInclusionTargetingList', {
     bindings: {
         texts: '<',

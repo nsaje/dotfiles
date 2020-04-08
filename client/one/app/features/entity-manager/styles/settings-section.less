@@ -1,11 +1,16 @@
 @import 'variables';
 
 .zem-settings-section {
+    display: block;
     padding: @spacing--default;
 }
 
 .zem-settings-section:not(:last-child) {
     border-bottom: 1px solid @color--lighter-neutral;
+}
+
+.zem-settings-section__header {
+    display: block;
 }
 
 .zem-settings-section__header:not(:last-child) {
@@ -17,11 +22,13 @@
 }
 
 .zem-settings-section__title {
+    display: block;
     font-size: 17px;
     color: @color--secondary;
 }
 
 .zem-settings-section__description {
+    display: block;
     color: @text-color--lighter;
 }
 

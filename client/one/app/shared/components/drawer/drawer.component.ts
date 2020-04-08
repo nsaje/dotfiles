@@ -7,8 +7,6 @@ import {
     HostBinding,
     Output,
     EventEmitter,
-    OnChanges,
-    SimpleChanges,
 } from '@angular/core';
 
 @Component({
@@ -16,7 +14,7 @@ import {
     templateUrl: './drawer.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DrawerComponent implements OnChanges {
+export class DrawerComponent {
     @Input()
     @HostBinding('class.zem-drawer--open')
     isOpen: boolean;
@@ -26,16 +24,6 @@ export class DrawerComponent implements OnChanges {
     isLoading: boolean;
     @Output()
     closeRequest = new EventEmitter<undefined>();
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.isOpen) {
-            if (this.isOpen) {
-                document.body.classList.add('body--drawer-open');
-            } else {
-                document.body.classList.remove('body--drawer-open');
-            }
-        }
-    }
 
     close() {
         if (this.isClosable) {
