@@ -647,7 +647,7 @@ class ContentAdsOnAdGroupLevelLoader(ContentAdsLoader):
     @cached_property
     def bid_modifiers_by_ad(self):
         bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
-            type=bid_modifiers.BidModifierType.AD, target__in=map(str, self.objs_ids)
+            ad_group=self.ad_group, type=bid_modifiers.BidModifierType.AD, target__in=map(str, self.objs_ids)
         )
         return {int(x.target): x for x in bid_modifiers_qs}
 
