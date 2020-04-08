@@ -23,6 +23,7 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
         "send_email_subject",
         "send_email_body",
         "send_email_recipients",
+        "publisher_group",
         "change_step",
         "change_limit",
         "cooldown",

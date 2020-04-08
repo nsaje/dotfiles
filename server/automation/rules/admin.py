@@ -51,6 +51,10 @@ class RuleAdmin(admin.ModelAdmin):
         "ad_groups_included_ids",
         "target_type",
         "action_type",
+        "send_email_subject",
+        "send_email_body",
+        "send_email_recipients",
+        "publisher_group",
         "change_step",
         "change_limit",
         "cooldown",
@@ -60,7 +64,7 @@ class RuleAdmin(admin.ModelAdmin):
         "created_dt",
         "created_by",
     )
-    raw_id_fields = ("agency", "publisher_group", "created_by", "modified_by")
+    raw_id_fields = ("created_by", "modified_by")
     exclude = ("ad_groups_included",)
 
     def ad_groups_included_ids(self, obj=None):
