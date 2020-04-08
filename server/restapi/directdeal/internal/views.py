@@ -61,7 +61,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
                 errors={"non_field_errors": "Either agency id or account id must be provided."}
             )
 
-        keyword = request.query_params.get("keyword")
+        keyword = qpe.validated_data.get("keyword")
         if keyword:
             deal_items = deal_items.filter(
                 Q(name__icontains=keyword)
