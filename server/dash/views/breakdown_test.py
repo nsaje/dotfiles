@@ -1,5 +1,6 @@
 import datetime
 import json
+from operator import itemgetter
 
 from django.test import Client
 from django.test import TestCase
@@ -1215,40 +1216,49 @@ class BreakdownHelperTest(TestCase):
         self.maxDiff = None
         self.assertEqual(
             rows,
-            [
-                {
-                    "ad_group_id": 1,
-                    "cpc": 0.2,
-                    "local_cpc": 0.4,
-                    "performance": {
-                        "list": [
-                            {"emoticon": constants.Emoticon.NEUTRAL, "text": "$0.400 CPC"},
-                            {"emoticon": constants.Emoticon.NEUTRAL, "text": "N/A CPA - test conversion goal"},
-                        ],
-                        "overall": constants.Emoticon.NEUTRAL,
+            test_helper.ListMatcher(
+                [
+                    {
+                        "ad_group_id": 1,
+                        "cpc": 0.2,
+                        "local_cpc": 0.4,
+                        "performance": {
+                            "list": test_helper.ListMatcher(
+                                [
+                                    {"emoticon": constants.Emoticon.NEUTRAL, "text": "$0.400 CPC"},
+                                    {"emoticon": constants.Emoticon.NEUTRAL, "text": "N/A CPA - test conversion goal"},
+                                ],
+                                key=itemgetter("text"),
+                            ),
+                            "overall": constants.Emoticon.NEUTRAL,
+                        },
+                        "performance_campaign_goal_1": constants.CampaignGoalPerformance.AVERAGE,
+                        "performance_campaign_goal_2": constants.CampaignGoalPerformance.AVERAGE,
+                        "styles": {},
                     },
-                    "performance_campaign_goal_1": constants.CampaignGoalPerformance.AVERAGE,
-                    "performance_campaign_goal_2": constants.CampaignGoalPerformance.AVERAGE,
-                    "styles": {},
-                },
-                {
-                    "ad_group_id": 2,
-                    "cpc": 0.2,
-                    "local_cpc": 0.4,
-                    "performance": {
-                        "list": [
-                            {"emoticon": constants.Emoticon.HAPPY, "text": "$0.400 CPC"},
-                            {"emoticon": constants.Emoticon.SAD, "text": "$10.00 CPA - test conversion goal"},
-                        ],
-                        "overall": constants.Emoticon.HAPPY,
+                    {
+                        "ad_group_id": 2,
+                        "cpc": 0.2,
+                        "local_cpc": 0.4,
+                        "performance": {
+                            "list": test_helper.ListMatcher(
+                                [
+                                    {"emoticon": constants.Emoticon.HAPPY, "text": "$0.400 CPC"},
+                                    {"emoticon": constants.Emoticon.SAD, "text": "$10.00 CPA - test conversion goal"},
+                                ],
+                                key=itemgetter("text"),
+                            ),
+                            "overall": constants.Emoticon.HAPPY,
+                        },
+                        "avg_cost_per_pixel_1_168": 5.0,
+                        "local_avg_cost_per_pixel_1_168": 10.0,
+                        "performance_campaign_goal_1": constants.CampaignGoalPerformance.SUPERPERFORMING,
+                        "performance_campaign_goal_2": constants.CampaignGoalPerformance.UNDERPERFORMING,
+                        "styles": {"avg_cost_per_pixel_1_168": 3, "cpc": 1},
                     },
-                    "avg_cost_per_pixel_1_168": 5.0,
-                    "local_avg_cost_per_pixel_1_168": 10.0,
-                    "performance_campaign_goal_1": constants.CampaignGoalPerformance.SUPERPERFORMING,
-                    "performance_campaign_goal_2": constants.CampaignGoalPerformance.UNDERPERFORMING,
-                    "styles": {"avg_cost_per_pixel_1_168": 3, "cpc": 1},
-                },
-            ],
+                ],
+                key=itemgetter("ad_group_id"),
+            ),
         )
 
     def test_dont_add_performance_indicators(self):
