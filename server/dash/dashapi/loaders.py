@@ -552,15 +552,14 @@ class ContentAdsLoader(Loader):
             )
 
     def _get_submission_status_for_native_ads(self, content_ad, content_ad_source, content_ad_submission_policy):
-        # TEMP(luka 2020-04-02): disable sspd
-        # if self.sspd_status_map is None:
-        #     return constants.ContentAdSubmissionStatus.NOT_AVAILABLE, ""
-        # sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
-        # if not sspd_status and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
-        #     return constants.ContentAdSubmissionStatus.PENDING, ""
-        # elif sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
-        #     return sspd_status["status"], sspd_status["reason"]
-        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+        if self.sspd_status_map is None:
+            return constants.ContentAdSubmissionStatus.NOT_AVAILABLE, ""
+        sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
+        if not sspd_status and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
+            return constants.ContentAdSubmissionStatus.PENDING, ""
+        elif sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
+            return sspd_status["status"], sspd_status["reason"]
+        elif self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
             return outbrain_content_ad_source.get_submission_status(), outbrain_content_ad_source.submission_errors
         else:
