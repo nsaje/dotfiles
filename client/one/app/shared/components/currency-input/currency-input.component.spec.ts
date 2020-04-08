@@ -64,6 +64,17 @@ describe('CurrencyInputComponent', () => {
         expect(component.model).toEqual('1,234.12');
     });
 
+    it('should allow entering negative value', () => {
+        component.ngOnInit();
+
+        const value = '-1234';
+        component.value = value;
+        component.ngOnChanges({
+            value: new SimpleChange(null, value, false),
+        });
+        expect(component.model).toEqual('-1,234.00');
+    });
+
     it('should correctly format model on focus event', () => {
         component.ngOnInit();
 

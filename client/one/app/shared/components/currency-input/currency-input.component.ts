@@ -50,7 +50,9 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
             this.fractionSize,
             2
         );
-        this.regExp = new RegExp(`^\\d+(\\.\\d{0,${this.fractionSize}})?$`);
+        this.regExp = new RegExp(
+            `^[-+]?(\\d+(\\.\\d{0,${this.fractionSize}})?)?$`
+        );
     }
 
     ngOnChanges(changes: SimpleChanges) {
