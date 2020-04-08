@@ -262,3 +262,10 @@ class AdGroupSerializer(
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
     )
+
+
+class AdGroupQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+    campaign_id = restapi.serializers.fields.IdField(required=False)
+    limit = restapi.serializers.fields.IdField(required=False)
+    offset = restapi.serializers.fields.IdField(required=False)
+    include_archived = rest_framework.serializers.BooleanField(default=False, required=False)
