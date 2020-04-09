@@ -187,6 +187,8 @@ def sync_content_ads(content_ads):
                 "description": item.description,
                 "brandName": item.brand_name,
                 "imageId": item.image_id,
+                "documentId": item.document_id,
+                "documentFeatures": item.document_features,
             }
             request.append(item_dict)
 

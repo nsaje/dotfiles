@@ -263,6 +263,8 @@ class SSPDClientTestCase(TestCase):
                 "description": content_ad.description,
                 "brandName": content_ad.brand_name,
                 "imageId": content_ad.image_id,
+                "documentId": content_ad.document_id,
+                "documentFeatures": content_ad.document_features,
             }
         ]
 
