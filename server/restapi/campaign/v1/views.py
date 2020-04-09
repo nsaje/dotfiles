@@ -29,8 +29,10 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def list(self, request):
-        account_id = request.query_params.get("accountId", None)
-        only_ids = request.query_params.get("onlyIds", False)
+        qpe = serializers.CampaignQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        account_id = qpe.validated_data.get("account_id", None)
+        only_ids = qpe.validated_data.get("only_ids", False)
         if account_id:
             account = restapi.access.get_account(request.user, account_id)
             campaigns = core.models.Campaign.objects.filter(account=account)
