@@ -52,13 +52,21 @@ describe('PublisherGroupsService', () => {
             .calls.reset();
 
         service
-            .search(mockedAgencyId, keyword, offset, limit, requestStateUpdater)
-            .subscribe(deals => {
-                expect(deals).toEqual(mockedPublisherGroups);
+            .search(
+                mockedAgencyId,
+                null,
+                keyword,
+                offset,
+                limit,
+                requestStateUpdater
+            )
+            .subscribe(publisherGroups => {
+                expect(publisherGroups).toEqual(mockedPublisherGroups);
             });
         expect(publisherGroupsEndpointStub.search).toHaveBeenCalledTimes(1);
         expect(publisherGroupsEndpointStub.search).toHaveBeenCalledWith(
             mockedAgencyId,
+            null,
             keyword,
             offset,
             limit,
@@ -71,11 +79,14 @@ describe('PublisherGroupsService', () => {
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
 
-        service.list(mockedAccountId, requestStateUpdater).subscribe(deals => {
-            expect(deals).toEqual(mockedPublisherGroups);
-        });
+        service
+            .list(null, mockedAccountId, requestStateUpdater)
+            .subscribe(publisherGroups => {
+                expect(publisherGroups).toEqual(mockedPublisherGroups);
+            });
         expect(publisherGroupsEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(publisherGroupsEndpointStub.list).toHaveBeenCalledWith(
+            null,
             mockedAccountId,
             requestStateUpdater
         );
@@ -88,8 +99,8 @@ describe('PublisherGroupsService', () => {
 
         service
             .upload(mockedPublisherGroup, requestStateUpdater)
-            .subscribe(deals => {
-                expect(deals).toEqual(mockedPublisherGroup);
+            .subscribe(publisherGroups => {
+                expect(publisherGroups).toEqual(mockedPublisherGroup);
             });
         expect(publisherGroupsEndpointStub.upload).toHaveBeenCalledTimes(1);
         expect(publisherGroupsEndpointStub.upload).toHaveBeenCalledWith(

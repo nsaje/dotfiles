@@ -1,10 +1,10 @@
 from django.conf import settings
 
 import automation.campaignstop.service
+import core.features.publisher_groups
 import dash.constants
 import dash.features.custom_flags
 import dash.models
-from core.features.publisher_groups import publisher_group_helpers
 from utils import db_router
 from utils import zlogging
 
@@ -74,7 +74,7 @@ class AdGroupsView(K1APIView):
             # Cache ad_group on settings to avoid additional DB queries.
             ad_group = ad_group.settings.ad_group
 
-            blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
+            blacklist, whitelist = core.features.publisher_groups.concat_publisher_group_targeting(
                 ad_group,
                 ad_group.settings,
                 ad_group.campaign,

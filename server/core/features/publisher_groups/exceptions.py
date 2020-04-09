@@ -1,0 +1,2 @@
+class PublisherGroupTargetingException(Exception):
+    pass

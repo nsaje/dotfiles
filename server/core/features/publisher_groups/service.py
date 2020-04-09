@@ -13,15 +13,13 @@ from utils import email_helper
 from utils import k1_helper
 from utils import zlogging
 
+from . import exceptions
+
 logger = zlogging.getLogger(__name__)
 
 OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS = 30
 OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
 OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal("0.65")
-
-
-class PublisherGroupTargetingException(Exception):
-    pass
 
 
 def get_global_blacklist():
@@ -60,7 +58,7 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
     """
 
     if obj is None:
-        raise PublisherGroupTargetingException("Whitelisting not supported on global level")
+        raise exceptions.PublisherGroupTargetingException("Whitelisting not supported on global level")
 
     with transaction.atomic():
         publisher_group = obj.default_whitelist
@@ -235,7 +233,9 @@ def get_publisher_entry_list_level(entry, targeting):
         return constants.PublisherBlacklistLevel.ACCOUNT
     elif entry.publisher_group_id in targeting["global"]["excluded"]:
         return constants.PublisherBlacklistLevel.GLOBAL
-    raise PublisherGroupTargetingException("Publisher entry does not belong to specified targeting configuration")
+    raise exceptions.PublisherGroupTargetingException(
+        "Publisher entry does not belong to specified targeting configuration"
+    )
 
 
 def _get_blacklists(obj, obj_settings):
@@ -334,20 +334,22 @@ def unlist_publishers(request, entry_dicts, obj, history=True):
             )
 
         selected_entries.delete()
-    except PublisherGroupTargetingException:
+    except exceptions.PublisherGroupTargetingException:
         # pass if global level
         pass
 
 
 @transaction.atomic
-def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dicts):
+def upsert_publisher_group(request, publisher_group_dict, entry_dicts):
     changes = {}
 
     include_subdomains = bool(publisher_group_dict.get("include_subdomains"))
+    agency_id = publisher_group_dict.get("agency_id")
+    account_id = publisher_group_dict.get("account_id")
 
     # update or create publisher group
     if publisher_group_dict.get("id"):
-        publisher_group = helpers.get_publisher_group(request.user, account_id, publisher_group_dict["id"])
+        publisher_group = helpers.get_publisher_group(request.user, publisher_group_dict["id"])
         history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_UPDATE
         changes_text = 'Publisher group "{} [{}]" updated'.format(publisher_group.name, publisher_group.id)
 
@@ -359,12 +361,24 @@ def upsert_publisher_group(request, account_id, publisher_group_dict, entry_dict
             changes["name"] = (publisher_group.name, publisher_group_dict["name"])
             publisher_group.name = publisher_group_dict["name"]
 
+        if publisher_group.agency_id != agency_id:
+            agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
+            publisher_group.agency = agency
+
+        if publisher_group.account_id != account_id:
+            account = helpers.get_account(request.user, account_id) if account_id is not None else None
+            publisher_group.account = account
+
         publisher_group.save(request)
+
     else:
+        agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
+        account = helpers.get_account(request.user, account_id) if account_id is not None else None
         publisher_group = models.PublisherGroup.objects.create(
             request,
             name=publisher_group_dict["name"],
-            account=helpers.get_account(request.user, account_id),
+            agency=agency,
+            account=account,
             default_include_subdomains=include_subdomains,
             implicit=False,
         )
@@ -498,7 +512,9 @@ def validate_blacklist_entry(obj, entry):
         and entry.source.source_type.type == constants.SourceType.OUTBRAIN
         and ((obj and obj.get_publisher_level() != constants.PublisherBlacklistLevel.ACCOUNT) or not obj)
     ):
-        raise PublisherGroupTargetingException("Outbrain specific blacklisting is only available on account level")
+        raise exceptions.PublisherGroupTargetingException(
+            "Outbrain specific blacklisting is only available on account level"
+        )
 
 
 def validate_outbrain_blacklist_count(obj, entries):
@@ -515,7 +531,7 @@ def validate_outbrain_blacklist_count(obj, entries):
         ob_blacklist_count_added
         and ob_blacklist_count_existing + ob_blacklist_count_added > OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS
     ):
-        raise PublisherGroupTargetingException("Outbrain blacklist limit exceeded")
+        raise exceptions.PublisherGroupTargetingException("Outbrain blacklist limit exceeded")
 
 
 def get_ob_blacklisted_publishers_count(account):

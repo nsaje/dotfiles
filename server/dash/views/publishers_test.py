@@ -169,14 +169,14 @@ class PublisherGroupsViewTest(TestCase):
         self.client.login(username=self.user.email, password="secret")
 
     def test_get_not_allowed(self):
-        response = self.client.get(reverse("accounts_publisher_groups", kwargs={"account_id": 1}))
+        response = self.client.get(reverse("publisher_groups"), {"account_id": 1})
         self.assertEqual(response.status_code, 404)
 
-    def test_get(self):
+    def test_get_with_account(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
 
-        response = self.client.get(reverse("accounts_publisher_groups", kwargs={"account_id": account.id}))
+        response = self.client.get(reverse("publisher_groups"), {"account_id": account.id})
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -185,13 +185,40 @@ class PublisherGroupsViewTest(TestCase):
             # check user has permission for all the publisher groups returned
             self.assertEqual(models.PublisherGroup.objects.filter(pk=pg["id"]).filter_by_account(account).count(), 1)
 
+    def test_get_with_agency(self):
+        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
+        agency = magic_mixer.blend(models.Agency, users=[self.user])
+        publisher_group = magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
+
+        response = self.client.get(reverse("publisher_groups"), {"agency_id": agency.id})
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(len(content["data"]["publisher_groups"]), 1)
+        self.assertEqual(content["data"]["publisher_groups"][0]["id"], publisher_group.id)
+
+        for pg in content["data"]["publisher_groups"]:
+            # check user has permission for all the publisher groups returned
+            self.assertEqual(models.PublisherGroup.objects.filter(pk=pg["id"]).filter_by_agency(agency).count(), 1)
+
+    def test_get_without_agency_and_account(self):
+        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
+        agency = magic_mixer.blend(models.Agency, users=[self.user])
+
+        magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
+
+        response = self.client.get(reverse("publisher_groups"))
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(content["data"]["error_code"], "ValidationError")
+
     def test_get_not_implicit(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
 
-        response = self.client.get(
-            reverse("accounts_publisher_groups", kwargs={"account_id": account.id}), data={"not_implicit": True}
-        )
+        response = self.client.get(reverse("publisher_groups"), {"account_id": account.id, "not_implicit": True})
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -213,22 +240,18 @@ class PublisherGroupsUploadTest(TestCase):
         self.client.login(username=self.user.email, password="secret")
 
     def test_get_not_allowed(self):
-        response = self.client.get(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": 1, "csv_key": "asd"})
-        )
+        response = self.client.get(reverse("publisher_groups_upload", kwargs={"csv_key": "asd"}), {"account_id": 1})
         self.assertEqual(response.status_code, 404)
 
     def test_post_not_allowed(self):
-        response = self.client.post(reverse("accounts_publisher_groups_upload", kwargs={"account_id": 1}))
+        response = self.client.post(reverse("publisher_groups_upload"), {"account_id": 1})
         self.assertEqual(response.status_code, 404)
 
     @patch.object(s3helpers.S3Helper, "get")
     def test_get(self, mock_s3):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
 
-        response = self.client.get(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": 1, "csv_key": "asd"})
-        )
+        response = self.client.get(reverse("publisher_groups_upload", kwargs={"csv_key": "asd"}), {"account_id": 1})
 
         self.assertEqual(response.status_code, 200)
         mock_s3.assert_called_with("publisher_group_errors/account_1/asd.csv")
@@ -236,11 +259,9 @@ class PublisherGroupsUploadTest(TestCase):
     def test_post_update(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
-        data = {"id": 1, "name": "qweasd", "include_subdomains": True}
+        data = {"id": 1, "name": "qweasd", "include_subdomains": True, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         publisher_group = models.PublisherGroup.objects.get(pk=1)
@@ -251,11 +272,9 @@ class PublisherGroupsUploadTest(TestCase):
     def test_post_update_apply_include_subdomains(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
-        data = {"id": 1, "name": "qweasd", "include_subdomains": False}
+        data = {"id": 1, "name": "qweasd", "include_subdomains": False, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         publisher_group = models.PublisherGroup.objects.get(pk=1)
@@ -280,11 +299,9 @@ class PublisherGroupsUploadTest(TestCase):
         rows = [{"Publisher": "asd", "Source": ""}, {"Publisher": "qwe", "Source": "adsnative"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
@@ -304,11 +321,9 @@ class PublisherGroupsUploadTest(TestCase):
         rows = [{"Publisher": "asd"}, {"Publisher": "qwe"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
@@ -331,11 +346,9 @@ class PublisherGroupsUploadTest(TestCase):
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()["success"])
@@ -350,11 +363,9 @@ class PublisherGroupsUploadTest(TestCase):
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
@@ -375,11 +386,9 @@ class PublisherGroupsUploadTest(TestCase):
         rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()["success"])
@@ -391,11 +400,9 @@ class PublisherGroupsUploadTest(TestCase):
         rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
@@ -416,11 +423,9 @@ class PublisherGroupsUploadTest(TestCase):
         rows = [{"Publisher": "asd", "Unknown": "foo"}, {"Publisher": "qwe", "Unknown": "bar"}]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()["success"])
@@ -437,11 +442,9 @@ class PublisherGroupsUploadTest(TestCase):
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
@@ -471,11 +474,9 @@ class PublisherGroupsUploadTest(TestCase):
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 400)
         self.assertTrue(mock_s3.called)
@@ -512,11 +513,9 @@ class PublisherGroupsUploadTest(TestCase):
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
-        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file}
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
 
-        response = self.client.post(
-            reverse("accounts_publisher_groups_upload", kwargs={"account_id": account.id}), data=data
-        )
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
 
         self.assertEqual(response.status_code, 400)
         self.assertTrue(mock_s3.called)
@@ -575,10 +574,8 @@ class PublisherGroupsDownloadTest(TestCase):
     def test_get_without_placement_permission(self):
         models.PublisherGroupEntry.objects.filter(publisher_group=self.publisher_group).exclude(placement=None).delete()
         response = self.client.get(
-            reverse(
-                "download_publisher_groups",
-                kwargs={"account_id": self.account.id, "publisher_group_id": self.publisher_group.id},
-            )
+            reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
+            data={"account_id": self.account.id},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -596,10 +593,8 @@ class PublisherGroupsDownloadTest(TestCase):
 
     def test_get_without_placement_permission_existing_placement_entry(self):
         response = self.client.get(
-            reverse(
-                "download_publisher_groups",
-                kwargs={"account_id": self.account.id, "publisher_group_id": self.publisher_group.id},
-            )
+            reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
+            data={"account_id": self.account.id},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -619,10 +614,8 @@ class PublisherGroupsDownloadTest(TestCase):
     def test_get_with_placement_permission(self):
         test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         response = self.client.get(
-            reverse(
-                "download_publisher_groups",
-                kwargs={"account_id": self.account.id, "publisher_group_id": self.publisher_group.id},
-            )
+            reverse("download_publisher_groups", kwargs={"publisher_group_id": self.publisher_group.id}),
+            data={"account_id": self.account.id},
         )
 
         self.assertEqual(response.status_code, 200)

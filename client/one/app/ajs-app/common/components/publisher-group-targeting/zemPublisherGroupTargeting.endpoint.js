@@ -4,10 +4,12 @@ angular
         this.list = list;
 
         function list(accountId, agencyId, notImplicit) {
-            var url = '/api/accounts/' + accountId + '/publisher_groups/';
+            var url = '/api/publisher_groups/';
             var config = {
                 params: {
                     not_implicit: notImplicit,
+                    agency_id: agencyId,
+                    account_id: accountId,
                 },
             };
 

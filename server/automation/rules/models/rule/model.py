@@ -2,8 +2,8 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-import core.features.publisher_groups
 import core.models
+from core.features.publisher_groups import PublisherGroup
 
 from ... import constants
 from . import instance
@@ -53,9 +53,7 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
     send_email_body = models.TextField(null=True, blank=True)
     send_email_recipients = ArrayField(models.TextField(), null=True, blank=True)
 
-    publisher_group = models.ForeignKey(
-        core.features.publisher_groups.PublisherGroup, on_delete=models.PROTECT, null=True, blank=True
-    )
+    publisher_group = models.ForeignKey(PublisherGroup, on_delete=models.PROTECT, null=True, blank=True)
 
     notification_type = models.IntegerField(choices=constants.NotificationType.get_choices())
     notification_recipients = ArrayField(models.TextField(), null=True, blank=True)

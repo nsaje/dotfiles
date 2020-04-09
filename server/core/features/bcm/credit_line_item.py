@@ -380,7 +380,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
         if self.account.id not in accounts:
             raise ValidationError(
-                "Credit line item is used on the current account. Account cannot be changed to {account_name}.".format(
+                "Credit line item is used outside of the scope of {account_name} account. To change the scope of the credit line item to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
                     account_name=self.account.name
                 )
             )
@@ -404,7 +404,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
         if self.agency.id not in agencies:
             raise ValidationError(
-                "Credit line item is used on the current agency. Agency cannot be changed to {agency_name}.".format(
+                "Credit line item is used outside of the scope of {agency_name} agency. To change the scope of the credit line item to {agency_name} stop using it on other agencies (and their accounts, campaigns and ad groups) and try again.".format(
                     agency_name=self.agency.name
                 )
             )

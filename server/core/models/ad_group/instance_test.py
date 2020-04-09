@@ -1,7 +1,7 @@
 import mock
 from django.test import TestCase
 
-import core.features.publisher_groups.publisher_group
+import core.features.publisher_groups
 import core.models
 import dash.constants
 import dash.history_helpers
@@ -50,8 +50,8 @@ class AdGroupInstanceTest(TestCase):
             campaign=campaign,
             amplify_review=False,
         )
-        blacklist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
-        whitelist = magic_mixer.blend(core.features.publisher_groups.publisher_group.PublisherGroup)
+        blacklist = magic_mixer.blend(core.features.publisher_groups.PublisherGroup)
+        whitelist = magic_mixer.blend(core.features.publisher_groups.PublisherGroup)
         tags = magic_mixer.cycle(2).blend(core.models.EntityTag)
 
         ad_group.update(

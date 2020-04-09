@@ -9,7 +9,8 @@ export class PublisherGroupsService {
     constructor(private endpoint: PublisherGroupsEndpoint) {}
 
     search(
-        agencyId: string,
+        agencyId: string | null,
+        accountId: string | null,
         keyword: string | null,
         offset: number | null,
         limit: number | null,
@@ -17,6 +18,7 @@ export class PublisherGroupsService {
     ): Observable<PublisherGroup[]> {
         return this.endpoint.search(
             agencyId,
+            accountId,
             keyword,
             offset,
             limit,
@@ -25,10 +27,11 @@ export class PublisherGroupsService {
     }
 
     list(
+        agencyId: string | null,
         accountId: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        return this.endpoint.list(accountId, requestStateUpdater);
+        return this.endpoint.list(agencyId, accountId, requestStateUpdater);
     }
 
     upload(
@@ -45,8 +48,8 @@ export class PublisherGroupsService {
         return this.endpoint.remove(publisherGroupId, requestStateUpdater);
     }
 
-    download(publisherGroup: PublisherGroup) {
-        this.endpoint.download(publisherGroup);
+    download(publisherGroupId: string) {
+        this.endpoint.download(publisherGroupId);
     }
 
     downloadErrors(publisherGroup: PublisherGroup, csvKey: string) {

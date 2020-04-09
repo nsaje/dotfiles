@@ -12,8 +12,9 @@ from dash import history_helpers
 from dash import models
 from utils.magic_mixer import magic_mixer
 
-from . import publisher_group_csv_helpers
-from . import publisher_group_helpers
+from . import csv_helper
+from . import exceptions
+from . import service
 
 
 class PublisherGroupHelpersTest(TestCase):
@@ -47,11 +48,11 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(history.count(), 2 if default_list_created else 1)
         self.assertEqual(history.first().changes_text, changes_text)
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
-        publisher_group_helpers.blacklist_publishers(
+        service.blacklist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -64,11 +65,11 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
-        publisher_group_helpers.blacklist_publishers(
+        service.blacklist_publishers(
             self.request,
             [{"publisher": "cnn.com", "source": None, "include_subdomains": False}],
             obj,
@@ -83,11 +84,11 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryNotWritten(history_helpers.get_ad_group_history(obj))
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
-        publisher_group_helpers.whitelist_publishers(
+        service.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -99,11 +100,11 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
-        publisher_group_helpers.whitelist_publishers(
+        service.whitelist_publishers(
             self.request,
             [{"publisher": "cnn.com", "source": None, "include_subdomains": False}],
             obj,
@@ -121,7 +122,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj = magic_mixer.blend(models.AdGroup, default_blacklist=None)
         self.assertIsNone(obj.default_blacklist)
 
-        publisher_group_helpers.blacklist_publishers(
+        service.blacklist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
         self.assertBlacklistCreated(obj)
@@ -132,13 +133,13 @@ class PublisherGroupHelpersTest(TestCase):
         obj = magic_mixer.blend(models.AdGroup, default_whitelist=None)
         self.assertIsNone(obj.default_whitelist)
 
-        publisher_group_helpers.whitelist_publishers(
+        service.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
         self.assertWhitelistCreated(obj)
         mock_k1_ping.assert_called_once_with(obj, "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -149,7 +150,7 @@ class PublisherGroupHelpersTest(TestCase):
             obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
         )
 
-        publisher_group_helpers.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
+        service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
         self.assertEntriesEqual(obj.default_whitelist, [])
 
         changes_text = "Disabled the following publishers on ad group level: cnn.com on all sources."
@@ -157,7 +158,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_blacklisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -168,7 +169,7 @@ class PublisherGroupHelpersTest(TestCase):
             obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
         )
 
-        publisher_group_helpers.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
+        service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
         self.assertEntriesEqual(obj.default_blacklist, [])
 
         changes_text = "Enabled the following publishers on ad group level: cnn.com on all sources."
@@ -185,7 +186,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj = models.Campaign.objects.get(pk=1)
         self.assertIsNone(obj.default_blacklist)
 
-        publisher_group_helpers.blacklist_publishers(
+        service.blacklist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -208,7 +209,7 @@ class PublisherGroupHelpersTest(TestCase):
         obj = models.Campaign.objects.get(pk=1)
         self.assertIsNone(obj.default_whitelist)
 
-        publisher_group_helpers.whitelist_publishers(
+        service.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -222,7 +223,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
         mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
@@ -239,7 +240,7 @@ class PublisherGroupHelpersTest(TestCase):
             obj.default_whitelist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
         )
 
-        publisher_group_helpers.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
+        service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
         self.assertEntriesEqual(obj.default_whitelist, [])
 
         changes_text = "Disabled the following publishers on campaign level: cnn.com on all sources."
@@ -247,7 +248,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_blacklisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
@@ -264,7 +265,7 @@ class PublisherGroupHelpersTest(TestCase):
             obj.default_blacklist, [{"publisher": "cnn.com", "source": None, "include_subdomains": True}]
         )
 
-        publisher_group_helpers.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
+        service.unlist_publishers(self.request, [{"publisher": "cnn.com", "source": None}], obj)
         self.assertEntriesEqual(obj.default_blacklist, [])
 
         changes_text = "Enabled the following publishers on campaign level: cnn.com on all sources."
@@ -279,7 +280,8 @@ class PublisherGroupHelpersTest(TestCase):
         mock_queryset.filter.return_value.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
 
         obj = models.Account.objects.get(pk=1)
-        publisher_group_helpers.blacklist_publishers(
+
+        service.blacklist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -299,7 +301,7 @@ class PublisherGroupHelpersTest(TestCase):
     def test_limit_outbrain_blacklist(self, mock_email):
         obj = models.Account.objects.get(pk=1000)
         outbrain = models.Source.objects.get(pk=3)
-        for i in range(publisher_group_helpers.OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS):
+        for i in range(service.OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS):
             models.PublisherGroupEntry.objects.create(
                 publisher_group=obj.default_blacklist, source=outbrain, publisher="cnn{}.com".format(i)
             )
@@ -308,8 +310,8 @@ class PublisherGroupHelpersTest(TestCase):
         ]
         ob_entries = [{"publisher": "cnn.com", "source": outbrain, "include_subdomains": False}]
 
-        with self.assertRaises(publisher_group_helpers.PublisherGroupTargetingException):
-            publisher_group_helpers.blacklist_publishers(self.request, ob_entries + non_relevant_entries, obj)
+        with self.assertRaises(exceptions.PublisherGroupTargetingException):
+            service.blacklist_publishers(self.request, ob_entries + non_relevant_entries, obj)
 
     @mock.patch("core.models.AdGroup.objects")
     @mock.patch("utils.k1_helper.update_ad_groups")
@@ -318,7 +320,7 @@ class PublisherGroupHelpersTest(TestCase):
         mock_queryset.filter.return_value.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
 
         obj = models.Account.objects.get(pk=1)
-        publisher_group_helpers.whitelist_publishers(
+        service.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
@@ -332,7 +334,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
         mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_account(self, mock_email, mock_k1_ping):
         obj = models.Account.objects.get(pk=1)
@@ -346,7 +348,7 @@ class PublisherGroupHelpersTest(TestCase):
             publisher_group=obj.default_whitelist, source=None, publisher="cnn.com"
         )
 
-        publisher_group_helpers.unlist_publishers(
+        service.unlist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
         self.assertEntriesEqual(obj.default_whitelist, [])
@@ -356,14 +358,14 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
         global_group.save(self.request)
 
         with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
-            publisher_group_helpers.blacklist_publishers(
+            service.blacklist_publishers(
                 self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
             )
 
@@ -373,18 +375,18 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertFalse(mock_email.called)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_global(self, mock_email, mock_k1_ping):
-        with self.assertRaises(publisher_group_helpers.PublisherGroupTargetingException):
+        with self.assertRaises(exceptions.PublisherGroupTargetingException):
             # not available
-            publisher_group_helpers.whitelist_publishers(
+            service.whitelist_publishers(
                 self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
             )
             self.assertFalse(mock_email.called)
             mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
+    @mock.patch("core.features.publisher_groups.service.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
@@ -393,7 +395,7 @@ class PublisherGroupHelpersTest(TestCase):
         models.PublisherGroupEntry.objects.create(publisher_group=global_group, source=None, publisher="cnn.com")
 
         with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
-            publisher_group_helpers.unlist_publishers(
+            service.unlist_publishers(
                 self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
             )
 
@@ -430,7 +432,7 @@ class PublisherGroupHelpersTest(TestCase):
             agency.default_whitelist_id = 17
             agency_settings.whitelist_publisher_groups = [18]
 
-            blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
+            blacklist, whitelist = service.concat_publisher_group_targeting(
                 ad_group,
                 ad_group_settings,
                 campaign,
@@ -449,27 +451,30 @@ class PublisherGroupHelpersTest(TestCase):
 
         obj = models.Account.objects.get(pk=1)
         entries = [{"publisher": "cnn.com", "source": outbrain, "include_subdomains": False}]
-        publisher_group_helpers.blacklist_publishers(self.request, entries, obj)  # no error
+
+        service.blacklist_publishers(self.request, entries, obj)  # no error
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(self.request, entries, models.Campaign.objects.get(pk=1))
+            service.blacklist_publishers(self.request, entries, models.Campaign.objects.get(pk=1))
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(self.request, entries, models.AdGroup.objects.get(pk=1))
+            service.blacklist_publishers(self.request, entries, models.AdGroup.objects.get(pk=1))
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(self.request, entries, None)
+            service.blacklist_publishers(self.request, entries, None)
 
     def test_upsert_publisher_group_update(self):
-        form_data = {"id": 1, "name": "Bla bla bla", "include_subdomains": False}
 
-        publisher_group = publisher_group_helpers.upsert_publisher_group(self.request, 1, form_data, None)
+        form_data = {"id": 1, "name": "Bla bla bla", "include_subdomains": False, "account_id": 1}
+
+        publisher_group = service.upsert_publisher_group(self.request, form_data, None)
         publisher_group.refresh_from_db()
 
         self.assertEqual(
             form_data,
             {
                 "id": publisher_group.id,
+                "account_id": publisher_group.account.id,
                 "name": publisher_group.name,
                 "include_subdomains": publisher_group.default_include_subdomains,
             },
@@ -484,7 +489,7 @@ class PublisherGroupHelpersTest(TestCase):
     def test_upsert_publisher_group_create(self):
         form_data = {"name": "Bla bla bla", "include_subdomains": False}
 
-        publisher_group = publisher_group_helpers.upsert_publisher_group(self.request, 1, form_data, None)
+        publisher_group = service.upsert_publisher_group(self.request, form_data, None)
         publisher_group.refresh_from_db()
 
         self.assertEqual(
@@ -498,7 +503,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
     def test_get_csv_content(self):
         publisher_group = models.PublisherGroup.objects.get(pk=1)
         self.assertEqual(
-            publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
+            csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account),
             textwrap.dedent(
                 """\
             "Publisher","Placement","Source"\r
@@ -512,7 +517,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         publisher_group = models.PublisherGroup.objects.get(pk=1)
         publisher_group.account.agency.id = 55
         self.assertEqual(
-            publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all()),
+            csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account),
             textwrap.dedent(
                 """\
             "Publisher","Placement","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id"\r
@@ -537,9 +542,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         rows = [
             row
             for row in csv.DictReader(
-                io.StringIO(
-                    publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all())
-                )
+                io.StringIO(csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account))
             )
         ]
         self.assertEqual(
@@ -577,13 +580,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
                 placement="someplacement",
             ),
         ]
-
         rows = [
             row
             for row in csv.DictReader(
-                io.StringIO(
-                    publisher_group_csv_helpers.get_csv_content(publisher_group.account, publisher_group.entries.all())
-                )
+                io.StringIO(csv_helper.get_csv_content(publisher_group.entries.all(), account=publisher_group.account))
             )
         ]
         self.assertEqual(
@@ -627,8 +627,8 @@ class PublisherGroupCSVHelpersTest(TestCase):
             row
             for row in csv.DictReader(
                 io.StringIO(
-                    publisher_group_csv_helpers.get_csv_content(
-                        publisher_group.account, publisher_group.entries.all(), include_placement=True
+                    csv_helper.get_csv_content(
+                        publisher_group.entries.all(), include_placement=True, account=publisher_group.account
                     )
                 )
             )
@@ -646,19 +646,14 @@ class PublisherGroupCSVHelpersTest(TestCase):
         )
 
     def test_get_example_csv_content_without_placement(self):
-        rows = [row for row in csv.DictReader(io.StringIO(publisher_group_csv_helpers.get_example_csv_content()))]
+        rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content()))]
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
             {(("Publisher", "example.com"), ("Source", "")), (("Publisher", "example.com"), ("Source", "somesource"))},
         )
 
     def test_get_example_csv_content_with_placement(self):
-        rows = [
-            row
-            for row in csv.DictReader(
-                io.StringIO(publisher_group_csv_helpers.get_example_csv_content(include_placement=True))
-            )
-        ]
+        rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content(include_placement=True)))]
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
             {
@@ -671,7 +666,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
 
     def test_validate_entries(self):
         self.assertEqual(
-            publisher_group_csv_helpers.validate_entries(
+            csv_helper.validate_entries(
                 [
                     {"publisher": "wwwpub1.com", "source": "AdsNative", "include_subdomains": True},
                     {"publisher": "https://pub1.com", "source": "", "include_subdomains": True},
@@ -699,7 +694,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
 
     def test_validate_entries_with_error(self):
         self.assertEqual(
-            publisher_group_csv_helpers.validate_entries(
+            csv_helper.validate_entries(
                 [
                     {"publisher": "wwwpub1.com", "source": "AdsNative", "include_subdomains": True},
                     {
@@ -736,7 +731,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
             {"publisher": "https://pub3.com", "include_subdomains": True},
         ]
 
-        publisher_group_csv_helpers.clean_entry_sources(entries)
+        csv_helper.clean_entry_sources(entries)
 
         self.assertEqual(
             entries,
@@ -768,7 +763,7 @@ class PublisherGroupCSVHelpersTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.agency.id = 55
         self.assertEqual(
-            publisher_group_csv_helpers.get_entries_errors_csv_content(account, entries),
+            csv_helper.get_entries_errors_csv_content(entries, account=account),
             textwrap.dedent(
                 """\
             "Publisher","Source","Outbrain Publisher Id","Outbrain Section Id","Outbrain Amplify Publisher Id","Outbrain Engage Publisher Id","Error"\r

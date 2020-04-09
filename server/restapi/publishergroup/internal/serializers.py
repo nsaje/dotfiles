@@ -9,6 +9,8 @@ class PublisherGroupQueryParamsExpectations(restapi.serializers.serializers.Quer
     keyword = restapi.serializers.fields.PlainCharField(max_length=50, required=False)
     limit = fields.IntegerField(max_value=50, default=10)
     offset = fields.IntegerField(default=0)
+    agency_id = restapi.serializers.fields.IdField(default=None)
+    account_id = restapi.serializers.fields.IdField(default=None)
 
 
 class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):

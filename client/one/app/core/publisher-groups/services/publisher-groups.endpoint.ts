@@ -22,25 +22,21 @@ export class PublisherGroupsEndpoint {
     constructor(private http: HttpClient) {}
 
     search(
-        agencyId: string,
+        agencyId: string | null,
+        accountId: string | null,
         keyword: string | null,
         offset: number | null,
         limit: number | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        const request = replaceUrl(
-            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.search,
-            {agencyId: agencyId}
-        );
-
-        if (!commonHelpers.isDefined(keyword)) {
-            keyword = '';
-        }
+        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.search;
 
         const params = {
             offset: `${offset}`,
             limit: `${limit}`,
-            keyword: `${keyword}`,
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
         };
 
         requestStateUpdater(request.name, {
@@ -73,15 +69,16 @@ export class PublisherGroupsEndpoint {
     }
 
     list(
+        agencyId: string | null,
         accountId: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        const request = replaceUrl(
-            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.list,
-            {accountId: accountId}
-        );
+        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.list;
 
-        const params: any = {};
+        const params: any = {
+            ...(commonHelpers.isDefined(agencyId) && {agency_id: agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {account_id: accountId}),
+        };
 
         requestStateUpdater(request.name, {
             inProgress: true,
@@ -114,10 +111,7 @@ export class PublisherGroupsEndpoint {
         publisherGroup: PublisherGroup,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup> {
-        const request = replaceUrl(
-            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.upload,
-            {accountId: publisherGroup.accountId}
-        );
+        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.upload;
 
         requestStateUpdater(request.name, {
             inProgress: true,
@@ -132,12 +126,12 @@ export class PublisherGroupsEndpoint {
             'entries',
             'includeSubdomains',
             'accountId',
+            'agencyId',
         ]);
         const snakeCased: any = this.camelObjectToSnakeCase(
             publisherGroupUpload
         );
         const formData: FormData = convertToFormData(snakeCased);
-
         return this.http
             .post<ApiResponse<PublisherGroup>>(request.url, formData)
             .pipe(
@@ -186,12 +180,11 @@ export class PublisherGroupsEndpoint {
         );
     }
 
-    download(publisherGroup: PublisherGroup) {
+    download(publisherGroupId: string) {
         const request = replaceUrl(
             PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.download,
             {
-                accountId: publisherGroup.accountId,
-                publisherGroupId: publisherGroup.id,
+                publisherGroupId: publisherGroupId,
             }
         );
         window.open(request.url, '_blank');
@@ -201,10 +194,16 @@ export class PublisherGroupsEndpoint {
         const request = replaceUrl(
             PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.downloadErrors,
             {
-                accountId: publisherGroup.accountId,
                 csvKey: csvKey,
             }
         );
+        if (commonHelpers.isDefined(publisherGroup.accountId)) {
+            request.url = `${request.url}?account_id=${
+                publisherGroup.accountId
+            }`;
+        } else if (commonHelpers.isDefined(publisherGroup.agencyId)) {
+            request.url = `${request.url}?agency_id=${publisherGroup.agencyId}`;
+        }
         window.open(request.url, '_blank');
     }
 

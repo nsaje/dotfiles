@@ -1,6 +1,6 @@
 import {Routes} from '@angular/router';
 import {DealsLibraryView} from './views/deals-library/deals-library.view';
-import {RoutePathName, LevelParam} from '../../app.constants';
+import {RoutePathName} from '../../app.constants';
 
 const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}`;
 

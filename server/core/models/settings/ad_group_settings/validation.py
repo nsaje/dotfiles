@@ -5,7 +5,7 @@ import rfc3987
 
 import core.features.audiences
 import core.features.multicurrency
-import core.features.publisher_groups.publisher_group
+import core.features.publisher_groups
 import core.models.settings.ad_group_source_settings.validation_helpers
 import dash.features.bluekai
 import utils.dates_helper
@@ -210,7 +210,7 @@ class AdGroupSettingsValidatorMixin(object):
     def _validate_publisher_groups(self, new_settings):
         if self.whitelist_publisher_groups != new_settings.whitelist_publisher_groups:
             whitelist_count = (
-                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.PublisherGroup.objects.all()
                 .filter_by_account(self.ad_group.campaign.account)
                 .filter(pk__in=new_settings.whitelist_publisher_groups)
                 .count()
@@ -220,7 +220,7 @@ class AdGroupSettingsValidatorMixin(object):
 
         if self.blacklist_publisher_groups != new_settings.blacklist_publisher_groups:
             blacklist_count = (
-                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.PublisherGroup.objects.all()
                 .filter_by_account(self.ad_group.campaign.account)
                 .filter(pk__in=new_settings.blacklist_publisher_groups)
                 .count()

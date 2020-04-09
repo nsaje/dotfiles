@@ -53,6 +53,21 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                 );
             },
         },
+        {
+            value: RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+            displayValue: 'Publisher Groups',
+            icon: ListGroupIcon.PublisherGroups,
+            isVisible: () => {
+                return (
+                    this.zemPermissions.hasPermission(
+                        'zemauth.can_see_publisher_groups_ui'
+                    ) &&
+                    this.zemPermissions.hasPermission(
+                        'zemauth.can_edit_publisher_groups'
+                    )
+                );
+            },
+        },
     ];
 
     hasAgencyScope: boolean;

@@ -2122,6 +2122,8 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
         },
     )
     include_subdomains = forms.BooleanField(required=False)
+    agency_id = forms.IntegerField(required=False)
+    account_id = forms.IntegerField(required=False)
     entries = forms.FileField(required=False)
     user = None
 

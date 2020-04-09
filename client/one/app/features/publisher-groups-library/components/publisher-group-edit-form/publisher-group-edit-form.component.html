@@ -1,5 +1,6 @@
 <zem-text-form-group
     class="zem-text-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__text-form-group"
+    [isDisabled]="isDisabled"
     [label]="showNewLabels ? 'List name' : 'Publisher group name'"
     [value]="publisherGroup.name"
     [placeholder]="showNewLabels ? 'List name' : 'Publisher group name'"
@@ -8,6 +9,7 @@
 ></zem-text-form-group>
 <zem-checkbox-form-group
     class="zem-checkbox-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__checkbox-form-group"
+    [isDisabled]="isDisabled"
     [label]="'Include subdomains'"
     [value]="publisherGroup.includeSubdomains"
     (valueChange)="onIncludeSubdomainsChange($event)"
@@ -24,11 +26,12 @@
     </div>
 </zem-content-form-group>
 <zem-content-form-group
+    *ngIf="!isDisabled"
     class="zem-content-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__content-form-group"
     [label]="showNewLabels ? 'CSV file' : 'CSV file with publishers'"
 >
     <zem-file-selector
-        class="zem-file-selector zem-publisher-group-edit-form__item "
+        class="zem-file-selector zem-publisher-group-edit-form__item"
         [dropZoneLabel]="'Drop your file here to upload or'"
         [accept]="'text/csv'"
         [isMultiple]="false"
@@ -55,9 +58,15 @@
         class="zem-message zem-message--bubble zem-message--help zem-message--with-icon"
     >
         <p>
+            You can omit the file if you would only like to update the scope or
+            name of the publisher group.
+        </p>
+        <p *ngIf="publisherGroup.id">
             If you have trouble with the file structure, you can download our
             example file and start from there.
         </p>
         <a (click)="downloadExample.emit()">Download CSV example file</a><br />
     </div>
 </zem-content-form-group>
+
+<ng-content></ng-content>

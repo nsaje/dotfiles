@@ -18,7 +18,7 @@ import {PublisherGroupsService} from '../../../../core/publisher-groups/services
 import {PublisherGroupActionsCellComponent} from '../../components/publisher-group-actions-cell/publisher-group-actions-cell.component';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
-import {isDefined} from '../../../../shared/helpers/common.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {
     booleanFormatter,
     dateTimeFormatter,
@@ -37,7 +37,6 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     editPublisherGroupModal: ModalComponent;
 
     columnDefs: ColDef[] = [];
-
     systemColumnDefs: ColDef[] = [];
 
     context: any;
@@ -73,11 +72,15 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
             ? 'Edit Publishers & Placement list'
             : 'Edit publisher group';
 
-        this.route.params
+        this.route.queryParams
             .pipe(takeUntil(this.ngUnsubscribe$))
-            .pipe(filter(params => isDefined(params.id)))
-            .subscribe(params => {
-                this.updateInternalState(params);
+            .pipe(
+                filter(queryParams =>
+                    commonHelpers.isDefined(queryParams.agencyId)
+                )
+            )
+            .subscribe(queryParams => {
+                this.updateInternalState(queryParams);
             });
     }
 
@@ -106,12 +109,12 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     }
 
     download(publisherGroup: PublisherGroup) {
-        this.service.download(publisherGroup);
+        this.service.download(publisherGroup.id);
     }
 
     downloadErrors() {
         const activeEntity = this.store.state.activeEntity;
-        const csvKey: string = activeEntity.fieldErrors.errorsCsvKey;
+        const csvKey: string = activeEntity.fieldsErrors.errorsCsvKey;
         const publisherGroup: PublisherGroup = activeEntity.entity;
         this.service.downloadErrors(publisherGroup, csvKey);
     }
@@ -135,24 +138,27 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
 
     addPublisherGroup() {
         this.openEditPublisherGroupModal({
+            agencyId: this.store.state.accountId
+                ? null
+                : this.store.state.agencyId,
             accountId: this.store.state.accountId,
             includeSubdomains: true,
         });
     }
 
-    private updateInternalState(params: any) {
-        const accountId: string = params.id;
+    private updateInternalState(queryParams: any) {
+        const agencyId = queryParams.agencyId;
+        const accountId = queryParams.accountId || null;
 
         this.showGridLoadingOverlays();
-
-        this.store.setStore(accountId);
+        this.store.setStore(agencyId, accountId);
     }
 
     private showGridLoadingOverlays() {
-        if (isDefined(this.gridApi)) {
+        if (commonHelpers.isDefined(this.gridApi)) {
             this.gridApi.showLoadingOverlay();
         }
-        if (isDefined(this.systemGridApi)) {
+        if (commonHelpers.isDefined(this.systemGridApi)) {
             this.systemGridApi.showLoadingOverlay();
         }
     }
@@ -191,9 +197,24 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
             },
             {
+                headerName: 'Scope',
+                field: 'agencyId',
+                valueFormatter: data => {
+                    if (commonHelpers.isDefined(data.value)) {
+                        return 'Agency';
+                    } else {
+                        return 'Account';
+                    }
+                },
+                width: 90,
+                suppressSizeToFit: true,
+                resizable: false,
+            },
+            {
                 headerName: '',
-                width: 100,
-                minWidth: 100,
+                width: 105,
+                suppressSizeToFit: true,
+                resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,
                 pinned: 'right',
             },
@@ -238,11 +259,25 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
                 minWidth: 134,
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
             },
-            {headerName: '', width: 160},
+            {
+                headerName: 'Scope',
+                field: 'agencyId',
+                valueFormatter: data => {
+                    if (commonHelpers.isDefined(data.value)) {
+                        return 'Agency';
+                    } else {
+                        return 'Account';
+                    }
+                },
+                width: 90,
+                suppressSizeToFit: true,
+                resizable: false,
+            },
             {
                 headerName: '',
-                maxWidth: 70,
-                minWidth: 70,
+                width: 75,
+                suppressSizeToFit: true,
+                resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,
                 pinned: 'right',
             },

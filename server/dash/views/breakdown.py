@@ -4,12 +4,12 @@ from functools import partial
 
 import newrelic.agent
 
+import core.features.publisher_groups
 import stats.api_breakdowns
 import stats.constants
 import stats.constraints_helper
 import stats.helpers
 from core.features import bid_modifiers
-from core.features.publisher_groups import publisher_group_helpers
 from dash import campaign_goals
 from dash import constants
 from dash import forms
@@ -273,7 +273,7 @@ class AccountBreakdown(api_common.BaseApiView):
 
         extras = {}
         if stats.constants.get_target_dimension(breakdown) == "publisher_id":
-            extras["ob_blacklisted_count"] = publisher_group_helpers.get_ob_blacklisted_publishers_count(account)
+            extras["ob_blacklisted_count"] = core.features.publisher_groups.get_ob_blacklisted_publishers_count(account)
 
         extras["currency"] = currency
         stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
@@ -357,7 +357,7 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         extras = {}
         if stats.constants.get_target_dimension(breakdown) == "publisher_id":
-            extras["ob_blacklisted_count"] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
+            extras["ob_blacklisted_count"] = core.features.publisher_groups.get_ob_blacklisted_publishers_count(
                 campaign.account
             )
 
@@ -451,7 +451,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
             extras.update(breakdown_helpers.get_ad_group_sources_extras(ad_group))
 
         if stats.constants.get_target_dimension(breakdown) == "publisher_id":
-            extras["ob_blacklisted_count"] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
+            extras["ob_blacklisted_count"] = core.features.publisher_groups.get_ob_blacklisted_publishers_count(
                 ad_group.campaign.account
             )
 

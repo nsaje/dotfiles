@@ -31,22 +31,28 @@ def get_example_csv_content(include_placement=False):
     return csv_utils.dictlist_to_csv(columns, content)
 
 
-def get_csv_content(account, publisher_group_entries, include_placement=False):
+def get_csv_content(publisher_group_entries, include_placement=False, agency=None, account=None):
     return csv_utils.tuplelist_to_csv(
-        _get_rows_generator(account, publisher_group_entries, include_placement=include_placement)
+        _get_rows_generator(
+            publisher_group_entries, include_placement=include_placement, agency=agency, account=account
+        )
     )
 
 
-def get_entries_errors_csv_content(account, entry_dicts, include_placement=False):
+def get_entries_errors_csv_content(entry_dicts, include_placement=False, agency=None, account=None):
     return csv_utils.tuplelist_to_csv(
-        _get_error_rows_generator(account, entry_dicts, include_placement=include_placement)
+        _get_error_rows_generator(entry_dicts, include_placement=include_placement, agency=agency, account=account)
     )
 
 
-def _get_rows_generator(account, publisher_group_entries, include_placement=False):
+def _get_rows_generator(publisher_group_entries, include_placement=False, agency=None, account=None):
     entries_list = list(publisher_group_entries.order_by("publisher"))
 
-    is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
+    if account is not None:
+        is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
+    elif agency is not None:
+        is_outbrain = agency.id == OUTBRAIN_AGENCY
+
     add_outbrain_publisher_id = is_outbrain and any(
         (
             entry.outbrain_publisher_id
@@ -82,8 +88,11 @@ def _get_rows_generator(account, publisher_group_entries, include_placement=Fals
         yield row
 
 
-def _get_error_rows_generator(account, entry_dicts, include_placement=False):
-    is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
+def _get_error_rows_generator(entry_dicts, include_placement=False, agency=None, account=None):
+    if account is not None:
+        is_outbrain = account.agency is not None and account.agency.id == OUTBRAIN_AGENCY
+    elif agency is not None:
+        is_outbrain = agency.id == OUTBRAIN_AGENCY
     add_outbrain_publisher_id = is_outbrain and any(
         (
             "outbrain_publisher_id" in entry_dict
@@ -171,13 +180,20 @@ def clean_entry_sources(entry_dicts):
         entry["source"] = sources_by_slug.get(entry["source"].lower())
 
 
-def save_entries_errors_csv(account, entry_dicts, include_placement=False):
-    csv_content = get_entries_errors_csv_content(account, entry_dicts)
-    csv_content = get_entries_errors_csv_content(account, entry_dicts, include_placement=include_placement)
+def save_entries_errors_csv(entry_dicts, include_placement=False, agency=None, account=None):
+    csv_content = get_entries_errors_csv_content(entry_dicts, agency=agency, account=account)
+    csv_content = get_entries_errors_csv_content(
+        entry_dicts, include_placement=include_placement, agency=agency, account=account
+    )
     csv_key = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
-    s3_helper.put(
-        os.path.join("publisher_group_errors", "account_{}".format(account.id), csv_key + ".csv"), csv_content
-    )
+    if account is not None:
+        s3_helper.put(
+            os.path.join("publisher_group_errors", "account_{}".format(account.id), csv_key + ".csv"), csv_content
+        )
+    elif agency is not None:
+        s3_helper.put(
+            os.path.join("publisher_group_errors", "agency_{}".format(agency.id), csv_key + ".csv"), csv_content
+        )
 
     return csv_key

@@ -2,8 +2,8 @@ import copy
 
 import newrelic.agent
 
+import core.features.publisher_groups
 import dash.constants
-from core.features.publisher_groups import publisher_group_helpers
 from dash import models
 from stats import constants
 from utils.queryset_helper import get_pk_list
@@ -229,11 +229,11 @@ def add_publisher_constraints(
     account,
     account_settings,
 ):
-    blacklists, whitelists = publisher_group_helpers.concat_publisher_group_targeting(
+    blacklists, whitelists = core.features.publisher_groups.concat_publisher_group_targeting(
         ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings
     )
 
-    publisher_group_targeting = publisher_group_helpers.get_publisher_group_targeting_dict(
+    publisher_group_targeting = core.features.publisher_groups.get_publisher_group_targeting_dict(
         ad_group, ad_group_settings, campaign, campaign_settings, account, account_settings
     )
 

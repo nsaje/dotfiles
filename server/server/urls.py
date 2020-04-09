@@ -570,19 +570,19 @@ urlpatterns += [
         name="publisher_targeting",
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/publisher_groups/(?P<publisher_group_id>\d+)/download/$",
+        r"^api/publisher_groups/(?P<publisher_group_id>\d+)/download/$",
         login_required(dash.views.publishers.PublisherGroupsDownload.as_view()),
         name="download_publisher_groups",
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/publisher_groups/$",
+        r"^api/publisher_groups/$",
         login_required(dash.views.publishers.PublisherGroups.as_view()),
-        name="accounts_publisher_groups",
+        name="publisher_groups",
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/publisher_groups/upload/$",
+        r"^api/publisher_groups/upload/$",
         login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
-        name="accounts_publisher_groups_upload",
+        name="publisher_groups_upload",
     ),
     url(
         r"^api/custom_report_download/$",
@@ -595,9 +595,9 @@ urlpatterns += [
         name="publisher_groups_example",
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/publisher_groups/errors/(?P<csv_key>[a-zA-Z0-9]+)$",
+        r"^api/publisher_groups/errors/(?P<csv_key>[a-zA-Z0-9]+)$",
         login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
-        name="accounts_publisher_groups_upload",
+        name="publisher_groups_upload",
     ),
     url(
         r"^api/scheduled_reports/$",

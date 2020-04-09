@@ -15,8 +15,10 @@ from dash import models
 from dash.dashapi import data_helper
 from restapi.access import get_account  # noqa
 from restapi.access import get_ad_group  # noqa
+from restapi.access import get_agency  # noqa
 from restapi.access import get_campaign  # noqa
 from restapi.access import get_content_ad  # noqa
+from restapi.access import get_publisher_group  # noqa
 from restapi.access import get_upload_batch  # noqa
 from utils import columns
 from utils import exc
@@ -109,14 +111,6 @@ def get_additional_columns(additional_columns):
     if additional_columns:
         return additional_columns.split(",")
     return []
-
-
-def get_publisher_group(user, account_id, publisher_group_id):
-    try:
-        account = get_account(user, account_id)
-        return models.PublisherGroup.objects.all().filter_by_account(account).get(pk=publisher_group_id)
-    except models.PublisherGroup.DoesNotExist:
-        raise exc.MissingDataError("Publisher group does not exist")
 
 
 def is_agency_manager(user, account):

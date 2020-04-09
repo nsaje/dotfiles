@@ -12,7 +12,6 @@ import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
 import * as mockHelpers from '../../../../testing/mock.helpers';
-import {state} from '@angular/animations';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 describe('DealsLibraryStore', () => {
@@ -268,7 +267,7 @@ describe('DealsLibraryStore', () => {
         expect(store.state.activeEntity.isReadOnly).toEqual(false);
     });
 
-    it('should correctly set existing agencyt deal to activeEntity with read only', () => {
+    it('should correctly set existing agency deal to activeEntity with read only', () => {
         const mockedDeal = clone(mockedDeals[0]);
         mockedDeal.agencyId = mockedAgencyId;
         mockedDeal.accountId = null;

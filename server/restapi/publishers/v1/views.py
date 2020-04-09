@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework import permissions
 
 import core.features.bid_modifiers
-import core.features.publisher_groups.publisher_group_helpers
+import core.features.publisher_groups.service
 import dash.constants
 import dash.views.helpers
 import restapi.access
@@ -23,7 +23,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return self.response_ok(serializer.data)
 
     def _get_publisher_group_items(self, ad_group, user):
-        targeting = core.features.publisher_groups.publisher_group_helpers.get_publisher_group_targeting_dict(
+        targeting = core.features.publisher_groups.service.get_publisher_group_targeting_dict(
             ad_group,
             ad_group.get_current_settings(),
             ad_group.campaign,
@@ -116,13 +116,9 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             cleaned_entry = {"publisher": entry["name"], "source": entry["source"], "include_subdomains": True}
             entity = self._get_level_entity(ad_group, entry)
             if entry["status"] == dash.constants.PublisherStatus.BLACKLISTED:
-                core.features.publisher_groups.publisher_group_helpers.blacklist_publishers(
-                    request, [cleaned_entry], entity
-                )
+                core.features.publisher_groups.service.blacklist_publishers(request, [cleaned_entry], entity)
             elif entry["status"] == dash.constants.PublisherStatus.ENABLED:
-                core.features.publisher_groups.publisher_group_helpers.unlist_publishers(
-                    request, [cleaned_entry], entity
-                )
+                core.features.publisher_groups.service.unlist_publishers(request, [cleaned_entry], entity)
 
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
                 if entry.get("source") is not None and "modifier" in entry:

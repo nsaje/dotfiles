@@ -1,8 +1,8 @@
+import core.features.publisher_groups
 import dash.constants
 import dash.models
 import stats.constants
 import stats.constraints_helper
-from core.features.publisher_groups import publisher_group_helpers
 
 
 def _intersection(base_collection, qs_ids):
@@ -119,7 +119,7 @@ def prepare_constraints(
     if only_used_sources:
         filtered_sources = stats.constraints_helper.narrow_filtered_sources(filtered_sources, ad_group_sources)
 
-    blacklists, whitelists, pg_targeting = publisher_group_helpers.get_publisher_group_targeting_multiple_entities(
+    blacklists, whitelists, pg_targeting = core.features.publisher_groups.get_publisher_group_targeting_multiple_entities(
         allowed_accounts if constrain_accounts else None,
         allowed_campaigns if constrain_campaigns else None,
         allowed_ad_groups if constrain_ad_group else None,

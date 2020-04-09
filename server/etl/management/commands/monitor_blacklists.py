@@ -4,8 +4,8 @@ import datetime
 import dateutil.parser
 
 import backtosql
+import core.features.publisher_groups
 import redshiftapi.db
-from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
 from dash import publisher_helpers
@@ -92,7 +92,7 @@ class Command(Z1Command):
         overall_vialotors_stats = {"clicks": 0, "impressions": 0}
 
         for ad_group in ad_groups:
-            blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
+            blacklist, whitelist = core.features.publisher_groups.concat_publisher_group_targeting(
                 ad_group,
                 ad_group_settings_map[ad_group.id],
                 ad_group.campaign,

@@ -8,7 +8,7 @@ from django.urls import reverse
 from mock import ANY
 from mock import patch
 
-from core.features.publisher_groups import publisher_group_helpers
+import core.features.publisher_groups
 from dash import constants
 from dash import models
 from dash.constants import Level
@@ -21,7 +21,7 @@ from zemauth.models import User
 
 
 def get_publisher_group_targeting_dict():
-    d = publisher_group_helpers.get_default_publisher_group_targeting_dict()
+    d = core.features.publisher_groups.get_default_publisher_group_targeting_dict()
     d["account"]["excluded"] = set([1])
     d["account"]["included"] = set([1])
     d["campaign"]["excluded"] = set([1])

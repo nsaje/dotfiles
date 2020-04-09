@@ -1,4 +1,4 @@
-import core.features.publisher_groups.publisher_group
+import core.features.publisher_groups
 
 from . import exceptions
 
@@ -17,7 +17,7 @@ class AccountSettingsValidatorMixin(object):
 
         if whitelist:
             whitelist_count = (
-                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.PublisherGroup.objects.all()
                 .filter_by_account(self.account)
                 .filter(pk__in=whitelist)
                 .count()
@@ -27,7 +27,7 @@ class AccountSettingsValidatorMixin(object):
 
         if blacklist:
             blacklist_count = (
-                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.PublisherGroup.objects.all()
                 .filter_by_account(self.account)
                 .filter(pk__in=blacklist)
                 .count()

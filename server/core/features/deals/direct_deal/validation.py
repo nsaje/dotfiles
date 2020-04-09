@@ -47,7 +47,7 @@ class DirectDealValidatorMixin(object):
         if self.account.id not in accounts:
             raise ValidationError(
                 {
-                    "account_id": "Deal is used on the current account. Account cannot be changed to {account_name}.".format(
+                    "account_id": "Deal is used outside of the scope of {account_name} account. To change the scope of the deal to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
                         account_name=self.account.name
                     )
                 }
@@ -78,7 +78,7 @@ class DirectDealValidatorMixin(object):
         if self.agency.id not in agencies:
             raise ValidationError(
                 {
-                    "agency_id": "Deal is used on the current agency. Agency cannot be changed to {agency_name}.".format(
+                    "agency_id": "Deal is used outside of the scope of {agency_name} agency. To change the scope of the deal to {agency_name} stop using it on other agencies (and their accounts, campaigns and ad groups) and try again.".format(
                         agency_name=self.agency.name
                     )
                 }

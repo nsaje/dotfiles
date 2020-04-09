@@ -2056,7 +2056,7 @@ includeSubdomains  | boolean             | if true, the publisher's subdomains w
 ### List publisher group entries [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{?offset,limit}] ###
 
 + Parameters
-    + publisherGroupId: 153 (required)
+    + publisherGroupId: 157 (required)
     + offset: 0 (optional, int) - 0-based starting index
     + limit: 100 (required, int) - Maximum number of entries to return, up to `1000`, defaults to `100`
 
@@ -2068,13 +2068,13 @@ includeSubdomains  | boolean             | if true, the publisher's subdomains w
             "data": [
                 {
                     "id": "652",
-                    "publisherGroupId": "153",
+                    "publisherGroupId": "157",
                     "publisher": "example.com/publisher1",
                     "source": "gumgum"
                 },
                 {
                     "id": "655",
-                    "publisherGroupId": "153",
+                    "publisherGroupId": "157",
                     "publisher": "example.com/publisher2",
                     "source": "gumgum"
                 }
@@ -2086,18 +2086,18 @@ includeSubdomains  | boolean             | if true, the publisher's subdomains w
 This endpoint supports creating multiple entries at once that are all appended to the same publisher group.
 
 + Parameters
-    + publisherGroupId: 153 (required)
+    + publisherGroupId: 157 (required)
 
 + Request (application/json)
 
         [
             {
-                "publisherGroupId": "153",
+                "publisherGroupId": "157",
                 "publisher": "example.com/publisher3",
                 "source": "triplelift"
             },
             {
-                "publisherGroupId": "153",
+                "publisherGroupId": "157",
                 "publisher": "example.com/publisher4",
                 "source": "yahoo"
             }
@@ -2109,13 +2109,13 @@ This endpoint supports creating multiple entries at once that are all appended t
             "data": [
                 {
                       "id": "650",
-                      "publisherGroupId": "153",
+                      "publisherGroupId": "157",
                       "publisher": "example.com/publisher3",
                       "source": "triplelift"
                 },
                 {
-                      "id": "622",
-                      "publisherGroupId": "153",
+                      "id": "625",
+                      "publisherGroupId": "157",
                       "publisher": "example.com/publisher4",
                       "source": "yahoo"
                 }
@@ -2125,15 +2125,15 @@ This endpoint supports creating multiple entries at once that are all appended t
 ### Get a publisher group entry [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
 
 + Parameters
-    + publisherGroupId: 153 (required)
-    + entryId: 622 (required)
+    + publisherGroupId: 157 (required)
+    + entryId: 625 (required)
 
 + Response 200 (application/json)
 
         {
             "data": {
-                  "id": "622",
-                  "publisherGroupId": "153",
+                  "id": "625",
+                  "publisherGroupId": "157",
                   "publisher": "example.com/publisher4",
                   "source": "yahoo"
             }
@@ -2142,8 +2142,8 @@ This endpoint supports creating multiple entries at once that are all appended t
 ### Edit a publisher group entry [PUT /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
 
 + Parameters
-    + publisherGroupId: 153 (required)
-    + entryId: 622 (required)
+    + publisherGroupId: 157 (required)
+    + entryId: 625 (required)
 
 + Request (application/json)
 
@@ -2156,8 +2156,8 @@ This endpoint supports creating multiple entries at once that are all appended t
 
         {
             "data": {
-                  "id": "622",
-                  "publisherGroupId": "153",
+                  "id": "625",
+                  "publisherGroupId": "157",
                   "publisher": "example.com/publisher4",
                   "source": "yahoo"
             }
@@ -2166,8 +2166,8 @@ This endpoint supports creating multiple entries at once that are all appended t
 ### Delete a publisher group entry [DELETE /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
 
 + Parameters
-    + publisherGroupId: 153 (required)
-    + entryId: 622 (required)
+    + publisherGroupId: 157 (required)
+    + entryId: 625 (required)
 
 + Response 204
 

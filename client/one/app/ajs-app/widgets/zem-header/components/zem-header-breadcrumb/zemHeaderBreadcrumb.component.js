@@ -199,18 +199,12 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     RoutePathName.APP_BASE,
                     RoutePathName.PUBLISHER_GROUPS_LIBRARY
                 ];
-                if (levelParam) {
-                    urlTree.push(levelParam);
-                }
-                if (entityId) {
-                    urlTree.push(entityId);
-                }
                 var canUserSeeNewPublisherLibrary = zemPermissions.hasPermission(
                     'zemauth.can_see_new_publisher_library'
                 );
                 return {
-                    typeName: 'Account settings',
-                    name: canUserSeeNewPublisherLibrary ? 'Publishers & Placements' : 'Publisher groups',
+                    typeName: 'Management Console',
+                    name: canUserSeeNewPublisherLibrary ? 'Publishers & Placements' : 'Publisher Groups',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {

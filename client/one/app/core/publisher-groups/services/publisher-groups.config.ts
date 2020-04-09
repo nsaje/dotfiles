@@ -4,9 +4,9 @@ import {HttpRequestInfo} from '../../../shared/types/http-request-info';
 const publisherGroupsInternalApiUrl = `${
     APP_CONFIG.apiRestInternalUrl
 }/publishergroups`;
-const publisherGroupsApiUrl = `${
+const publisherGroupsLegacyApiUrl = `${
     APP_CONFIG.apiLegacyUrl
-}/accounts/{accountId}/publisher_groups`;
+}/publisher_groups`;
 
 export const PUBLISHER_GROUPS_CONFIG: {
     requests: {publisherGroups: {[key: string]: HttpRequestInfo}};
@@ -15,7 +15,7 @@ export const PUBLISHER_GROUPS_CONFIG: {
         publisherGroups: {
             search: {
                 name: 'search',
-                url: `${publisherGroupsInternalApiUrl}/agencies/{agencyId}/search/`,
+                url: `${publisherGroupsInternalApiUrl}/`,
             },
             remove: {
                 name: 'remove',
@@ -23,25 +23,23 @@ export const PUBLISHER_GROUPS_CONFIG: {
             },
             list: {
                 name: 'list',
-                url: `${publisherGroupsApiUrl}/`,
+                url: `${publisherGroupsLegacyApiUrl}/`,
             },
             upload: {
                 name: 'upload',
-                url: `${publisherGroupsApiUrl}/upload/`,
+                url: `${publisherGroupsLegacyApiUrl}/upload/`,
             },
             download: {
                 name: 'download',
-                url: `${publisherGroupsApiUrl}/{publisherGroupId}/download/`,
+                url: `${publisherGroupsLegacyApiUrl}/{publisherGroupId}/download/`,
             },
             downloadErrors: {
                 name: 'downloadErrors',
-                url: `${publisherGroupsApiUrl}/errors/{csvKey}`,
+                url: `${publisherGroupsLegacyApiUrl}/errors/{csvKey}`,
             },
             downloadExample: {
                 name: 'downloadExample',
-                url: `${
-                    APP_CONFIG.apiLegacyUrl
-                }/publisher_groups/download/example/`,
+                url: `${publisherGroupsLegacyApiUrl}/download/example/`,
             },
         },
     },

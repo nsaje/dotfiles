@@ -46,16 +46,6 @@ angular
                 ),
             },
             {
-                text: canUserSeeNewPublisherLibrary
-                    ? 'Publishers & Placements'
-                    : 'Publisher groups',
-                callback: navigateToPublisherGroupsView,
-                isAvailable: isPublisherGroupsActionAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
-                    'zemauth.can_see_publisher_groups_ui'
-                ),
-            },
-            {
                 text: 'Scheduled reports',
                 callback: navigateToScheduledReportsView,
                 isAvailable: zemPermissions.hasPermission(
@@ -90,6 +80,16 @@ angular
                 isAvailable: isDealsLibraryViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_see_deals_library'
+                ),
+            },
+            {
+                text: canUserSeeNewPublisherLibrary
+                    ? 'Publishers & Placements'
+                    : 'Publisher Groups',
+                callback: navigateToPublisherGroupsView,
+                isAvailable: isPublisherGroupsActionAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_publisher_groups_ui'
                 ),
             },
         ];
@@ -139,9 +139,7 @@ angular
         }
 
         function isPublisherGroupsActionAvailable() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
             return (
-                activeAccount &&
                 zemPermissions.hasPermission(
                     'zemauth.can_see_publisher_groups_ui'
                 ) &&
@@ -153,12 +151,26 @@ angular
 
         function navigateToPublisherGroupsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            NgRouter.navigate([
-                RoutePathName.APP_BASE,
-                RoutePathName.PUBLISHER_GROUPS_LIBRARY,
-                LevelParam.ACCOUNT,
-                activeAccount.id,
-            ]);
+
+            if (commonHelpers.isDefined(activeAccount)) {
+                NgRouter.navigate(
+                    [
+                        RoutePathName.APP_BASE,
+                        RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+                    ],
+                    {
+                        queryParams: {
+                            agencyId: activeAccount.data.agencyId,
+                            accountId: activeAccount.id,
+                        },
+                    }
+                );
+            } else {
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+                ]);
+            }
         }
 
         function isCreditsLibraryViewAvailable() {

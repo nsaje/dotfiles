@@ -3,20 +3,40 @@ import {asapScheduler, of} from 'rxjs';
 import {PublisherGroupsLibraryStore} from './publisher-groups-library.store';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {Account} from '../../../../core/entities/types/account/account';
+import * as mockHelpers from '../../../../testing/mock.helpers';
+import * as clone from 'clone';
+import {PublisherGroupsLibraryStoreState} from './publisher-groups-library.store.state';
+import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 describe('PublisherGroupsLibraryStore', () => {
-    let publisherGroupServiceStub: jasmine.SpyObj<PublisherGroupsService>;
+    let publisherGroupsServiceStub: jasmine.SpyObj<PublisherGroupsService>;
+    let accountsServiceStub: jasmine.SpyObj<AccountService>;
+    let zemPermissionsStub: any;
     let store: PublisherGroupsLibraryStore;
     let mockedPublisherGroups: PublisherGroup[];
+    let mockedAgencyId: string;
     let mockedAccountId: string;
+    let mockedAccounts: Account[];
 
     beforeEach(() => {
-        publisherGroupServiceStub = jasmine.createSpyObj(
+        publisherGroupsServiceStub = jasmine.createSpyObj(
             PublisherGroupsService.name,
             ['list', 'upload', 'remove']
         );
+        accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
+            'list',
+        ]);
+        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+            'hasAgencyScope',
+        ]);
 
-        store = new PublisherGroupsLibraryStore(publisherGroupServiceStub);
+        store = new PublisherGroupsLibraryStore(
+            publisherGroupsServiceStub,
+            accountsServiceStub,
+            zemPermissionsStub
+        );
 
         mockedPublisherGroups = [
             {
@@ -69,35 +89,45 @@ describe('PublisherGroupsLibraryStore', () => {
             },
         ];
 
+        mockedAgencyId = '10';
         mockedAccountId = '525';
+
+        mockedAccounts = [mockHelpers.getMockedAccount()];
     });
 
     it('should correctly initialize store', fakeAsync(() => {
-        publisherGroupServiceStub.list.and
+        publisherGroupsServiceStub.list.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
+        accountsServiceStub.list.and
+            .returnValue(of(mockedAccounts, asapScheduler))
+            .calls.reset();
 
-        store.setStore(mockedAccountId);
+        store.setStore(mockedAgencyId, mockedAccountId);
         tick();
 
         expect(store.state.entities).toEqual(mockedPublisherGroups);
+        expect(store.state.agencyId).toEqual(mockedAgencyId);
         expect(store.state.accountId).toEqual(mockedAccountId);
-        expect(publisherGroupServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(store.state.accounts).toEqual(mockedAccounts);
+
+        expect(publisherGroupsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should list publisher groups via service', fakeAsync(() => {
-        publisherGroupServiceStub.list.and
+        publisherGroupsServiceStub.list.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
         store.loadEntities();
         tick();
 
         expect(store.state.entities).toEqual(mockedPublisherGroups);
-        expect(publisherGroupServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
     it('should upload publisher groups via service', fakeAsync(() => {
-        publisherGroupServiceStub.upload.and
+        publisherGroupsServiceStub.upload.and
             .returnValue(of(mockedPublisherGroups[0], asapScheduler))
             .calls.reset();
 
@@ -105,8 +135,8 @@ describe('PublisherGroupsLibraryStore', () => {
         store.saveActiveEntity();
         tick();
 
-        expect(publisherGroupServiceStub.upload).toHaveBeenCalledTimes(1);
-        expect(publisherGroupServiceStub.upload).toHaveBeenCalledWith(
+        expect(publisherGroupsServiceStub.upload).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.upload).toHaveBeenCalledWith(
             mockedPublisherGroups[0],
             (<any>store).requestStateUpdater
         );
@@ -114,16 +144,157 @@ describe('PublisherGroupsLibraryStore', () => {
 
     it('should remove publisher group via service', fakeAsync(() => {
         const mockedPublisherGroupId = mockedPublisherGroups[0].id;
-        publisherGroupServiceStub.remove.and
+        publisherGroupsServiceStub.remove.and
             .returnValue(of(null, asapScheduler))
             .calls.reset();
         store.deleteEntity(mockedPublisherGroupId);
         tick();
 
-        expect(publisherGroupServiceStub.remove).toHaveBeenCalledTimes(1);
-        expect(publisherGroupServiceStub.remove).toHaveBeenCalledWith(
+        expect(publisherGroupsServiceStub.remove).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.remove).toHaveBeenCalledWith(
             mockedPublisherGroups[0].id,
             (<any>store).requestStateUpdater
         );
     }));
+
+    it('should correctly set existing agency publisher group to activeEntity', () => {
+        const mockedPublisherGroup = clone(mockedPublisherGroups[0]);
+        mockedPublisherGroup.agencyId = mockedAgencyId;
+        mockedPublisherGroup.accountId = null;
+        store.state.agencyId = mockedAgencyId;
+        store.state.hasAgencyScope = true;
+
+        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+            .activeEntity.entity;
+        store.setActiveEntity(mockedPublisherGroup);
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...mockedEmptyPublisherGroup,
+            ...mockedPublisherGroup,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(false);
+    });
+
+    it('should correctly set existing agency publisher group to activeEntity with read only', () => {
+        const mockedPublisherGroup = clone(mockedPublisherGroups[0]);
+        mockedPublisherGroup.agencyId = mockedAgencyId;
+        mockedPublisherGroup.accountId = null;
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = false;
+
+        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+            .activeEntity.entity;
+        store.setActiveEntity(mockedPublisherGroup);
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...mockedEmptyPublisherGroup,
+            ...mockedPublisherGroup,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(true);
+    });
+
+    it('should correctly set existing account publisher group to activeEntity', () => {
+        const mockedPublisherGroup = clone(mockedPublisherGroups[0]);
+        mockedPublisherGroup.agencyId = null;
+        mockedPublisherGroup.accountId = mockedAccountId;
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = false;
+
+        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+            .activeEntity.entity;
+        store.setActiveEntity(mockedPublisherGroup);
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...mockedEmptyPublisherGroup,
+            ...mockedPublisherGroup,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+        expect(store.state.activeEntity.isReadOnly).toEqual(false);
+    });
+
+    it('should correctly set new account publisher group to activeEntity', () => {
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = mockedAccountId;
+        store.state.hasAgencyScope = true;
+
+        store.setActiveEntity({});
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...new PublisherGroupsLibraryStoreState().activeEntity.entity,
+            accountId: mockedAccountId,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+    });
+
+    it('should correctly set new agency publisher group to activeEntity', () => {
+        store.state.agencyId = mockedAgencyId;
+        store.state.accountId = null;
+        store.state.hasAgencyScope = true;
+
+        store.setActiveEntity({});
+
+        expect(store.state.activeEntity.entity).toEqual({
+            ...new PublisherGroupsLibraryStoreState().activeEntity.entity,
+            agencyId: mockedAgencyId,
+        });
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+    });
+
+    it('should set account to activeEntity', () => {
+        store.state.activeEntity.entity = clone(mockedPublisherGroups[0]);
+
+        store.setActiveEntityAccount(mockedAccountId);
+
+        expect(store.state.activeEntity.entity.accountId).toEqual(
+            mockedAccountId
+        );
+    });
+
+    it('should set activeEntity scope to account scope', () => {
+        store.state.accounts = clone(mockedAccounts);
+        store.state.activeEntity.entity = clone(mockedPublisherGroups[0]);
+        store.state.activeEntity.scopeState = ScopeSelectorState.AGENCY_SCOPE;
+        store.state.accountId = mockedAccountId;
+
+        store.setActiveEntityScope(ScopeSelectorState.ACCOUNT_SCOPE);
+
+        expect(store.state.activeEntity.entity.accountId).toEqual(
+            mockedAccountId
+        );
+        expect(store.state.activeEntity.entity.agencyId).toEqual(null);
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.ACCOUNT_SCOPE
+        );
+    });
+
+    it('should set activeEntity scope to agency scope', () => {
+        store.state.activeEntity.entity = clone(mockedPublisherGroups[0]);
+        store.state.activeEntity.entity.agencyId = null;
+        store.state.activeEntity.entity.accountId = mockedAccountId;
+        store.state.activeEntity.scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+        store.state.agencyId = mockedAgencyId;
+        store.setActiveEntityScope(ScopeSelectorState.AGENCY_SCOPE);
+
+        expect(store.state.activeEntity.entity.agencyId).toEqual(
+            mockedAgencyId
+        );
+        expect(store.state.activeEntity.entity.accountId).toEqual(null);
+        expect(store.state.activeEntity.scopeState).toEqual(
+            ScopeSelectorState.AGENCY_SCOPE
+        );
+    });
 });

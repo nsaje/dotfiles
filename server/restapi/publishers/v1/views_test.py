@@ -4,11 +4,12 @@ from unittest import mock
 from django.urls import reverse
 
 import core.features.bid_modifiers
+import core.features.publisher_groups
 import core.models
 import dash.constants
 import restapi.common.views_base_test
-from core.features.publisher_groups import publisher_group_helpers
 from utils import test_helper
+
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 
@@ -26,17 +27,17 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_adgroups_publishers_list(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
             self.test_ad_group,
         )
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn2.com", "source": source, "include_subdomains": True}],
             self.test_ad_group.campaign,
         )
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn3.com", "source": source, "include_subdomains": True}],
             self.test_ad_group.campaign.account,
@@ -65,7 +66,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
     def test_adgroups_placements_list(self):
         test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
             self.test_ad_group,
@@ -92,7 +93,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_adgroups_placements_list_no_permission(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
             self.test_ad_group,
@@ -161,17 +162,17 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_adgroups_publishers_put_unlist(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
             self.test_ad_group,
         )
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn2.com", "source": source, "include_subdomains": True}],
             self.test_ad_group.campaign,
         )
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn3.com", "source": source, "include_subdomains": True}],
             self.test_ad_group.campaign.account,
@@ -194,7 +195,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_modifiers_get(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
-        publisher_group_helpers.blacklist_publishers(
+        core.features.publisher_groups.blacklist_publishers(
             self.test_request,
             [{"publisher": "testpub1", "source": source, "include_subdomains": True}],
             self.test_ad_group,

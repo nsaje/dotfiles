@@ -10,7 +10,6 @@ import core.features.publisher_groups
 import core.models
 import dash.constants
 import utils.email_helper
-from core.features.publisher_groups import publisher_group_helpers
 
 from .. import Rule
 from .. import constants
@@ -185,7 +184,7 @@ def blacklist(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) 
     source = core.models.Source.objects.get(id=source_id)
 
     entry_dict = {"publisher": target, "source": source, "include_subdomains": False}
-    publisher_group_helpers.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
+    core.features.publisher_groups.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
     return ValueChangeData(
         target=target,
         old_value=dash.constants.PublisherStatus.ENABLED,

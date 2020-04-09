@@ -566,7 +566,6 @@
         created_dt: '2015-02-21T00:00:00'
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist'
-        account: 186
         agency: 1
     model: dash.publishergroup
     pk: 153
@@ -575,7 +574,6 @@
         created_dt: '2015-02-21T00:00:00'
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist 2'
-        account: 186
         agency: 1
     model: dash.publishergroup
     pk: 154
@@ -584,7 +582,6 @@
         created_dt: '2015-02-21T00:00:00'
         modified_dt: '2015-02-21T00:00:00'
         name: 'Whitelist 3'
-        account: 186
         agency: 1
     model: dash.publishergroup
     pk: 155
@@ -593,10 +590,41 @@
         created_dt: '2015-02-21T00:00:00'
         modified_dt: '2015-02-21T00:00:00'
         name: 'Blacklist'
-        account: 186
         agency: 1
     model: dash.publishergroup
     pk: 156
+
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Whitelist'
+        account: 186
+    model: dash.publishergroup
+    pk: 157
+
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Whitelist 2'
+        agency: 1
+    model: dash.publishergroup
+    pk: 158
+
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Whitelist 3'
+        agency: 1
+    model: dash.publishergroup
+    pk: 159
+
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Blacklist'
+        agency: 1
+    model: dash.publishergroup
+    pk: 160
 
 # test publisher group entries
 
@@ -625,6 +653,30 @@
     model: dash.publishergroupentry
     pk: 624
 
+-   fields:
+        publisher_group: 157
+        publisher: "example4.com"
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.publishergroupentry
+    pk: 625
+
+-   fields:
+        publisher_group: 157
+        publisher: "example5.com"
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.publishergroupentry
+    pk: 626
+
+-   fields:
+        publisher_group: 160
+        publisher: "example6.com"
+        source: 1
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+    model: dash.publishergroupentry
+    pk: 627
 
 # bluekai taxonomy
 

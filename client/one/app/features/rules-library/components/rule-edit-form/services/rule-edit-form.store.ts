@@ -242,6 +242,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             this.publisherGroupsService
                 .search(
                     this.state.agencyId,
+                    null,
                     !isKeywordDefined ? null : keyword.trim(),
                     0,
                     10,

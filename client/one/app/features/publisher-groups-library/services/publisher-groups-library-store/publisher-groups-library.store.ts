@@ -1,4 +1,4 @@
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
 import {takeUntil} from 'rxjs/operators';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
@@ -8,8 +8,12 @@ import {PublisherGroupsLibraryStoreState} from './publisher-groups-library.store
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {HttpErrorResponse} from '@angular/common/http';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {PublisherGroupsLibraryStoreFieldsErrorsState} from './publisher-groups-library.store.fields-errors-state';
 import {ChangeEvent} from '../../../../shared/types/change-event';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {Account} from '../../../../core/entities/types/account/account';
+import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 @Injectable()
 export class PublisherGroupsLibraryStore
@@ -17,28 +21,47 @@ export class PublisherGroupsLibraryStore
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private accountsRequestStateUpdater: RequestStateUpdater;
 
-    constructor(private publisherGroupsService: PublisherGroupsService) {
+    constructor(
+        private publisherGroupsService: PublisherGroupsService,
+        private accountsService: AccountService,
+        @Inject('zemPermissions') private zemPermissions: any
+    ) {
         super(new PublisherGroupsLibraryStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
+        this.accountsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'accountsRequests'
+        );
     }
 
-    setStore(accountId: string | null): Promise<boolean> {
+    setStore(
+        agencyId: string | null,
+        accountId: string | null
+    ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
-            Promise.all([this.loadPublisherGroups(accountId)])
-                .then((values: [PublisherGroup[]]) => {
+            Promise.all([
+                this.loadPublisherGroups(agencyId, accountId),
+                this.loadAccounts(agencyId),
+            ])
+                .then((values: [PublisherGroup[], Account[]]) => {
                     const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
-                        values[0],
-                        accountId
+                        values[0]
                     );
 
                     this.setState({
                         ...this.state,
+                        agencyId: agencyId,
                         accountId: accountId,
+                        hasAgencyScope: this.zemPermissions.hasAgencyScope(
+                            agencyId
+                        ),
                         entities: splitRows[0],
                         systemEntities: splitRows[1],
+                        accounts: values[1],
                     });
                     resolve(true);
                 })
@@ -48,11 +71,13 @@ export class PublisherGroupsLibraryStore
 
     loadEntities(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.loadPublisherGroups(this.state.accountId).then(
+            this.loadPublisherGroups(
+                this.state.agencyId,
+                this.state.accountId
+            ).then(
                 (publisherGroups: PublisherGroup[]) => {
                     const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
-                        publisherGroups,
-                        this.state.accountId
+                        publisherGroups
                     );
 
                     this.patchState(splitRows[0], 'entities');
@@ -69,14 +94,74 @@ export class PublisherGroupsLibraryStore
     setActiveEntity(entity: Partial<PublisherGroup>): void {
         const newActiveEntity = new PublisherGroupsLibraryStoreState()
             .activeEntity;
+        let scopeState = null;
+
+        if (!commonHelpers.isDefined(entity.id)) {
+            if (
+                this.state.accountId === null &&
+                this.state.hasAgencyScope === true
+            ) {
+                newActiveEntity.entity.agencyId = this.state.agencyId;
+                scopeState = ScopeSelectorState.AGENCY_SCOPE;
+            } else {
+                newActiveEntity.entity.accountId = this.state.accountId;
+                scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+            }
+        } else {
+            if (commonHelpers.isDefined(entity.agencyId)) {
+                scopeState = ScopeSelectorState.AGENCY_SCOPE;
+            } else {
+                scopeState = ScopeSelectorState.ACCOUNT_SCOPE;
+            }
+        }
 
         this.setState({
             ...this.state,
             activeEntity: {
                 ...newActiveEntity,
+                scopeState: scopeState,
+                isReadOnly: this.isReadOnly({
+                    ...newActiveEntity.entity,
+                    ...entity,
+                }),
                 entity: {
                     ...newActiveEntity.entity,
                     ...entity,
+                },
+            },
+        });
+    }
+
+    setActiveEntityAccount(accountId: string) {
+        this.patchState(
+            {
+                ...this.state.activeEntity.entity,
+                accountId: accountId,
+            },
+            'activeEntity',
+            'entity'
+        );
+    }
+
+    setActiveEntityScope(scopeState: ScopeSelectorState) {
+        this.setState({
+            ...this.state,
+            activeEntity: {
+                ...this.state.activeEntity,
+                scopeState: scopeState,
+                entity: {
+                    ...this.state.activeEntity.entity,
+                    agencyId:
+                        scopeState === ScopeSelectorState.AGENCY_SCOPE
+                            ? this.state.agencyId
+                            : null,
+                    accountId:
+                        scopeState === ScopeSelectorState.ACCOUNT_SCOPE
+                            ? commonHelpers.getValueOrDefault(
+                                  this.state.accountId,
+                                  this.state.accounts[0].id
+                              )
+                            : null,
                 },
             },
         });
@@ -101,17 +186,17 @@ export class PublisherGroupsLibraryStore
                         resolve();
                     },
                     (error: HttpErrorResponse) => {
-                        const fieldErrors = storeHelpers.getStoreFieldsErrorsState(
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
                             new PublisherGroupsLibraryStoreFieldsErrorsState(),
                             error
                         );
                         if (error.status === 413) {
-                            fieldErrors.entries = ['File too large.'];
+                            fieldsErrors.entries = ['File too large.'];
                         }
                         this.patchState(
-                            fieldErrors,
+                            fieldsErrors,
                             'activeEntity',
-                            'fieldErrors'
+                            'fieldsErrors'
                         );
                         reject();
                     }
@@ -149,11 +234,12 @@ export class PublisherGroupsLibraryStore
     }
 
     private loadPublisherGroups(
+        agencyId: string | null,
         accountId: string | null
     ): Promise<PublisherGroup[]> {
         return new Promise<PublisherGroup[]>((resolve, reject) => {
             this.publisherGroupsService
-                .list(accountId, this.requestStateUpdater)
+                .list(agencyId, accountId, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (publisherGroups: PublisherGroup[]) => {
@@ -166,15 +252,36 @@ export class PublisherGroupsLibraryStore
         });
     }
 
+    private isReadOnly(publisherGroup: PublisherGroup): boolean {
+        if (!this.state.hasAgencyScope && publisherGroup.agencyId) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private loadAccounts(agencyId: string): Promise<Account[]> {
+        return new Promise<Account[]>((resolve, reject) => {
+            this.accountsService
+                .list(agencyId, this.accountsRequestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    accounts => {
+                        resolve(accounts);
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     /*This method is temporary and will be removed after the backend is updated. It simulates some aspects of the new service's responses:
-     * - accountId is set on every publisherGroup
      * - the list of publisher groups is split into user and system publishers*/
     private postProcessLegacyServiceResponse(
-        publisherGroups: PublisherGroup[],
-        accountId: string
+        publisherGroups: PublisherGroup[]
     ): PublisherGroup[][] {
         const splitRows: PublisherGroup[][] = [[], []];
-        publisherGroups.forEach(pg => (pg.accountId = accountId));
 
         splitRows[0] = publisherGroups.filter(pg => pg.implicit === false);
         splitRows[1] = publisherGroups.filter(pg => pg.implicit === true);
