@@ -320,7 +320,7 @@ class NotificationEmailTestCase(TestCase):
             target_type=constants.TargetType.PUBLISHER,
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
             ad_groups_included=[self.ad_group],
-            notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+            notification_type=constants.NotificationType.ON_RULE_RUN,
             notification_recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
         )
 
@@ -478,8 +478,10 @@ class NotificationEmailTestCase(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_execute_rule_send_email_no_changes_on_rule_run(self, mock_stats, mock_format, mock_apply, mock_send_email):
-        self.rule.update(None, notification_type=constants.NotificationType.ON_RULE_RUN)
+    def test_execute_rule_send_email_no_changes_on_rule_action_triggered(
+        self, mock_stats, mock_format, mock_apply, mock_send_email
+    ):
+        self.rule.update(None, notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED)
         mock_stats.return_value = [{"ad_group_id": 123}]
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = ([], [])

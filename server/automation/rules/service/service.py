@@ -148,7 +148,7 @@ def _send_notification_email_if_enabled(
         _send_changes_email(rule, ad_group, changes, errors)
     elif errors:
         _send_errors_email(rule, ad_group, errors)
-    elif rule.notification_type == constants.NotificationType.ON_RULE_ACTION_TRIGGERED:
+    elif rule.notification_type == constants.NotificationType.ON_RULE_RUN:
         _send_no_action_email(rule, ad_group)
 
 
