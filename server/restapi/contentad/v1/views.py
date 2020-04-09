@@ -17,9 +17,9 @@ ACCOUNTS_CAN_EDIT_BRAND_NAME = [305]
 
 class ContentAdViewList(RESTAPIBaseView):
     def get(self, request):
-        ad_group_id = request.query_params.get("adGroupId")
-        if not ad_group_id:
-            raise rest_framework.serializers.ValidationError("Must pass adGroupId parameter")
+        qpe = serializers.ContentAdQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        ad_group_id = qpe.validated_data.get("ad_group_id")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content_ads = (
             dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related("ad_group")
@@ -58,9 +58,9 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
 class ContentAdBatchViewList(RESTAPIBaseView):
     def post(self, request):
-        ad_group_id = request.query_params.get("adGroupId")
-        if not ad_group_id:
-            raise rest_framework.serializers.ValidationError("Must pass adGroupId parameter")
+        qpe = serializers.ContentAdQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        ad_group_id = qpe.validated_data.get("ad_group_id")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         candidates_data = []
