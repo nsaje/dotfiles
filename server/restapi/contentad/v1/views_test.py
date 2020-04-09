@@ -1,6 +1,7 @@
 import json
 
 import mock
+from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -203,7 +204,7 @@ class ContentAdsTest(RESTAPITest):
 
 
 @override_settings(R1_DEMO_MODE=True)
-class TestBatchUpload(RESTAPITest):
+class TestBatchUpload(TestCase):
     fixtures = ["test_views.yaml"]
 
     def setUp(self):
@@ -335,17 +336,6 @@ class TestBatchUpload(RESTAPITest):
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
-
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
-    def test_content_batch_wrong_params(self):
-        ad1 = self._mock_content_ad("test1")
-        to_upload = [ad1]
-        r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=wrongValue", to_upload, format="json"
-        )
-        self.assertEqual(400, r.status_code)
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(["Invalid format"], resp_json["details"]["adGroupId"])
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_content_batch_upload_success_no_icon_permission(self):
