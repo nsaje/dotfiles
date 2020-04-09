@@ -189,4 +189,4 @@ class UploadBatchSerializer(rest_framework.serializers.Serializer):
 
 
 class ContentAdQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
-    ad_group_id = restapi.serializers.fields.IdField(required=False)
+    ad_group_id = restapi.serializers.fields.IdField(required=True)

@@ -61,8 +61,8 @@ class ContentAdBatchViewList(RESTAPIBaseView):
         qpe = serializers.ContentAdQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         candidates_data = []
 
         for candidate in request.data:

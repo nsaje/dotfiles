@@ -1,3 +1,5 @@
+import './dropdown.directive.less';
+
 import {
     Directive,
     Output,
@@ -5,6 +7,9 @@ import {
     OnDestroy,
     ElementRef,
     ChangeDetectorRef,
+    Input,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 
 const KEY_ESC = 27;
@@ -13,7 +18,9 @@ const KEY_ESC = 27;
     selector: '[zemDropdown]',
     exportAs: 'zemDropdown',
 })
-export class DropdownDirective implements OnDestroy {
+export class DropdownDirective implements OnChanges, OnDestroy {
+    @Input()
+    disabled: boolean = false;
     @Output()
     onOpen = new EventEmitter();
     @Output()
@@ -22,12 +29,23 @@ export class DropdownDirective implements OnDestroy {
     element: HTMLElement;
     private closeOnOutsideClickHandler: (event: MouseEvent) => void;
     private closeOnEscapeKeyHandler: (event: KeyboardEvent) => void;
+    private readonly DISABLED_CSS_CLASS: string = 'zem-dropdown--disabled';
 
     constructor(
         private elementRef: ElementRef,
         private changeDetectorRef: ChangeDetectorRef
     ) {
         this.element = this.elementRef.nativeElement;
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.disabled) {
+            if (this.disabled) {
+                this.element.classList.add(this.DISABLED_CSS_CLASS);
+            } else {
+                this.element.classList.remove(this.DISABLED_CSS_CLASS);
+            }
+        }
     }
 
     ngOnDestroy() {
