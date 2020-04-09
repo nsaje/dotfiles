@@ -14,6 +14,7 @@ from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
+from .manager import OEN_ACCOUNT_ID
 
 
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
@@ -41,6 +42,12 @@ class AdGroupCreate(TestCase):
         history = dash.history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
+
+    def test_create_oen(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
+        campaign = magic_mixer.blend(core.models.Campaign, account__id=OEN_ACCOUNT_ID)
+        core.models.AdGroup.objects.create(self.request, campaign)
+
+        self.assertFalse(mock_bulk_create.called)
 
     def test_create_campaign_archived(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
         self.campaign.archived = True

@@ -250,6 +250,130 @@ class AdGroupSourcesTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
+    def test_adgroups_sources_post(self):
+        credentials = magic_mixer.blend(dash.models.SourceCredentials)
+        source = magic_mixer.blend(dash.models.Source, source_credentials=credentials, bidder_slug="a")
+        magic_mixer.blend(dash.models.DefaultSourceSettings, credentials=credentials, source=source)
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account.allowed_sources.add(source)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
+
+        test_ags = self.adgroupsource_repr(
+            source=source.bidder_slug,
+            daily_budget="12.3800",
+            cpc="0.6120",
+            state=constants.AdGroupSourceSettingsState.INACTIVE,
+        )
+        r = self.client.post(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}),
+            test_ags,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+
+        self.validate_against_db(ad_group.id, resp_json["data"])
+        self.assertEqual(test_ags, resp_json["data"])
+
+    def test_adgroups_sources_post_error(self):
+        source = magic_mixer.blend(dash.models.Source, bidder_slug="a")
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
+
+        test_ags = self.adgroupsource_repr(
+            source=source.bidder_slug,
+            daily_budget="12.3800",
+            cpc="0.6120",
+            state=constants.AdGroupSourceSettingsState.INACTIVE,
+        )
+        r = self.client.post(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}),
+            test_ags,
+            format="json",
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertIn("media source can not be added to this account", resp_json["details"])
+
+    def test_adgroups_sources_post_multiple(self):
+        credentials = magic_mixer.blend(dash.models.SourceCredentials)
+        sources = magic_mixer.cycle(3).blend(
+            dash.models.Source, source_credentials=credentials, bidder_slug=(slug for slug in ["a", "b", "c"])
+        )
+        magic_mixer.cycle(3).blend(
+            dash.models.DefaultSourceSettings, credentials=credentials, source=(s for s in sources)
+        )
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account.allowed_sources.add(*sources)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
+
+        test_ags = [
+            self.adgroupsource_repr(
+                source=sources[0].bidder_slug,
+                daily_budget="12.3800",
+                cpc="0.6120",
+                state=constants.AdGroupSourceSettingsState.INACTIVE,
+            ),
+            self.adgroupsource_repr(
+                source=sources[1].bidder_slug,
+                daily_budget="15.3800",
+                cpc="0.5120",
+                state=constants.AdGroupSourceSettingsState.INACTIVE,
+            ),
+            self.adgroupsource_repr(
+                source=sources[2].bidder_slug,
+                daily_budget="12.3400",
+                cpc="0.1234",
+                state=constants.AdGroupSourceSettingsState.ACTIVE,
+            ),
+        ]
+
+        r = self.client.post(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}),
+            test_ags,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.validate_against_db(ad_group.id, resp_json["data"][0])
+        self.validate_against_db(ad_group.id, resp_json["data"][1])
+        self.validate_against_db(ad_group.id, resp_json["data"][2])
+
+        resp_a = next(x for x in resp_json["data"] if x["source"] == "a")
+        resp_b = next(x for x in resp_json["data"] if x["source"] == "b")
+        resp_c = next(x for x in resp_json["data"] if x["source"] == "c")
+        self.assertEqual(test_ags[0], resp_a)
+        self.assertEqual(test_ags[1], resp_b)
+        self.assertEqual(test_ags[2], resp_c)
+
+    def test_adgroups_sources_post_multiple_error(self):
+        sources = magic_mixer.cycle(2).blend(dash.models.Source, bidder_slug=(slug for slug in ["a", "b"]))
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
+
+        test_ags = [
+            self.adgroupsource_repr(
+                source=sources[0].bidder_slug,
+                daily_budget="12.3800",
+                cpc="0.6120",
+                state=constants.AdGroupSourceSettingsState.INACTIVE,
+            ),
+            self.adgroupsource_repr(
+                source=sources[1].bidder_slug,
+                daily_budget="15.3800",
+                cpc="0.5120",
+                state=constants.AdGroupSourceSettingsState.INACTIVE,
+            ),
+        ]
+
+        r = self.client.post(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id}),
+            test_ags,
+            format="json",
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+
+        for error_msg in resp_json["details"]:
+            self.assertIn("media source can not be added to this account", error_msg)
+
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)

@@ -61,30 +61,54 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
 
     def create(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
-        serializer = serializers.AdGroupSourceSerializer(data=request.data)
+        is_many = isinstance(request.data, list)
+        serializer = serializers.AdGroupSourceSerializer(data=request.data, many=is_many)
         serializer.is_valid(raise_exception=True)
 
+        if is_many:
+            new_settings = self._create_bulk(request, ad_group, serializer.validated_data)
+        else:
+            new_settings = self._create_ad_group_source(request, ad_group, serializer.validated_data)
+
+        return self.response_ok(serializers.AdGroupSourceSerializer(new_settings, many=is_many).data)
+
+    def _create_bulk(self, request, ad_group, data):
+        ad_group_sources_settings = []
+
         with transaction.atomic():
-            data = serializer.validated_data
-            source = data["ad_group_source"]["source"]
-            data.pop("ad_group_source")
+            errors = []
+            for entry in data:
+                try:
+                    ad_group_source = self._create_ad_group_source(request, ad_group, entry)
+                    ad_group_sources_settings.append(ad_group_source)
 
-            try:
-                ad_group_source = core.models.ad_group_source.AdGroupSource.objects.create(
-                    request, ad_group, source, write_history=True, k1_sync=False, **data
-                )
+                except utils.exc.ValidationError as e:
+                    errors.append(str(e))
 
-            except (
-                core.models.ad_group_source.exceptions.SourceNotAllowed,
-                core.models.ad_group_source.exceptions.RetargetingNotSupported,
-                core.models.ad_group_source.exceptions.SourceAlreadyExists,
-                core.models.ad_group_source.exceptions.VideoNotSupported,
-                core.models.ad_group_source.exceptions.DisplayNotSupported,
-            ) as err:
-                raise utils.exc.ValidationError(str(err))
+            if errors:
+                raise utils.exc.ValidationError(errors=errors)
 
-        serializer = serializers.AdGroupSourceSerializer(ad_group_source.get_current_settings())
-        return self.response_ok(serializer.data)
+        return ad_group_sources_settings
+
+    def _create_ad_group_source(self, request, ad_group, updates):
+        try:
+            source = updates["ad_group_source"]["source"]
+            updates.pop("ad_group_source")
+
+            ad_group_source = core.models.ad_group_source.AdGroupSource.objects.create(
+                request, ad_group, source, write_history=True, k1_sync=False, **updates
+            )
+
+        except (
+            core.models.ad_group_source.exceptions.SourceNotAllowed,
+            core.models.ad_group_source.exceptions.RetargetingNotSupported,
+            core.models.ad_group_source.exceptions.SourceAlreadyExists,
+            core.models.ad_group_source.exceptions.VideoNotSupported,
+            core.models.ad_group_source.exceptions.DisplayNotSupported,
+        ) as err:
+            raise utils.exc.ValidationError(str(err))
+
+        return ad_group_source.get_current_settings()
 
     def _update_ad_group_source(self, request, ad_group_source, data):
         try:

@@ -17,7 +17,7 @@ class AdGroupSourceInstanceMixin:
     def set_initial_settings(self, request, ad_group, skip_notification=False, write_history=True, **updates):
         from dash.views import helpers
 
-        if "cpc_cc" not in updates:
+        if "cpc_cc" not in updates and "local_cpc_cc" not in updates:
             updates["cpc_cc"] = self.source.default_cpc_cc
             if ad_group.settings.is_mobile_only():
                 updates["cpc_cc"] = self.source.default_mobile_cpc_cc
@@ -29,7 +29,7 @@ class AdGroupSourceInstanceMixin:
                 updates["cpc_cc"] = ad_group.settings.b1_sources_group_cpc_cc
             if ad_group.settings.cpc:
                 updates["cpc_cc"] = min(ad_group.settings.cpc, updates["cpc_cc"])
-        if "cpm" not in updates:
+        if "cpm" not in updates and "local_cpm" not in updates:
             updates["cpm"] = self.source.default_cpm
             if ad_group.settings.is_mobile_only():
                 updates["cpm"] = self.source.default_mobile_cpm
@@ -46,7 +46,7 @@ class AdGroupSourceInstanceMixin:
                 updates["state"] = dash.constants.AdGroupSourceSettingsState.ACTIVE
             else:
                 updates["state"] = dash.constants.AdGroupSourceSettingsState.INACTIVE
-        if "daily_budget_cc" not in updates:
+        if "daily_budget_cc" not in updates and "local_daily_budget_cc" not in updates:
             updates["daily_budget_cc"] = self.source.default_daily_budget_cc
 
         enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, [self])
