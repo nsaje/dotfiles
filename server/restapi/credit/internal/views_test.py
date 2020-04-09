@@ -355,6 +355,14 @@ class CreditViewSetTest(RESTAPITest):
                 self.assertEqual(item["past"], "100.0000")
                 self.assertEqual(item["available"], "100.0000")
 
+    def test_totals_invalid_params(self):
+        r = self.client.get(
+            reverse("restapi.credit.internal:credits_totals"),
+            {"agencyId": "NON-NUMERICAL", "accountId": "NON-NUMERICAL"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"agencyId": ["Invalid format"], "accountId": ["Invalid format"]}, resp_json["details"])
+
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put(self, mock_log_to_slack):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
