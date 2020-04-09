@@ -7,6 +7,7 @@ import dash.models
 from . import models
 from .campaignstop.admin import RealTimeCampaignStopLogAdmin
 from .rules.admin import RuleAdmin
+from .rules.admin import RulesDailyJobLogAdmin
 
 
 class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
@@ -113,3 +114,4 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
 admin.site.register(models.CampaignStopLog, CampaignStopLogAdmin)
 admin.site.register(models.RealTimeCampaignStopLog, RealTimeCampaignStopLogAdmin)
 admin.site.register(models.Rule, RuleAdmin)
+admin.site.register(models.RulesDailyJobLog, RulesDailyJobLogAdmin)

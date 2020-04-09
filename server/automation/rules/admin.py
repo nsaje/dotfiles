@@ -3,6 +3,13 @@ from django.contrib import admin
 from . import models
 
 
+class RulesDailyJobLogAdmin(admin.ModelAdmin):
+    model = models.RulesDailyJobLog
+    list_display = ("created_dt",)
+    ordering = ("-created_dt",)
+    list_display_links = None
+
+
 class RuleConditionAdmin(admin.TabularInline):
     model = models.RuleCondition
 
