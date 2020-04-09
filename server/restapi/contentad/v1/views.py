@@ -58,11 +58,10 @@ class ContentAdViewDetails(RESTAPIBaseView):
 
 class ContentAdBatchViewList(RESTAPIBaseView):
     def post(self, request):
+        qpe = serializers.ContentAdBatchViewListQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
         ad_group_id = request.query_params.get("adGroupId")
-        if not ad_group_id:
-            raise rest_framework.serializers.ValidationError("Must pass adGroupId parameter")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         candidates_data = []
 
         for candidate in request.data:

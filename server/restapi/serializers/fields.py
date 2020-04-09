@@ -53,7 +53,10 @@ class IdField(serializers.Field):
         return str(data)
 
     def to_internal_value(self, data):
-        return int(data)
+        try:
+            return int(data)
+        except ValueError:
+            raise serializers.ValidationError("Invalid format")
 
 
 class DashConstantField(serializers.CharField):
