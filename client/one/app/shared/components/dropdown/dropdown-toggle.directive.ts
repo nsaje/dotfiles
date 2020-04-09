@@ -10,6 +10,10 @@ export class DropdownToggleDirective {
 
     @HostListener('click')
     toggleDropdown(): void {
+        if (this.dropdown.disabled) {
+            return;
+        }
+
         if (this.dropdown.isOpen()) {
             this.dropdown.close();
         } else {
