@@ -217,6 +217,17 @@ class CampaignViewSetTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_campaigns_list_invalid_params(self):
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"),
+            {"accountId": "NON-NUMERICAL", "offset": "NON-NUMERICAL", "limit": "NON-NUMERICAL"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            {"accountId": ["Invalid format"], "offset": ["Invalid format"], "limit": ["Invalid format"]},
+            resp_json["details"],
+        )
+
     def test_campaigns_list_permissionless(self):
         utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
