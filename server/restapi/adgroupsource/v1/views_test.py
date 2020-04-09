@@ -291,7 +291,7 @@ class AdGroupSourcesTest(RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertIn("media source can not be added to this account", resp_json["details"])
+        self.assertIn("media source can not be added because it is not allowed on this account", resp_json["details"])
 
     def test_adgroups_sources_post_multiple(self):
         credentials = magic_mixer.blend(dash.models.SourceCredentials)
@@ -372,7 +372,7 @@ class AdGroupSourcesTest(RESTAPITest):
         resp_json = self.assertResponseError(r, "ValidationError")
 
         for error_msg in resp_json["details"]:
-            self.assertIn("media source can not be added to this account", error_msg)
+            self.assertIn("media source can not be added because it is not allowed on this account", error_msg)
 
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
