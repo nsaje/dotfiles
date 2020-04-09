@@ -2029,8 +2029,15 @@ class PublisherGroupEntryForm(forms.Form):
 
     def clean_placement(self):
         if self.user is None or not self.user.has_perm("zemauth.can_use_placement_targeting"):
-            if self.cleaned_data["placement"]:
+            if self.data.get("placement") is not None:
                 raise exceptions.ValidationError("Invalid field: placement")
+
+        if self.data.get("placement") == "":
+            raise exceptions.ValidationError("Placement can not be empty")
+
+        if self.cleaned_data["placement"] == "":
+            # If data["placement"] is None, cleaned_data will have an empty string
+            return None
 
         return self.cleaned_data["placement"]
 
@@ -2044,16 +2051,7 @@ class PublisherTargetingForm(forms.Form):
 
     level = forms.TypedChoiceField(choices=constants.PublisherBlacklistLevel.get_choices(), required=False)
 
-    enforce_cpc = forms.BooleanField(required=False)
-
     user = None
-
-    # bulk selection fields
-    start_date = forms.DateField(required=False)
-    end_date = forms.DateField(required=False)
-    select_all = forms.BooleanField(required=False)
-    entries_not_selected = forms.Field(required=False)
-    filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
@@ -2077,17 +2075,6 @@ class PublisherTargetingForm(forms.Form):
     def clean_entries(self):
         entries = self.cleaned_data["entries"]
         return self._clean_entries(entries)
-
-    def clean_entries_not_selected(self):
-        entries = self.cleaned_data["entries_not_selected"]
-        return self._clean_entries(entries)
-
-    def clean_select_all(self):
-        if self.cleaned_data["select_all"] and not (
-            self.cleaned_data.get("start_date") and self.cleaned_data.get("end_date")
-        ):
-            raise forms.ValidationError("Please specify start and end date when selecting all publishers")
-        return self.cleaned_data["select_all"]
 
     def clean(self):
         provided_objs = [
@@ -2122,9 +2109,6 @@ class PublisherTargetingForm(forms.Form):
         elif self.cleaned_data.get("account"):
             return self.cleaned_data["account"]
         return None
-
-    def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.cleaned_data.get("filtered_sources"))
 
 
 class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):

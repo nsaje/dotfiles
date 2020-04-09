@@ -254,21 +254,21 @@ def _get_whitelists(obj, obj_settings):
     return set(x for x in [obj.default_whitelist_id] + obj_settings.whitelist_publisher_groups if x)
 
 
-def handle_publishers(request, entry_dicts, obj, status, enforce_cpc):
+def handle_publishers(request, entry_dicts, obj, status):
     if status == constants.PublisherTargetingStatus.BLACKLISTED:
-        blacklist_publishers(request, entry_dicts, obj, enforce_cpc)
+        blacklist_publishers(request, entry_dicts, obj)
     elif status == constants.PublisherTargetingStatus.WHITELISTED:
-        whitelist_publishers(request, entry_dicts, obj, enforce_cpc)
+        whitelist_publishers(request, entry_dicts, obj)
     else:
-        unlist_publishers(request, entry_dicts, obj, enforce_cpc)
+        unlist_publishers(request, entry_dicts, obj)
 
 
 @transaction.atomic
-def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_write_history=True):
+def blacklist_publishers(request, entry_dicts, obj, should_write_history=True):
     publisher_group, created = get_blacklist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
-    unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
+    unlist_publishers(request, entry_dicts, obj, history=False)
 
     entries = _prepare_entries(entry_dicts, publisher_group)
 
@@ -286,11 +286,11 @@ def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_wr
 
 
 @transaction.atomic
-def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_write_history=True):
+def whitelist_publishers(request, entry_dicts, obj, should_write_history=True):
     publisher_group, created = get_whitelist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
-    unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
+    unlist_publishers(request, entry_dicts, obj, history=False)
 
     entries = _prepare_entries(entry_dicts, publisher_group)
     models.PublisherGroupEntry.objects.bulk_create(entries)
@@ -303,7 +303,7 @@ def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False, should_wr
 
 
 @transaction.atomic
-def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True):
+def unlist_publishers(request, entry_dicts, obj, history=True):
     publisher_group, _ = get_blacklist_publisher_group(obj)
     selected_entries = models.PublisherGroupEntry.objects.filter(
         publisher_group=publisher_group

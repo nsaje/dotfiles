@@ -8,6 +8,7 @@ import core.models
 import dash.constants
 import restapi.common.views_base_test
 from core.features.publisher_groups import publisher_group_helpers
+from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 
@@ -59,6 +60,52 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
                 },
                 {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
             ],
+        )
+
+    def test_adgroups_placements_list(self):
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
+        publisher_group_helpers.blacklist_publishers(
+            self.test_request,
+            [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
+            self.test_ad_group,
+        )
+
+        r = self.client.get(
+            reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id})
+        )
+
+        resp_json = json.loads(r.content)
+        self.assertEqual(
+            resp_json["data"],
+            [
+                {
+                    "name": "cnn.com",
+                    "placement": "plac",
+                    "source": "gumgum",
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "modifier": None,
+                }
+            ],
+        )
+
+    def test_adgroups_placements_list_no_permission(self):
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
+        publisher_group_helpers.blacklist_publishers(
+            self.test_request,
+            [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
+            self.test_ad_group,
+        )
+
+        r = self.client.get(
+            reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id})
+        )
+
+        resp_json = json.loads(r.content)
+        self.assertEqual(
+            resp_json["data"],
+            [{"name": "cnn.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None}],
         )
 
     @mock.patch("utils.k1_helper.update_ad_group")

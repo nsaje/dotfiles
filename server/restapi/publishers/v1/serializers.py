@@ -3,6 +3,7 @@ from rest_framework import serializers
 import dash.constants
 import dash.views.publishers
 import restapi.serializers.fields
+import restapi.serializers.serializers
 from utils import exc
 
 
@@ -23,11 +24,13 @@ class PublisherListSerializer(serializers.ListSerializer):
         return ret
 
 
-class PublisherSerializer(serializers.Serializer):
+class PublisherSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
     class Meta:
         list_serializer_class = PublisherListSerializer
+        permissioned_fields = {"placement": "zemauth.can_use_placement_targeting"}
 
     name = restapi.serializers.fields.PlainCharField(max_length=127)
+    placement = restapi.serializers.fields.PlainCharField(max_length=127, required=False, allow_null=True)
     source = restapi.serializers.fields.SourceIdSlugField(required=False, allow_null=True)
     status = restapi.serializers.fields.DashConstantField(dash.constants.PublisherStatus)
     level = restapi.serializers.fields.DashConstantField(dash.constants.PublisherBlacklistLevel, label="level")

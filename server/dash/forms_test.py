@@ -2365,69 +2365,6 @@ class PublisherTargetingFormTestCase(TestCase):
                 "ad_group": models.AdGroup.objects.get(pk=1),
                 "campaign": None,
                 "account": None,
-                "entries_not_selected": [],
-                "select_all": False,
-                "start_date": None,
-                "end_date": None,
-                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.all()),
-                "enforce_cpc": False,
-                "level": "",
-            },
-        )
-
-    def test_form_select_all_invalid(self):
-        f = forms.PublisherTargetingForm(
-            self.user,
-            {
-                "entries": [
-                    {"publisher": "cnn.com", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "source": 1, "include_subdomains": True},
-                ],
-                "status": constants.PublisherTargetingStatus.BLACKLISTED,
-                "ad_group": 1,
-                "select_all": True,
-            },
-        )
-
-        self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["select_all"], ["Please specify start and end date when selecting all publishers"])
-
-    def test_form_select_all(self):
-        f = forms.PublisherTargetingForm(
-            self.user,
-            {
-                "entries": [
-                    {"publisher": "cnn.com", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "source": 1, "include_subdomains": True},
-                ],
-                "status": constants.PublisherTargetingStatus.BLACKLISTED,
-                "ad_group": 1,
-                "select_all": True,
-                "start_date": "2017-01-05",
-                "end_date": "2017-01-30",
-                "entries_not_selected": [{"publisher": "cnn33.com", "source": None, "include_subdomains": False}],
-                "enforce_cpc": True,
-            },
-        )
-
-        self.assertTrue(f.is_valid())
-        self.assertEqual(
-            f.cleaned_data,
-            {
-                "entries": [
-                    {"publisher": "cnn.com", "source": None, "include_subdomains": False},
-                    {"publisher": "cnn2.com", "source": models.Source.objects.get(pk=1), "include_subdomains": True},
-                ],
-                "status": constants.PublisherTargetingStatus.BLACKLISTED,
-                "ad_group": models.AdGroup.objects.get(pk=1),
-                "campaign": None,
-                "account": None,
-                "entries_not_selected": [{"publisher": "cnn33.com", "source": None, "include_subdomains": False}],
-                "select_all": True,
-                "start_date": datetime.date(2017, 1, 5),
-                "end_date": datetime.date(2017, 1, 30),
-                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.all()),
-                "enforce_cpc": True,
                 "level": "",
             },
         )
@@ -2439,8 +2376,6 @@ class PublisherTargetingFormTestCase(TestCase):
                 "entries": [],
                 "status": constants.PublisherTargetingStatus.BLACKLISTED,
                 "ad_group": 1,
-                "start_date": "2017-01-05",
-                "end_date": "2017-01-30",
                 "level": constants.PublisherBlacklistLevel.CAMPAIGN,
             },
         )
@@ -2452,9 +2387,6 @@ class PublisherTargetingFormTestCase(TestCase):
                 "campaign": models.Campaign.objects.get(pk=1),
                 "account": None,
                 "level": constants.PublisherBlacklistLevel.CAMPAIGN,
-                "start_date": datetime.date(2017, 1, 5),
-                "end_date": datetime.date(2017, 1, 30),
-                "enforce_cpc": False,
             },
             f.cleaned_data,
         )
@@ -2522,12 +2454,74 @@ class PublisherTargetingFormTestCase(TestCase):
                 "ad_group": models.AdGroup.objects.get(pk=1),
                 "campaign": None,
                 "account": None,
-                "entries_not_selected": [],
-                "select_all": False,
-                "start_date": None,
-                "end_date": None,
-                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.all()),
-                "enforce_cpc": False,
                 "level": "",
             },
         )
+
+    def test_form_missing_placement(self):
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
+        f = forms.PublisherTargetingForm(
+            self.user,
+            {
+                "entries": [
+                    {"publisher": "cnn.com", "source": None, "include_subdomains": False},
+                    {"publisher": "cnn2.com", "source": 1, "include_subdomains": True},
+                ],
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "ad_group": 1,
+            },
+        )
+
+        self.assertTrue(f.is_valid())
+        self.assertEqual(
+            f.cleaned_data,
+            {
+                "entries": [
+                    {"publisher": "cnn.com", "source": None, "placement": None, "include_subdomains": False},
+                    {
+                        "publisher": "cnn2.com",
+                        "placement": None,
+                        "source": models.Source.objects.get(pk=1),
+                        "include_subdomains": True,
+                    },
+                ],
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "ad_group": models.AdGroup.objects.get(pk=1),
+                "campaign": None,
+                "account": None,
+                "level": "",
+            },
+        )
+
+    def test_form_empty_placement(self):
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
+        f = forms.PublisherTargetingForm(
+            self.user,
+            {
+                "entries": [
+                    {"publisher": "cnn.com", "placement": "", "source": None, "include_subdomains": False},
+                    {"publisher": "cnn2.com", "placement": "", "source": 1, "include_subdomains": True},
+                ],
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "ad_group": 1,
+            },
+        )
+
+        self.assertFalse(f.is_valid())
+        self.assertEqual(f.errors["entries"], ["Placement can not be empty"])
+
+    def test_form_empty_placement_no_permission(self):
+        f = forms.PublisherTargetingForm(
+            self.user,
+            {
+                "entries": [
+                    {"publisher": "cnn.com", "placement": "", "source": None, "include_subdomains": False},
+                    {"publisher": "cnn2.com", "placement": "", "source": 1, "include_subdomains": True},
+                ],
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "ad_group": 1,
+            },
+        )
+
+        self.assertFalse(f.is_valid())
+        self.assertEqual(f.errors["entries"], ["Invalid field: placement"])

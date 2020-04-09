@@ -17,12 +17,12 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
     def list(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
-        items = self._get_publisher_group_items(ad_group)
+        items = self._get_publisher_group_items(ad_group, request.user)
         items = self._augment_with_bid_modifiers(items, ad_group)
-        serializer = serializers.PublisherSerializer(items, many=True)
+        serializer = serializers.PublisherSerializer(items, many=True, context={"request": request})
         return self.response_ok(serializer.data)
 
-    def _get_publisher_group_items(self, ad_group):
+    def _get_publisher_group_items(self, ad_group, user):
         targeting = core.features.publisher_groups.publisher_group_helpers.get_publisher_group_targeting_dict(
             ad_group,
             ad_group.get_current_settings(),
@@ -35,30 +35,36 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
         publishers = []
 
-        def add_entries(entries, level):
+        def add_entries(user, entries, level):
+            add_placement = user.has_perm("zemauth.can_use_placement_targeting")
             for entry in entries:
-                publishers.append(
-                    {
-                        "name": entry.publisher,
-                        "source": entry.source,
-                        "status": dash.constants.PublisherStatus.BLACKLISTED,
-                        "level": level,
-                    }
-                )
+                publisher = {
+                    "name": entry.publisher,
+                    "source": entry.source,
+                    "status": dash.constants.PublisherStatus.BLACKLISTED,
+                    "level": level,
+                }
+                if add_placement:
+                    publisher.update({"placement": entry.placement})
+
+                publishers.append(publisher)
 
         add_entries(
+            user,
             dash.models.PublisherGroupEntry.objects.filter(
                 publisher_group_id__in=targeting["ad_group"]["excluded"]
             ).select_related("source"),
             dash.constants.PublisherBlacklistLevel.ADGROUP,
         )
         add_entries(
+            user,
             dash.models.PublisherGroupEntry.objects.filter(
                 publisher_group_id__in=targeting["campaign"]["excluded"]
             ).select_related("source"),
             dash.constants.PublisherBlacklistLevel.CAMPAIGN,
         )
         add_entries(
+            user,
             dash.models.PublisherGroupEntry.objects.filter(
                 publisher_group_id__in=targeting["account"]["excluded"]
             ).select_related("source"),
@@ -98,7 +104,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
     def put(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)  # validate ad group is allowed
-        serializer = serializers.PublisherSerializer(data=request.data, many=True)
+        serializer = serializers.PublisherSerializer(data=request.data, many=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         self._put_handle_entries(request, ad_group, serializer.validated_data)
         k1_helper.update_ad_group(ad_group, msg="restapi.publishers.set", priority=True)

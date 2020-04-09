@@ -280,10 +280,7 @@ class PublisherGroupHelpersTest(TestCase):
 
         obj = models.Account.objects.get(pk=1)
         publisher_group_helpers.blacklist_publishers(
-            self.request,
-            [{"publisher": "cnn.com", "source": None, "include_subdomains": False}],
-            obj,
-            enforce_cpc=False,
+            self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
         )
 
         self.assertEntriesEqual(
@@ -312,9 +309,7 @@ class PublisherGroupHelpersTest(TestCase):
         ob_entries = [{"publisher": "cnn.com", "source": outbrain, "include_subdomains": False}]
 
         with self.assertRaises(publisher_group_helpers.PublisherGroupTargetingException):
-            publisher_group_helpers.blacklist_publishers(
-                self.request, ob_entries + non_relevant_entries, obj, enforce_cpc=True
-            )
+            publisher_group_helpers.blacklist_publishers(self.request, ob_entries + non_relevant_entries, obj)
 
     @mock.patch("core.models.AdGroup.objects")
     @mock.patch("utils.k1_helper.update_ad_groups")
@@ -454,20 +449,16 @@ class PublisherGroupHelpersTest(TestCase):
 
         obj = models.Account.objects.get(pk=1)
         entries = [{"publisher": "cnn.com", "source": outbrain, "include_subdomains": False}]
-        publisher_group_helpers.blacklist_publishers(self.request, entries, obj, enforce_cpc=False)  # no error
+        publisher_group_helpers.blacklist_publishers(self.request, entries, obj)  # no error
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(
-                self.request, entries, models.Campaign.objects.get(pk=1), enforce_cpc=False
-            )
+            publisher_group_helpers.blacklist_publishers(self.request, entries, models.Campaign.objects.get(pk=1))
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(
-                self.request, entries, models.AdGroup.objects.get(pk=1), enforce_cpc=False
-            )
+            publisher_group_helpers.blacklist_publishers(self.request, entries, models.AdGroup.objects.get(pk=1))
 
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
-            publisher_group_helpers.blacklist_publishers(self.request, entries, None, enforce_cpc=False)
+            publisher_group_helpers.blacklist_publishers(self.request, entries, None)
 
     def test_upsert_publisher_group_update(self):
         form_data = {"id": 1, "name": "Bla bla bla", "include_subdomains": False}
