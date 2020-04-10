@@ -191,6 +191,7 @@ class ContentAdSourcesView(K1APIView):
         ).values(
             "id",
             "content_ad_id",
+            "content_ad__created_dt",
             "content_ad__ad_group_id",
             "content_ad__ad_group__campaign_id",
             "content_ad__ad_group__campaign__type",
@@ -250,6 +251,8 @@ class ContentAdSourcesView(K1APIView):
 
     def _get_content_ad_source_state(self, content_ad_source, amplify_review_statuses):
         if self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
+            return dash.constants.ContentAdSourceState.INACTIVE
+        elif content_ad_source["content_ad__created_dt"] > datetime(2020, 4, 10, 14, 46):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source["state"]
