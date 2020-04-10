@@ -649,7 +649,10 @@ class PublisherGroupCSVHelpersTest(TestCase):
         rows = [row for row in csv.DictReader(io.StringIO(csv_helper.get_example_csv_content()))]
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
-            {(("Publisher", "example.com"), ("Source", "")), (("Publisher", "example.com"), ("Source", "somesource"))},
+            {
+                (("Publisher", "example.com"), ("Source (optional)", "")),
+                (("Publisher", "some.example.com"), ("Source (optional)", "")),
+            },
         )
 
     def test_get_example_csv_content_with_placement(self):
@@ -657,10 +660,8 @@ class PublisherGroupCSVHelpersTest(TestCase):
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
             {
-                (("Publisher", "example.com"), ("Placement", ""), ("Source", "")),
-                (("Publisher", "example.com"), ("Placement", ""), ("Source", "somesource")),
-                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "somesource")),
-                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "")),
+                (("Publisher", "example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
+                (("Publisher", "some.example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
             },
         )
 

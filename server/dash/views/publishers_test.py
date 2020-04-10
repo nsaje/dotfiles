@@ -459,6 +459,34 @@ class PublisherGroupsUploadTest(TestCase):
             self.assertEqual(entry.source.bidder_slug if entry.source else None, rows[i]["Source"] or None)
             self.assertEqual(entry.include_subdomains, True)
 
+    def test_post_create_publisher_optional_in_column_names(self):
+        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        account = models.Account.objects.get(pk=1)
+        rows = [
+            {"Publisher": "qwe", "Placement (optional)": "", "Source (optional)": ""},
+            {"Publisher": "qwe", "Placement (optional)": "", "Source (optional)": "adsnative"},
+            {"Publisher": "qwe", "Placement (optional)": "widget1", "Source (optional)": "adsnative"},
+            {"Publisher": "qwe", "Placement (optional)": "widget1", "Source (optional)": ""},
+        ]
+
+        mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
+        data = {"name": "qweasd", "include_subdomains": True, "entries": mock_file, "account_id": account.id}
+
+        response = self.client.post(reverse("publisher_groups_upload"), data=data)
+
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+
+        self.assertEqual(response["data"]["name"], "qweasd")
+
+        publisher_group = models.PublisherGroup.objects.get(pk=response["data"]["id"])
+        self.assertEqual(publisher_group.name, "qweasd")
+        for i, entry in enumerate(publisher_group.entries.all()):
+            self.assertEqual(entry.publisher, rows[i]["Publisher"] or None)
+            self.assertEqual(entry.placement, rows[i]["Placement (optional)"] or None)
+            self.assertEqual(entry.source.bidder_slug if entry.source else None, rows[i]["Source (optional)"] or None)
+            self.assertEqual(entry.include_subdomains, True)
+
     @patch.object(s3helpers.S3Helper, "put")
     def test_post_create_publisher_mixed_entries_errors(self, mock_s3):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
@@ -647,7 +675,10 @@ class PublisherGroupsExampleDownloadTest(TestCase):
         rows = [row for row in csv.DictReader(io.StringIO(response.content.decode()))]
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
-            {(("Publisher", "example.com"), ("Source", "")), (("Publisher", "example.com"), ("Source", "somesource"))},
+            {
+                (("Publisher", "example.com"), ("Source (optional)", "")),
+                (("Publisher", "some.example.com"), ("Source (optional)", "")),
+            },
         )
 
     def test_get_with_placement_permission(self):
@@ -659,9 +690,7 @@ class PublisherGroupsExampleDownloadTest(TestCase):
         self.assertEqual(
             set(tuple(row.items()) for row in rows),
             {
-                (("Publisher", "example.com"), ("Placement", ""), ("Source", "")),
-                (("Publisher", "example.com"), ("Placement", ""), ("Source", "somesource")),
-                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "somesource")),
-                (("Publisher", "example.com"), ("Placement", "someplacement"), ("Source", "")),
+                (("Publisher", "example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
+                (("Publisher", "some.example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
             },
         )

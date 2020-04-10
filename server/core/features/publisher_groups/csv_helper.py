@@ -17,16 +17,17 @@ OUTBRAIN_AGENCY = 55
 
 def get_example_csv_content(include_placement=False):
     if include_placement:
-        columns = ["Publisher", "Placement", "Source"]
+        columns = ["Publisher", "Placement (optional)", "Source (optional)"]
         content = [
-            {"Publisher": "example.com", "Placement": None, "Source": None},
-            {"Publisher": "example.com", "Placement": None, "Source": "somesource"},
-            {"Publisher": "example.com", "Placement": "someplacement", "Source": "somesource"},
-            {"Publisher": "example.com", "Placement": "someplacement", "Source": None},
+            {"Publisher": "example.com", "Placement (optional)": None, "Source (optional)": None},
+            {"Publisher": "some.example.com", "Placement (optional)": None, "Source (optional)": None},
         ]
     else:
-        columns = ["Publisher", "Source"]
-        content = [{"Publisher": "example.com", "Source": None}, {"Publisher": "example.com", "Source": "somesource"}]
+        columns = ["Publisher", "Source (optional)"]
+        content = [
+            {"Publisher": "example.com", "Source (optional)": None},
+            {"Publisher": "some.example.com", "Source (optional)": None},
+        ]
 
     return csv_utils.dictlist_to_csv(columns, content)
 

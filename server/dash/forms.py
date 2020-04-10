@@ -2134,7 +2134,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
     def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
-        column_names = [col.strip(" _").lower().replace(" ", "_") for col in header]
+        column_names = [col.lower().replace("(optional)", "").strip(" _").replace(" ", "_") for col in header]
 
         if "publisher" not in column_names:
             raise forms.ValidationError("Publisher column is required")
@@ -2146,7 +2146,7 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
 
         extra_columns = []
         for column in header:
-            column_name = column.strip(" _").lower().replace(" ", "_")
+            column_name = column.lower().replace("(optional)", "").strip(" _").replace(" ", "_")
             if column_name not in allowed_columns:
                 extra_columns.append(column)
 
