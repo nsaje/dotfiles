@@ -278,6 +278,14 @@ class CampaignViewSetTest(RESTAPITest):
             },
         )
 
+    def test_get_defaults_invalid_params(self):
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": "NON-NUMERIC"})
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"accountId": ["Invalid format"]}, resp_json["details"])
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"))
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"accountId": ["This field is required."]}, resp_json["details"])
+
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
         agency = magic_mixer.blend(core.models.Agency)
