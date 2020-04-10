@@ -12,13 +12,13 @@ from . import helpers
 def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[str, Any]]:
     local_today = dates_helper.local_today()  # NOTE: using local today since budget dates are in local timezone
     campaigns = core.models.Campaign.objects.filter(adgroup__in=ad_groups)
-    budgets_by_campaign = _fetch_bugets(campaigns)
+    budgets_by_campaign_id = _fetch_bugets(campaigns)
 
     budgets_data = {}
     for campaign in core.models.Campaign.objects.filter(adgroup__in=ad_groups):
-        if campaign.id not in budgets_by_campaign:
+        if campaign.id not in budgets_by_campaign_id:
             continue
-        campaign_budgets = budgets_by_campaign[campaign.id]
+        campaign_budgets = budgets_by_campaign_id[campaign.id]
         (start_date, end_date, remaining_budget, margin) = _calculate_budget_data_for_campaign(
             campaign, campaign_budgets
         )
@@ -37,11 +37,11 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
 
 
 def _fetch_bugets(campaigns):
-    budgets_by_campaign = {}
+    budgets_by_campaign_id = {}
     for budget in core.features.bcm.BudgetLineItem.objects.filter(campaign__in=campaigns):
-        budgets_by_campaign.setdefault(budget.campaign_id, [])
-        budgets_by_campaign[budget.campaign_id].append(budget)
-    return budgets_by_campaign
+        budgets_by_campaign_id.setdefault(budget.campaign_id, [])
+        budgets_by_campaign_id[budget.campaign_id].append(budget)
+    return budgets_by_campaign_id
 
 
 def _calculate_budget_data_for_campaign(campaign, campaign_budgets):

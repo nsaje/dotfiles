@@ -46,7 +46,7 @@ def _get_cpa_ad_groups(rules_map):
 
 def _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats):
     target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
-    conversion_stats_by_pixel = sort_helper.group_rows_by_breakdown_key(
+    conversion_stats_by_pixel_breakdown = sort_helper.group_rows_by_breakdown_key(
         target_column_keys + ["slug", "window_key"], conversion_stats
     )
     cpa_ad_groups_map = {ad_group.id: ad_group for ad_group in cpa_ad_groups}
@@ -68,7 +68,7 @@ def _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats):
             merged_stats.append(row)
             continue
 
-        pixel_rows = conversion_stats_by_pixel.get(
+        pixel_rows = conversion_stats_by_pixel_breakdown.get(
             tuple(row[col] for col in target_column_keys) + (target_goal.pixel.slug, row["window_key"])
         )
         merged_stats.append(_merge_row(target_goal, row, pixel_rows))

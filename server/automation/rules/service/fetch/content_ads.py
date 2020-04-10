@@ -19,11 +19,11 @@ def prepare_content_ad_settings(
         .annotate(content_ad_id=F("id"), **content_ad_annotate_mappings)
         .values("ad_group_id", "content_ad_id", *content_ad_annotate_mappings.keys())
     )
-    settings_by_ad_group_by_content_ad: Dict[int, Dict[int, Dict[str, Union[int, str]]]] = {}
+    settings_by_ad_group_id_by_content_ad_id: Dict[int, Dict[int, Dict[str, Union[int, str]]]] = {}
     for el in content_ad_settings_qs:
-        settings_by_ad_group_by_content_ad.setdefault(el["ad_group_id"], {})
-        settings_by_ad_group_by_content_ad[el["ad_group_id"]][el["content_ad_id"]] = el
-    return settings_by_ad_group_by_content_ad
+        settings_by_ad_group_id_by_content_ad_id.setdefault(el["ad_group_id"], {})
+        settings_by_ad_group_id_by_content_ad_id[el["ad_group_id"]][el["content_ad_id"]] = el
+    return settings_by_ad_group_id_by_content_ad_id
 
 
 def _prepare_content_ad_annotations():
