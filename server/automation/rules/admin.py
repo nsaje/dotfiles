@@ -1,6 +1,11 @@
+from django.conf.urls import url
 from django.contrib import admin
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.html import format_html
 
 from . import models
+from . import service
 
 
 class RulesDailyJobLogAdmin(admin.ModelAdmin):
@@ -55,6 +60,7 @@ class RuleAdmin(admin.ModelAdmin):
     readonly_fields = (
         "agency",
         "name",
+        "rule_actions",
         "ad_groups_included_ids",
         "target_type",
         "action_type",
@@ -88,3 +94,26 @@ class RuleAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            url(r"^(?P<rule_id>.+)/run/$", self.admin_site.admin_view(self.run_rule), name="automation-run-rule")
+        ]
+        return custom_urls + urls
+
+    def rule_actions(self, rule):
+        if rule.id is None:
+            return "Rule not yet created"
+        return format_html('<a class="button" href="{}">Run</a>', reverse("admin:automation-run-rule", args=[rule.id]))
+
+    rule_actions.short_description = "Rule Actions"
+
+    def run_rule(self, request, rule_id, *args, **kwargs):
+        rule = self.get_object(request, rule_id)
+
+        service.execute_rules([rule])
+        self.message_user(request, "Rule ran successfully. See history for details.")
+
+        url = reverse("admin:automation_rule_change", args=[rule.id], current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)

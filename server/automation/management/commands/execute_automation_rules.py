@@ -12,4 +12,4 @@ class Command(Z1Command):
     @metrics_compat.timer("automation.rules.run_rules_job")
     def handle(self, *args, **options):
         logger.info("Executing automation rules...")
-        automation.rules.execute_rules()
+        automation.rules.execute_rules_daily_run()

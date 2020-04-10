@@ -7,8 +7,6 @@ from typing import Union
 
 from django.conf import settings
 
-import automation.models
-import automation.rules.constants
 import core.features.bid_modifiers.constants
 import core.features.goals
 import core.models
@@ -20,6 +18,7 @@ from utils import zlogging
 
 from .. import Rule
 from .. import RuleHistory
+from .. import RulesDailyJobLog
 from .. import constants
 from . import exceptions
 from . import fetch
@@ -31,10 +30,19 @@ from .apply import apply_rule
 logger = zlogging.getLogger(__name__)
 
 
-def execute_rules() -> None:
-    if automation.models.RulesDailyJobLog.objects.filter(
-        created_dt__gte=dates_helper.local_midnight_to_utc_time()
-    ).exists():
+def execute_rules(rules: Sequence[Rule]) -> None:
+    rules_by_target_type: Dict[int, List[Rule]] = {}
+    for rule in rules:
+        rules_by_target_type.setdefault(rule.target_type, [])
+        rules_by_target_type[rule.target_type].append(rule)
+
+    for target_type, rules in rules_by_target_type.items():
+        rules_map = helpers.get_rules_by_ad_group_map(rules)
+        _apply_rules(target_type, rules_map)
+
+
+def execute_rules_daily_run() -> None:
+    if RulesDailyJobLog.objects.filter(created_dt__gte=dates_helper.local_midnight_to_utc_time()).exists():
         logger.info("Execution of rules was aborted since the daily run was already completed.")
         return
 
@@ -48,43 +56,46 @@ def execute_rules() -> None:
         )
 
         rules_map = helpers.get_rules_by_ad_group_map(rules)
+        _apply_rules(target_type, rules_map)
 
-        ad_groups = list(rules_map.keys())
-        stats = fetch.query_stats(target_type, rules_map)
-        ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
-        campaign_budgets_map = fetch.prepare_budgets(ad_groups)
-        content_ad_settings_map = {}
-        if target_type == constants.TargetType.AD:
-            content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
+    RulesDailyJobLog.objects.create()
 
-        for ad_group in ad_groups:
-            relevant_rules = rules_map[ad_group]
 
-            for rule in relevant_rules:
-                changes, errors = apply_rule(
-                    rule,
-                    ad_group,
-                    stats.get(ad_group.id, {}),
-                    ad_group_settings_map.get(ad_group.id, {}),
-                    content_ad_settings_map.get(ad_group.id, {}),
-                    campaign_budgets_map.get(ad_group.campaign_id, {}),
+def _apply_rules(target_type: int, rules_map: DefaultDict[core.models.AdGroup, List[Rule]]):
+    ad_groups = list(rules_map.keys())
+    stats = fetch.query_stats(target_type, rules_map)
+    ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
+    campaign_budgets_map = fetch.prepare_budgets(ad_groups)
+    content_ad_settings_map = {}
+    if target_type == constants.TargetType.AD:
+        content_ad_settings_map = fetch.prepare_content_ad_settings(ad_groups)
+
+    for ad_group in ad_groups:
+        relevant_rules = rules_map[ad_group]
+
+        for rule in relevant_rules:
+            changes, errors = apply_rule(
+                rule,
+                ad_group,
+                stats.get(ad_group.id, {}),
+                ad_group_settings_map.get(ad_group.id, {}),
+                content_ad_settings_map.get(ad_group.id, {}),
+                campaign_budgets_map.get(ad_group.campaign_id, {}),
+            )
+
+            if changes:
+                _write_history(rule, ad_group, changes)
+
+            if errors:
+                fail_history = _write_fail_history(rule, ad_group, errors)
+                logger.warning(
+                    "Rule application failed.",
+                    rule_id=str(rule),
+                    ad_group_id=str(ad_group),
+                    fail_history_id=str(fail_history),
                 )
 
-                if changes:
-                    _write_history(rule, ad_group, changes)
-
-                if errors:
-                    fail_history = _write_fail_history(rule, ad_group, errors)
-                    logger.warning(
-                        "Rule application failed.",
-                        rule_id=str(rule),
-                        ad_group_id=str(ad_group),
-                        fail_history_id=str(fail_history),
-                    )
-
-                _send_notification_email_if_enabled(rule, ad_group, changes, errors)
-
-    automation.models.RulesDailyJobLog.objects.create()
+            _send_notification_email_if_enabled(rule, ad_group, changes, errors)
 
 
 def _fetch_ad_group_settings(

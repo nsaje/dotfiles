@@ -20,13 +20,13 @@ from .actions import ValueChangeData
 from .apply import ErrorData
 
 
-class ServiceTest(TestCase):
+class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("core.features.bid_modifiers.converters.TargetConverter.from_target")
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_execute_rules(self, mock_stats, mock_format, mock_apply, mock_from_target):
+    def test_execute_rules_daily_run(self, mock_stats, mock_format, mock_apply, mock_from_target):
         ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
             ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
@@ -86,7 +86,7 @@ class ServiceTest(TestCase):
         magic_mixer.blend(etl.models.MaterializationRun)
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         # daily job
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
@@ -196,7 +196,7 @@ class ServiceTest(TestCase):
             Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=[ad_group]
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         latest_ad_group_history = ad_group.history.latest("created_dt")
         latest_rule_history = RuleHistory.objects.get(rule=publisher_rule, status=constants.ApplyStatus.SUCCESS)
@@ -218,7 +218,7 @@ class ServiceTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_execute_rules_fail(self, mock_stats, mock_format, mock_apply, mock_time):
+    def test_execute_rules_daily_run_fail(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         mock_stats.return_value = [{"ad_group_id": 123}]
@@ -237,7 +237,7 @@ class ServiceTest(TestCase):
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         history = RuleHistory.objects.get()
@@ -250,7 +250,7 @@ class ServiceTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
-    def test_execute_rules_no_changes(self, mock_stats, mock_format, mock_apply, mock_time):
+    def test_execute_rules_daily_run_no_changes(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         mock_stats.return_value = [{"ad_group_id": 123}]
@@ -263,7 +263,7 @@ class ServiceTest(TestCase):
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
         self.assertEqual(10, mock_stats.call_count)
@@ -277,17 +277,17 @@ class ServiceTest(TestCase):
         magic_mixer.blend(automation.models.RulesDailyJobLog)
         magic_mixer.blend(etl.models.MaterializationRun)
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         mock_stats.assert_not_called()
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("redshiftapi.api_rules.query", return_value=[])
-    def test_execute_rules_no_materialized_data(self, mock_stats, mock_time):
+    def test_execute_rules_daily_run_no_materialized_data(self, mock_stats, mock_time):
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
         self.assertFalse(etl.models.MaterializationRun.objects.exists())
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
@@ -295,14 +295,14 @@ class ServiceTest(TestCase):
         etl_run.finished_dt = "2018-12-31 09:59:59"
         etl_run.save()
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
         etl_run.finished_dt = "2018-12-31 10:00:00"
         etl_run.save()
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(10, mock_stats.call_count)
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
@@ -338,7 +338,7 @@ class NotificationEmailTestCase(TestCase):
             [],
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
         self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
@@ -381,7 +381,7 @@ class NotificationEmailTestCase(TestCase):
             ],
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
         self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
@@ -425,7 +425,7 @@ class NotificationEmailTestCase(TestCase):
             ],
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
         self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
@@ -455,7 +455,7 @@ class NotificationEmailTestCase(TestCase):
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = ([], [])
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
         self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
@@ -486,7 +486,7 @@ class NotificationEmailTestCase(TestCase):
         mock_format.return_value = {self.ad_group.id: {}}
         mock_apply.return_value = ([], [])
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
 
         self.assertFalse(mock_send_email.called)
 
@@ -514,7 +514,7 @@ class FetchSettingsTest(TestCase):
     def test_fetch_ad_group_settings(self, mock_apply):
         self._prepare_ad_group_rule()
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         self.assertEqual(
             self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
@@ -529,7 +529,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {
             constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
@@ -549,7 +549,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {
             constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
@@ -569,7 +569,7 @@ class FetchSettingsTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
         )
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         additional_metric_types = {constants.MetricType.AD_GROUP_DAILY_CAP}
         self.assertEqual(
@@ -580,7 +580,7 @@ class FetchSettingsTest(TestCase):
     def test_fetch_content_ad_settings(self, mock_apply):
         self._prepare_content_ad_rule()
 
-        service.execute_rules()
+        service.execute_rules_daily_run()
         self.assertEqual(1, mock_apply.call_count)
         self.assertEqual(
             self._get_settings_fields(self.basic_metric_types) | {"ad_group_id"}, set(mock_apply.call_args[0][3])
