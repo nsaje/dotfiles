@@ -5,6 +5,7 @@ from django.test import TestCase
 
 import core.models
 import dash.constants
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
@@ -151,19 +152,30 @@ class ApplyTest(TestCase):
             RuleTriggerHistory.objects.filter(ad_group=ad_group, rule=rule, target="publisher3.com__456").exists()
         )
 
-    @mock.patch("utils.dates_helper.local_now")
+    @mock.patch("utils.dates_helper.utc_now")
     def test_is_on_cooldown(self, mock_now):
+        mock_now.return_value = datetime.datetime.now()
+
         ad_group = magic_mixer.blend(core.models.AdGroup)
         rule = magic_mixer.blend(Rule, cooldown=48)
         target = "publisher1.com__234"
         magic_mixer.blend(
-            RuleTriggerHistory, ad_group=ad_group, rule=rule, target=target, triggered_dt=datetime.datetime.now()
+            RuleTriggerHistory, ad_group=ad_group, rule=rule, target=target, triggered_dt=datetime.datetime.utcnow()
         )
 
-        mock_now.return_value = datetime.datetime.now() + datetime.timedelta(hours=47)
+        utc_now = datetime.datetime.utcnow().replace(hour=10, minute=0, second=0, microsecond=0)
+        local_now = dates_helper.utc_to_local(utc_now)
+
+        # calculation of midnight instead of setting it directly is done to account for DST
+        local_midnight_in_2_days = (local_now + datetime.timedelta(days=2)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        mock_utc_now = dates_helper.local_to_utc_time(local_midnight_in_2_days)
+
+        mock_now.return_value = mock_utc_now - datetime.timedelta(minutes=1)
         self.assertTrue(apply._is_on_cooldown(target, rule, ad_group))
 
-        mock_now.return_value = datetime.datetime.now() + datetime.timedelta(hours=49)
+        mock_now.return_value = mock_utc_now
         self.assertFalse(apply._is_on_cooldown(target, rule, ad_group))
 
     def test_meet_all_conditions_left_operand_stats(self):

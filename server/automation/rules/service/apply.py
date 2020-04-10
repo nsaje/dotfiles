@@ -81,9 +81,20 @@ def apply_rule(
 
 
 def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> bool:
-    cooldown_window_start = utils.dates_helper.local_now() - datetime.timedelta(hours=rule.cooldown)
+    # NOTE: this function assumes rules are run daily. If a rule has 24h cooldown, it should
+    # trigger after 23h as well if it's a new date. This is done to account for the job not
+    # running at exact same time every day because of materialization. It does not support
+    # running rules hourly.
+    assert rule.cooldown % 24 == 0, "Support for hourly cooldowns not implemented yet"
+
+    days_to_check = (rule.cooldown // 24) - 1
+
+    local_midnight = utils.dates_helper.get_midnight(utils.dates_helper.local_now())
+    local_from_dt = local_midnight - datetime.timedelta(days=days_to_check)
+    utc_from_dt = utils.dates_helper.local_to_utc_time(local_from_dt)
+
     return models.RuleTriggerHistory.objects.filter(
-        target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=cooldown_window_start
+        target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=utc_from_dt
     ).exists()
 
 

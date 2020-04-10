@@ -67,6 +67,10 @@ def days_after(date, days):
     return date + datetime.timedelta(days=days)
 
 
+def get_midnight(dt):
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 def local_midnight_to_utc_time():
     local_now = utc_to_local(utc_now())
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
