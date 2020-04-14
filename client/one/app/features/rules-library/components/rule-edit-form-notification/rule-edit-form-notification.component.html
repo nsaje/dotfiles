@@ -26,6 +26,7 @@
     class="zem-rule-edit-form__section-item zem-text-form-group zem-rule-edit-form__text-setting"
     label="Recipients"
     *ngIf="notificationType !== RuleNotificationType.None"
+    [errors]="notificationRecipientsErrors"
     [value]="notificationRecipients"
     (valueChange)="updateRecipients($event)"
 >
