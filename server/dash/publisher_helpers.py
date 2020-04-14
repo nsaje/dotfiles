@@ -1,5 +1,7 @@
 import re
 
+from django.db.models import QuerySet
+
 OUTBRAIN_SOURCE_ID = 3
 PLACEMENT_SEPARATOR = "__"
 
@@ -104,7 +106,10 @@ def all_subdomains(publisher):
 
 class PublisherIdLookupMap(object):
     def _filter_publisher_group_entries(self, entries):
-        return entries.filter(placement=None)
+        if isinstance(entries, QuerySet):
+            return entries.filter(placement=None)
+
+        return [e for e in entries if e.placement is None]
 
     def _add_entry_to_map(self, entry):
         publisher_name = entry.publisher.strip().lower()
@@ -165,7 +170,10 @@ class PublisherIdLookupMap(object):
 
 class PublisherPlacementLookupMap(PublisherIdLookupMap):
     def _filter_publisher_group_entries(self, entries):
-        return entries.exclude(placement=None)
+        if isinstance(entries, QuerySet):
+            return entries.exclude(placement=None)
+
+        return [e for e in entries if e.placement is not None]
 
     def _add_entry_to_map(self, entry):
         publisher_name = entry.publisher.strip().lower()
