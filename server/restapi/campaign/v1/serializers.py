@@ -110,7 +110,7 @@ class CampaignIdsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 class CampaignQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
     account_id = restapi.serializers.fields.IdField(required=False)
     only_ids = rest_framework.serializers.BooleanField(default=False, required=False)
-    limit = restapi.serializers.fields.IdField(required=False)
-    offset = restapi.serializers.fields.IdField(required=False)
+    limit = restapi.serializers.fields.IntegerField(required=False)
+    offset = restapi.serializers.fields.IntegerField(required=False)
     only_id = rest_framework.serializers.BooleanField(default=False, required=False)
     include_archived = rest_framework.serializers.BooleanField(required=False)
