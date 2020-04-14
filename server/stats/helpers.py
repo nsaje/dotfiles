@@ -420,7 +420,7 @@ def merge_rows(breakdown, dash_rows, stats_rows):
         # not all rows were popped from group_b, that means that we fetched
         # stats rows for dash rows that either do not exist or were a part of
         # some other page
-        logger.debug("Got stats for unknown objects")
+        logger.warning("Got stats for unknown objects", count=len(group_b), breakdown=str(breakdown))
 
     return rows
 

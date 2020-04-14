@@ -3,6 +3,7 @@ from django.utils.text import slugify
 import dash.dashapi.api_reports
 import redshiftapi.api_reports
 from stats import api_breakdowns
+from stats import augmenter
 from stats import constants
 from stats import helpers
 from stats import permission_filter
@@ -46,6 +47,11 @@ def query(
     else:
         rows = stats_rows
         dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, level, dashapi_cache)
+
+    if constants.is_placement_breakdown(breakdown):
+        for row in rows:
+            if "placement_type" in row:
+                augmenter.augment_placement_type(row)
 
     permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 

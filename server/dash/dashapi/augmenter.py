@@ -45,7 +45,7 @@ def get_report_augmenter_for_dimension(target_dimension, level):
     elif target_dimension == "publisher_id":
         return generate_loop_function(augment_publisher, augment_publisher_for_report)
     elif target_dimension == "placement_id":
-        return generate_loop_function(augment_placement)
+        return generate_loop_function(augment_placement, augment_placement_for_report)
     elif stats.constants.is_top_level_delivery_dimension(target_dimension):
         return generate_loop_function(augment_delivery, augment_delivery_for_report)
 
@@ -586,6 +586,23 @@ def augment_placement(row, loader, is_base_level=False):
         )
 
 
+def augment_placement_for_report(row, loader, is_base_level=False):
+    source_id = row["source_id"]
+    source = loader.source_map[source_id]
+    entry_status = loader.find_blacklisted_status_by_subdomain(row)
+
+    row.update(
+        {
+            "source": source.name,
+            "status": constants.PublisherTargetingStatus.get_text(entry_status["status"]).upper(),
+            "publisher_status": constants.PublisherTargetingStatus.get_text(entry_status["status"]).upper(),
+            "blacklisted_level": (
+                constants.PublisherBlacklistLevel.get_text(entry_status.get("blacklisted_level", "")) or ""
+            ).upper(),
+        }
+    )
+
+
 def augment_delivery(row, loader, is_base_level=True):
     if not loader.ad_group:
         return
@@ -682,8 +699,8 @@ def make_placement_dash_rows(objs_ids):
         publisher, source_id, placement = publisher_helpers.dissect_placement_id(obj_id)
         publisher_id = publisher_helpers.create_publisher_id(publisher, source_id)
 
-        # dont include rows without source_id
-        if source_id:
+        # dont include rows without source_id or placement
+        if all((source_id, placement)):
             rows.append(make_placement_dash_row(publisher_id, publisher, placement, source_id))
 
     return rows

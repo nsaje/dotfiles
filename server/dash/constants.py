@@ -2387,12 +2387,16 @@ class PlacementType(ConstantBase):
     RECOMMENDATION_WIDGET = 4
 
     _VALUES = {
-        UNDEFINED: "Undefined",
+        UNDEFINED: "Not reported",
         IN_FEED: "In feed",
         IN_ARTICLE_PAGE: "In article page",
         ADS_SECTION: "Ads section",
         RECOMMENDATION_WIDGET: "Recommendation widget",
     }
+
+    @classmethod
+    def human_readable(cls, placement_type):
+        return cls.get_text(placement_type) or "Other"
 
 
 class ZemPlacementType(ConstantBase):

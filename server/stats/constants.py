@@ -159,6 +159,12 @@ def get_delivery_dimension(breakdown):
     return dimension.pop()
 
 
+def contains_dimension(breakdown, dimensions):
+    if not (breakdown and dimensions):
+        return False
+    return len(set(breakdown) & set(dimensions)) != 0
+
+
 def is_extended_delivery_dimension(dimension):
     return dimension in DeliveryDimension._EXTENDED
 

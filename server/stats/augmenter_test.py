@@ -472,7 +472,7 @@ class AugmenterTestCase(TestCase):
                     "breakdown_name": "placement",
                     "breakdown_id": "",
                     "parent_breakdown_id": None,
-                    "placement_type": "Undefined",
+                    "placement_type": "Not reported",
                 },
                 {
                     "name": "placement",
@@ -507,7 +507,7 @@ class AugmenterTestCase(TestCase):
                     "breakdown_name": "placement",
                     "breakdown_id": "",
                     "parent_breakdown_id": None,
-                    "placement_type": "Unknown",
+                    "placement_type": "Other",
                 },
             ],
         )

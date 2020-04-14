@@ -138,6 +138,10 @@ def prepare_constraints(
     allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
     allowed_accounts = allowed_accounts.exclude_archived(show_archived)
 
+    include_publisher_groups = stats.constants.contains_dimension(
+        breakdown, [stats.constants.PUBLISHER, stats.constants.PLACEMENT]
+    )
+
     constraints = {
         "show_archived": show_archived,
         "ad_group": ad_group,
@@ -145,10 +149,10 @@ def prepare_constraints(
         "allowed_ad_groups": allowed_ad_groups if constrain_ad_group else None,
         "allowed_campaigns": allowed_campaigns,
         "allowed_accounts": allowed_accounts,
-        "publisher_blacklist": blacklisted_entries if stats.constants.PUBLISHER in breakdown else None,
-        "publisher_whitelist": whitelisted_entries if stats.constants.PUBLISHER in breakdown else None,
-        "publisher_group_targeting": pg_targeting if stats.constants.PUBLISHER in breakdown else None,
-        "publisher_blacklist_filter": show_blacklisted_publishers if stats.constants.PUBLISHER in breakdown else None,
+        "publisher_blacklist": blacklisted_entries if include_publisher_groups else None,
+        "publisher_whitelist": whitelisted_entries if include_publisher_groups else None,
+        "publisher_group_targeting": pg_targeting if include_publisher_groups else None,
+        "publisher_blacklist_filter": show_blacklisted_publishers if include_publisher_groups else None,
         "filtered_sources": filtered_sources,
         "date__gte": start_date,
         "date__lte": end_date,

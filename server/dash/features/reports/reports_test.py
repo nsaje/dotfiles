@@ -434,6 +434,59 @@ class ReportsGetReportCSVTest(TestCase):
         )
         self.assertEqual(expected, output)
 
+    @mock.patch("stats.api_reports.query")
+    def test_placement(self, mock_query):
+        utils.test_helper.add_permissions(self.reportJob.user, ["can_use_placement_targeting"])
+        self.reportJob.query = self.build_query(["Placement"])
+        row = {"placement": "00000000-0029-e16a-0000-000000000071", "etfm_cost": Decimal("12.3"), "clicks": 5}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Placement"\r\n"00000000-0029-e16a-0000-000000000071"\r\n"""
+        self.assertEqual(expected, output)
+
+    @mock.patch("stats.api_reports.query")
+    def test_placement_all_related_columns(self, mock_query):
+        utils.test_helper.add_permissions(self.reportJob.user, ["can_use_placement_targeting"])
+        self.reportJob.query = self.build_query(
+            [
+                "Placement Id",
+                "Placement",
+                "Placement Type",
+                "Publisher Id",
+                "Publisher",
+                "Link",
+                "Source ID",
+                "Media Source",
+                "Source Slug",
+                "Ad Group Id",
+                "Status",
+                "Blacklisted Level",
+                "Publisher Status",
+                "Clicks",
+            ]
+        )
+        mock_query.return_value = [
+            {
+                "placement_id": "pubx.com__2__plac1",
+                "publisher": "pubx.com",
+                "placement": "plac1",
+                "source_id": 2,
+                "source_slug": "gravity",
+                "domain_link": "http://pubx.com",
+                "status": "ACTIVE",
+                "blacklisted_level": "",
+                "ad_group_id": 1,
+                "clicks": 1,
+                "publisher_id": "pubx.com__2",
+                "publisher_status": "ACTIVE",
+                "source": "Gravity",
+                "placement_type": "In feed",
+            }
+        ]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Placement Id","Placement","Placement Type","Publisher Id","Publisher","Link","Source ID","Media Source","Source Slug","Ad Group Id","Status","Blacklisted Level","Publisher Status","Clicks"\r\n"pubx.com__2__plac1","plac1","In feed","pubx.com__2","pubx.com","http://pubx.com","2","Gravity","gravity","1","ACTIVE","","ACTIVE","1"\r\n"""
+        self.assertEqual(expected, output)
+
 
 class IncludeEntityTagsReportTestCase(TestCase):
     def setUp(self):

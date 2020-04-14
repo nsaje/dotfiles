@@ -205,7 +205,7 @@ class ReportJobExecutor(JobExecutor):
         filtered_businesses = filter_constraints.get("businesses", None)
 
         level = helpers.get_level_from_constraints(filter_constraints)
-        breakdown = list(helpers.get_breakdown_from_fields(job.query["fields"], level))
+        breakdown = list(helpers.get_breakdown_from_fields(cls._handle_legacy_fields(job.query["fields"], user), level))
         structure_constraints = cls._extract_structure_constraints(filter_constraints)
         all_accounts_in_local_currency = helpers.get_option(job, "all_accounts_in_local_currency") and user.has_perm(
             "zemauth.can_request_accounts_report_in_local_currencies"
@@ -237,6 +237,8 @@ class ReportJobExecutor(JobExecutor):
             show_publishers_fields=stats.constants.PUBLISHER in breakdown,
             uses_bcm_v2=stats.api_reports.get_uses_bcm_v2(user, constraints, level),
         )
+        # TODO: PLAC: remove after legacy grace period
+        cls._handle_legacy_columns_mapping(column_to_field_name_map, user)
 
         order = cls._get_order(job, column_to_field_name_map)
         column_names = helpers.extract_column_names(job.query["fields"])
@@ -244,7 +246,7 @@ class ReportJobExecutor(JobExecutor):
         cls._append_entity_tag_columns_if_necessary(user, constraints, breakdown, column_names)
         helpers.insert_delivery_name_columns_if_necessary(column_names, column_to_field_name_map)
         # TODO: PLAC: remove after legacy grace period
-        cls._handle_legacy_columns(column_names, column_to_field_name_map)
+        cls._handle_legacy_columns(column_names, column_to_field_name_map, user)
 
         currency = None
         account_currency_map = None
@@ -396,7 +398,34 @@ class ReportJobExecutor(JobExecutor):
 
     # TODO: PLAC: remove after legacy grace period
     @staticmethod
-    def _handle_legacy_columns(columns, column_to_field_name_map):
+    def _handle_legacy_fields(fields, user):
+        fields = fields[:]
+        if user.has_perm("zemauth.can_use_placement_targeting"):
+            return fields
+
+        placement_field = {"field": "Placement"}
+        if placement_field in fields:
+            placement_idx = fields.index(placement_field)
+            if placement_idx >= 0:
+                fields = fields[:placement_idx] + [{"field": "Environment"}] + fields[placement_idx + 1 :]
+
+        return fields
+
+    # TODO: PLAC: remove after legacy grace period
+    @staticmethod
+    def _handle_legacy_columns_mapping(column_to_field_name_map, user):
+        if user.has_perm("zemauth.can_use_placement_targeting"):
+            return
+
+        column_to_field_name_map.update({"Placement": "environment", "Placement Type": "zem_placement_type"})
+        column_to_field_name_map.pop("Placement Id", None)
+
+    # TODO: PLAC: remove after legacy grace period
+    @staticmethod
+    def _handle_legacy_columns(columns, column_to_field_name_map, user):
+        if user.has_perm("zemauth.can_use_placement_targeting"):
+            return
+
         legacy_to_column_map = {"Placement": "Environment", "Placement Name": "Environment Name"}
 
         if all(

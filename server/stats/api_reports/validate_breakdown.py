@@ -7,7 +7,10 @@ from utils import exc
 def validate_breakdown_by_permissions(level, user, breakdown):
     if constants.StructureDimension.PUBLISHER in breakdown and not user.has_perm("zemauth.can_see_publishers"):
         raise exc.MissingDataError()
-    elif constants.StructureDimension.SOURCE in breakdown:
+    if constants.is_placement_breakdown(breakdown) and not user.has_perm("zemauth.can_use_placement_targeting"):
+        raise exc.MissingDataError()
+
+    if constants.StructureDimension.SOURCE in breakdown:
         if level == Level.ALL_ACCOUNTS and not user.has_perm("zemauth.all_accounts_sources_view"):
             raise exc.MissingDataError()
         elif level == Level.ACCOUNTS and not user.has_perm("zemauth.account_sources_view"):
@@ -34,6 +37,10 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     ):
         raise exc.MissingDataError()
 
+    if constants.is_placement_breakdown(breakdown):
+        if level in (Level.ALL_ACCOUNTS, Level.ACCOUNTS, Level.CONTENT_ADS):
+            raise exc.MissingDataError()
+
 
 def validate_breakdown_by_structure(level, breakdown):
     if constants.StructureDimension.PUBLISHER in breakdown and constants.StructureDimension.SOURCE in breakdown:
@@ -48,8 +55,22 @@ def validate_breakdown_by_structure(level, breakdown):
     delivery = [dimension for dimension in breakdown if dimension in constants.DeliveryDimension._ALL]
     if len(delivery) > 1:
         raise exc.InvalidBreakdownError("Unsupported breakdown - only one delivery breakdown supported per report")
-    clean_breakdown.extend(delivery)
 
+    if constants.is_placement_breakdown(breakdown) and "content_ad_id" in breakdown:
+        raise exc.InvalidBreakdownError(
+            "Unsupported breakdown - content ads can not be broken down by placement/placement type"
+        )
+
+    if (
+        delivery
+        and constants.is_placement_breakdown(breakdown)
+        and delivery[0] != constants.DeliveryDimension.PLACEMENT_TYPE
+    ):
+        raise exc.InvalidBreakdownError(
+            "Unsupported breakdown - placements/placement types can not be broken down by {}".format(delivery[0])
+        )
+
+    clean_breakdown.extend(delivery)
     unsupported_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupported_breakdowns:
         raise exc.InvalidBreakdownError("Unsupported breakdowns: {}".format(", ".join(unsupported_breakdowns)))
