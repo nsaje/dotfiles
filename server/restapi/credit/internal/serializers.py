@@ -93,6 +93,6 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
 class CreditQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
-    active = restapi.serializers.fields.PlainCharField(required=False)
+    active = restapi.serializers.fields.NullBooleanField(required=False)
     offset = restapi.serializers.fields.IdField(required=False)
     limit = restapi.serializers.fields.IdField(required=False)

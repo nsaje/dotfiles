@@ -159,6 +159,10 @@ class OutNullURLField(OutNoneFieldMixin, serializers.URLField):
     pass
 
 
+class NullBooleanField(serializers.NullBooleanField):
+    pass
+
+
 class OutIntIdField(IdField):
     def to_representation(self, data):
         if isinstance(data, django.db.models.Model):
