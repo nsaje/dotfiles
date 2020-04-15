@@ -2,4 +2,4 @@
 import './vendor.config';
 
 // Legacy AngularJS app libraries
-import './vendor.ajs.js'; // tslint:disable-line
+import './vendor-ajs.js'; // tslint:disable-line

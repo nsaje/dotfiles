@@ -1,7 +1,7 @@
 import './polyfills';
 
 // Import legacy AngularJS tests
-import './tests.ajs.js';
+import './main-ajs.test.js';
 
 import 'zone.js/dist/long-stack-trace-zone';
 import 'zone.js/dist/proxy';

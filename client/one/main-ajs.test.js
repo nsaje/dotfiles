@@ -1,9 +1,9 @@
 require('core-js/es');
 
-require('./vendor.ajs.js');
+require('./vendor-ajs.js');
 require('angular-mocks'); // Should be required after AngularJS
 
-require('./main.ajs.js');
+require('./main-ajs.js');
 
 requireAll(require.context('./app/ajs-app/test/', true, /\.js$/));
 requireAll(require.context('./app/ajs-app/', true, /spec\.js$|mock\.js$/));

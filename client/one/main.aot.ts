@@ -1,5 +1,5 @@
 // Import legacy AngularJS app
-import './main.ajs.js';
+import './main-ajs.js';
 
 import {enableProdMode} from '@angular/core';
 import {platformBrowser} from '@angular/platform-browser';

@@ -33,7 +33,7 @@ function generateMainConfig(appEnvironment) {
             'zemanta-one': [
                 common.root('./one/polyfills.ts'),
                 common.root('./one/vendor.ts'),
-                common.root('./one/main.ts'),
+                common.root('./one/main.jit.ts'),
             ],
         };
     }
@@ -98,6 +98,7 @@ function generateMainConfig(appEnvironment) {
                     loader: 'awesome-typescript-loader',
                     options: {
                         transpileOnly: true,
+                        configFileName: 'tsconfig.jit.json',
                     },
                 },
                 {loader: 'angular2-template-loader'},
@@ -147,7 +148,7 @@ function generateStyleConfig(appEnvironment, theme) {
     config.entry = {
         'zemanta-one': [
             common.root('./one/app/styles/main.less'),
-            common.root('./one/main.ts'),
+            common.root('./one/main.jit.ts'),
         ],
     };
 
@@ -165,6 +166,7 @@ function generateStyleConfig(appEnvironment, theme) {
                 loader: 'awesome-typescript-loader',
                 options: {
                     transpileOnly: true,
+                    configFileName: 'tsconfig.jit.json',
                 },
             },
             {loader: 'angular2-template-loader'},

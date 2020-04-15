@@ -1,6 +1,6 @@
 {
     "extends": "./tsconfig.json",
-    "exclude": ["one/main.ts", "one/tests.ts", "one/**/*.spec.ts", "one/app/testing/**/*"],
+    "exclude": ["one/main.jit.ts", "one/main.test.ts", "one/**/*.spec.ts", "one/app/testing/**/*"],
     "angularCompilerOptions": {
         "fullTemplateTypeCheck": true
     }
