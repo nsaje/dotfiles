@@ -92,6 +92,58 @@ describe('RulesLibraryStore', () => {
         expect(store.state.requests).toEqual({save: {}});
     }));
 
+    it('should correctly split notification recipients', fakeAsync(() => {
+        store.initStore(mockedAgencyId, mockedAdGroupId);
+
+        store.setRuleNotificationRecipients('user@test.com');
+        expect(store.state.rule.notificationRecipients).toEqual([
+            'user@test.com',
+        ]);
+
+        store.setRuleNotificationRecipients('user@test.com,user2@test.com');
+        expect(store.state.rule.notificationRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+
+        store.setRuleNotificationRecipients('user@test.com,user2@test.com');
+        expect(store.state.rule.notificationRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+
+        store.setRuleNotificationRecipients('user@test.com	user2@test.com');
+        expect(store.state.rule.notificationRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+    }));
+
+    it('should correctly split send email recipients', fakeAsync(() => {
+        store.initStore(mockedAgencyId, mockedAdGroupId);
+
+        store.setSendEmailRecipients('user@test.com');
+        expect(store.state.rule.sendEmailRecipients).toEqual(['user@test.com']);
+
+        store.setSendEmailRecipients('user@test.com,user2@test.com');
+        expect(store.state.rule.sendEmailRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+
+        store.setSendEmailRecipients('user@test.com,user2@test.com');
+        expect(store.state.rule.sendEmailRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+
+        store.setSendEmailRecipients('user@test.com	user2@test.com');
+        expect(store.state.rule.sendEmailRecipients).toEqual([
+            'user@test.com',
+            'user2@test.com',
+        ]);
+    }));
+
     it('should search for publisher groups via publisher group service', fakeAsync(() => {
         const keyword = 'blue';
         publisherGroupsServiceStub.search.and

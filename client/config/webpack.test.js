@@ -1,4 +1,3 @@
-var webpack = require('webpack');
 var common = require('./webpack.common.js');
 var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -49,19 +48,11 @@ config.module.rules = [
 ];
 
 config.plugins.push(
-    // https://webpack.js.org/plugins/source-map-dev-tool-plugin/
-    // Enables more fine grained control of source map generation.
-    new webpack.SourceMapDevToolPlugin({
-        filename: null,
-        test: /\.(ts|js)($|\?)/i,
-    }),
-
     // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
     // Runs typescript type checking in a separate process.
     new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true})
 );
 
-config.devtool = 'inline-source-map';
 config.mode = 'development';
 
 module.exports = config;

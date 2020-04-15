@@ -150,7 +150,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     setSendEmailRecipients(recipients: string) {
         let recipientsList: string[] = [];
         if (recipients.length > 0) {
-            recipientsList = recipients.split(',');
+            recipientsList = recipients.split(/[\s,]+/);
         }
         this.patchState(recipientsList, 'rule', 'sendEmailRecipients');
     }
@@ -231,7 +231,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     setRuleNotificationRecipients(recipients: string) {
         let recipientsList: string[] = [];
         if (recipients.length > 0) {
-            recipientsList = recipients.split(',');
+            recipientsList = recipients.split(/[\s,]+/);
         }
         this.patchState(recipientsList, 'rule', 'notificationRecipients');
     }

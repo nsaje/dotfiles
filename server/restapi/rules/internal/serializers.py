@@ -74,7 +74,7 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     send_email_subject = restapi.serializers.fields.PlainCharField(required=False, allow_null=True, initial=None)
     send_email_body = restapi.serializers.fields.PlainCharField(required=False, allow_null=True, initial=None)
     send_email_recipients = rest_framework.serializers.ListSerializer(
-        child=rest_framework.serializers.EmailField(), default=[], allow_empty=True, required=False, initial=None
+        child=restapi.serializers.fields.PlainCharField(), default=[], allow_empty=True, required=False, initial=None
     )
 
     publisher_group_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
@@ -83,7 +83,7 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
     notification_type = restapi.serializers.fields.DashConstantField(automation.rules.NotificationType)
     notification_recipients = rest_framework.serializers.ListSerializer(
-        child=rest_framework.serializers.EmailField(), default=[], allow_empty=True
+        child=restapi.serializers.fields.PlainCharField(), default=[], allow_empty=True
     )
 
     conditions = rest_framework.serializers.ListSerializer(

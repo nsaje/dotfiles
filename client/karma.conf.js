@@ -37,7 +37,7 @@ module.exports = function karmaConfig(config) {
         exclude: [],
 
         preprocessors: {
-            './one/main.test.ts': ['webpack', 'sourcemap'],
+            './one/main.test.ts': ['webpack'],
         },
 
         browsers: [
