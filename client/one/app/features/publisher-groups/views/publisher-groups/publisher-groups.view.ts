@@ -1,4 +1,4 @@
-import './publisher-groups-library.view.less';
+import './publisher-groups.view.less';
 
 import {
     Component,
@@ -13,7 +13,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
 import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
-import {PublisherGroupsLibraryStore} from '../../services/publisher-groups-library-store/publisher-groups-library.store';
+import {PublisherGroupsStore} from '../../services/publisher-groups-store/publisher-groups.store';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {PublisherGroupActionsCellComponent} from '../../components/publisher-group-actions-cell/publisher-group-actions-cell.component';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
@@ -25,14 +25,14 @@ import {
 } from '../../../../shared/helpers/grid.helpers';
 
 @Component({
-    selector: 'zem-publisher-groups-library-view',
-    templateUrl: './publisher-groups-library.view.html',
+    selector: 'zem-publisher-groups-view',
+    templateUrl: './publisher-groups.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [PublisherGroupsLibraryStore],
+    providers: [PublisherGroupsStore],
 })
-export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
+export class PublisherGroupsView implements OnInit, OnDestroy {
     @HostBinding('class')
-    cssClass = 'zem-publisher-groups-library-view';
+    cssClass = 'zem-publisher-groups-view';
     @ViewChild('editPublisherGroupModal', {static: false})
     editPublisherGroupModal: ModalComponent;
 
@@ -49,7 +49,7 @@ export class PublisherGroupsLibraryView implements OnInit, OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
-        public store: PublisherGroupsLibraryStore,
+        public store: PublisherGroupsStore,
         private route: ActivatedRoute,
         private service: PublisherGroupsService,
         @Inject('zemPermissions') private zemPermissions: any

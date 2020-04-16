@@ -734,7 +734,7 @@ export enum RoutePathName {
     NEW_ENTITY_ANALYTICS_MOCK = 'create',
     REPORTS_LIBRARY = 'reports',
     CREDITS = 'credits',
-    PUBLISHER_GROUPS_LIBRARY = 'publishergroups',
+    PUBLISHER_GROUPS = 'publishergroups',
     USERS_LIBRARY = 'users',
     PIXELS_LIBRARY = 'pixels',
     INVENTORY_PLANNING = 'inventory-planning',

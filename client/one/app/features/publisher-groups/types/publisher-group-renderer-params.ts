@@ -1,10 +1,10 @@
 import {ICellRendererParams} from 'ag-grid-community';
-import {PublisherGroupsLibraryView} from '../views/publisher-groups-library/publisher-groups-library.view';
+import {PublisherGroupsView} from '../views/publisher-groups/publisher-groups.view';
 import {PublisherGroup} from '../../../core/publisher-groups/types/publisher-group';
 
 export interface PublisherGroupRendererParams extends ICellRendererParams {
     context: {
-        componentParent: PublisherGroupsLibraryView;
+        componentParent: PublisherGroupsView;
     };
     data: PublisherGroup;
 }

@@ -4,20 +4,19 @@ import {takeUntil} from 'rxjs/operators';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {Subject} from 'rxjs';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
-import {PublisherGroupsLibraryStoreState} from './publisher-groups-library.store.state';
+import {PublisherGroupsStoreState} from './publisher-groups.store.state';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {HttpErrorResponse} from '@angular/common/http';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {PublisherGroupsLibraryStoreFieldsErrorsState} from './publisher-groups-library.store.fields-errors-state';
+import {PublisherGroupsStoreFieldsErrorsState} from './publisher-groups.store.fields-errors-state';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 @Injectable()
-export class PublisherGroupsLibraryStore
-    extends Store<PublisherGroupsLibraryStoreState>
+export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
@@ -28,7 +27,7 @@ export class PublisherGroupsLibraryStore
         private accountsService: AccountService,
         @Inject('zemPermissions') private zemPermissions: any
     ) {
-        super(new PublisherGroupsLibraryStoreState());
+        super(new PublisherGroupsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
@@ -92,8 +91,7 @@ export class PublisherGroupsLibraryStore
     }
 
     setActiveEntity(entity: Partial<PublisherGroup>): void {
-        const newActiveEntity = new PublisherGroupsLibraryStoreState()
-            .activeEntity;
+        const newActiveEntity = new PublisherGroupsStoreState().activeEntity;
         let scopeState = null;
 
         if (!commonHelpers.isDefined(entity.id)) {
@@ -178,8 +176,7 @@ export class PublisherGroupsLibraryStore
                 .subscribe(
                     () => {
                         this.patchState(
-                            new PublisherGroupsLibraryStoreState().activeEntity
-                                .entity,
+                            new PublisherGroupsStoreState().activeEntity.entity,
                             'activeEntity',
                             'entity'
                         );
@@ -187,7 +184,7 @@ export class PublisherGroupsLibraryStore
                     },
                     (error: HttpErrorResponse) => {
                         const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new PublisherGroupsLibraryStoreFieldsErrorsState(),
+                            new PublisherGroupsStoreFieldsErrorsState(),
                             error
                         );
                         if (error.status === 413) {

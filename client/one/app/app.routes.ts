@@ -6,7 +6,7 @@ import {DEALS_ROUTES} from './features/deals/deals.routes';
 import {INVENTORY_PLANNING_ROUTES} from './features/inventory-planning/inventory-planning.routes';
 import {CREDITS_ROUTES} from './features/credits/credits.routes';
 import {PIXELS_LIBRARY_ROUTES} from './features/pixels-library/pixels-library.routes';
-import {PUBLISHER_GROUPS_LIBRARY_ROUTES} from './features/publisher-groups-library/publisher-groups-library.routes';
+import {PUBLISHER_GROUPS_ROUTES} from './features/publisher-groups/publisher-groups.routes';
 import {REPORTS_LIBRARY_ROUTES} from './features/reports-library/reports-library.routes';
 import {USERS_LIBRARY_ROUTES} from './features/users-library/users-library.routes';
 import {ANALYTICS_ROUTES} from './features/analytics/analytics.routes';
@@ -43,8 +43,8 @@ export const APP_ROUTES: Routes = [
                 children: CREDITS_ROUTES,
             },
             {
-                path: RoutePathName.PUBLISHER_GROUPS_LIBRARY,
-                children: PUBLISHER_GROUPS_LIBRARY_ROUTES,
+                path: RoutePathName.PUBLISHER_GROUPS,
+                children: PUBLISHER_GROUPS_ROUTES,
             },
             {
                 path: RoutePathName.USERS_LIBRARY,

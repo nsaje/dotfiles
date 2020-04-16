@@ -4,7 +4,7 @@ import {Component} from '@angular/core';
 import {ICellRendererAngularComp} from 'ag-grid-angular';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {PublisherGroupRendererParams} from '../../types/publisher-group-renderer-params';
-import {PublisherGroupsLibraryView} from '../../views/publisher-groups-library/publisher-groups-library.view';
+import {PublisherGroupsView} from '../../views/publisher-groups/publisher-groups.view';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 @Component({
     templateUrl: './publisher-group-actions-cell.component.html',
@@ -12,7 +12,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 export class PublisherGroupActionsCellComponent
     implements ICellRendererAngularComp {
     publisherGroup: PublisherGroup;
-    parent: PublisherGroupsLibraryView;
+    parent: PublisherGroupsView;
     isReadOnly: boolean;
 
     agInit(params: PublisherGroupRendererParams) {

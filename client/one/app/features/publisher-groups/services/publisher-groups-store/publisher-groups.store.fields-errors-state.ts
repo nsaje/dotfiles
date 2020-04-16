@@ -1,6 +1,6 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
 
-export class PublisherGroupsLibraryStoreFieldsErrorsState {
+export class PublisherGroupsStoreFieldsErrorsState {
     name: FieldErrors = [];
     entries: FieldErrors = [];
     errorsCsvKey: string;

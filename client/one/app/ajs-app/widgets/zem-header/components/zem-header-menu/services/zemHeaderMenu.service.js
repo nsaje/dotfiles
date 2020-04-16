@@ -14,7 +14,7 @@ angular
         // eslint-disable-line max-len
         this.getAvailableActions = getAvailableActions;
 
-        var canUserSeeNewPublisherLibrary = zemPermissions.hasPermission(
+        var canUserSeeNewPublisherGroupsView = zemPermissions.hasPermission(
             'zemauth.can_see_new_publisher_library'
         );
 
@@ -83,11 +83,11 @@ angular
                 ),
             },
             {
-                text: canUserSeeNewPublisherLibrary
+                text: canUserSeeNewPublisherGroupsView
                     ? 'Publishers & Placements'
                     : 'Publisher Groups',
                 callback: navigateToPublisherGroupsView,
-                isAvailable: isPublisherGroupsActionAvailable,
+                isAvailable: isPublisherGroupsViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_see_publisher_groups_ui'
                 ),
@@ -138,7 +138,7 @@ angular
             $window.location.href = params.href;
         }
 
-        function isPublisherGroupsActionAvailable() {
+        function isPublisherGroupsViewAvailable() {
             return (
                 zemPermissions.hasPermission(
                     'zemauth.can_see_publisher_groups_ui'
@@ -154,10 +154,7 @@ angular
 
             if (commonHelpers.isDefined(activeAccount)) {
                 NgRouter.navigate(
-                    [
-                        RoutePathName.APP_BASE,
-                        RoutePathName.PUBLISHER_GROUPS_LIBRARY,
-                    ],
+                    [RoutePathName.APP_BASE, RoutePathName.PUBLISHER_GROUPS],
                     {
                         queryParams: {
                             agencyId: activeAccount.data.agencyId,
@@ -168,7 +165,7 @@ angular
             } else {
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
-                    RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+                    RoutePathName.PUBLISHER_GROUPS,
                 ]);
             }
         }

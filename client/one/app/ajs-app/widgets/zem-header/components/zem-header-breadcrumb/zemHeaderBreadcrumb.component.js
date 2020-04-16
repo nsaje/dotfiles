@@ -194,17 +194,17 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'Deals',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
-            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS_LIBRARY)) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
-                    RoutePathName.PUBLISHER_GROUPS_LIBRARY
+                    RoutePathName.PUBLISHER_GROUPS
                 ];
-                var canUserSeeNewPublisherLibrary = zemPermissions.hasPermission(
+                var canUserSeeNewPublisherGroupsView = zemPermissions.hasPermission(
                     'zemauth.can_see_new_publisher_library'
                 );
                 return {
                     typeName: 'Management Console',
-                    name: canUserSeeNewPublisherLibrary ? 'Publishers & Placements' : 'Publisher Groups',
+                    name: canUserSeeNewPublisherGroupsView ? 'Publishers & Placements' : 'Publisher Groups',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {

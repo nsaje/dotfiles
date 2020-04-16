@@ -18,7 +18,7 @@ import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
 import {UsersLibraryModule} from './features/users-library/users-library.module';
 import {ReportsLibraryModule} from './features/reports-library/reports-library.module';
-import {PublisherGroupsLibraryModule} from './features/publisher-groups-library/publisher-groups-library.module';
+import {PublisherGroupsModule} from './features/publisher-groups/publisher-groups.module';
 import {DashboardView} from './views/dashboard/dashboard.view';
 import {AppRootComponent} from './app-root.component';
 import {LayoutModule} from './layout/layout.module';
@@ -86,7 +86,7 @@ if (APP_CONFIG.env.prod) {
         PixelsLibraryModule,
         UsersLibraryModule,
         ReportsLibraryModule,
-        PublisherGroupsLibraryModule,
+        PublisherGroupsModule,
         SidebarContentModule,
         NewEntityAnalyticsMockModule,
 

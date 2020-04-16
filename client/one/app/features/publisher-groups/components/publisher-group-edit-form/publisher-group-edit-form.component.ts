@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {ChangeEvent} from '../../../../shared/types/change-event';
-import {PublisherGroupsLibraryStoreFieldsErrorsState} from '../../services/publisher-groups-library-store/publisher-groups-library.store.fields-errors-state';
+import {PublisherGroupsStoreFieldsErrorsState} from '../../services/publisher-groups-store/publisher-groups.store.fields-errors-state';
 
 @Component({
     selector: 'zem-publisher-group-edit-form',
@@ -20,7 +20,7 @@ export class PublisherGroupEditFormComponent {
     @Input()
     publisherGroup: PublisherGroup;
     @Input()
-    publisherGroupErrors: PublisherGroupsLibraryStoreFieldsErrorsState;
+    publisherGroupErrors: PublisherGroupsStoreFieldsErrorsState;
     @Input()
     showNewLabels: boolean = false;
     @Input()

@@ -3,10 +3,10 @@
 </h1>
 <ng-container *ngIf="(store.state$ | async) as state">
     <div
-        class="zem-panel zem-panel--with-padding zem-publisher-groups-library-view__panel"
+        class="zem-panel zem-panel--with-padding zem-publisher-groups-view__panel"
     >
-        <div class="zem-publisher-groups-library-view__top-bar">
-            <div class="zem-publisher-groups-library-view__description">
+        <div class="zem-publisher-groups-view__top-bar">
+            <div class="zem-publisher-groups-view__description">
                 {{
                     showNewLabels
                         ? 'Publisher groups allow you to upload lists of publishers or placements and blacklist or whitelist them in account, campaign or ad group settings.'
@@ -14,14 +14,14 @@
                 }}
             </div>
             <button
-                class="zem-publisher-groups-library-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
+                class="zem-publisher-groups-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
                 (click)="addPublisherGroup()"
             >
                 {{ showNewLabels ? 'Add new list' : 'Add new publisher group' }}
             </button>
         </div>
         <zem-smart-grid
-            class="zem-smart-grid zem-publisher-groups-library-view__item"
+            class="zem-smart-grid zem-publisher-groups-view__item"
             [rowData]="store.state.entities"
             [columnDefs]="columnDefs"
             [context]="context"
@@ -41,9 +41,9 @@
                     : 'Hide system publisher groups'
             "
         >
-            <div class="zem-publisher-groups-library-view__expandable-section">
+            <div class="zem-publisher-groups-view__expandable-section">
                 <div
-                    class="zem-publisher-groups-library-view__item zem-publisher-groups-library-view__section-title"
+                    class="zem-publisher-groups-view__item zem-publisher-groups-view__section-title"
                 >
                     {{
                         showNewLabels
@@ -53,14 +53,14 @@
                 </div>
                 <div
                     *ngIf="showNewLabels"
-                    class="zem-publisher-groups-library-view__description"
+                    class="zem-publisher-groups-view__description"
                 >
                     Publishers and placements that you blacklist in the
                     dashboard are added to one of the system blacklists listed
                     below.
                 </div>
                 <zem-smart-grid
-                    class="zem-smart-grid zem-publisher-groups-library-view__item"
+                    class="zem-smart-grid zem-publisher-groups-view__item"
                     *ngIf="systemPublisherGroupsSection.expanded"
                     [rowData]="store.state.systemEntities"
                     [columnDefs]="systemColumnDefs"
@@ -74,7 +74,7 @@
 
     <zem-modal
         #editPublisherGroupModal
-        class="zem-modal zem-publisher-groups-library-view__modal"
+        class="zem-modal zem-publisher-groups-view__modal"
         [canCloseOnBackdropClick]="false"
         [canCloseOnEscapeKey]="true"
     >
@@ -99,10 +99,8 @@
                     (downloadErrors)="downloadErrors()"
                     (downloadExample)="downloadExample()"
                 >
-                    <div
-                        class="zem-publisher-groups-library-view__splitter"
-                    ></div>
-                    <div class="zem-publisher-groups-library-view__item">
+                    <div class="zem-publisher-groups-view__splitter"></div>
+                    <div class="zem-publisher-groups-view__item">
                         <label>
                             Scope selector
                             <zem-help-popover
@@ -113,7 +111,7 @@
                         </label>
                     </div>
                     <zem-scope-selector
-                        class="zem-publisher-groups-library-view__item zem-scope-selector"
+                        class="zem-publisher-groups-view__item zem-scope-selector"
                         [scopeState]="state.activeEntity.scopeState"
                         [agencyErrors]="
                             state.activeEntity.fieldsErrors?.agencyId

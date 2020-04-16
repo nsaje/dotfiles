@@ -54,7 +54,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             },
         },
         {
-            value: RoutePathName.PUBLISHER_GROUPS_LIBRARY,
+            value: RoutePathName.PUBLISHER_GROUPS,
             displayValue: 'Publisher Groups',
             icon: ListGroupIcon.PublisherGroups,
             isVisible: () => {

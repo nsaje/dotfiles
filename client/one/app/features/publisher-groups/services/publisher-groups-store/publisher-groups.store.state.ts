@@ -1,10 +1,10 @@
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {Account} from '../../../../core/entities/types/account/account';
-import {PublisherGroupsLibraryStoreFieldsErrorsState} from './publisher-groups-library.store.fields-errors-state';
+import {PublisherGroupsStoreFieldsErrorsState} from './publisher-groups.store.fields-errors-state';
 import {RequestState} from '../../../../shared/types/request-state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
-export class PublisherGroupsLibraryStoreState {
+export class PublisherGroupsStoreState {
     agencyId: string = null;
     accountId: string = null;
     hasAgencyScope: boolean = null;
@@ -28,7 +28,7 @@ export class PublisherGroupsLibraryStoreState {
         } as PublisherGroup,
         scopeState: null as ScopeSelectorState,
         isReadOnly: null as boolean,
-        fieldsErrors: new PublisherGroupsLibraryStoreFieldsErrorsState(),
+        fieldsErrors: new PublisherGroupsStoreFieldsErrorsState(),
     };
     accounts: Account[] = [];
     accountsRequests = {

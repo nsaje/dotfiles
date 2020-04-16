@@ -1,20 +1,20 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of} from 'rxjs';
-import {PublisherGroupsLibraryStore} from './publisher-groups-library.store';
+import {PublisherGroupsStore} from './publisher-groups.store';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
 import * as mockHelpers from '../../../../testing/mock.helpers';
 import * as clone from 'clone';
-import {PublisherGroupsLibraryStoreState} from './publisher-groups-library.store.state';
+import {PublisherGroupsStoreState} from './publisher-groups.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
-describe('PublisherGroupsLibraryStore', () => {
+describe('PublisherGroupsStore', () => {
     let publisherGroupsServiceStub: jasmine.SpyObj<PublisherGroupsService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
     let zemPermissionsStub: any;
-    let store: PublisherGroupsLibraryStore;
+    let store: PublisherGroupsStore;
     let mockedPublisherGroups: PublisherGroup[];
     let mockedAgencyId: string;
     let mockedAccountId: string;
@@ -32,7 +32,7 @@ describe('PublisherGroupsLibraryStore', () => {
             'hasAgencyScope',
         ]);
 
-        store = new PublisherGroupsLibraryStore(
+        store = new PublisherGroupsStore(
             publisherGroupsServiceStub,
             accountsServiceStub,
             zemPermissionsStub
@@ -164,7 +164,7 @@ describe('PublisherGroupsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.hasAgencyScope = true;
 
-        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+        const mockedEmptyPublisherGroup = new PublisherGroupsStoreState()
             .activeEntity.entity;
         store.setActiveEntity(mockedPublisherGroup);
 
@@ -186,7 +186,7 @@ describe('PublisherGroupsLibraryStore', () => {
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
 
-        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+        const mockedEmptyPublisherGroup = new PublisherGroupsStoreState()
             .activeEntity.entity;
         store.setActiveEntity(mockedPublisherGroup);
 
@@ -208,7 +208,7 @@ describe('PublisherGroupsLibraryStore', () => {
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
 
-        const mockedEmptyPublisherGroup = new PublisherGroupsLibraryStoreState()
+        const mockedEmptyPublisherGroup = new PublisherGroupsStoreState()
             .activeEntity.entity;
         store.setActiveEntity(mockedPublisherGroup);
 
@@ -230,7 +230,7 @@ describe('PublisherGroupsLibraryStore', () => {
         store.setActiveEntity({});
 
         expect(store.state.activeEntity.entity).toEqual({
-            ...new PublisherGroupsLibraryStoreState().activeEntity.entity,
+            ...new PublisherGroupsStoreState().activeEntity.entity,
             accountId: mockedAccountId,
         });
         expect(store.state.activeEntity.scopeState).toEqual(
@@ -246,7 +246,7 @@ describe('PublisherGroupsLibraryStore', () => {
         store.setActiveEntity({});
 
         expect(store.state.activeEntity.entity).toEqual({
-            ...new PublisherGroupsLibraryStoreState().activeEntity.entity,
+            ...new PublisherGroupsStoreState().activeEntity.entity,
             agencyId: mockedAgencyId,
         });
         expect(store.state.activeEntity.scopeState).toEqual(
