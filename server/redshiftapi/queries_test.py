@@ -347,7 +347,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
             MAX(base_table.publisher_source_id) publisher_id
-        FROM mv_touchpointconversions base_table
+        FROM mv_adgroup_touch_placement base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
@@ -363,6 +363,36 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                 {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
                 [{"account_id": 1, "source_id": 2}],
             )
+
+        sql, params, _ = queries.prepare_query_all_touchpoints(
+            ["publisher_id", "placement", "day", "slug", "window"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
+        )
+
+        self.assertSQLEquals(
+            sql,
+            """
+        SELECT
+            base_table.publisher AS publisher,
+            base_table.source_id AS source_id,
+            base_table.placement AS placement,
+            base_table.date AS day,
+            base_table.slug AS slug,
+            base_table.conversion_window AS "window",
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
+            MAX(base_table.publisher_source_id) publisher_id
+        FROM mv_adgroup_touch_placement base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3, 4, 5, 6
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, placement ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST""",
+        )
+
+        self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_structure_with_stats(self):
         sql, params, _ = queries.prepare_query_structure_with_stats(

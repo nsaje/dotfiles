@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS mv_touchpointconversions (
       conversion_value_nano bigint,
 
       -- kw::dimensions
-      type int2
+      type int2,
+      placement varchar(127)
       -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_touchpointconversions_main_idx ON mv_touchpointconversions (source_id, account_id, campaign_id, ad_group_id, content_ad_id, slug, conversion_window, date);

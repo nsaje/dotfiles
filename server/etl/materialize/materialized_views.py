@@ -24,11 +24,22 @@ MATERIALIZED_VIEWS = [
     MVHelpersAdGroupStructure,
     MVHelpersCampaignFactors,
     MVHelpersCurrencyExchangeRates,
-    # Placement view
-    MVAdGroupPlacementView,
-    MVHelpersNormalizedStats,
     # Must be done before master, it is used there to generate empty rows for conversions
     MVTouchpointConversions,
+    # Placement view
+    MVAdGroupPlacementView,
+    TouchpointConversionsDerivedView.create(
+        table_name="mv_adgroup_touch_placement",
+        breakdown=AD_GROUP_BREAKDOWN
+        + ["publisher", "publisher_source_id", "placement"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=AD_GROUP_BREAKDOWN
+        + ["publisher_source_id", "placement"]
+        + ["slug", "conversion_window", "conversion_label"],
+        distkey="ad_group_id",
+    ),
+    # Master view
+    MVHelpersNormalizedStats,
     MasterView,
     MasterPublishersView,
     MVConversions,

@@ -153,9 +153,20 @@ class ViewSelectorTest(TestCase):
             view_selector.get_best_view_touchpoints(["ad_group_id", "content_ad_id", "publisher_id"]),
             "mv_touchpointconversions",
         )  # noqa
+        self.assertEqual(
+            view_selector.get_best_view_touchpoints(["ad_group_id", "content_ad_id", "publisher_id", "placement_id"]),
+            "mv_touchpointconversions",
+        )  # noqa
 
         self.assertEqual(
-            view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id"]), "mv_touchpointconversions"
+            view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id"]), "mv_adgroup_touch_placement"
+        )  # noqa
+        self.assertEqual(
+            view_selector.get_best_view_touchpoints(["ad_group_id", "placement_id"]), "mv_adgroup_touch_placement"
+        )  # noqa
+        self.assertEqual(
+            view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "placement_id"]),
+            "mv_adgroup_touch_placement",
         )  # noqa
         self.assertEqual(
             view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "dma"]), "mv_touchpointconversions"
@@ -173,6 +184,9 @@ class ViewSelectorTest(TestCase):
         )  # noqa
         self.assertEqual(
             view_selector.get_best_view_touchpoints(["content_ad_id", "publisher_id"]), "mv_touchpointconversions"
+        )  # noqa
+        self.assertEqual(
+            view_selector.get_best_view_touchpoints(["content_ad_id", "placement_id"]), "mv_touchpointconversions"
         )  # noqa
 
     def test_supports_conversions(self):

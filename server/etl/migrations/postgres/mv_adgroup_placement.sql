@@ -35,7 +35,15 @@ CREATE TABLE IF NOT EXISTS mv_adgroup_placement (
     local_effective_cost_nano bigint,
     local_effective_data_cost_nano bigint,
     local_license_fee_nano bigint,
-    local_margin_nano bigint
+    local_margin_nano bigint,
+
+    visits integer,
+    new_visits integer,
+    bounced_visits integer,
+    pageviews integer,
+    total_time_on_site integer,
+    users integer,
+    returning_users integer
 -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_adgroup_placement_main_idx ON mv_adgroup_placement (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement, date);

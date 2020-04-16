@@ -82,52 +82,68 @@ INSERT INTO mv_adgroup_placement (
     FROM
         (
             (
+                (
+                    SELECT
+                        CASE
+                            WHEN hour IS NULL THEN date
+                            {% for date_context in date_ranges %}
+                            WHEN hour IS NOT NULL AND (
+                                (date='{{ date_context.tzdate_from }}'::date AND hour >= {{ date_context.tzhour_from }})
+                                OR (date='{{ date_context.tzdate_to }}'::date AND hour < {{ date_context.tzhour_to }})
+                            )
+                            THEN '{{ date_context.date }}'::date
+                            {% endfor %}
+                        END AS date,
+                        stats_placement.media_source AS source_slug,
+
+                        ad_group_id,
+                        LOWER(publisher) AS publisher,
+                        NULLIF(placement_type, 0) AS placement_type,
+                        LOWER(placement) AS placement,
+                        
+                        SUM(impressions) AS impressions,
+                        SUM(clicks) AS clicks,
+                        SUM(spend) AS spend,
+                        SUM(data_spend) AS data_spend,
+
+                        SUM(video_start) AS video_start,
+                        SUM(video_first_quartile) AS video_first_quartile,
+                        SUM(video_midpoint) AS video_midpoint,
+                        SUM(video_third_quartile) AS video_third_quartile,
+                        SUM(video_complete) AS video_complete,
+                        SUM(video_progress_3s) AS video_progress_3s
+                    FROM (SELECT * from stats_placement_diff UNION ALL SELECT * FROM stats_placement) AS stats_placement
+                    WHERE
+                        ((hour IS NULL AND date>=%(date_from)s AND date<=%(date_to)s)
+                        OR (hour IS NOT NULL and date>%(tzdate_from)s AND date<%(tzdate_to)s)
+                        OR (hour IS NOT NULL AND (
+                            (date=%(tzdate_from)s AND hour >= %(tzhour_from)s)
+                            OR (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
+                        )))
+
+                        {% if account_id %}
+                        AND ad_group_id=ANY(%(ad_group_id)s)
+                        {% endif %}
+                    GROUP BY
+                        1, 2, 3, 4, 5, 6
+                ) a
+                LEFT OUTER JOIN mvh_source b
+                ON a.source_slug=b.bidder_slug
+            )
+            NATURAL FULL OUTER JOIN (
                 SELECT
-                    CASE
-                        WHEN hour IS NULL THEN date
-                        {% for date_context in date_ranges %}
-                        WHEN hour IS NOT NULL AND (
-                            (date='{{ date_context.tzdate_from }}'::date AND hour >= {{ date_context.tzhour_from }})
-                            OR (date='{{ date_context.tzdate_to }}'::date AND hour < {{ date_context.tzhour_to }})
-                        )
-                        THEN '{{ date_context.date }}'::date
-                        {% endfor %}
-                    END AS date,
-                    stats_placement.media_source AS source_slug,
-
+                    date,
+                    source_id,
                     ad_group_id,
-                    LOWER(publisher) AS publisher,
-                    NULLIF(placement_type, 0) AS placement_type,
-                    LOWER(placement) AS placement,
-                    
-                    SUM(impressions) AS impressions,
-                    SUM(clicks) AS clicks,
-                    SUM(spend) AS spend,
-                    SUM(data_spend) AS data_spend,
-
-                    SUM(video_start) AS video_start,
-                    SUM(video_first_quartile) AS video_first_quartile,
-                    SUM(video_midpoint) AS video_midpoint,
-                    SUM(video_third_quartile) AS video_third_quartile,
-                    SUM(video_complete) AS video_complete,
-                    SUM(video_progress_3s) AS video_progress_3s
-                FROM (SELECT * from stats_placement_diff UNION ALL SELECT * FROM stats_placement) AS stats_placement
-                WHERE
-                    ((hour IS NULL AND date>=%(date_from)s AND date<=%(date_to)s)
-                    OR (hour IS NOT NULL and date>%(tzdate_from)s AND date<%(tzdate_to)s)
-                    OR (hour IS NOT NULL AND (
-                        (date=%(tzdate_from)s AND hour >= %(tzhour_from)s)
-                        OR (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
-                    )))
-
-                    {% if account_id %}
-                    AND ad_group_id=ANY(%(ad_group_id)s)
-                    {% endif %}
-                GROUP BY
-                    1, 2, 3, 4, 5, 6
-            ) a
-            LEFT OUTER JOIN mvh_source b
-            ON a.source_slug=b.bidder_slug
+                    CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher,
+                    placement
+                FROM mv_touchpointconversions
+                WHERE date BETWEEN %(date_from)s AND %(date_to)s
+                {% if account_id %}
+                AND account_id=%(account_id)s
+                {% endif %}
+                GROUP BY 1, 2, 3, 4, 5
+            ) tpc
         ) d
         JOIN mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id
         JOIN mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
