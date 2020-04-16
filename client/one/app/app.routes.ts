@@ -2,7 +2,7 @@ import {Routes} from '@angular/router';
 import {DashboardView} from './views/dashboard/dashboard.view';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {RoutePathName} from './app.constants';
-import {DEALS_LIBRARY_ROUTES} from './features/deals-library/deals-library.routes';
+import {DEALS_ROUTES} from './features/deals/deals.routes';
 import {INVENTORY_PLANNING_ROUTES} from './features/inventory-planning/inventory-planning.routes';
 import {CREDITS_ROUTES} from './features/credits/credits.routes';
 import {PIXELS_LIBRARY_ROUTES} from './features/pixels-library/pixels-library.routes';
@@ -55,8 +55,8 @@ export const APP_ROUTES: Routes = [
                 children: PIXELS_LIBRARY_ROUTES,
             },
             {
-                path: RoutePathName.DEALS_LIBRARY,
-                children: DEALS_LIBRARY_ROUTES,
+                path: RoutePathName.DEALS,
+                children: DEALS_ROUTES,
             },
             {
                 path: RoutePathName.INVENTORY_PLANNING,

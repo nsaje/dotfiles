@@ -1,19 +1,17 @@
-<h1 class="zem-main-container__view-title">Deals Library</h1>
+<h1 class="zem-main-container__view-title">Deals</h1>
 
 <ng-container *ngIf="(store.state$ | async) as state">
-    <div
-        class="zem-panel zem-panel--with-padding zem-deals-library-view__panel"
-    >
-        <zem-deals-library-actions
-            class="zem-deals-library-actions zem-deals-library-view__item"
+    <div class="zem-panel zem-panel--with-padding zem-deals-view__panel">
+        <zem-deals-actions
+            class="zem-deals-actions zem-deals-view__item"
             [value]="keyword"
             [isDisabled]="!state.agencyId"
             (search)="searchDeals($event)"
             (dealCreate)="openEditDealModal({})"
         >
-        </zem-deals-library-actions>
+        </zem-deals-actions>
         <zem-smart-grid
-            class="zem-smart-grid zem-deals-library-view__item"
+            class="zem-smart-grid zem-deals-view__item"
             [rowData]="state.entities"
             [columnDefs]="columnDefs"
             [context]="context"
@@ -26,7 +24,7 @@
     </div>
     <zem-modal
         #editDealModal
-        class="zem-modal zem-deals-library-view__modal"
+        class="zem-modal zem-deals-view__modal"
         [canCloseOnBackdropClick]="false"
         [canCloseOnEscapeKey]="true"
     >
@@ -49,7 +47,7 @@
                     [sources]="state.sources"
                     (dealChange)="store.changeActiveEntity($event)"
                 >
-                    <div class="zem-deals-library-view__splitter"></div>
+                    <div class="zem-deals-view__splitter"></div>
                     <div class="zem-deal-edit-form__item">
                         <label>
                             Scope selector
@@ -152,7 +150,7 @@
     </zem-modal>
     <zem-modal
         #connectionsModal
-        class="zem-modal zem-deals-library-view__modal"
+        class="zem-modal zem-deals-view__modal"
         [canCloseOnBackdropClick]="false"
         [canCloseOnEscapeKey]="true"
         (onClose)="closeConnectionsModal()"

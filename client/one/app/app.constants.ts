@@ -739,7 +739,7 @@ export enum RoutePathName {
     PIXELS_LIBRARY = 'pixels',
     INVENTORY_PLANNING = 'inventory-planning',
     ARCHIVED = 'archived',
-    DEALS_LIBRARY = 'dealslibrary',
+    DEALS = 'deals',
     ERROR_FORBIDDEN = 'error/forbidden',
 }
 

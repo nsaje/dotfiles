@@ -75,9 +75,9 @@ angular
                 ),
             },
             {
-                text: 'Deals Library',
-                callback: navigateToDealsLibraryView,
-                isAvailable: isDealsLibraryViewAvailable,
+                text: 'Deals',
+                callback: navigateToDealsView,
+                isAvailable: isDealsViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_see_deals_library'
                 ),
@@ -267,18 +267,18 @@ angular
             ]);
         }
 
-        function isDealsLibraryViewAvailable() {
+        function isDealsViewAvailable() {
             return zemPermissions.hasPermission(
                 'zemauth.can_see_deals_library'
             );
         }
 
-        function navigateToDealsLibraryView() {
+        function navigateToDealsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
 
             if (commonHelpers.isDefined(activeAccount)) {
                 NgRouter.navigate(
-                    [RoutePathName.APP_BASE, RoutePathName.DEALS_LIBRARY],
+                    [RoutePathName.APP_BASE, RoutePathName.DEALS],
                     {
                         queryParams: {
                             agencyId: activeAccount.data.agencyId,
@@ -289,7 +289,7 @@ angular
             } else {
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
-                    RoutePathName.DEALS_LIBRARY,
+                    RoutePathName.DEALS,
                 ]);
             }
         }

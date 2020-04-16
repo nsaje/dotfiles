@@ -1,11 +1,11 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of, noop} from 'rxjs';
 import * as clone from 'clone';
-import {DealsLibraryStore} from './deals-library.store';
+import {DealsStore} from './deals.store';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {DealsService} from '../../../../core/deals/services/deals.service';
-import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
-import {DealsLibraryStoreState} from './deals-library.store.state';
+import {DealsStoreFieldsErrorsState} from './deals.store.fields-errors-state';
+import {DealsStoreState} from './deals.store.state';
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
@@ -19,7 +19,7 @@ describe('DealsLibraryStore', () => {
     let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
     let zemPermissionsStub: any;
-    let store: DealsLibraryStore;
+    let store: DealsStore;
     let mockedDeals: Deal[];
     let mockedSources: Source[];
     let mockedAgencyId: string;
@@ -46,7 +46,7 @@ describe('DealsLibraryStore', () => {
         zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
             'hasAgencyScope',
         ]);
-        store = new DealsLibraryStore(
+        store = new DealsStore(
             dealsServiceStub,
             sourcesServiceStub,
             accountsServiceStub,
@@ -212,7 +212,7 @@ describe('DealsLibraryStore', () => {
         tick();
 
         expect(store.state.activeEntity.fieldsErrors).toEqual(
-            new DealsLibraryStoreFieldsErrorsState()
+            new DealsStoreFieldsErrorsState()
         );
         expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     }));
@@ -253,8 +253,7 @@ describe('DealsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.hasAgencyScope = true;
 
-        const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
-            .entity;
+        const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);
 
         expect(store.state.activeEntity.entity).toEqual({
@@ -275,8 +274,7 @@ describe('DealsLibraryStore', () => {
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
 
-        const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
-            .entity;
+        const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);
 
         expect(store.state.activeEntity.entity).toEqual({
@@ -297,8 +295,7 @@ describe('DealsLibraryStore', () => {
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
 
-        const mockedEmptyDeal = new DealsLibraryStoreState().activeEntity
-            .entity;
+        const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);
 
         expect(store.state.activeEntity.entity).toEqual({
@@ -319,7 +316,7 @@ describe('DealsLibraryStore', () => {
         store.setActiveEntity({});
 
         expect(store.state.activeEntity.entity).toEqual({
-            ...new DealsLibraryStoreState().activeEntity.entity,
+            ...new DealsStoreState().activeEntity.entity,
             accountId: mockedAccountId,
         });
         expect(store.state.activeEntity.scopeState).toEqual(
@@ -335,7 +332,7 @@ describe('DealsLibraryStore', () => {
         store.setActiveEntity({});
 
         expect(store.state.activeEntity.entity).toEqual({
-            ...new DealsLibraryStoreState().activeEntity.entity,
+            ...new DealsStoreState().activeEntity.entity,
             agencyId: mockedAgencyId,
         });
         expect(store.state.activeEntity.scopeState).toEqual(

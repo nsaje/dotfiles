@@ -2,23 +2,23 @@ import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
-import {DealsLibraryView} from './deals-library.view';
-import {DealsLibraryStore} from '../../services/deals-library-store/deals-library.store';
+import {DealsView} from './deals.view';
+import {DealsStore} from '../../services/deals-store/deals.store';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {SourcesEndpoint} from '../../../../core/sources/services/sources.endpoint';
 import {DealsEndpoint} from '../../../../core/deals/services/deals.endpoint';
 import {ConnectionsListComponent} from '../../components/connections-list/connections-list.component';
-import {DealsLibraryActionsComponent} from '../../components/deals-library-actions/deals-library-actions.component';
+import {DealsActionsComponent} from '../../components/deals-actions/deals-actions.component';
 import {noop} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
 
-describe('DealsLibraryView', () => {
-    let component: DealsLibraryView;
-    let fixture: ComponentFixture<DealsLibraryView>;
+describe('DealsView', () => {
+    let component: DealsView;
+    let fixture: ComponentFixture<DealsView>;
 
     let zemPermissionsStub: any;
     let zemNavigationNewServiceStub: any;
@@ -33,9 +33,9 @@ describe('DealsLibraryView', () => {
 
         TestBed.configureTestingModule({
             declarations: [
-                DealsLibraryView,
+                DealsView,
                 ConnectionsListComponent,
-                DealsLibraryActionsComponent,
+                DealsActionsComponent,
             ],
             imports: [
                 FormsModule,
@@ -43,7 +43,7 @@ describe('DealsLibraryView', () => {
                 RouterTestingModule.withRoutes([]),
             ],
             providers: [
-                DealsLibraryStore,
+                DealsStore,
                 DealsService,
                 DealsEndpoint,
                 {
@@ -74,7 +74,7 @@ describe('DealsLibraryView', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(DealsLibraryView);
+        fixture = TestBed.createComponent(DealsView);
         component = fixture.componentInstance;
     });
 

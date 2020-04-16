@@ -3,15 +3,15 @@ import {Source} from '../../../../core/sources/types/source';
 import {Account} from '../../../../core/entities/types/account/account';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {RequestState} from '../../../../shared/types/request-state';
-import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
+import {DealsStoreFieldsErrorsState} from './deals.store.fields-errors-state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
-export class DealsLibraryStoreState {
+export class DealsStoreState {
     agencyId: string = null;
     accountId: string = null;
     hasAgencyScope: boolean = null;
     entities: Deal[] = [];
-    fieldsErrors: DealsLibraryStoreFieldsErrorsState[] = [];
+    fieldsErrors: DealsStoreFieldsErrorsState[] = [];
     activeEntity = {
         entity: {
             id: null,
@@ -34,7 +34,7 @@ export class DealsLibraryStoreState {
         scopeState: null as ScopeSelectorState,
         isReadOnly: null as boolean,
         connections: [] as DealConnection[],
-        fieldsErrors: new DealsLibraryStoreFieldsErrorsState(),
+        fieldsErrors: new DealsStoreFieldsErrorsState(),
     };
     accounts: Account[] = [];
     accountsRequests = {

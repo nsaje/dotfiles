@@ -10,7 +10,7 @@ import {InventoryPlanningModule} from './features/inventory-planning/inventory-p
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
 import {RulesLibraryModule} from './features/rules-library/rules-library.module';
-import {DealsLibraryModule} from './features/deals-library/deals-library.module';
+import {DealsModule} from './features/deals/deals.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
 import {CreditsModule} from './features/credits/credits.module';
@@ -81,7 +81,7 @@ if (APP_CONFIG.env.prod) {
         AnalyticsModule,
         ArchivedModule,
         RulesLibraryModule,
-        DealsLibraryModule,
+        DealsModule,
         CreditsModule,
         PixelsLibraryModule,
         UsersLibraryModule,

@@ -6,8 +6,8 @@ import {takeUntil} from 'rxjs/operators';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {Deal} from '../../../../core/deals/types/deal';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
-import {DealsLibraryStoreState} from './deals-library.store.state';
-import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
+import {DealsStoreState} from './deals.store.state';
+import {DealsStoreFieldsErrorsState} from './deals.store.fields-errors-state';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
@@ -19,8 +19,7 @@ import {Source} from '../../../../core/sources/types/source';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 
 @Injectable()
-export class DealsLibraryStore extends Store<DealsLibraryStoreState>
-    implements OnDestroy {
+export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private sourcesRequestStateUpdater: RequestStateUpdater;
@@ -32,7 +31,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         private accountsService: AccountService,
         @Inject('zemPermissions') private zemPermissions: any
     ) {
-        super(new DealsLibraryStoreState());
+        super(new DealsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
@@ -109,7 +108,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                 .subscribe(
                     () => {
                         this.patchState(
-                            new DealsLibraryStoreState().activeEntity.entity,
+                            new DealsStoreState().activeEntity.entity,
                             'activeEntity',
                             'entity'
                         );
@@ -117,7 +116,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                     },
                     (error: HttpErrorResponse) => {
                         const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new DealsLibraryStoreFieldsErrorsState(),
+                            new DealsStoreFieldsErrorsState(),
                             error
                         );
                         this.patchState(
@@ -141,14 +140,14 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             .subscribe(
                 () => {
                     this.patchState(
-                        new DealsLibraryStoreFieldsErrorsState(),
+                        new DealsStoreFieldsErrorsState(),
                         'activeEntity',
                         'fieldsErrors'
                     );
                 },
                 (error: HttpErrorResponse) => {
                     const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                        new DealsLibraryStoreFieldsErrorsState(),
+                        new DealsStoreFieldsErrorsState(),
                         error
                     );
                     this.patchState(
@@ -221,7 +220,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     }
 
     setActiveEntity(entity: Partial<Deal>): void {
-        const newActiveEntity = new DealsLibraryStoreState().activeEntity;
+        const newActiveEntity = new DealsStoreState().activeEntity;
         let scopeState = null;
 
         if (!commonHelpers.isDefined(entity.id)) {

@@ -184,14 +184,14 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'Pixels & Audiences',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
-            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.DEALS_LIBRARY)) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.DEALS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
-                    RoutePathName.DEALS_LIBRARY
+                    RoutePathName.DEALS
                 ];
                 return {
                     typeName: 'Management Console',
-                    name: 'Deals Library',
+                    name: 'Deals',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.PUBLISHER_GROUPS_LIBRARY)) {

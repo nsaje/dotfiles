@@ -1,7 +1,7 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
 import {NonFieldErrors} from '../../../../shared/types/non-field-errors';
 
-export class DealsLibraryStoreFieldsErrorsState {
+export class DealsStoreFieldsErrorsState {
     id: FieldErrors = [];
     agencyId: FieldErrors = [];
     accountId: FieldErrors = [];

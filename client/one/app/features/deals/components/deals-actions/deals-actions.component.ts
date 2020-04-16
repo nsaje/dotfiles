@@ -1,4 +1,4 @@
-import './deals-library-actions.component.less';
+import './deals-actions.component.less';
 
 import {
     Component,
@@ -14,11 +14,11 @@ import {takeUntil, distinctUntilChanged, debounceTime} from 'rxjs/operators';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
-    selector: 'zem-deals-library-actions',
-    templateUrl: './deals-library-actions.component.html',
+    selector: 'zem-deals-actions',
+    templateUrl: './deals-actions.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DealsLibraryActionsComponent implements OnInit, OnDestroy {
+export class DealsActionsComponent implements OnInit, OnDestroy {
     @Input()
     value: string;
     @Input()

@@ -1,25 +1,25 @@
 import {NgModule} from '@angular/core';
 
 import {SharedModule} from '../../shared/shared.module';
-import {DealsLibraryView} from './views/deals-library/deals-library.view';
+import {DealsView} from './views/deals/deals.view';
 import {DealActionsCellComponent} from './components/deal-actions-cell/deal-actions-cell.component';
 import {ConnectionActionsCellComponent} from './components/connection-actions-cell/connection-actions-cell.component';
 import {ConnectionsListComponent} from './components/connections-list/connections-list.component';
-import {DealsLibraryActionsComponent} from './components/deals-library-actions/deals-library-actions.component';
+import {DealsActionsComponent} from './components/deals-actions/deals-actions.component';
 
 @NgModule({
     declarations: [
-        DealsLibraryView,
+        DealsView,
         DealActionsCellComponent,
         ConnectionActionsCellComponent,
         ConnectionsListComponent,
-        DealsLibraryActionsComponent,
+        DealsActionsComponent,
     ],
     imports: [SharedModule],
     entryComponents: [
-        DealsLibraryView,
+        DealsView,
         DealActionsCellComponent,
         ConnectionActionsCellComponent,
     ],
 })
-export class DealsLibraryModule {}
+export class DealsModule {}

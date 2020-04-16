@@ -1,14 +1,14 @@
 import {Routes} from '@angular/router';
-import {DealsLibraryView} from './views/deals-library/deals-library.view';
+import {DealsView} from './views/deals/deals.view';
 import {RoutePathName} from '../../app.constants';
 
 const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}`;
 
-export const DEALS_LIBRARY_ROUTES: Routes = [
+export const DEALS_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        component: DealsLibraryView,
+        component: DealsView,
     },
     {
         path: '**',

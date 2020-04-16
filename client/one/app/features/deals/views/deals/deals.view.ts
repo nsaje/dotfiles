@@ -1,4 +1,4 @@
-import './deals-library.view.less';
+import './deals.view.less';
 
 import {
     Component,
@@ -22,9 +22,9 @@ import {ModalComponent} from '../../../../shared/components/modal/modal.componen
 import {FieldErrors} from 'one/app/shared/types/field-errors';
 import {Deal} from '../../../../core/deals/types/deal';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
-import {DealsLibraryStore} from '../../services/deals-library-store/deals-library.store';
+import {DealsStore} from '../../services/deals-store/deals.store';
 import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/types/pagination-change-event';
-import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal-actions-cell.component';
+import {DealActionsCellComponent} from '../../components/deal-actions-cell/deal-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -32,14 +32,14 @@ import {ActivatedRoute, Router} from '@angular/router';
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
 @Component({
-    selector: 'zem-deals-library-view',
-    templateUrl: './deals-library.view.html',
+    selector: 'zem-deals-view',
+    templateUrl: './deals.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [DealsLibraryStore],
+    providers: [DealsStore],
 })
-export class DealsLibraryView implements OnInit, OnDestroy {
+export class DealsView implements OnInit, OnDestroy {
     @HostBinding('class')
-    cssClass = 'zem-deals-library-view';
+    cssClass = 'zem-deals-view';
     @ViewChild('editDealModal', {static: false})
     editDealModal: ModalComponent;
     @ViewChild('connectionsModal', {static: false})
@@ -126,7 +126,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             headerName: 'Accounts',
             field: 'numOfAccounts',
             cellClassRules: {
-                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': 'x>=1',
             },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
@@ -141,7 +141,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             headerName: 'Campaigns',
             field: 'numOfCampaigns',
             cellClassRules: {
-                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': 'x>=1',
             },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
@@ -156,7 +156,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
             headerName: 'Ad Groups',
             field: 'numOfAdgroups',
             cellClassRules: {
-                'zem-deals-library-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': 'x>=1',
             },
             onCellClicked: $event => {
                 if ($event.value >= 1) {
@@ -194,7 +194,7 @@ export class DealsLibraryView implements OnInit, OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
-        public store: DealsLibraryStore,
+        public store: DealsStore,
         private route: ActivatedRoute,
         private router: Router
     ) {

@@ -1,21 +1,21 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
-import {DealsLibraryActionsComponent} from './deals-library-actions.component';
+import {DealsActionsComponent} from './deals-actions.component';
 
-describe('DealsLibraryActionsComponent', () => {
-    let component: DealsLibraryActionsComponent;
-    let fixture: ComponentFixture<DealsLibraryActionsComponent>;
+describe('DealsActionsComponent', () => {
+    let component: DealsActionsComponent;
+    let fixture: ComponentFixture<DealsActionsComponent>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [DealsLibraryActionsComponent],
+            declarations: [DealsActionsComponent],
             imports: [FormsModule, SharedModule],
         });
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(DealsLibraryActionsComponent);
+        fixture = TestBed.createComponent(DealsActionsComponent);
         component = fixture.componentInstance;
     });
 

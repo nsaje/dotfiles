@@ -44,8 +44,8 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             },
         },
         {
-            value: RoutePathName.DEALS_LIBRARY,
-            displayValue: 'Deals Library',
+            value: RoutePathName.DEALS,
+            displayValue: 'Deals',
             icon: ListGroupIcon.Folder,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(
