@@ -5,7 +5,6 @@ import backtosql
 import dash.constants
 import stats.constants
 from redshiftapi import helpers
-from redshiftapi import view_selector
 from utils import cache_helper
 from utils import converters
 from utils.dict_helper import dict_join
@@ -80,7 +79,6 @@ class BreakdownsBase(backtosql.Model):
 
     publisher_id = backtosql.TemplateColumn("part_publisher_id.sql")
     placement_id = backtosql.TemplateColumn("part_placement_id.sql")
-    external_id = backtosql.TemplateColumn("part_max.sql", {"column_name": "external_id"})
 
     def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
@@ -106,9 +104,6 @@ class BreakdownsBase(backtosql.Model):
 
         if "publisher_id" in breakdown:
             columns.append(self.publisher_id)
-
-            if view_selector.supports_external_id(view):
-                columns.append(self.external_id)
 
         if "placement_id" in breakdown:
             columns.append(self.placement_id)

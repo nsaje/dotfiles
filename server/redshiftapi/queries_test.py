@@ -60,9 +60,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
     @mock.patch.object(
-        models.MVMaster,
-        "get_aggregates",
-        return_value=[models.MVMaster.clicks, models.MVMaster.external_id, models.MVMaster.publisher_id],
+        models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks, models.MVMaster.publisher_id]
     )
     def test_query_all_base_publishers(self, _):
         sql, params, _ = queries.prepare_query_all_base(
@@ -80,7 +78,6 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.dma AS dma,
             SUM(base_table.clicks) clicks,
-            MAX(base_table.external_id) AS external_id,
             MAX(base_table.publisher_source_id) publisher_id
         FROM mv_master_pubs base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
@@ -484,7 +481,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             models.MVJointMaster.clicks,
             models.MVJointMaster.total_seconds,
             models.MVJointMaster.publisher_id,
-            models.MVJointMaster.external_id,
         ],
     )
     def test_query_joint_base_publishers(self, _a, _b):
@@ -504,7 +500,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                temp_base.clicks,
                temp_base.total_seconds,
                temp_base.publisher_id,
-               temp_base.external_id,
                temp_yesterday.e_yesterday_cost,
                temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
@@ -520,8 +515,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.source_id AS source_id,
                   sum(a.clicks) clicks,
                   sum(a.total_time_on_site) total_seconds,
-                  max(a.publisher_source_id) publisher_id,
-                  max(a.external_id) AS external_id
+                  max(a.publisher_source_id) publisher_id
            FROM mv_account_pubs a
            WHERE (a.date>=%s
                   AND a.date<=%s)
@@ -746,7 +740,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             models.MVJointMaster.clicks,
             models.MVJointMaster.total_seconds,
             models.MVJointMaster.publisher_id,
-            models.MVJointMaster.external_id,
         ],
     )
     def test_query_joint_levels_publishers(self, _a, _b):
@@ -767,7 +760,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.clicks,
                b.total_seconds,
                b.publisher_id,
-               b.external_id,
                b.e_yesterday_cost,
                b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
@@ -785,7 +777,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.clicks,
                   a.total_seconds,
                   a.publisher_id,
-                  a.external_id,
                   a.e_yesterday_cost,
                   a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
@@ -805,7 +796,6 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.clicks,
                      temp_base.total_seconds,
                      temp_base.publisher_id,
-                     temp_base.external_id,
                      temp_yesterday.e_yesterday_cost,
                      temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
@@ -822,8 +812,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         a.dma AS dma,
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
-                        max(a.publisher_source_id) publisher_id,
-                        max(a.external_id) AS external_id
+                        max(a.publisher_source_id) publisher_id
                  FROM mv_master_pubs a
                  WHERE (a.date>=%s
                         AND a.date<=%s)

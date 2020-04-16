@@ -262,7 +262,7 @@ class MVMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
     def test_get_aggregates(self):
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["publisher_id"], "mv_master_pubs")],
-            ALL_AGGREGATES + ["external_id", "publisher_id"],
+            ALL_AGGREGATES + ["publisher_id"],
         )
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["publisher_id"], "mv_master")],
@@ -785,7 +785,7 @@ class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
     def test_aggregates(self):
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["publisher_id"], "mv_master_pubs")],
-            ALL_AGGREGATES + ["external_id", "publisher_id"],
+            ALL_AGGREGATES + ["publisher_id"],
         )
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["publisher_id"], "mv_master")],

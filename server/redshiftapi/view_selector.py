@@ -77,10 +77,6 @@ TOUCHPOINT_VIEWS = [
 ]
 
 
-def supports_external_id(view):
-    return view in [x[0] for x in PUBLISHER_VIEWS]
-
-
 def supports_conversions(base_view, conversions_view):
     return bool(base_view and conversions_view)
 
