@@ -28,8 +28,8 @@ class CreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         return value
 
 
-class CreditRefundQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+class CreditRefundQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+):
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
-    offset = restapi.serializers.fields.IntegerField(required=False)
-    limit = restapi.serializers.fields.IntegerField(required=False)
