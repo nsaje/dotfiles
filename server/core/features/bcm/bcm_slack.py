@@ -3,8 +3,8 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
-AGENCY_URL = "https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}"
-ACCOUNT_URL = "https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}"
+AGENCY_URL = "https://one.zemanta.com/v2/credits?agencyId={agency_id}"
+ACCOUNT_URL = "https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}"
 CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{campaign_id}(drawer:settings)?settingsEntityType=campaign&settingsEntityId={campaign_id}"
 
 SLACK_SKIP_LOG_ACCOUNTS = (305,)

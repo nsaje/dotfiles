@@ -34,8 +34,8 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
 
     items: ListGroupItem[] = [
         {
-            value: RoutePathName.CREDITS_LIBRARY,
-            displayValue: 'Credits Library',
+            value: RoutePathName.CREDITS,
+            displayValue: 'Credits',
             icon: ListGroupIcon.Credit,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(

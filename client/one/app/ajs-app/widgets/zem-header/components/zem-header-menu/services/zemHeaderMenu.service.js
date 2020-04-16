@@ -67,9 +67,9 @@ angular
 
         var MANAGEMENT_CONSOLE_ACTIONS = [
             {
-                text: 'Credits Library',
-                callback: navigateToCreditsLibraryView,
-                isAvailable: isCreditsLibraryViewAvailable,
+                text: 'Credits',
+                callback: navigateToCreditsView,
+                isAvailable: isCreditsViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.account_credit_view'
                 ),
@@ -173,16 +173,16 @@ angular
             }
         }
 
-        function isCreditsLibraryViewAvailable() {
+        function isCreditsViewAvailable() {
             return zemPermissions.hasPermission('zemauth.account_credit_view');
         }
 
-        function navigateToCreditsLibraryView() {
+        function navigateToCreditsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
 
             if (commonHelpers.isDefined(activeAccount)) {
                 NgRouter.navigate(
-                    [RoutePathName.APP_BASE, RoutePathName.CREDITS_LIBRARY],
+                    [RoutePathName.APP_BASE, RoutePathName.CREDITS],
                     {
                         queryParams: {
                             agencyId: activeAccount.data.agencyId,
@@ -193,7 +193,7 @@ angular
             } else {
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
-                    RoutePathName.CREDITS_LIBRARY,
+                    RoutePathName.CREDITS,
                 ]);
             }
         }

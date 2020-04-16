@@ -1,17 +1,17 @@
 import {NgModule} from '@angular/core';
 
 import {SharedModule} from '../../shared/shared.module';
-import {CreditsLibraryView} from './views/credits-library/credits-library.view';
+import {CreditsView} from './views/credits/credits.view';
 import {CreditsComponent} from './components/credits/credits.component';
 import {CreditsScopeSelectorComponent} from './components/credits-scope-selector/credits-scope-selector.component';
 
 @NgModule({
     declarations: [
-        CreditsLibraryView,
+        CreditsView,
         CreditsComponent,
         CreditsScopeSelectorComponent,
     ],
     imports: [SharedModule],
-    entryComponents: [CreditsLibraryView, CreditsScopeSelectorComponent],
+    entryComponents: [CreditsView, CreditsScopeSelectorComponent],
 })
-export class CreditsLibraryModule {}
+export class CreditsModule {}

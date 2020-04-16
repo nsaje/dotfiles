@@ -1,4 +1,4 @@
-import './credits-library.view.less';
+import './credits.view.less';
 
 import {
     Component,
@@ -14,13 +14,13 @@ import {takeUntil, filter} from 'rxjs/operators';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
-    selector: 'zem-credits-library-view',
-    templateUrl: './credits-library.view.html',
+    selector: 'zem-credits-view',
+    templateUrl: './credits.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CreditsLibraryView implements OnInit, OnDestroy {
+export class CreditsView implements OnInit, OnDestroy {
     @HostBinding('class')
-    cssClass = 'zem-credits-library-view';
+    cssClass = 'zem-credits-view';
 
     agencyId: string;
     accountId: string;

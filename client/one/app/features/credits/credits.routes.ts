@@ -1,14 +1,14 @@
 import {Routes} from '@angular/router';
 import {RoutePathName} from '../../app.constants';
-import {CreditsLibraryView} from './views/credits-library/credits-library.view';
+import {CreditsView} from './views/credits/credits.view';
 
 const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}`;
 
-export const CREDITS_LIBRARY_ROUTES: Routes = [
+export const CREDITS_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        component: CreditsLibraryView,
+        component: CreditsView,
     },
     {
         path: '**',

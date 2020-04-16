@@ -142,14 +142,14 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'User permissions',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
-            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS_LIBRARY)) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.CREDITS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
-                    RoutePathName.CREDITS_LIBRARY
+                    RoutePathName.CREDITS
                 ];
                 return {
                     typeName: 'Management Console',
-                    name: 'Credits Library',
+                    name: 'Credits',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.REPORTS_LIBRARY)) {

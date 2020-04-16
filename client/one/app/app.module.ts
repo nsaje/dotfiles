@@ -13,7 +13,7 @@ import {RulesLibraryModule} from './features/rules-library/rules-library.module'
 import {DealsLibraryModule} from './features/deals-library/deals-library.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
-import {CreditsLibraryModule} from './features/credits-library/credits-library.module';
+import {CreditsModule} from './features/credits/credits.module';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
 import {UsersLibraryModule} from './features/users-library/users-library.module';
@@ -82,7 +82,7 @@ if (APP_CONFIG.env.prod) {
         ArchivedModule,
         RulesLibraryModule,
         DealsLibraryModule,
-        CreditsLibraryModule,
+        CreditsModule,
         PixelsLibraryModule,
         UsersLibraryModule,
         ReportsLibraryModule,

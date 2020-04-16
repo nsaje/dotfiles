@@ -218,7 +218,7 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             None,
-            "New agency credit #{credit_id} added to agency <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}|{agency_name}> with amount €500 and end date 2017-06-20.".format(
+            "New agency credit #{credit_id} added to agency <https://one.zemanta.com/v2/credits?agencyId={agency_id}|{agency_name}> with amount €500 and end date 2017-06-20.".format(
                 credit_id=cli.pk, agency_id=self.agency.id, agency_name=self.agency.name
             ),
         )
@@ -263,7 +263,7 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
                 credit_id=cli.pk,
                 agency_id=self.account.agency_id,
                 account_id=self.account.id,
@@ -310,7 +310,7 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
                 credit_id=cli.pk,
                 agency_id=self.account.agency_id,
                 account_id=self.account.id,
@@ -357,7 +357,7 @@ class CreateCreditTestCase(TestCase):
         )
         mock_slack.assert_called_with(
             1,
-            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/creditslibrary?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
+            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
                 credit_id=cli.pk,
                 agency_id=self.account.agency_id,
                 account_id=self.account.id,

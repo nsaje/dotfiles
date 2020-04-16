@@ -1,10 +1,10 @@
 import {Routes} from '@angular/router';
 import {DashboardView} from './views/dashboard/dashboard.view';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
-import {RoutePathName, LevelParam} from './app.constants';
+import {RoutePathName} from './app.constants';
 import {DEALS_LIBRARY_ROUTES} from './features/deals-library/deals-library.routes';
 import {INVENTORY_PLANNING_ROUTES} from './features/inventory-planning/inventory-planning.routes';
-import {CREDITS_LIBRARY_ROUTES} from './features/credits-library/credits-library.routes';
+import {CREDITS_ROUTES} from './features/credits/credits.routes';
 import {PIXELS_LIBRARY_ROUTES} from './features/pixels-library/pixels-library.routes';
 import {PUBLISHER_GROUPS_LIBRARY_ROUTES} from './features/publisher-groups-library/publisher-groups-library.routes';
 import {REPORTS_LIBRARY_ROUTES} from './features/reports-library/reports-library.routes';
@@ -39,8 +39,8 @@ export const APP_ROUTES: Routes = [
                 children: REPORTS_LIBRARY_ROUTES,
             },
             {
-                path: RoutePathName.CREDITS_LIBRARY,
-                children: CREDITS_LIBRARY_ROUTES,
+                path: RoutePathName.CREDITS,
+                children: CREDITS_ROUTES,
             },
             {
                 path: RoutePathName.PUBLISHER_GROUPS_LIBRARY,

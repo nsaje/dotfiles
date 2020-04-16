@@ -1,9 +1,9 @@
 <div class="custom-panel">
     <h2 class="custom-panel__title">Overview</h2>
     <div class="custom-panel__description">
-        Account credit is the basis of allocating any budget to any campaign.
-        Valid credit items are used by campaign budget items in the order they
-        are listed.
+        Credit is the basis of allocating any budget to any campaign. Valid
+        credit items are used by campaign budget items in the order they are
+        listed.
     </div>
     <div
         class="loader loader--full-width"
@@ -15,9 +15,7 @@
         ng-repeat="item in $ctrl.state.totals"
     >
         <div class="zem-credits__credit-overview-box">
-            <span class="zem-credits__credit-overview-name"
-                >Total Account Value</span
-            >
+            <span class="zem-credits__credit-overview-name">Total Value</span>
             <span class="zem-credits__credit-overview-value">{{
                 item.total | decimalCurrency: item.currencySymbol:2
             }}</span>
@@ -40,7 +38,7 @@
             class="zem-credits__credit-overview-box zem-credits__credit-overview-box--exposed"
         >
             <span class="zem-credits__credit-overview-name"
-                >Available Account Credit</span
+                >Available Credit</span
             >
             <span class="zem-credits__credit-overview-value">{{
                 item.available | decimalCurrency: item.currencySymbol:2
