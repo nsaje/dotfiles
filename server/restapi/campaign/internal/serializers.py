@@ -137,7 +137,7 @@ class CloneCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
 
-class CampaignInternalQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+class CampaignInternalQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+):
     account_id = restapi.serializers.fields.IdField(required=True)
-    limit = restapi.serializers.fields.IntegerField(required=False)
-    offset = restapi.serializers.fields.IntegerField(required=False)
