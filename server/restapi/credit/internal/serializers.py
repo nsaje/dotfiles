@@ -90,9 +90,9 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
         return value
 
 
-class CreditQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+class CreditQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+):
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
     active = restapi.serializers.fields.NullBooleanField(required=False)
-    offset = restapi.serializers.fields.IntegerField(required=False)
-    limit = restapi.serializers.fields.IntegerField(required=False)
