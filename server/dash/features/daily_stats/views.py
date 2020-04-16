@@ -186,6 +186,12 @@ class AllAccountsDailyStatsView(BaseDailyStatsView):
         params["filtered_account_types"] = self.view_filter.cleaned_data.get("filtered_account_types")
         return params
 
+    def _get_currency_from_constraints(self, user, constraints):
+        currency = super()._get_currency_from_constraints(user, constraints)
+        if currency:
+            return currency
+        return dash.constants.Currency.USD
+
 
 class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
     def extract_params(self, request, selected_only):
