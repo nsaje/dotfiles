@@ -17,7 +17,7 @@ import {CreditsModule} from './features/credits/credits.module';
 import {ErrorForbiddenView} from './views/error-forbidden/error-forbidden.view';
 import {PixelsLibraryModule} from './features/pixels-library/pixels-library.module';
 import {UserPermissionsModule} from './features/user-permissions/user-permissions.module';
-import {ReportsLibraryModule} from './features/reports-library/reports-library.module';
+import {ScheduledReportsModule} from './features/scheduled-reports/scheduled-reports.module';
 import {PublisherGroupsModule} from './features/publisher-groups/publisher-groups.module';
 import {DashboardView} from './views/dashboard/dashboard.view';
 import {AppRootComponent} from './app-root.component';
@@ -85,7 +85,7 @@ if (APP_CONFIG.env.prod) {
         CreditsModule,
         PixelsLibraryModule,
         UserPermissionsModule,
-        ReportsLibraryModule,
+        ScheduledReportsModule,
         PublisherGroupsModule,
         SidebarContentModule,
         NewEntityAnalyticsMockModule,

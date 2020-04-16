@@ -1,4 +1,4 @@
-import './reports-library.view.less';
+import './scheduled-reports.view.less';
 
 import {
     Component,
@@ -20,13 +20,13 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-    selector: 'zem-reports-library-view',
-    templateUrl: './reports-library.view.html',
+    selector: 'zem-scheduled-reports-view',
+    templateUrl: './scheduled-reports.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportsLibraryView implements OnInit, OnDestroy {
+export class ScheduledReportsView implements OnInit, OnDestroy {
     @HostBinding('class')
-    cssClass = 'zem-reports-library-view';
+    cssClass = 'zem-scheduled-reports-view';
 
     entity: any;
 

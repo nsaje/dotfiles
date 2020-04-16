@@ -7,7 +7,7 @@ import {INVENTORY_PLANNING_ROUTES} from './features/inventory-planning/inventory
 import {CREDITS_ROUTES} from './features/credits/credits.routes';
 import {PIXELS_LIBRARY_ROUTES} from './features/pixels-library/pixels-library.routes';
 import {PUBLISHER_GROUPS_ROUTES} from './features/publisher-groups/publisher-groups.routes';
-import {REPORTS_LIBRARY_ROUTES} from './features/reports-library/reports-library.routes';
+import {SCHEDULED_REPORTS_ROUTES} from './features/scheduled-reports/scheduled-reports.routes';
 import {USER_PERMISSIONS_ROUTES} from './features/user-permissions/user-permissions.routes';
 import {ANALYTICS_ROUTES} from './features/analytics/analytics.routes';
 import {ARCHIVED_ROUTES} from './features/archived/archived.routes';
@@ -35,8 +35,8 @@ export const APP_ROUTES: Routes = [
                 children: NEW_ENTITY_ANALYTICS_MOCK_ROUTES,
             },
             {
-                path: RoutePathName.REPORTS_LIBRARY,
-                children: REPORTS_LIBRARY_ROUTES,
+                path: RoutePathName.SCHEDULED_REPORTS,
+                children: SCHEDULED_REPORTS_ROUTES,
             },
             {
                 path: RoutePathName.CREDITS,

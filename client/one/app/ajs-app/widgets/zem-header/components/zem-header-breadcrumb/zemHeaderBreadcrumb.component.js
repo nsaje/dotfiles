@@ -152,10 +152,10 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'Credits',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
-            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.REPORTS_LIBRARY)) {
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.SCHEDULED_REPORTS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
-                    RoutePathName.REPORTS_LIBRARY
+                    RoutePathName.SCHEDULED_REPORTS
                 ];
                 if (levelParam) {
                     urlTree.push(levelParam);

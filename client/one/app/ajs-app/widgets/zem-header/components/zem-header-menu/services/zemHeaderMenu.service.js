@@ -200,14 +200,14 @@ angular
             if (activeAccount) {
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
-                    RoutePathName.REPORTS_LIBRARY,
+                    RoutePathName.SCHEDULED_REPORTS,
                     LevelParam.ACCOUNT,
                     activeAccount.id,
                 ]);
             } else if (activeAccount === null) {
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
-                    RoutePathName.REPORTS_LIBRARY,
+                    RoutePathName.SCHEDULED_REPORTS,
                     LevelParam.ACCOUNTS,
                 ]);
             }

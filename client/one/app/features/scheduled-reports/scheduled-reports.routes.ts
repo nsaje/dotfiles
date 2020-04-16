@@ -1,10 +1,10 @@
 import {Routes} from '@angular/router';
 import {RoutePathName, LevelParam} from '../../app.constants';
-import {ReportsLibraryView} from './views/reports-library/reports-library.view';
+import {ScheduledReportsView} from './views/scheduled-reports/scheduled-reports.view';
 
 const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}`;
 
-export const REPORTS_LIBRARY_ROUTES: Routes = [
+export const SCHEDULED_REPORTS_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
@@ -15,7 +15,7 @@ export const REPORTS_LIBRARY_ROUTES: Routes = [
         data: {
             level: LevelParam.ACCOUNTS,
         },
-        component: ReportsLibraryView,
+        component: ScheduledReportsView,
     },
     {
         path: LevelParam.ACCOUNT,
@@ -30,7 +30,7 @@ export const REPORTS_LIBRARY_ROUTES: Routes = [
             },
             {
                 path: ':id',
-                component: ReportsLibraryView,
+                component: ScheduledReportsView,
             },
         ],
     },

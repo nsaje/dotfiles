@@ -2,11 +2,11 @@ import {NgModule} from '@angular/core';
 
 import {SharedModule} from '../../shared/shared.module';
 import {ScheduledReportsComponent} from './components/scheduled-reports/scheduled-reports.component';
-import {ReportsLibraryView} from './views/reports-library/reports-library.view';
+import {ScheduledReportsView} from './views/scheduled-reports/scheduled-reports.view';
 
 @NgModule({
-    declarations: [ScheduledReportsComponent, ReportsLibraryView],
+    declarations: [ScheduledReportsComponent, ScheduledReportsView],
     imports: [SharedModule],
-    entryComponents: [ReportsLibraryView],
+    entryComponents: [ScheduledReportsView],
 })
-export class ReportsLibraryModule {}
+export class ScheduledReportsModule {}
