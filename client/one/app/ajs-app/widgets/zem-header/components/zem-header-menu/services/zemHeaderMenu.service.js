@@ -57,8 +57,8 @@ angular
             },
             {
                 text: 'User permissions',
-                callback: navigateToUserPermissions,
-                isAvailable: isUserPermissionsAvailable,
+                callback: navigateToUserPermissionsView,
+                isAvailable: isUserPermissionsViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.account_agency_access_permissions'
                 ),
@@ -222,7 +222,7 @@ angular
             });
         }
 
-        function isUserPermissionsAvailable() {
+        function isUserPermissionsViewAvailable() {
             if (
                 !zemPermissions.hasPermission(
                     'zemauth.account_agency_access_permissions'
@@ -234,11 +234,11 @@ angular
             );
         }
 
-        function navigateToUserPermissions() {
+        function navigateToUserPermissionsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
             NgRouter.navigate([
                 RoutePathName.APP_BASE,
-                RoutePathName.USERS_LIBRARY,
+                RoutePathName.USER_PERMISSIONS,
                 LevelParam.ACCOUNT,
                 activeAccount.id,
             ]);

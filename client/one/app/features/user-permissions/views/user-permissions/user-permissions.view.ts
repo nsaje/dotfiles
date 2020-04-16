@@ -1,4 +1,4 @@
-import './users-library.view.less';
+import './user-permissions.view.less';
 
 import {
     Component,
@@ -19,13 +19,13 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 
 @Component({
-    selector: 'zem-users-library-view',
-    templateUrl: './users-library.view.html',
+    selector: 'zem-user-permissions-view',
+    templateUrl: './user-permissions.view.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UsersLibraryView implements OnInit, OnDestroy {
+export class UserPermissionsView implements OnInit, OnDestroy {
     @HostBinding('class')
-    cssClass = 'zem-users-library-view';
+    cssClass = 'zem-user-permissions-view';
 
     entity: any;
 

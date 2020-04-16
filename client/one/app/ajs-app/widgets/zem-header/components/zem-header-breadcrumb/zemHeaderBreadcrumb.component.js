@@ -126,10 +126,10 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 : null;
             var queryParams = NgRouter.browserUrlTree.queryParams;
             var urlTree = [];
-            if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USERS_LIBRARY)) {
+            if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USER_PERMISSIONS)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
-                    RoutePathName.USERS_LIBRARY
+                    RoutePathName.USER_PERMISSIONS
                 ];
                 if (levelParam) {
                     urlTree.push(levelParam);

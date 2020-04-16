@@ -735,7 +735,7 @@ export enum RoutePathName {
     REPORTS_LIBRARY = 'reports',
     CREDITS = 'credits',
     PUBLISHER_GROUPS = 'publishergroups',
-    USERS_LIBRARY = 'users',
+    USER_PERMISSIONS = 'users',
     PIXELS_LIBRARY = 'pixels',
     INVENTORY_PLANNING = 'inventory-planning',
     ARCHIVED = 'archived',

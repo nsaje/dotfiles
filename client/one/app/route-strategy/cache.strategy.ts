@@ -22,7 +22,7 @@ export class CacheRouteReuseStrategy implements RouteReuseStrategy {
         // `${RoutePathName.APP_BASE}/${RoutePathName.CREDITS}`,
         // `${RoutePathName.APP_BASE}/${RoutePathName.PIXELS_LIBRARY}`,
         // `${RoutePathName.APP_BASE}/${RoutePathName.REPORTS_LIBRARY}`,
-        // `${RoutePathName.APP_BASE}/${RoutePathName.USERS_LIBRARY}`,
+        // `${RoutePathName.APP_BASE}/${RoutePathName.USER_PERMISSIONS}`,
         // `${RoutePathName.APP_BASE}/${RoutePathName.INVENTORY_PLANNING}`,
     ];
     private routeCacheMap = new Map<string, RouteCache>();

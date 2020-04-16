@@ -1,10 +1,10 @@
 import {Routes} from '@angular/router';
 import {RoutePathName, LevelParam} from '../../app.constants';
-import {UsersLibraryView} from './views/users-library/users-library.view';
+import {UserPermissionsView} from './views/user-permissions/user-permissions.view';
 
 const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}`;
 
-export const USERS_LIBRARY_ROUTES: Routes = [
+export const USER_PERMISSIONS_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
@@ -23,7 +23,7 @@ export const USERS_LIBRARY_ROUTES: Routes = [
             },
             {
                 path: ':id',
-                component: UsersLibraryView,
+                component: UserPermissionsView,
             },
         ],
     },
