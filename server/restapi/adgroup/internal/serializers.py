@@ -153,6 +153,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
 
 
 class AdGroupInternalQueryParams(
-    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     campaign_id = restapi.serializers.fields.IdField(required=True)

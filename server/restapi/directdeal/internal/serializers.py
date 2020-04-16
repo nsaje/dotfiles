@@ -69,7 +69,7 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 
 class DirectDealQueryParams(
-    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     campaign_id = restapi.serializers.fields.IdField(required=False)
     agency_id = restapi.serializers.fields.IdField(required=False)

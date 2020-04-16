@@ -71,6 +71,7 @@ class NoneToDictSerializerMixin(serializers.Serializer):
         return super().run_validation(data)
 
 
-class LimitOffsetMixin(serializers.Serializer):
+class PaginationParametersMixin(serializers.Serializer):
     limit = restapi.serializers.fields.IntegerField(required=False)
     offset = restapi.serializers.fields.IntegerField(required=False)
+    marker = restapi.serializers.fields.IntegerField(required=False)

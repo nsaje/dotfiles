@@ -108,7 +108,7 @@ class CampaignIdsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 
 class CampaignQueryParams(
-    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.LimitOffsetMixin
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     account_id = restapi.serializers.fields.IdField(required=False)
     only_ids = rest_framework.serializers.BooleanField(default=False, required=False)
