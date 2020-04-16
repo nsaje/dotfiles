@@ -743,6 +743,14 @@ export enum RoutePathName {
     ERROR_FORBIDDEN = 'error/forbidden',
 }
 
+export enum GeolocationType {
+    COUNTRY = 'COUNTRY',
+    REGION = 'REGION',
+    DMA = 'DMA',
+    CITY = 'CITY',
+    ZIP = 'ZIP',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,
