@@ -1072,7 +1072,7 @@ export const RULE_CONDITIONS_OPTIONS = {
                     RuleConditionOperandType.AbsoluteValue
                 ],
                 dataType: DataType.Currency,
-                unit: Unit.CurrencySign,
+                unit: Unit.Percent,
                 fractionSize: 2,
             },
         ],

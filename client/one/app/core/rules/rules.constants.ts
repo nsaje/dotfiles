@@ -200,7 +200,7 @@ export enum RuleConditionOperandType {
     AvgCostPerConversionView = 'AVG_COST_PER_CONVERSION_VIEW',
     AvgCostPerConversionTotal = 'AVG_COST_PER_CONVERSION_TOTAL',
     CampaignBudget = 'CAMPAIGN_BUDGET',
-    RemainingCampaignBudget = 'REMAINING_CAMPAIGN_BUDGET',
+    RemainingCampaignBudget = 'CAMPAIGN_REMAINING_BUDGET',
     CampaignBudgetMargin = 'CAMPAIGN_BUDGET_MARGIN',
     CampaignBudgetStartDate = 'CAMPAIGN_BUDGET_START_DATE',
     CampaignBudgetEndDate = 'CAMPAIGN_BUDGET_END_DATE',
