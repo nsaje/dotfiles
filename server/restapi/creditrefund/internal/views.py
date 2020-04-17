@@ -30,8 +30,11 @@ class CreditRefundViewSet(RESTAPIBaseViewSet):
         return Response(None, status=204)
 
     def list(self, request, credit_id=None):
-        agency_id = request.query_params.get("agencyId")
-        account_id = request.query_params.get("accountId")
+        qpe = serializers.CreditRefundQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        agency_id = qpe.validated_data.get("agency_id")
+        account_id = qpe.validated_data.get("account_id")
 
         if credit_id is not None:
             credit = restapi.access.get_credit_line_item(request.user, credit_id)

@@ -85,6 +85,13 @@ class CreditRefundViewSetTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_refund_get_invalid_params(self):
+        r = self.client.get(
+            reverse("restapi.creditrefund.internal:credits_refunds_list_all"), {"accountId": "NON-NUMERIC"}
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"accountId": ["Invalid format"]}, resp_json["details"])
+
     def test_refund_post(self):
         new_refund = self.refund_repr(account_id=186, credit_id=861, amount=0)
         del new_refund["id"]

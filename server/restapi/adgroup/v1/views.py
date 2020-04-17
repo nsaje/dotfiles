@@ -31,7 +31,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def list(self, request):
-        campaign_id = request.query_params.get("campaignId", None)
+        qpe = serializers.AdGroupQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        campaign_id = qpe.validated_data.get("campaign_id", None)
         if campaign_id:
             campaign = restapi.access.get_campaign(request.user, campaign_id)
             ad_groups = core.models.AdGroup.objects.filter(campaign=campaign)

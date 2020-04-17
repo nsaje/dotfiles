@@ -86,6 +86,11 @@ class ContentAdsTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_contentads_list_invalid_params(self):
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), {"adGroupId": "NON-NUMERIC"})
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"adGroupId": ["Invalid format"]}, resp_json["details"])
+
     def test_contentads_get(self):
         r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
         resp_json = self.assertResponseValid(r)
@@ -356,6 +361,16 @@ class TestBatchUpload(TestCase):
         self.assertIsNone(candidate.icon_height)
         self.assertIsNone(candidate.icon_width)
         self.assertIsNone(candidate.icon_file_size)
+
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    def test_contentads_batch_upload_invalid_params(self):
+        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
+        to_upload = [self._mock_content_ad("test1")]
+        r = self.client.post(
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId='NON-NUMERIC'", to_upload, format="json"
+        )
+        resp_json = json.loads(r.content)
+        self.assertEqual({"adGroupId": ["Invalid format"]}, resp_json["details"])
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):

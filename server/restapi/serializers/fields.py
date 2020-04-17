@@ -118,6 +118,14 @@ class BlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
     pass
 
 
+class IntegerField(serializers.IntegerField):
+    def to_internal_value(self, data):
+        try:
+            return int(data)
+        except ValueError:
+            raise serializers.ValidationError("Invalid format")
+
+
 class TwoWayBlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
     def __init__(self, output_precision=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -153,6 +161,10 @@ class OutNullDashConstantField(OutNoneFieldMixin, DashConstantField):
 
 
 class OutNullURLField(OutNoneFieldMixin, serializers.URLField):
+    pass
+
+
+class NullBooleanField(serializers.NullBooleanField):
     pass
 
 

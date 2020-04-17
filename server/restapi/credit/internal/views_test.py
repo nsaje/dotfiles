@@ -127,6 +127,27 @@ class CreditViewSetTest(RESTAPITest):
         resp_json_paginated_ids = sorted([int(item.get("id")) for item in resp_json_paginated["data"]])
         self.assertEqual(resp_json_ids, resp_json_paginated_ids)
 
+    def test_list_invalid_params(self):
+        r = self.client.get(
+            reverse("restapi.credit.internal:credits_list"),
+            {
+                "agencyId": "NON-NUMERICAL",
+                "accountId": "NON-NUMERICAL",
+                "offset": "NON-NUMERICAL",
+                "limit": "NON-NUMERICAL",
+            },
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            {
+                "agencyId": ["Invalid format"],
+                "accountId": ["Invalid format"],
+                "offset": ["Invalid format"],
+                "limit": ["Invalid format"],
+            },
+            resp_json["details"],
+        )
+
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_pagination_with_account(self, mock_log_to_slack):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
@@ -333,6 +354,14 @@ class CreditViewSetTest(RESTAPITest):
                 self.assertEqual(item["allocated"], "0.0000")
                 self.assertEqual(item["past"], "100.0000")
                 self.assertEqual(item["available"], "100.0000")
+
+    def test_totals_invalid_params(self):
+        r = self.client.get(
+            reverse("restapi.credit.internal:credits_totals"),
+            {"agencyId": "NON-NUMERICAL", "accountId": "NON-NUMERICAL"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"agencyId": ["Invalid format"], "accountId": ["Invalid format"]}, resp_json["details"])
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put(self, mock_log_to_slack):
