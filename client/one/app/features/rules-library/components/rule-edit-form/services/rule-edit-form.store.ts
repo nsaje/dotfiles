@@ -348,24 +348,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversionTotal
             ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.RemainingCampaignBudget
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.CampaignBudgetMargin
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.CampaignBudgetStartDate
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.CampaignBudgetEndDate
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.DaysSinceCampaignBudgetStart
-            ],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.DaysUntilCampaignBudgetEnd
-            ],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AccountCreatedDate
@@ -396,6 +378,24 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdCreatedDate],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.DaysSinceAdCreated
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.RemainingCampaignBudget
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetMargin
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetStartDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetEndDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCampaignBudgetStart
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysUntilCampaignBudgetEnd
             ],
         ];
     }
