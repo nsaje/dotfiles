@@ -119,20 +119,16 @@ PERCENT_MODIFIER_LEFT_OPERAND_TYPES = {
     constants.MetricType.AD_GROUP_DAILY_CAP,
 }
 
-PERCENT_MODIFIER_RIGHT_OPERAND_TYPES = {
-    constants.ValueType.CAMPAIGN_BUDGET,
-    constants.ValueType.REMAINING_CAMPAIGN_BUDGET,
-    constants.ValueType.AD_GROUP_DAILY_CAP,
-    constants.ValueType.AD_GROUP_CLICK_DAILY_CAP,
+DAY_MODIFIER_LEFT_OPERAND_TYPES = {
+    constants.MetricType.ACCOUNT_CREATED_DATE,
+    constants.MetricType.CAMPAIGN_CREATED_DATE,
+    constants.MetricType.AD_GROUP_CREATED_DATE,
+    constants.MetricType.AD_GROUP_START_DATE,
+    constants.MetricType.AD_GROUP_END_DATE,
+    constants.MetricType.AD_CREATED_DATE,
+    constants.MetricType.CAMPAIGN_BUDGET_START_DATE,
+    constants.MetricType.CAMPAIGN_BUDGET_END_DATE,
 }
-
-DAY_MODIFIER_LEFT_OPERAND_TYPES = set(
-    {
-        # constants.MetricType.CONTENT_AD_CREATED_DATE,  # TODO: add metric
-    }
-)
-
-DAY_MODIFIER_RIGHT_OPERAND_TYPES = {constants.ValueType.CURRENT_DATE}
 
 EMAIL_ACTION_SETTINGS_MACROS = {
     constants.EmailActionMacro.AGENCY_ID,

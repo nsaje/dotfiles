@@ -194,22 +194,25 @@ def _prepare_right_stat_operand(
     raise ValueError("Invalid right operand")
 
 
-def _prepare_settings_operands(condition, settings_dict: Dict[str, Union[int, str]]):
+def _prepare_settings_operands(condition, settings_dict):
     assert condition.right_operand_type in [
         constants.ValueType.ABSOLUTE,
         constants.ValueType.CONSTANT,
     ]  # TODO: support remaining right operand types
     field_name = constants.METRIC_SETTINGS_MAPPING[condition.left_operand_type]
-    value = condition.right_operand_value
+    left_value = settings_dict[field_name]
+    right_value = condition.right_operand_value
     if condition.left_operand_type in config.INT_OPERANDS:
-        value = int(value)
+        right_value = int(right_value)
     if condition.left_operand_type in config.FLOAT_OPERANDS:
-        value = float(value)
+        right_value = float(right_value)
     elif condition.left_operand_type in config.DATE_OPERANDS:
-        value = datetime.date.fromisoformat(value)
+        right_value = datetime.date.fromisoformat(right_value)
+        if condition.left_operand_modifier:
+            left_value += datetime.timedelta(days=condition.left_operand_modifier)
     elif condition.left_operand_type in config.DECIMAL_OPERANDS:
-        value = decimal.Decimal(value)
-    return settings_dict[field_name], value
+        right_value = decimal.Decimal(right_value)
+    return left_value, right_value
 
 
 def _meets_condition(operator: int, left_value, right_value) -> bool:

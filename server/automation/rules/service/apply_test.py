@@ -366,6 +366,30 @@ class SettingsOperandTest(TestCase):
         settings_dict = {"account_created_date": datetime.date(2000, 1, 1)}
         self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
 
+    def test_left_operand_date_type_with_date_modifier(self):
+        RuleCondition.objects.create(
+            rule=self.rule,
+            left_operand_type=constants.MetricType.ACCOUNT_CREATED_DATE,
+            left_operand_modifier=1,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="1999-12-31",
+        )
+        settings_dict = {"account_created_date": datetime.date(1999, 12, 30)}
+        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+
+    def test_left_operand_date_type_with_date_modifier_negative(self):
+        RuleCondition.objects.create(
+            rule=self.rule,
+            left_operand_type=constants.MetricType.ACCOUNT_CREATED_DATE,
+            left_operand_modifier=-1,
+            operator=constants.Operator.GREATER_THAN,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="1999-12-31",
+        )
+        settings_dict = {"account_created_date": datetime.date(2000, 1, 1)}
+        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+
     def test_left_operand_constant_type(self):
         RuleCondition.objects.create(
             rule=self.rule,

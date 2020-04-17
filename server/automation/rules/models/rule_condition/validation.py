@@ -47,7 +47,7 @@ class RuleConditionValidationMixin:
                 not in config.PERCENT_MODIFIER_LEFT_OPERAND_TYPES | config.DAY_MODIFIER_LEFT_OPERAND_TYPES
             ):
                 raise exceptions.InvalidLeftOperandModifier("Invalid modifier")
-            if left_operand_modifier < 0:
+            if left_operand_type in config.PERCENT_MODIFIER_LEFT_OPERAND_TYPES and left_operand_modifier < 0:
                 raise exceptions.InvalidLeftOperandModifier("Invalid modifier")
 
     def _validate_right_operand_type(self, changes):
