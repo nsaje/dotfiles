@@ -188,5 +188,7 @@ class UploadBatchSerializer(rest_framework.serializers.Serializer):
         return external_data
 
 
-class ContentAdQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
+class ContentAdQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
     ad_group_id = restapi.serializers.fields.IdField(required=True)

@@ -29,3 +29,9 @@ class QueryParamsExpectationsTestCase(TestCase):
 
         self.assertEqual(serializer.validated_data["multiple_words"], 123)
         self.assertNotIn("multipleWords", serializer.validated_data)
+
+    def test_not_supported_param(self):
+        query = QueryDict("debug=a")
+        serializer = QueryParamsExpectationsTest(data=query)
+        serializer.is_valid(raise_exception=True)
+        self.assertEqual(serializer.validated_data.get("debug"), None)

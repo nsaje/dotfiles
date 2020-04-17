@@ -18,7 +18,7 @@ class QueryParamsExpectations(serializers.Serializer):
             for key in data:
                 snake_cased_key = camel_to_underscore(key)
                 value = data.getlist(key)
-                if isinstance(self.fields[snake_cased_key], serializers.ListField):
+                if isinstance(self.fields.get(snake_cased_key), serializers.ListField):
                     value = utils.list_helper.flatten(x.split(",") for x in value)
                 snake_cased_data.setlist(snake_cased_key, value)
             kwargs["data"] = snake_cased_data
