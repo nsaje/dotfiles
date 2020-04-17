@@ -72,7 +72,7 @@ class RuleConditionValidationTest(TestCase):
         self.assertFalse(constants.MetricType.ACCOUNT_NAME in config.PERCENT_MODIFIER_LEFT_OPERAND_TYPES)
         self.rule_condition.left_operand_type = constants.MetricType.ACCOUNT_NAME
         self.rule_condition.operator = constants.Operator.CONTAINS
-        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier()]):
+        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier]):
             self.rule_condition.clean({"left_operand_modifier": 0.5})
 
     def test_validate_right_operand_type(self):
