@@ -500,14 +500,23 @@ class FetchSettingsTest(TestCase):
         self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         self.content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
 
+        budget_settings = {
+            constants.MetricType.CAMPAIGN_BUDGET_START_DATE,
+            constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START,
+            constants.MetricType.CAMPAIGN_BUDGET_END_DATE,
+            constants.MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END,
+            constants.MetricType.CAMPAIGN_BUDGET_MARGIN,
+            constants.MetricType.CAMPAIGN_REMAINING_BUDGET,
+        }
+        additional_settings = {
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
+            constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
+            constants.MetricType.AD_GROUP_DAILY_CAP,
+        }
         self.basic_metric_types = (
             set(constants.METRIC_SETTINGS_MAPPING)
-            - set(constants.METRIC_BUDGETS_MAPPING)
-            - {
-                constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
-                constants.MetricType.CAMPAIGN_PRIMARY_GOAL_VALUE,
-                constants.MetricType.AD_GROUP_DAILY_CAP,
-            }
+            - budget_settings
+            - additional_settings
             - constants.CONTENT_AD_SETTINGS
         )
 

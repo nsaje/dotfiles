@@ -9,6 +9,14 @@ class InvalidActionType(ValidationError):
     pass
 
 
+class InvalidCooldown(ValidationError):
+    pass
+
+
+class InvalidWindow(ValidationError):
+    pass
+
+
 class InvalidChangeStep(ValidationError):
     pass
 

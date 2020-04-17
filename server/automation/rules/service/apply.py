@@ -134,10 +134,7 @@ def _prepare_operands(
     _validate_condition(condition)
     if condition.left_operand_type in constants.METRIC_STATS_MAPPING:
         return _prepare_stats_operands(rule, condition, target_stats)
-    elif (
-        condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING
-        or condition.left_operand_type in constants.METRIC_BUDGETS_MAPPING
-    ):
+    elif condition.left_operand_type in constants.METRIC_SETTINGS_MAPPING:
         return _prepare_settings_operands(condition, settings_dict)
 
     raise ValueError("Invalid condition type")

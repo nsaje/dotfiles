@@ -10,6 +10,7 @@
         groupByValue="group"
         [isClearable]="false"
         (valueChange)="selectMetricType($event)"
+        [appendTo]="'body'"
     ></zem-select-input>
     <ng-template #metricModifierPopoverTemplate>
         <zem-rule-edit-form-condition-modifier
@@ -44,6 +45,7 @@
     [isClearable]="false"
     [hasError]="conditionErrors?.operator"
     (valueChange)="selectOperator($event)"
+    [appendTo]="'body'"
 ></zem-select-input>
 <div class="zem-rule-edit-form-condition__operand-container">
     <zem-integer-input

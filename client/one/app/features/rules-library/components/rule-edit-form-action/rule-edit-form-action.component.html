@@ -9,6 +9,7 @@
     [isClearable]="false"
     [errors]="actionTypeErrors"
     (valueChange)="selectTargetAndActionType($event)"
+    [appendTo]="'body'"
 ></zem-select-form-group>
 
 <zem-currency-form-group
@@ -70,6 +71,7 @@
     [isClearable]="false"
     [errors]="actionFrequencyErrors"
     (valueChange)="selectActionFrequency($event)"
+    [appendTo]="'body'"
 ></zem-select-form-group>
 
 <ng-container *ngIf="actionType === RuleActionType.SendEmail">
@@ -117,6 +119,7 @@
                 [isSearchable]="false"
                 [isClearable]="true"
                 (valueChange)="selectMacro($event)"
+                [appendTo]="'body'"
             ></zem-select-form-group>
             <button
                 class="zem-rule-edit-form__section-item button button--highlight button--with-icon add-icon"

@@ -34,6 +34,18 @@ class RuleValidationTest(test.TestCase):
         with self._assert_multiple_validation_error([exceptions.InvalidActionType]):
             self.rule.clean({"action_type": 999})
 
+    def test_validate_window(self):
+        self.rule.clean({"window": constants.MetricWindow.LAST_30_DAYS})
+        with self._assert_multiple_validation_error([exceptions.InvalidWindow]):
+            self.rule.clean({"window": 999})
+
+    def test_validate_cooldown(self):
+        self.rule.clean({"cooldown": 24})
+        with self._assert_multiple_validation_error([exceptions.InvalidCooldown]):
+            self.rule.clean({"cooldown": 0})
+        with self._assert_multiple_validation_error([exceptions.InvalidCooldown]):
+            self.rule.clean({"cooldown": 40})
+
     def test_validate_change_step_bid_modifier(self):
         self.rule.target_type = constants.TargetType.PUBLISHER
         for action_type in [constants.ActionType.INCREASE_BID_MODIFIER, constants.ActionType.DECREASE_BID_MODIFIER]:

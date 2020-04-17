@@ -89,3 +89,5 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     conditions = rest_framework.serializers.ListSerializer(
         child=RuleConditionSerializer(), default=[], allow_empty=True
     )
+
+    window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, allow_null=True)

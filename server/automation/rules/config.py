@@ -83,8 +83,6 @@ ADJUSTEMENT_ACTION_TYPES = {
     ),
 }
 
-VALID_LEFT_OPERAND_TYPES = set(constants.METRIC_STATS_MAPPING.keys()) | set(constants.METRIC_SETTINGS_MAPPING.keys())
-
 VALID_RIGTH_OPERAND_TYPES = {constants.ValueType.ABSOLUTE}
 
 WINDOW_ADJUSTEMENT_POSSIBLE_TYPES = {
@@ -173,6 +171,9 @@ EMAIL_ACTION_STATS_MACROS = {
     constants.EmailActionMacro.AVG_COST_PER_PAGEVIEW,
     constants.EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT,
     constants.EmailActionMacro.AVG_COST_PER_MINUTE,
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
 }
 
 EMAIL_ACTION_MACROS_VALID_WINDOWS = {
@@ -180,6 +181,7 @@ EMAIL_ACTION_MACROS_VALID_WINDOWS = {
     constants.MetricWindow.LAST_3_DAYS,
     constants.MetricWindow.LAST_7_DAYS,
     constants.MetricWindow.LAST_30_DAYS,
+    constants.MetricWindow.LIFETIME,
 }
 
 INT_OPERANDS = {
@@ -331,4 +333,10 @@ VALID_OPERATORS = {
     constants.MetricType.AD_LABEL: VALID_STRING_OPERATORS,
     constants.MetricType.AD_CREATED_DATE: VALID_DATE_OPERATORS,
     constants.MetricType.DAYS_SINCE_AD_CREATED: VALID_DATE_OPERATORS,
+    constants.MetricType.CAMPAIGN_BUDGET_START_DATE: VALID_DATE_OPERATORS,
+    constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: VALID_DATE_OPERATORS,
+    constants.MetricType.CAMPAIGN_BUDGET_END_DATE: VALID_DATE_OPERATORS,
+    constants.MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: VALID_DATE_OPERATORS,
+    constants.MetricType.CAMPAIGN_BUDGET_MARGIN: VALID_NUMBER_OPERATORS,
+    constants.MetricType.CAMPAIGN_REMAINING_BUDGET: VALID_NUMBER_OPERATORS,
 }

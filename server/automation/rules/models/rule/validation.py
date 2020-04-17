@@ -23,6 +23,8 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "state"),
             partial(self._validate_if_present, "target_type"),
             partial(self._validate_if_present, "action_type"),
+            partial(self._validate_if_present, "cooldown"),
+            partial(self._validate_if_present, "window"),
             partial(self._validate_if_present, "send_email_subject"),
             partial(self._validate_if_present, "send_email_body"),
             partial(self._validate_if_present, "send_email_recipients"),
@@ -42,6 +44,14 @@ class RuleValidationMixin:
     def _validate_state(self, changes, state):
         if state not in constants.RuleState.get_all():
             raise exceptions.InvalidRuleState("Invalid state")
+
+    def _validate_cooldown(self, changes, cooldown):
+        if not cooldown or cooldown % 24 != 0:
+            raise exceptions.InvalidCooldown("Invalid action frequency")
+
+    def _validate_window(self, changes, window):
+        if window not in constants.MetricWindow.get_all():
+            raise exceptions.InvalidWindow("Invalid time range")
 
     def _validate_target_type(self, changes, target_type):
         if len(config.VALID_ACTION_TYPES_FOR_TARGET.get(target_type, [])) == 0:

@@ -59,6 +59,10 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
                     errors.setdefault("target_type", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidActionType):
                     errors.setdefault("action_type", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidCooldown):
+                    errors.setdefault("action_frequency", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidWindow):
+                    errors.setdefault("window", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidChangeLimit):
                     errors.setdefault("change_limit", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidChangeStep):

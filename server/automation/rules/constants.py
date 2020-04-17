@@ -329,16 +329,6 @@ METRIC_SETTINGS_MAPPING = {
 }
 
 
-METRIC_BUDGETS_MAPPING = {
-    MetricType.CAMPAIGN_BUDGET_START_DATE: "campaign_budget_start_date",
-    MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: "days_since_campaign_budget_start",
-    MetricType.CAMPAIGN_BUDGET_END_DATE: "campaign_budget_end_date",
-    MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: "days_until_campaign_budget_end",
-    MetricType.CAMPAIGN_BUDGET_MARGIN: "campaign_budget_margin",
-    MetricType.CAMPAIGN_REMAINING_BUDGET: "campaign_remaining_budget",
-}
-
-
 CONTENT_AD_SETTINGS = {
     MetricType.AD_TITLE,
     MetricType.AD_LABEL,
@@ -438,7 +428,7 @@ class EmailActionMacro(ConstantBase):
     TOTAL_SECONDS = "TOTAL_SECONDS"
     AVG_TIME_ON_SITE = "AVG_TIME_ON_SITE"
     AVG_COST_PER_VISIT = "AVG_COST_PER_VISIT"
-    AVG_COST_PER_NEW_VISITOR = "AVG_COT_PER_NEW_VISITOR"
+    AVG_COST_PER_NEW_VISITOR = "AVG_COST_PER_NEW_VISITOR"
     AVG_COST_PER_PAGEVIEW = "AVG_COST_PER_PAGEVIEW"
     AVG_COST_PER_NON_BOUNCED_VISIT = "AVG_COST_PER_NON_BOUNCED_VISIT"
     AVG_COST_PER_MINUTE = "AVG_COST_PER_MINUTE"

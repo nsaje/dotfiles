@@ -88,8 +88,6 @@ export const RULE_TARGET_TYPES = [
         availableActions: [
             RuleActionType.IncreaseBidModifier,
             RuleActionType.DecreaseBidModifier,
-            RuleActionType.Blacklist,
-            RuleActionType.AddToPublisherGroup,
         ],
     },
     {
@@ -219,7 +217,11 @@ export const RULE_ACTIONS_OPTIONS = {
         label: 'Add to publisher group',
         type: RuleActionType.AddToPublisherGroup,
         hasPublisherGroupSelector: true,
-        frequencies: [] as RuleActionFrequency[],
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
     },
 };
 
@@ -310,96 +312,112 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         type: RuleConditionOperandType.Visits,
         label: 'Visits',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.UniqueUsers]: {
         type: RuleConditionOperandType.UniqueUsers,
         label: 'Unique users',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.NewUsers]: {
         type: RuleConditionOperandType.NewUsers,
         label: 'New users',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.ReturningUsers]: {
         type: RuleConditionOperandType.ReturningUsers,
         label: 'Returning users',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.PercentNewUsers]: {
         type: RuleConditionOperandType.PercentNewUsers,
         label: '% new users',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.ClickDiscrepancy]: {
         type: RuleConditionOperandType.ClickDiscrepancy,
         label: 'Click discrepancy',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.Pageviews]: {
         type: RuleConditionOperandType.Pageviews,
         label: 'Pageviews',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.PageviewsPerVisit]: {
         type: RuleConditionOperandType.PageviewsPerVisit,
         label: 'Pageviews per visit',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.BouncedVisits]: {
         type: RuleConditionOperandType.BouncedVisits,
         label: 'Bounced visits',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.NonBouncedVisits]: {
         type: RuleConditionOperandType.NonBouncedVisits,
         label: 'Non-bounced visits',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.BounceRate]: {
         type: RuleConditionOperandType.BounceRate,
         label: 'Bounce rate',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.TotalSeconds]: {
         type: RuleConditionOperandType.TotalSeconds,
         label: 'Total seconds',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.TimeOnSite]: {
         type: RuleConditionOperandType.TimeOnSite,
         label: 'Time on site',
         group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.AvgCostPerConversion]: {
         type: RuleConditionOperandType.AvgCostPerConversion,
         label: 'Avg. cost per conversion - click attribution',
-        group: RuleConditionOperandGroup.TrafficAcquisition,
+        group: RuleConditionOperandGroup.Conversions,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.AvgCostPerConversionView]: {
         type: RuleConditionOperandType.AvgCostPerConversionView,
         label: 'Avg. cost per conversion - view attribution',
-        group: RuleConditionOperandGroup.TrafficAcquisition,
+        group: RuleConditionOperandGroup.Conversions,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.AvgCostPerConversionTotal]: {
         type: RuleConditionOperandType.AvgCostPerConversionTotal,
         label: 'Avg. cost per conversion - total',
-        group: RuleConditionOperandGroup.TrafficAcquisition,
+        group: RuleConditionOperandGroup.Conversions,
+        hasTimeRangeModifier: true,
         valueModifier: {dataType: DataType.Decimal, unit: Unit.Percent},
     },
     [RuleConditionOperandType.CampaignBudget]: {
@@ -1493,27 +1511,39 @@ export const EMAIL_MACROS = [
     {label: 'Total spend (last day)', value: Macro.TotalSpendLastDay},
     {label: 'Total spend (last 3 days)', value: Macro.TotalSpendLastThreeDays},
     {label: 'Total spend (last 7 days)', value: Macro.TotalSpendLastSevenDays},
-    {label: 'Total spend (last 30 days)', value: Macro.TotalSpendThirtyDays},
+    {
+        label: 'Total spend (last 30 days)',
+        value: Macro.TotalSpendLastThirtyDays,
+    },
+    {label: 'Total spend (lifetime)', value: Macro.TotalSpendLifetime},
     {label: 'Clicks (last day)', value: Macro.ClicksLastDay},
     {label: 'Clicks (last 3 days)', value: Macro.ClicksLastThreeDays},
     {label: 'Clicks (last 7 days)', value: Macro.ClicksLastSevenDays},
-    {label: 'Clicks (last 30 days)', value: Macro.ClicksThirtyDays},
+    {label: 'Clicks (last 30 days)', value: Macro.ClicksLastThirtyDays},
+    {label: 'Clicks (lifetime)', value: Macro.ClicksLifetime},
     {label: 'Impressions (last day)', value: Macro.ImpressionsLastDay},
     {label: 'Impressions (last 3 days)', value: Macro.ImpressionsLastThreeDays},
     {label: 'Impressions (last 7 days)', value: Macro.ImpressionsLastSevenDays},
-    {label: 'Impressions (last 30 days)', value: Macro.ImpressionsThirtyDays},
+    {
+        label: 'Impressions (last 30 days)',
+        value: Macro.ImpressionsLastThirtyDays,
+    },
+    {label: 'Impressions (lifetime)', value: Macro.ImpressionsLifetime},
     {label: 'Avg. CPC (last day)', value: Macro.AvgCpcLastDay},
     {label: 'Avg. CPC (last 3 days)', value: Macro.AvgCpcLastThreeDays},
     {label: 'Avg. CPC (last 7 days)', value: Macro.AvgCpcLastSevenDays},
-    {label: 'Avg. CPC (last 30 days)', value: Macro.AvgCpcThirtyDays},
+    {label: 'Avg. CPC (last 30 days)', value: Macro.AvgCpcLastThirtyDays},
+    {label: 'Avg. CPC (lifetime)', value: Macro.AvgCpcLifetime},
     {label: 'Avg. CPM (last day)', value: Macro.AvgCpmLastDay},
     {label: 'Avg. CPM (last 3 days)', value: Macro.AvgCpmLastThreeDays},
     {label: 'Avg. CPM (last 7 days)', value: Macro.AvgCpmLastSevenDays},
-    {label: 'Avg. CPM (last 30 days)', value: Macro.AvgCpmThirtyDays},
+    {label: 'Avg. CPM (last 30 days)', value: Macro.AvgCpmLastThirtyDays},
+    {label: 'Avg. CPM (lifetime)', value: Macro.AvgCpmLifetime},
     {label: 'Visits (last day)', value: Macro.VisitsLastDay},
     {label: 'Visits (last 3 days)', value: Macro.VisitsLastThreeDays},
     {label: 'Visits (last 7 days)', value: Macro.VisitsLastSevenDays},
-    {label: 'Visits (last 30 days)', value: Macro.VisitsThirtyDays},
+    {label: 'Visits (last 30 days)', value: Macro.VisitsLastThirtyDays},
+    {label: 'Visits (lifetime)', value: Macro.VisitsLifetime},
     {label: 'Unique users (last day)', value: Macro.UniqueUsersLastDay},
     {
         label: 'Unique users (last 3 days)',
@@ -1523,11 +1553,16 @@ export const EMAIL_MACROS = [
         label: 'Unique users (last 7 days)',
         value: Macro.UniqueUsersLastSevenDays,
     },
-    {label: 'Unique users (last 30 days)', value: Macro.UniqueUsersThirtyDays},
+    {
+        label: 'Unique users (last 30 days)',
+        value: Macro.UniqueUsersLastThirtyDays,
+    },
+    {label: 'Unique users (lifetime)', value: Macro.UniqueUsersLifetime},
     {label: 'New users (last day)', value: Macro.NewUsersLastDay},
     {label: 'New users (last 3 days)', value: Macro.NewUsersLastThreeDays},
     {label: 'New users (last 7 days)', value: Macro.NewUsersLastSevenDays},
-    {label: 'New users (last 30 days)', value: Macro.NewUsersThirtyDays},
+    {label: 'New users (last 30 days)', value: Macro.NewUsersLastThirtyDays},
+    {label: 'New users (lifetime)', value: Macro.NewUsersLifetime},
     {label: 'Returning users (last day)', value: Macro.ReturningUsersLastDay},
     {
         label: 'Returning users (last 3 days)',
@@ -1539,7 +1574,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Returning users (last 30 days)',
-        value: Macro.ReturningUsersThirtyDays,
+        value: Macro.ReturningUsersLastThirtyDays,
+    },
+    {
+        label: 'Returning users (lifetime)',
+        value: Macro.ReturningUsersLifetime,
     },
     {label: '% new users (last day)', value: Macro.PercentNewUsersLastDay},
     {
@@ -1552,7 +1591,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: '% new users (last 30 days)',
-        value: Macro.PercentNewUsersThirtyDays,
+        value: Macro.PercentNewUsersLastThirtyDays,
+    },
+    {
+        label: '% new users (lifetime)',
+        value: Macro.PercentNewUsersLifetime,
     },
     {
         label: 'Click discrepancy (last day)',
@@ -1568,12 +1611,17 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Click discrepancy (last 30 days)',
-        value: Macro.ClickDiscrepancyThirtyDays,
+        value: Macro.ClickDiscrepancyLastThirtyDays,
+    },
+    {
+        label: 'Click discrepancy (lifetime)',
+        value: Macro.ClickDiscrepancyLifetime,
     },
     {label: 'Pageviews (last day)', value: Macro.PageviewsLastDay},
     {label: 'Pageviews (last 3 days)', value: Macro.PageviewsLastThreeDays},
     {label: 'Pageviews (last 7 days)', value: Macro.PageviewsLastSevenDays},
-    {label: 'Pageviews (last 30 days)', value: Macro.PageviewsThirtyDays},
+    {label: 'Pageviews (last 30 days)', value: Macro.PageviewsLastThirtyDays},
+    {label: 'Pageviews (lifetime)', value: Macro.PageviewsLifetime},
     {
         label: 'Pageviews per visit (last day)',
         value: Macro.PageviewsPerVisitLastDay,
@@ -1588,7 +1636,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Pageviews per visit (last 30 days)',
-        value: Macro.PageviewsPerVisitThirtyDays,
+        value: Macro.PageviewsPerVisitLastThirtyDays,
+    },
+    {
+        label: 'Pageviews per visit (lifetime)',
+        value: Macro.PageviewsPerVisitLifetime,
     },
     {label: 'Bounced visits (last day)', value: Macro.BouncedVisitsLastDay},
     {
@@ -1601,7 +1653,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Bounced visits (last 30 days)',
-        value: Macro.BouncedVisitsThirtyDays,
+        value: Macro.BouncedVisitsLastThirtyDays,
+    },
+    {
+        label: 'Bounced visits (lifetime)',
+        value: Macro.BouncedVisitsLifetime,
     },
     {
         label: 'Non-bounced visits (last day)',
@@ -1617,12 +1673,20 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Non-bounced visits (last 30 days)',
-        value: Macro.NonBouncedVisitsThirtyDays,
+        value: Macro.NonBouncedVisitsLastThirtyDays,
+    },
+    {
+        label: 'Non-bounced visits (lifetime)',
+        value: Macro.NonBouncedVisitsLifetime,
     },
     {label: 'Bounce rate (last day)', value: Macro.BounceRateLastDay},
     {label: 'Bounce rate (last 3 days)', value: Macro.BounceRateLastThreeDays},
     {label: 'Bounce rate (last 7 days)', value: Macro.BounceRateLastSevenDays},
-    {label: 'Bounce rate (last 30 days)', value: Macro.BounceRateThirtyDays},
+    {
+        label: 'Bounce rate (last 30 days)',
+        value: Macro.BounceRateLastThirtyDays,
+    },
+    {label: 'Bounce rate (lifetime)', value: Macro.BounceRateLifetime},
     {label: 'Total seconds (last day)', value: Macro.TotalSecondsLastDay},
     {
         label: 'Total seconds (last 3 days)',
@@ -1634,7 +1698,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Total seconds (last 30 days)',
-        value: Macro.TotalSecondsThirtyDays,
+        value: Macro.TotalSecondsLastThirtyDays,
+    },
+    {
+        label: 'Total seconds (lifetime)',
+        value: Macro.TotalSecondsLifetime,
     },
     {label: 'Time on site (last day)', value: Macro.AvgTimeOnSiteLastDay},
     {
@@ -1647,7 +1715,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Time on site (last 30 days)',
-        value: Macro.AvgTimeOnSiteThirtyDays,
+        value: Macro.AvgTimeOnSiteLastThirtyDays,
+    },
+    {
+        label: 'Time on site (lifetime)',
+        value: Macro.AvgTimeOnSiteLifetime,
     },
     {
         label: 'Avg. cost per visit (last day)',
@@ -1663,7 +1735,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per visit (last 30 days)',
-        value: Macro.AvgCostPerVisitThirtyDays,
+        value: Macro.AvgCostPerVisitLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per visit (lifetime)',
+        value: Macro.AvgCostPerVisitLifetime,
     },
     {
         label: 'Avg. cost per new visitor (last day)',
@@ -1679,7 +1755,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per new visitor (last 30 days)',
-        value: Macro.AvgCostPerNewVisitorThirtyDays,
+        value: Macro.AvgCostPerNewVisitorLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per new visitor (lifetime)',
+        value: Macro.AvgCostPerNewVisitorLifetime,
     },
     {
         label: 'Avg. cost per pageview (last day)',
@@ -1695,7 +1775,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per pageview (last 30 days)',
-        value: Macro.AvgCostPerPageviewThirtyDays,
+        value: Macro.AvgCostPerPageviewLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per pageview (lifetime)',
+        value: Macro.AvgCostPerPageviewLifetime,
     },
     {
         label: 'Avg. cost per non-bounced visit (last day)',
@@ -1711,7 +1795,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per non-bounced visit (last 30 days)',
-        value: Macro.AvgCostPerNonBouncedVisitThirtyDays,
+        value: Macro.AvgCostPerNonBouncedVisitLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per non-bounced visit (lifetime)',
+        value: Macro.AvgCostPerNonBouncedVisitLifetime,
     },
     {
         label: 'Avg. cost per minute (last day)',
@@ -1727,7 +1815,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per minute (last 30 days)',
-        value: Macro.AvgCostPerMinuteThirtyDays,
+        value: Macro.AvgCostPerMinuteLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per minute (lifetime)',
+        value: Macro.AvgCostPerMinuteLifetime,
     },
     {
         label: 'Avg. cost per conversion (last day)',
@@ -1743,7 +1835,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per conversion (last 30 days)',
-        value: Macro.AvgCostPerConversionThirtyDays,
+        value: Macro.AvgCostPerConversionLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion (lifetime)',
+        value: Macro.AvgCostPerConversionLifetime,
     },
     {
         label: 'Avg. cost per conversion - view attribution (last day)',
@@ -1759,7 +1855,11 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per conversion - view attribution (last 30 days)',
-        value: Macro.AvgCostPerConversionViewThirtyDays,
+        value: Macro.AvgCostPerConversionViewLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion - view attribution (lifetime)',
+        value: Macro.AvgCostPerConversionViewLifetime,
     },
     {
         label: 'Avg. cost per conversion - total (last day)',
@@ -1775,6 +1875,10 @@ export const EMAIL_MACROS = [
     },
     {
         label: 'Avg. cost per conversion - total (last 30 days)',
-        value: Macro.AvgCostPerConversionTotalThirtyDays,
+        value: Macro.AvgCostPerConversionTotalLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per conversion - total (lifetime)',
+        value: Macro.AvgCostPerConversionTotalLifetime,
     },
 ];

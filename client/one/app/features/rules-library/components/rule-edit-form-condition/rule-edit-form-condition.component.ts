@@ -63,7 +63,6 @@ export class RuleEditFormConditionComponent implements OnChanges {
     // TODO (automation-rules): Return correct currency symbol
     getUnitText = unitsHelpers.getUnitText;
 
-    // TODO (automation-rules): When unit === Date, operand value must be converted from/to string
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.availableConditions) {
             this.availableMetrics = this.getAvailableFirstOperands(
