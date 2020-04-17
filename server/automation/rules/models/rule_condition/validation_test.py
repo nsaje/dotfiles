@@ -69,9 +69,10 @@ class RuleConditionValidationTest(TestCase):
             self.rule_condition.clean(
                 {"left_operand_modifier": 0.5, "left_operand_type": constants.MetricType.AVG_TIME_ON_SITE}
             )
-        self.assertFalse(constants.MetricType.AVG_TIME_ON_SITE in config.PERCENT_MODIFIER_LEFT_OPERAND_TYPES)
-        self.rule_condition.left_operand_type = constants.MetricType.AVG_TIME_ON_SITE
-        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier]):
+        self.assertFalse(constants.MetricType.ACCOUNT_NAME in config.PERCENT_MODIFIER_LEFT_OPERAND_TYPES)
+        self.rule_condition.left_operand_type = constants.MetricType.ACCOUNT_NAME
+        self.rule_condition.operator = constants.Operator.CONTAINS
+        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier()]):
             self.rule_condition.clean({"left_operand_modifier": 0.5})
 
     def test_validate_right_operand_type(self):
