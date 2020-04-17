@@ -85,36 +85,8 @@ ADJUSTEMENT_ACTION_TYPES = {
 
 VALID_RIGTH_OPERAND_TYPES = {constants.ValueType.ABSOLUTE}
 
-WINDOW_ADJUSTEMENT_POSSIBLE_TYPES = {
-    constants.MetricType.TOTAL_SPEND,
-    # constants.MetricType.AVG_DAILY_TOTAL_SPEND,  # TODO: add this metric
-    constants.MetricType.IMPRESSIONS,
-    constants.MetricType.CLICKS,
-    constants.MetricType.CTR,
-    constants.MetricType.AVG_CPC,
-    constants.MetricType.AVG_CPM,
-}
-
-PERCENT_MODIFIER_LEFT_OPERAND_TYPES = {
-    constants.MetricType.TOTAL_SPEND,
+PERCENT_MODIFIER_LEFT_OPERAND_TYPES = set(constants.METRIC_STATS_MAPPING.keys()) | {
     # constants.MetricType.AVG_DAILY_TOTAL_SPEND,  # TODO: add metric
-    constants.MetricType.IMPRESSIONS,
-    constants.MetricType.CLICKS,
-    constants.MetricType.CTR,
-    constants.MetricType.AVG_CPC,
-    constants.MetricType.AVG_CPM,
-    constants.MetricType.VISITS,
-    constants.MetricType.UNIQUE_USERS,
-    constants.MetricType.NEW_USERS,
-    constants.MetricType.RETURNING_USERS,
-    constants.MetricType.NEW_USERS_RATIO,
-    constants.MetricType.CLICK_DISCREPANCY,
-    constants.MetricType.PAGEVIEWS,
-    constants.MetricType.PAGEVIEWS_PER_VISIT,
-    constants.MetricType.BOUNCED_VISITS,
-    constants.MetricType.NON_BOUNCED_VISITS,
-    constants.MetricType.BOUNCE_RATE,
-    constants.MetricType.TOTAL_SECONDS,
     constants.MetricType.CAMPAIGN_PRIMARY_GOAL,
     constants.MetricType.AD_GROUP_DAILY_CAP,
 }
@@ -297,6 +269,9 @@ VALID_OPERATORS = {
     constants.MetricType.AVG_COST_PER_PAGEVIEW: VALID_NUMBER_OPERATORS,
     constants.MetricType.AVG_COST_PER_NON_BOUNCED_VISIT: VALID_NUMBER_OPERATORS,
     constants.MetricType.AVG_COST_PER_MINUTE: VALID_NUMBER_OPERATORS,
+    constants.MetricType.AVG_COST_PER_CONVERSION: VALID_NUMBER_OPERATORS,
+    constants.MetricType.AVG_COST_PER_CONVERSION_VIEW: VALID_NUMBER_OPERATORS,
+    constants.MetricType.AVG_COST_PER_CONVERSION_TOTAL: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_START: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_FIRST_QUARTILE: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_MIDPOINT: VALID_NUMBER_OPERATORS,

@@ -35,7 +35,7 @@ class RuleConditionValidationMixin:
     def _validate_left_operand_window(self, changes):
         left_operand_window = changes.get("left_operand_window", self.left_operand_window)
         left_operand_type = changes.get("left_operand_type", self.left_operand_type)
-        if left_operand_window and left_operand_type not in config.WINDOW_ADJUSTEMENT_POSSIBLE_TYPES:
+        if left_operand_window and left_operand_type not in constants.METRIC_STATS_MAPPING:
             raise exceptions.InvalidLeftOperandWindow("Setting window is not supported for this metric")
 
     def _validate_left_operand_modifier(self, changes):
