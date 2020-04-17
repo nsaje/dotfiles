@@ -54,6 +54,9 @@ testim \
     --name "Create credit" \
     --name "Create campaign" \
     --name "Create ad group" \
+    --name "Publisher groups (Account manager)" \
+    --name "Publisher groups (Agency manager)" \
+    --name "Publisher groups (Internal user)" \
     --token "$TESTIM_TOKEN" \
     --project "$TESTIM_PROJECT" \
     --host "$GRID_HOST" \
