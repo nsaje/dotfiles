@@ -4,6 +4,7 @@ from django.http.request import QueryDict
 from djangorestframework_camel_case.util import camel_to_underscore
 from rest_framework import serializers
 
+import restapi.serializers.fields
 import utils.list_helper
 
 
@@ -68,3 +69,9 @@ class NoneToDictSerializerMixin(serializers.Serializer):
         if data is None:
             data = {}
         return super().run_validation(data)
+
+
+class PaginationParametersMixin(serializers.Serializer):
+    limit = restapi.serializers.fields.IntegerField(required=False)
+    offset = restapi.serializers.fields.IntegerField(required=False)
+    marker = restapi.serializers.fields.IntegerField(required=False)

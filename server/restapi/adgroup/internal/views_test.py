@@ -100,6 +100,15 @@ class AdGroupViewSetTest(RESTAPITest):
             },
         )
 
+    def test_get_defaults_invalid_params(self):
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": "NON-NUMERICAL"})
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"campaignId": ["Invalid format"]}, resp_json["details"])
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"))
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual({"campaignId": ["This field is required."]}, resp_json["details"])
+
     @mock.patch("restapi.adgroup.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
         mock_get_extra_data.return_value = {

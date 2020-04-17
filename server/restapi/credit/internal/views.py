@@ -35,16 +35,18 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(credit, context={"request": request}).data)
 
     def list(self, request):
-        agency_id = request.query_params.get("agencyId")
-        account_id = request.query_params.get("accountId")
-        active = request.query_params.get("active")
+        qpe = serializers.CreditQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        agency_id = qpe.validated_data.get("agency_id")
+        account_id = qpe.validated_data.get("account_id")
+        active = qpe.validated_data.get("active", None)
 
         credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id)
         if active is not None:
             date = dates_helper.local_today()
-            if active.lower() == "true":
+            if active:
                 credits_qs = credits_qs.filter(start_date__lte=date, end_date__gte=date)
-            elif active.lower() == "false":
+            else:
                 credits_qs = credits_qs.filter(end_date__lte=date)
 
         paginator = StandardPagination()
@@ -54,8 +56,10 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         )
 
     def totals(self, request):
-        agency_id = request.query_params.get("agencyId")
-        account_id = request.query_params.get("accountId")
+        qpe = serializers.CreditQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        agency_id = qpe.validated_data.get("agency_id")
+        account_id = qpe.validated_data.get("account_id")
 
         credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id).exclude(
             status=dash.constants.CreditLineItemStatus.PENDING

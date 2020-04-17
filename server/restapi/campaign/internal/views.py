@@ -31,9 +31,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return self.response_ok(None)
 
     def defaults(self, request):
-        account_id = request.query_params.get("accountId", None)
-        if not account_id:
-            raise rest_framework.serializers.ValidationError("Must pass accountId parameter")
+        qpe = serializers.CampaignInternalQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+        account_id = qpe.validated_data.get("account_id")
         account = restapi.access.get_account(request.user, account_id)
         campaign = core.models.Campaign.objects.get_default(request, account)
         self._augment_campaign(request, campaign)

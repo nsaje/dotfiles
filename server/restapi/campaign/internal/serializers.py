@@ -12,6 +12,7 @@ import restapi.serializers.base
 import restapi.serializers.deals
 import restapi.serializers.fields
 import restapi.serializers.hack
+import restapi.serializers.serializers
 import restapi.serializers.user
 import zemauth.models
 
@@ -134,3 +135,9 @@ class CloneCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     ad_state_override = restapi.serializers.fields.DashConstantField(
         dash.constants.ContentAdSourceState, required=False, allow_null=True
     )
+
+
+class CampaignInternalQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    account_id = restapi.serializers.fields.IdField(required=True)
