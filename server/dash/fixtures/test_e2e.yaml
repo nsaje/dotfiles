@@ -913,6 +913,15 @@
     model: dash.publishergroup
     pk: 5
 
+-   fields:
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
+        name: 'Agency level group'
+        account: !!null
+        agency: 1
+    model: dash.publishergroup
+    pk: 6
+
 # publisher_group_entries
 
 -   fields:
@@ -939,3 +948,12 @@
         modified_dt: '2019-08-20T00:00:00'
     model: dash.publishergroupentry
     pk: 3
+
+-   fields:
+        publisher_group: 6
+        publisher: "example4.com"
+        source: 1
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
+    model: dash.publishergroupentry
+    pk: 4

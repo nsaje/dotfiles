@@ -57,6 +57,7 @@ testim \
     --name "Publisher groups (Account manager)" \
     --name "Publisher groups (Agency manager)" \
     --name "Publisher groups (Internal user)" \
+    --name "Publisher groups (Readonly)" \
     --token "$TESTIM_TOKEN" \
     --project "$TESTIM_PROJECT" \
     --host "$GRID_HOST" \
