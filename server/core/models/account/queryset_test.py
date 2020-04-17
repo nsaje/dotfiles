@@ -15,9 +15,9 @@ class AccountQuerysetTestCase(TestCase):
         ag_internal = magic_mixer.blend(core.models.Agency)
         ag_internal.entity_tags.add(queryset.INTERNAL_TAG)
 
+        acc_oen = magic_mixer.blend(core.models.Account, id=305)
         acc_z1 = magic_mixer.blend(core.models.Account)
         acc_zms = magic_mixer.blend(core.models.Account, agency=ag_zms)
-        acc_oen = magic_mixer.blend(core.models.Account, id=305)
         acc_internal = magic_mixer.blend(core.models.Account, agency=ag_internal)
 
         self.assertEqual(
