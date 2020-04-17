@@ -27,12 +27,9 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def list(self, request):
-        qpe = serializers.DirectDealQueryParams(data=request.query_params)
-        qpe.is_valid(raise_exception=True)
-
-        agency_id = qpe.validated_data.get("agency_id")
-        account_id = qpe.validated_data.get("account_id")
-        agency_only = qpe.validated_data.get("agency_only", None)
+        agency_id = request.query_params.get("agencyId")
+        account_id = request.query_params.get("accountId")
+        agency_only = request.query_params.get("agencyOnly")
 
         if account_id is not None:
             account = restapi.access.get_account(request.user, account_id)
@@ -43,7 +40,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             )
         elif agency_id is not None:
             agency = restapi.access.get_agency(request.user, agency_id)
-            if agency_only is not None and agency_only:
+            if agency_only is not None and agency_only.lower() == "true":
                 deal_items = (
                     core.features.deals.DirectDeal.objects.filter_by_agency(agency)
                     .select_related("source", "agency")
@@ -61,7 +58,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
                 errors={"non_field_errors": "Either agency id or account id must be provided."}
             )
 
-        keyword = qpe.validated_data.get("keyword")
+        keyword = request.query_params.get("keyword")
         if keyword:
             deal_items = deal_items.filter(
                 Q(name__icontains=keyword)

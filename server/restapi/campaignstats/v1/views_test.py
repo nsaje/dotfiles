@@ -26,9 +26,3 @@ class CampaignStatsTest(RESTAPITest):
         self.assertEqual(
             resp_json["data"], {"totalCost": "123.46", "cpc": "0.123", "impressions": 1234567, "clicks": 1234}
         )
-
-    def test_get_invalid_params(self):
-        r = self.client.get(
-            reverse("restapi.campaignstats.v1:campaignstats", kwargs={"campaign_id": 608}), {"from": 123, "to": 321}
-        )
-        self.assertResponseError(r, "ValidationError")

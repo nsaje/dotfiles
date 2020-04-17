@@ -10,7 +10,6 @@ import restapi.serializers.bid_modifiers
 import restapi.serializers.deals
 import restapi.serializers.fields
 import restapi.serializers.hack
-import restapi.serializers.serializers
 import restapi.serializers.targeting
 
 
@@ -150,9 +149,3 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     deals = rest_framework.serializers.ListSerializer(
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
-
-
-class AdGroupInternalQueryParams(
-    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
-):
-    campaign_id = restapi.serializers.fields.IdField(required=True)

@@ -186,7 +186,3 @@ class UploadBatchSerializer(rest_framework.serializers.Serializer):
         )
         external_data["validationStatus"] = [candidate["errors"] for candidate in cleaned_candidates]
         return external_data
-
-
-class ContentAdQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
-    ad_group_id = restapi.serializers.fields.IdField(required=True)

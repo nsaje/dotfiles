@@ -5,7 +5,6 @@ import rest_framework.serializers
 import restapi.access
 import restapi.serializers.base
 import restapi.serializers.fields
-import restapi.serializers.serializers
 
 
 class CreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -26,10 +25,3 @@ class CreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         value = super().to_internal_value(data)
         value["account"] = restapi.access.get_account(self.context["request"].user, value.get("account_id"))
         return value
-
-
-class CreditRefundQueryParams(
-    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
-):
-    agency_id = restapi.serializers.fields.IdField(required=False)
-    account_id = restapi.serializers.fields.IdField(required=False)

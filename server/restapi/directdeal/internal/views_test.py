@@ -284,17 +284,6 @@ class DirectDealViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(resp_json["count"], 20)
 
-    def test_list_invalid_query_params(self):
-        r = self.client.get(
-            reverse("restapi.directdeal.internal:directdeal_list"),
-            {"agencyId": "NON-NUMERIC", "offset": "NON-NUMERIC", "limit": "NON-NUMERIC"},
-        )
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(
-            {"agencyId": ["Invalid format"], "offset": ["Invalid format"], "limit": ["Invalid format"]},
-            resp_json["details"],
-        )
-
     def test_put(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         source = magic_mixer.blend(core.models.Source)

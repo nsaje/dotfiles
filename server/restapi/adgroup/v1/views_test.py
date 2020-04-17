@@ -217,9 +217,6 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_adgroups_list_campaign_id_invalid(self):
         r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"campaignId": 1000})
         self.assertResponseError(r, "MissingDataError")
-        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"campaignId": "NON-NUMERIC"})
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(["Invalid format"], resp_json["details"]["campaignId"])
 
     def test_adgroups_list_pagination(self):
         campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])

@@ -23,9 +23,9 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         return self.response_ok(None)
 
     def defaults(self, request):
-        qpe = serializers.AdGroupInternalQueryParams(data=request.query_params)
-        qpe.is_valid(raise_exception=True)
-        campaign_id = qpe.validated_data.get("campaign_id")
+        campaign_id = request.query_params.get("campaignId", None)
+        if not campaign_id:
+            raise rest_framework.serializers.ValidationError("Must pass campaignId parameter")
         campaign = restapi.access.get_campaign(request.user, campaign_id)
         ad_group = core.models.AdGroup.objects.get_default(request, campaign)
         self._augment_ad_group(request, ad_group)
