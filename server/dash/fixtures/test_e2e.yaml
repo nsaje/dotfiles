@@ -1,959 +1,1045 @@
 # zemauth_user
 
--   fields:
-        password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
-        email: 'test@test.com'
-        username: 'test'
-        first_name: 'test'
-        last_name: 'test'
-        date_joined: '2019-08-20 07:56:27.433930'
-        is_superuser: false
-        is_staff: true
-        is_active: true
-        is_test_user: false
-        groups: []
-        user_permissions:
-            - ['account_agency_access_permissions', 'zemauth', 'user']
-            - ['account_credit_view', 'zemauth', 'user']
-            - ['account_custom_audiences_view', 'zemauth', 'user']
-            - ['aggregate_postclick_acquisition', 'zemauth', 'user']
-            - ['aggregate_postclick_engagement', 'zemauth', 'user']
-            - ['all_accounts_accounts_add_account', 'zemauth', 'user']
-            - ['all_accounts_accounts_view', 'zemauth', 'user']
-            - ['all_accounts_sources_view', 'zemauth', 'user']
-            - ['account_campaigns_view', 'zemauth', 'user']
-            - ['archive_restore_entity', 'zemauth', 'user']
-            - ['bulk_actions_on_all_levels', 'zemauth', 'user']
-            - ['campaign_ad_groups_detailed_report', 'zemauth', 'user']
-            - ['campaign_goal_optimization', 'zemauth', 'user']
-            - ['campaign_goal_performance', 'zemauth', 'user']
-            - ['campaign_settings_cs_rep', 'zemauth', 'user']
-            - ['campaign_settings_sales_rep', 'zemauth', 'user']
-            - ['can_access_additional_outbrain_publisher_settings', 'zemauth', 'user']
-            - ['can_access_agency_infobox', 'zemauth', 'user']
-            - ['can_access_all_accounts_infobox', 'zemauth', 'user']
-            - ['can_access_campaign_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_global_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_publisher_reports', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'zemauth', 'user']
-            - ['can_be_ob_representative', 'zemauth', 'user']
-            - ['can_breakdown_reports_by_ads_and_publishers', 'zemauth', 'user']
-            - ['can_clone_campaigns', 'zemauth', 'user']
-            - ['can_clone_adgroups', 'zemauth', 'user']
-            - ['can_clone_contentads', 'zemauth', 'user']
-            - ['can_control_ad_group_state_in_table', 'zemauth', 'user']
-            - ['can_create_agency', 'zemauth', 'user']
-            - ['can_download_custom_reports', 'zemauth', 'user']
-            - ['can_edit_advanced_custom_flags', 'zemauth', 'user']
-            - ['can_edit_content_ads', 'zemauth', 'user']
-            - ['can_edit_publisher_groups', 'zemauth', 'user']
-            - ['can_filter_by_account_type', 'zemauth', 'user']
-            - ['can_filter_by_agency', 'zemauth', 'user']
-            - ['can_filter_by_business', 'zemauth', 'user']
-            - ['can_filter_by_media_source', 'zemauth', 'user']
-            - ['can_filter_sources_through_table', 'zemauth', 'user']
-            - ['can_hide_chart', 'zemauth', 'user']
-            - ['can_include_credit_refunds_in_report', 'zemauth', 'user']
-            - ['can_include_model_ids_in_reports', 'zemauth', 'user']
-            - ['can_include_tags_in_reports', 'zemauth', 'user']
-            - ['can_include_totals_in_reports', 'zemauth', 'user']
-            - ['can_manage_ad_group_dayparting', 'zemauth', 'user']
-            - ['can_manage_agency_margin', 'zemauth', 'user']
-            - ['can_manage_budgets_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_credit_refunds', 'zemauth', 'user']
-            - ['can_manage_goals_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_oauth2_apps', 'zemauth', 'user']
-            - ['can_manage_restapi_access', 'zemauth', 'user']
-            - ['can_manage_settings_in_local_currency', 'zemauth', 'user']
-            - ['can_modify_account_manager', 'zemauth', 'user']
-            - ['can_modify_account_name', 'zemauth', 'user']
-            - ['can_modify_account_type', 'zemauth', 'user']
-            - ['can_modify_allowed_sources', 'zemauth', 'user']
-            - ['can_modify_campaign_iab_category', 'zemauth', 'user']
-            - ['can_modify_campaign_manager', 'zemauth', 'user']
-            - ['can_modify_facebook_page', 'zemauth', 'user']
-            - ['can_modify_outbrain_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_promote_additional_pixel', 'zemauth', 'user']
-            - ['can_promote_agency_managers', 'zemauth', 'user']
-            - ['can_receive_pacing_email', 'zemauth', 'user']
-            - ['can_receive_sales_credit_email', 'zemauth', 'user']
-            - ['can_redirect_pixels', 'zemauth', 'user']
-            - ['can_request_accounts_report_in_local_currencies', 'zemauth', 'user']
-            - ['can_request_demo_v3', 'zemauth', 'user']
-            - ['can_review_bid_modifiers', 'zemauth', 'user']
-            - ['can_see_account_type', 'zemauth', 'user']
-            - ['can_see_agency_managers_under_access_permissions', 'zemauth', 'user']
-            - ['can_see_all_accounts', 'zemauth', 'user']
-            - ['can_see_all_available_sources', 'zemauth', 'user']
-            - ['can_see_all_nas_in_inventory_planning', 'zemauth', 'user']
-            - ['can_see_all_users_for_managers', 'zemauth', 'user']
-            - ['can_see_amplify_ad_id_column', 'zemauth', 'user']
-            - ['can_see_amplify_live_preview', 'zemauth', 'user']
-            - ['can_see_amplify_review_link', 'zemauth', 'user']
-            - ['can_see_backend_hacks', 'zemauth', 'user']
-            - ['can_see_budget_optimization', 'zemauth', 'user']
-            - ['can_see_campaign_goals', 'zemauth', 'user']
-            - ['can_see_campaign_language_choices', 'zemauth', 'user']
-            - ['can_see_campaign_type_in_breakdowns', 'zemauth', 'user']
-            - ['can_see_credit_refunds', 'zemauth', 'user']
-            - ['can_see_currency_setting', 'zemauth', 'user']
-            - ['can_see_deals_in_ui', 'zemauth', 'user']
-            - ['can_see_direct_deals_section', 'zemauth', 'user']
-            - ['can_see_grid_actions', 'zemauth', 'user']
-            - ['can_see_history_in_drawer', 'zemauth', 'user']
-            - ['can_see_id_columns_in_table', 'zemauth', 'user']
-            - ['can_see_infobox_in_local_currency', 'zemauth', 'user']
-            - ['can_see_landing_mode_alerts', 'zemauth', 'user']
-            - ['can_see_managers_in_accounts_table', 'zemauth', 'user']
-            - ['can_see_managers_in_campaigns_table', 'zemauth', 'user']
-            - ['can_see_mediamond_publishers', 'zemauth', 'user']
-            - ['can_see_media_source_status_on_submission_popover', 'zemauth', 'user']
-            - ['can_see_new_account_credit', 'zemauth', 'user']
-            - ['can_see_new_budgets', 'zemauth', 'user']
-            - ['can_see_new_chart', 'zemauth', 'user']
-            - ['can_see_new_content_insights', 'zemauth', 'user']
-            - ['can_see_new_pixels_view', 'zemauth', 'user']
-            - ['can_see_new_report_download', 'zemauth', 'user']
-            - ['can_see_new_report_schedule', 'zemauth', 'user']
-            - ['can_see_new_scheduled_reports', 'zemauth', 'user']
-            - ['can_see_newscorp_publishers', 'zemauth', 'user']
-            - ['can_see_open_in_admin', 'zemauth', 'user']
-            - ['can_see_pixel_notes', 'zemauth', 'user']
-            - ['can_see_pixel_traffic', 'zemauth', 'user']
-            - ['can_see_projections', 'zemauth', 'user']
-            - ['can_see_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_see_publisher_groups_ui', 'zemauth', 'user']
-            - ['can_see_publishers', 'zemauth', 'user']
-            - ['can_see_publishers_all_levels', 'zemauth', 'user']
-            - ['can_see_rcs_publishers', 'zemauth', 'user']
-            - ['can_see_realtime_spend', 'zemauth', 'user']
-            - ['can_see_redshift_postclick_statistics', 'zemauth', 'user']
-            - ['can_see_rtb_sources_as_one', 'zemauth', 'user']
-            - ['can_see_salesforce_url', 'zemauth', 'user']
-            - ['can_see_sspd_url', 'zemauth', 'user']
-            - ['can_see_stats_in_local_currency', 'zemauth', 'user']
-            - ['can_see_top_level_delivery_breakdowns', 'zemauth', 'user']
-            - ['can_see_vast', 'zemauth', 'user']
-            - ['can_see_viewthrough_conversions', 'zemauth', 'user']
-            - ['can_set_account_cs_representative', 'zemauth', 'user']
-            - ['can_set_account_ob_representative', 'zemauth', 'user']
-            - ['can_set_account_sales_representative', 'zemauth', 'user']
-            - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
-            - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_advanced_device_targeting', 'zemauth', 'user']
-            - ['can_set_agency_for_account', 'zemauth', 'user']
-            - ['can_set_auto_add_new_sources', 'zemauth', 'user']
-            - ['can_set_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_click_capping', 'zemauth', 'user']
-            - ['can_set_click_capping_daily_click_budget', 'zemauth', 'user']
-            - ['can_set_day_of_week_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_delivery_type', 'zemauth', 'user']
-            - ['can_set_export_delimiter_separator', 'zemauth', 'user']
-            - ['can_set_frequency_capping', 'zemauth', 'user']
-            - ['can_set_ga_api_tracking', 'zemauth', 'user']
-            - ['can_set_interest_targeting', 'zemauth', 'user']
-            - ['can_set_media_source_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_rtb_sources_as_one_cpc', 'zemauth', 'user']
-            - ['can_set_source_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_subdivision_targeting', 'zemauth', 'user']
-            - ['can_set_time_period_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
-            - ['can_switch_between_cost_breakdowns', 'zemauth', 'user']
-            - ['can_target_custom_audiences', 'zemauth', 'user']
-            - ['can_use_ad_additional_data', 'zemauth', 'user']
-            - ['can_use_advanced_inventory_planning_features', 'zemauth', 'user']
-            - ['can_use_bluekai_targeting', 'zemauth', 'user']
-            - ['can_use_language_targeting', 'zemauth', 'user']
-            - ['can_use_new_account_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_ad_group_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_campaign_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_routing', 'zemauth', 'user']
-            - ['can_use_own_images_in_upload', 'zemauth', 'user']
-            - ['can_use_partial_updates_in_upload', 'zemauth', 'user']
-            - ['can_use_publisher_bid_modifiers_in_ui', 'zemauth', 'user']
-            - ['can_use_restapi', 'zemauth', 'user']
-            - ['can_use_single_ad_upload', 'zemauth', 'user']
-            - ['can_view_account_agency_information', 'zemauth', 'user']
-            - ['can_view_actual_costs', 'zemauth', 'user']
-            - ['can_view_additional_targeting', 'zemauth', 'user']
-            - ['can_view_agency_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_agency_margin', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery_extended', 'zemauth', 'user']
-            - ['can_view_campaign_content_insights_side_tab', 'zemauth', 'user']
-            - ['can_view_end_user_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_flat_fees', 'zemauth', 'user']
-            - ['can_view_new_history_backend', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown_derived', 'zemauth', 'user']
-            - ['can_view_retargeting_settings', 'zemauth', 'user']
-            - ['can_view_sidetabs', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type_to_display', 'zemauth', 'user']
-            - ['fea_can_create_automation_rules', 'zemauth', 'user']
-            - ['fea_can_see_inventory_planning', 'zemauth', 'user']
-            - ['fea_can_see_roas', 'zemauth', 'user']
-            - ['fea_can_see_video_metrics', 'zemauth', 'user']
-            - ['fea_can_use_column_picker_in_reports', 'zemauth', 'user']
-            - ['fea_can_use_cpm_buying', 'zemauth', 'user']
-            - ['fea_new_geo_targeting', 'zemauth', 'user']
-            - ['fea_video_upload', 'zemauth', 'user']
-            - ['settings_defaults_on_campaign_level', 'zemauth', 'user']
-            - ['sspd_can_block_account', 'zemauth', 'user']
-            - ['sspd_can_block_ad_group', 'zemauth', 'user']
-            - ['sspd_can_block_agency', 'zemauth', 'user']
-            - ['sspd_can_block_campaign', 'zemauth', 'user']
-            - ['sspd_can_filter_by_account', 'zemauth', 'user']
-            - ['sspd_can_filter_by_agency', 'zemauth', 'user']
-            - ['sspd_can_see_all_sources', 'zemauth', 'user']
-            - ['sspd_can_see_link_to_entity_in_z1', 'zemauth', 'user']
-            - ['sspd_can_use_sspd', 'zemauth', 'user']
-            - ['supply_dash_link_view', 'zemauth', 'user']
-    model: zemauth.user
-    pk: 1
+- fields:
+    password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
+    email: "test@test.com"
+    username: "test"
+    first_name: "test"
+    last_name: "test"
+    date_joined: "2019-08-20 07:56:27.433930"
+    is_superuser: false
+    is_staff: true
+    is_active: true
+    is_test_user: false
+    groups: []
+    user_permissions:
+      - ["account_agency_access_permissions", "zemauth", "user"]
+      - ["account_credit_view", "zemauth", "user"]
+      - ["account_custom_audiences_view", "zemauth", "user"]
+      - ["aggregate_postclick_acquisition", "zemauth", "user"]
+      - ["aggregate_postclick_engagement", "zemauth", "user"]
+      - ["all_accounts_accounts_add_account", "zemauth", "user"]
+      - ["all_accounts_accounts_view", "zemauth", "user"]
+      - ["all_accounts_sources_view", "zemauth", "user"]
+      - ["account_campaigns_view", "zemauth", "user"]
+      - ["archive_restore_entity", "zemauth", "user"]
+      - ["bulk_actions_on_all_levels", "zemauth", "user"]
+      - ["campaign_ad_groups_detailed_report", "zemauth", "user"]
+      - ["campaign_goal_optimization", "zemauth", "user"]
+      - ["campaign_goal_performance", "zemauth", "user"]
+      - ["campaign_settings_cs_rep", "zemauth", "user"]
+      - ["campaign_settings_sales_rep", "zemauth", "user"]
+      - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
+      - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
+      - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
+      - ["can_create_agency", "zemauth", "user"]
+      - ["can_download_custom_reports", "zemauth", "user"]
+      - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
+      - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
+      - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
+      - ["can_filter_sources_through_table", "zemauth", "user"]
+      - ["can_hide_chart", "zemauth", "user"]
+      - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
+      - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
+      - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
+      - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
+      - ["can_manage_oauth2_apps", "zemauth", "user"]
+      - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
+      - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
+      - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_promote_additional_pixel", "zemauth", "user"]
+      - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
+      - ["can_receive_sales_credit_email", "zemauth", "user"]
+      - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
+      - ["can_request_demo_v3", "zemauth", "user"]
+      - ["can_review_bid_modifiers", "zemauth", "user"]
+      - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
+      - ["can_see_all_accounts", "zemauth", "user"]
+      - ["can_see_all_available_sources", "zemauth", "user"]
+      - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
+      - ["can_see_all_users_for_managers", "zemauth", "user"]
+      - ["can_see_amplify_ad_id_column", "zemauth", "user"]
+      - ["can_see_amplify_live_preview", "zemauth", "user"]
+      - ["can_see_amplify_review_link", "zemauth", "user"]
+      - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_campaign_type_in_breakdowns", "zemauth", "user"]
+      - ["can_see_credit_refunds", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
+      - ["can_see_deals_in_ui", "zemauth", "user"]
+      - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
+      - ["can_see_history_in_drawer", "zemauth", "user"]
+      - ["can_see_id_columns_in_table", "zemauth", "user"]
+      - ["can_see_infobox_in_local_currency", "zemauth", "user"]
+      - ["can_see_landing_mode_alerts", "zemauth", "user"]
+      - ["can_see_managers_in_accounts_table", "zemauth", "user"]
+      - ["can_see_managers_in_campaigns_table", "zemauth", "user"]
+      - ["can_see_mediamond_publishers", "zemauth", "user"]
+      - ["can_see_media_source_status_on_submission_popover", "zemauth", "user"]
+      - ["can_see_new_account_credit", "zemauth", "user"]
+      - ["can_see_new_budgets", "zemauth", "user"]
+      - ["can_see_new_chart", "zemauth", "user"]
+      - ["can_see_new_content_insights", "zemauth", "user"]
+      - ["can_see_new_pixels_view", "zemauth", "user"]
+      - ["can_see_new_report_download", "zemauth", "user"]
+      - ["can_see_new_report_schedule", "zemauth", "user"]
+      - ["can_see_new_scheduled_reports", "zemauth", "user"]
+      - ["can_see_newscorp_publishers", "zemauth", "user"]
+      - ["can_see_open_in_admin", "zemauth", "user"]
+      - ["can_see_pixel_notes", "zemauth", "user"]
+      - ["can_see_pixel_traffic", "zemauth", "user"]
+      - ["can_see_projections", "zemauth", "user"]
+      - ["can_see_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_see_publisher_groups_ui", "zemauth", "user"]
+      - ["can_see_publishers", "zemauth", "user"]
+      - ["can_see_publishers_all_levels", "zemauth", "user"]
+      - ["can_see_rcs_publishers", "zemauth", "user"]
+      - ["can_see_realtime_spend", "zemauth", "user"]
+      - ["can_see_redshift_postclick_statistics", "zemauth", "user"]
+      - ["can_see_rtb_sources_as_one", "zemauth", "user"]
+      - ["can_see_salesforce_url", "zemauth", "user"]
+      - ["can_see_sspd_url", "zemauth", "user"]
+      - ["can_see_stats_in_local_currency", "zemauth", "user"]
+      - ["can_see_top_level_delivery_breakdowns", "zemauth", "user"]
+      - ["can_see_vast", "zemauth", "user"]
+      - ["can_see_viewthrough_conversions", "zemauth", "user"]
+      - ["can_set_account_cs_representative", "zemauth", "user"]
+      - ["can_set_account_ob_representative", "zemauth", "user"]
+      - ["can_set_account_sales_representative", "zemauth", "user"]
+      - ["can_set_ad_group_max_cpc", "zemauth", "user"]
+      - ["can_set_adgroup_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_advanced_device_targeting", "zemauth", "user"]
+      - ["can_set_agency_for_account", "zemauth", "user"]
+      - ["can_set_auto_add_new_sources", "zemauth", "user"]
+      - ["can_set_bid_modifiers", "zemauth", "user"]
+      - ["can_set_click_capping", "zemauth", "user"]
+      - ["can_set_click_capping_daily_click_budget", "zemauth", "user"]
+      - ["can_set_day_of_week_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_delivery_type", "zemauth", "user"]
+      - ["can_set_export_delimiter_separator", "zemauth", "user"]
+      - ["can_set_frequency_capping", "zemauth", "user"]
+      - ["can_set_ga_api_tracking", "zemauth", "user"]
+      - ["can_set_interest_targeting", "zemauth", "user"]
+      - ["can_set_media_source_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_rtb_sources_as_one_cpc", "zemauth", "user"]
+      - ["can_set_source_bid_modifiers", "zemauth", "user"]
+      - ["can_set_subdivision_targeting", "zemauth", "user"]
+      - ["can_set_time_period_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_white_blacklist_publisher_groups", "zemauth", "user"]
+      - ["can_switch_between_cost_breakdowns", "zemauth", "user"]
+      - ["can_target_custom_audiences", "zemauth", "user"]
+      - ["can_use_ad_additional_data", "zemauth", "user"]
+      - ["can_use_advanced_inventory_planning_features", "zemauth", "user"]
+      - ["can_use_bluekai_targeting", "zemauth", "user"]
+      - ["can_use_language_targeting", "zemauth", "user"]
+      - ["can_use_new_account_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_ad_group_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_campaign_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_routing", "zemauth", "user"]
+      - ["can_use_own_images_in_upload", "zemauth", "user"]
+      - ["can_use_partial_updates_in_upload", "zemauth", "user"]
+      - ["can_use_publisher_bid_modifiers_in_ui", "zemauth", "user"]
+      - ["can_use_restapi", "zemauth", "user"]
+      - ["can_use_single_ad_upload", "zemauth", "user"]
+      - ["can_view_account_agency_information", "zemauth", "user"]
+      - ["can_view_actual_costs", "zemauth", "user"]
+      - ["can_view_additional_targeting", "zemauth", "user"]
+      - ["can_view_agency_cost_breakdown", "zemauth", "user"]
+      - ["can_view_agency_margin", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery_extended", "zemauth", "user"]
+      - ["can_view_campaign_content_insights_side_tab", "zemauth", "user"]
+      - ["can_view_end_user_cost_breakdown", "zemauth", "user"]
+      - ["can_view_flat_fees", "zemauth", "user"]
+      - ["can_view_new_history_backend", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown_derived", "zemauth", "user"]
+      - ["can_view_retargeting_settings", "zemauth", "user"]
+      - ["can_view_sidetabs", "zemauth", "user"]
+      - ["fea_can_change_campaign_type", "zemauth", "user"]
+      - ["fea_can_change_campaign_type_to_display", "zemauth", "user"]
+      - ["fea_can_create_automation_rules", "zemauth", "user"]
+      - ["fea_can_see_inventory_planning", "zemauth", "user"]
+      - ["fea_can_see_roas", "zemauth", "user"]
+      - ["fea_can_see_video_metrics", "zemauth", "user"]
+      - ["fea_can_use_column_picker_in_reports", "zemauth", "user"]
+      - ["fea_can_use_cpm_buying", "zemauth", "user"]
+      - ["fea_new_geo_targeting", "zemauth", "user"]
+      - ["fea_video_upload", "zemauth", "user"]
+      - ["settings_defaults_on_campaign_level", "zemauth", "user"]
+      - ["sspd_can_block_account", "zemauth", "user"]
+      - ["sspd_can_block_ad_group", "zemauth", "user"]
+      - ["sspd_can_block_agency", "zemauth", "user"]
+      - ["sspd_can_block_campaign", "zemauth", "user"]
+      - ["sspd_can_filter_by_account", "zemauth", "user"]
+      - ["sspd_can_filter_by_agency", "zemauth", "user"]
+      - ["sspd_can_see_all_sources", "zemauth", "user"]
+      - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
+      - ["sspd_can_use_sspd", "zemauth", "user"]
+      - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
+  model: zemauth.user
+  pk: 1
 
--   fields:
-        password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
-        email: 'agency-manager@test.com'
-        username: 'agency-manager'
-        first_name: 'agency-manager'
-        last_name: 'agency-manager'
-        date_joined: '2020-04-06 07:56:27.433930'
-        is_superuser: false
-        is_staff: false
-        is_active: true
-        is_test_user: false
-        groups: []
-        user_permissions:
-            - ['account_agency_access_permissions', 'zemauth', 'user']
-            - ['account_credit_view', 'zemauth', 'user']
-            - ['account_custom_audiences_view', 'zemauth', 'user']
-            - ['aggregate_postclick_acquisition', 'zemauth', 'user']
-            - ['aggregate_postclick_engagement', 'zemauth', 'user']
-            - ['all_accounts_accounts_add_account', 'zemauth', 'user']
-            - ['all_accounts_accounts_view', 'zemauth', 'user']
-            - ['all_accounts_sources_view', 'zemauth', 'user']
-            - ['account_campaigns_view', 'zemauth', 'user']
-            - ['archive_restore_entity', 'zemauth', 'user']
-            - ['bulk_actions_on_all_levels', 'zemauth', 'user']
-            - ['campaign_ad_groups_detailed_report', 'zemauth', 'user']
-            - ['campaign_goal_optimization', 'zemauth', 'user']
-            - ['campaign_goal_performance', 'zemauth', 'user']
-            - ['campaign_settings_cs_rep', 'zemauth', 'user']
-            - ['campaign_settings_sales_rep', 'zemauth', 'user']
-            - ['can_access_additional_outbrain_publisher_settings', 'zemauth', 'user']
-            - ['can_access_agency_infobox', 'zemauth', 'user']
-            - ['can_access_all_accounts_infobox', 'zemauth', 'user']
-            - ['can_access_campaign_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_global_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_publisher_reports', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'zemauth', 'user']
-            - ['can_be_ob_representative', 'zemauth', 'user']
-            - ['can_breakdown_reports_by_ads_and_publishers', 'zemauth', 'user']
-            - ['can_clone_campaigns', 'zemauth', 'user']
-            - ['can_clone_adgroups', 'zemauth', 'user']
-            - ['can_clone_contentads', 'zemauth', 'user']
-            - ['can_control_ad_group_state_in_table', 'zemauth', 'user']
-            - ['can_create_agency', 'zemauth', 'user']
-            - ['can_download_custom_reports', 'zemauth', 'user']
-            - ['can_edit_advanced_custom_flags', 'zemauth', 'user']
-            - ['can_edit_content_ads', 'zemauth', 'user']
-            - ['can_edit_publisher_groups', 'zemauth', 'user']
-            - ['can_filter_by_account_type', 'zemauth', 'user']
-            - ['can_filter_by_agency', 'zemauth', 'user']
-            - ['can_filter_by_business', 'zemauth', 'user']
-            - ['can_filter_by_media_source', 'zemauth', 'user']
-            - ['can_filter_sources_through_table', 'zemauth', 'user']
-            - ['can_hide_chart', 'zemauth', 'user']
-            - ['can_include_credit_refunds_in_report', 'zemauth', 'user']
-            - ['can_include_model_ids_in_reports', 'zemauth', 'user']
-            - ['can_include_tags_in_reports', 'zemauth', 'user']
-            - ['can_include_totals_in_reports', 'zemauth', 'user']
-            - ['can_manage_ad_group_dayparting', 'zemauth', 'user']
-            - ['can_manage_agency_margin', 'zemauth', 'user']
-            - ['can_manage_budgets_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_credit_refunds', 'zemauth', 'user']
-            - ['can_manage_goals_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_oauth2_apps', 'zemauth', 'user']
-            - ['can_manage_restapi_access', 'zemauth', 'user']
-            - ['can_manage_settings_in_local_currency', 'zemauth', 'user']
-            - ['can_modify_account_manager', 'zemauth', 'user']
-            - ['can_modify_account_name', 'zemauth', 'user']
-            - ['can_modify_account_type', 'zemauth', 'user']
-            - ['can_modify_allowed_sources', 'zemauth', 'user']
-            - ['can_modify_campaign_iab_category', 'zemauth', 'user']
-            - ['can_modify_campaign_manager', 'zemauth', 'user']
-            - ['can_modify_facebook_page', 'zemauth', 'user']
-            - ['can_modify_outbrain_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_promote_additional_pixel', 'zemauth', 'user']
-            - ['can_promote_agency_managers', 'zemauth', 'user']
-            - ['can_receive_pacing_email', 'zemauth', 'user']
-            - ['can_receive_sales_credit_email', 'zemauth', 'user']
-            - ['can_redirect_pixels', 'zemauth', 'user']
-            - ['can_request_accounts_report_in_local_currencies', 'zemauth', 'user']
-            - ['can_request_demo_v3', 'zemauth', 'user']
-            - ['can_review_bid_modifiers', 'zemauth', 'user']
-            - ['can_see_account_type', 'zemauth', 'user']
-            - ['can_see_agency_managers_under_access_permissions', 'zemauth', 'user']
-            - ['can_see_all_available_sources', 'zemauth', 'user']
-            - ['can_see_all_nas_in_inventory_planning', 'zemauth', 'user']
-            - ['can_see_all_users_for_managers', 'zemauth', 'user']
-            - ['can_see_amplify_ad_id_column', 'zemauth', 'user']
-            - ['can_see_amplify_live_preview', 'zemauth', 'user']
-            - ['can_see_amplify_review_link', 'zemauth', 'user']
-            - ['can_see_backend_hacks', 'zemauth', 'user']
-            - ['can_see_budget_optimization', 'zemauth', 'user']
-            - ['can_see_campaign_goals', 'zemauth', 'user']
-            - ['can_see_campaign_language_choices', 'zemauth', 'user']
-            - ['can_see_campaign_type_in_breakdowns', 'zemauth', 'user']
-            - ['can_see_credit_refunds', 'zemauth', 'user']
-            - ['can_see_currency_setting', 'zemauth', 'user']
-            - ['can_see_deals_in_ui', 'zemauth', 'user']
-            - ['can_see_direct_deals_section', 'zemauth', 'user']
-            - ['can_see_grid_actions', 'zemauth', 'user']
-            - ['can_see_history_in_drawer', 'zemauth', 'user']
-            - ['can_see_id_columns_in_table', 'zemauth', 'user']
-            - ['can_see_infobox_in_local_currency', 'zemauth', 'user']
-            - ['can_see_landing_mode_alerts', 'zemauth', 'user']
-            - ['can_see_managers_in_accounts_table', 'zemauth', 'user']
-            - ['can_see_managers_in_campaigns_table', 'zemauth', 'user']
-            - ['can_see_mediamond_publishers', 'zemauth', 'user']
-            - ['can_see_media_source_status_on_submission_popover', 'zemauth', 'user']
-            - ['can_see_new_account_credit', 'zemauth', 'user']
-            - ['can_see_new_budgets', 'zemauth', 'user']
-            - ['can_see_new_chart', 'zemauth', 'user']
-            - ['can_see_new_content_insights', 'zemauth', 'user']
-            - ['can_see_new_pixels_view', 'zemauth', 'user']
-            - ['can_see_new_report_download', 'zemauth', 'user']
-            - ['can_see_new_report_schedule', 'zemauth', 'user']
-            - ['can_see_new_scheduled_reports', 'zemauth', 'user']
-            - ['can_see_newscorp_publishers', 'zemauth', 'user']
-            - ['can_see_open_in_admin', 'zemauth', 'user']
-            - ['can_see_pixel_notes', 'zemauth', 'user']
-            - ['can_see_pixel_traffic', 'zemauth', 'user']
-            - ['can_see_projections', 'zemauth', 'user']
-            - ['can_see_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_see_publisher_groups_ui', 'zemauth', 'user']
-            - ['can_see_publishers', 'zemauth', 'user']
-            - ['can_see_publishers_all_levels', 'zemauth', 'user']
-            - ['can_see_rcs_publishers', 'zemauth', 'user']
-            - ['can_see_realtime_spend', 'zemauth', 'user']
-            - ['can_see_redshift_postclick_statistics', 'zemauth', 'user']
-            - ['can_see_rtb_sources_as_one', 'zemauth', 'user']
-            - ['can_see_salesforce_url', 'zemauth', 'user']
-            - ['can_see_sspd_url', 'zemauth', 'user']
-            - ['can_see_stats_in_local_currency', 'zemauth', 'user']
-            - ['can_see_top_level_delivery_breakdowns', 'zemauth', 'user']
-            - ['can_see_vast', 'zemauth', 'user']
-            - ['can_see_viewthrough_conversions', 'zemauth', 'user']
-            - ['can_set_account_cs_representative', 'zemauth', 'user']
-            - ['can_set_account_ob_representative', 'zemauth', 'user']
-            - ['can_set_account_sales_representative', 'zemauth', 'user']
-            - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
-            - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_advanced_device_targeting', 'zemauth', 'user']
-            - ['can_set_agency_for_account', 'zemauth', 'user']
-            - ['can_set_auto_add_new_sources', 'zemauth', 'user']
-            - ['can_set_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_click_capping', 'zemauth', 'user']
-            - ['can_set_click_capping_daily_click_budget', 'zemauth', 'user']
-            - ['can_set_day_of_week_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_delivery_type', 'zemauth', 'user']
-            - ['can_set_export_delimiter_separator', 'zemauth', 'user']
-            - ['can_set_frequency_capping', 'zemauth', 'user']
-            - ['can_set_ga_api_tracking', 'zemauth', 'user']
-            - ['can_set_interest_targeting', 'zemauth', 'user']
-            - ['can_set_media_source_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_rtb_sources_as_one_cpc', 'zemauth', 'user']
-            - ['can_set_source_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_subdivision_targeting', 'zemauth', 'user']
-            - ['can_set_time_period_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
-            - ['can_switch_between_cost_breakdowns', 'zemauth', 'user']
-            - ['can_target_custom_audiences', 'zemauth', 'user']
-            - ['can_use_ad_additional_data', 'zemauth', 'user']
-            - ['can_use_advanced_inventory_planning_features', 'zemauth', 'user']
-            - ['can_use_bluekai_targeting', 'zemauth', 'user']
-            - ['can_use_language_targeting', 'zemauth', 'user']
-            - ['can_use_new_account_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_ad_group_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_campaign_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_routing', 'zemauth', 'user']
-            - ['can_use_own_images_in_upload', 'zemauth', 'user']
-            - ['can_use_partial_updates_in_upload', 'zemauth', 'user']
-            - ['can_use_publisher_bid_modifiers_in_ui', 'zemauth', 'user']
-            - ['can_use_restapi', 'zemauth', 'user']
-            - ['can_use_single_ad_upload', 'zemauth', 'user']
-            - ['can_view_account_agency_information', 'zemauth', 'user']
-            - ['can_view_actual_costs', 'zemauth', 'user']
-            - ['can_view_additional_targeting', 'zemauth', 'user']
-            - ['can_view_agency_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_agency_margin', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery_extended', 'zemauth', 'user']
-            - ['can_view_campaign_content_insights_side_tab', 'zemauth', 'user']
-            - ['can_view_end_user_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_flat_fees', 'zemauth', 'user']
-            - ['can_view_new_history_backend', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown_derived', 'zemauth', 'user']
-            - ['can_view_retargeting_settings', 'zemauth', 'user']
-            - ['can_view_sidetabs', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type_to_display', 'zemauth', 'user']
-            - ['fea_can_create_automation_rules', 'zemauth', 'user']
-            - ['fea_can_see_inventory_planning', 'zemauth', 'user']
-            - ['fea_can_see_roas', 'zemauth', 'user']
-            - ['fea_can_see_video_metrics', 'zemauth', 'user']
-            - ['fea_can_use_column_picker_in_reports', 'zemauth', 'user']
-            - ['fea_can_use_cpm_buying', 'zemauth', 'user']
-            - ['fea_new_geo_targeting', 'zemauth', 'user']
-            - ['fea_video_upload', 'zemauth', 'user']
-            - ['settings_defaults_on_campaign_level', 'zemauth', 'user']
-            - ['sspd_can_block_account', 'zemauth', 'user']
-            - ['sspd_can_block_ad_group', 'zemauth', 'user']
-            - ['sspd_can_block_agency', 'zemauth', 'user']
-            - ['sspd_can_block_campaign', 'zemauth', 'user']
-            - ['sspd_can_filter_by_account', 'zemauth', 'user']
-            - ['sspd_can_filter_by_agency', 'zemauth', 'user']
-            - ['sspd_can_see_all_sources', 'zemauth', 'user']
-            - ['sspd_can_see_link_to_entity_in_z1', 'zemauth', 'user']
-            - ['sspd_can_use_sspd', 'zemauth', 'user']
-            - ['supply_dash_link_view', 'zemauth', 'user']
-    model: zemauth.user
-    pk: 2
+- fields:
+    password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
+    email: "agency-manager@test.com"
+    username: "agency-manager"
+    first_name: "agency-manager"
+    last_name: "agency-manager"
+    date_joined: "2020-04-06 07:56:27.433930"
+    is_superuser: false
+    is_staff: false
+    is_active: true
+    is_test_user: false
+    groups: []
+    user_permissions:
+      - ["account_agency_access_permissions", "zemauth", "user"]
+      - ["account_credit_view", "zemauth", "user"]
+      - ["account_custom_audiences_view", "zemauth", "user"]
+      - ["aggregate_postclick_acquisition", "zemauth", "user"]
+      - ["aggregate_postclick_engagement", "zemauth", "user"]
+      - ["all_accounts_accounts_add_account", "zemauth", "user"]
+      - ["all_accounts_accounts_view", "zemauth", "user"]
+      - ["all_accounts_sources_view", "zemauth", "user"]
+      - ["account_campaigns_view", "zemauth", "user"]
+      - ["archive_restore_entity", "zemauth", "user"]
+      - ["bulk_actions_on_all_levels", "zemauth", "user"]
+      - ["campaign_ad_groups_detailed_report", "zemauth", "user"]
+      - ["campaign_goal_optimization", "zemauth", "user"]
+      - ["campaign_goal_performance", "zemauth", "user"]
+      - ["campaign_settings_cs_rep", "zemauth", "user"]
+      - ["campaign_settings_sales_rep", "zemauth", "user"]
+      - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
+      - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
+      - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
+      - ["can_create_agency", "zemauth", "user"]
+      - ["can_download_custom_reports", "zemauth", "user"]
+      - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
+      - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
+      - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
+      - ["can_filter_sources_through_table", "zemauth", "user"]
+      - ["can_hide_chart", "zemauth", "user"]
+      - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
+      - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
+      - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
+      - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
+      - ["can_manage_oauth2_apps", "zemauth", "user"]
+      - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
+      - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
+      - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_promote_additional_pixel", "zemauth", "user"]
+      - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
+      - ["can_receive_sales_credit_email", "zemauth", "user"]
+      - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
+      - ["can_request_demo_v3", "zemauth", "user"]
+      - ["can_review_bid_modifiers", "zemauth", "user"]
+      - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
+      - ["can_see_all_available_sources", "zemauth", "user"]
+      - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
+      - ["can_see_all_users_for_managers", "zemauth", "user"]
+      - ["can_see_amplify_ad_id_column", "zemauth", "user"]
+      - ["can_see_amplify_live_preview", "zemauth", "user"]
+      - ["can_see_amplify_review_link", "zemauth", "user"]
+      - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_campaign_type_in_breakdowns", "zemauth", "user"]
+      - ["can_see_credit_refunds", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
+      - ["can_see_deals_in_ui", "zemauth", "user"]
+      - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
+      - ["can_see_history_in_drawer", "zemauth", "user"]
+      - ["can_see_id_columns_in_table", "zemauth", "user"]
+      - ["can_see_infobox_in_local_currency", "zemauth", "user"]
+      - ["can_see_landing_mode_alerts", "zemauth", "user"]
+      - ["can_see_managers_in_accounts_table", "zemauth", "user"]
+      - ["can_see_managers_in_campaigns_table", "zemauth", "user"]
+      - ["can_see_mediamond_publishers", "zemauth", "user"]
+      - ["can_see_media_source_status_on_submission_popover", "zemauth", "user"]
+      - ["can_see_new_account_credit", "zemauth", "user"]
+      - ["can_see_new_budgets", "zemauth", "user"]
+      - ["can_see_new_chart", "zemauth", "user"]
+      - ["can_see_new_content_insights", "zemauth", "user"]
+      - ["can_see_new_pixels_view", "zemauth", "user"]
+      - ["can_see_new_report_download", "zemauth", "user"]
+      - ["can_see_new_report_schedule", "zemauth", "user"]
+      - ["can_see_new_scheduled_reports", "zemauth", "user"]
+      - ["can_see_newscorp_publishers", "zemauth", "user"]
+      - ["can_see_open_in_admin", "zemauth", "user"]
+      - ["can_see_pixel_notes", "zemauth", "user"]
+      - ["can_see_pixel_traffic", "zemauth", "user"]
+      - ["can_see_projections", "zemauth", "user"]
+      - ["can_see_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_see_publisher_groups_ui", "zemauth", "user"]
+      - ["can_see_publishers", "zemauth", "user"]
+      - ["can_see_publishers_all_levels", "zemauth", "user"]
+      - ["can_see_rcs_publishers", "zemauth", "user"]
+      - ["can_see_realtime_spend", "zemauth", "user"]
+      - ["can_see_redshift_postclick_statistics", "zemauth", "user"]
+      - ["can_see_rtb_sources_as_one", "zemauth", "user"]
+      - ["can_see_salesforce_url", "zemauth", "user"]
+      - ["can_see_sspd_url", "zemauth", "user"]
+      - ["can_see_stats_in_local_currency", "zemauth", "user"]
+      - ["can_see_top_level_delivery_breakdowns", "zemauth", "user"]
+      - ["can_see_vast", "zemauth", "user"]
+      - ["can_see_viewthrough_conversions", "zemauth", "user"]
+      - ["can_set_account_cs_representative", "zemauth", "user"]
+      - ["can_set_account_ob_representative", "zemauth", "user"]
+      - ["can_set_account_sales_representative", "zemauth", "user"]
+      - ["can_set_ad_group_max_cpc", "zemauth", "user"]
+      - ["can_set_adgroup_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_advanced_device_targeting", "zemauth", "user"]
+      - ["can_set_agency_for_account", "zemauth", "user"]
+      - ["can_set_auto_add_new_sources", "zemauth", "user"]
+      - ["can_set_bid_modifiers", "zemauth", "user"]
+      - ["can_set_click_capping", "zemauth", "user"]
+      - ["can_set_click_capping_daily_click_budget", "zemauth", "user"]
+      - ["can_set_day_of_week_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_delivery_type", "zemauth", "user"]
+      - ["can_set_export_delimiter_separator", "zemauth", "user"]
+      - ["can_set_frequency_capping", "zemauth", "user"]
+      - ["can_set_ga_api_tracking", "zemauth", "user"]
+      - ["can_set_interest_targeting", "zemauth", "user"]
+      - ["can_set_media_source_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_rtb_sources_as_one_cpc", "zemauth", "user"]
+      - ["can_set_source_bid_modifiers", "zemauth", "user"]
+      - ["can_set_subdivision_targeting", "zemauth", "user"]
+      - ["can_set_time_period_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_white_blacklist_publisher_groups", "zemauth", "user"]
+      - ["can_switch_between_cost_breakdowns", "zemauth", "user"]
+      - ["can_target_custom_audiences", "zemauth", "user"]
+      - ["can_use_ad_additional_data", "zemauth", "user"]
+      - ["can_use_advanced_inventory_planning_features", "zemauth", "user"]
+      - ["can_use_bluekai_targeting", "zemauth", "user"]
+      - ["can_use_language_targeting", "zemauth", "user"]
+      - ["can_use_new_account_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_ad_group_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_campaign_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_routing", "zemauth", "user"]
+      - ["can_use_own_images_in_upload", "zemauth", "user"]
+      - ["can_use_partial_updates_in_upload", "zemauth", "user"]
+      - ["can_use_publisher_bid_modifiers_in_ui", "zemauth", "user"]
+      - ["can_use_restapi", "zemauth", "user"]
+      - ["can_use_single_ad_upload", "zemauth", "user"]
+      - ["can_view_account_agency_information", "zemauth", "user"]
+      - ["can_view_actual_costs", "zemauth", "user"]
+      - ["can_view_additional_targeting", "zemauth", "user"]
+      - ["can_view_agency_cost_breakdown", "zemauth", "user"]
+      - ["can_view_agency_margin", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery_extended", "zemauth", "user"]
+      - ["can_view_campaign_content_insights_side_tab", "zemauth", "user"]
+      - ["can_view_end_user_cost_breakdown", "zemauth", "user"]
+      - ["can_view_flat_fees", "zemauth", "user"]
+      - ["can_view_new_history_backend", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown_derived", "zemauth", "user"]
+      - ["can_view_retargeting_settings", "zemauth", "user"]
+      - ["can_view_sidetabs", "zemauth", "user"]
+      - ["fea_can_change_campaign_type", "zemauth", "user"]
+      - ["fea_can_change_campaign_type_to_display", "zemauth", "user"]
+      - ["fea_can_create_automation_rules", "zemauth", "user"]
+      - ["fea_can_see_inventory_planning", "zemauth", "user"]
+      - ["fea_can_see_roas", "zemauth", "user"]
+      - ["fea_can_see_video_metrics", "zemauth", "user"]
+      - ["fea_can_use_column_picker_in_reports", "zemauth", "user"]
+      - ["fea_can_use_cpm_buying", "zemauth", "user"]
+      - ["fea_new_geo_targeting", "zemauth", "user"]
+      - ["fea_video_upload", "zemauth", "user"]
+      - ["settings_defaults_on_campaign_level", "zemauth", "user"]
+      - ["sspd_can_block_account", "zemauth", "user"]
+      - ["sspd_can_block_ad_group", "zemauth", "user"]
+      - ["sspd_can_block_agency", "zemauth", "user"]
+      - ["sspd_can_block_campaign", "zemauth", "user"]
+      - ["sspd_can_filter_by_account", "zemauth", "user"]
+      - ["sspd_can_filter_by_agency", "zemauth", "user"]
+      - ["sspd_can_see_all_sources", "zemauth", "user"]
+      - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
+      - ["sspd_can_use_sspd", "zemauth", "user"]
+      - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
+  model: zemauth.user
+  pk: 2
 
--   fields:
-        password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
-        email: 'account-manager@test.com'
-        username: 'account-manager'
-        first_name: 'account-manager'
-        last_name: 'account-manager'
-        date_joined: '2020-04-06 07:56:27.433930'
-        is_superuser: false
-        is_staff: false
-        is_active: true
-        is_test_user: false
-        groups: []
-        user_permissions:
-            - ['account_agency_access_permissions', 'zemauth', 'user']
-            - ['account_credit_view', 'zemauth', 'user']
-            - ['account_custom_audiences_view', 'zemauth', 'user']
-            - ['aggregate_postclick_acquisition', 'zemauth', 'user']
-            - ['aggregate_postclick_engagement', 'zemauth', 'user']
-            - ['all_accounts_accounts_add_account', 'zemauth', 'user']
-            - ['all_accounts_accounts_view', 'zemauth', 'user']
-            - ['all_accounts_sources_view', 'zemauth', 'user']
-            - ['account_campaigns_view', 'zemauth', 'user']
-            - ['archive_restore_entity', 'zemauth', 'user']
-            - ['bulk_actions_on_all_levels', 'zemauth', 'user']
-            - ['campaign_ad_groups_detailed_report', 'zemauth', 'user']
-            - ['campaign_goal_optimization', 'zemauth', 'user']
-            - ['campaign_goal_performance', 'zemauth', 'user']
-            - ['campaign_settings_cs_rep', 'zemauth', 'user']
-            - ['campaign_settings_sales_rep', 'zemauth', 'user']
-            - ['can_access_additional_outbrain_publisher_settings', 'zemauth', 'user']
-            - ['can_access_agency_infobox', 'zemauth', 'user']
-            - ['can_access_all_accounts_infobox', 'zemauth', 'user']
-            - ['can_access_campaign_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_global_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_access_publisher_reports', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level', 'zemauth', 'user']
-            - ['can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'zemauth', 'user']
-            - ['can_be_ob_representative', 'zemauth', 'user']
-            - ['can_breakdown_reports_by_ads_and_publishers', 'zemauth', 'user']
-            - ['can_clone_campaigns', 'zemauth', 'user']
-            - ['can_clone_adgroups', 'zemauth', 'user']
-            - ['can_clone_contentads', 'zemauth', 'user']
-            - ['can_control_ad_group_state_in_table', 'zemauth', 'user']
-            - ['can_create_agency', 'zemauth', 'user']
-            - ['can_download_custom_reports', 'zemauth', 'user']
-            - ['can_edit_advanced_custom_flags', 'zemauth', 'user']
-            - ['can_edit_content_ads', 'zemauth', 'user']
-            - ['can_edit_publisher_groups', 'zemauth', 'user']
-            - ['can_filter_by_account_type', 'zemauth', 'user']
-            - ['can_filter_by_agency', 'zemauth', 'user']
-            - ['can_filter_by_business', 'zemauth', 'user']
-            - ['can_filter_by_media_source', 'zemauth', 'user']
-            - ['can_filter_sources_through_table', 'zemauth', 'user']
-            - ['can_hide_chart', 'zemauth', 'user']
-            - ['can_include_credit_refunds_in_report', 'zemauth', 'user']
-            - ['can_include_model_ids_in_reports', 'zemauth', 'user']
-            - ['can_include_tags_in_reports', 'zemauth', 'user']
-            - ['can_include_totals_in_reports', 'zemauth', 'user']
-            - ['can_manage_ad_group_dayparting', 'zemauth', 'user']
-            - ['can_manage_agency_margin', 'zemauth', 'user']
-            - ['can_manage_budgets_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_credit_refunds', 'zemauth', 'user']
-            - ['can_manage_goals_in_local_currency', 'zemauth', 'user']
-            - ['can_manage_oauth2_apps', 'zemauth', 'user']
-            - ['can_manage_restapi_access', 'zemauth', 'user']
-            - ['can_manage_settings_in_local_currency', 'zemauth', 'user']
-            - ['can_modify_account_manager', 'zemauth', 'user']
-            - ['can_modify_account_name', 'zemauth', 'user']
-            - ['can_modify_account_type', 'zemauth', 'user']
-            - ['can_modify_allowed_sources', 'zemauth', 'user']
-            - ['can_modify_campaign_iab_category', 'zemauth', 'user']
-            - ['can_modify_campaign_manager', 'zemauth', 'user']
-            - ['can_modify_facebook_page', 'zemauth', 'user']
-            - ['can_modify_outbrain_account_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_promote_additional_pixel', 'zemauth', 'user']
-            - ['can_promote_agency_managers', 'zemauth', 'user']
-            - ['can_receive_pacing_email', 'zemauth', 'user']
-            - ['can_receive_sales_credit_email', 'zemauth', 'user']
-            - ['can_redirect_pixels', 'zemauth', 'user']
-            - ['can_request_accounts_report_in_local_currencies', 'zemauth', 'user']
-            - ['can_request_demo_v3', 'zemauth', 'user']
-            - ['can_review_bid_modifiers', 'zemauth', 'user']
-            - ['can_see_account_type', 'zemauth', 'user']
-            - ['can_see_agency_managers_under_access_permissions', 'zemauth', 'user']
-            - ['can_see_all_available_sources', 'zemauth', 'user']
-            - ['can_see_all_nas_in_inventory_planning', 'zemauth', 'user']
-            - ['can_see_all_users_for_managers', 'zemauth', 'user']
-            - ['can_see_amplify_ad_id_column', 'zemauth', 'user']
-            - ['can_see_amplify_live_preview', 'zemauth', 'user']
-            - ['can_see_amplify_review_link', 'zemauth', 'user']
-            - ['can_see_backend_hacks', 'zemauth', 'user']
-            - ['can_see_budget_optimization', 'zemauth', 'user']
-            - ['can_see_campaign_goals', 'zemauth', 'user']
-            - ['can_see_campaign_language_choices', 'zemauth', 'user']
-            - ['can_see_campaign_type_in_breakdowns', 'zemauth', 'user']
-            - ['can_see_credit_refunds', 'zemauth', 'user']
-            - ['can_see_currency_setting', 'zemauth', 'user']
-            - ['can_see_deals_in_ui', 'zemauth', 'user']
-            - ['can_see_direct_deals_section', 'zemauth', 'user']
-            - ['can_see_grid_actions', 'zemauth', 'user']
-            - ['can_see_history_in_drawer', 'zemauth', 'user']
-            - ['can_see_id_columns_in_table', 'zemauth', 'user']
-            - ['can_see_infobox_in_local_currency', 'zemauth', 'user']
-            - ['can_see_landing_mode_alerts', 'zemauth', 'user']
-            - ['can_see_managers_in_accounts_table', 'zemauth', 'user']
-            - ['can_see_managers_in_campaigns_table', 'zemauth', 'user']
-            - ['can_see_mediamond_publishers', 'zemauth', 'user']
-            - ['can_see_media_source_status_on_submission_popover', 'zemauth', 'user']
-            - ['can_see_new_account_credit', 'zemauth', 'user']
-            - ['can_see_new_budgets', 'zemauth', 'user']
-            - ['can_see_new_chart', 'zemauth', 'user']
-            - ['can_see_new_content_insights', 'zemauth', 'user']
-            - ['can_see_new_pixels_view', 'zemauth', 'user']
-            - ['can_see_new_report_download', 'zemauth', 'user']
-            - ['can_see_new_report_schedule', 'zemauth', 'user']
-            - ['can_see_new_scheduled_reports', 'zemauth', 'user']
-            - ['can_see_newscorp_publishers', 'zemauth', 'user']
-            - ['can_see_open_in_admin', 'zemauth', 'user']
-            - ['can_see_pixel_notes', 'zemauth', 'user']
-            - ['can_see_pixel_traffic', 'zemauth', 'user']
-            - ['can_see_projections', 'zemauth', 'user']
-            - ['can_see_publisher_blacklist_status', 'zemauth', 'user']
-            - ['can_see_publisher_groups_ui', 'zemauth', 'user']
-            - ['can_see_publishers', 'zemauth', 'user']
-            - ['can_see_publishers_all_levels', 'zemauth', 'user']
-            - ['can_see_rcs_publishers', 'zemauth', 'user']
-            - ['can_see_realtime_spend', 'zemauth', 'user']
-            - ['can_see_redshift_postclick_statistics', 'zemauth', 'user']
-            - ['can_see_rtb_sources_as_one', 'zemauth', 'user']
-            - ['can_see_salesforce_url', 'zemauth', 'user']
-            - ['can_see_sspd_url', 'zemauth', 'user']
-            - ['can_see_stats_in_local_currency', 'zemauth', 'user']
-            - ['can_see_top_level_delivery_breakdowns', 'zemauth', 'user']
-            - ['can_see_vast', 'zemauth', 'user']
-            - ['can_see_viewthrough_conversions', 'zemauth', 'user']
-            - ['can_set_account_cs_representative', 'zemauth', 'user']
-            - ['can_set_account_ob_representative', 'zemauth', 'user']
-            - ['can_set_account_sales_representative', 'zemauth', 'user']
-            - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
-            - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_advanced_device_targeting', 'zemauth', 'user']
-            - ['can_set_agency_for_account', 'zemauth', 'user']
-            - ['can_set_auto_add_new_sources', 'zemauth', 'user']
-            - ['can_set_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_click_capping', 'zemauth', 'user']
-            - ['can_set_click_capping_daily_click_budget', 'zemauth', 'user']
-            - ['can_set_day_of_week_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_delivery_type', 'zemauth', 'user']
-            - ['can_set_export_delimiter_separator', 'zemauth', 'user']
-            - ['can_set_frequency_capping', 'zemauth', 'user']
-            - ['can_set_ga_api_tracking', 'zemauth', 'user']
-            - ['can_set_interest_targeting', 'zemauth', 'user']
-            - ['can_set_media_source_to_auto_pilot', 'zemauth', 'user']
-            - ['can_set_rtb_sources_as_one_cpc', 'zemauth', 'user']
-            - ['can_set_source_bid_modifiers', 'zemauth', 'user']
-            - ['can_set_subdivision_targeting', 'zemauth', 'user']
-            - ['can_set_time_period_in_scheduled_reports', 'zemauth', 'user']
-            - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
-            - ['can_switch_between_cost_breakdowns', 'zemauth', 'user']
-            - ['can_target_custom_audiences', 'zemauth', 'user']
-            - ['can_use_ad_additional_data', 'zemauth', 'user']
-            - ['can_use_advanced_inventory_planning_features', 'zemauth', 'user']
-            - ['can_use_bluekai_targeting', 'zemauth', 'user']
-            - ['can_use_language_targeting', 'zemauth', 'user']
-            - ['can_use_new_account_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_ad_group_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_campaign_settings_drawer', 'zemauth', 'user']
-            - ['can_use_new_routing', 'zemauth', 'user']
-            - ['can_use_own_images_in_upload', 'zemauth', 'user']
-            - ['can_use_partial_updates_in_upload', 'zemauth', 'user']
-            - ['can_use_publisher_bid_modifiers_in_ui', 'zemauth', 'user']
-            - ['can_use_restapi', 'zemauth', 'user']
-            - ['can_use_single_ad_upload', 'zemauth', 'user']
-            - ['can_view_account_agency_information', 'zemauth', 'user']
-            - ['can_view_actual_costs', 'zemauth', 'user']
-            - ['can_view_additional_targeting', 'zemauth', 'user']
-            - ['can_view_agency_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_agency_margin', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery', 'zemauth', 'user']
-            - ['can_view_breakdown_by_delivery_extended', 'zemauth', 'user']
-            - ['can_view_campaign_content_insights_side_tab', 'zemauth', 'user']
-            - ['can_view_end_user_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_flat_fees', 'zemauth', 'user']
-            - ['can_view_new_history_backend', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
-            - ['can_view_platform_cost_breakdown_derived', 'zemauth', 'user']
-            - ['can_view_retargeting_settings', 'zemauth', 'user']
-            - ['can_view_sidetabs', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type', 'zemauth', 'user']
-            - ['fea_can_change_campaign_type_to_display', 'zemauth', 'user']
-            - ['fea_can_create_automation_rules', 'zemauth', 'user']
-            - ['fea_can_see_inventory_planning', 'zemauth', 'user']
-            - ['fea_can_see_roas', 'zemauth', 'user']
-            - ['fea_can_see_video_metrics', 'zemauth', 'user']
-            - ['fea_can_use_column_picker_in_reports', 'zemauth', 'user']
-            - ['fea_can_use_cpm_buying', 'zemauth', 'user']
-            - ['fea_new_geo_targeting', 'zemauth', 'user']
-            - ['fea_video_upload', 'zemauth', 'user']
-            - ['settings_defaults_on_campaign_level', 'zemauth', 'user']
-            - ['sspd_can_block_account', 'zemauth', 'user']
-            - ['sspd_can_block_ad_group', 'zemauth', 'user']
-            - ['sspd_can_block_agency', 'zemauth', 'user']
-            - ['sspd_can_block_campaign', 'zemauth', 'user']
-            - ['sspd_can_filter_by_account', 'zemauth', 'user']
-            - ['sspd_can_filter_by_agency', 'zemauth', 'user']
-            - ['sspd_can_see_all_sources', 'zemauth', 'user']
-            - ['sspd_can_see_link_to_entity_in_z1', 'zemauth', 'user']
-            - ['sspd_can_use_sspd', 'zemauth', 'user']
-            - ['supply_dash_link_view', 'zemauth', 'user']
-    model: zemauth.user
-    pk: 3
+- fields:
+    password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
+    email: "account-manager@test.com"
+    username: "account-manager"
+    first_name: "account-manager"
+    last_name: "account-manager"
+    date_joined: "2020-04-06 07:56:27.433930"
+    is_superuser: false
+    is_staff: false
+    is_active: true
+    is_test_user: false
+    groups: []
+    user_permissions:
+      - ["account_agency_access_permissions", "zemauth", "user"]
+      - ["account_credit_view", "zemauth", "user"]
+      - ["account_custom_audiences_view", "zemauth", "user"]
+      - ["aggregate_postclick_acquisition", "zemauth", "user"]
+      - ["aggregate_postclick_engagement", "zemauth", "user"]
+      - ["all_accounts_accounts_add_account", "zemauth", "user"]
+      - ["all_accounts_accounts_view", "zemauth", "user"]
+      - ["all_accounts_sources_view", "zemauth", "user"]
+      - ["account_campaigns_view", "zemauth", "user"]
+      - ["archive_restore_entity", "zemauth", "user"]
+      - ["bulk_actions_on_all_levels", "zemauth", "user"]
+      - ["campaign_ad_groups_detailed_report", "zemauth", "user"]
+      - ["campaign_goal_optimization", "zemauth", "user"]
+      - ["campaign_goal_performance", "zemauth", "user"]
+      - ["campaign_settings_cs_rep", "zemauth", "user"]
+      - ["campaign_settings_sales_rep", "zemauth", "user"]
+      - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
+      - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
+      - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
+      - ["can_create_agency", "zemauth", "user"]
+      - ["can_download_custom_reports", "zemauth", "user"]
+      - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
+      - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
+      - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
+      - ["can_filter_sources_through_table", "zemauth", "user"]
+      - ["can_hide_chart", "zemauth", "user"]
+      - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
+      - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
+      - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
+      - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
+      - ["can_manage_oauth2_apps", "zemauth", "user"]
+      - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
+      - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
+      - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_promote_additional_pixel", "zemauth", "user"]
+      - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
+      - ["can_receive_sales_credit_email", "zemauth", "user"]
+      - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
+      - ["can_request_demo_v3", "zemauth", "user"]
+      - ["can_review_bid_modifiers", "zemauth", "user"]
+      - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
+      - ["can_see_all_available_sources", "zemauth", "user"]
+      - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
+      - ["can_see_all_users_for_managers", "zemauth", "user"]
+      - ["can_see_amplify_ad_id_column", "zemauth", "user"]
+      - ["can_see_amplify_live_preview", "zemauth", "user"]
+      - ["can_see_amplify_review_link", "zemauth", "user"]
+      - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_campaign_type_in_breakdowns", "zemauth", "user"]
+      - ["can_see_credit_refunds", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
+      - ["can_see_deals_in_ui", "zemauth", "user"]
+      - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
+      - ["can_see_history_in_drawer", "zemauth", "user"]
+      - ["can_see_id_columns_in_table", "zemauth", "user"]
+      - ["can_see_infobox_in_local_currency", "zemauth", "user"]
+      - ["can_see_landing_mode_alerts", "zemauth", "user"]
+      - ["can_see_managers_in_accounts_table", "zemauth", "user"]
+      - ["can_see_managers_in_campaigns_table", "zemauth", "user"]
+      - ["can_see_mediamond_publishers", "zemauth", "user"]
+      - ["can_see_media_source_status_on_submission_popover", "zemauth", "user"]
+      - ["can_see_new_account_credit", "zemauth", "user"]
+      - ["can_see_new_budgets", "zemauth", "user"]
+      - ["can_see_new_chart", "zemauth", "user"]
+      - ["can_see_new_content_insights", "zemauth", "user"]
+      - ["can_see_new_pixels_view", "zemauth", "user"]
+      - ["can_see_new_report_download", "zemauth", "user"]
+      - ["can_see_new_report_schedule", "zemauth", "user"]
+      - ["can_see_new_scheduled_reports", "zemauth", "user"]
+      - ["can_see_newscorp_publishers", "zemauth", "user"]
+      - ["can_see_open_in_admin", "zemauth", "user"]
+      - ["can_see_pixel_notes", "zemauth", "user"]
+      - ["can_see_pixel_traffic", "zemauth", "user"]
+      - ["can_see_projections", "zemauth", "user"]
+      - ["can_see_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_see_publisher_groups_ui", "zemauth", "user"]
+      - ["can_see_publishers", "zemauth", "user"]
+      - ["can_see_publishers_all_levels", "zemauth", "user"]
+      - ["can_see_rcs_publishers", "zemauth", "user"]
+      - ["can_see_realtime_spend", "zemauth", "user"]
+      - ["can_see_redshift_postclick_statistics", "zemauth", "user"]
+      - ["can_see_rtb_sources_as_one", "zemauth", "user"]
+      - ["can_see_salesforce_url", "zemauth", "user"]
+      - ["can_see_sspd_url", "zemauth", "user"]
+      - ["can_see_stats_in_local_currency", "zemauth", "user"]
+      - ["can_see_top_level_delivery_breakdowns", "zemauth", "user"]
+      - ["can_see_vast", "zemauth", "user"]
+      - ["can_see_viewthrough_conversions", "zemauth", "user"]
+      - ["can_set_account_cs_representative", "zemauth", "user"]
+      - ["can_set_account_ob_representative", "zemauth", "user"]
+      - ["can_set_account_sales_representative", "zemauth", "user"]
+      - ["can_set_ad_group_max_cpc", "zemauth", "user"]
+      - ["can_set_adgroup_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_advanced_device_targeting", "zemauth", "user"]
+      - ["can_set_agency_for_account", "zemauth", "user"]
+      - ["can_set_auto_add_new_sources", "zemauth", "user"]
+      - ["can_set_bid_modifiers", "zemauth", "user"]
+      - ["can_set_click_capping", "zemauth", "user"]
+      - ["can_set_click_capping_daily_click_budget", "zemauth", "user"]
+      - ["can_set_day_of_week_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_delivery_type", "zemauth", "user"]
+      - ["can_set_export_delimiter_separator", "zemauth", "user"]
+      - ["can_set_frequency_capping", "zemauth", "user"]
+      - ["can_set_ga_api_tracking", "zemauth", "user"]
+      - ["can_set_interest_targeting", "zemauth", "user"]
+      - ["can_set_media_source_to_auto_pilot", "zemauth", "user"]
+      - ["can_set_rtb_sources_as_one_cpc", "zemauth", "user"]
+      - ["can_set_source_bid_modifiers", "zemauth", "user"]
+      - ["can_set_subdivision_targeting", "zemauth", "user"]
+      - ["can_set_time_period_in_scheduled_reports", "zemauth", "user"]
+      - ["can_set_white_blacklist_publisher_groups", "zemauth", "user"]
+      - ["can_switch_between_cost_breakdowns", "zemauth", "user"]
+      - ["can_target_custom_audiences", "zemauth", "user"]
+      - ["can_use_ad_additional_data", "zemauth", "user"]
+      - ["can_use_advanced_inventory_planning_features", "zemauth", "user"]
+      - ["can_use_bluekai_targeting", "zemauth", "user"]
+      - ["can_use_language_targeting", "zemauth", "user"]
+      - ["can_use_new_account_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_ad_group_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_campaign_settings_drawer", "zemauth", "user"]
+      - ["can_use_new_routing", "zemauth", "user"]
+      - ["can_use_own_images_in_upload", "zemauth", "user"]
+      - ["can_use_partial_updates_in_upload", "zemauth", "user"]
+      - ["can_use_publisher_bid_modifiers_in_ui", "zemauth", "user"]
+      - ["can_use_restapi", "zemauth", "user"]
+      - ["can_use_single_ad_upload", "zemauth", "user"]
+      - ["can_view_account_agency_information", "zemauth", "user"]
+      - ["can_view_actual_costs", "zemauth", "user"]
+      - ["can_view_additional_targeting", "zemauth", "user"]
+      - ["can_view_agency_cost_breakdown", "zemauth", "user"]
+      - ["can_view_agency_margin", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery", "zemauth", "user"]
+      - ["can_view_breakdown_by_delivery_extended", "zemauth", "user"]
+      - ["can_view_campaign_content_insights_side_tab", "zemauth", "user"]
+      - ["can_view_end_user_cost_breakdown", "zemauth", "user"]
+      - ["can_view_flat_fees", "zemauth", "user"]
+      - ["can_view_new_history_backend", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown", "zemauth", "user"]
+      - ["can_view_platform_cost_breakdown_derived", "zemauth", "user"]
+      - ["can_view_retargeting_settings", "zemauth", "user"]
+      - ["can_view_sidetabs", "zemauth", "user"]
+      - ["fea_can_change_campaign_type", "zemauth", "user"]
+      - ["fea_can_change_campaign_type_to_display", "zemauth", "user"]
+      - ["fea_can_create_automation_rules", "zemauth", "user"]
+      - ["fea_can_see_inventory_planning", "zemauth", "user"]
+      - ["fea_can_see_roas", "zemauth", "user"]
+      - ["fea_can_see_video_metrics", "zemauth", "user"]
+      - ["fea_can_use_column_picker_in_reports", "zemauth", "user"]
+      - ["fea_can_use_cpm_buying", "zemauth", "user"]
+      - ["fea_new_geo_targeting", "zemauth", "user"]
+      - ["fea_video_upload", "zemauth", "user"]
+      - ["settings_defaults_on_campaign_level", "zemauth", "user"]
+      - ["sspd_can_block_account", "zemauth", "user"]
+      - ["sspd_can_block_ad_group", "zemauth", "user"]
+      - ["sspd_can_block_agency", "zemauth", "user"]
+      - ["sspd_can_block_campaign", "zemauth", "user"]
+      - ["sspd_can_filter_by_account", "zemauth", "user"]
+      - ["sspd_can_filter_by_agency", "zemauth", "user"]
+      - ["sspd_can_see_all_sources", "zemauth", "user"]
+      - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
+      - ["sspd_can_use_sspd", "zemauth", "user"]
+      - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
+  model: zemauth.user
+  pk: 3
 
 # agency
 
--   fields:
-        name: 'Alfa&Omega'
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        modified_by: 1
-        users: [1, 2]
-    model: dash.agency
-    pk: 1
+- fields:
+    name: "Alfa&Omega"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    modified_by: 1
+    users: [1, 2]
+  model: dash.agency
+  pk: 1
 
 # account
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        modified_by: 1
-        users: [3]
-        allowed_sources: [1,2,3,4]
-        agency: 1
-        settings: 1
-        name: 'Demo account'
-        yahoo_account: 1
-    model: dash.account
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    modified_by: 1
+    users: [3]
+    allowed_sources: [1, 2, 3, 4]
+    agency: 1
+    settings: 1
+    name: "Demo account"
+    yahoo_account: 1
+  model: dash.account
+  pk: 1
 
 # account_settings
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        created_by: 1
-        archived: False
-        name: 'Demo account'
-        account: 1
-        account_type: 5
-    model: dash.accountsettings
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    created_by: 1
+    archived: False
+    name: "Demo account"
+    account: 1
+    account_type: 5
+  model: dash.accountsettings
+  pk: 1
 
 # credit_line_item
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        created_by: 1
-        account: 1
-        start_date: '2019-08-20'
-        end_date: '2100-08-20'
-        amount: 200000
-        license_fee: 0.2
-        status: 1
-        comment: 'Demo account credit'
-    model: dash.creditlineitem
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    created_by: 1
+    account: 1
+    start_date: "2019-08-20"
+    end_date: "2100-08-20"
+    amount: 200000
+    license_fee: 0.2
+    status: 1
+    comment: "Demo account credit"
+  model: dash.creditlineitem
+  pk: 1
 
 # campaign
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        modified_by: 1
-        account: 1
-        settings: 1
-        name: 'Demo campaign'
-    model: dash.campaign
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    modified_by: 1
+    account: 1
+    settings: 1
+    name: "Demo campaign"
+  model: dash.campaign
+  pk: 1
 
 # campaign_settings
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        created_by: 1
-        name: 'Demo campaign'
-        campaign_manager: 1
-        iab_category: 'IAB24'
-        campaign_goal: 4
-        target_devices: ['mobile']
-        target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
-        target_environments: ['app']
-        target_regions: ['US']
-        campaign: 1
-    model: dash.campaignsettings
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    created_by: 1
+    name: "Demo campaign"
+    campaign_manager: 1
+    iab_category: "IAB24"
+    campaign_goal: 4
+    target_devices: ["mobile"]
+    target_os: [{ name: "ios", version: { min: "ios_4_0" } }]
+    target_environments: ["app"]
+    target_regions: ["US"]
+    campaign: 1
+  model: dash.campaignsettings
+  pk: 1
 
 # source_types
 
--   fields:
-        type: 'b1'
-    model: dash.sourcetype
-    pk: 1
+- fields:
+    type: "b1"
+  model: dash.sourcetype
+  pk: 1
 
--   fields:
-        type: 'outbrain'
-    model: dash.sourcetype
-    pk: 2
+- fields:
+    type: "outbrain"
+  model: dash.sourcetype
+  pk: 2
 
--   fields:
-        type: 'yahoo'
-    model: dash.sourcetype
-    pk: 3
+- fields:
+    type: "yahoo"
+  model: dash.sourcetype
+  pk: 3
 
 # sources
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: GumGum
-        tracking_slug: 'b1_gumgum'
-        source_type: 1
-        bidder_slug: 'gumgum'
-        supports_retargeting: True
-        maintenance: False
-        default_cpc_cc: '0.45'
-        default_mobile_cpc_cc: '0.45'
-    model: dash.source
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: GumGum
+    tracking_slug: "b1_gumgum"
+    source_type: 1
+    bidder_slug: "gumgum"
+    supports_retargeting: True
+    maintenance: False
+    default_cpc_cc: "0.45"
+    default_mobile_cpc_cc: "0.45"
+  model: dash.source
+  pk: 1
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: TripleLift
-        tracking_slug: 'b1_triplelift'
-        source_type: 1
-        bidder_slug: 'triplelift'
-        supports_retargeting: True
-        maintenance: False
-        default_cpc_cc: '0.45'
-        default_mobile_cpc_cc: '0.45'
-    model: dash.source
-    pk: 2
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: TripleLift
+    tracking_slug: "b1_triplelift"
+    source_type: 1
+    bidder_slug: "triplelift"
+    supports_retargeting: True
+    maintenance: False
+    default_cpc_cc: "0.45"
+    default_mobile_cpc_cc: "0.45"
+  model: dash.source
+  pk: 2
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: Yahoo
-        tracking_slug: 'yahoo'
-        source_type: 3
-        bidder_slug: 'yahoo'
-        supports_retargeting: True
-        maintenance: False
-        default_cpc_cc: '0.45'
-        default_mobile_cpc_cc: '0.45'
-    model: dash.source
-    pk: 3
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: Yahoo
+    tracking_slug: "yahoo"
+    source_type: 3
+    bidder_slug: "yahoo"
+    supports_retargeting: True
+    maintenance: False
+    default_cpc_cc: "0.45"
+    default_mobile_cpc_cc: "0.45"
+  model: dash.source
+  pk: 3
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: Adiant
-        tracking_slug: 'b1_adiant'
-        source_type: 1
-        bidder_slug: 'adiant'
-        supports_retargeting: True
-        maintenance: False
-        default_cpc_cc: '0.45'
-        default_mobile_cpc_cc: '0.45'
-    model: dash.source
-    pk: 4
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: Adiant
+    tracking_slug: "b1_adiant"
+    source_type: 1
+    bidder_slug: "adiant"
+    supports_retargeting: True
+    maintenance: False
+    default_cpc_cc: "0.45"
+    default_mobile_cpc_cc: "0.45"
+  model: dash.source
+  pk: 4
 
 # source_credentials
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        source: 1
-        name: 'Test credentials 1'
-        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-    model: dash.sourcecredentials
-    pk: 1
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 1
+    name: "Test credentials 1"
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.sourcecredentials
+  pk: 1
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        source: 2
-        name: 'Test credentials 2'
-        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-    model: dash.sourcecredentials
-    pk: 2
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 2
+    name: "Test credentials 2"
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.sourcecredentials
+  pk: 2
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        source: 3
-        name: 'Test credentials 3'
-        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-    model: dash.sourcecredentials
-    pk: 3
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 3
+    name: "Test credentials 3"
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.sourcecredentials
+  pk: 3
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        source: 4
-        name: 'Test credentials 2'
-        credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
-    model: dash.sourcecredentials
-    pk: 4
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 4
+    name: "Test credentials 2"
+    credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
+  model: dash.sourcecredentials
+  pk: 4
 
 # default_source_settings
 
--   fields:
-        source: 1
-        credentials: 1
-    model: dash.defaultsourcesettings
-    pk: 1
+- fields:
+    source: 1
+    credentials: 1
+  model: dash.defaultsourcesettings
+  pk: 1
 
--   fields:
-        source: 2
-        credentials: 2
-    model: dash.defaultsourcesettings
-    pk: 2
+- fields:
+    source: 2
+    credentials: 2
+  model: dash.defaultsourcesettings
+  pk: 2
 
--   fields:
-        source: 3
-        credentials: 3
-    model: dash.defaultsourcesettings
-    pk: 3
+- fields:
+    source: 3
+    credentials: 3
+  model: dash.defaultsourcesettings
+  pk: 3
 
--   fields:
-        source: 4
-        credentials: 4
-    model: dash.defaultsourcesettings
-    pk: 4
+- fields:
+    source: 4
+    credentials: 4
+  model: dash.defaultsourcesettings
+  pk: 4
 
 # publisher_groups
 
--   fields:
-        name: 'global blacklist'
-        account: !!null
-        agency: !!null
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        modified_by: 1
-    model: dash.publishergroup
-    pk: 1
+- fields:
+    name: "global blacklist"
+    account: !!null
+    agency: !!null
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 1
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: 'Whitelist'
-        account: !!null
-        agency: !!null
-    model: dash.publishergroup
-    pk: 2
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: "Whitelist"
+    account: !!null
+    agency: !!null
+  model: dash.publishergroup
+  pk: 2
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: 'Whitelist 2'
-        account: !!null
-        agency: !!null
-    model: dash.publishergroup
-    pk: 3
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: "Whitelist 2"
+    account: !!null
+    agency: !!null
+  model: dash.publishergroup
+  pk: 3
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: 'Whitelist 3'
-        account: !!null
-        agency: !!null
-    model: dash.publishergroup
-    pk: 4
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: "Whitelist 3"
+    account: !!null
+    agency: !!null
+  model: dash.publishergroup
+  pk: 4
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: 'Blacklist'
-        account: !!null
-        agency: !!null
-    model: dash.publishergroup
-    pk: 5
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: "Blacklist"
+    account: !!null
+    agency: !!null
+  model: dash.publishergroup
+  pk: 5
 
--   fields:
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-        name: 'Agency level group'
-        account: !!null
-        agency: 1
-    model: dash.publishergroup
-    pk: 6
+- fields:
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    name: "Agency level group"
+    account: !!null
+    agency: 1
+  model: dash.publishergroup
+  pk: 6
 
 # publisher_group_entries
 
--   fields:
-        publisher_group: 1
-        publisher: "example.com"
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-    model: dash.publishergroupentry
-    pk: 1
+- fields:
+    publisher_group: 1
+    publisher: "example.com"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+  model: dash.publishergroupentry
+  pk: 1
 
--   fields:
-        publisher_group: 1
-        publisher: "example2.com"
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-    model: dash.publishergroupentry
-    pk: 2
+- fields:
+    publisher_group: 1
+    publisher: "example2.com"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+  model: dash.publishergroupentry
+  pk: 2
 
--   fields:
-        publisher_group: 2
-        publisher: "example3.com"
-        source: 1
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-    model: dash.publishergroupentry
-    pk: 3
+- fields:
+    publisher_group: 2
+    publisher: "example3.com"
+    source: 1
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+  model: dash.publishergroupentry
+  pk: 3
 
--   fields:
-        publisher_group: 6
-        publisher: "example4.com"
-        source: 1
-        created_dt: '2019-08-20T00:00:00'
-        modified_dt: '2019-08-20T00:00:00'
-    model: dash.publishergroupentry
-    pk: 4
+- fields:
+    publisher_group: 6
+    publisher: "example4.com"
+    source: 1
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+  model: dash.publishergroupentry
+  pk: 4
+
+# direct deals
+
+- fields:
+    deal_id: "test agency deal 1"
+    name: "test agency deal 1 name"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 1
+    agency: 1
+    account: !!null
+  model: dash.directdeal
+  pk: 1
+
+- fields:
+    deal_id: "test agency deal 2"
+    name: "test agency deal 2 name"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 1
+    agency: 1
+    account: !!null
+  model: dash.directdeal
+  pk: 2
+
+- fields:
+    deal_id: "test account deal 1"
+    name: "test account deal 1 name"
+    created_dt: "2019-08-20T00:00:00"
+    modified_dt: "2019-08-20T00:00:00"
+    source: 1
+    agency: !!null
+    account: 1
+  model: dash.directdeal
+  pk: 3
