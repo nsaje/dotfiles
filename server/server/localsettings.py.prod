@@ -729,8 +729,5 @@ if os.environ.get("IS_RUNSSH"):
     SECURE_CONTENT_TYPE_NOSNIFF = False
     SESSION_COOKIE_SECURE = False
 
-    # enable some debugging tools
-    ENABLE_DEBUG_TOOLBAR = True
-
     # readable logs
     LOGGING_FORMATTER = "readable"
