@@ -42,7 +42,9 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
     )
 
     agency_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
+    agency_name = rest_framework.serializers.CharField(source="agency.name", default=None, read_only=True)
     account_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
+    account_name = rest_framework.serializers.CharField(source="account.settings.name", default=None, read_only=True)
 
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField(allow_null=True)

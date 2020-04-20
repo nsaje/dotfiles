@@ -3,7 +3,7 @@ import './publisher-group-actions-cell.component.less';
 import {Component} from '@angular/core';
 import {ICellRendererAngularComp} from 'ag-grid-angular';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
-import {PublisherGroupRendererParams} from '../../types/publisher-group-renderer-params';
+import {PublisherGroupRendererParams} from '../../types/publisher-group.renderer-params';
 import {PublisherGroupsView} from '../../views/publisher-groups/publisher-groups.view';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 @Component({

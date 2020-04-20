@@ -141,11 +141,14 @@
                                 | decimalCurrency: item.currencySymbol:2
                         }}
                     </td>
-                    <td>
-                        <span ng-show="item.agencyId">Agency</span>
-                        <span ng-show="!item.agencyId">Account</span>
+                    <td class="custom-table__no-wrap">
+                        <zem-item-scope-cell
+                            class="zem-item-scope-cell"
+                            item="item"
+                            agency-link="'/v2/analytics/accounts?filtered_agencies=' + item.agencyId"
+                            account-link="'/v2/analytics/account/' + item.accountId"
+                        ></zem-item-scope-cell>
                     </td>
-                    <!-- prettier-ignore -->
                     <td>
                         <zem-note-popover
                             content="{{ item.comment }}"
@@ -342,9 +345,13 @@
                                 | decimalCurrency: item.currencySymbol:2
                         }}
                     </td>
-                    <td>
-                        <span ng-show="item.agencyId">Agency</span>
-                        <span ng-show="!item.agencyId">Account</span>
+                    <td class="custom-table__no-wrap">
+                        <zem-item-scope-cell
+                            class="zem-item-scope-cell"
+                            item="item"
+                            agency-link="'/v2/analytics/accounts?filtered_agencies=' + item.agencyId"
+                            account-link="'/v2/analytics/account/' + item.accountId"
+                        ></zem-item-scope-cell>
                     </td>
                     <td>
                         <zem-note-popover

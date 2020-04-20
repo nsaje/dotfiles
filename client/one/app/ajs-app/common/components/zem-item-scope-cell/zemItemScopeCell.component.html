@@ -1,0 +1,18 @@
+<div class="zem-item-scope-cell">
+    <a
+        class="zem-item-scope-cell__link"
+        ng-if="$ctrl.itemScopeState && $ctrl.entityLink && $ctrl.canUseEntityLink"
+        ng-href="{{ $ctrl.entityLink }}"
+        title="{{ $ctrl.itemScopeState }} ({{ $ctrl.entityName }}"
+        target="_blank"
+        >{{ $ctrl.itemScopeState }} ({{ $ctrl.entityName }})</a
+    >
+    <span
+        class="zem-item-scope-cell__text"
+        ng-if="$ctrl.itemScopeState && (!$ctrl.entityLink || !$ctrl.canUseEntityLink)"
+        >{{ $ctrl.itemScopeState }} ({{ $ctrl.entityName }})
+    </span>
+    <span class="zem-item-scope-cell__text" ng-if="!$ctrl.itemScopeState"
+        >N/A</span
+    >
+</div>

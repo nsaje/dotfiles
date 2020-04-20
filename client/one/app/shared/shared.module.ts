@@ -65,6 +65,7 @@ import {ImageCheckboxInputGroupComponent} from './components/image-checkbox-inpu
 import {ExpandableSectionComponent} from './components/expandable-section/expandable-section.component';
 import {NewFeatureDirective} from './directives/new-feature/new-feature.directive';
 import {LoadingOverlayDirective} from './directives/loading-overlay/loading-overlay.directive';
+import {ItemScopeCellComponent} from './components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -123,6 +124,7 @@ const EXPORTED_DECLARATIONS = [
     ImageCheckboxInputComponent,
     ImageCheckboxInputGroupComponent,
     ExpandableSectionComponent,
+    ItemScopeCellComponent,
 ];
 
 @NgModule({
@@ -141,6 +143,7 @@ const EXPORTED_DECLARATIONS = [
             LoadingOverlayComponent,
             NoRowsOverlayComponent,
             HelpPopoverHeaderComponent,
+            ItemScopeCellComponent,
         ]),
         NgbPaginationModule,
     ],

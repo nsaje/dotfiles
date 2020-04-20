@@ -7,6 +7,7 @@ import {
     OnDestroy,
     ViewChild,
     HostBinding,
+    Inject,
 } from '@angular/core';
 import {merge, Subject, Observable} from 'rxjs';
 import {
@@ -28,6 +29,8 @@ import {DealActionsCellComponent} from '../../components/deal-actions-cell/deal-
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -110,17 +113,19 @@ export class DealsView implements OnInit, OnDestroy {
         },
         {
             headerName: 'Scope',
-            field: 'agencyId',
-            valueFormatter: data => {
-                if (commonHelpers.isDefined(data.value)) {
-                    return 'Agency';
-                } else {
-                    return 'Account';
-                }
-            },
-            width: 90,
-            suppressSizeToFit: true,
-            resizable: false,
+            cellRendererFramework: ItemScopeCellComponent,
+            cellRendererParams: {
+                getAgencyLink: item => {
+                    return `/v2/analytics/accounts?filtered_agencies=${
+                        item.agencyId
+                    }`;
+                },
+                getAccountLink: item => {
+                    return `/v2/analytics/account/${item.accountId}`;
+                },
+            } as ItemScopeRendererParams<Deal>,
+            minWidth: 200,
+            resizable: true,
         },
         {
             headerName: 'Accounts',
@@ -196,7 +201,8 @@ export class DealsView implements OnInit, OnDestroy {
     constructor(
         public store: DealsStore,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        @Inject('zemPermissions') public zemPermissions: any
     ) {
         this.context = {
             componentParent: this,

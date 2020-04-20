@@ -1,0 +1,18 @@
+<div class="zem-item-scope-cell">
+    <ng-container *ngIf="itemScopeState">
+        <a
+            class="zem-item-scope-cell__link"
+            *ngIf="entityLink && canUseEntityLink"
+            [href]="entityLink"
+            title="{{ itemScopeState }} ({{ entityName }}"
+            target="_blank"
+            >{{ itemScopeState }} ({{ entityName }})</a
+        >
+        <span
+            class="zem-item-scope-cell__text"
+            *ngIf="!entityLink || !canUseEntityLink"
+            >{{ itemScopeState }} ({{ entityName }})
+        </span>
+    </ng-container>
+    <span class="zem-item-scope-cell__text" *ngIf="!itemScopeState">N/A</span>
+</div>

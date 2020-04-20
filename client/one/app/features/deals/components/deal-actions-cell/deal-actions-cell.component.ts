@@ -4,16 +4,17 @@ import {Component} from '@angular/core';
 import {ICellRendererAngularComp} from 'ag-grid-angular';
 import {Deal} from '../../../../core/deals/types/deal';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {DealRendererParams} from '../../types/deal.renderer-params';
 
 @Component({
     templateUrl: './deal-actions-cell.component.html',
 })
 export class DealActionsCellComponent implements ICellRendererAngularComp {
+    params: DealRendererParams;
     deal: Deal;
-    params: any;
     isReadOnlyDeal: boolean;
 
-    agInit(params: any) {
+    agInit(params: DealRendererParams) {
         this.params = params;
         this.deal = params.data;
 

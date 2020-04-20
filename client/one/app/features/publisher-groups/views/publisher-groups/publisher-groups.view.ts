@@ -23,6 +23,8 @@ import {
     booleanFormatter,
     dateTimeFormatter,
 } from '../../../../shared/helpers/grid.helpers';
+import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
+import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 
 @Component({
     selector: 'zem-publisher-groups-view',
@@ -198,17 +200,19 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: 'Scope',
-                field: 'agencyId',
-                valueFormatter: data => {
-                    if (commonHelpers.isDefined(data.value)) {
-                        return 'Agency';
-                    } else {
-                        return 'Account';
-                    }
-                },
-                width: 90,
-                suppressSizeToFit: true,
-                resizable: false,
+                cellRendererFramework: ItemScopeCellComponent,
+                cellRendererParams: {
+                    getAgencyLink: item => {
+                        return `/v2/analytics/accounts?filtered_agencies=${
+                            item.agencyId
+                        }`;
+                    },
+                    getAccountLink: item => {
+                        return `/v2/analytics/account/${item.accountId}`;
+                    },
+                } as ItemScopeRendererParams<PublisherGroup>,
+                minWidth: 200,
+                resizable: true,
             },
             {
                 headerName: '',
@@ -261,17 +265,19 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: 'Scope',
-                field: 'agencyId',
-                valueFormatter: data => {
-                    if (commonHelpers.isDefined(data.value)) {
-                        return 'Agency';
-                    } else {
-                        return 'Account';
-                    }
-                },
-                width: 90,
-                suppressSizeToFit: true,
-                resizable: false,
+                cellRendererFramework: ItemScopeCellComponent,
+                cellRendererParams: {
+                    getAgencyLink: item => {
+                        return `/v2/analytics/accounts?filtered_agencies=${
+                            item.agencyId
+                        }`;
+                    },
+                    getAccountLink: item => {
+                        return `/v2/analytics/account/${item.accountId}`;
+                    },
+                } as ItemScopeRendererParams<PublisherGroup>,
+                minWidth: 200,
+                resizable: true,
             },
             {
                 headerName: '',

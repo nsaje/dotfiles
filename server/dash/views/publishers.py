@@ -7,7 +7,6 @@ from django.db.models import Count
 from django.db.models import Q
 
 import core.features.publisher_groups
-
 from dash import forms
 from dash import models
 from dash.views import helpers
@@ -25,7 +24,9 @@ def serialize_publisher_group(publisher_group):
     return {
         "id": publisher_group.id,
         "agency_id": str(publisher_group.agency.id) if publisher_group.agency else None,
+        "agency_name": str(publisher_group.agency.name) if publisher_group.agency else None,
         "account_id": str(publisher_group.account.id) if publisher_group.account else None,
+        "account_name": str(publisher_group.account.settings.name) if publisher_group.account else None,
         "name": publisher_group.name,
         "include_subdomains": publisher_group.default_include_subdomains,
         "implicit": publisher_group.implicit,

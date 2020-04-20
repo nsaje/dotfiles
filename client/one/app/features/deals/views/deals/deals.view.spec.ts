@@ -21,14 +21,11 @@ describe('DealsView', () => {
     let fixture: ComponentFixture<DealsView>;
 
     let zemPermissionsStub: any;
-    let zemNavigationNewServiceStub: any;
 
     beforeEach(() => {
-        zemNavigationNewServiceStub = {
-            getEntityById: () => noop,
-        };
         zemPermissionsStub = {
             hasAgencyScope: () => noop,
+            hasPermission: () => noop,
         };
 
         TestBed.configureTestingModule({
@@ -46,10 +43,6 @@ describe('DealsView', () => {
                 DealsStore,
                 DealsService,
                 DealsEndpoint,
-                {
-                    provide: 'zemNavigationNewService',
-                    useValue: zemNavigationNewServiceStub,
-                },
                 {
                     provide: 'zemPermissions',
                     useValue: zemPermissionsStub,

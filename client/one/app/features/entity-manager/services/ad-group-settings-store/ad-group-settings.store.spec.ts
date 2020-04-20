@@ -359,11 +359,13 @@ describe('AdGroupSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        const mockedDeal = {
+        const mockedDeal: Deal = {
             id: '10000000',
             dealId: '45345',
             agencyId: '45',
-            accountId: '55',
+            agencyName: 'Test agency',
+            accountId: null,
+            accountName: null,
             description: 'test directDeal',
             name: 'test directDeal',
             source: 'urska',
@@ -390,7 +392,9 @@ describe('AdGroupSettingsStore', () => {
                 id: '10000000',
                 dealId: '45345',
                 agencyId: '45',
-                accountId: '55',
+                agencyName: 'Test agency',
+                accountId: null,
+                accountName: null,
                 description: 'test directDeal',
                 name: 'test directDeal',
                 source: 'urska',
