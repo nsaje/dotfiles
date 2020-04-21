@@ -69,7 +69,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                         );
                     })
                     .filter(function(row) {
-                        return row.source !== undefined;
+                        return row !== undefined && row.source !== undefined;
                     });
             }
         }
