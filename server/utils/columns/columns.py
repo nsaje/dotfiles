@@ -248,8 +248,8 @@ _DYNAMIC_COST_FIELDS_PREFIXES = (
     "avg_etfm_cost_per_",
     "avg_et_cost_per_",
     "avg_cost_per_",
-    "roas_etfm_",
-    "roas_et_",
+    "etfm_roas",
+    "et_roas",
     "roas_",
 )
 
@@ -375,8 +375,8 @@ def _get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2):
 def _get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2):
     if uses_bcm_v2:
         return {
-            "ROAS ({})".format(column_name): "roas_etfm_{}".format(field_name),
-            "Platform ROAS ({})".format(column_name): "roas_et_{}".format(field_name),
+            "ROAS ({})".format(column_name): "etfm_roas_{}".format(field_name),
+            "Platform ROAS ({})".format(column_name): "et_roas_{}".format(field_name),
         }
     return {"ROAS ({})".format(column_name): "roas_{}".format(field_name)}
 

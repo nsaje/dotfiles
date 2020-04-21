@@ -507,13 +507,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_24, 0) avg_etfm_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_24, 0) local_avg_etfm_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_24"
+                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_24"
+                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_24"
+                    "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24"
                 ),  # noqa
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_168, 0) local_avg_cost_per_pixel_1_168"),
@@ -522,13 +522,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_168, 0) avg_etfm_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_168, 0) local_avg_etfm_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_168"
+                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_168"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_168"
+                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_168"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_168"
+                    "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_168"
                 ),  # noqa
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_720, 0) local_avg_cost_per_pixel_1_720"),
@@ -537,13 +537,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_720, 0) avg_etfm_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_720, 0) local_avg_etfm_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_720"
+                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_720"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_720"
+                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_720"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_720"
+                    "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_720"
                 ),  # noqa
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_2160, 0) local_avg_cost_per_pixel_1_2160"),
@@ -552,13 +552,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_2160, 0) avg_etfm_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_2160, 0) local_avg_etfm_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_2160"
+                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_2160"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_2160"
+                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_2160"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_2160"
+                    "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_2160"
                 ),  # noqa
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24_view, 0) avg_cost_per_pixel_1_24_view"),
                 backtosql.SQLMatcher(
@@ -573,13 +573,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                     "local_etfm_cost / NULLIF(pixel_1_24_view, 0) local_avg_etfm_cost_per_pixel_1_24_view"
                 ),
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_24_view"
+                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24_view"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_24_view"
+                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24_view"
                 ),  # noqa
                 backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_24_view"
+                    "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24_view"
                 ),  # noqa
             ],
         )

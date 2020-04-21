@@ -292,9 +292,9 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                             if x["conversion_value"]
                         )
                     )
-                    roas = value - float(local_cost)
-                    et_roas = value - float(local_et_cost)
-                    etfm_roas = value - float(local_etfm_cost)
+                    roas = value / float(local_cost) if local_cost else None
+                    et_roas = value / float(local_et_cost) if local_et_cost else None
+                    etfm_roas = value / float(local_etfm_cost) if local_etfm_cost else None
                 else:
                     count = None
                     avg_cost = None

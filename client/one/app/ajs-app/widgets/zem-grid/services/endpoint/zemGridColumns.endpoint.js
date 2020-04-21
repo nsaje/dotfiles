@@ -1518,7 +1518,8 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             conversionRoas: {
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                type: zemGridConstants.gridColumnTypes.NUMBER,
+                fractionSize: 2,
                 help: 'Return on advertising spend.',
                 internal: 'zemauth.fea_can_see_roas',
                 shown: 'zemauth.fea_can_see_roas',
@@ -2673,6 +2674,9 @@ angular
         ) {
             var conversionsHelp = '';
             var cpaHelp = '';
+            var roasHelp =
+                'Return on ad spend (ROAS) is calculated by dividing revenue with advertising cost (ROAS = revenue / agency spend).\n' +
+                'Your revenue is reported via value parameter on the conversion callback. You can read more about the ROAS in our help pages.';
             if (attribution === 'Click attribution') {
                 conversionsHelp =
                     'The number of conversions attributed to your campaign based on user clicks.';
@@ -2801,6 +2805,7 @@ angular
                         performance: 'ROAS',
                         field: roasField,
                         costMode: constants.costMode.LEGACY,
+                        help: roasHelp,
                     }
                 );
                 var etRoasNewColumn = Object.assign(
@@ -2823,6 +2828,7 @@ angular
                         ],
                         costMode: constants.costMode.PLATFORM,
                         fieldGroup: roasField,
+                        help: roasHelp,
                     }
                 );
                 var etfmRoasNewColumn = Object.assign(
@@ -2840,6 +2846,7 @@ angular
                         ],
                         costMode: constants.costMode.PUBLIC,
                         fieldGroup: roasField,
+                        help: roasHelp,
                     }
                 );
 
