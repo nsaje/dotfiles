@@ -51,11 +51,8 @@ class PublisherGroupQuerySet(models.QuerySet):
 
         return self.filter(id__in=ids)
 
-    def name_contains(self, name_contains):
-        return self.filter(name__icontains=name_contains)
-
     def search(self, search_expression):
-        return self.filter_explicit().name_contains(name_contains=search_expression)
+        return self.filter(name__icontains=search_expression)
 
     def _all_ids_from_values_list_to_set(self, data, ids):
         for line in data:

@@ -81,6 +81,20 @@ class PublisherGroupTest(RESTAPITest):
         expected_response_ids = [publisher_groups_1.id, publisher_groups_2.id]
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
+    def test_list_without_implicit_publisher_groups(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, agency=agency, name="implicit publisher group", implicit=True
+        )
+
+        r = self.client.get(
+            reverse("restapi.publishergroup.internal:publishergroup_list"),
+            {"agencyId": agency.id, "includeImplicit": False},
+        )
+        self.assertEqual(r.status_code, 200)
+        response = self.assertResponseValid(r, data_type=list, status_code=200)
+        self.assertEqual(len(response["data"]), 0)
+
     def test_list_pagination(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         publisher_groups = magic_mixer.cycle(20).blend(core.features.publisher_groups.PublisherGroup, agency=agency)

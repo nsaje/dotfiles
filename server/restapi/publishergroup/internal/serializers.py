@@ -11,6 +11,7 @@ class PublisherGroupQueryParamsExpectations(restapi.serializers.serializers.Quer
     offset = fields.IntegerField(default=0)
     agency_id = restapi.serializers.fields.IdField(default=None)
     account_id = restapi.serializers.fields.IdField(default=None)
+    include_implicit = fields.BooleanField(default=True)
 
 
 class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):

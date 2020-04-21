@@ -34,6 +34,9 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
         else:
             raise utils.exc.ValidationError("Either agency id or account id must be provided.")
 
+        if not query_params.validated_data["include_implicit"]:
+            publisher_groups_items = publisher_groups_items.filter_explicit()
+
         keyword = query_params.validated_data.get("keyword")
         if keyword is not None:
             publisher_groups_items = publisher_groups_items.search(search_expression=keyword)

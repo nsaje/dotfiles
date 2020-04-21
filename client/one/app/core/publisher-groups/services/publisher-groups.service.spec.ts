@@ -58,6 +58,7 @@ describe('PublisherGroupsService', () => {
                 keyword,
                 offset,
                 limit,
+                true,
                 requestStateUpdater
             )
             .subscribe(publisherGroups => {
@@ -70,6 +71,7 @@ describe('PublisherGroupsService', () => {
             keyword,
             offset,
             limit,
+            true,
             requestStateUpdater
         );
     });

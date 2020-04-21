@@ -246,6 +246,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     !isKeywordDefined ? null : keyword.trim(),
                     0,
                     10,
+                    false,
                     this.publisherGroupsRequestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

@@ -27,6 +27,7 @@ export class PublisherGroupsEndpoint {
         keyword: string | null,
         offset: number | null,
         limit: number | null,
+        includeImplicit: boolean,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
         const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.search;
@@ -34,6 +35,7 @@ export class PublisherGroupsEndpoint {
         const params = {
             offset: `${offset}`,
             limit: `${limit}`,
+            includeImplicit: `${includeImplicit}`,
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
             ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(keyword) && {keyword}),

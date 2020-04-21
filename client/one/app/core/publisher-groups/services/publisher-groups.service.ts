@@ -14,6 +14,7 @@ export class PublisherGroupsService {
         keyword: string | null,
         offset: number | null,
         limit: number | null,
+        includeImplicit: boolean,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
         return this.endpoint.search(
@@ -22,6 +23,7 @@ export class PublisherGroupsService {
             keyword,
             offset,
             limit,
+            includeImplicit,
             requestStateUpdater
         );
     }
