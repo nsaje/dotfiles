@@ -210,6 +210,26 @@
     background-image: url('images/remove-red.svg');
 }
 
+.zem-button--dropdown-toggle-icon {
+    padding-right: 30px;
+}
+
+.zem-button--dropdown-toggle-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    right: 10px;
+    width: 6px;
+    height: 10px;
+    background-image: url('@{images-folder}/arrow-sec.svg');
+    background-repeat: no-repeat;
+}
+
+.zem-button--dropdown-toggle-icon.zem-button--highlighted::after {
+    background-image: url('images/arrow-white.svg');
+}
+
 .zem-button--highlighted.zem-button--remove-icon:not(.zem-button--loading)::before,
 .zem-button--danger.zem-button--remove-icon:not(.zem-button--loading):hover::before {
     background-image: url('images/remove-white.svg');

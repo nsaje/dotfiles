@@ -124,6 +124,7 @@ export const ANALYTICS_ROUTES: Routes = [
                             breakdowns: [
                                 BreakdownParam.SOURCES,
                                 BreakdownParam.PUBLISHERS,
+                                BreakdownParam.PLACEMENTS,
                                 BreakdownParam.INSIGHTS,
                                 BreakdownParam.COUNTRY,
                                 BreakdownParam.STATE,
@@ -170,6 +171,7 @@ export const ANALYTICS_ROUTES: Routes = [
                             breakdowns: [
                                 BreakdownParam.SOURCES,
                                 BreakdownParam.PUBLISHERS,
+                                BreakdownParam.PLACEMENTS,
                                 BreakdownParam.COUNTRY,
                                 BreakdownParam.STATE,
                                 BreakdownParam.DMA,

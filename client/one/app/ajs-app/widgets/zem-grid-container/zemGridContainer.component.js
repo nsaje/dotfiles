@@ -157,6 +157,7 @@ angular.module('one.widgets').component('zemGridContainer', {
             to.grid = from.grid;
             to.activated = from.activated;
             to.selected = from.selected;
+            to.isNewFeature = from.isNewFeature || false;
         }
 
         function onGridInitialized(tab, gridApi) {

@@ -1700,6 +1700,18 @@ angular
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'video_cpcv',
             },
+            placementType: {
+                name: 'Placement Type',
+                field: 'placement_type',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                shown: true,
+            },
+            publisher: {
+                name: 'Publisher',
+                field: 'publisher',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                shown: true,
+            },
         };
 
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1730,6 +1742,10 @@ angular
         NAME_COLUMN_BRANDING[constants.breakdown.PUBLISHER] = {
             name: 'Publisher',
             help: 'A publisher where your content is being promoted.',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.PLACEMENT] = {
+            name: 'Placement',
+            help: 'A placement where your content is being promoted.',
         };
         NAME_COLUMN_BRANDING[constants.breakdown.COUNTRY] = {
             name: 'Country',
@@ -1785,6 +1801,10 @@ angular
             name: 'Status',
             help: 'Blacklisted status of a publisher.',
         };
+        STATUS_COLUMN_BRANDING[constants.breakdown.PLACEMENT] = {
+            name: 'Status',
+            help: 'Blacklisted status of a placement.',
+        };
 
         var STATE_COLUMN_BRANDING = {};
         STATE_COLUMN_BRANDING[constants.breakdown.AD_GROUP] = {
@@ -1811,6 +1831,8 @@ angular
             COLUMNS.editButton,
             COLUMNS.cloneButton,
             COLUMNS.name,
+            COLUMNS.placementType,
+            COLUMNS.publisher,
             COLUMNS.exchange,
             COLUMNS.status,
             COLUMNS.submissionStatus,
@@ -2037,6 +2059,7 @@ angular
         ]);
         configureBreakdownExceptions(PUBLISHER_GROUP, [
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
         ]);
 
         // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE
@@ -2087,6 +2110,7 @@ angular
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
             constants.breakdown.COUNTRY,
             constants.breakdown.STATE,
             constants.breakdown.DMA,
@@ -2124,6 +2148,15 @@ angular
 
         COLUMNS.exchange.exceptions.breakdowns = [
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
+        ];
+
+        COLUMNS.placementType.exceptions.breakdowns = [
+            constants.breakdown.PLACEMENT,
+        ];
+
+        COLUMNS.publisher.exceptions.breakdowns = [
+            constants.breakdown.PLACEMENT,
         ];
 
         // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
@@ -2142,6 +2175,11 @@ angular
             breakdown: constants.breakdown.PUBLISHER,
             shown: false,
         }); // eslint-disable-line max-len
+        COLUMNS.performance.exceptions.custom.push({
+            level: constants.level.ACCOUNTS,
+            breakdown: constants.breakdown.PLACEMENT,
+            shown: false,
+        }); // eslint-disable-line max-len
 
         // Exceptions (media source status column - shown only on Ad Group level)
         COLUMNS.status.exceptions.breakdowns = [
@@ -2152,6 +2190,7 @@ angular
             constants.breakdown.MEDIA_SOURCE,
             constants.breakdown.MEDIA_SOURCE,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
         ]; // eslint-disable-line max-len
         COLUMNS.status.exceptions.custom.push({
             level: constants.level.ALL_ACCOUNTS,
@@ -2267,10 +2306,12 @@ angular
         COLUMNS.sourceId.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
         ];
         COLUMNS.sourceSlug.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
         ];
         COLUMNS.sspdUrl.exceptions.breakdowns = [
             constants.breakdown.ACCOUNT,
@@ -2417,8 +2458,11 @@ angular
         }
 
         function adjustOrder(columns, breakdowns) {
-            // status not orderable on publisher tabs
-            if (breakdowns.indexOf(constants.breakdown.PUBLISHER) >= 0) {
+            // status not orderable on publisher and placement tabs
+            if (
+                breakdowns.indexOf(constants.breakdown.PUBLISHER) >= 0 ||
+                breakdowns.indexOf(constants.breakdown.PLACEMENT) >= 0
+            ) {
                 columns.forEach(function(column) {
                     if (column.field === COLUMNS.status.field) {
                         column.order = false;

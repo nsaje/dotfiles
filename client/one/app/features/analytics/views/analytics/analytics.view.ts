@@ -18,7 +18,7 @@ import {
 } from '../../../../app.constants';
 import {
     DEFAULT_BREAKDOWN,
-    BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP,
+    BREAKDOWN_PARAM_TO_BREAKDOWN_MAP,
 } from '../../analytics.config';
 import {
     LEVEL_PARAM_TO_LEVEL_MAP,
@@ -110,8 +110,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
         level: Level,
         breakdownParam: BreakdownParam | null
     ): Breakdown {
-        const breakdown =
-            BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP[breakdownParam];
+        const breakdown = BREAKDOWN_PARAM_TO_BREAKDOWN_MAP[breakdownParam];
         if (commonHelpers.isDefined(breakdown)) {
             return breakdown;
         }

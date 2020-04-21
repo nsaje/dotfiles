@@ -125,6 +125,7 @@ angular
         breakdownUrlMap[constants.breakdown.CONTENT_AD] = 'contentads';
         breakdownUrlMap[constants.breakdown.MEDIA_SOURCE] = 'sources';
         breakdownUrlMap[constants.breakdown.PUBLISHER] = 'publishers';
+        breakdownUrlMap[constants.breakdown.PLACEMENT] = 'placements';
         breakdownUrlMap[constants.breakdown.COUNTRY] = 'country';
         breakdownUrlMap[constants.breakdown.STATE] = 'region';
         breakdownUrlMap[constants.breakdown.DMA] = 'dma';

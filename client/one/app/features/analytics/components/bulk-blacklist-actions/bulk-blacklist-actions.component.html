@@ -1,0 +1,56 @@
+<ng-container
+    *ngIf="blacklistActions?.length > 0 && blacklistLevels?.length > 0"
+>
+    <div
+        *ngFor="let blacklistAction of blacklistActions"
+        zemDropdown
+        class="zem-bulk-blacklist-actions__dropdown zem-dropdown zem-dropdown--no-mobile-style"
+        [disabled]="
+            dropdownsDisabled ||
+            store.state.requests.updateBlacklistStatuses.inProgress
+        "
+        [disablePopover]="!dropdownsDisabled"
+        [zemPopover]="
+            'At least one Publisher has to be selected before using ' +
+            blacklistAction.name +
+            ' blacklist.'
+        "
+        triggers="mouseenter:mouseleave"
+        container="body"
+        placement="top"
+    >
+        <button
+            class="zem-button zem-button--dropdown-toggle-icon"
+            zemDropdownToggle
+        >
+            {{ blacklistAction.name }} blacklist
+        </button>
+        <div
+            class="zem-bulk-blacklist-actions__dropdown-content zem-dropdown__content"
+        >
+            <ul class="zem-bulk-blacklist-actions__list">
+                <li
+                    *ngFor="let blacklistLevel of blacklistLevels"
+                    class="zem-bulk-blacklist-actions__list-item"
+                    (click)="
+                        updateBlacklistStatuses(
+                            blacklistAction.status,
+                            blacklistLevel.level
+                        )
+                    "
+                >
+                    {{ blacklistAction.name }}
+                    {{ blacklistLevel.name }} blacklist
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div
+        class="zem-bulk-blacklist-actions__loader"
+        [ngStyle]="{
+            display: store.state.requests.updateBlacklistStatuses.inProgress
+                ? 'inline-block'
+                : 'none'
+        }"
+    ></div>
+</ng-container>

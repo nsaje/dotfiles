@@ -24,6 +24,11 @@ angular
             return empty();
         };
     })
+    .service('zemPublishersService', function() {
+        this.updateBlacklistStatuses = function() {
+            return empty();
+        };
+    })
     .service('zemExceptionHandlerService', function() {
         this.handleHttpException = function() {
             return empty();

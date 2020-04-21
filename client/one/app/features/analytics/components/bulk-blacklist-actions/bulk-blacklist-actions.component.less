@@ -1,0 +1,42 @@
+@import 'variables';
+
+.zem-bulk-blacklist-actions {
+    display: block;
+}
+
+.zem-bulk-blacklist-actions__dropdown {
+    display: inline;
+}
+
+.zem-bulk-blacklist-actions__dropdown:not(:first-of-type) {
+    margin-left: @spacing--small;
+}
+
+.zem-bulk-blacklist-actions__dropdown-content {
+    padding: @border-radius--default;
+}
+
+.zem-bulk-blacklist-actions__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.zem-bulk-blacklist-actions__list-item {
+    cursor: pointer;
+    padding: @border-radius--default;
+    border-radius: @border-radius--default;
+
+    &:hover {
+        background-color: @color--lightest-neutral;
+    }
+}
+
+.zem-bulk-blacklist-actions__loader {
+    width: 50px;
+    height: 20px;
+    background: transparent url('@{images-folder}/loader.gif') no-repeat center
+        center;
+    margin-left: @spacing--small;
+    margin-top: 5px;
+}

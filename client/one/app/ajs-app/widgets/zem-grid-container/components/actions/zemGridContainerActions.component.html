@@ -17,11 +17,18 @@
         class="button-bar-item"
     ></zem-grid-bulk-actions>
 
-    <zem-grid-bulk-publishers-actions
-        ng-if="$ctrl.isGridBulkPublishersActionsVisible()"
-        api="$ctrl.gridApi"
-        class="button-bar-item"
-    ></zem-grid-bulk-publishers-actions>
+    <zem-bulk-blacklist-actions
+        ng-if="$ctrl.isGridBulkBlacklistActionsVisible()"
+        class="zem-bulk-blacklist-actions button-bar-item zem-bulk-blacklist-actions"
+        [selected-rows]="$ctrl.selectedRows"
+        [level]="$ctrl.level"
+        [account-id]="$ctrl.accountId"
+        [campaign-id]="$ctrl.campaignId"
+        [ad-group-id]="$ctrl.adGroupId"
+        (action-success)="
+            $ctrl.gridApi.clearSelection(); $ctrl.gridApi.reload()
+        "
+    ></zem-bulk-blacklist-actions>
 
     <zem-bid-modifier-actions
         ng-if="$ctrl.areBidModifierActionsVisible()"

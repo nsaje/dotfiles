@@ -13,7 +13,9 @@ angular
         zemCloneCampaignService,
         zemCloneContentService,
         $window,
-        zemGridBulkPublishersActionsService,
+        zemPublishersService,
+        zemGridEndpointColumns,
+        zemNavigationNewService,
         zemModalsService,
         zemUtils,
         $location,
@@ -62,6 +64,7 @@ angular
         this.isStateSwitchVisible = isStateSwitchVisible;
         this.getStateCautionMessage = getStateCautionMessage;
         this.getWidth = getWidth;
+        this.mapRowForBlacklisting = mapRowForBlacklisting;
 
         // prettier-ignore
         function getButtons(level, breakdown, row) { // eslint-disable-line complexity
@@ -73,29 +76,16 @@ angular
                     buttons.push(BUTTONS.archive);
                 }
             }
-            function addPublisherActions(row, actions) {
-                angular.copy(actions).forEach(function(action) {
-                    if (row.data.stats.exchange) {
-                        if (
-                            row.data.stats.exchange.value ===
-                            constants.sourceTypeName.YAHOO
-                        ) {
-                            return;
-                        }
-                        if (
-                            row.data.stats.exchange.value ===
-                                constants.sourceTypeName.OUTBRAIN &&
-                            action.level !==
-                                constants.publisherBlacklistLevel.ACCOUNT
-                        ) {
-                            return;
-                        }
-                    }
-                    if (!action.hasPermission) {
-                        return;
-                    }
-                    action.action = executePublisherAction;
-                    action.type = action.value;
+            function addBlacklistActions(row, breakdown, actionType, actionLevels) {
+                actionLevels.forEach(function(actionLevel) {
+                    var action = {
+                        action: executeBlacklistAction,
+                        name: actionType.name + ' ' + actionLevel.name + ' blacklist',
+                        status: actionType.status,
+                        type: actionType.status === constants.publisherTargetingStatus.BLACKLISTED ? 'blacklist' : 'unlist',
+                        level: actionLevel.level,
+                        breakdown: breakdown
+                    };
                     buttons.push(action);
                 });
             }
@@ -132,24 +122,37 @@ angular
                 buttons.push(BUTTONS.clone);
                 buttons.push(BUTTONS.download);
                 addArchiveUnarchive();
-            } else if (breakdown === constants.breakdown.PUBLISHER) {
+            } else if (breakdown === constants.breakdown.PUBLISHER || breakdown === constants.breakdown.PLACEMENT) {
+                var blacklistingActions = zemPublishersService.getBlacklistActions();
+                var blacklistItemAction = blacklistingActions.find(function(action) {
+                    return action.status === constants.publisherTargetingStatus.BLACKLISTED;
+                });
+                var unlistItemAction = blacklistingActions.find(function(action) {
+                    return action.status === constants.publisherTargetingStatus.UNLISTED;
+                });
+                var blacklistLevels = zemPublishersService.getBlacklistLevels(
+                    zemNavigationNewService.getActiveEntityByType(constants.entityType.ACCOUNT),
+                    zemNavigationNewService.getActiveEntityByType(constants.entityType.CAMPAIGN),
+                    zemNavigationNewService.getActiveEntityByType(constants.entityType.AD_GROUP)
+                );
+
                 if (
                     row.data.stats.status &&
                     row.data.stats.status.value ===
                         constants.publisherTargetingStatus.BLACKLISTED
                 ) {
-                    addPublisherActions(
+                    addBlacklistActions(
                         row,
-                        zemGridBulkPublishersActionsService.getUnlistActions(
-                            level
-                        )
+                        breakdown,
+                        unlistItemAction,
+                        blacklistLevels
                     );
                 }
-                addPublisherActions(
+                addBlacklistActions(
                     row,
-                    zemGridBulkPublishersActionsService.getBlacklistActions(
-                        level
-                    )
+                    breakdown,
+                    blacklistItemAction,
+                    blacklistLevels
                 );
             }
             return buttons;
@@ -201,7 +204,8 @@ angular
                 width += 40;
                 if (
                     buttons.length > 1 &&
-                    breakdown !== constants.breakdown.PUBLISHER
+                    breakdown !== constants.breakdown.PUBLISHER &&
+                    breakdown !== constants.breakdown.PLACEMENT
                 ) {
                     width += 40;
                 }
@@ -409,11 +413,70 @@ angular
             return $q.resolve();
         }
 
-        function executePublisherAction(row, grid, action) {
-            return zemGridBulkPublishersActionsService
-                .execute(action, false, {selected: [row], unselected: []})
-                .then(function() {
-                    grid.meta.api.loadData();
-                });
+        function executeBlacklistAction(row, grid, action) {
+            var defer = $q.defer();
+
+            var entityId = getEntityIdForLevel(action.level);
+            var blacklistSubscription;
+
+            var requestStateUpdater = function(requestName, requestState) {
+                if (requestState.inProgress === false) {
+                    if (commonHelpers.isDefined(blacklistSubscription)) {
+                        blacklistSubscription.unsubscribe();
+                        blacklistSubscription = undefined;
+                    }
+                    if (requestState.error === true) {
+                        defer.reject;
+                    } else {
+                        grid.meta.api.loadData();
+                        defer.resolve(true);
+                    }
+                }
+            };
+
+            blacklistSubscription = zemPublishersService
+                .updateBlacklistStatuses(
+                    [mapRowForBlacklisting(row, action.breakdown)],
+                    action.status,
+                    action.level,
+                    entityId,
+                    requestStateUpdater
+                )
+                .subscribe(function() {});
+
+            return defer.promise;
+        }
+
+        function getEntityIdForLevel(publisherBlacklistLevel) {
+            switch (publisherBlacklistLevel) {
+                case constants.publisherBlacklistLevel.ACCOUNT:
+                    return zemNavigationNewService.getActiveEntityByType(
+                        constants.entityType.ACCOUNT
+                    ).id;
+                case constants.publisherBlacklistLevel.CAMPAIGN:
+                    return zemNavigationNewService.getActiveEntityByType(
+                        constants.entityType.CAMPAIGN
+                    ).id;
+                case constants.publisherBlacklistLevel.ADGROUP:
+                    return zemNavigationNewService.getActiveEntityByType(
+                        constants.entityType.AD_GROUP
+                    ).id;
+            }
+        }
+
+        function mapRowForBlacklisting(row, breakdown) {
+            var COLUMNS = zemGridEndpointColumns.COLUMNS;
+            if (breakdown === constants.breakdown.PUBLISHER) {
+                return {
+                    source: row.data.stats[COLUMNS.sourceId.field].value,
+                    publisher: row.data.stats[COLUMNS.domain.field].value,
+                };
+            } else if (breakdown === constants.breakdown.PLACEMENT) {
+                return {
+                    source: row.data.stats[COLUMNS.sourceId.field].value,
+                    publisher: row.data.stats[COLUMNS.publisher.field].value,
+                    placement: row.data.stats[COLUMNS.name.field].value,
+                };
+            }
         }
     });

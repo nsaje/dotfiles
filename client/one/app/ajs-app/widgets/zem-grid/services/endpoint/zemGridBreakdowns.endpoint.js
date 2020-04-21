@@ -44,6 +44,12 @@ angular
                 report_query: 'Publisher',
                 shown: true,
             },
+            placement: {
+                name: 'By Placement',
+                query: constants.breakdown.PLACEMENT,
+                report_query: 'Placement',
+                shown: true,
+            },
 
             age: {
                 name: 'Age',
@@ -165,6 +171,7 @@ angular
         var BASE_LEVEL_BREAKDOWNS = ENTITY_BREAKDOWNS.concat([
             BREAKDOWNS.source,
             BREAKDOWNS.publisher,
+            BREAKDOWNS.placement,
             BREAKDOWNS.country,
             BREAKDOWNS.region,
             BREAKDOWNS.dma,
@@ -233,6 +240,7 @@ angular
                     ];
                     break;
                 case constants.breakdown.PUBLISHER:
+                case constants.breakdown.PLACEMENT:
                 case constants.breakdown.COUNTRY:
                 case constants.breakdown.STATE:
                 case constants.breakdown.DMA:

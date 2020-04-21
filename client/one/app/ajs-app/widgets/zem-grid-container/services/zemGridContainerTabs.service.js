@@ -1,4 +1,5 @@
 var arrayHelpers = require('../../../../shared/helpers/array.helpers');
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
 
 angular
     .module('one.widgets')
@@ -33,6 +34,16 @@ angular
                         name: 'Publishers',
                         breakdown: constants.breakdown.PUBLISHER,
                         permissions: 'zemauth.can_see_publishers_all_levels',
+                    },
+                    {
+                        name: 'Placements',
+                        breakdown: constants.breakdown.PLACEMENT,
+                        permissions: 'zemauth.can_use_placement_targeting',
+                        isNewFeature: true,
+                        displayOnEntityTypes: [
+                            constants.entityType.CAMPAIGN,
+                            constants.entityType.AD_GROUP,
+                        ],
                     },
                     {
                         name: 'Media Sources',
@@ -92,19 +103,49 @@ angular
             var options = [];
             if (!entity) {
                 addTab(options, TABS.accounts);
-                addTab(options, TABS.additional_breakdowns);
+                addTab(
+                    options,
+                    getAdditionalBreakdownsForEntityType(undefined)
+                );
             } else if (entity.type === constants.entityType.ACCOUNT) {
                 addTab(options, TABS.campaigns);
-                addTab(options, TABS.additional_breakdowns);
+                addTab(
+                    options,
+                    getAdditionalBreakdownsForEntityType(entity.type)
+                );
             } else if (entity.type === constants.entityType.CAMPAIGN) {
                 addTab(options, TABS.ad_groups);
-                addTab(options, TABS.additional_breakdowns);
+                addTab(
+                    options,
+                    getAdditionalBreakdownsForEntityType(entity.type)
+                );
                 addTab(options, TABS.insights);
             } else if (entity.type === constants.entityType.AD_GROUP) {
                 addTab(options, TABS.content_ads);
-                addTab(options, TABS.additional_breakdowns);
+                addTab(
+                    options,
+                    getAdditionalBreakdownsForEntityType(entity.type)
+                );
             }
             return options;
+        }
+
+        function getAdditionalBreakdownsForEntityType(entityType) {
+            var displayedOptions = TABS.additional_breakdowns.options.filter(
+                function(x) {
+                    return (
+                        arrayHelpers.isEmpty(x.displayOnEntityTypes) ||
+                        (commonHelpers.isDefined(entityType) &&
+                            x.displayOnEntityTypes.includes(entityType))
+                    );
+                }
+            );
+
+            var result = {};
+            Object.assign(result, TABS.additional_breakdowns);
+            result.options = displayedOptions;
+
+            return result;
         }
 
         //

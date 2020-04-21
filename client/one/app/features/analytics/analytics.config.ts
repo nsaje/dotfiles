@@ -7,7 +7,7 @@ export const DEFAULT_BREAKDOWN = {
     [Level.AD_GROUPS]: Breakdown.CONTENT_AD,
 };
 
-export const BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP = {
+export const BREAKDOWN_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownParam.SOURCES]: Breakdown.MEDIA_SOURCE,
     [BreakdownParam.COUNTRY]: Breakdown.COUNTRY,
     [BreakdownParam.STATE]: Breakdown.STATE,
@@ -16,5 +16,6 @@ export const BREAKDOWN_STATE_PARAM_TO_BREAKDOWN_MAP = {
     [BreakdownParam.ENVIRONMENT]: Breakdown.ENVIRONMENT,
     [BreakdownParam.OPERATING_SYSTEM]: Breakdown.OPERATING_SYSTEM,
     [BreakdownParam.PUBLISHERS]: Breakdown.PUBLISHER,
+    [BreakdownParam.PLACEMENTS]: Breakdown.PLACEMENT,
     [BreakdownParam.INSIGHTS]: Breakdown.INSIGHTS,
 };

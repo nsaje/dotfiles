@@ -6,14 +6,25 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         level: '<',
         gridApi: '<',
     },
-    controller: function(zemPermissions, zemNavigationNewService) {
+    controller: function(
+        $scope,
+        zemPermissions,
+        zemNavigationNewService,
+        zemGridActionsService,
+        zemGridConstants
+    ) {
         var $ctrl = this;
         $ctrl.constants = constants;
+        $ctrl.selectedRows = [];
+        $ctrl.level = undefined;
+        $ctrl.accountId = undefined;
+        $ctrl.campaignId = undefined;
+        $ctrl.adGroupId = undefined;
 
         $ctrl.isEntityBreakdown = isEntityBreakdown;
         $ctrl.isGridExportVisible = isGridExportVisible;
         $ctrl.isGridBulkActionsVisible = isGridBulkActionsVisible;
-        $ctrl.isGridBulkPublishersActionsVisible = isGridBulkPublishersActionsVisible;
+        $ctrl.isGridBulkBlacklistActionsVisible = isGridBulkBlacklistActionsVisible;
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
@@ -23,13 +34,51 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.areRuleActionsVisible = areRuleActionsVisible;
 
         $ctrl.$onInit = function() {
+            $ctrl.level = $ctrl.gridApi.getMetaData().level;
             $ctrl.entity = zemNavigationNewService.getActiveEntity();
+
+            var account = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.ACCOUNT
+            );
+            var campaign = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.CAMPAIGN
+            );
+            var adGroup = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.AD_GROUP
+            );
+
+            $ctrl.accountId = account ? account.id : undefined;
+            $ctrl.campaignId = campaign ? campaign.id : undefined;
+            $ctrl.adGroupId = adGroup ? adGroup.id : undefined;
+            $ctrl.gridApi.onSelectionUpdated($scope, updateSelectedRowsList);
         };
+
+        function updateSelectedRowsList() {
+            if (
+                $ctrl.gridApi.getSelection().type ===
+                zemGridConstants.gridSelectionFilterType.ALL
+            ) {
+                $ctrl.selectedRows = [];
+            } else {
+                $ctrl.selectedRows = $ctrl.gridApi
+                    .getSelection()
+                    .selected.map(function(row) {
+                        return zemGridActionsService.mapRowForBlacklisting(
+                            row,
+                            $ctrl.breakdown
+                        );
+                    })
+                    .filter(function(row) {
+                        return row.source !== undefined;
+                    });
+            }
+        }
 
         function isEntityBreakdown() {
             return (
                 $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE &&
                 $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
                 $ctrl.breakdown !== constants.breakdown.COUNTRY &&
                 $ctrl.breakdown !== constants.breakdown.STATE &&
                 $ctrl.breakdown !== constants.breakdown.DMA &&
@@ -56,8 +105,11 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             );
         }
 
-        function isGridBulkPublishersActionsVisible() {
-            return $ctrl.breakdown === constants.breakdown.PUBLISHER;
+        function isGridBulkBlacklistActionsVisible() {
+            return (
+                $ctrl.breakdown === constants.breakdown.PUBLISHER ||
+                $ctrl.breakdown === constants.breakdown.PLACEMENT
+            );
         }
 
         function isCreateEntityActionVisible() {
@@ -99,6 +151,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function isBreakdownSelectorVisible() {
             return (
+                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
                 $ctrl.breakdown !== constants.breakdown.COUNTRY &&
                 $ctrl.breakdown !== constants.breakdown.STATE &&
                 $ctrl.breakdown !== constants.breakdown.DMA &&

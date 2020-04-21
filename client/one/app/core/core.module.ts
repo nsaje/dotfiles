@@ -14,6 +14,7 @@ import {SourcesModule} from './sources/sources.module';
 import {ExceptionHttpInterceptor} from './interceptors/exception.interceptor';
 import {NotificationService} from './notification/services/notification.service';
 import {ExceptionHandlerService} from './exception-handler/services/exception-handler.service';
+import {PublishersModule} from './publishers/publishers.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -37,6 +38,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         RulesModule,
         SourcesModule,
         PublisherGroupsModule,
+        PublishersModule,
     ],
     providers: [
         GoogleAnalyticsService,

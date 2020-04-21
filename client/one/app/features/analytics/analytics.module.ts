@@ -18,6 +18,7 @@ import {GridContainerComponent} from './components/grid-container/grid-container
 import {AnalyticsView} from './views/analytics/analytics.view';
 import {CanActivateBreakdownGuard} from './route-guards/canActivateBreakdown.guard';
 import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
+import {BulkBlacklistActionsComponent} from './components/bulk-blacklist-actions/bulk-blacklist-actions.component';
 
 @NgModule({
     declarations: [
@@ -36,6 +37,7 @@ import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
         InfoboxComponent,
         GridContainerComponent,
         AnalyticsView,
+        BulkBlacklistActionsComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard],
@@ -48,6 +50,7 @@ import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
         DisplayAdPreviewComponent,
         CampaignCloningFormComponent,
         AnalyticsView,
+        BulkBlacklistActionsComponent,
     ],
 })
 export class AnalyticsModule {}

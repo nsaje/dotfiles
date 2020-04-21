@@ -7,6 +7,7 @@
         class="zem-grid-container-tabs__tab-content"
         ng-click="$ctrl.navigateToStateWithQueryParams($event, tab)"
         ng-href="{{ $ctrl.getStateHrefWithQueryParams(tab) }}"
+        zem-new-feature="{{ tab.isNewFeature === true }}"
     >
         {{ tab.name }}
     </a>
@@ -27,6 +28,7 @@
                         ng-href="{{
                             $ctrl.getStateHrefWithQueryParams(tab, option)
                         }}"
+                        zem-new-feature="{{ option.isNewFeature === true }}"
                     >
                         {{ option.name }}
                     </a>

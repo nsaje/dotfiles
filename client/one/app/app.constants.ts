@@ -38,6 +38,13 @@ export enum EntityType {
     ACCOUNT = 'account',
 }
 
+export enum PublisherBlacklistLevel {
+    ADGROUP = 'adgroup',
+    CAMPAIGN = 'campaign',
+    ACCOUNT = 'account',
+    GLOBAL = 'global',
+}
+
 export enum EntityUpdateAction {
     EDIT = 'edit',
     CREATE = 'create',
@@ -205,6 +212,7 @@ export enum InterestCategory {
 export enum BreakdownParam {
     SOURCES = 'sources',
     PUBLISHERS = 'publishers',
+    PLACEMENTS = 'placements',
     INSIGHTS = 'insights',
     COUNTRY = 'country',
     STATE = 'region',
@@ -221,6 +229,7 @@ export enum Breakdown {
     CONTENT_AD = 'content_ad',
     MEDIA_SOURCE = 'source',
     PUBLISHER = 'publisher',
+    PLACEMENT = 'placement',
     INSIGHTS = 'insights',
     COUNTRY = 'country',
     STATE = 'region',
@@ -234,6 +243,12 @@ export enum PublisherStatus {
     ENABLED = 1,
     BLACKLISTED = 2,
     PENDING = 3,
+}
+
+export enum PublisherTargetingStatus {
+    WHITELISTED = 1,
+    BLACKLISTED = 2,
+    UNLISTED = 3,
 }
 
 export enum BidModifierType {
@@ -847,11 +862,7 @@ export const APP_CONSTANTS = {
         DISABLED: 'disabled',
     },
     publisherStatus: PublisherStatus,
-    publisherTargetingStatus: {
-        WHITELISTED: 1,
-        BLACKLISTED: 2,
-        UNLISTED: 3,
-    },
+    publisherTargetingStatus: PublisherTargetingStatus,
     notificationType: {
         info: 'info',
         success: 'success',
@@ -1429,12 +1440,7 @@ export const APP_CONSTANTS = {
         THIS_MONTH: 6,
         LAST_MONTH: 7,
     },
-    publisherBlacklistLevel: {
-        ADGROUP: 'adgroup',
-        CAMPAIGN: 'campaign',
-        ACCOUNT: 'account',
-        GLOBAL: 'global',
-    },
+    publisherBlacklistLevel: PublisherBlacklistLevel,
     /* source type names are string values of dash.SourceType */
     sourceTypeName: {
         ADBLADE: 'AdBlade',
@@ -1624,6 +1630,8 @@ APP_CONSTANTS.breakdownToBreakdownParamMap[
 ] = APP_CONSTANTS.breakdownParam.OPERATING_SYSTEM;
 APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.PUBLISHER] =
     APP_CONSTANTS.breakdownParam.PUBLISHERS;
+APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.PLACEMENT] =
+    APP_CONSTANTS.breakdownParam.PLACEMENTS;
 APP_CONSTANTS.breakdownToBreakdownParamMap[APP_CONSTANTS.breakdown.INSIGHTS] =
     APP_CONSTANTS.breakdownParam.INSIGHTS;
 

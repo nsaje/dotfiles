@@ -138,6 +138,22 @@ angular
                     statusTexts: statusTexts,
                 };
             }
+            if (breakdown === constants.breakdown.PLACEMENT) {
+                statusTexts = {};
+                statusTexts[constants.publisherTargetingStatus.UNLISTED] =
+                    'Active';
+                statusTexts[constants.publisherTargetingStatus.BLACKLISTED] =
+                    'Blacklisted';
+                statusTexts[constants.publisherTargetingStatus.WHITELISTED] =
+                    'Whitelisted';
+
+                return {
+                    unlisted: constants.publisherTargetingStatus.UNLISTED,
+                    blacklisted: constants.publisherTargetingStatus.BLACKLISTED,
+                    whitelisted: constants.publisherTargetingStatus.WHITELISTED,
+                    statusTexts: statusTexts,
+                };
+            }
         }
 
         function getStateValues(level, breakdown) {

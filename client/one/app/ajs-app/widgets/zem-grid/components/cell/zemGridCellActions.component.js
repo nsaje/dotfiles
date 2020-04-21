@@ -104,12 +104,7 @@ angular
                             breakdown,
                             vm.row
                         );
-                        if (
-                            buttons.length > 0 &&
-                            buttons[0].type !== 'archive' &&
-                            vm.grid.meta.data.breakdown !==
-                                constants.breakdown.PUBLISHER
-                        ) {
+                        if (shouldShowMainButton(buttons)) {
                             vm.mainButton = buttons[0];
                             vm.buttons = buttons.slice(1);
                         } else {
@@ -135,6 +130,17 @@ angular
                             vm.row
                         );
                     }
+                }
+
+                function shouldShowMainButton(buttons) {
+                    return (
+                        buttons.length > 0 &&
+                        buttons[0].type !== 'archive' &&
+                        vm.grid.meta.data.breakdown !==
+                            constants.breakdown.PUBLISHER &&
+                        vm.grid.meta.data.breakdown !==
+                            constants.breakdown.PLACEMENT
+                    );
                 }
 
                 function execute(button) {

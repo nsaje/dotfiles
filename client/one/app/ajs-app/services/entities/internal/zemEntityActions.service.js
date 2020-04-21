@@ -19,6 +19,7 @@ angular
             var mapEntityBulkActions = {};
             var mapSourceBulkActions = {};
             var mapPublisherBulkActions = {};
+            var mapPlacementBulkActions = {};
 
             //
             // Public API
@@ -95,8 +96,11 @@ angular
                 if (actionType === constants.entityActionType.BULK) {
                     if (breakdown === constants.breakdown.MEDIA_SOURCE) {
                         return mapSourceBulkActions[action];
-                    } else if (breakdown === constants.breakdown.PUBLISHER)
+                    } else if (breakdown === constants.breakdown.PUBLISHER) {
                         return mapPublisherBulkActions[action];
+                    } else if (breakdown === constants.breakdown.PLACEMENT) {
+                        return mapPlacementBulkActions[action];
+                    }
                     return mapEntityBulkActions[action];
                 }
             }
@@ -145,6 +149,8 @@ angular
                     mapSourceBulkActions[action] = actionFn;
                 } else if (breakdown === constants.breakdown.PUBLISHER) {
                     mapPublisherBulkActions[action] = actionFn;
+                } else if (breakdown === constants.breakdown.PLACEMENT) {
+                    mapPlacementBulkActions[action] = actionFn;
                 } else {
                     mapEntityBulkActions[action] = actionFn;
                 }

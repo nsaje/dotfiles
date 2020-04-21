@@ -74,7 +74,8 @@ angular
         function getEntityServiceByLevel(level, breakdown) {
             if (
                 breakdown === constants.breakdown.MEDIA_SOURCE ||
-                breakdown === constants.breakdown.PUBLISHER
+                breakdown === constants.breakdown.PUBLISHER ||
+                breakdown === constants.breakdown.PLACEMENT
             ) {
                 return getEntityService(constants.levelToEntityTypeMap[level]);
             }
