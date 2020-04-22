@@ -1,7 +1,9 @@
 import rest_framework.serializers
 
 import automation.rules
+import core.features.publisher_groups
 import core.models
+import restapi.access
 import restapi.serializers.base
 import restapi.serializers.fields
 
@@ -77,7 +79,12 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=restapi.serializers.fields.PlainCharField(), default=[], allow_empty=True, required=False, initial=None
     )
 
-    publisher_group_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    publisher_group_id = rest_framework.serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=core.features.publisher_groups.PublisherGroup.objects.all(),
+        source="publisher_group",
+    )
 
     action_frequency = rest_framework.serializers.IntegerField(source="cooldown", required=False, allow_null=True)
 
@@ -91,3 +98,9 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
     window = restapi.serializers.fields.DashConstantField(automation.rules.MetricWindow, allow_null=True)
+
+    def validate_publisher_group_id(self, publisher_group):
+        if publisher_group:
+            user = self.context["request"].user
+            restapi.access.get_publisher_group(user, publisher_group.id)
+        return publisher_group

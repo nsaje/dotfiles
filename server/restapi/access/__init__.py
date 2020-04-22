@@ -194,5 +194,5 @@ def get_publisher_group(user, publisher_group_id):
             raise utils.exc.MissingDataError("Publisher group does not exist")
 
         return publisher_group
-    except core.features.publisher_groups.PublisherGroup.DoesNotExist:
+    except (core.features.publisher_groups.PublisherGroup.DoesNotExist, utils.exc.MissingDataError):
         raise utils.exc.MissingDataError("Publisher group does not exist")

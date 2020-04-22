@@ -4,7 +4,6 @@ from functools import partial
 from django.core.validators import ValidationError
 from django.core.validators import validate_email
 
-import core.features.publisher_groups
 import utils.validation_helper
 
 from ... import config
@@ -30,7 +29,7 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "send_email_recipients"),
             partial(self._validate_if_present, "change_step"),
             partial(self._validate_if_present, "change_limit"),
-            partial(self._validate_if_present, "publisher_group_id"),
+            partial(self._validate_if_present, "publisher_group"),
             partial(self._validate_if_present, "conditions"),
             partial(self._validate_if_present, "notification_type"),
             partial(self._validate_if_present, "notification_recipients"),
@@ -186,25 +185,25 @@ class RuleValidationMixin:
         for email in email_list:
             validate_email(email)
 
-    def _validate_publisher_group_id(self, changes, publisher_group_id):
+    def _validate_publisher_group(self, changes, publisher_group):
         action_type = changes.get("action_type", self.action_type)
         if action_type != constants.ActionType.ADD_TO_PUBLISHER_GROUP:
-            if not publisher_group_id:
-                return
-            raise exceptions.InvalidPublisherGroup("Invalid action type")
+            if publisher_group:
+                raise exceptions.InvalidPublisherGroup("Invalid action type")
+        else:
+            if not publisher_group:
+                raise exceptions.InvalidPublisherGroup("Please specify a publisher group.")
 
-        if not publisher_group_id:
-            raise exceptions.InvalidPublisherGroup("Please specify a publisher group.")
+            target_type = changes.get("target_type", self.target_type)
+            if target_type != constants.TargetType.PUBLISHER:
+                raise exceptions.InvalidPublisherGroup("Invalid target type")
 
-        target_type = changes.get("target_type", self.target_type)
-        if target_type != constants.TargetType.PUBLISHER:
-            raise exceptions.InvalidPublisherGroup("Invalid target type")
-
-        publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(id=publisher_group_id)
-        if publisher_group.agency and publisher_group.agency_id != self.agency_id:
-            raise exceptions.InvalidPublisherGroup("Publisher group has to belong to the rule's agency")
-        if publisher_group.account and publisher_group.account.agency_id != self.agency_id:
-            raise exceptions.InvalidPublisherGroup("Publisher group has to belong to an account of the rule's agency")
+            if publisher_group.agency and publisher_group.agency_id != self.agency_id:
+                raise exceptions.InvalidPublisherGroup("Publisher group has to belong to the rule's agency")
+            if publisher_group.account and publisher_group.account.agency_id != self.agency_id:
+                raise exceptions.InvalidPublisherGroup(
+                    "Publisher group has to belong to an account of the rule's agency"
+                )
 
     def _validate_conditions(self, changes, conditions):
         if len(conditions) < 1:

@@ -20,12 +20,12 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
     def get(self, request, agency_id, rule_id):
         agency = restapi.access.get_agency(request.user, agency_id)
         rule = agency.rule_set.get(id=rule_id)
-        serializer = serializers.RuleSerializer(rule)
+        serializer = serializers.RuleSerializer(rule, context={"request": request})
         return self.response_ok(data=serializer.data)
 
     def create(self, request, agency_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        serializer = serializers.RuleSerializer(data=request.data)
+        serializer = serializers.RuleSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -38,16 +38,18 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
         rules = automation.rules.Rule.objects.filter(agency=agency).order_by("id")
         paginator = StandardPagination()
         rules_paginated = paginator.paginate_queryset(rules, request)
-        return paginator.get_paginated_response(serializers.RuleSerializer(rules_paginated, many=True).data)
+        return paginator.get_paginated_response(
+            serializers.RuleSerializer(rules_paginated, many=True, context={"request": request}).data
+        )
 
     def put(self, request, agency_id, rule_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        serializer = serializers.RuleSerializer(data=request.data, partial=True)
+        serializer = serializers.RuleSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         rule = agency.rule_set.get(id=rule_id)
         self._wrap_validation_exceptions(rule.update, request, **data)
-        return self.response_ok(serializers.RuleSerializer(rule).data)
+        return self.response_ok(serializers.RuleSerializer(rule, context={"request": request}).data)
 
     def _wrap_validation_exceptions(self, fn, *args, **kwargs):
         try:

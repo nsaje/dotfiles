@@ -2,6 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 import automation.rules
+import core.features.publisher_groups
 import core.models
 import restapi.common.views_base_test
 import utils.test_helper
@@ -83,7 +84,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             "actionFrequency": cooldown,
             "notificationType": automation.rules.NotificationType.get_name(notification_type),
             "notificationRecipients": notification_recipients,
-            "publisherGroupId": str(publisher_group_id) if publisher_group_id else None,
+            "publisherGroupId": publisher_group_id,
             "conditions": [cls.rule_condition_repr(**condition) for condition in conditions],
         }
         if id is not None:
@@ -173,11 +174,9 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             self.validate_against_db(rule)
 
     def test_create(self):
-        new_agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        new_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__agency=self.agency)
         rule_data = self.rule_repr(
-            name="New test campaign",
-            ad_groups_included=[new_ad_group.id],
+            name="New test rule",
+            ad_groups_included=[self.ad_group.id],
             target_type=automation.rules.TargetType.PUBLISHER,
             action_type=automation.rules.ActionType.DECREASE_BID_MODIFIER,
             window=5,
@@ -203,7 +202,60 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             ],
         )
         response = self.client.post(
-            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": new_agency.id}),
+            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
+            data=rule_data,
+            format="json",
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_201_CREATED)
+        self.validate_against_db(result["data"])
+
+    def test_create_publisher_group(self):
+        other_agency = magic_mixer.blend(core.models.Agency)
+        invalid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, agency=other_agency, name="test pub group"
+        )
+        rule_data = self.rule_repr(
+            name="New test rule",
+            ad_groups_included=[self.ad_group.id],
+            target_type=automation.rules.TargetType.PUBLISHER,
+            action_type=automation.rules.ActionType.ADD_TO_PUBLISHER_GROUP,
+            window=5,
+            change_step=None,
+            change_limit=None,
+            send_email_subject=None,
+            send_email_body=None,
+            send_email_recipients=[],
+            cooldown=48,
+            notification_type=automation.rules.NotificationType.ON_RULE_RUN,
+            notification_recipients=["user@domain.com"],
+            publisher_group_id=invalid_publisher_group.id,
+            conditions=[
+                {
+                    "left_operand_type": automation.rules.MetricType.AVG_CPC,
+                    "left_operand_window": automation.rules.MetricWindow.LAST_7_DAYS,
+                    "left_operand_modifier": 1.0,
+                    "operator": automation.rules.Operator.GREATER_THAN,
+                    "right_operand_type": automation.rules.ValueType.ABSOLUTE,
+                    "right_operand_window": None,
+                    "right_operand_value": "2.22",
+                }
+            ],
+        )
+
+        response = self.client.post(
+            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
+            data=rule_data,
+            format="json",
+        )
+        result = self.assertResponseError(response, "MissingDataError")
+
+        valid_publisher_group = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, agency=self.agency, name="test pub group"
+        )
+        rule_data["publisher_group_id"] = valid_publisher_group.id
+
+        response = self.client.post(
+            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
             data=rule_data,
             format="json",
         )
