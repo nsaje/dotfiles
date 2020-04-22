@@ -1,4 +1,4 @@
-import automation.rules.service
+import automation.rules
 from utils import metrics_compat
 from utils import zlogging
 from utils.command_helpers import Z1Command
