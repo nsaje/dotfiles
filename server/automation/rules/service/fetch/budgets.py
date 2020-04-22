@@ -14,7 +14,7 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
     campaigns = core.models.Campaign.objects.filter(adgroup__in=ad_groups)
     budgets_by_campaign_id = _fetch_bugets(campaigns)
 
-    budgets_data = {}
+    budgets_data_by_campaign_id = {}
     for campaign in core.models.Campaign.objects.filter(adgroup__in=ad_groups):
         if campaign.id not in budgets_by_campaign_id:
             continue
@@ -22,7 +22,7 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
         (start_date, end_date, remaining_budget, margin) = _calculate_budget_data_for_campaign(
             campaign, campaign_budgets
         )
-        budgets_data[campaign] = helpers.map_keys_from_constant_to_qs_string_representation(
+        budgets_data_by_campaign_id[campaign.id] = helpers.map_keys_from_constant_to_qs_string_representation(
             {
                 constants.MetricType.CAMPAIGN_BUDGET_START_DATE: start_date,
                 constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: (local_today - start_date).days,
@@ -33,7 +33,7 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
             }
         )
 
-    return budgets_data
+    return budgets_data_by_campaign_id
 
 
 def _fetch_bugets(campaigns):

@@ -61,7 +61,9 @@ def apply_rule(
         if _is_on_cooldown(target, rule, ad_group):
             continue
 
-        settings_dict = _get_settings_dict(rule, ad_group, campaign_budget, ad_group_settings, content_ads_settings)
+        settings_dict = _construct_target_settings_dict(
+            rule, ad_group, target, campaign_budget, ad_group_settings, content_ads_settings
+        )
         try:
             with transaction.atomic():
                 if _meets_all_conditions(rule, target_stats, settings_dict):
@@ -98,18 +100,20 @@ def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGrou
     ).exists()
 
 
-def _get_settings_dict(
+def _construct_target_settings_dict(
     rule: models.Rule,
     ad_group: core.models.AdGroup,
+    target: str,
     campaign_budget: Dict[str, Any],
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
 ) -> Dict[str, Union[int, str]]:
-    settings_dict = dict(ad_group_settings)
+    settings_dict = {}
     settings_dict.update(campaign_budget)
+    settings_dict.update(ad_group_settings)
     if rule.target_type == constants.TargetType.AD:
-        settings_dict = dict(content_ads_settings.get(ad_group.id, {}))
-        settings_dict.update(ad_group_settings)
+        content_ad_settings: Dict[str, Union[int, str]] = content_ads_settings.get(int(target), {})
+        settings_dict.update(content_ad_settings)
     return settings_dict
 
 

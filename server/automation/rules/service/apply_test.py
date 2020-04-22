@@ -106,7 +106,7 @@ class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
     def test_apply_rule_no_changes(self, cooldown_mock, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
         cooldown_mock.return_value = False
@@ -127,7 +127,7 @@ class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
     def test_apply_rule_write_trigger_history(self, cooldown_mock, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
         cooldown_mock.return_value = False
@@ -152,12 +152,66 @@ class ApplyTest(TestCase):
             RuleTriggerHistory.objects.filter(ad_group=ad_group, rule=rule, target="publisher3.com__456").exists()
         )
 
+    def test_apply_content_ad_rule_budget_settings(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad = magic_mixer.blend(core.models.ContentAd)
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.AD,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            change_step=0.01,
+            change_limit=1.5,
+            cooldown=24,
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=None,
+            left_operand_type=constants.MetricType.AD_GROUP_NAME,
+            left_operand_modifier=None,
+            operator=constants.Operator.CONTAINS,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="name",
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=None,
+            left_operand_type=constants.MetricType.AD_TITLE,
+            left_operand_modifier=None,
+            operator=constants.Operator.CONTAINS,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="title",
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=None,
+            left_operand_type=constants.MetricType.CAMPAIGN_REMAINING_BUDGET,
+            left_operand_modifier=None,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="1000",
+        )
+
+        stats = {str(ad.id): {}}
+        ad_group_settings = {constants.METRIC_SETTINGS_MAPPING[constants.MetricType.AD_GROUP_NAME]: "ad group name"}
+        content_ad_settings = {ad.id: {constants.METRIC_SETTINGS_MAPPING[constants.MetricType.AD_TITLE]: "ad title"}}
+        budgets_data = {"campaign_remaining_budget": 500}
+
+        changes, errors = apply.apply_rule(rule, ad_group, stats, ad_group_settings, content_ad_settings, budgets_data)
+        self.assertFalse(errors)
+        self.assertEqual(changes, [ValueChangeData(target=str(ad.id), old_value=1.0, new_value=1.01)])
+
     @mock.patch("utils.dates_helper.utc_now")
     def test_is_on_cooldown(self, mock_now):
         mock_now.return_value = datetime.datetime.now()
 
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, cooldown=48)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, cooldown=48)
         target = "publisher1.com__234"
         magic_mixer.blend(
             RuleTriggerHistory, ad_group=ad_group, rule=rule, target=target, triggered_dt=datetime.datetime.utcnow()
@@ -239,7 +293,9 @@ class ApplyTest(TestCase):
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
     def test_stats_condition_left_operand_window_none(self):
-        rule = magic_mixer.blend(Rule, window=constants.MetricWindow.LAST_3_DAYS)
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_3_DAYS
+        )
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
@@ -256,7 +312,9 @@ class ApplyTest(TestCase):
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
     def test_stats_condition_right_operand_window_none(self):
-        rule = magic_mixer.blend(Rule, window=constants.MetricWindow.LAST_3_DAYS)
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_3_DAYS
+        )
         magic_mixer.blend(
             RuleCondition,
             rule=rule,

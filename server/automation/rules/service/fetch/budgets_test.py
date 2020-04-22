@@ -88,7 +88,7 @@ class PrepareBudgetsTestCase(TestCase):
         self.assertEqual(
             budgets.prepare_budgets([ad_group]),
             {
-                campaign: {
+                campaign.id: {
                     "campaign_budget_start_date": past_overlapping_budget.start_date,
                     "days_since_campaign_budget_start": 10,
                     "campaign_budget_end_date": future_overlapping_budget.end_date,
