@@ -22,7 +22,6 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     def put(self, request, campaign_id, budget_id):
         if request.user.has_perm("zemauth.disable_budget_management"):
             raise utils.exc.AuthorizationError()
-
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
         serializer = self.serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

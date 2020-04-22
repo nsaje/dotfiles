@@ -3,6 +3,7 @@ import time
 import djangorestframework_camel_case.util
 import ipware.ip
 import rest_framework.renderers
+from django.utils.decorators import classonlymethod
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -107,4 +108,13 @@ class RESTAPIBaseView(APIView):
 
 
 class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
-    pass
+    """
+    as_view is overridden and "http_method_not_allowed" assigned as default value to prevent unsupported/invalid methods
+    being called on url endpoints.
+    """
+
+    @classonlymethod
+    def as_view(cls, actions=None, **initkwargs):
+        if actions:
+            actions = {method: actions.get(method, "http_method_not_allowed") for method in cls.http_method_names}
+        return super().as_view(actions, **initkwargs)
