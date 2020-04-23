@@ -3,7 +3,6 @@ import datetime
 import decimal
 import traceback
 from typing import Any
-from typing import DefaultDict
 from typing import Dict
 from typing import Optional
 from typing import Sequence
@@ -50,7 +49,7 @@ class ErrorData:
 def apply_rule(
     rule: models.Rule,
     ad_group: core.models.AdGroup,
-    ad_group_stats: Union[DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]], Dict],
+    ad_group_stats: Union[Dict[str, Dict[str, Dict[int, Optional[float]]]], Dict],
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
     campaign_budget: Dict[str, Any],
@@ -118,9 +117,7 @@ def _construct_target_settings_dict(
 
 
 def _meets_all_conditions(
-    rule: models.Rule,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
-    settings_dict: Dict[str, Union[int, str]],
+    rule: models.Rule, target_stats: Dict[str, Dict[int, Optional[float]]], settings_dict: Dict[str, Union[int, str]]
 ) -> bool:
     for condition in rule.conditions.all():
         left_operand_value, right_operand_value = _prepare_operands(rule, condition, target_stats, settings_dict)
@@ -132,7 +129,7 @@ def _meets_all_conditions(
 def _prepare_operands(
     rule: models.Rule,
     condition: models.RuleCondition,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    target_stats: Dict[str, Dict[int, Optional[float]]],
     settings_dict: Dict[str, Union[int, str]],
 ):
     _validate_condition(condition)
@@ -153,9 +150,7 @@ def _validate_condition(condition):
 
 
 def _prepare_stats_operands(
-    rule: models.Rule,
-    condition: models.RuleCondition,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     left_operand_value = _prepare_left_stat_operand(rule, condition, target_stats)
     right_operand_value = _prepare_right_stat_operand(rule, condition, target_stats)
@@ -163,9 +158,7 @@ def _prepare_stats_operands(
 
 
 def _prepare_left_stat_operand(
-    rule: models.Rule,
-    condition: models.RuleCondition,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     left_operand_key = constants.METRIC_STATS_MAPPING[condition.left_operand_type]
     left_operand_window = condition.left_operand_window or rule.window
@@ -177,9 +170,7 @@ def _prepare_left_stat_operand(
 
 
 def _prepare_right_stat_operand(
-    rule: models.Rule,
-    condition: models.RuleCondition,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     # TODO: handle constants
     if condition.right_operand_type == constants.ValueType.ABSOLUTE:

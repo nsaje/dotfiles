@@ -79,7 +79,7 @@ class QueryStatsTest(TestCase):
             result,
         )
 
-    def test_query_stats_cpa_rule(self, mock_query, mock_query_conversions):
+    def test_query_stats_cpa_operand(self, mock_query, mock_query_conversions):
         mock_query.return_value = self.raw_stats
         mock_query_conversions.return_value = self.conversion_stats
 
@@ -91,26 +91,53 @@ class QueryStatsTest(TestCase):
         )
 
         result = stats.query_stats(constants.TargetType.PUBLISHER, helpers.get_rules_by_ad_group_map([self.rule]))
-        self.assertEqual(
-            {
-                self.ad_group.id: {
-                    "pub1.com__12": {
-                        "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 100},
-                        "cpc": {constants.MetricWindow.LAST_3_DAYS: 0.2},
-                        "cpm": {constants.MetricWindow.LAST_3_DAYS: 0.3},
-                        "conversions_click": {constants.MetricWindow.LAST_3_DAYS: 100},
-                        "conversions_view": {constants.MetricWindow.LAST_3_DAYS: 250},
-                        "conversions_total": {constants.MetricWindow.LAST_3_DAYS: 350},
-                        "local_avg_etfm_cost_per_conversion": {constants.MetricWindow.LAST_3_DAYS: 1.0},
-                        "local_avg_etfm_cost_per_conversion_view": {constants.MetricWindow.LAST_3_DAYS: 0.4},
-                        "local_avg_etfm_cost_per_conversion_total": {
-                            constants.MetricWindow.LAST_3_DAYS: 0.2857142857142857
-                        },
-                    }
-                }
-            },
-            result,
+        self.assertTrue("local_avg_etfm_cost_per_conversion" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_view" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_total" in result[self.ad_group.id]["pub1.com__12"])
+
+    def test_query_stats_cpa_email_subject(self, mock_query, mock_query_conversions):
+        mock_query.return_value = self.raw_stats
+        mock_query_conversions.return_value = self.conversion_stats
+
+        rule = magic_mixer.blend(
+            models.Rule,
+            ad_groups_included=[self.ad_group],
+            action_type=constants.ActionType.SEND_EMAIL,
+            send_email_subject="{AVG_COST_PER_CONVERSION_LAST_7_DAYS}",
         )
+        magic_mixer.blend(
+            models.RuleCondition,
+            rule=rule,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+        )
+
+        result = stats.query_stats(constants.TargetType.PUBLISHER, helpers.get_rules_by_ad_group_map([rule]))
+        self.assertTrue("local_avg_etfm_cost_per_conversion" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_view" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_total" in result[self.ad_group.id]["pub1.com__12"])
+
+    def test_query_stats_cpa_email_body(self, mock_query, mock_query_conversions):
+        mock_query.return_value = self.raw_stats
+        mock_query_conversions.return_value = self.conversion_stats
+
+        rule = magic_mixer.blend(
+            models.Rule,
+            ad_groups_included=[self.ad_group],
+            action_type=constants.ActionType.SEND_EMAIL,
+            send_email_body="{AVG_COST_PER_CONVERSION_LAST_7_DAYS}",
+        )
+        magic_mixer.blend(
+            models.RuleCondition,
+            rule=rule,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+        )
+
+        result = stats.query_stats(constants.TargetType.PUBLISHER, helpers.get_rules_by_ad_group_map([rule]))
+        self.assertTrue("local_avg_etfm_cost_per_conversion" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_view" in result[self.ad_group.id]["pub1.com__12"])
+        self.assertTrue("local_avg_etfm_cost_per_conversion_total" in result[self.ad_group.id]["pub1.com__12"])
 
 
 class MergeTest(TestCase):

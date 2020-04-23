@@ -1,5 +1,4 @@
 from collections import ChainMap
-from typing import DefaultDict
 from typing import Dict
 from typing import List
 from typing import Sequence
@@ -61,7 +60,7 @@ def execute_rules_daily_run() -> None:
     RulesDailyJobLog.objects.create()
 
 
-def _apply_rules(target_type: int, rules_map: DefaultDict[core.models.AdGroup, List[Rule]]):
+def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rule]]):
     ad_groups = list(rules_map.keys())
     stats = fetch.query_stats(target_type, rules_map)
     ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
@@ -99,7 +98,7 @@ def _apply_rules(target_type: int, rules_map: DefaultDict[core.models.AdGroup, L
 
 
 def _fetch_ad_group_settings(
-    target_type: int, ad_groups: Sequence[core.models.AdGroup], rules_map: DefaultDict[core.models.AdGroup, List[Rule]]
+    target_type: int, ad_groups: Sequence[core.models.AdGroup], rules_map: Dict[core.models.AdGroup, List[Rule]]
 ) -> Dict[int, Dict[str, Union[int, str]]]:
     include_campaign_goals = _any_condition_of_types(
         [

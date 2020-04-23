@@ -1,6 +1,3 @@
-from collections import defaultdict
-from typing import Callable
-from typing import DefaultDict
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -17,11 +14,12 @@ from utils import sort_helper
 
 from ... import constants
 from ... import models
+from .. import macros
 
 
 def query_stats(
-    target_type: int, rules_map: DefaultDict[core.models.AdGroup, List[models.Rule]]
-) -> DefaultDict[int, DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]]]:
+    target_type: int, rules_map: Dict[core.models.AdGroup, List[models.Rule]]
+) -> Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]]:
     ad_groups = list(rules_map.keys())
     raw_stats = redshiftapi.api_rules.query(target_type, ad_groups)
     cpa_ad_groups = _get_cpa_ad_groups(rules_map)
@@ -34,14 +32,31 @@ def _get_cpa_ad_groups(rules_map):
     cpa_ad_groups = []
     for ad_group, rules in rules_map.items():
         for rule in rules:
-            for condition in rule.conditions.all():
-                if condition.left_operand_type in [
-                    constants.MetricType.AVG_COST_PER_CONVERSION,
-                    constants.MetricType.AVG_COST_PER_CONVERSION_VIEW,
-                    constants.MetricType.AVG_COST_PER_CONVERSION_TOTAL,
-                ]:
-                    cpa_ad_groups.append(ad_group)
+            if ad_group not in cpa_ad_groups and (_has_cpa_operands(rule) or _has_cpa_macros(rule)):
+                cpa_ad_groups.append(ad_group)
     return cpa_ad_groups
+
+
+def _has_cpa_operands(rule):
+    for condition in rule.conditions.all():
+        if condition.left_operand_type in [
+            constants.MetricType.AVG_COST_PER_CONVERSION,
+            constants.MetricType.AVG_COST_PER_CONVERSION_VIEW,
+            constants.MetricType.AVG_COST_PER_CONVERSION_TOTAL,
+        ]:
+            return True
+    return False
+
+
+def _has_cpa_macros(rule):
+    if rule.action_type == constants.ActionType.SEND_EMAIL:
+        if rule.send_email_subject:
+            if macros.has_cpa_macros(rule.send_email_subject):
+                return True
+        if rule.send_email_body:
+            if macros.has_cpa_macros(rule.send_email_body):
+                return True
+    return False
 
 
 def _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats):
@@ -109,15 +124,9 @@ def _get_target_goal(ad_group) -> Optional[core.features.goals.ConversionGoal]:
     return None  # campaign has no cpa goal set
 
 
-def _format(
-    target_type: int, stats: Sequence[Dict]
-) -> DefaultDict[int, DefaultDict[str, DefaultDict[str, DefaultDict[int, Optional[float]]]]]:
-
-    dict_tree: Callable[[], DefaultDict] = lambda: defaultdict(dict_tree)  # noqa
-    formatted_stats = dict_tree()
-
+def _format(target_type: int, stats: Sequence[Dict]) -> Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]]:
     target_column_keys = automation.rules.constants.TARGET_TYPE_STATS_MAPPING[target_type]
-
+    formatted_stats: Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]] = {}
     for row in stats:
         ad_group_id = row.pop("ad_group_id", None)
         default_key = ad_group_id if target_type == constants.TargetType.AD_GROUP else None
@@ -133,6 +142,9 @@ def _format(
         target_key = "__".join(map(str, target_key_group))
 
         for metric, value in row.items():
+            formatted_stats.setdefault(ad_group_id, {})
+            formatted_stats[ad_group_id].setdefault(target_key, {})
+            formatted_stats[ad_group_id][target_key].setdefault(metric, {})
             formatted_stats[ad_group_id][target_key][metric][window_key] = value
 
     return formatted_stats

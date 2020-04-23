@@ -1,6 +1,6 @@
 import decimal
 import re
-from typing import DefaultDict
+from typing import Dict
 from typing import Optional
 
 import core.features.multicurrency
@@ -29,6 +29,11 @@ CURRENCY_MACROS = [
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
 ]
 PERCENT_MACROS = [constants.EmailActionMacro.PERCENT_NEW_USERS]
+CPA_MACROS = [
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
+    constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
+]
 
 
 def validate(content) -> None:
@@ -53,9 +58,15 @@ def _is_valid(macro):
     return False
 
 
-def expand(
-    content: str, ad_group: core.models.AdGroup, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]
-) -> str:
+def has_cpa_macros(content: str):
+    for macro in set(EMAIL_EXTRACT_MACROS_REGEX.findall(content)):
+        postfix_window_match = EMAIL_MACRO_SPLIT_WINDOW_REGEX.match(macro)
+        if postfix_window_match and any(postfix_window_match.group(1) == cpa_macro for cpa_macro in CPA_MACROS):
+            return True
+    return False
+
+
+def expand(content: str, ad_group: core.models.AdGroup, target_stats: Dict[str, Dict[int, Optional[float]]]) -> str:
     account_currency = ad_group.campaign.account.currency
     for macro in set(EMAIL_EXTRACT_MACROS_REGEX.findall(content)):
         value = _get_macro_value(macro, ad_group, account_currency, target_stats)
@@ -92,7 +103,7 @@ def _get_macro_value(macro, ad_group, currency, target_stats):
 
 
 def _get_stat_macro_value(
-    macro_prefix: str, window: str, currency, target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]]
+    macro_prefix: str, window: str, currency, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     stat_key = constants.EMAIL_MACRO_STATS_MAPPING[macro_prefix]
     window_constant_value = constants.MetricWindow.get_constant_value(window)

@@ -1,6 +1,5 @@
 import dataclasses
 from decimal import Decimal
-from typing import DefaultDict
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -156,7 +155,7 @@ def send_email(
     rule: Rule,
     ad_group: core.models.AdGroup,
     *,
-    target_stats: DefaultDict[str, DefaultDict[int, Optional[float]]],
+    target_stats: Dict[str, Dict[int, Optional[float]]],
     **kwargs
 ):
     if rule.action_type != constants.ActionType.SEND_EMAIL:

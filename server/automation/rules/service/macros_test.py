@@ -32,6 +32,14 @@ class ValidateTestCase(TestCase):
             macros.validate("This is a macro test {TOTAL_SPEND_LAST_30_DAYS {ACCOUNT_NAME}}")
 
 
+class HasCPAMacrosTest(TestCase):
+    def test_has_cpa_macros(self):
+        self.assertFalse(macros.has_cpa_macros("{TOTAL_SPEND_LAST_7_DAYS}"))
+        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_LAST_7_DAYS}"))
+        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_VIEW_LAST_7_DAYS}"))
+        self.assertTrue(macros.has_cpa_macros("{AVG_COST_PER_CONVERSION_TOTAL_LAST_7_DAYS}"))
+
+
 class ExpandTestCase(TestCase):
     def setUp(self):
         patcher = patch("automation.autopilot.recalculate_budgets_ad_group")
