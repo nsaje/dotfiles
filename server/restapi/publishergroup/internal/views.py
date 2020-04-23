@@ -1,4 +1,6 @@
 import rest_framework.response
+import rest_framework.status
+from django.db import transaction
 from django.db.models import Q
 from rest_framework import permissions
 
@@ -50,4 +52,28 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
     def remove(self, request, publisher_group_id):
         publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
         publisher_group.delete()
-        return rest_framework.response.Response(None, status=204)
+        return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)
+
+
+class AddToPublisherGroupViewSet(RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def create(self, request):
+        serializer = serializers.AddToPublisherGroupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            publisher_group, _ = core.features.publisher_groups.get_or_create_publisher_group(
+                request,
+                serializer.validated_data.get("name"),
+                publisher_group_id=serializer.validated_data.get("id"),
+                agency_id=serializer.validated_data.get("agency_id"),
+                account_id=serializer.validated_data.get("account_id"),
+                default_include_subdomains=serializer.validated_data.get("default_include_subdomains"),
+                implicit=True,
+            )
+            core.features.publisher_groups.add_publisher_group_entries(
+                request, publisher_group, serializer.validated_data.get("entries")
+            )
+        serializer = serializers.AddToPublisherGroupSerializer(publisher_group)
+        return rest_framework.response.Response(serializer.data, status=rest_framework.status.HTTP_202_ACCEPTED)

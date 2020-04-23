@@ -279,7 +279,7 @@ def blacklist_publishers(request, entry_dicts, obj, should_write_history=True):
     models.PublisherGroupEntry.objects.bulk_create(entries)
 
     if created:
-        ping_k1(obj)
+        _ping_k1(obj)
 
     if should_write_history:
         write_history(request, obj, entries, constants.PublisherTargetingStatus.BLACKLISTED)
@@ -296,7 +296,7 @@ def whitelist_publishers(request, entry_dicts, obj, should_write_history=True):
     models.PublisherGroupEntry.objects.bulk_create(entries)
 
     if created:
-        ping_k1(obj)
+        _ping_k1(obj)
 
     if should_write_history:
         write_history(request, obj, entries, constants.PublisherTargetingStatus.WHITELISTED)
@@ -304,6 +304,9 @@ def whitelist_publishers(request, entry_dicts, obj, should_write_history=True):
 
 @transaction.atomic
 def unlist_publishers(request, entry_dicts, obj, history=True):
+    if not entry_dicts:
+        return
+
     publisher_group, _ = get_blacklist_publisher_group(obj)
     selected_entries = models.PublisherGroupEntry.objects.filter(
         publisher_group=publisher_group
@@ -426,13 +429,18 @@ def write_history(request, obj, entries, status, previous_status=None):
     if status == constants.PublisherTargetingStatus.UNLISTED and previous_status is None:
         raise Exception("Previous status required")
 
-    action = {
+    action_map = {
         constants.PublisherTargetingStatus.WHITELISTED: "Whitelisted",
         constants.PublisherTargetingStatus.BLACKLISTED: "Blacklisted",
         constants.PublisherTargetingStatus.UNLISTED: (
             "Enabled" if previous_status == constants.PublisherTargetingStatus.BLACKLISTED else "Disabled"
         ),
-    }[status]
+    }
+    if status is None:
+        # adding entries to a publisher group where status is not known
+        action_map.update({None: "Added"})
+
+    action = action_map[status]
 
     if obj is None:
         level_description = "globally"
@@ -458,7 +466,54 @@ def write_history(request, obj, entries, status, previous_status=None):
         email_helper.send_obj_changes_notification_email(obj, request, changes_text)
 
 
-def ping_k1(obj):
+def get_or_create_publisher_group(
+    request,
+    name,
+    publisher_group_id=None,
+    agency_id=None,
+    account_id=None,
+    default_include_subdomains=True,
+    implicit=False,
+):
+    if publisher_group_id is not None:
+        return (
+            models.PublisherGroup.objects.filter_by_user(request.user)
+            .filter(agency_id=agency_id)
+            .filter(account_id=account_id)
+            .filter(default_include_subdomains=default_include_subdomains)
+            .get(id=publisher_group_id),
+            False,
+        )
+
+    agency = models.Agency.objects.filter_by_user(request.user).get(id=agency_id) if agency_id is not None else None
+    account = models.Account.objects.filter_by_user(request.user).get(id=account_id) if account_id is not None else None
+
+    return (
+        models.PublisherGroup.objects.create(
+            request,
+            name,
+            agency=agency,
+            account=account,
+            default_include_subdomains=default_include_subdomains,
+            implicit=implicit,
+        ),
+        True,
+    )
+
+
+def add_publisher_group_entries(request, publisher_group, entry_dicts):
+    if not entry_dicts:
+        return models.PublisherGroupEntry.objects.none()
+
+    entries = _prepare_entries(entry_dicts, publisher_group)
+    models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group).filter_by_publisher_source(
+        entry_dicts
+    ).delete()
+    write_history(request, None, entries, None)
+    return models.PublisherGroupEntry.objects.bulk_create(entries)
+
+
+def _ping_k1(obj):
     message = "publisher_group.create"
     level = obj.get_publisher_level()
 

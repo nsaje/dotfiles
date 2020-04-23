@@ -8,8 +8,10 @@ from django.test import TestCase
 from django.test import override_settings
 
 import zemauth.models
+from dash import constants
 from dash import history_helpers
 from dash import models
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 
 from . import csv_helper
@@ -48,7 +50,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(history.count(), 2 if default_list_created else 1)
         self.assertEqual(history.first().changes_text, changes_text)
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -65,7 +67,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -84,7 +86,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryNotWritten(history_helpers.get_ad_group_history(obj))
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -100,7 +102,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_ad_group_no_history(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -139,7 +141,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertWhitelistCreated(obj)
         mock_k1_ping.assert_called_once_with(obj, "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -158,7 +160,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_blacklisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
@@ -223,7 +225,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
         mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
@@ -248,7 +250,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_blacklisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
@@ -334,7 +336,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
         mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_whitelisted_publisher_account(self, mock_email, mock_k1_ping):
         obj = models.Account.objects.get(pk=1)
@@ -358,7 +360,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
@@ -375,7 +377,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertFalse(mock_email.called)
         mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_whitelist_publisher_global(self, mock_email, mock_k1_ping):
         with self.assertRaises(exceptions.PublisherGroupTargetingException):
@@ -386,7 +388,7 @@ class PublisherGroupHelpersTest(TestCase):
             self.assertFalse(mock_email.called)
             mock_k1_ping.assert_not_called()
 
-    @mock.patch("core.features.publisher_groups.service.ping_k1")
+    @mock.patch("core.features.publisher_groups.service._ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_unlist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
@@ -773,3 +775,163 @@ class PublisherGroupCSVHelpersTest(TestCase):
             """
             ),
         )
+
+
+class GetOrCreatePublisherGroupTest(TestCase):
+    def setUp(self):
+        self.user = magic_mixer.blend_user()
+        self.request = get_request_mock(self.user)
+        self.account = magic_mixer.blend(models.Account)
+        self.account.users.add(self.user)
+        self.agency = magic_mixer.blend(models.Agency)
+        self.agency.users.add(self.user)
+        self.other_account = magic_mixer.blend(models.Account)
+        self.publisher_group = magic_mixer.blend(models.PublisherGroup, account=self.account)
+        self.other_publisher_group = magic_mixer.blend(models.PublisherGroup, account=self.other_account)
+
+    def test_get_existing_publisher_group(self):
+        publisher_group, created = service.get_or_create_publisher_group(
+            self.request,
+            self.publisher_group.name,
+            publisher_group_id=self.publisher_group.id,
+            account_id=self.account.id,
+            default_include_subdomains=self.publisher_group.default_include_subdomains,
+        )
+
+        self.assertFalse(created)
+        self.assertEqual(publisher_group, self.publisher_group)
+
+    def test_create_new_publisher_group(self):
+        pg_name = "somerandomname"
+        self.assertEqual(models.PublisherGroup.objects.filter(name=pg_name).count(), 0)
+        publisher_group, created = service.get_or_create_publisher_group(
+            self.request, pg_name, publisher_group_id=None, account_id=self.account.id, default_include_subdomains=True
+        )
+
+        self.assertTrue(created)
+        self.assertEqual(publisher_group.name, pg_name)
+        self.assertIsNone(publisher_group.agency)
+        self.assertEqual(publisher_group.account, self.account)
+        self.assertTrue(publisher_group.default_include_subdomains)
+        self.assertFalse(publisher_group.implicit)
+        self.assertEqual(models.PublisherGroup.objects.filter(name=pg_name).count(), 1)
+
+    def test_no_access_to_foreign_publisher_group(self):
+        with self.assertRaises(models.PublisherGroup.DoesNotExist):
+            service.get_or_create_publisher_group(
+                self.request,
+                self.other_publisher_group.name,
+                publisher_group_id=self.other_publisher_group.id,
+                account_id=self.other_account.id,
+                default_include_subdomains=self.other_publisher_group.default_include_subdomains,
+            )
+
+    def test_can_not_create_publisher_group_for_foreign_account(self):
+        pg_name = "somerandomname"
+        self.assertEqual(models.PublisherGroup.objects.filter(name=pg_name).count(), 0)
+        with self.assertRaises(models.Account.DoesNotExist):
+            service.get_or_create_publisher_group(
+                self.request,
+                pg_name,
+                publisher_group_id=None,
+                account_id=self.other_account.id,
+                default_include_subdomains=True,
+            )
+
+
+class AddPublisherGroupEntriesTest(TestCase):
+    def setUp(self):
+        self.source = magic_mixer.blend(models.Source)
+        self.request = magic_mixer.blend_request_user()
+        self.publisher_1 = "example.com"
+        self.publisher_2 = "publisher.com"
+        self.placement_2 = "00000000-0029-e16a-0000-000000000071"
+        self.publisher_group_1 = magic_mixer.blend(models.PublisherGroup)
+        self.publisher_group_2 = magic_mixer.blend(models.PublisherGroup)
+
+        self.pge_1 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_2,
+            placement=self.placement_2,
+            includeSubdomains=False,
+            publisher_group=self.publisher_group_2,
+        )
+        self.pge_2 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_1,
+            includeSubdomains=True,
+            publisher_group=self.publisher_group_2,
+        )
+        self.pge_3 = magic_mixer.blend(
+            models.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_2,
+            includeSubdomains=True,
+            publisher_group=self.publisher_group_2,
+        )
+
+    def _get_history_entries(self):
+        return models.History.objects.filter(
+            created_by=self.request.user,
+            level=constants.HistoryLevel.GLOBAL,
+            action_type=constants.HistoryActionType.GLOBAL_PUBLISHER_BLACKLIST_CHANGE,
+        )
+
+    def test_add_publisher_group_entries(self):
+        self.assertEqual(self.publisher_group_1.entries.count(), 0)
+        self.assertEqual(self._get_history_entries().count(), 0)
+        entries = service.add_publisher_group_entries(
+            self.request,
+            self.publisher_group_1,
+            [
+                {"source": self.source, "publisher": self.publisher_1, "placement": None, "include_subdomains": True},
+                {
+                    "source": self.source,
+                    "publisher": self.publisher_2,
+                    "placement": self.placement_2,
+                    "include_subdomains": False,
+                },
+            ],
+        )
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(self.publisher_group_1.entries.count(), 2)
+
+        history_entries = list(self._get_history_entries())
+        self.assertEqual(len(history_entries), 1)
+        self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
+
+    def test_add_no_entries(self):
+        self.assertEqual(self.publisher_group_2.entries.count(), 3)
+        self.assertEqual(self._get_history_entries().count(), 0)
+        entries = service.add_publisher_group_entries(self.request, self.publisher_group_2, [])
+        self.assertEqual(len(entries), 0)
+        self.assertEqual(self.publisher_group_2.entries.count(), 3)
+        self.assertEqual(self._get_history_entries().count(), 0)
+
+    def test_replace_publisher_group_entries(self):
+        self.assertEqual(self.publisher_group_2.entries.count(), 3)
+        self.assertEqual(self._get_history_entries().count(), 0)
+        entries = service.add_publisher_group_entries(
+            self.request,
+            self.publisher_group_2,
+            [
+                {"source": self.source, "publisher": self.publisher_1, "placement": None, "include_subdomains": True},
+                {
+                    "source": self.source,
+                    "publisher": self.publisher_2,
+                    "placement": self.placement_2,
+                    "include_subdomains": False,
+                },
+            ],
+        )
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(self.publisher_group_2.entries.count(), 3)
+
+        history_entries = list(self._get_history_entries())
+        self.assertEqual(len(history_entries), 1)
+        self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
+
+        self.assertFalse(self.publisher_group_2.entries.filter(id__in=[self.pge_1.id, self.pge_2.id]).exists())
+        self.assertTrue(self.publisher_group_2.entries.filter(id=self.pge_3.id).exists())

@@ -18,7 +18,7 @@ class PublisherGroupEntryQuerySet(models.QuerySet):
     def filter_by_publisher_source(self, publisher_source_dicts):
         q = models.Q()
         for entry in publisher_source_dicts:
-            q |= models.Q(publisher=entry["publisher"], source=entry["source"])
+            q |= models.Q(publisher=entry["publisher"], source=entry["source"], placement=entry.get("placement"))
         return self.filter(q)
 
     def annotate_publisher_id(self):

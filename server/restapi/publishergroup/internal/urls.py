@@ -10,4 +10,9 @@ urlpatterns = [
         views.PublisherGroupViewSet.as_view({"delete": "remove"}),
         name="publishergroup_details",
     ),
+    url(
+        r"^publishergroups/add/$",
+        views.AddToPublisherGroupViewSet.as_view({"post": "create"}),
+        name="publishergroup_add",
+    ),
 ]

@@ -8,12 +8,13 @@ from . import model
 
 class PublisherGroupEntryManager(models.Manager):
     def bulk_create(self, objs, batch_size=None):
-        publisher_group = objs[0].publisher_group
-        core.common.entity_limits.enforce(
-            model.PublisherGroupEntry.objects.filter(publisher_group=publisher_group),
-            publisher_group.account_id,
-            create_count=len(objs),
-        )
+        if len(objs) > 0:
+            publisher_group = objs[0].publisher_group
+            core.common.entity_limits.enforce(
+                model.PublisherGroupEntry.objects.filter(publisher_group=publisher_group),
+                publisher_group.account_id,
+                create_count=len(objs),
+            )
         return super().bulk_create(objs, batch_size)
 
     def create(self, **kwargs):

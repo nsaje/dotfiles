@@ -1,6 +1,8 @@
 from rest_framework import fields
+from rest_framework import serializers
 
 import restapi.publishergroup.v1.serializers
+import restapi.publishergroupentry.v1.serializers
 import restapi.serializers.fields
 import restapi.serializers.serializers
 
@@ -19,3 +21,18 @@ class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGr
         fields = restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta.fields + ("agency_id",)
 
     agency_id = restapi.serializers.fields.IdField(read_only=True)
+
+
+class AddToPublisherGroupSerializer(PublisherGroupSerializer):
+    class Meta(PublisherGroupSerializer.Meta):
+        fields = PublisherGroupSerializer.Meta.fields + ("default_include_subdomains", "entries")
+
+    id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    agency_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    account_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    entries = restapi.publishergroupentry.v1.serializers.PublisherGroupEntrySerializer(many=True)
+
+    def validate_entries(self, value):
+        if len(value) == 0:
+            raise serializers.ValidationError("At least one entry is required")
+        return value

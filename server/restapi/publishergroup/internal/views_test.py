@@ -1,8 +1,11 @@
+import rest_framework.status
 from django.db.models import Q
 from django.urls import reverse
 
+import core.features.history
 import core.features.publisher_groups
 import core.models
+import dash.constants
 from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
@@ -158,3 +161,382 @@ class PublisherGroupTest(RESTAPITest):
             )
         )
         self.assertEqual(r.status_code, 404)
+
+
+class AddToPublisherGroupTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        self.source = magic_mixer.blend(core.models.Source)
+        self.account = magic_mixer.blend(core.models.Account)
+        self.account.users.add(self.user)
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.agency.users.add(self.user)
+        self.other_account = magic_mixer.blend(core.models.Account)
+        self.publisher_1 = "example.com"
+        self.publisher_2 = "publisher.com"
+        self.placement_2 = "00000000-0029-e16a-0000-000000000071"
+        self.pg_1 = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=self.account)
+        self.pg_2_name = "new publisher group"
+        self.pg_other = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=self.other_account)
+
+    def test_add_to_existing_publisher_group(self):
+        request_data = {
+            "id": str(self.pg_1.id),
+            "name": self.pg_1.name,
+            "accountId": str(self.pg_1.account.id),
+            "agencyId": None,
+            "defaultIncludeSubdomains": self.pg_1.default_include_subdomains,
+            "entries": [
+                {"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True},
+                {
+                    "source": self.source.bidder_slug,
+                    "publisher": self.publisher_2,
+                    "placement": self.placement_2,
+                    "includeSubdomains": False,
+                },
+            ],
+        }
+
+        self.assertEqual(self.pg_1.entries.count(), 0)
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_202_ACCEPTED)
+
+        self.assertEqual(self.pg_1.entries.count(), 2)
+        pge_1 = self.pg_1.entries.first()
+        pge_2 = self.pg_1.entries.last()
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": str(self.pg_1.id),
+                    "name": self.pg_1.name,
+                    "accountId": str(self.pg_1.account.id),
+                    "agencyId": None,
+                    "defaultIncludeSubdomains": self.pg_1.default_include_subdomains,
+                    "entries": [
+                        {
+                            "id": str(pge_1.id),
+                            "source": pge_1.source.bidder_slug,
+                            "publisher": self.publisher_1,
+                            "placement": None,
+                            "publisherGroupId": str(self.pg_1.id),
+                            "includeSubdomains": True,
+                        },
+                        {
+                            "id": str(pge_2.id),
+                            "source": pge_2.source.bidder_slug,
+                            "publisher": self.publisher_2,
+                            "placement": self.placement_2,
+                            "publisherGroupId": str(self.pg_1.id),
+                            "includeSubdomains": False,
+                        },
+                    ],
+                }
+            },
+        )
+
+    def test_create_publisher_group_and_add(self):
+        request_data = {
+            "id": None,
+            "name": self.pg_2_name,
+            "accountId": None,
+            "agencyId": str(self.agency.id),
+            "defaultIncludeSubdomains": False,
+            "entries": [
+                {"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True},
+                {
+                    "source": self.source.bidder_slug,
+                    "publisher": self.publisher_2,
+                    "placement": self.placement_2,
+                    "includeSubdomains": False,
+                },
+            ],
+        }
+
+        self.assertFalse(core.features.publisher_groups.PublisherGroup.objects.filter(name=self.pg_2_name).exists())
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_202_ACCEPTED)
+
+        self.assertEqual(core.features.publisher_groups.PublisherGroup.objects.filter(name=self.pg_2_name).count(), 1)
+        pg_2 = core.features.publisher_groups.PublisherGroup.objects.get(name=self.pg_2_name)
+        self.assertEqual(pg_2.entries.count(), 2)
+        pge_1 = pg_2.entries.first()
+        pge_2 = pg_2.entries.last()
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": str(pg_2.id),
+                    "name": self.pg_2_name,
+                    "accountId": None,
+                    "agencyId": str(self.agency.id),
+                    "defaultIncludeSubdomains": False,
+                    "entries": [
+                        {
+                            "id": str(pge_1.id),
+                            "source": pge_1.source.bidder_slug,
+                            "publisher": self.publisher_1,
+                            "placement": None,
+                            "publisherGroupId": str(pg_2.id),
+                            "includeSubdomains": True,
+                        },
+                        {
+                            "id": str(pge_2.id),
+                            "source": pge_2.source.bidder_slug,
+                            "publisher": self.publisher_2,
+                            "placement": self.placement_2,
+                            "publisherGroupId": str(pg_2.id),
+                            "includeSubdomains": False,
+                        },
+                    ],
+                }
+            },
+        )
+
+    def test_add_to_invalid_publisher_group(self):
+        request_data = {
+            "id": str(self.pg_other.id),
+            "name": self.pg_other.name,
+            "accountId": str(self.pg_other.account.id),
+            "agencyId": None,
+            "defaultIncludeSubdomains": self.pg_other.default_include_subdomains,
+            "entries": [{"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True}],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "DoesNotExist")
+        self.assertEqual(response["details"], "PublisherGroup matching query does not exist.")
+
+    def test_add_to_invalid_account(self):
+        request_data = {
+            "id": None,
+            "name": self.pg_2_name,
+            "accountId": str(self.other_account.id),
+            "agencyId": None,
+            "defaultIncludeSubdomains": True,
+            "entries": [{"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True}],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "DoesNotExist")
+        self.assertEqual(response["details"], "Account matching query does not exist.")
+
+    def test_add_to_both_agency_and_account(self):
+        request_data = {
+            "id": None,
+            "name": self.pg_2_name,
+            "accountId": str(self.account.id),
+            "agencyId": str(self.agency.id),
+            "defaultIncludeSubdomains": True,
+            "entries": [{"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True}],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            response["details"],
+            {
+                "accountId": ["Only one of either account or agency must be set."],
+                "agencyId": ["Only one of either account or agency must be set."],
+            },
+        )
+
+    def test_missing_required_fields(self):
+        request_data = {}
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            response["details"], {"name": ["This field is required."], "entries": ["This field is required."]}
+        )
+
+        request_data = {"name": self.pg_2_name, "entries": []}
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"entries": ["At least one entry is required"]})
+
+        request_data = {
+            "name": self.pg_2_name,
+            "entries": [{"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True}],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            response["details"], {"defaultIncludeSubdomains": ["'None' value must be either True or False."]}
+        )
+
+    def test_defaults(self):
+        request_data = {
+            "name": self.pg_2_name,
+            "defaultIncludeSubdomains": True,
+            "entries": [{"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True}],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_202_ACCEPTED)
+
+        self.assertEqual(core.features.publisher_groups.PublisherGroup.objects.filter(name=self.pg_2_name).count(), 1)
+        pg_2 = core.features.publisher_groups.PublisherGroup.objects.get(name=self.pg_2_name)
+        self.assertEqual(pg_2.entries.count(), 1)
+        pge_1 = pg_2.entries.first()
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": str(pg_2.id),
+                    "name": self.pg_2_name,
+                    "accountId": None,
+                    "agencyId": None,
+                    "defaultIncludeSubdomains": True,
+                    "entries": [
+                        {
+                            "id": str(pge_1.id),
+                            "source": pge_1.source.bidder_slug,
+                            "publisher": self.publisher_1,
+                            "placement": None,
+                            "publisherGroupId": str(pg_2.id),
+                            "includeSubdomains": True,
+                        }
+                    ],
+                }
+            },
+        )
+
+    def test_replace_publisher_group_entries_with_history(self):
+        def _get_history_entries():
+            return core.features.history.History.objects.filter(
+                created_by=self.user,
+                level=dash.constants.HistoryLevel.GLOBAL,
+                action_type=dash.constants.HistoryActionType.GLOBAL_PUBLISHER_BLACKLIST_CHANGE,
+            )
+
+        pge_a = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_2,
+            placement=self.placement_2,
+            includeSubdomains=False,
+            publisher_group=self.pg_1,
+        )
+        pge_b = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_1,
+            includeSubdomains=True,
+            publisher_group=self.pg_1,
+        )
+        pge_c = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry,
+            source=self.source,
+            publisher=self.publisher_2,
+            includeSubdomains=True,
+            publisher_group=self.pg_1,
+        )
+
+        self.assertEqual(self.pg_1.entries.count(), 3)
+
+        self.assertEqual(_get_history_entries().count(), 0)
+
+        request_data = {
+            "id": str(self.pg_1.id),
+            "name": self.pg_1.name,
+            "accountId": str(self.pg_1.account.id),
+            "agencyId": None,
+            "defaultIncludeSubdomains": self.pg_1.default_include_subdomains,
+            "entries": [
+                {"source": self.source.bidder_slug, "publisher": self.publisher_1, "includeSubdomains": True},
+                {
+                    "source": self.source.bidder_slug,
+                    "publisher": self.publisher_2,
+                    "placement": self.placement_2,
+                    "includeSubdomains": False,
+                },
+            ],
+        }
+
+        r = self.client.post(
+            reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_202_ACCEPTED)
+
+        self.assertEqual(self.pg_1.entries.count(), 3)
+        pges = list(self.pg_1.entries.order_by("id"))
+        pge_1 = pges[-2]
+        pge_2 = pges[-1]
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": str(self.pg_1.id),
+                    "name": self.pg_1.name,
+                    "accountId": str(self.pg_1.account.id),
+                    "agencyId": None,
+                    "defaultIncludeSubdomains": self.pg_1.default_include_subdomains,
+                    "entries": [
+                        {
+                            "id": str(pge_c.id),
+                            "source": pge_c.source.bidder_slug,
+                            "publisher": self.publisher_2,
+                            "placement": None,
+                            "publisherGroupId": str(self.pg_1.id),
+                            "includeSubdomains": True,
+                        },
+                        {
+                            "id": str(pge_1.id),
+                            "source": pge_1.source.bidder_slug,
+                            "publisher": self.publisher_1,
+                            "placement": None,
+                            "publisherGroupId": str(self.pg_1.id),
+                            "includeSubdomains": True,
+                        },
+                        {
+                            "id": str(pge_2.id),
+                            "source": pge_2.source.bidder_slug,
+                            "publisher": self.publisher_2,
+                            "placement": self.placement_2,
+                            "publisherGroupId": str(self.pg_1.id),
+                            "includeSubdomains": False,
+                        },
+                    ],
+                }
+            },
+        )
+
+        self.assertFalse(
+            core.features.publisher_groups.PublisherGroupEntry.objects.filter(id__in=[pge_a.id, pge_b.id]).exists()
+        )
+
+        history_entries = list(_get_history_entries())
+        self.assertEqual(len(history_entries), 1)
+        self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
