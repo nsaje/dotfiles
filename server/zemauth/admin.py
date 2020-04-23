@@ -14,7 +14,13 @@ from . import models
 
 class EntityPermissionUserInline(admin.TabularInline):
     model = models.EntityPermission
+    autocomplete_fields = ("agency", "account")
     extra = 0
+
+    def get_queryset(self, request):
+        qs = super(EntityPermissionUserInline, self).get_queryset(request)
+        qs = qs.select_related("agency", "account")
+        return qs
 
 
 class UserCreationForm(forms.UserCreationForm):
@@ -89,6 +95,7 @@ class PermissionAdmin(admin.ModelAdmin):
 class EntityPermissionAdmin(admin.ModelAdmin):
     search_fields = ("id", "user__email", "agency__name", "account__name")
     list_display = ("id", "user", "agency", "account", "permission")
+    autocomplete_fields = ("agency", "account")
 
     def get_queryset(self, request):
         qs = super(EntityPermissionAdmin, self).get_queryset(request)
