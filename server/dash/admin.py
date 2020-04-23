@@ -21,6 +21,7 @@ from import_export.admin import ExportMixin
 
 import core.features.source_adoption
 import utils.email_helper
+import utils.exc
 import utils.k1_helper
 import utils.redirector_helper
 import utils.slack
@@ -2082,6 +2083,13 @@ class DirectDealAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "modified_dt", "created_dt", "created_by", "modified_by")
     list_display = ("deal_id", "name", "source", "agency", "account", "floor_price", "valid_from_date", "valid_to_date")
     search_fields = ("id", "deal_id", "name", "agency__name", "account__name", "source__name")
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        try:
+            return super(DirectDealAdmin, self).changeform_view(request, object_id, form_url, extra_context)
+        except utils.exc.ValidationError as e:
+            self.message_user(request, str(e.errors), level=messages.ERROR)
+            return HttpResponseRedirect(request.path)
 
     def save_model(self, request, obj, form, change):
         obj.save(request)

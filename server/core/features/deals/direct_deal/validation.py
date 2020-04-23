@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from utils.exc import ValidationError
 
 
 class DirectDealValidatorMixin(object):
@@ -11,14 +11,14 @@ class DirectDealValidatorMixin(object):
     def _validate_agency_account(self):
         if self.account is not None and self.agency is not None:
             raise ValidationError(
-                {
+                errors={
                     "account_id": ["Only one of either account or agency must be set."],
                     "agency_id": ["Only one of either account or agency must be set."],
                 }
             )
         if self.account is None and self.agency is None:
             raise ValidationError(
-                {
+                errors={
                     "account_id": ["One of either account or agency must be set."],
                     "agency_id": ["One of either account or agency must be set."],
                 }
@@ -46,7 +46,7 @@ class DirectDealValidatorMixin(object):
 
         if self.account.id not in accounts:
             raise ValidationError(
-                {
+                errors={
                     "account_id": "Deal is used outside of the scope of {account_name} account. To change the scope of the deal to {account_name} stop using it on other accounts (and their campaigns and ad groups) and try again.".format(
                         account_name=self.account.name
                     )
@@ -77,7 +77,7 @@ class DirectDealValidatorMixin(object):
 
         if self.agency.id not in agencies:
             raise ValidationError(
-                {
+                errors={
                     "agency_id": "Deal is used outside of the scope of {agency_name} agency. To change the scope of the deal to {agency_name} stop using it on other agencies (and their accounts, campaigns and ad groups) and try again.".format(
                         agency_name=self.agency.name
                     )

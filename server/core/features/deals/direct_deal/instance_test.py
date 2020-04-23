@@ -1,8 +1,8 @@
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 import core.features.deals
 import core.models
+from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
 
 
