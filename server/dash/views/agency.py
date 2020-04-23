@@ -1461,6 +1461,8 @@ class AccountUsers(api_common.BaseApiView):
             new_settings.changes_text = changes_text
             new_settings.save(request, changes_text=changes_text)
 
+            user.refresh_entity_permissions()
+
         return self.create_api_response({"user": self._get_user_dict(user)}, status_code=201 if created else 200)
 
     def _add_user_to_groups(self, user):
@@ -1487,6 +1489,7 @@ class AccountUsers(api_common.BaseApiView):
         with transaction.atomic():
             self._remove_user(request, account, user, remove_from_all_accounts=remove_from_all_accounts)
 
+        user.refresh_entity_permissions()
         return self.create_api_response({"user_id": user.id})
 
     def _remove_user(self, request, account, user, remove_from_all_accounts=False):
@@ -1562,6 +1565,7 @@ class AccountUserAction(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         self.actions[action](request, user, account)
+        user.refresh_entity_permissions()
 
         return self.create_api_response()
 

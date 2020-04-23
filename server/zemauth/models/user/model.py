@@ -1,77 +1,28 @@
-import operator
-from functools import reduce
+# -*- coding: utf-8 -*-
 
-from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib.postgres.fields import JSONField
-from django.core import validators
-from django.core.exceptions import ValidationError
+from django.core import validators as django_validators
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 import utils.demo_anonymizer
-import utils.email_helper
 from core.models import Source
 
-
-class UserManager(auth_models.BaseUserManager):
-    def get_queryset(self):
-        return self.model.QuerySet(self.model)
-
-    def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
-        """
-        Creates and saves a User with the given email and password.
-        """
-        now = timezone.now()
-        if not email:
-            raise ValueError("Users must have an email address")
-        email = self.normalize_email(email)
-        user = self.model(
-            email=email,
-            is_staff=is_staff,
-            is_active=True,
-            is_superuser=is_superuser,
-            last_login=now,
-            date_joined=now,
-            **extra_fields
-        )
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_user(self, email, password=None, **extra_fields):
-        return self._create_user(email, password, False, False, **extra_fields)
-
-    def create_superuser(self, email, password, **extra_fields):
-        return self._create_user(email, password, True, True, **extra_fields)
-
-    def get_or_create_service_user(self, service_name):
-        user, _ = self.get_or_create(
-            username=service_name, email="%s@service.zemanta.com" % service_name, is_service=True
-        )
-        return user
-
-    def get_users_with_perm(self, perm_name, include_superusers=False):
-        perm = auth_models.Permission.objects.get(codename=perm_name)
-
-        query_list = [models.Q(groups__permissions=perm), models.Q(user_permissions=perm)]
-
-        if include_superusers:
-            query_list.append(models.Q(is_superuser=True))
-
-        return self.filter(reduce(operator.or_, query_list)).distinct()
+from . import entity_permission
+from . import instance
+from . import manager
+from . import queryset
+from . import validators
 
 
-def validate_sspd_sources_markets(sources_markets):
-    all_sources = set(Source.objects.values_list("name", flat=True))
-    form_sources = set(sources_markets.keys())
-    invalid_sources = list(form_sources - all_sources)
-    if invalid_sources:
-        raise ValidationError([{"sspd_sources_markets": "Form contains invalid sources: {}".format(invalid_sources)}])
-
-
-class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
+class User(
+    instance.UserMixin,
+    entity_permission.EntityPermissionMixin,
+    auth_models.AbstractBaseUser,
+    auth_models.PermissionsMixin,
+):
     """ Describes custom Zemanta user.
 
     IMPORTANT: Default unique constraint on the email created by Django is deleted and
@@ -91,7 +42,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         blank=True,
         null=True,
         help_text=_("30 characters or fewer. Letters, digits and " "@/./+/-/_ only."),
-        validators=[validators.RegexValidator(r"^[\w.@+-]+$", _("Enter a valid username."), "invalid")],
+        validators=[django_validators.RegexValidator(r"^[\w.@+-]+$", _("Enter a valid username."), "invalid")],
     )
     first_name = models.CharField(_("first name"), max_length=30, blank=True)
     last_name = models.CharField(_("last name"), max_length=30, blank=True)
@@ -120,31 +71,13 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     sspd_sources = models.ManyToManyField(Source, blank=True)
 
-    sspd_sources_markets = JSONField(null=True, blank=True, validators=[validate_sspd_sources_markets])
+    sspd_sources_markets = JSONField(null=True, blank=True, validators=[validators.validate_sspd_sources_markets])
     outbrain_user_id = models.CharField(null=True, blank=True, max_length=30, help_text="Outbrain ID")
-    objects = UserManager()
 
-    class QuerySet(models.QuerySet):
-        def filter_by_agencies(self, agencies):
-            if not agencies:
-                return self
-            return self.filter(
-                models.Q(agency__id__in=agencies)
-                | models.Q(groups__permissions__codename="can_see_all_accounts")
-                | models.Q(user_permissions__codename="can_see_all_accounts")
-            )
-
-        def filter_selfmanaged(self):
-            return self.filter(email__isnull=False).exclude(email__icontains="@zemanta").exclude(is_test_user=True)
+    objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-    SUPERUSER_EXCLUDED_PERMISSIONS = (
-        "disable_public_rcs",
-        "disable_public_newscorp",
-        "disable_budget_management",
-        "can_see_projections",
-    )
 
     class Meta:
         verbose_name = _("user")
@@ -444,93 +377,3 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_use_placement_targeting", "User can use publisher placement targeting."),
             ("can_see_new_publisher_library", "User can see the new Publishers & Placements library."),
         )
-
-    def get_full_name(self):
-        """
-        Returns the first_name plus the last_name, with a space in between.
-        """
-        full_name = "%s %s" % (self.first_name, self.last_name)
-        return full_name.strip()
-
-    def get_short_name(self):
-        "Returns the short name for the user."
-        return self.first_name
-
-    def __str__(self):
-        return self.email
-
-    def clean(self):
-        if not self.pk and self.__class__.objects.filter(email=self.email.lower).exists():
-            raise ValidationError({"email": "User with this e-mail already exists."})
-
-    def get_all_permissions_with_access_levels(self):
-        if not self.is_active or self.is_anonymous:
-            return {}
-
-        perm_cache_name = "_zemauth_permission_cache"
-        if not hasattr(self, perm_cache_name):
-            if self.is_superuser:
-                perms = auth_models.Permission.objects.all().exclude(codename__in=User.SUPERUSER_EXCLUDED_PERMISSIONS)
-            else:
-                perms = (
-                    auth_models.Permission.objects.filter(
-                        models.Q(id__in=self.user_permissions.all()) | models.Q(group__in=self.groups.all())
-                    )
-                    .order_by("id")
-                    .distinct("id")
-                )
-
-            perms = perms.select_related("content_type")
-
-            public_permissions = auth_models.Permission.objects.filter(pk__in=(x.pk for x in perms)).filter(
-                group__in=auth_models.Group.objects.filter(internalgroup=None)
-            )
-
-            public_permissions_ids = [x.pk for x in public_permissions]
-
-            permissions = {
-                "{}.{}".format(x.content_type.app_label, x.codename): x.pk in public_permissions_ids for x in perms
-            }
-
-            setattr(self, perm_cache_name, permissions)
-
-        return getattr(self, perm_cache_name)
-
-    def is_self_managed(self):
-        return self.email and "@zemanta" not in self.email.lower()
-
-    def get_sspd_sources(self):
-        if self.has_perm("zemauth.sspd_can_see_all_sources"):
-            sources = Source.objects.filter(deprecated=False)
-        else:
-            sources = self.sspd_sources.all()
-
-        result = []
-        for source in sources:
-            result.append(str(source.id))
-
-        return result
-
-    def get_sspd_sources_markets(self):
-        if self.has_perm("zemauth.sspd_can_see_all_sources"):
-            return {"*": ["*"]}
-        else:
-            return self.sspd_sources_markets
-
-
-class InternalGroup(models.Model):
-    group = models.OneToOneField(auth_models.Group, on_delete=models.PROTECT)
-
-    def __str__(self):
-        return self.group.name
-
-
-class Device(models.Model):
-    device_key = models.CharField(max_length=40, primary_key=True)
-    expire_date = models.DateTimeField(db_index=True)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, through="UserDevice")
-
-
-class UserDevice(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)

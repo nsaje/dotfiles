@@ -155,6 +155,7 @@ class User(api_common.BaseApiView):
             return {}
 
         agencies = user.agency_set.all()
+        entity_permissions = user.entitypermission_set.all()
         intercom_user_hash = hmac.new(
             settings.INTERCOM_ID_VERIFICATION_SECRET, user.email.encode("utf-8"), digestmod=hashlib.sha256
         ).hexdigest()
@@ -164,12 +165,22 @@ class User(api_common.BaseApiView):
             "name": user.get_full_name(),
             "agencies": [agency.id for agency in agencies],
             "permissions": user.get_all_permissions_with_access_levels(),
+            "entity_permissions": [
+                self._get_entity_permission_dict(entity_permission) for entity_permission in entity_permissions
+            ],
             "timezone_offset": pytz.timezone(settings.DEFAULT_TIME_ZONE)
             .utcoffset(datetime.datetime.utcnow(), is_dst=True)
             .total_seconds(),
             "intercom_user_hash": intercom_user_hash,
             "default_csv_separator": agencies[0].default_csv_separator if agencies else None,
             "default_csv_decimal_separator": agencies[0].default_csv_decimal_separator if agencies else None,
+        }
+
+    def _get_entity_permission_dict(self, entity_permission):
+        return {
+            "agency_id": entity_permission.agency_id,
+            "account_id": entity_permission.account_id,
+            "permission": entity_permission.permission,
         }
 
 

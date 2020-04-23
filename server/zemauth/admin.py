@@ -1,10 +1,20 @@
 from django.contrib import admin
+from django.contrib import messages
 from django.contrib.auth import admin as authadmin
 from django.contrib.auth import forms
 from django.contrib.auth.models import Permission
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
+import core.models
+import utils.exc
+
 from . import models
+
+
+class EntityPermissionUserInline(admin.TabularInline):
+    model = models.EntityPermission
+    extra = 0
 
 
 class UserCreationForm(forms.UserCreationForm):
@@ -43,10 +53,19 @@ class UserAdmin(authadmin.UserAdmin):
 
     filter_horizontal = ("sspd_sources", "groups", "user_permissions")
 
+    inlines = (EntityPermissionUserInline,)
+
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "sspd_sources":
-            kwargs["queryset"] = models.Source.objects.filter(deprecated=False)
+            kwargs["queryset"] = core.models.Source.objects.filter(deprecated=False)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        try:
+            return super(UserAdmin, self).changeform_view(request, object_id, form_url, extra_context)
+        except utils.exc.ValidationError as e:
+            self.message_user(request, str(e.errors), level=messages.ERROR)
+            return HttpResponseRedirect(request.path)
 
 
 class InternalGroupAdmin(admin.ModelAdmin):
@@ -67,6 +86,24 @@ class PermissionAdmin(admin.ModelAdmin):
         return qs
 
 
+class EntityPermissionAdmin(admin.ModelAdmin):
+    search_fields = ("id", "user__email", "agency__name", "account__name")
+    list_display = ("id", "user", "agency", "account", "permission")
+
+    def get_queryset(self, request):
+        qs = super(EntityPermissionAdmin, self).get_queryset(request)
+        qs = qs.select_related("user", "agency", "account")
+        return qs
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        try:
+            return super(EntityPermissionAdmin, self).changeform_view(request, object_id, form_url, extra_context)
+        except utils.exc.ValidationError as e:
+            self.message_user(request, str(e.errors), level=messages.ERROR)
+            return HttpResponseRedirect(request.path)
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.InternalGroup, InternalGroupAdmin)
 admin.site.register(Permission, PermissionAdmin)
+admin.site.register(models.EntityPermission, EntityPermissionAdmin)

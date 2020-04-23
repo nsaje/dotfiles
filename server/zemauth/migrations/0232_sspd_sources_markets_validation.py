@@ -3,7 +3,7 @@
 import django.contrib.postgres.fields.jsonb
 from django.db import migrations
 
-import zemauth.models
+import zemauth.models.user.validators
 
 
 class Migration(migrations.Migration):
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             model_name="user",
             name="sspd_sources_markets",
             field=django.contrib.postgres.fields.jsonb.JSONField(
-                blank=True, null=True, validators=[zemauth.models.validate_sspd_sources_markets]
+                blank=True, null=True, validators=[zemauth.models.user.validators.validate_sspd_sources_markets]
             ),
         )
     ]
