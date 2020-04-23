@@ -67,7 +67,7 @@ class PrepareBudgetsTestCase(TestCase):
             credit=credit,
             amount=500,
             margin=decimal.Decimal("0.05"),
-            start_date=local_today,
+            start_date=local_today - datetime.timedelta(days=1),
             end_date=local_today + datetime.timedelta(days=10),
         )
         future_overlapping_budget = core.features.bcm.BudgetLineItem.objects.create_unsafe(

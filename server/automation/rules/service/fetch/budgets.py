@@ -84,6 +84,6 @@ def _filter_budgets_active_today(campaign_budgets):
     local_today = dates_helper.local_today()
     budgets_active_today = []
     for budget in campaign_budgets:
-        if budget.start_date <= local_today and budget.start_date >= local_today:
+        if budget.start_date <= local_today and budget.end_date >= local_today:
             budgets_active_today.append(budget)
     return budgets_active_today
