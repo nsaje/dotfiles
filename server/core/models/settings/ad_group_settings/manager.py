@@ -36,12 +36,14 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.state = source_ad_group_settings.state
         if state_override:
             new_settings.state = state_override
+
         new_settings.archived = False
-        if (
-            source_ad_group_settings.end_date is not None
-            and source_ad_group_settings.end_date <= dates_helper.local_today()
-        ):
-            new_settings.start_date = dates_helper.local_today()
+
+        today = dates_helper.local_today()
+        if source_ad_group_settings.start_date is not None and source_ad_group_settings.start_date < today:
+            new_settings.start_date = today
+
+        if source_ad_group_settings.end_date is not None and source_ad_group_settings.end_date <= today:
             new_settings.end_date = None
 
         new_settings.keep_old_and_new_bid_values_in_sync(new_settings)

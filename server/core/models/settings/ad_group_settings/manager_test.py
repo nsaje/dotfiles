@@ -55,9 +55,12 @@ class AdGroupSettingsCreate(TestCase):
         self.assertFalse(ad_group_settings.b1_sources_group_enabled)
 
     def test_clone(self):
-        end_date = dates_helper.local_today() + datetime.timedelta(days=1)
+        local_today = dates_helper.local_today()
+        end_date = local_today + datetime.timedelta(days=7)
+        start_date = local_today + datetime.timedelta(days=3)
         source_ad_group = magic_mixer.blend(models.AdGroup)
-        source_ad_group.settings.update_unsafe(None, end_date=end_date)
+        source_ad_group.settings.update_unsafe(None, start_date=start_date, end_date=end_date)
+        self.assertEqual(source_ad_group.settings.start_date, start_date)
 
         ad_group_settings = model.AdGroupSettings.objects.clone(
             magic_mixer.blend_request_user(), magic_mixer.blend(models.AdGroup, name="AAAA"), source_ad_group.settings
@@ -66,6 +69,8 @@ class AdGroupSettingsCreate(TestCase):
         self.assertEqual(ad_group_settings.state, source_ad_group.settings.state)
         self.assertEqual(ad_group_settings.archived, False)
         self.assertEqual(ad_group_settings.ad_group_name, "AAAA")
+        self.assertEqual(ad_group_settings.start_date, start_date)
+        self.assertEqual(ad_group_settings.end_date, end_date)
 
         for field in set(model.AdGroupSettings._settings_fields) - {"archived", "state", "ad_group_name"}:
             self.assertEqual(getattr(ad_group_settings, field), getattr(source_ad_group.settings, field))
@@ -83,6 +88,18 @@ class AdGroupSettingsCreate(TestCase):
 
         self.assertEqual(ad_group_settings.state, constants.AdGroupSettingsState.ACTIVE)
 
+    def test_clone_starts_in_past(self):
+        local_today = dates_helper.local_today()
+        start_date = local_today - datetime.timedelta(days=7)
+        source_ad_group = magic_mixer.blend(models.AdGroup)
+        source_ad_group.settings.update_unsafe(None, start_date=start_date)
+
+        ad_group_settings = model.AdGroupSettings.objects.clone(
+            magic_mixer.blend_request_user(), magic_mixer.blend(models.AdGroup), source_ad_group.settings
+        )
+
+        self.assertEqual(ad_group_settings.start_date, local_today)
+
     def test_clone_ends_in_past(self):
         end_date = dates_helper.local_yesterday()
         source_ad_group = magic_mixer.blend(models.AdGroup)
@@ -92,7 +109,6 @@ class AdGroupSettingsCreate(TestCase):
             magic_mixer.blend_request_user(), magic_mixer.blend(models.AdGroup), source_ad_group.settings
         )
 
-        self.assertEqual(ad_group_settings.start_date, dates_helper.local_today())
         self.assertEqual(ad_group_settings.end_date, None)
         self.assertEqual(ad_group_settings.state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(ad_group_settings.archived, False)
