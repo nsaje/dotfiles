@@ -55,7 +55,11 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         },
         {
             value: RoutePathName.PUBLISHER_GROUPS,
-            displayValue: 'Publisher Groups',
+            displayValue: this.zemPermissions.hasPermission(
+                'zemauth.can_see_new_publisher_library'
+            )
+                ? 'Publishers & Placements'
+                : 'Publisher Groups',
             icon: ListGroupIcon.PublisherGroups,
             isVisible: () => {
                 return (
