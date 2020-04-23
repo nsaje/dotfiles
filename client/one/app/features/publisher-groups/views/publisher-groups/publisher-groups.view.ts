@@ -233,6 +233,9 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 field: 'type',
                 width: 66,
                 minWidth: 66,
+                valueFormatter: this.showNewLabels
+                    ? this.blacklistStatusFormatter
+                    : null,
             },
             {
                 headerName: 'Subdomains included',
@@ -243,11 +246,11 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: this.showNewLabels
-                    ? 'Number of placements'
+                    ? 'Number of publishers/placements'
                     : 'Number of publishers',
                 field: 'size',
                 width: 134,
-                minWidth: 134,
+                minWidth: this.showNewLabels ? 200 : 134,
             },
             {
                 headerName: 'Modified',
@@ -281,12 +284,25 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: '',
-                width: 75,
+                width: 45,
                 suppressSizeToFit: true,
                 resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,
                 pinned: 'right',
             },
         ];
+    }
+
+    private blacklistStatusFormatter(params: {value: string}): string {
+        const value: string = params.value;
+
+        switch (value) {
+            case 'Blacklist':
+                return 'Blacklisted';
+            case 'Whitelist':
+                return 'Whitelisted';
+            default:
+                return value;
+        }
     }
 }

@@ -91,6 +91,7 @@ angular
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_see_publisher_groups_ui'
                 ),
+                isNewFeature: canUserSeeNewPublisherGroupsView,
             },
         ];
 
