@@ -20,6 +20,7 @@ describe('SidebarContentView', () => {
     beforeEach(() => {
         zemPermissionsStub = {
             hasAgencyScope: () => noop,
+            hasPermission: (x: string) => true,
         };
 
         TestBed.configureTestingModule({
