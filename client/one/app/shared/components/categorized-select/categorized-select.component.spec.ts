@@ -86,9 +86,9 @@ describe('CategorizedSelectComponent', () => {
 
         component.resetSelectedCategory();
         expect(component.selectedCategory).toEqual(null);
-        expect(<Item | Category>component.highlightedEntity).toEqual(<
-            Item | Category
-        >testCategory1);
+        expect(<Item | Category>component.highlightedEntity).toEqual(
+            <Item | Category>testCategory1
+        );
         expect(component.searchQuery).toEqual('');
         expect(component.renderedItems).toEqual([]);
     });

@@ -88,9 +88,7 @@ export class ConversionPixelsEndpoint {
 
         return this.http
             .put<ApiResponse<ConversionPixel>>(
-                `${request.url}${conversionPixel.accountId}/pixels/${
-                    conversionPixel.id
-                }`,
+                `${request.url}${conversionPixel.accountId}/pixels/${conversionPixel.id}`,
                 conversionPixel
             )
             .pipe(

@@ -46,9 +46,7 @@ export class BidModifiersOverviewComponent implements OnChanges {
         if (!commonHelpers.isDefined(this.adGroupId)) {
             return;
         }
-        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${
-            this.adGroupId
-        }/bidmodifiers/download/`;
+        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${this.adGroupId}/bidmodifiers/download/`;
         window.open(url, '_blank');
     }
 
@@ -56,9 +54,7 @@ export class BidModifiersOverviewComponent implements OnChanges {
         if (!commonHelpers.isDefined(this.adGroupId)) {
             return;
         }
-        const url = `${
-            APP_CONFIG.apiRestInternalUrl
-        }/adgroups/bidmodifiers/example_csv_download/`;
+        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/bidmodifiers/example_csv_download/`;
         window.open(url, '_blank');
     }
 
@@ -67,14 +63,8 @@ export class BidModifiersOverviewComponent implements OnChanges {
             return;
         }
         const url = commonHelpers.isDefined(this.adGroupId)
-            ? `${APP_CONFIG.apiRestInternalUrl}/adgroups/${
-                  this.adGroupId
-              }/bidmodifiers/error_download/${this.importError.errorFileUrl}/`
-            : `${
-                  APP_CONFIG.apiRestInternalUrl
-              }/adgroups/bidmodifiers/error_download/${
-                  this.importError.errorFileUrl
-              }/`;
+            ? `${APP_CONFIG.apiRestInternalUrl}/adgroups/${this.adGroupId}/bidmodifiers/error_download/${this.importError.errorFileUrl}/`
+            : `${APP_CONFIG.apiRestInternalUrl}/adgroups/bidmodifiers/error_download/${this.importError.errorFileUrl}/`;
         window.open(url, '_blank');
     }
 

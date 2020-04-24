@@ -8,7 +8,7 @@
     "
     (closeRequest)="cancel()"
 >
-    <ng-container *ngIf="(store.state$ | async) as state">
+    <ng-container *ngIf="store.state$ | async as state">
         <zem-settings-drawer-header
             class="zem-settings-drawer-header zem-drawer__header"
             [entityId]="entityId"
@@ -318,8 +318,8 @@
                             zemPermissions.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             ) &&
-                            (!state.requests.defaults.inProgress &&
-                                !state.requests.get.inProgress)
+                            !state.requests.defaults.inProgress &&
+                            !state.requests.get.inProgress
                         "
                     >
                         <div
@@ -336,8 +336,8 @@
                             zemPermissions.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             ) &&
-                            (!state.requests.defaults.inProgress &&
-                                !state.requests.get.inProgress) &&
+                            !state.requests.defaults.inProgress &&
+                            !state.requests.get.inProgress &&
                             isDefaultIconPreviewVisible
                         "
                     >
@@ -356,8 +356,8 @@
                                 'zemauth.can_use_creative_icon'
                             ) &&
                             !isDefaultIconPreviewVisible &&
-                            (!state.requests.defaults.inProgress &&
-                                !state.requests.get.inProgress) &&
+                            !state.requests.defaults.inProgress &&
+                            !state.requests.get.inProgress &&
                             state.entity.defaultIconUrl
                         "
                     >

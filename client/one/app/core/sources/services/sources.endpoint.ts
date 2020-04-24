@@ -16,9 +16,7 @@ export class SourcesEndpoint {
         requestStateUpdater: RequestStateUpdater
     ): Observable<Source[]> {
         const request = {
-            url: `${
-                APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/sources/`,
+            url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/sources/`,
             name: 'list',
         };
 

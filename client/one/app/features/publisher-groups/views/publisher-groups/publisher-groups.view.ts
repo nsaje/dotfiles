@@ -203,9 +203,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 cellRendererFramework: ItemScopeCellComponent,
                 cellRendererParams: {
                     getAgencyLink: item => {
-                        return `/v2/analytics/accounts?filtered_agencies=${
-                            item.agencyId
-                        }`;
+                        return `/v2/analytics/accounts?filtered_agencies=${item.agencyId}`;
                     },
                     getAccountLink: item => {
                         return `/v2/analytics/account/${item.accountId}`;
@@ -271,9 +269,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 cellRendererFramework: ItemScopeCellComponent,
                 cellRendererParams: {
                     getAgencyLink: item => {
-                        return `/v2/analytics/accounts?filtered_agencies=${
-                            item.agencyId
-                        }`;
+                        return `/v2/analytics/accounts?filtered_agencies=${item.agencyId}`;
                     },
                     getAccountLink: item => {
                         return `/v2/analytics/account/${item.accountId}`;

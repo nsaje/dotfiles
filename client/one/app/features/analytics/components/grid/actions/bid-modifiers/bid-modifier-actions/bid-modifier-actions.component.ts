@@ -41,9 +41,7 @@ export class BidModifierActionsComponent {
 
     export(): void {
         this.bidModifierActionsDropdown.close();
-        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${
-            this.adGroupId
-        }/bidmodifiers/download/${this.breakdown}/`;
+        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${this.adGroupId}/bidmodifiers/download/${this.breakdown}/`;
         window.open(url, '_blank');
     }
 

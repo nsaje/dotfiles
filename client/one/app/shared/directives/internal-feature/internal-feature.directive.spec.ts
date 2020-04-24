@@ -27,7 +27,9 @@ describe('InternalFeatureDirective', () => {
         );
         expect(rendererSpy.appendChild).toHaveBeenCalledWith(
             elementRefStub.nativeElement,
-            {className: 'zem-internal-feature__indicator'}
+            {
+                className: 'zem-internal-feature__indicator',
+            }
         );
     });
 
@@ -42,7 +44,9 @@ describe('InternalFeatureDirective', () => {
         );
         expect(rendererSpy.appendChild).toHaveBeenCalledWith(
             elementRefStub.nativeElement,
-            {className: 'zem-internal-feature__indicator'}
+            {
+                className: 'zem-internal-feature__indicator',
+            }
         );
     });
 
@@ -74,7 +78,9 @@ describe('InternalFeatureDirective', () => {
         );
         expect(rendererSpy.removeChild).toHaveBeenCalledWith(
             elementRefStub.nativeElement,
-            {className: 'zem-internal-feature__indicator'}
+            {
+                className: 'zem-internal-feature__indicator',
+            }
         );
     });
 });

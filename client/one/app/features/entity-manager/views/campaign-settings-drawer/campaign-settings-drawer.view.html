@@ -8,7 +8,7 @@
     "
     (closeRequest)="cancel()"
 >
-    <ng-container *ngIf="(store.state$ | async) as state">
+    <ng-container *ngIf="store.state$ | async as state">
         <zem-settings-drawer-header
             class="zem-settings-drawer-header zem-drawer__header"
             [entityId]="entityId"

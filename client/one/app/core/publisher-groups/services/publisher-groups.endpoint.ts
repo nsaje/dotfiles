@@ -86,50 +86,54 @@ export class PublisherGroupsEndpoint {
             inProgress: true,
         });
 
-        return this.http.get<ApiResponse<any>>(request.url, {params}).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    count: response.count,
-                    next: response.next,
-                    previous: response.previous,
-                });
-                return this.snakeObjectToCamelCase<PublisherGroup[]>(
-                    response.data.publisher_groups
-                );
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        return this.http
+            .get<ApiResponse<any>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return this.snakeObjectToCamelCase<PublisherGroup[]>(
+                        response.data.publisher_groups
+                    );
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     upload(
         publisherGroup: PublisherGroup,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup> {
-        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.upload;
+        const request =
+            PUBLISHER_GROUPS_CONFIG.requests?.publisherGroups.upload;
 
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         // The current backend only accepts a limited number of properties, later this can be removed
-        const publisherGroupUpload: Partial<
-            PublisherGroup
-        > = getValueWithOnlyProps(publisherGroup, [
-            'id',
-            'name',
-            'entries',
-            'includeSubdomains',
-            'accountId',
-            'agencyId',
-        ]);
+        const publisherGroupUpload: Partial<PublisherGroup> = getValueWithOnlyProps(
+            publisherGroup,
+            [
+                'id',
+                'name',
+                'entries',
+                'includeSubdomains',
+                'accountId',
+                'agencyId',
+            ]
+        );
         const snakeCased: any = this.camelObjectToSnakeCase(
             publisherGroupUpload
         );
@@ -200,9 +204,7 @@ export class PublisherGroupsEndpoint {
             }
         );
         if (commonHelpers.isDefined(publisherGroup.accountId)) {
-            request.url = `${request.url}?account_id=${
-                publisherGroup.accountId
-            }`;
+            request.url = `${request.url}?account_id=${publisherGroup.accountId}`;
         } else if (commonHelpers.isDefined(publisherGroup.agencyId)) {
             request.url = `${request.url}?agency_id=${publisherGroup.agencyId}`;
         }

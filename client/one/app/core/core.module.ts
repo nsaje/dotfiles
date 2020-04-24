@@ -57,9 +57,7 @@ export class CoreModule {
     ) {
         if (parentModule) {
             throw new Error(
-                `${CoreModule.name} has already been loaded. Import ${
-                    CoreModule.name
-                } in the AppModule only.`
+                `${CoreModule.name} has already been loaded. Import ${CoreModule.name} in the AppModule only.`
             );
         }
     }

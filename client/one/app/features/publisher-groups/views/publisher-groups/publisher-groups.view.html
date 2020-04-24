@@ -1,7 +1,7 @@
 <h1 class="zem-main-container__view-title">
     {{ showNewLabels ? 'Publishers & Placements' : 'Publisher groups' }}
 </h1>
-<ng-container *ngIf="(store.state$ | async) as state">
+<ng-container *ngIf="store.state$ | async as state">
     <div
         class="zem-panel zem-panel--with-padding zem-publisher-groups-view__panel"
     >

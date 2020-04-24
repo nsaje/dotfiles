@@ -39,25 +39,27 @@ export class DealsEndpoint {
             inProgress: true,
         });
 
-        return this.http.get<ApiResponse<Deal[]>>(request.url, {params}).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    count: response.count,
-                    next: response.next,
-                    previous: response.previous,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        return this.http
+            .get<ApiResponse<Deal[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     create(
@@ -203,9 +205,7 @@ export class DealsEndpoint {
         requestStateUpdater: RequestStateUpdater
     ): Observable<DealConnection[]> {
         const request = {
-            url: `${
-                APP_CONFIG.apiRestInternalUrl
-            }/deals/${dealId}/connections/`,
+            url: `${APP_CONFIG.apiRestInternalUrl}/deals/${dealId}/connections/`,
             name: 'listConnections',
         };
         requestStateUpdater(request.name, {
@@ -236,9 +236,7 @@ export class DealsEndpoint {
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         const request = {
-            url: `${
-                APP_CONFIG.apiRestInternalUrl
-            }/deals/${dealId}/connections/${dealConnectionId}`,
+            url: `${APP_CONFIG.apiRestInternalUrl}/deals/${dealId}/connections/${dealConnectionId}`,
             name: 'removeConnection',
         };
         requestStateUpdater(request.name, {

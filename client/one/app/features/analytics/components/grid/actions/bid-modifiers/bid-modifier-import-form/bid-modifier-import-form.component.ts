@@ -57,20 +57,12 @@ export class BidModifierImportFormComponent
     }
 
     downloadErrors(): void {
-        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${
-            this.adGroupId
-        }/bidmodifiers/error_download/${
-            this.store.state.fieldsErrors.errorFileUrl
-        }/`;
+        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${this.adGroupId}/bidmodifiers/error_download/${this.store.state.fieldsErrors.errorFileUrl}/`;
         window.open(url, '_blank');
     }
 
     downloadExample(): void {
-        const url = `${
-            APP_CONFIG.apiRestInternalUrl
-        }/adgroups/bidmodifiers/example_csv_download/${
-            this.store.state.breakdown
-        }/`;
+        const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/bidmodifiers/example_csv_download/${this.store.state.breakdown}/`;
         window.open(url, '_blank');
     }
 

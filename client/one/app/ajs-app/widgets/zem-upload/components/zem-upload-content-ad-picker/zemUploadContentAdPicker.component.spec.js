@@ -204,10 +204,9 @@ describe('zemUploadContentAdPicker', function() {
             $ctrl.$onInit();
             $interval.flush(2501);
 
-            expect($ctrl.endpoint.checkStatus).toHaveBeenCalledWith(
-                $ctrl.batchId,
-                [1]
-            );
+            expect(
+                $ctrl.endpoint.checkStatus
+            ).toHaveBeenCalledWith($ctrl.batchId, [1]);
         });
 
         it('stops polling when no candidates are left waiting', function() {

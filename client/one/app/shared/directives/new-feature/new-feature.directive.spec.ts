@@ -22,7 +22,10 @@ describe('NewFeatureDirective', () => {
         directive.ngOnChanges();
         expect(rendererSpy.appendChild).toHaveBeenCalledWith(
             elementRefStub.nativeElement,
-            {className: 'zem-new-feature__text', innerText: 'NEW'}
+            {
+                className: 'zem-new-feature__text',
+                innerText: 'NEW',
+            }
         );
     });
 
@@ -31,7 +34,10 @@ describe('NewFeatureDirective', () => {
         directive.ngOnChanges();
         expect(rendererSpy.appendChild).toHaveBeenCalledWith(
             elementRefStub.nativeElement,
-            {className: 'zem-new-feature__text', innerText: 'NEW'}
+            {
+                className: 'zem-new-feature__text',
+                innerText: 'NEW',
+            }
         );
     });
 

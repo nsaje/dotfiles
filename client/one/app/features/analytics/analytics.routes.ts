@@ -4,9 +4,7 @@ import {AnalyticsView} from './views/analytics/analytics.view';
 import {CanActivateBreakdownGuard} from './route-guards/canActivateBreakdown.guard';
 import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
 
-const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}/${
-    RoutePathName.ANALYTICS
-}/${LevelParam.ACCOUNTS}`;
+const REDIRECT_TO_URL = `/${RoutePathName.APP_BASE}/${RoutePathName.ANALYTICS}/${LevelParam.ACCOUNTS}`;
 
 export const ANALYTICS_ROUTES: Routes = [
     {

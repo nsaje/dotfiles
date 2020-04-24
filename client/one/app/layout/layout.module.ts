@@ -32,9 +32,7 @@ export class LayoutModule {
     ) {
         if (parentModule) {
             throw new Error(
-                `${LayoutModule.name} has already been loaded. Import ${
-                    LayoutModule.name
-                } in the AppModule only.`
+                `${LayoutModule.name} has already been loaded. Import ${LayoutModule.name} in the AppModule only.`
             );
         }
     }

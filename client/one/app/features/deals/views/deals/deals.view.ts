@@ -116,9 +116,7 @@ export class DealsView implements OnInit, OnDestroy {
             cellRendererFramework: ItemScopeCellComponent,
             cellRendererParams: {
                 getAgencyLink: item => {
-                    return `/v2/analytics/accounts?filtered_agencies=${
-                        item.agencyId
-                    }`;
+                    return `/v2/analytics/accounts?filtered_agencies=${item.agencyId}`;
                 },
                 getAccountLink: item => {
                     return `/v2/analytics/account/${item.accountId}`;
@@ -249,9 +247,7 @@ export class DealsView implements OnInit, OnDestroy {
     removeDeal(deal: Deal) {
         if (
             confirm(
-                `Are you sure you wish to delete ${deal.name} for ${
-                    deal.source
-                } media source?`
+                `Are you sure you wish to delete ${deal.name} for ${deal.source} media source?`
             )
         ) {
             this.store.deleteEntity(deal.id).then(() => {
@@ -351,9 +347,10 @@ export class DealsView implements OnInit, OnDestroy {
             map(state => state.activeEntity.fieldsErrors),
             distinctUntilChanged(),
             tap(fieldsErrors => {
-                this.canSaveActiveEntity = Object.values(fieldsErrors).every(
-                    (fieldValue: FieldErrors) =>
-                        arrayHelpers.isEmpty(fieldValue)
+                this.canSaveActiveEntity = Object.values(
+                    fieldsErrors
+                ).every((fieldValue: FieldErrors) =>
+                    arrayHelpers.isEmpty(fieldValue)
                 );
             })
         );

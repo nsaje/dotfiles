@@ -64,7 +64,8 @@ angular
                 zemPermissions.hasPermission(
                     'zemauth.can_switch_between_cost_breakdowns'
                 ) &&
-                (activeAccount && activeAccount.data.usesBCMv2)
+                activeAccount &&
+                activeAccount.data.usesBCMv2
             );
         }
 
