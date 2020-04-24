@@ -24,7 +24,10 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
         publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(
             pk=self.kwargs["publisher_group_id"]
         )
-        restapi.access.get_account(self.request.user, publisher_group.account_id)
+        if publisher_group.account_id is not None:
+            restapi.access.get_account(self.request.user, publisher_group.account_id)
+        else:
+            restapi.access.get_agency(self.request.user, publisher_group.agency_id)
         return publisher_group.entries.all().select_related("source")
 
     def create(self, request, *args, **kwargs):
@@ -39,5 +42,8 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
         publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(
             pk=self.kwargs["publisher_group_id"]
         )
-        restapi.access.get_account(self.request.user, publisher_group.account_id)
+        if publisher_group.account_id is not None:
+            restapi.access.get_account(self.request.user, publisher_group.account_id)
+        else:
+            restapi.access.get_agency(self.request.user, publisher_group.agency_id)
         serializer.save(publisher_group_id=self.kwargs["publisher_group_id"])
