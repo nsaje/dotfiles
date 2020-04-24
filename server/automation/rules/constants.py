@@ -336,6 +336,12 @@ CONTENT_AD_SETTINGS = {
     MetricType.DAYS_SINCE_AD_CREATED,
 }
 
+CONVERSION_METRICS = {
+    MetricType.AVG_COST_PER_CONVERSION,
+    MetricType.AVG_COST_PER_CONVERSION_VIEW,
+    MetricType.AVG_COST_PER_CONVERSION_TOTAL,
+}
+
 
 # TODO: find a better name
 class ValueType(ConstantBase):

@@ -161,6 +161,9 @@ def _prepare_left_stat_operand(
     rule: models.Rule, condition: models.RuleCondition, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     left_operand_key = constants.METRIC_STATS_MAPPING[condition.left_operand_type]
+    if condition.left_operand_type in constants.CONVERSION_METRICS and left_operand_key not in target_stats:
+        raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
+
     left_operand_window = condition.left_operand_window or rule.window
     left_operand_stat_value = target_stats[left_operand_key][left_operand_window]
     if left_operand_stat_value is None:

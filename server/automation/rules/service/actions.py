@@ -12,8 +12,8 @@ import utils.email_helper
 
 from .. import Rule
 from .. import constants
+from ..common import macros
 from . import exceptions
-from . import macros
 
 
 @dataclasses.dataclass

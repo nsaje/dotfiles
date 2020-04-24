@@ -329,6 +329,25 @@ class ApplyTest(TestCase):
         stats = {"local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
+    def test_stats_cpa_metrics_missing(self):
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_3_DAYS
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_type=constants.MetricType.AVG_COST_PER_CONVERSION,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.TOTAL_SPEND,
+            right_operand_value="11.0",
+        )
+
+        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
+            apply._meets_all_conditions(rule, stats, {})
+
     def test_meet_all_conditions_invalid_operator(self):
         rule = magic_mixer.blend(Rule)
         magic_mixer.blend(

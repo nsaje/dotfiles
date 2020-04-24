@@ -29,7 +29,7 @@ CURRENCY_MACROS = [
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
 ]
 PERCENT_MACROS = [constants.EmailActionMacro.PERCENT_NEW_USERS]
-CPA_MACROS = [
+CONVERSION_MACROS = [
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
@@ -61,7 +61,7 @@ def _is_valid(macro):
 def has_cpa_macros(content: str):
     for macro in set(EMAIL_EXTRACT_MACROS_REGEX.findall(content)):
         postfix_window_match = EMAIL_MACRO_SPLIT_WINDOW_REGEX.match(macro)
-        if postfix_window_match and any(postfix_window_match.group(1) == cpa_macro for cpa_macro in CPA_MACROS):
+        if postfix_window_match and any(postfix_window_match.group(1) == cpa_macro for cpa_macro in CONVERSION_MACROS):
             return True
     return False
 
@@ -106,6 +106,9 @@ def _get_stat_macro_value(
     macro_prefix: str, window: str, currency, target_stats: Dict[str, Dict[int, Optional[float]]]
 ):
     stat_key = constants.EMAIL_MACRO_STATS_MAPPING[macro_prefix]
+    if macro_prefix in CONVERSION_MACROS and stat_key not in target_stats:
+        raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
+
     window_constant_value = constants.MetricWindow.get_constant_value(window)
     macro_stat = target_stats[stat_key][window_constant_value]
     if macro_prefix in CURRENCY_MACROS and macro_stat is not None:

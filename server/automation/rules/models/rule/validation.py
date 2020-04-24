@@ -9,6 +9,7 @@ import utils.validation_helper
 from ... import config
 from ... import constants
 from ... import exceptions
+from ...common import macros
 from ..rule_condition import RuleCondition
 
 EMAIL_CONTAINS_NESTED_MACRO_REGEX = re.compile(r"{[^}]*{")
@@ -126,8 +127,6 @@ class RuleValidationMixin:
             if "\n" in send_email_subject or "\r" in send_email_subject:
                 raise exceptions.InvalidSendEmailSubject(f"Email subject should not contain multiple lines of text.")
             try:
-                from ...service import macros
-
                 macros.validate(send_email_subject)
             except exceptions.InvalidMacros as e:
                 raise exceptions.InvalidSendEmailSubject(str(e))
@@ -143,8 +142,6 @@ class RuleValidationMixin:
             )
         elif send_email_body:
             try:
-                from ...service import macros
-
                 macros.validate(send_email_body)
             except exceptions.InvalidMacros as e:
                 raise exceptions.InvalidSendEmailBody(str(e))
