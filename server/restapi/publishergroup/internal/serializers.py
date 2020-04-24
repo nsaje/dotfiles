@@ -18,14 +18,23 @@ class PublisherGroupQueryParamsExpectations(restapi.serializers.serializers.Quer
 
 class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):
     class Meta(restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta):
-        fields = restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta.fields + ("agency_id",)
+        fields = restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta.fields + (
+            "include_subdomains",
+            "agency_id",
+        )
 
     agency_id = restapi.serializers.fields.IdField(read_only=True)
+    # TODO temporary renaming field for easier front-end migration
+    include_subdomains = serializers.BooleanField(source="default_include_subdomains")
 
 
-class AddToPublisherGroupSerializer(PublisherGroupSerializer):
-    class Meta(PublisherGroupSerializer.Meta):
-        fields = PublisherGroupSerializer.Meta.fields + ("default_include_subdomains", "entries")
+class AddToPublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):
+    class Meta(restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta):
+        fields = restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta.fields + (
+            "agency_id",
+            "default_include_subdomains",
+            "entries",
+        )
 
     id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     agency_id = restapi.serializers.fields.IdField(required=False, allow_null=True)

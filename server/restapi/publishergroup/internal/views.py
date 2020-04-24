@@ -70,7 +70,6 @@ class AddToPublisherGroupViewSet(RESTAPIBaseViewSet):
                 agency_id=serializer.validated_data.get("agency_id"),
                 account_id=serializer.validated_data.get("account_id"),
                 default_include_subdomains=serializer.validated_data.get("default_include_subdomains"),
-                implicit=True,
             )
             core.features.publisher_groups.add_publisher_group_entries(
                 request, publisher_group, serializer.validated_data.get("entries")

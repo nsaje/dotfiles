@@ -11,6 +11,41 @@ from utils.magic_mixer import magic_mixer
 
 
 class PublisherGroupTest(RESTAPITest):
+    def test_list(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+
+        publisher_group_1 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, agency=agency, default_include_subdomains=True
+        )
+        publisher_group_2 = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroup, account=account, default_include_subdomains=False
+        )
+
+        r = self.client.get(reverse("restapi.publishergroup.internal:publishergroup_list"), {"agencyId": agency.id})
+        self.assertEqual(r.status_code, 200)
+        response = self.assertResponseValid(r, data_type=list, status_code=200)
+
+        self.assertEqual(
+            response["data"],
+            [
+                {
+                    "id": str(publisher_group_1.id),
+                    "name": publisher_group_1.name,
+                    "accountId": None,
+                    "includeSubdomains": True,
+                    "agencyId": str(agency.id),
+                },
+                {
+                    "id": str(publisher_group_2.id),
+                    "name": publisher_group_2.name,
+                    "accountId": str(account.id),
+                    "includeSubdomains": False,
+                    "agencyId": None,
+                },
+            ],
+        )
+
     def test_list_with_agency(self):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
@@ -265,6 +300,7 @@ class AddToPublisherGroupTest(RESTAPITest):
 
         self.assertEqual(core.features.publisher_groups.PublisherGroup.objects.filter(name=self.pg_2_name).count(), 1)
         pg_2 = core.features.publisher_groups.PublisherGroup.objects.get(name=self.pg_2_name)
+        self.assertFalse(pg_2.implicit)
         self.assertEqual(pg_2.entries.count(), 2)
         pge_1 = pg_2.entries.first()
         pge_2 = pg_2.entries.last()
@@ -408,6 +444,7 @@ class AddToPublisherGroupTest(RESTAPITest):
 
         self.assertEqual(core.features.publisher_groups.PublisherGroup.objects.filter(name=self.pg_2_name).count(), 1)
         pg_2 = core.features.publisher_groups.PublisherGroup.objects.get(name=self.pg_2_name)
+        self.assertFalse(pg_2.implicit)
         self.assertEqual(pg_2.entries.count(), 1)
         pge_1 = pg_2.entries.first()
         self.assertEqual(
