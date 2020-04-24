@@ -396,12 +396,12 @@ DCRON = {
         "run_autopilot": dcron_constants.Severity.HIGH,
         "campaignstop_main": dcron_constants.Severity.HIGH,
         "campaignstop_simple": dcron_constants.Severity.HIGH,
-        "campaignstop_handle_updates": dcron_constants.Severity.HIGH,
         "campaignstop_selection": dcron_constants.Severity.HIGH,
         "campaignstop_midnight_refresh": dcron_constants.Severity.HIGH,
         "campaignstop_midnight": dcron_constants.Severity.HIGH,
         "campaignstop_monitor": dcron_constants.Severity.HIGH,
         "create_demand_report": dcron_constants.Severity.HIGH,
+        "handle_auto_save_batches": dcron_constants.Severity.HIGH,
         "monitor_dailystatement_holes": dcron_constants.Severity.HIGH,
     },
     # How long to wait before warning alert if job execution is late.
@@ -425,6 +425,7 @@ DCRON = {
         "create_demand_report": 7200,  # 2 h
         "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
+        "refresh_audience_sample_size_cache": 8100.0,  # 2h 15 min
         "cross_check": 7200,  # 2h
     },
     # If the same job is run within this interval, the second should exit before doing anything.
