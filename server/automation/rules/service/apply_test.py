@@ -348,6 +348,44 @@ class ApplyTest(TestCase):
         with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
             apply._meets_all_conditions(rule, stats, {})
 
+    def test_stats_window_data_missing(self):
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_30_DAYS
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LAST_3_DAYS,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="5.0",
+        )
+
+        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+
+    def test_stats_window_avg_data_missing(self):
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, window=constants.MetricWindow.LAST_30_DAYS
+        )
+        magic_mixer.blend(
+            RuleCondition,
+            rule=rule,
+            left_operand_window=constants.MetricWindow.LAST_3_DAYS,
+            left_operand_type=constants.MetricType.AVG_CPC,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_window=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="5.0",
+        )
+
+        stats = {"local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+
+        # should evaluate to False since avg data is unknown and thus not comparable
+        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+
     def test_meet_all_conditions_invalid_operator(self):
         rule = magic_mixer.blend(Rule)
         magic_mixer.blend(

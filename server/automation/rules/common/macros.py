@@ -110,15 +110,22 @@ def _get_stat_macro_value(
         raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
 
     window_constant_value = constants.MetricWindow.get_constant_value(window)
-    macro_stat = target_stats[stat_key][window_constant_value]
+    if window_constant_value in target_stats[stat_key]:
+        macro_stat = target_stats[stat_key][window_constant_value]
+    else:
+        macro_stat = config.STATS_FIELDS_DEFAULTS[stat_key]
+
     if macro_prefix in CURRENCY_MACROS and macro_stat is not None:
         value = core.features.multicurrency.format_value_in_currency(
             macro_stat, places=2, rounding=decimal.ROUND_HALF_DOWN, currency=currency
         )
     elif macro_prefix in PERCENT_MACROS and macro_stat is not None:
         value = "{:.2f}%".format(macro_stat)
+    elif macro_stat is None:
+        value = "N/A"
     else:
         value = str(macro_stat)
+
     return value
 
 

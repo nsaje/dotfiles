@@ -221,3 +221,21 @@ class ExpandTestCase(TestCase):
         }
         with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
             macros.expand(self.content, self.ad_group, target_stats)
+
+    def test_missing_window(self):
+        target_stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
+            "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 0.5},
+        }
+        content = textwrap.dedent(
+            """\
+            TOTAL SPEND: {TOTAL_SPEND_LAST_7_DAYS}
+            AVG CPC: {AVG_CPC_LAST_7_DAYS}"""
+        )
+        expected = textwrap.dedent(
+            """\
+            TOTAL SPEND: $0.00
+            AVG CPC: N/A"""
+        )
+        expanded = macros.expand(content, self.ad_group, target_stats)
+        self.assertEqual(expected, expanded)

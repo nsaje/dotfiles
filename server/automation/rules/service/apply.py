@@ -164,8 +164,11 @@ def _prepare_left_stat_operand(
     if condition.left_operand_type in constants.CONVERSION_METRICS and left_operand_key not in target_stats:
         raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
 
-    left_operand_window = condition.left_operand_window or rule.window
-    left_operand_stat_value = target_stats[left_operand_key][left_operand_window]
+    window = condition.left_operand_window or rule.window
+    if window in target_stats[left_operand_key]:
+        left_operand_stat_value = target_stats[left_operand_key][window]
+    else:
+        left_operand_stat_value = config.STATS_FIELDS_DEFAULTS[left_operand_key]
     if left_operand_stat_value is None:
         return left_operand_stat_value
     left_operand_modifier = condition.left_operand_modifier or 1.0
