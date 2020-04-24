@@ -123,6 +123,8 @@ class RuleValidationMixin:
                 f"Email subject not expected to be set for action type {action_type_name}."
             )
         elif send_email_subject:
+            if "\n" in send_email_subject or "\r" in send_email_subject:
+                raise exceptions.InvalidSendEmailSubject(f"Email subject should not contain multiple lines of text.")
             try:
                 from ...service import macros
 

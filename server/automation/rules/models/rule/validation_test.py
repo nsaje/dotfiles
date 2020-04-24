@@ -135,6 +135,25 @@ class RuleValidationTest(test.TestCase):
                     "action_type": constants.ActionType.SEND_EMAIL,
                 }
             )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": """This is a macro test {ACCOUNT_NAME_LAST_30_DAYS}
+                        that spans two lines""",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
+        with self._assert_multiple_validation_error([exceptions.InvalidSendEmailSubject]):
+            self.rule.clean(
+                {
+                    "send_email_body": "test",
+                    "send_email_subject": "This is a macro test {ACCOUNT_NAME_LAST_30_DAYS}\rthat spans two lines",
+                    "send_email_recipients": ["user@test.com"],
+                    "action_type": constants.ActionType.SEND_EMAIL,
+                }
+            )
 
     def test_validate_send_email_subject_adjustable_window_macros(self):
         self.rule.target_type = constants.TargetType.AD_GROUP
