@@ -8,8 +8,8 @@ import {BidModifierImportFormComponent} from './components/grid/actions/bid-modi
 import {RuleActionsComponent} from './components/grid/actions/rule-actions/rule-actions.component';
 import {AttributionColumnPickerComponent} from './components/grid/column-selectors/attribution/attribution-column-picker/attribution-column-picker.component';
 import {AttributionLoockbackWindowPickerComponent} from './components/grid/column-selectors/attribution/attribution-lookback-window-picker/attribution-lookback-window-picker.component';
-import {NativeAdPreviewComponent} from './components/grid/shared/thumbnail/native-ad-preview/native-ad-preview.component';
-import {DisplayAdPreviewComponent} from './components/grid/shared/thumbnail/display-ad-preview/display-ad-preview.component';
+import {NativeAdPreviewComponent} from './components/grid/shared/native-ad-preview/native-ad-preview.component';
+import {DisplayAdPreviewComponent} from './components/grid/shared/display-ad-preview/display-ad-preview.component';
 import {CampaignCloningFormComponent} from './components/grid/shared/campaign-cloning-form/campaign-cloning-form.component';
 import {BidRangeInfoComponent} from './components/grid/cells/bid-modifiers/bid-range-info/bid-range-info.component';
 import {ChartComponent} from './components/chart/chart.component';
