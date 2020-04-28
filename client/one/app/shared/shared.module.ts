@@ -37,6 +37,7 @@ import {SelectFormGroupComponent} from './components/select-form-group/select-fo
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
 import {TextFormGroupComponent} from './components/text-form-group/text-form-group.component';
+import {TextAreaComponent} from './components/textarea/textarea.component';
 import {TextAreaFormGroupComponent} from './components/textarea-form-group/textarea-form-group.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
 import {PopoverDirective} from './components/popover/popover.directive';
@@ -103,6 +104,7 @@ const EXPORTED_DECLARATIONS = [
     PrefixedInputComponent,
     TextInputComponent,
     TextFormGroupComponent,
+    TextAreaComponent,
     TextAreaFormGroupComponent,
     BidModifierInputComponent,
     ModalComponent,

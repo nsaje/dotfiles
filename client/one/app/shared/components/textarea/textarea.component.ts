@@ -1,4 +1,4 @@
-import './tracking-code-setting.component.less';
+import './textarea.component.less';
 
 import {
     Component,
@@ -8,18 +8,20 @@ import {
     EventEmitter,
     Output,
     Input,
-    OnInit,
 } from '@angular/core';
-import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
-    selector: 'zem-tracking-code-setting',
-    templateUrl: './tracking-code-setting.component.html',
+    selector: 'zem-textarea',
+    templateUrl: './textarea.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TrackingCodeSettingComponent implements OnInit, OnChanges {
+export class TextAreaComponent implements OnChanges {
     @Input()
     value: string;
+    @Input()
+    placeholder: string;
+    @Input()
+    maxLength: number;
     @Input()
     rows: number;
     @Input()
@@ -27,15 +29,13 @@ export class TrackingCodeSettingComponent implements OnInit, OnChanges {
     @Input()
     isFocused: boolean = false;
     @Input()
-    errors: string[];
+    hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    inputBlur = new EventEmitter<string>();
 
     model: string;
-
-    ngOnInit(): void {
-        this.rows = commonHelpers.getValueOrDefault(this.rows, 4);
-    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
@@ -43,7 +43,13 @@ export class TrackingCodeSettingComponent implements OnInit, OnChanges {
         }
     }
 
-    onBlur($event: string) {
+    onModelChange($event: string) {
         this.valueChange.emit($event);
+    }
+
+    onBlur() {
+        if (this.model !== this.value) {
+            this.inputBlur.emit(this.model);
+        }
     }
 }

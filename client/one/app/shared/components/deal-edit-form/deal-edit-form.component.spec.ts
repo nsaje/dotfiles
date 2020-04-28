@@ -6,6 +6,7 @@ import {FocusDirective} from '../../directives/focus/focus.directive';
 import {PopoverDirective} from '../popover/popover.directive';
 import {HelpPopoverComponent} from '../help-popover/help-popover.component';
 import {TextFormGroupComponent} from '../text-form-group/text-form-group.component';
+import {TextAreaComponent} from '../textarea/textarea.component';
 import {TextAreaFormGroupComponent} from '../textarea-form-group/textarea-form-group.component';
 import {SelectFormGroupComponent} from '../select-form-group/select-form-group.component';
 import {SelectInputComponent} from '../select-input/select-input.component';
@@ -39,6 +40,7 @@ describe('DealEditFormComponent', () => {
                 SelectInputComponent,
                 DateInputComponent,
                 TextFormGroupComponent,
+                TextAreaComponent,
                 TextAreaFormGroupComponent,
                 DecimalFormGroupComponent,
                 SelectFormGroupComponent,

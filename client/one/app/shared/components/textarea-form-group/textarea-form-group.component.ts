@@ -51,7 +51,7 @@ export class TextAreaFormGroupComponent implements OnInit, OnChanges {
         }
     }
 
-    onBlur($event: FocusEvent) {
-        this.valueChange.emit(this.model);
+    onBlur($event: string) {
+        this.valueChange.emit($event);
     }
 }

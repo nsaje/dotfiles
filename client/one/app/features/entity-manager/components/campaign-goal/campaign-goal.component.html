@@ -55,12 +55,11 @@
         <div class="zem-modal__title">Copy Tag</div>
     </div>
     <div class="zem-modal__body">
-        <textarea
-            class="zem-input-textarea zem-input-textarea--dashed"
-            type="text"
-            rows="5"
-            [ngModel]="pixelTag"
-        ></textarea>
+        <zem-textarea
+            class="zem-textarea zem-input-textarea--dashed"
+            [value]="pixelTag"
+            [rows]="5"
+        ></zem-textarea>
     </div>
     <div class="zem-modal__footer buttons-panel">
         <button

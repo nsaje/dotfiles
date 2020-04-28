@@ -4,16 +4,15 @@
 <div class="zem-tracking-code-setting__item zem-settings-section__description">
     The tracking code / UTM to be appended to all URLs being promoted.
 </div>
-<textarea
-    class="zem-tracking-code-setting__item zem-input-textarea"
-    [ngClass]="{'zem-input-textarea--error': errors.length > 0}"
-    type="text"
-    rows="{{ rows }}"
-    [(ngModel)]="model"
-    (blur)="onBlur($event)"
-    [disabled]="isDisabled"
-    [zemFocus]="isFocused"
-></textarea>
+<zem-textarea
+    class="zem-textarea zem-tracking-code-setting__item"
+    [value]="model"
+    [hasError]="errors && errors.length > 0"
+    [rows]="rows"
+    [isDisabled]="isDisabled"
+    [isFocused]="isFocused"
+    (inputBlur)="onBlur($event)"
+></zem-textarea>
 <div
     class="zem-tracking-code-setting__item zem-message zem-message--error"
     *ngFor="let error of errors"

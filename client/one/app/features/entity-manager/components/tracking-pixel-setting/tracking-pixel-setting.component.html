@@ -22,13 +22,12 @@
         class="zem-tracking-pixel-setting__item zem-tracking-pixel-setting__title"
         >Javascript</span
     >
-    <textarea
-        class="zem-tracking-pixel-setting__item zem-input-textarea zem-input-textarea--dashed"
-        type="text"
-        rows="4"
-        [ngModel]="redirectJavascript"
-        [disabled]="true"
-    ></textarea>
+    <zem-textarea
+        class="zem-textarea zem-tracking-pixel-setting__item zem-input-textarea--dashed"
+        [value]="redirectJavascript"
+        [rows]="4"
+        [isDisabled]="true"
+    ></zem-textarea>
 </ng-container>
 <div
     class="zem-tracking-pixel-setting__item zem-message"

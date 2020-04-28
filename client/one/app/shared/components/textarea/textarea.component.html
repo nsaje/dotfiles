@@ -1,0 +1,12 @@
+<textarea
+    class="zem-input-textarea"
+    [ngClass]="{'zem-input-textarea--error': hasError}"
+    placeholder="{{ placeholder }}"
+    maxlength="{{ maxLength }}"
+    rows="{{ rows }}"
+    [(ngModel)]="model"
+    (ngModelChange)="onModelChange($event)"
+    (blur)="onBlur()"
+    [disabled]="isDisabled"
+    [zemFocus]="isFocused"
+></textarea>
