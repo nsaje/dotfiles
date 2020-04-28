@@ -176,7 +176,7 @@ class AccountsLoader(Loader):
                             user_map.get(settings.ob_sales_representative_id), default_value=None
                         ),
                         "ob_account_manager": view_helpers.get_user_full_name_or_email(
-                            user_map.get(settings.ob_account_manager_id), default_value=None
+                            user_map.get(settings.ob_account_manager), default_value=None
                         ),
                         "salesforce_url": settings.salesforce_url or "",
                     }
