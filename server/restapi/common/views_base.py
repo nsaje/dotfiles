@@ -108,13 +108,18 @@ class RESTAPIBaseView(APIView):
 
 
 class RESTAPIBaseViewSet(ViewSetMixin, RESTAPIBaseView):
+    always_allowed_methods = ["trace", "options", "head"]
     """
     as_view is overridden and "http_method_not_allowed" assigned as default value to prevent unsupported/invalid methods
-    being called on url endpoints.
+    being called on url endpoints. Exception for trace, options and head.
     """
 
     @classonlymethod
     def as_view(cls, actions=None, **initkwargs):
         if actions:
-            actions = {method: actions.get(method, "http_method_not_allowed") for method in cls.http_method_names}
+            actions = {
+                method: actions.get(method, "http_method_not_allowed")
+                for method in cls.http_method_names
+                if method not in cls.always_allowed_methods
+            }
         return super().as_view(actions, **initkwargs)

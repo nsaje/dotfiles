@@ -5,7 +5,7 @@ from restapi.creditrefund.internal import views
 app_name = "restapi.creditrefund"
 urlpatterns = [
     url(
-        r"^credits/(?P<credit_id>\d+)/refunds/(?P<refund_id>\d+)",
+        r"^credits/(?P<credit_id>\d+)/refunds/(?P<refund_id>\d+)$",
         views.CreditRefundViewSet.as_view({"get": "get", "delete": "remove"}),
         name="credits_refunds_details",
     ),
