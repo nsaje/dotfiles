@@ -23,7 +23,7 @@ describe('GeolocationsService', () => {
 
     it('should list geolocations via endpoint', () => {
         const nameContains = 'aust';
-        const types = [GeolocationType.COUNTRY];
+        const type = GeolocationType.COUNTRY;
         const keys: string[] | null = null;
         const limit = 20;
         const offset = 0;
@@ -52,7 +52,7 @@ describe('GeolocationsService', () => {
             .calls.reset();
 
         service
-            .list(nameContains, types, keys, limit, offset, requestStateUpdater)
+            .list(nameContains, type, keys, limit, offset, requestStateUpdater)
             .subscribe(geolocations => {
                 expect(geolocations).toEqual(mockedGeolocations);
             });
@@ -60,7 +60,7 @@ describe('GeolocationsService', () => {
         expect(geolocationsEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(geolocationsEndpointStub.list).toHaveBeenCalledWith(
             nameContains,
-            types,
+            type,
             keys,
             limit,
             offset,

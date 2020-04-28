@@ -15,17 +15,19 @@ export class GeolocationsEndpoint {
 
     list(
         nameContains: string | null,
-        types: GeolocationType[] | null,
+        type: GeolocationType | null,
         keys: string[] | null,
         limit: number | null,
         offset: number | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Geolocation[]> {
-        const request = GEOLOCATIONS_CONFIG.requests.geolocations.list;
+        const request = commonHelpers.isDefined(type)
+            ? GEOLOCATIONS_CONFIG.requests.geolocations[`list${type}`]
+            : GEOLOCATIONS_CONFIG.requests.geolocations.list;
 
         const params = {
-            ...(commonHelpers.isDefined(types) && {
-                types: types.join(','),
+            ...(commonHelpers.isDefined(type) && {
+                types: type,
             }),
             ...(commonHelpers.isDefined(nameContains) && {nameContains}),
             ...(commonHelpers.isDefined(keys) && {

@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Store} from 'rxjs-observable-store';
-import {Subject} from 'rxjs';
+import {Subject, forkJoin, Observable} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import * as deepEqual from 'fast-deep-equal';
 import * as clone from 'clone';
@@ -18,6 +18,8 @@ import {
     DeliveryType,
     BiddingType,
     InterestCategory,
+    GeolocationType,
+    IncludeExcludeType,
 } from '../../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
@@ -38,6 +40,15 @@ import {
     TARGETING_ENVIRONMENT_OPTIONS,
 } from '../../entity-manager.config';
 import {isEmpty} from '../../../../shared/helpers/array.helpers';
+import {GeolocationsService} from '../../../../core/geolocations/services/geolocations.service';
+import {Geolocation} from '../../../../core/geolocations/types/geolocation';
+import {
+    getGeolocationsKeys,
+    getGeotargetingLocationPropertyFromGeolocationType,
+    getIncludeExcludePropertyNameFromIncludeExcludeType,
+} from '../../helpers/geolocations.helpers';
+import {GeolocationSearchParams} from '../../types/geolocation-search-params';
+import {Geotargeting} from '../../types/geotargeting';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -47,13 +58,15 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     private dealsRequestStateUpdater: RequestStateUpdater;
     private sourcesRequestStateUpdater: RequestStateUpdater;
     private bidModifierRequestStateUpdater: RequestStateUpdater;
+    private locationsRequestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
     constructor(
         private adGroupService: AdGroupService,
         private dealsService: DealsService,
         private sourcesService: SourcesService,
-        private bidModifierService: BidModifiersService
+        private bidModifierService: BidModifiersService,
+        private locationService: GeolocationsService
     ) {
         super(new AdGroupSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -70,6 +83,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.bidModifierRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this,
             'bidModifiersRequests'
+        );
+        this.locationsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'locationsRequests'
         );
     }
 
@@ -103,6 +120,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         extras: adGroupWithExtras.extras,
                     });
                     this.loadSources(this.state.extras.agencyId);
+                    this.loadSelectedLocations(
+                        getGeolocationsKeys(this.state.entity.targeting.geo)
+                    );
                 },
                 error => {}
             );
@@ -610,6 +630,159 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.validateEntity();
     }
 
+    addGeotargeting(geotargeting: Geotargeting): void {
+        const geo = clone(this.state.entity.targeting.geo);
+        const selectedLocations = clone(
+            this.state.selectedGeotargetingLocations
+        );
+
+        const geotargetingTypeProperty = getIncludeExcludePropertyNameFromIncludeExcludeType(
+            geotargeting.includeExcludeType
+        );
+        const locationTypeProperty = getGeotargetingLocationPropertyFromGeolocationType(
+            geotargeting.selectedLocation.type
+        );
+
+        geo[geotargetingTypeProperty][locationTypeProperty].push(
+            geotargeting.selectedLocation.key
+        );
+        selectedLocations.push(geotargeting.selectedLocation);
+
+        this.setGeotargetingState(
+            geo,
+            selectedLocations,
+            this.state.selectedZipTargetingLocation
+        );
+    }
+
+    removeGeotargeting(geotargeting: Geotargeting): void {
+        const geo = clone(this.state.entity.targeting.geo);
+        const selectedLocations = clone(
+            this.state.selectedGeotargetingLocations
+        );
+
+        const geotargetingTypeProperty = getIncludeExcludePropertyNameFromIncludeExcludeType(
+            geotargeting.includeExcludeType
+        );
+        const locationTypeProperty = getGeotargetingLocationPropertyFromGeolocationType(
+            geotargeting.selectedLocation.type
+        );
+
+        const geotargetingRemoveIndex = geo[geotargetingTypeProperty][
+            locationTypeProperty
+        ].findIndex((key: string) => key === geotargeting.selectedLocation.key);
+        if (geotargetingRemoveIndex !== -1) {
+            geo[geotargetingTypeProperty][locationTypeProperty].splice(
+                geotargetingRemoveIndex,
+                1
+            );
+        }
+
+        const selectedLocationRemoveIndex = selectedLocations.findIndex(
+            location => location.key === geotargeting.selectedLocation.key
+        );
+        if (selectedLocationRemoveIndex !== -1) {
+            selectedLocations.splice(selectedLocationRemoveIndex, 1);
+        }
+
+        this.setGeotargetingState(
+            geo,
+            selectedLocations,
+            this.state.selectedZipTargetingLocation
+        );
+    }
+
+    setZipTargeting(zipTargeting: Geotargeting): void {
+        if (!commonHelpers.isDefined(zipTargeting.zipCodes)) {
+            return;
+        }
+
+        const geo = clone(this.state.entity.targeting.geo);
+        if (zipTargeting.includeExcludeType === IncludeExcludeType.INCLUDE) {
+            geo.included.postalCodes = zipTargeting.zipCodes;
+            geo.excluded.postalCodes = [];
+        } else {
+            geo.excluded.postalCodes = zipTargeting.zipCodes;
+            geo.included.postalCodes = [];
+        }
+
+        this.setGeotargetingState(
+            geo,
+            this.state.selectedGeotargetingLocations,
+            zipTargeting.selectedLocation
+        );
+    }
+
+    loadSelectedLocations(keys: string[]): void {
+        if (isEmpty(keys)) {
+            return;
+        }
+
+        const batches = [];
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+            batches.push(keys.slice(i, i + BATCH_SIZE));
+        }
+
+        const requestBatches = batches.map(batchKeys => {
+            return this.locationService.list(
+                null,
+                null,
+                batchKeys,
+                BATCH_SIZE,
+                null,
+                () => {}
+            );
+        });
+
+        this.executeParallelRequests(requestBatches).then(locations => {
+            let selectedZipTargetingLocation: Geolocation = null;
+            let selectedGeotargetingLocations: Geolocation[] = [];
+
+            const postalCodes = this.state.entity.targeting.geo.included.postalCodes.concat(
+                this.state.entity.targeting.geo.excluded.postalCodes
+            );
+            if (!isEmpty(postalCodes)) {
+                const zipTargetingCountryKey = postalCodes[0].split(':')[0];
+                selectedZipTargetingLocation = locations.find(
+                    location => location.key === zipTargetingCountryKey
+                );
+                selectedGeotargetingLocations = locations.filter(
+                    location => location.key !== zipTargetingCountryKey
+                );
+            } else {
+                selectedGeotargetingLocations = locations;
+            }
+
+            this.setState({
+                ...this.state,
+                selectedZipTargetingLocation: selectedZipTargetingLocation,
+                selectedGeotargetingLocations: selectedGeotargetingLocations,
+            });
+        });
+    }
+
+    searchLocations(searchParameters: GeolocationSearchParams): void {
+        const requestsByType = searchParameters.types.map(type => {
+            return this.locationService.list(
+                searchParameters.nameContains,
+                type,
+                null,
+                commonHelpers.getValueOrDefault(searchParameters.limit, 20),
+                commonHelpers.getValueOrDefault(searchParameters.offset, 0),
+                this.locationsRequestStateUpdater
+            );
+        });
+
+        this.executeParallelRequests(requestsByType).then(locations => {
+            this.patchState(locations, 'searchedLocations');
+        });
+    }
+
+    clearSearchedLocations(): void {
+        this.patchState([], 'searchedLocations');
+    }
+
     isLocationTargetingDifferentFromDefault(): boolean {
         const areIncludedLocationsDifferent = !deepEqual(
             this.state.entity.targeting.geo.included,
@@ -810,5 +983,42 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             newItems = allItems;
         }
         return newItems;
+    }
+
+    private executeParallelRequests<T>(
+        requests: Observable<T[]>[]
+    ): Promise<T[]> {
+        return new Promise<T[]>((resolve, reject) => {
+            forkJoin(requests)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (data: T[][]) => {
+                        resolve([].concat(...data));
+                    },
+                    error => {
+                        reject(error);
+                    }
+                );
+        });
+    }
+
+    private setGeotargetingState(
+        geo: IncludedExcluded<TargetRegions>,
+        selectedGeotargetingLocations: Geolocation[],
+        selectedZipTargetingLocation: Geolocation
+    ) {
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                targeting: {
+                    ...this.state.entity.targeting,
+                    geo: geo,
+                },
+            },
+            selectedGeotargetingLocations: selectedGeotargetingLocations,
+            selectedZipTargetingLocation: selectedZipTargetingLocation,
+        });
+        this.validateEntity();
     }
 }

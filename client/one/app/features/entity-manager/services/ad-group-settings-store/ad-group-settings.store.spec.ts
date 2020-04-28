@@ -1,4 +1,4 @@
-import {of, asapScheduler, throwError} from 'rxjs';
+import {of, asapScheduler, throwError, Observable} from 'rxjs';
 import {tick, fakeAsync} from '@angular/core/testing';
 import * as clone from 'clone';
 import {AdGroupSettingsStore} from './ad-group-settings.store';
@@ -11,6 +11,8 @@ import {BidModifiersImportErrorState} from './bid-modifiers-import-error-state';
 import {
     InterestCategory,
     AdGroupAutopilotState,
+    GeolocationType,
+    IncludeExcludeType,
 } from '../../../../app.constants';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
@@ -19,12 +21,19 @@ import {Source} from '../../../../core/sources/types/source';
 import {BidModifiersService} from '../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid-modifier-upload-summary';
 import {TargetOperatingSystem} from '../../../../core/entities/types/common/target-operating-system';
+import {GeolocationsService} from '../../../../core/geolocations/services/geolocations.service';
+import {Geolocation} from '../../../../core/geolocations/types/geolocation';
+import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
+import {Geotargeting} from '../../types/geotargeting';
+import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
+import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let bidModifiersServiceStub: jasmine.SpyObj<BidModifiersService>;
+    let geolocationsServiceStub: jasmine.SpyObj<GeolocationsService>;
     let store: AdGroupSettingsStore;
     let adGroupWithExtras: AdGroupWithExtras;
     let adGroup: AdGroup;
@@ -47,12 +56,17 @@ describe('AdGroupSettingsStore', () => {
             BidModifiersService.name,
             ['save', 'importFromFile', 'validateImportFile']
         );
+        geolocationsServiceStub = jasmine.createSpyObj(
+            GeolocationsService.name,
+            ['list']
+        );
 
         store = new AdGroupSettingsStore(
             serviceStub,
             dealsServiceStub,
             sourcesServiceStub,
-            bidModifiersServiceStub
+            bidModifiersServiceStub,
+            geolocationsServiceStub
         );
         adGroup = clone(store.state.entity);
         adGroupExtras = clone(store.state.extras);
@@ -772,6 +786,367 @@ describe('AdGroupSettingsStore', () => {
         store.setFrequencyCapping('30');
         expect(store.state.entity.frequencyCapping).toEqual(30);
     });
+
+    it('should correctly add geotargeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedLocations: Geolocation[] = [
+            {
+                key: 'AU',
+                type: GeolocationType.COUNTRY,
+                name: 'Australia',
+                outbrainId: 'dafd9b2285eb829458b9982a9ff8792b',
+                woeid: '23424748',
+                facebookKey: 'AU',
+            },
+            {
+                key: 'AU-ACT',
+                type: GeolocationType.REGION,
+                name: 'Australian Capital Territory, Australia',
+                outbrainId: '56f1a9a6cdac475bad9ce3b7dad76479',
+                woeid: '2344699',
+                facebookKey: '',
+            },
+        ];
+
+        let mockedGeotargeting: Geotargeting = {
+            selectedLocation: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+        };
+
+        store.patchState([], 'selectedGeotargetingLocations');
+        expect(store.state.selectedGeotargetingLocations).toEqual([]);
+
+        store.addGeotargeting(mockedGeotargeting);
+        expect(store.state.selectedGeotargetingLocations).toEqual([
+            mockedLocations[0],
+        ]);
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: ['AU'],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        });
+
+        mockedGeotargeting = {
+            selectedLocation: mockedLocations[1],
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+        };
+        store.addGeotargeting(mockedGeotargeting);
+        expect(store.state.selectedGeotargetingLocations).toEqual([
+            mockedLocations[0],
+            mockedLocations[1],
+        ]);
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: ['AU'],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: ['AU-ACT'],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        });
+    });
+
+    it('should correctly remove geotargeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedGeo: IncludedExcluded<TargetRegions> = {
+            included: {
+                countries: ['AU'],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: ['AU-ACT'],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        };
+
+        const mockedLocations: Geolocation[] = [
+            {
+                key: 'AU',
+                type: GeolocationType.COUNTRY,
+                name: 'Australia',
+                outbrainId: 'dafd9b2285eb829458b9982a9ff8792b',
+                woeid: '23424748',
+                facebookKey: 'AU',
+            },
+            {
+                key: 'AU-ACT',
+                type: GeolocationType.REGION,
+                name: 'Australian Capital Territory, Australia',
+                outbrainId: '56f1a9a6cdac475bad9ce3b7dad76479',
+                woeid: '2344699',
+                facebookKey: '',
+            },
+        ];
+
+        let mockedGeotargeting: Geotargeting = {
+            selectedLocation: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+        };
+
+        store.setState({
+            ...store.state,
+            entity: {
+                ...store.state.entity,
+                targeting: {
+                    ...store.state.entity.targeting,
+                    geo: mockedGeo,
+                },
+            },
+            selectedGeotargetingLocations: mockedLocations,
+        });
+
+        store.removeGeotargeting(mockedGeotargeting);
+        expect(store.state.selectedGeotargetingLocations).toEqual([
+            mockedLocations[1],
+        ]);
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: ['AU-ACT'],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        });
+
+        mockedGeotargeting = {
+            selectedLocation: mockedLocations[1],
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+        };
+        store.removeGeotargeting(mockedGeotargeting);
+        expect(store.state.selectedGeotargetingLocations).toEqual([]);
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        });
+    });
+
+    it('should correctly set zip targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedLocations: Geolocation[] = [
+            {
+                key: 'AU',
+                type: GeolocationType.COUNTRY,
+                name: 'Australia',
+                outbrainId: 'dafd9b2285eb829458b9982a9ff8792b',
+                woeid: '23424748',
+                facebookKey: 'AU',
+            },
+        ];
+
+        let mockedGeotargeting: Geotargeting = {
+            selectedLocation: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+            zipCodes: ['AU:1000', 'AU:2000'],
+        };
+
+        store.setZipTargeting(mockedGeotargeting);
+        expect(store.state.selectedZipTargetingLocation).toEqual(
+            mockedLocations[0]
+        );
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: ['AU:1000', 'AU:2000'],
+            },
+            excluded: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+        });
+
+        mockedGeotargeting = {
+            selectedLocation: mockedLocations[0],
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+            zipCodes: ['AU:5000', 'AU:6000'],
+        };
+        store.setZipTargeting(mockedGeotargeting);
+        expect(store.state.selectedZipTargetingLocation).toEqual(
+            mockedLocations[0]
+        );
+        expect(store.state.entity.targeting.geo).toEqual({
+            included: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: [],
+            },
+            excluded: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: ['AU:5000', 'AU:6000'],
+            },
+        });
+    });
+
+    it('should correctly clear searched geolocations state', () => {
+        const mockedGeolocations = [
+            {
+                key: 'AU',
+                type: GeolocationType.COUNTRY,
+                name: 'Australia',
+                outbrainId: 'dafd9b2285eb829458b9982a9ff8792b',
+                woeid: '23424748',
+                facebookKey: 'AU',
+            },
+        ];
+
+        store.patchState(mockedGeolocations, 'searchedLocations');
+        expect(store.state.searchedLocations).toEqual(mockedGeolocations);
+        store.clearSearchedLocations();
+        expect(store.state.searchedLocations).toEqual([]);
+    });
+
+    it('should correctly call load selected geolocations by keys batches via geolocations service', fakeAsync(() => {
+        const keys: string[] = Array.from({length: 120}, (_, i) => `${i}`);
+
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
+            .calls.reset();
+
+        store.loadSelectedLocations(keys);
+
+        expect(geolocationsServiceStub.list).toHaveBeenCalledTimes(3);
+    }));
+
+    it('should correctly load searched geolocations via geolocations service', fakeAsync(() => {
+        const nameContains = 'austra';
+        const mockedLocations: Geolocation[] = [
+            {
+                key: 'AU',
+                type: GeolocationType.COUNTRY,
+                name: 'Australia',
+                outbrainId: 'dafd9b2285eb829458b9982a9ff8792b',
+                woeid: '23424748',
+                facebookKey: 'AU',
+            },
+            {
+                key: 'AU-ACT',
+                type: GeolocationType.REGION,
+                name: 'Australian Capital Territory, Australia',
+                outbrainId: '56f1a9a6cdac475bad9ce3b7dad76479',
+                woeid: '2344699',
+                facebookKey: '',
+            },
+            {
+                key: '2078025',
+                type: GeolocationType.CITY,
+                name: 'Adelaide, South Australia, Australia',
+                outbrainId: '',
+                woeid: '1099805',
+                facebookKey: '',
+            },
+        ];
+
+        geolocationsServiceStub.list.and
+            .callFake(
+                (
+                    nameContains: string | null,
+                    type: GeolocationType | null,
+                    keys: string[] | null,
+                    limit: number | null,
+                    offset: number | null,
+                    requestStateUpdater: RequestStateUpdater
+                ): Observable<Geolocation[]> => {
+                    let mockedLocationsByType: Geolocation[] = [];
+                    if (type === GeolocationType.COUNTRY) {
+                        mockedLocationsByType = [mockedLocations[0]];
+                    } else if (type === GeolocationType.REGION) {
+                        mockedLocationsByType = [mockedLocations[1]];
+                    } else if (type === GeolocationType.CITY) {
+                        mockedLocationsByType = [mockedLocations[2]];
+                    } else if (type === GeolocationType.DMA) {
+                        mockedLocationsByType = [];
+                    } else if (type === GeolocationType.ZIP) {
+                        mockedLocationsByType = [];
+                    } else {
+                        mockedLocationsByType = mockedLocations;
+                    }
+                    return of(mockedLocationsByType, asapScheduler);
+                }
+            )
+            .calls.reset();
+
+        store.searchLocations({
+            nameContains: nameContains,
+            types: [
+                GeolocationType.COUNTRY,
+                GeolocationType.REGION,
+                GeolocationType.CITY,
+                GeolocationType.DMA,
+                GeolocationType.ZIP,
+            ],
+        });
+        tick();
+
+        expect(geolocationsServiceStub.list).toHaveBeenCalledTimes(
+            Object.keys(GeolocationType).length
+        );
+        expect(store.state.searchedLocations).toEqual(
+            jasmine.arrayWithExactContents(mockedLocations)
+        );
+    }));
 
     it('should correctly set location targeting', () => {
         spyOn(store, 'validateEntity')

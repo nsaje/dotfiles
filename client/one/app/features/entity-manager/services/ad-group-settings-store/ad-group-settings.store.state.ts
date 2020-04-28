@@ -6,6 +6,7 @@ import {BidModifierUploadSummary} from '../../../../core/bid-modifiers/types/bid
 import {RequestState} from '../../../../shared/types/request-state';
 import {Deal} from '../../../../core/deals/types/deal';
 import {Source} from '../../../../core/sources/types/source';
+import {Geolocation} from '../../../../core/geolocations/types/geolocation';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -121,6 +122,9 @@ export class AdGroupSettingsStoreState {
     };
     sources: Source[] = [];
     availableDeals: Deal[] = [];
+    searchedLocations: Geolocation[] = [];
+    selectedGeotargetingLocations: Geolocation[] = [];
+    selectedZipTargetingLocation: Geolocation = null;
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     dealsRequests = {
         list: {} as RequestState,
@@ -141,5 +145,13 @@ export class AdGroupSettingsStoreState {
     bidModifiersRequests = {
         import: {} as RequestState,
         validateFile: {} as RequestState,
+    };
+    locationsRequests = {
+        list: {} as RequestState,
+        listCountry: {} as RequestState,
+        listRegion: {} as RequestState,
+        listDma: {} as RequestState,
+        listCity: {} as RequestState,
+        listZip: {} as RequestState,
     };
 }

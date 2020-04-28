@@ -766,6 +766,11 @@ export enum GeolocationType {
     ZIP = 'ZIP',
 }
 
+export enum IncludeExcludeType {
+    INCLUDE = 'INCLUDE',
+    EXCLUDE = 'EXCLUDE',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,

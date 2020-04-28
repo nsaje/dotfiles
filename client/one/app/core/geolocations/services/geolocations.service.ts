@@ -11,7 +11,7 @@ export class GeolocationsService {
 
     list(
         nameContains: string | null,
-        types: GeolocationType[] | null,
+        type: GeolocationType | null,
         keys: string[] | null,
         limit: number | null,
         offset: number | null,
@@ -19,7 +19,7 @@ export class GeolocationsService {
     ): Observable<Geolocation[]> {
         return this.endpoint.list(
             nameContains,
-            types,
+            type,
             keys,
             limit,
             offset,
