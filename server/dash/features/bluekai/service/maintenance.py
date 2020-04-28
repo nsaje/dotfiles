@@ -125,12 +125,15 @@ def _get_existing_categories():
 
 
 def _get_updated_categories(taxonomy, existing_categories):
-    new_categories, updated_categories = [], []
+    new_categories, updated_categories, number_of_incomplete_categories = [], [], 0
     for bluekai_category in taxonomy:
         if bluekai_category["status"] != STATUS_ACTIVE:
             logger.warning(
                 "BlueKai category not active. id=%s status=%s", bluekai_category["id"], bluekai_category["status"]
             )
+        if "description" not in bluekai_category:
+            number_of_incomplete_categories += 1
+            continue
 
         category = {
             "category_id": bluekai_category["id"],
@@ -141,7 +144,6 @@ def _get_updated_categories(taxonomy, existing_categories):
             "price": bluekai_category["categoryPrice"],
             "navigation_only": bluekai_category["isForNavigationOnlyFlag"],
         }
-
         existing_category = existing_categories.get(bluekai_category["id"])
         if not existing_category:
             new_categories.append(category)
@@ -149,6 +151,8 @@ def _get_updated_categories(taxonomy, existing_categories):
 
         category["id"] = existing_category.pk
         updated_categories.append(category)
+    if number_of_incomplete_categories:
+        logger.warning(f"number of incomplete bluekai_categories: {number_of_incomplete_categories}")
 
     return new_categories, updated_categories
 
