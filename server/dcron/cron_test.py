@@ -154,6 +154,7 @@ class CrontabItemsGeneratorTestCase(TestCase):
         "base_command": "/home/ubuntu/docker-manage-py.sh",
         "check_margin": timedelta(seconds=5),
         "severities": {"run_autopilot": constants.Severity.HIGH},
+        "ownerships": {"audit_hacks": constants.Ownership.PRODOPS},
         "default_warning_wait": 60,
         "warning_waits": {"monitor_blacklists": 120, "refresh_etl": 3600},
         "default_max_duration": 3600,
@@ -177,6 +178,7 @@ class DCronModelsTestCase(TestCase):
         schedule,
         enabled=True,
         severity=constants.Severity.LOW,
+        ownership=constants.Ownership.Z1,
         warning_wait=None,
         max_duration=None,
         min_separation=None,
@@ -198,6 +200,7 @@ class DCronModelsTestCase(TestCase):
         self.assertEqual(job_settings.full_command, full_command)
         self.assertEqual(job_settings.enabled, enabled)
         self.assertEqual(job_settings.severity, severity)
+        self.assertEqual(job_settings.ownership, ownership)
         self.assertEqual(job_settings.warning_wait, warning_wait)
         self.assertEqual(job_settings.max_duration, max_duration)
         self.assertEqual(job_settings.min_separation, min_separation)
@@ -222,7 +225,14 @@ class DCronModelsTestCase(TestCase):
         self._assert_job_settings(job_settings, "refresh_etl", "*/5 * * * *", warning_wait=3600, extra_params=" 3")
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_hacks")
-        self._assert_job_settings(job_settings, "audit_hacks", "20 11 * * *", enabled=False, extra_params=" --slack")
+        self._assert_job_settings(
+            job_settings,
+            "audit_hacks",
+            "20 11 * * *",
+            ownership=constants.Ownership.PRODOPS,
+            enabled=False,
+            extra_params=" --slack",
+        )
 
     def test_update_records(self):
         dcj = models.DCronJob.objects.create(command_name="monitor_blacklists")
@@ -288,7 +298,14 @@ class DCronModelsTestCase(TestCase):
             cron._process_cron_item(cron_item)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_hacks")
-        self._assert_job_settings(job_settings, "audit_hacks", "20 11 * * *", enabled=False, extra_params=" --slack")
+        self._assert_job_settings(
+            job_settings,
+            "audit_hacks",
+            "20 11 * * *",
+            ownership=constants.Ownership.PRODOPS,
+            enabled=False,
+            extra_params=" --slack",
+        )
 
     def test_remove_records(self):
         dcj = models.DCronJob.objects.create(command_name="monitor_blacklists")
@@ -354,7 +371,14 @@ class DCronModelsTestCase(TestCase):
         self._assert_job_settings(job_settings, "refresh_etl", "*/5 * * * *", warning_wait=3600, extra_params=" 3")
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_hacks")
-        self._assert_job_settings(job_settings, "audit_hacks", "20 11 * * *", enabled=False, extra_params=" --slack")
+        self._assert_job_settings(
+            job_settings,
+            "audit_hacks",
+            "20 11 * * *",
+            ownership=constants.Ownership.PRODOPS,
+            enabled=False,
+            extra_params=" --slack",
+        )
 
     def test_manual_override(self):
         dcj = models.DCronJob.objects.create(command_name="monitor_blacklists")

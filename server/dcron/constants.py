@@ -25,3 +25,10 @@ class Severity(ConstantBase):
     HIGH = 1
 
     _VALUES = {LOW: "low", HIGH: "high"}
+
+
+class Ownership(ConstantBase):
+    Z1 = 1
+    PRODOPS = 2
+
+    _VALUES = {Z1: "Z1", PRODOPS: "ProdOps"}

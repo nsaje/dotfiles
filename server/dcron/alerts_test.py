@@ -491,7 +491,7 @@ class HandleAlertsTestCase(TestCase):
             "completed_dt": None,
             "alert": constants.Alert.OK,
         }
-        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        settings_kwargs_dict = {"schedule": "0 * * * *", "ownership": constants.Ownership.PRODOPS}
         _create_job("command_05", job_kwargs_dict, settings_kwargs_dict)
 
         # Executed in time, exceeded max_duration, but alerting already.
@@ -532,14 +532,6 @@ class HandleAlertsTestCase(TestCase):
                     "command_03",
                     alerts._alert_message("command_03", constants.Alert.EXECUTION),
                     event_severity=pagerduty_helper.PagerDutyEventSeverity.CRITICAL,
-                    details=None,
-                ),
-                mock.call(
-                    "trigger",
-                    pagerduty_helper.PagerDutyEventType.Z1,
-                    "command_05",
-                    alerts._alert_message("command_05", constants.Alert.DURATION),
-                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
                     details=None,
                 ),
                 mock.call(
@@ -611,7 +603,7 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_LOW_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[OK] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
@@ -632,7 +624,7 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_LOW_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[Alerting] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
@@ -653,7 +645,7 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_LOW_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[Alerting] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
@@ -674,7 +666,7 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_HIGH_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[OK] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
@@ -695,7 +687,7 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_HIGH_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[Alerting] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
@@ -716,7 +708,30 @@ class SlackAlertTestCase(TestCase):
             params,
             self.generate_params(
                 command_name="some_command",
-                channel=alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                channel=alerts.SLACK_CHANNEL_Z1_HIGH_SEVERITY,
+                username=alerts.SLACK_USERNAME,
+                title="[Alerting] Cron Command Alert",
+                title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                color="danger",
+                fallback=alerts._alert_message("some_command", constants.Alert.FAILURE),
+                text="There is a problem with a command run by cron",
+                field_title=dcron_job.command_name,
+                field_value=constants.Alert.get_description(constants.Alert.FAILURE),
+            ),
+        )
+
+    def test_create_slack_publish_params_danger_high_prodops(self):
+        dcron_job = _create_job(
+            "some_command", {}, {"severity": constants.Severity.HIGH, "ownership": constants.Ownership.PRODOPS}
+        )
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.FAILURE)
+
+        self.assertDictEqual(
+            params,
+            self.generate_params(
+                command_name="some_command",
+                channel=alerts.SLACK_CHANNEL_PRODOPS_HIGH_SEVERITY,
                 username=alerts.SLACK_USERNAME,
                 title="[Alerting] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,

@@ -25,6 +25,7 @@ The following fields are read from `crontab.txt` file and should not be updated 
 The following fields are populated from `settings.DCRON` configuration:
 
 * `severity`
+* `ownership`
 * `warning_wait`
 * `max_duration`
 * `min_separation`
@@ -41,6 +42,15 @@ This configuration value describes the alerting severity of a job. Possible valu
 * `dcron.constants.Severity.HIGH`
 
 The default value is `LOW`, which means that pagerduty alert is non-critical  and that Slack messages are sent to "z1-team-alerts-aux" channel. For `HIGH` severity jobs the alerts in pagerduty are critical and Slack messages are sent to "z1-team-alerts" channel.
+
+### `ownership`
+
+This configuration value describes the alerting ownership of a job. Possible values are:
+
+* `dcron.constants.Ownership.Z1`
+* `dcron.constants.Ownership.PRODOPS`
+
+The default value is `Z1`, which means that pagerduty alert is sent to Z1 team. For `PRODOPS` the alerts in pagerduty are sent to ProdOps team.
 
 ### `warning_wait`
 

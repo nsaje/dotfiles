@@ -55,6 +55,7 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
         logger.info("Created DCronJob", command=dcron_job.command_name)
 
     settings_kwargs["severity"] = settings.DCRON["severities"].get(command_name, constants.Severity.LOW)
+    settings_kwargs["ownership"] = settings.DCRON["ownerships"].get(command_name, constants.Ownership.Z1)
     settings_kwargs["warning_wait"] = settings.DCRON["warning_waits"].get(
         command_name, settings.DCRON["default_warning_wait"]
     )
@@ -72,6 +73,7 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
         if dcron_job_settings.manual_override:
             # Manual override is selected, thus don't update it.
             del settings_kwargs["severity"]
+            del settings_kwargs["ownership"]
             del settings_kwargs["warning_wait"]
             del settings_kwargs["max_duration"]
             del settings_kwargs["min_separation"]

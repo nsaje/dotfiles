@@ -33,6 +33,7 @@ class DCronJobAdmin(admin.ModelAdmin):
         "alert",
         "dcronjobsettings__enabled",
         "dcronjobsettings__severity",
+        "dcronjobsettings__ownership",
         "dcronjobsettings__manual_override",
         "dcronjobsettings__pause_execution",
     )
@@ -93,6 +94,7 @@ class DCronJobSettingsAdmin(admin.ModelAdmin):
         "full_command",
         "enabled",
         "severity",
+        "ownership",
         "warning_wait",
         "max_duration",
         "min_separation",
@@ -100,7 +102,7 @@ class DCronJobSettingsAdmin(admin.ModelAdmin):
         "pause_execution",
     )
     search_fields = ("job__command_name",)
-    list_filter = ("job__alert", "enabled", "severity", "manual_override", "pause_execution")
+    list_filter = ("job__alert", "enabled", "severity", "ownership", "manual_override", "pause_execution")
     readonly_fields = ("job", "schedule", "full_command", "enabled")
 
 

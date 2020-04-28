@@ -16,11 +16,13 @@ from utils import zlogging
 logger = zlogging.getLogger(__name__)
 
 SLACK_USERNAME = "Dcron Alert"
-SLACK_CHANNEL_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX
-SLACK_CHANNEL_HIGH_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS
 SLACK_COLOR_OK = "good"
 SLACK_COLOR_WARNING = "warning"
 SLACK_COLOR_DANGER = "danger"
+SLACK_CHANNEL_Z1_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX
+SLACK_CHANNEL_Z1_HIGH_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS
+SLACK_CHANNEL_PRODOPS_LOW_SEVERITY = slack.CHANNEL_ALERTS_RND_PRODOPS
+SLACK_CHANNEL_PRODOPS_HIGH_SEVERITY = slack.CHANNEL_ALERTS_RND_PRODOPS
 
 
 AlertId = typing.NewType("AlertId", int)
@@ -72,19 +74,25 @@ def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
     """
 
     description = _alert_message(dcron_job.command_name, alert)
+
     if hasattr(dcron_job, "dcronjobsettings"):
         event_severity = _to_pagerduty_severity(dcron_job.dcronjobsettings.severity)
     else:
         event_severity = pagerduty_helper.PagerDutyEventSeverity.WARNING
 
-    if alert != constants.Alert.OK:
-        pagerduty_helper.trigger(
-            pagerduty_helper.PagerDutyEventType.Z1, dcron_job.command_name, description, event_severity=event_severity
-        )
+    if hasattr(dcron_job, "dcronjobsettings"):
+        event_type = _to_pagerduty_event_type(dcron_job.dcronjobsettings.ownership)
     else:
-        pagerduty_helper.resolve(
-            pagerduty_helper.PagerDutyEventType.Z1, dcron_job.command_name, description, event_severity=event_severity
-        )
+        event_type = pagerduty_helper.PagerDutyEventType.Z1
+
+    if event_type == pagerduty_helper.PagerDutyEventType.PRODOPS:
+        # disable PD alerts for ProdOps
+        return
+
+    if alert != constants.Alert.OK:
+        pagerduty_helper.trigger(event_type, dcron_job.command_name, description, event_severity=event_severity)
+    else:
+        pagerduty_helper.resolve(event_type, dcron_job.command_name, description, event_severity=event_severity)
 
 
 def handle_slack_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
@@ -110,6 +118,13 @@ def _to_pagerduty_severity(severity: int) -> str:
     return pagerduty_helper.PagerDutyEventSeverity.WARNING
 
 
+def _to_pagerduty_event_type(ownership: int) -> str:
+    if ownership is constants.Ownership.PRODOPS:
+        return pagerduty_helper.PagerDutyEventType.PRODOPS
+
+    return pagerduty_helper.PagerDutyEventType.Z1
+
+
 def _to_slack_color(alert: AlertId) -> str:
     if alert == constants.Alert.OK:
         return SLACK_COLOR_OK
@@ -129,9 +144,12 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
 
     # determine channel name based on severity
     if hasattr(dcron_job, "dcronjobsettings") and dcron_job.dcronjobsettings.severity == constants.Severity.HIGH:
-        channel_name = SLACK_CHANNEL_HIGH_SEVERITY
+        if dcron_job.dcronjobsettings.ownership == constants.Ownership.PRODOPS:
+            channel_name = SLACK_CHANNEL_PRODOPS_HIGH_SEVERITY
+        else:
+            channel_name = SLACK_CHANNEL_Z1_HIGH_SEVERITY
     else:
-        channel_name = SLACK_CHANNEL_LOW_SEVERITY
+        channel_name = SLACK_CHANNEL_Z1_LOW_SEVERITY
 
     if alert is constants.Alert.OK:
         # in case of OK, override severity and summary

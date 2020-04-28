@@ -404,6 +404,26 @@ DCRON = {
         "handle_auto_save_batches": dcron_constants.Severity.HIGH,
         "monitor_dailystatement_holes": dcron_constants.Severity.HIGH,
     },
+    # Job ownersip overrides.
+    "ownerships": {
+        "audit_ad_group_missing_data_cost": dcron_constants.Ownership.PRODOPS,
+        "audit_autopilot": dcron_constants.Ownership.PRODOPS,
+        "audit_cpc_vs_ecpc": dcron_constants.Ownership.PRODOPS,
+        "audit_credits": dcron_constants.Ownership.PRODOPS,
+        "audit_hacks": dcron_constants.Ownership.PRODOPS,
+        "audit_overspend": dcron_constants.Ownership.PRODOPS,
+        "audit_pacing": dcron_constants.Ownership.PRODOPS,
+        "audit_publisher_high_ctr": dcron_constants.Ownership.PRODOPS,
+        "audit_spend_patterns": dcron_constants.Ownership.PRODOPS,
+        "daily_audit": dcron_constants.Ownership.PRODOPS,
+        "generate_hack_report": dcron_constants.Ownership.PRODOPS,
+        "ingest_product_feeds": dcron_constants.Ownership.PRODOPS,
+        "monitor_product_feeds_uploads": dcron_constants.Ownership.PRODOPS,
+        "nas_cpc_billing": dcron_constants.Ownership.PRODOPS,
+        "post_delivery_statuses": dcron_constants.Ownership.PRODOPS,
+        "publisher_classification": dcron_constants.Ownership.PRODOPS,
+        "send_daily_management_report": dcron_constants.Ownership.PRODOPS,
+    },
     # How long to wait before warning alert if job execution is late.
     "default_warning_wait": 300,  # 5 min
     # Job warning wait overrides.
