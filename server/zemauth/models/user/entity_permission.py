@@ -1,65 +1,47 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
 
-from django.db.models import Q
-
 import core.models
 import zemauth.features.entity_permission
+
+if TYPE_CHECKING:
+    Entity = Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
 
 
 class EntityPermissionMixin(object):
     entitypermission_set: Any
 
-    def has_read_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_read_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.READ, entity)
 
-    def has_write_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_write_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.WRITE, entity)
 
-    def has_user_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_user_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.USER, entity)
 
-    def has_budget_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_budget_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.BUDGET, entity)
 
-    def has_budget_margin_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_budget_margin_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.BUDGET_MARGIN, entity)
 
-    def has_agency_spend_and_margin_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_agency_spend_and_margin_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.AGENCY_SPEND_MARGIN, entity)
 
-    def has_media_cost_data_cost_and_licence_fee_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_media_cost_data_cost_and_licence_fee_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.MEDIA_COST_DATA_COST_LICENCE_FEE, entity)
 
-    def has_rest_api_perm_on(
-        self, entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
-    ) -> bool:
+    def has_rest_api_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.RESTAPI, entity)
 
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 
-    def _has_perm_on(
-        self,
-        permission: str,
-        entity: Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup],
-    ) -> bool:
+    def _has_perm_on(self, permission: str, entity: Entity) -> bool:
         if entity is None:
             return False
 
@@ -72,21 +54,11 @@ class EntityPermissionMixin(object):
                 return True
             return self._has_perm_on_wildcard(permission)
         elif isinstance(entity, core.models.Campaign):
-            has_perm = zemauth.features.entity_permission.EntityPermission.objects.filter(
-                Q(user=self)
-                & Q(permission=permission)
-                & (Q(agency__account__campaign=entity) | Q(account__campaign=entity))
-            ).exists()
-            if has_perm:
+            if self.entitypermission_set.filter(permission=permission).filter_by_campaign(entity).exists():
                 return True
             return self._has_perm_on_wildcard(permission)
         elif isinstance(entity, core.models.AdGroup):
-            has_perm = zemauth.features.entity_permission.EntityPermission.objects.filter(
-                Q(user=self)
-                & Q(permission=permission)
-                & (Q(agency__account__campaign__adgroup=entity) | Q(account__campaign__adgroup=entity))
-            ).exists()
-            if has_perm:
+            if self.entitypermission_set.filter(permission=permission).filter_by_adgroup(entity).exists():
                 return True
             return self._has_perm_on_wildcard(permission)
         else:
