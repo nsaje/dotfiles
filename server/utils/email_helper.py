@@ -12,6 +12,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.template import Context, Template
+from urllib.parse import urlparse, urlunparse
+from django.http import QueryDict
 
 import dash.constants
 import dash.models
@@ -350,8 +352,8 @@ def send_account_pixel_notification(account, request):
     )
 
 
-def send_password_reset_email(user, request):
-    args = {"user": user, "link_url": _generate_password_reset_url(user, request)}
+def send_password_reset_email(user, request, next_param=""):
+    args = {"user": user, "link_url": _generate_password_reset_url(user, request, next_param)}
 
     send_official_email(
         agency_or_user=user,
@@ -369,13 +371,17 @@ def send_email_to_new_user(user, request, agency=None):
     )
 
 
-def _generate_password_reset_url(user, request):
+def _generate_password_reset_url(user, request, next_param=""):
     encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(reverse("set_password", args=(encoded_id, token)))
-
-    return url.replace("http://", "https://")
+    url_parts = list(urlparse(url))
+    if next_param:
+        querystring = QueryDict(url_parts[4], mutable=True)
+        querystring["next"] = next_param
+        url_parts[4] = querystring.urlencode(safe="/")
+    return urlunparse(url_parts).replace("http://", "https://")
 
 
 def send_supply_report_email(

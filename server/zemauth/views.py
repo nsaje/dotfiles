@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from django.shortcuts import resolve_url
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.http import is_safe_url
 from django.utils.http import urlsafe_base64_decode
 from ratelimit.decorators import ratelimit
 from rest_framework import permissions
@@ -66,6 +67,7 @@ def login(request, *args, **kwargs):
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs["extra_context"]["gauth_url"] = gauth.get_uri(request)
 
+    kwargs["success_url_allowed_hosts"] = settings.ALLOWED_REDIRECT_HOSTS
     response = auth_views.LoginView.as_view(**kwargs)(request, *args, **kwargs)
     if request.method == "POST":
         devices.handle_user_device(request, response)
@@ -94,7 +96,9 @@ def set_password(request, uidb64=None, token=None, template_name=None):
                     user = auth.authenticate(username=user.email, password=request.POST["new_password"])
                     auth.login(request, user)
 
-                return HttpResponseRedirect(resolve_url("/"))
+                next_param = request.GET.get("next", "/")
+                redirect_to = next_param if is_safe_url(next_param, settings.ALLOWED_REDIRECT_HOSTS, True) else "/"
+                return HttpResponseRedirect(resolve_url(redirect_to))
         else:
             form = forms.SetPasswordForm(user)
     else:
@@ -122,7 +126,9 @@ def password_reset(request, template_name=None):
 
             try:
                 user = User.objects.get(email__iexact=form.cleaned_data["username"])
-                email_helper.send_password_reset_email(user, request)
+                next_param = request.GET.get("next", "")
+                safe_next_param = next_param if is_safe_url(next_param, settings.ALLOWED_REDIRECT_HOSTS, True) else ""
+                email_helper.send_password_reset_email(user, request, safe_next_param)
             except User.DoesNotExist:
                 pass
 

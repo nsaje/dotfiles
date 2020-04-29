@@ -137,6 +137,7 @@ STATIC_ROOT = "static"
 
 LOGIN_URL = "/signin"
 LOGIN_REDIRECT_URL = "/"
+ALLOWED_REDIRECT_HOSTS = ["ssp.zemanta.com"]
 
 AUTH_USER_MODEL = "zemauth.User"
 
