@@ -159,14 +159,14 @@ class ViewSelectorTest(TestCase):
         )  # noqa
 
         self.assertEqual(
-            view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id"]), "mv_adgroup_touch_placement"
+            view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id"]), "mv_touchpointconversions"
         )  # noqa
         self.assertEqual(
             view_selector.get_best_view_touchpoints(["ad_group_id", "placement_id"]), "mv_adgroup_touch_placement"
         )  # noqa
         self.assertEqual(
             view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "placement_id"]),
-            "mv_adgroup_touch_placement",
+            "mv_touchpointconversions",
         )  # noqa
         self.assertEqual(
             view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "dma"]), "mv_touchpointconversions"
