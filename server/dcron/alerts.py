@@ -143,11 +143,17 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
     slack_color = _to_slack_color(alert)
 
     # determine channel name based on severity
-    if hasattr(dcron_job, "dcronjobsettings") and dcron_job.dcronjobsettings.severity == constants.Severity.HIGH:
-        if dcron_job.dcronjobsettings.ownership == constants.Ownership.PRODOPS:
-            channel_name = SLACK_CHANNEL_PRODOPS_HIGH_SEVERITY
+    if hasattr(dcron_job, "dcronjobsettings"):
+        if dcron_job.dcronjobsettings.severity == constants.Severity.HIGH:
+            if dcron_job.dcronjobsettings.ownership == constants.Ownership.PRODOPS:
+                channel_name = SLACK_CHANNEL_PRODOPS_HIGH_SEVERITY
+            else:
+                channel_name = SLACK_CHANNEL_Z1_HIGH_SEVERITY
         else:
-            channel_name = SLACK_CHANNEL_Z1_HIGH_SEVERITY
+            if dcron_job.dcronjobsettings.ownership == constants.Ownership.PRODOPS:
+                channel_name = SLACK_CHANNEL_PRODOPS_LOW_SEVERITY
+            else:
+                channel_name = SLACK_CHANNEL_Z1_LOW_SEVERITY
     else:
         channel_name = SLACK_CHANNEL_Z1_LOW_SEVERITY
 
