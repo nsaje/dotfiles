@@ -5,6 +5,7 @@ from django.db.models import Q
 from rest_framework import permissions
 
 import core.features.publisher_groups
+import dash.models
 import restapi.access
 import utils.exc
 from restapi.common.pagination import StandardPagination
@@ -62,17 +63,24 @@ class AddToPublisherGroupViewSet(RESTAPIBaseViewSet):
         serializer = serializers.AddToPublisherGroupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        with transaction.atomic():
-            publisher_group, _ = core.features.publisher_groups.get_or_create_publisher_group(
-                request,
-                serializer.validated_data.get("name"),
-                publisher_group_id=serializer.validated_data.get("id"),
-                agency_id=serializer.validated_data.get("agency_id"),
-                account_id=serializer.validated_data.get("account_id"),
-                default_include_subdomains=serializer.validated_data.get("default_include_subdomains"),
-            )
-            core.features.publisher_groups.add_publisher_group_entries(
-                request, publisher_group, serializer.validated_data.get("entries")
-            )
-        serializer = serializers.AddToPublisherGroupSerializer(publisher_group)
-        return rest_framework.response.Response(serializer.data, status=rest_framework.status.HTTP_202_ACCEPTED)
+        try:
+            with transaction.atomic():
+                publisher_group, _ = core.features.publisher_groups.get_or_create_publisher_group(
+                    request,
+                    serializer.validated_data.get("name"),
+                    publisher_group_id=serializer.validated_data.get("id"),
+                    agency_id=serializer.validated_data.get("agency_id"),
+                    account_id=serializer.validated_data.get("account_id"),
+                    default_include_subdomains=serializer.validated_data.get("default_include_subdomains"),
+                )
+                core.features.publisher_groups.add_publisher_group_entries(
+                    request, publisher_group, serializer.validated_data.get("entries")
+                )
+            serializer = serializers.AddToPublisherGroupSerializer(publisher_group)
+            return rest_framework.response.Response(serializer.data, status=rest_framework.status.HTTP_202_ACCEPTED)
+        except dash.models.PublisherGroup.DoesNotExist as e:
+            raise utils.exc.ValidationError(errors={"id": [str(e)]})
+        except dash.models.Agency.DoesNotExist as e:
+            raise utils.exc.ValidationError(errors={"agencyId": [str(e)]})
+        except dash.models.Account.DoesNotExist as e:
+            raise utils.exc.ValidationError(errors={"accountId": [str(e)]})

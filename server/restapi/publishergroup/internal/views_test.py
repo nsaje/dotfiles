@@ -349,8 +349,8 @@ class AddToPublisherGroupTest(RESTAPITest):
             reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
         )
         self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
-        response = self.assertResponseError(r, "DoesNotExist")
-        self.assertEqual(response["details"], "PublisherGroup matching query does not exist.")
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"id": ["PublisherGroup matching query does not exist."]})
 
     def test_add_to_invalid_account(self):
         request_data = {
@@ -366,8 +366,8 @@ class AddToPublisherGroupTest(RESTAPITest):
             reverse("restapi.publishergroup.internal:publishergroup_add"), data=request_data, format="json"
         )
         self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
-        response = self.assertResponseError(r, "DoesNotExist")
-        self.assertEqual(response["details"], "Account matching query does not exist.")
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"accountId": ["Account matching query does not exist."]})
 
     def test_add_to_both_agency_and_account(self):
         request_data = {
