@@ -136,13 +136,14 @@ INSERT INTO mv_adgroup_placement (
                     source_id,
                     ad_group_id,
                     CASE WHEN source_id = 3 THEN NULL ELSE publisher END AS publisher,
-                    placement
+                    placement,
+                    placement_type
                 FROM mv_touchpointconversions
                 WHERE date BETWEEN %(date_from)s AND %(date_to)s
                 {% if account_id %}
                 AND account_id=%(account_id)s
                 {% endif %}
-                GROUP BY 1, 2, 3, 4, 5
+                GROUP BY 1, 2, 3, 4, 5, 6
             ) tpc
         ) d
         JOIN mvh_adgroup_structure c on d.ad_group_id=c.ad_group_id

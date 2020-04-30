@@ -496,6 +496,7 @@ class MVMaster(BreakdownsBase):
 
 
 class MVTouchpointConversions(BreakdownsBase):
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
     device_type = backtosql.Column("device_type", BREAKDOWN)
     device_os = backtosql.Column("device_os", BREAKDOWN)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN)

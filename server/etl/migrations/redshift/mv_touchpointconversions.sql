@@ -31,6 +31,7 @@ CREATE TABLE mv_touchpointconversions (
 
       -- kw::dimensions
       type int2 encode zstd,
-      placement varchar(127) encode zstd
+      placement varchar(127) encode zstd,
+      placement_type int encode AZ64
       -- kw::end      
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, slug, conversion_window);

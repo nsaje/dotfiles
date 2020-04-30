@@ -198,6 +198,7 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     publisher = backtosql.Column("publisher", BREAKDOWN)
     publisher_source_id = backtosql.Column("publisher_source_id", BREAKDOWN)
     placement = backtosql.Column("placement", BREAKDOWN)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN)
 
     device_type = backtosql.Column("device_type", BREAKDOWN)
     device_os = backtosql.Column("device_os", BREAKDOWN)

@@ -31,10 +31,10 @@ MATERIALIZED_VIEWS = [
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_placement",
         breakdown=AD_GROUP_BREAKDOWN
-        + ["publisher", "publisher_source_id", "placement"]
+        + ["publisher", "publisher_source_id", "placement_type", "placement"]
         + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_GROUP_BREAKDOWN
-        + ["publisher_source_id", "placement"]
+        + ["publisher_source_id", "placement_type", "placement"]
         + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),

@@ -53,7 +53,6 @@ CONVERSION_VIEWS = [
 
 TOUCH_BASE = {"slug", "window"}
 TOUCH_ENVIRONMENT = {sc.ENVIRONMENT}
-TOUCH_PLACEMENT = {sc.PLACEMENT}
 
 TOUCHPOINT_VIEWS = [
     ["mv_account_touch", TOUCH_BASE | ACCOUNT],
@@ -70,15 +69,15 @@ TOUCHPOINT_VIEWS = [
     ["mv_adgroup_touch_geo", TOUCH_BASE | AD_GROUP_N_ABOVE | GEO],
     [
         "mv_adgroup_touch_placement",
-        TOUCH_BASE | AD_GROUP_N_ABOVE | TOUCH_PLACEMENT,
-    ],  # TODO: add PUBLISHER back after conversions query bug is solved
+        TOUCH_BASE | AD_GROUP_N_ABOVE | PLACEMENT,
+    ],  # TODO: add PUBLISHER back after table correctly replicated
     ["mv_contentad_touch", TOUCH_BASE | CONTENT_AD_N_ABOVE],
     ["mv_contentad_touch_device", TOUCH_BASE | CONTENT_AD_N_ABOVE | DEVICE],
     ["mv_contentad_touch_environment", TOUCH_BASE | CONTENT_AD_N_ABOVE | TOUCH_ENVIRONMENT],
     ["mv_contentad_touch_geo", TOUCH_BASE | CONTENT_AD_N_ABOVE | GEO],
     [
         "mv_touchpointconversions",
-        TOUCH_BASE | CONTENT_AD_N_ABOVE | PUBLISHER | TOUCH_PLACEMENT | TOUCH_ENVIRONMENT | DEVICE | GEO,
+        TOUCH_BASE | CONTENT_AD_N_ABOVE | PUBLISHER | PLACEMENT | TOUCH_ENVIRONMENT | DEVICE | GEO,
     ],
 ]
 
