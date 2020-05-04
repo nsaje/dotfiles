@@ -7,9 +7,9 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
-import {ChangeEvent} from '../../../../shared/types/change-event';
-import {PublisherGroupsStoreFieldsErrorsState} from '../../services/publisher-groups-store/publisher-groups.store.fields-errors-state';
+import {PublisherGroup} from './types/publisher-group';
+import {ChangeEvent} from '../../types/change-event';
+import {PublisherGroupErrors} from './types/publisher-group-errors';
 
 @Component({
     selector: 'zem-publisher-group-edit-form',
@@ -20,11 +20,13 @@ export class PublisherGroupEditFormComponent {
     @Input()
     publisherGroup: PublisherGroup;
     @Input()
-    publisherGroupErrors: PublisherGroupsStoreFieldsErrorsState;
+    publisherGroupErrors: PublisherGroupErrors;
     @Input()
     showNewLabels: boolean = false;
     @Input()
     isDisabled: boolean = false;
+    @Input()
+    showFileUpload: boolean = true;
     @Output()
     publisherGroupChange = new EventEmitter<ChangeEvent<PublisherGroup>>();
     @Output()

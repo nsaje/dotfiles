@@ -1,6 +1,6 @@
 import {Inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
-import {UpdateBlacklistStatusesRequest} from '../types/update-blacklist-statuses-request';
+import {PublisherTargeting} from '../types/publisher-targeting';
 import {PublishersEndpoint} from './publishers.endpoint';
 import {
     PublisherBlacklistLevel,
@@ -28,10 +28,12 @@ export class PublishersService {
         entityId: number,
         requestStateUpdater: RequestStateUpdater
     ): Observable<boolean> {
-        const request: UpdateBlacklistStatusesRequest = {
+        const request: PublisherTargeting = {
             entries: rows.map(row => {
                 return {
-                    ...row,
+                    source: row.sourceId.toString(),
+                    publisher: row.publisher,
+                    ...(isDefined(row.placement) && {placement: row.placement}),
                     ...(status === PublisherTargetingStatus.BLACKLISTED && {
                         includeSubdomains: true,
                     }),

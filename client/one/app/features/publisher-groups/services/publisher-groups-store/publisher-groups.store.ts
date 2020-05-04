@@ -9,7 +9,7 @@ import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-
 import {HttpErrorResponse} from '@angular/common/http';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
-import {PublisherGroupsStoreFieldsErrorsState} from './publisher-groups.store.fields-errors-state';
+import {PublisherGroupFieldsErrorsState} from '../../../publisher-groups/types/publisher-group-fields-errors-state';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
@@ -184,7 +184,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                     },
                     (error: HttpErrorResponse) => {
                         const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new PublisherGroupsStoreFieldsErrorsState(),
+                            new PublisherGroupFieldsErrorsState(),
                             error
                         );
                         if (error.status === 413) {

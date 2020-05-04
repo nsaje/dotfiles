@@ -24,7 +24,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isEntityBreakdown = isEntityBreakdown;
         $ctrl.isGridExportVisible = isGridExportVisible;
         $ctrl.isGridBulkActionsVisible = isGridBulkActionsVisible;
-        $ctrl.isGridBulkBlacklistActionsVisible = isGridBulkBlacklistActionsVisible;
+        $ctrl.areGridPublisherAndPlacementActionsVisible = areGridPublisherAndPlacementActionsVisible;
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
@@ -63,13 +63,13 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.selectedRows = $ctrl.gridApi
                     .getSelection()
                     .selected.map(function(row) {
-                        return zemGridActionsService.mapRowForBlacklisting(
+                        return zemGridActionsService.mapRowToPublisherInfo(
                             row,
                             $ctrl.breakdown
                         );
                     })
                     .filter(function(row) {
-                        return row !== undefined && row.source !== undefined;
+                        return row !== undefined && row.sourceId !== undefined;
                     });
             }
         }
@@ -105,7 +105,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             );
         }
 
-        function isGridBulkBlacklistActionsVisible() {
+        function areGridPublisherAndPlacementActionsVisible() {
             return (
                 $ctrl.breakdown === constants.breakdown.PUBLISHER ||
                 $ctrl.breakdown === constants.breakdown.PLACEMENT
