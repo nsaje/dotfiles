@@ -19,8 +19,6 @@ import {AnalyticsView} from './views/analytics/analytics.view';
 import {CanActivateBreakdownGuard} from './route-guards/canActivateBreakdown.guard';
 import {CanActivateEntityGuard} from './route-guards/canActivateEntity.guard';
 import {BulkBlacklistActionsComponent} from './components/grid/actions/bulk-blacklist-actions/bulk-blacklist-actions.component';
-import {AddToPublishersActionComponent} from './components/grid/actions/add-to-publishers/add-to-publishers-action/add-to-publishers-action.component';
-import {AddToPublishersFormComponent} from './components/grid/actions/add-to-publishers/add-to-publishers-form/add-to-publishers-form.component';
 
 @NgModule({
     declarations: [
@@ -40,8 +38,6 @@ import {AddToPublishersFormComponent} from './components/grid/actions/add-to-pub
         GridContainerComponent,
         AnalyticsView,
         BulkBlacklistActionsComponent,
-        AddToPublishersActionComponent,
-        AddToPublishersFormComponent,
     ],
     imports: [SharedModule, RulesLibraryModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard],
@@ -55,7 +51,6 @@ import {AddToPublishersFormComponent} from './components/grid/actions/add-to-pub
         CampaignCloningFormComponent,
         AnalyticsView,
         BulkBlacklistActionsComponent,
-        AddToPublishersActionComponent,
     ],
 })
 export class AnalyticsModule {}

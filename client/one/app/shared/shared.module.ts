@@ -67,7 +67,6 @@ import {ExpandableSectionComponent} from './components/expandable-section/expand
 import {NewFeatureDirective} from './directives/new-feature/new-feature.directive';
 import {LoadingOverlayDirective} from './directives/loading-overlay/loading-overlay.directive';
 import {ItemScopeCellComponent} from './components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
-import {PublisherGroupEditFormComponent} from './components/publisher-group-edit-form/publisher-group-edit-form.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -128,7 +127,6 @@ const EXPORTED_DECLARATIONS = [
     ImageCheckboxInputGroupComponent,
     ExpandableSectionComponent,
     ItemScopeCellComponent,
-    PublisherGroupEditFormComponent,
 ];
 
 @NgModule({

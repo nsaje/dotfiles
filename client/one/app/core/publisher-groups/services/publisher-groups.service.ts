@@ -3,9 +3,6 @@ import {PublisherGroupsEndpoint} from './publisher-groups.endpoint';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
 import {PublisherGroup} from '../types/publisher-group';
-import {PublisherInfo} from '../../publishers/types/publisher-info';
-import {isDefined} from '../../../shared/helpers/common.helpers';
-import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
 
 @Injectable()
 export class PublisherGroupsService {
@@ -63,33 +60,5 @@ export class PublisherGroupsService {
 
     downloadExample() {
         this.endpoint.downloadExample();
-    }
-
-    addEntries(
-        rows: PublisherInfo[],
-        publisherGroup: Partial<PublisherGroup>,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<PublisherGroupWithEntries> {
-        const publisherGroupWithEntries: PublisherGroupWithEntries = {
-            id: publisherGroup.id,
-            name: publisherGroup.name,
-            accountId: publisherGroup.accountId,
-            agencyId: publisherGroup.agencyId,
-            defaultIncludeSubdomains: publisherGroup.includeSubdomains === true,
-            entries: rows.map(row => {
-                return {
-                    source: row.sourceSlug,
-                    publisher: row.publisher,
-                    ...(isDefined(row.placement) && {placement: row.placement}),
-                    includeSubdomains:
-                        publisherGroup.includeSubdomains === true,
-                };
-            }),
-        };
-
-        return this.endpoint.addEntries(
-            publisherGroupWithEntries,
-            requestStateUpdater
-        );
     }
 }

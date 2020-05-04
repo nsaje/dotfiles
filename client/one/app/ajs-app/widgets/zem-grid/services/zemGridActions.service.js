@@ -64,7 +64,7 @@ angular
         this.isStateSwitchVisible = isStateSwitchVisible;
         this.getStateCautionMessage = getStateCautionMessage;
         this.getWidth = getWidth;
-        this.mapRowToPublisherInfo = mapRowToPublisherInfo;
+        this.mapRowForBlacklisting = mapRowForBlacklisting;
 
         // prettier-ignore
         function getButtons(level, breakdown, row) { // eslint-disable-line complexity
@@ -436,7 +436,7 @@ angular
 
             blacklistSubscription = zemPublishersService
                 .updateBlacklistStatuses(
-                    [mapRowToPublisherInfo(row, action.breakdown)],
+                    [mapRowForBlacklisting(row, action.breakdown)],
                     action.status,
                     action.level,
                     entityId,
@@ -464,18 +464,16 @@ angular
             }
         }
 
-        function mapRowToPublisherInfo(row, breakdown) {
+        function mapRowForBlacklisting(row, breakdown) {
             var COLUMNS = zemGridEndpointColumns.COLUMNS;
             if (breakdown === constants.breakdown.PUBLISHER) {
                 return {
-                    sourceId: row.data.stats[COLUMNS.sourceId.field].value,
-                    sourceSlug: row.data.stats[COLUMNS.sourceSlug.field].value,
+                    source: row.data.stats[COLUMNS.sourceId.field].value,
                     publisher: row.data.stats[COLUMNS.domain.field].value,
                 };
             } else if (breakdown === constants.breakdown.PLACEMENT) {
                 return {
-                    sourceId: row.data.stats[COLUMNS.sourceId.field].value,
-                    sourceSlug: row.data.stats[COLUMNS.sourceSlug.field].value,
+                    source: row.data.stats[COLUMNS.sourceId.field].value,
                     publisher: row.data.stats[COLUMNS.publisher.field].value,
                     placement: row.data.stats[COLUMNS.name.field].value,
                 };

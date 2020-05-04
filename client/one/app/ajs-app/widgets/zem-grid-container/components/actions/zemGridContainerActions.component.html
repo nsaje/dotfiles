@@ -18,7 +18,7 @@
     ></zem-grid-bulk-actions>
 
     <zem-bulk-blacklist-actions
-        ng-if="$ctrl.areGridPublisherAndPlacementActionsVisible()"
+        ng-if="$ctrl.isGridBulkBlacklistActionsVisible()"
         class="zem-bulk-blacklist-actions button-bar-item zem-bulk-blacklist-actions"
         [selected-rows]="$ctrl.selectedRows"
         [level]="$ctrl.level"
@@ -29,14 +29,6 @@
             $ctrl.gridApi.clearSelection(); $ctrl.gridApi.reload()
         "
     ></zem-bulk-blacklist-actions>
-
-    <zem-add-to-publishers-action
-        ng-if="$ctrl.areGridPublisherAndPlacementActionsVisible()"
-        class="zem-add-to-publishers-action"
-        [selected-rows]="$ctrl.selectedRows"
-        [account-id]="$ctrl.accountId"
-        (action-success)="$ctrl.gridApi.clearSelection()"
-    ></zem-add-to-publishers-action>
 
     <zem-bid-modifier-actions
         ng-if="$ctrl.areBidModifierActionsVisible()"

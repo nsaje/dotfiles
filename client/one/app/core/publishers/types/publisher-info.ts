@@ -1,6 +1,5 @@
 export interface PublisherInfo {
-    sourceId: number;
-    sourceSlug: string;
+    source: number;
     publisher: string;
     placement?: string;
 }

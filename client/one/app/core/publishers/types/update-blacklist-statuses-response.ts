@@ -1,4 +1,4 @@
-export interface PublisherTargetingResponse {
+export interface UpdateBlacklistStatusesResponse {
     success: boolean;
     data: {success: boolean};
 }
