@@ -22,7 +22,7 @@ class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
     def test_apply_rule_on_cooldown(self, cooldown_mock, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
         cooldown_mock.return_value = True
@@ -42,7 +42,7 @@ class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._is_on_cooldown")
     def test_apply_rule_does_not_meet_conditions(self, cooldown_mock, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
         cooldown_mock.return_value = False
