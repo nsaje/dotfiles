@@ -2,11 +2,15 @@ from django.conf import settings
 from django.db import models
 
 import core.models
+import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 
 ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
 
 
-class PublisherGroupQuerySet(models.QuerySet):
+class PublisherGroupQuerySet(
+    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet
+):
     def filter_explicit(self):
         return self.filter(implicit=False)
 
@@ -58,6 +62,16 @@ class PublisherGroupQuerySet(models.QuerySet):
 
     def search(self, search_expression):
         return self.filter(name__icontains=search_expression)
+
+    def _get_query_path_to_account(self) -> str:
+        return "account"
+
+    def _filter_by_entity_permission(self, user: zemauth.models.User, permission: str) -> models.QuerySet:
+        query_set = super(PublisherGroupQuerySet, self)._filter_by_entity_permission(user, permission)
+        query_set |= self.filter(
+            models.Q(agency__entitypermission__user=user) & models.Q(agency__entitypermission__permission=permission)
+        )
+        return query_set
 
     def _all_ids_from_values_list_to_set(self, data, ids):
         for line in data:

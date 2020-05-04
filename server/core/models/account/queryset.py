@@ -3,6 +3,8 @@ from django.db import models
 import core.features.bcm
 import core.models.helpers
 import dash.constants
+import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 
 OEN_ACCOUNT_ID = 305
 ZMS_TAG = "outbrain/sales/OutbrainSalesforce"
@@ -10,7 +12,7 @@ NAS_TAG = "biz/NES"
 INTERNAL_TAG = "biz/internal"
 
 
-class AccountQuerySet(models.QuerySet):
+class AccountQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet):
     def filter_by_user(self, user):
         if user.has_perm("zemauth.can_see_all_accounts"):
             return self
@@ -72,3 +74,6 @@ class AccountQuerySet(models.QuerySet):
 
     def all_use_bcm_v2(self):
         return all(self.values_list("uses_bcm_v2", flat=True))
+
+    def _get_query_path_to_account(self) -> str:
+        return ""

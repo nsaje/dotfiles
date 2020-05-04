@@ -1,9 +1,11 @@
 from django.db import models
 
 import core.models
+import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 
 
-class CampaignQuerySet(models.QuerySet):
+class CampaignQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet):
     def filter_by_user(self, user):
         if user.has_perm("zemauth.can_see_all_accounts"):
             return self
@@ -42,3 +44,6 @@ class CampaignQuerySet(models.QuerySet):
             if campaignstop_state["allowed_to_run"]:
                 active_ids.append(campaign_id)
         return self.filter(id__in=active_ids)
+
+    def _get_query_path_to_account(self) -> str:
+        return "account"

@@ -1,17 +1,23 @@
+from typing import Any
+
 from django.test import TestCase
 
 import core
 import utils.dates_helper
+import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
 from . import model
 
 
-class AdGroupQuerysetTest(TestCase):
+class AdGroupQuerySetTest(
+    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetTestCaseMixin, TestCase
+):
     def test_filter_active(self):
         campaign = magic_mixer.blend(core.models.Campaign, settings_archived=True)
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign, archived=True)
+        adgroup = magic_mixer.blend(model.AdGroup, campaign=campaign, archived=True)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
 
         ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
@@ -28,7 +34,7 @@ class AdGroupQuerysetTest(TestCase):
 
     def test_filter_current_and_active(self):
         campaign = magic_mixer.blend(core.models.Campaign)
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        adgroup = magic_mixer.blend(model.AdGroup, campaign=campaign)
 
         adgroup.settings.update_unsafe(
             None,
@@ -52,7 +58,7 @@ class AdGroupQuerysetTest(TestCase):
 
     def test_filter_allowed_to_run(self):
         campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=False)
-        magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        magic_mixer.blend(model.AdGroup, campaign=campaign)
 
         groups = model.AdGroup.objects.all().filter_allowed_to_run()
         self.assertEqual(len(groups), 1)
@@ -65,7 +71,7 @@ class AdGroupQuerysetTest(TestCase):
 
     def test_all_filters(self):
         campaign = magic_mixer.blend(core.models.Campaign, archived=False)
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        adgroup = magic_mixer.blend(model.AdGroup, campaign=campaign)
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=adgroup)
 
         adgroup.settings.update_unsafe(
@@ -79,3 +85,10 @@ class AdGroupQuerysetTest(TestCase):
 
         groups = model.AdGroup.objects.all().filter_running_and_has_budget()
         self.assertEqual(len(groups), 1)
+
+    def _get_model_with_agency_scope(self, agency: core.models.Agency) -> Any:
+        return None
+
+    def _get_model_with_account_scope(self, account: core.models.Account) -> Any:
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        return magic_mixer.blend(model.AdGroup, campaign=campaign)

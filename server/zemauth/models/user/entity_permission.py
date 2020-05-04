@@ -38,6 +38,11 @@ class EntityPermissionMixin(object):
     def has_rest_api_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.RESTAPI, entity)
 
+    def has_perm_on_all_entities(self, permission: str) -> bool:
+        if permission is None or permission not in zemauth.features.entity_permission.Permission.get_all():
+            return False
+        return self.entitypermission_set.filter(permission=permission, agency=None, account=None).exists()
+
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 
@@ -48,19 +53,19 @@ class EntityPermissionMixin(object):
         if isinstance(entity, core.models.Agency):
             if self.entitypermission_set.filter(permission=permission).filter_by_agency(entity).exists():
                 return True
-            return self._has_perm_on_wildcard(permission)
+            return self.has_perm_on_all_entities(permission)
         elif isinstance(entity, core.models.Account):
             if self.entitypermission_set.filter(permission=permission).filter_by_account(entity).exists():
                 return True
-            return self._has_perm_on_wildcard(permission)
+            return self.has_perm_on_all_entities(permission)
         elif isinstance(entity, core.models.Campaign):
             if self.entitypermission_set.filter(permission=permission).filter_by_campaign(entity).exists():
                 return True
-            return self._has_perm_on_wildcard(permission)
+            return self.has_perm_on_all_entities(permission)
         elif isinstance(entity, core.models.AdGroup):
             if self.entitypermission_set.filter(permission=permission).filter_by_adgroup(entity).exists():
                 return True
-            return self._has_perm_on_wildcard(permission)
+            return self.has_perm_on_all_entities(permission)
         else:
             agency_full_name = f"{core.models.Agency.__module__}.{core.models.Agency.__name__}"
             account_full_name = f"{core.models.Account.__module__}.{core.models.Account.__name__}"
@@ -69,6 +74,3 @@ class EntityPermissionMixin(object):
             raise TypeError(
                 f"Entity must be of types: {agency_full_name}, {account_full_name}, {campaign_full_name}, {ad_group_full_name}."
             )
-
-    def _has_perm_on_wildcard(self, permission: str) -> bool:
-        return self.entitypermission_set.filter(permission=permission, agency=None, account=None).exists()

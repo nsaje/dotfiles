@@ -20,9 +20,9 @@ class EntityPermissionMixinTestCase(TestCase):
         user: User = magic_mixer.blend(User)
         for permission in zemauth.features.entity_permission.Permission.get_all():
             entity_perm_function = self._get_entity_perm_function(user, permission)
+            self._for_all_entities(user, entity_perm_function, permission)
             self._for_agency(user, entity_perm_function, permission)
             self._for_account(user, entity_perm_function, permission)
-            self._for_wildcard(user, entity_perm_function, permission)
             self._no_access(user, entity_perm_function)
 
     @staticmethod
@@ -45,6 +45,23 @@ class EntityPermissionMixinTestCase(TestCase):
             return user.has_rest_api_perm_on
         else:
             raise NotImplementedError(f"Entity permission {permission} function not implemented.")
+
+    def _for_all_entities(self, user, entity_perm_function, permission):
+        user.entitypermission_set.all().delete()
+        magic_mixer.blend(
+            zemauth.features.entity_permission.EntityPermission,
+            user=user,
+            agency=None,
+            account=None,
+            permission=permission,
+        )
+
+        self.assertEqual(entity_perm_function(self.agency), True)
+        self.assertEqual(entity_perm_function(self.account), True)
+        self.assertEqual(entity_perm_function(self.campaign), True)
+        self.assertEqual(entity_perm_function(self.adgroup), True)
+        with self.assertRaises(TypeError):
+            entity_perm_function(self.deal)
 
     def _for_agency(self, user, entity_perm_function, permission):
         user.entitypermission_set.all().delete()
@@ -69,23 +86,6 @@ class EntityPermissionMixinTestCase(TestCase):
         self.assertEqual(entity_perm_function(self.account), True)
         self.assertEqual(entity_perm_function(self.adgroup), True)
         self.assertEqual(entity_perm_function(self.campaign), True)
-        with self.assertRaises(TypeError):
-            entity_perm_function(self.deal)
-
-    def _for_wildcard(self, user, entity_perm_function, permission):
-        user.entitypermission_set.all().delete()
-        magic_mixer.blend(
-            zemauth.features.entity_permission.EntityPermission,
-            user=user,
-            agency=None,
-            account=None,
-            permission=permission,
-        )
-
-        self.assertEqual(entity_perm_function(self.agency), True)
-        self.assertEqual(entity_perm_function(self.account), True)
-        self.assertEqual(entity_perm_function(self.campaign), True)
-        self.assertEqual(entity_perm_function(self.adgroup), True)
         with self.assertRaises(TypeError):
             entity_perm_function(self.deal)
 

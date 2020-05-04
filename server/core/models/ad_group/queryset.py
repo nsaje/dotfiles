@@ -2,9 +2,11 @@ from django.db import models
 
 import dash.constants
 import utils.dates_helper
+import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 
 
-class AdGroupQuerySet(models.QuerySet):
+class AdGroupQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet):
     def filter_by_user(self, user):
         if user.has_perm("zemauth.can_see_all_accounts"):
             return self
@@ -132,3 +134,6 @@ class AdGroupQuerySet(models.QuerySet):
         return (
             self.filter_allowed_to_run().filter_at_least_one_source_running().exclude_end_date_before_date().distinct()
         )
+
+    def _get_query_path_to_account(self) -> str:
+        return "campaign__account"
