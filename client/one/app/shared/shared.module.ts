@@ -50,7 +50,7 @@ import {FileSelectorComponent} from './components/file-selector/file-selector.co
 import {CommentPopoverComponent} from './components/comment-popover/comment-popover.component';
 import {PaginationComponent} from './components/pagination/pagination.component';
 import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
-import {LoadingOverlayComponent} from './components/smart-grid/components/loading-overlay/loading-overlay.component';
+import {GridLoadingOverlayComponent} from './components/smart-grid/components/grid-loading-overlay/grid-loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
 import {HelpPopoverHeaderComponent} from './components/smart-grid/components/header/help-popover/help-popover-header.component';
 import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
@@ -114,7 +114,7 @@ const EXPORTED_DECLARATIONS = [
     ContentFormGroupComponent,
     PaginationComponent,
     SmartGridComponent,
-    LoadingOverlayComponent,
+    GridLoadingOverlayComponent,
     NoRowsOverlayComponent,
     HelpPopoverHeaderComponent,
     DealEditFormComponent,
@@ -142,7 +142,7 @@ const EXPORTED_DECLARATIONS = [
         NgbPopoverModule,
         NgxFileDropModule,
         AgGridModule.withComponents([
-            LoadingOverlayComponent,
+            GridLoadingOverlayComponent,
             NoRowsOverlayComponent,
             HelpPopoverHeaderComponent,
             ItemScopeCellComponent,

@@ -24,7 +24,7 @@ import {
     DEFAULT_GRID_OPTIONS,
     DEFAULT_PAGE_SIZE_OPTIONS,
 } from './smart-grid.component.config';
-import {LoadingOverlayComponent} from './components/loading-overlay/loading-overlay.component';
+import {GridLoadingOverlayComponent} from './components/grid-loading-overlay/grid-loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/no-rows-overlay/no-rows-overlay.component';
 import * as commonHelpers from '../../helpers/common.helpers';
 import * as arrayHelpers from '../../helpers/array.helpers';
@@ -85,7 +85,7 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
             ...DEFAULT_GRID_OPTIONS,
             ...commonHelpers.getValueOrDefault(this.options, {}),
             frameworkComponents: {
-                loadingOverlayComponent: LoadingOverlayComponent,
+                loadingOverlayComponent: GridLoadingOverlayComponent,
                 noRowsOverlayComponent: NoRowsOverlayComponent,
             },
         };
