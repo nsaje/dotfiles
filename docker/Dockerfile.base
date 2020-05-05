@@ -39,6 +39,7 @@ ADD server/requirements.txt /requirements.txt
 RUN set -ex && \
     cd /opt && \
     buildDeps='gcc python3-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev libcurl4-openssl-dev zlib1g-dev' && \
+    apt-get update && \
     apt-get install -y --no-install-recommends $buildDeps && \
     pip install -r /requirements.txt && \
     mv /requirements.txt /requirements.txt-installed && \

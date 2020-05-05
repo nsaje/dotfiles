@@ -1,7 +1,7 @@
 FROM node:8
 
-RUN apt-get update
-RUN apt-get install  -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install  -y --no-install-recommends \
         nano \
         xvfb
 
@@ -14,6 +14,7 @@ RUN mv node_modules/npm /usr/local/lib/node_modules/npm
 RUN test ! -x /opt/google/chrome/chrome \
     && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && (dpkg -i  google-chrome-stable_current_amd64.deb || true) \
+    && apt-get update \
     && apt-get install -f -y \
     && echo 'exec /opt/google/chrome/chrome --no-sandbox "$@"' > /run-chrome.sh \
     && chmod +x /run-chrome.sh \
