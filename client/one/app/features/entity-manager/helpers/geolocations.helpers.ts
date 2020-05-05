@@ -1,6 +1,8 @@
 import {IncludedExcluded} from '../../../core/entities/types/common/included-excluded';
 import {TargetRegions} from '../../../core/entities/types/common/target-regions';
 import {GeolocationType, IncludeExcludeType} from '../../../app.constants';
+import {isEmpty} from '../../../shared/helpers/array.helpers';
+import {getValueOrDefault} from '../../../shared/helpers/common.helpers';
 
 export function getGeolocationsKeys(
     geotargeting: IncludedExcluded<TargetRegions>
@@ -42,4 +44,41 @@ export function getIncludeExcludePropertyNameFromIncludeExcludeType(
     return includeExcludeType === IncludeExcludeType.INCLUDE
         ? 'included'
         : 'excluded';
+}
+
+export function getZipCodeCountry(zipCode: string): string {
+    return zipCode.split(':')[0];
+}
+
+export function getZipCodeNumber(zipCode: string): string {
+    const parts = zipCode.split(':');
+    return getValueOrDefault(parts[1], '');
+}
+
+export function getZipCodesArray(
+    zipCodesText: string,
+    countryCode: string
+): string[] {
+    return zipCodesText
+        .trim()
+        .split(/\s*[,\n]+\s*/)
+        .filter(zip => zip)
+        .map((zipCode: string) => {
+            return `${countryCode}:${zipCode}`;
+        });
+}
+
+export function getZipCodesText(zipCodesArray: string[]): string {
+    return zipCodesArray.map(zipCode => getZipCodeNumber(zipCode)).join(',');
+}
+
+export function areAllSameCountries(zipCodes: string[]): boolean {
+    if (isEmpty(zipCodes)) {
+        return true;
+    }
+
+    const zipCodeFirstCountry = getZipCodeCountry(zipCodes[0]);
+    return zipCodes.every(
+        (zipCode: string) => getZipCodeCountry(zipCode) === zipCodeFirstCountry
+    );
 }

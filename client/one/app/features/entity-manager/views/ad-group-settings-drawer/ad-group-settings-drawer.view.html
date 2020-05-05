@@ -529,6 +529,15 @@
                     "
                 >
                     <div class="zem-settings-section">
+                        <div class="zem-settings-section__header">
+                            <div class="zem-settings-section__title">
+                                ZIP / Postal code targeting
+                            </div>
+                            <div class="zem-settings-section__description">
+                                You can target ZIP / postal codes in one
+                                specific country.
+                            </div>
+                        </div>
                         <zem-zip-targeting
                             class="zem-zip-targeting zem-settings-section__item"
                             [includedLocations]="
@@ -537,9 +546,13 @@
                             [excludedLocations]="
                                 state.entity.targeting.geo.excluded
                             "
-                            (onUpdate)="
-                                store.setLocationTargeting($event.$event)
+                            [searchedLocations]="state.searchedLocations"
+                            [selectedLocation]="
+                                state.selectedZipTargetingLocation
                             "
+                            (locationSearch)="store.searchLocations($event)"
+                            (locationOpen)="store.clearSearchedLocations()"
+                            (targetingUpdate)="store.setZipTargeting($event)"
                         ></zem-zip-targeting>
                     </div>
                     <div class="zem-settings-section">

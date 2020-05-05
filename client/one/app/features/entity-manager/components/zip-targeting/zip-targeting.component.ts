@@ -1,49 +1,198 @@
+import './zip-targeting.component.less';
+
 import {
-    Directive,
+    Component,
     Input,
-    OnInit,
-    OnChanges,
-    DoCheck,
-    OnDestroy,
-    ElementRef,
-    Inject,
-    Injector,
-    SimpleChanges,
     Output,
+    ChangeDetectionStrategy,
+    EventEmitter,
+    OnChanges,
 } from '@angular/core';
-import {UpgradeComponent} from '@angular/upgrade/static';
+import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
+import {IncludeExcludeType, GeolocationType} from '../../../../app.constants';
+import {Geolocation} from '../../../../core/geolocations/types/geolocation';
+import {INCLUDE_EXCLUDE_TYPES} from '../../entity-manager.config';
+import {GeolocationSearchParams} from '../../types/geolocation-search-params';
+import {Geotargeting} from '../../types/geotargeting';
+import {isEmpty} from '../../../../shared/helpers/array.helpers';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {
+    getZipCodesText,
+    getZipCodesArray,
+    areAllSameCountries,
+} from '../../helpers/geolocations.helpers';
+import * as clone from 'clone';
 
-@Directive({
-    selector: 'zem-zip-targeting', // tslint:disable-line directive-selector
+@Component({
+    selector: 'zem-zip-targeting',
+    templateUrl: './zip-targeting.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ZipTargetingComponent extends UpgradeComponent
-    implements OnInit, OnChanges, DoCheck, OnDestroy {
+export class ZipTargetingComponent implements OnChanges {
     @Input()
-    includedLocations: any;
+    includedLocations: TargetRegions;
     @Input()
-    excludedLocations: any;
+    excludedLocations: TargetRegions;
     @Input()
-    errors: any;
+    selectedLocation: Geolocation;
+    @Input()
+    searchedLocations: Geolocation[] = [];
+    @Input()
+    errors: string[] = [];
     @Output()
-    onUpdate: any;
+    locationSearch: EventEmitter<GeolocationSearchParams> = new EventEmitter<
+        GeolocationSearchParams
+    >();
+    @Output()
+    locationOpen: EventEmitter<void> = new EventEmitter<void>();
+    @Output()
+    targetingUpdate: EventEmitter<Geotargeting> = new EventEmitter<
+        Geotargeting
+    >();
 
-    constructor(
-        @Inject(ElementRef) elementRef: ElementRef,
-        @Inject(Injector) injector: Injector
+    includeExcludeTypes = INCLUDE_EXCLUDE_TYPES;
+    availableLocations: Geolocation[] = [];
+
+    includeExcludeType: IncludeExcludeType = IncludeExcludeType.INCLUDE;
+    location: Geolocation;
+    zipCodesText: string = '';
+
+    sameCountryTargeted = false;
+    apiOnlySettings = false;
+
+    ngOnChanges(): void {
+        this.location = clone(this.selectedLocation);
+        this.availableLocations = this.getAvailableLocations(
+            this.location,
+            this.searchedLocations
+        );
+
+        if (isEmpty(this.excludedLocations.postalCodes)) {
+            this.includeExcludeType = IncludeExcludeType.INCLUDE;
+            this.zipCodesText = getZipCodesText(
+                this.includedLocations.postalCodes
+            );
+        } else {
+            this.includeExcludeType = IncludeExcludeType.EXCLUDE;
+            this.zipCodesText = getZipCodesText(
+                this.excludedLocations.postalCodes
+            );
+        }
+
+        this.apiOnlySettings = this.getApiOnlySettings(
+            this.includedLocations,
+            this.excludedLocations,
+            this.includeExcludeType
+        );
+        this.sameCountryTargeted = this.getSameCountryTargeted(
+            this.includedLocations,
+            this.excludedLocations,
+            this.includeExcludeType,
+            this.location
+        );
+    }
+
+    onLocationSearch(nameContains: string): void {
+        if (nameContains.length > 1) {
+            this.locationSearch.emit({
+                nameContains: nameContains,
+                types: [GeolocationType.COUNTRY],
+                limit: 20,
+                offset: 0,
+            });
+        }
+    }
+
+    onTypeChange(includeExcludeType: IncludeExcludeType): void {
+        this.update(includeExcludeType, this.location, this.zipCodesText);
+    }
+
+    onLocationChange(locationKey: string): void {
+        const location = this.searchedLocations.find(
+            searchedLocation => searchedLocation.key === locationKey
+        );
+        this.update(this.includeExcludeType, location, this.zipCodesText);
+    }
+
+    onZipCodesBlur(zipCodesText: string): void {
+        this.update(this.includeExcludeType, this.location, zipCodesText);
+    }
+
+    private update(
+        includeExcludeType: IncludeExcludeType,
+        location: Geolocation,
+        zipCodesText: string
+    ): void {
+        if (!isDefined(this.location)) {
+            return;
+        }
+
+        const zipCodesWithCountries = getZipCodesArray(
+            zipCodesText,
+            location.key
+        );
+
+        const zipTargeting: Geotargeting = {
+            selectedLocation: location,
+            includeExcludeType: includeExcludeType,
+            zipCodes: zipCodesWithCountries,
+        };
+
+        this.targetingUpdate.emit(zipTargeting);
+    }
+
+    private getAvailableLocations(
+        location: Geolocation,
+        searchedLocations: Geolocation[]
+    ): Geolocation[] {
+        let availableLocations: Geolocation[] = [];
+        if (!isEmpty(searchedLocations)) {
+            availableLocations = clone(searchedLocations);
+        } else if (isDefined(location)) {
+            availableLocations = [location];
+        }
+        return availableLocations;
+    }
+
+    private getApiOnlySettings(
+        includedLocations: TargetRegions,
+        excludedLocations: TargetRegions,
+        includeExcludeType: IncludeExcludeType
+    ): boolean {
+        if (
+            !isEmpty(includedLocations.postalCodes) &&
+            !isEmpty(excludedLocations.postalCodes)
+        ) {
+            return true;
+        }
+
+        const postalCodes =
+            includeExcludeType === IncludeExcludeType.INCLUDE
+                ? includedLocations.postalCodes
+                : excludedLocations.postalCodes;
+
+        return !areAllSameCountries(postalCodes);
+    }
+
+    private getSameCountryTargeted(
+        includedLocations: TargetRegions,
+        excludedLocations: TargetRegions,
+        includeExcludeType: IncludeExcludeType,
+        location: Geolocation
     ) {
-        super('zemZipTargeting', elementRef, injector);
-    }
+        if (
+            !isDefined(location) ||
+            includeExcludeType === IncludeExcludeType.EXCLUDE
+        ) {
+            return false;
+        }
 
-    ngOnInit() {
-        super.ngOnInit();
-    }
-    ngOnChanges(changes: SimpleChanges) {
-        super.ngOnChanges(changes);
-    }
-    ngDoCheck() {
-        super.ngDoCheck();
-    }
-    ngOnDestroy() {
-        super.ngOnDestroy();
+        const targetedCountries = includedLocations.countries.concat(
+            excludedLocations.countries
+        );
+
+        return targetedCountries.some(
+            (countryKey: string) => countryKey === location.key
+        );
     }
 }

@@ -130,6 +130,10 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
 
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
+            .calls.reset();
+
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
         expect(store.state.fieldsErrors).toEqual(
@@ -215,6 +219,9 @@ describe('AdGroupSettingsStore', () => {
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
             .calls.reset();
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
+            .calls.reset();
 
         store.loadEntity('12345');
         tick();
@@ -251,6 +258,9 @@ describe('AdGroupSettingsStore', () => {
             .calls.reset();
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
             .calls.reset();
 
         store.loadEntity('12345');
@@ -289,6 +299,9 @@ describe('AdGroupSettingsStore', () => {
             .calls.reset();
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
             .calls.reset();
 
         store.loadEntity('12345');
@@ -432,6 +445,9 @@ describe('AdGroupSettingsStore', () => {
             .calls.reset();
         sourcesServiceStub.list.and
             .returnValue(of(mockedSources, asapScheduler))
+            .calls.reset();
+        geolocationsServiceStub.list.and
+            .returnValue(of([], asapScheduler))
             .calls.reset();
 
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);

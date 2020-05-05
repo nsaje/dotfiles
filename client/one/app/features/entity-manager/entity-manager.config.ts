@@ -6,6 +6,7 @@ import {
     IabCategory,
     Language,
     AccountType,
+    IncludeExcludeType,
 } from '../../app.constants';
 import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
@@ -1467,3 +1468,10 @@ export const OPERATING_SYSTEMS: {[key: string]: OperatingSystem} = {
         versions: null,
     },
 };
+
+export const INCLUDE_EXCLUDE_TYPES = [
+    {name: 'Include', value: IncludeExcludeType.INCLUDE},
+    {name: 'Exclude', value: IncludeExcludeType.EXCLUDE},
+];
+
+export const DEFAULT_ZIP_TARGETING_LOCATION_KEY = 'US';

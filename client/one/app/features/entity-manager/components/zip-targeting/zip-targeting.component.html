@@ -1,0 +1,50 @@
+<ng-container *ngIf="!apiOnlySettings">
+    <div class="zem-zip-targeting__item">
+        <zem-select-input
+            class="zem-select-input zem-zip-targeting__select-include-exclude"
+            [value]="includeExcludeType"
+            [items]="includeExcludeTypes"
+            [bindValue]="'value'"
+            [bindLabel]="'name'"
+            [isClearable]="false"
+            (valueChange)="onTypeChange($event)"
+        >
+        </zem-select-input>
+        <zem-select-input
+            class="zem-select-input zem-zip-targeting__select-location"
+            [value]="location ? location.key : null"
+            [items]="availableLocations"
+            [bindLabel]="'name'"
+            [bindValue]="'key'"
+            [isSearchable]="true"
+            [isClearable]="false"
+            (valueChange)="onLocationChange($event)"
+            (search)="onLocationSearch($event)"
+            (open)="locationOpen.emit()"
+        >
+        </zem-select-input>
+    </div>
+    <zem-textarea
+        *ngIf="!sameCountryTargeted"
+        class="zem-textarea zem-zip-targeting__item"
+        type="text"
+        rows="4"
+        placeholder="Enter comma-separated ZIP / postal codes"
+        [value]="zipCodesText"
+        (inputBlur)="onZipCodesBlur($event)"
+    ></zem-textarea>
+</ng-container>
+<div
+    *ngIf="apiOnlySettings"
+    class="zem-zip-targeting__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+>
+    Current ZIP / postal code targeting settings are only modifiable by your
+    customer success manager or via Zemanta One API.
+</div>
+<div
+    *ngIf="sameCountryTargeted && location"
+    class="zem-zip-targeting__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+>
+    Please remove {{ location.name }} from general location targeting or pick a
+    different country for ZIP / postal code targeting.
+</div>

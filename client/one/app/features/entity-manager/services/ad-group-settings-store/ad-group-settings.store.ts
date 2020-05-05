@@ -38,6 +38,7 @@ import {
     OPERATING_SYSTEMS,
     TARGETING_DEVICE_OPTIONS,
     TARGETING_ENVIRONMENT_OPTIONS,
+    DEFAULT_ZIP_TARGETING_LOCATION_KEY,
 } from '../../entity-manager.config';
 import {isEmpty} from '../../../../shared/helpers/array.helpers';
 import {GeolocationsService} from '../../../../core/geolocations/services/geolocations.service';
@@ -46,6 +47,7 @@ import {
     getGeolocationsKeys,
     getGeotargetingLocationPropertyFromGeolocationType,
     getIncludeExcludePropertyNameFromIncludeExcludeType,
+    getZipCodeCountry,
 } from '../../helpers/geolocations.helpers';
 import {GeolocationSearchParams} from '../../types/geolocation-search-params';
 import {Geotargeting} from '../../types/geotargeting';
@@ -714,14 +716,19 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     loadSelectedLocations(keys: string[]): void {
-        if (isEmpty(keys)) {
-            return;
+        const searchKeys = keys;
+        const postalCodes = this.state.entity.targeting.geo.included.postalCodes.concat(
+            this.state.entity.targeting.geo.excluded.postalCodes
+        );
+
+        if (isEmpty(postalCodes)) {
+            searchKeys.push(DEFAULT_ZIP_TARGETING_LOCATION_KEY);
         }
 
         const batches = [];
         const BATCH_SIZE = 50;
-        for (let i = 0; i < keys.length; i += BATCH_SIZE) {
-            batches.push(keys.slice(i, i + BATCH_SIZE));
+        for (let i = 0; i < searchKeys.length; i += BATCH_SIZE) {
+            batches.push(searchKeys.slice(i, i + BATCH_SIZE));
         }
 
         const requestBatches = batches.map(batchKeys => {
@@ -739,19 +746,22 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             let selectedZipTargetingLocation: Geolocation = null;
             let selectedGeotargetingLocations: Geolocation[] = [];
 
-            const postalCodes = this.state.entity.targeting.geo.included.postalCodes.concat(
-                this.state.entity.targeting.geo.excluded.postalCodes
-            );
-            if (!isEmpty(postalCodes)) {
-                const zipTargetingCountryKey = postalCodes[0].split(':')[0];
+            if (isEmpty(postalCodes)) {
+                selectedZipTargetingLocation = locations.find(
+                    location =>
+                        location.key === DEFAULT_ZIP_TARGETING_LOCATION_KEY
+                );
+                selectedGeotargetingLocations = locations;
+            } else {
+                const zipTargetingCountryKey = getZipCodeCountry(
+                    postalCodes[0]
+                );
                 selectedZipTargetingLocation = locations.find(
                     location => location.key === zipTargetingCountryKey
                 );
                 selectedGeotargetingLocations = locations.filter(
                     location => location.key !== zipTargetingCountryKey
                 );
-            } else {
-                selectedGeotargetingLocations = locations;
             }
 
             this.setState({
