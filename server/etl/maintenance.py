@@ -34,6 +34,12 @@ def truncate(table, db_name=None):
     logger.info("Finished TRUNCATE table", table=table)
 
 
+def drop(table, db_name=None):
+    logger.info("Starting DROP table", table=table)
+    _execute_query(db_name, "DROP TABLE {}".format(table))
+    logger.info("Finished DROP table", table=table)
+
+
 def stats_min_date():
     logger.info("Querying earliest date in stats table")
     sql = "select min(date) from stats;"

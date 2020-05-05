@@ -96,7 +96,7 @@ elif args.fixtures == FixturesSource.ACCEPTANCE:
     call_command("loaddata", *["test_acceptance", "test_geolocations"])
 
 print("Applying migrations to stats database")
-call_command("apply_postgres_stats_migrations")
+call_command("apply_postgres_stats_migrations", "--force-create")
 
 print("Running the server on %s" % args.addrport)
 call_command("runserver", addrport=args.addrport, use_reloader=args.autoreload, use_threading=args.threading)
