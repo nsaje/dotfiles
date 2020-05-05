@@ -179,10 +179,10 @@ def blacklist(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) 
     if rule.target_type != constants.TargetType.PUBLISHER:
         raise Exception("Invalid blacklist target")
 
-    target, source_id = target.split("__")
+    publisher, source_id = target.split("__")
     source = core.models.Source.objects.get(id=source_id)
 
-    entry_dict = {"publisher": target, "source": source, "include_subdomains": False}
+    entry_dict = {"publisher": publisher, "source": source, "include_subdomains": False}
     core.features.publisher_groups.blacklist_publishers(None, [entry_dict], ad_group, should_write_history=False)
     return ValueChangeData(
         target=target,
@@ -198,10 +198,10 @@ def add_to_publisher_group(target: str, rule: Rule, ad_group: core.models.AdGrou
     if rule.target_type != constants.TargetType.PUBLISHER:
         raise Exception("Invalid add to publisher group target")
 
-    target, source_id = target.split("__")
+    publisher, source_id = target.split("__")
     source = core.models.Source.objects.get(id=source_id)
 
     core.features.publisher_groups.PublisherGroupEntry.objects.create(
-        publisher_group=rule.publisher_group, publisher=target, source=source, include_subdomains=False
+        publisher_group=rule.publisher_group, publisher=publisher, source=source, include_subdomains=False
     )
     return ValueChangeData(target=target, old_value=None, new_value="Added to publisher group")
