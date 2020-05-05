@@ -32,7 +32,7 @@ services:
         stdin_open: true
 
     testim-runner:
-        image: "testim/docker-cli"
+        image: "testim/docker-cli:node-8"
         hostname: testim-runner
         links:
           - "server"
