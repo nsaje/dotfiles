@@ -32,7 +32,7 @@ while true; do
             sleep 1
 	    echo -n "."
             ((n++))
-            if [[ $n -ge 360 ]]; then
+            if [[ $n -ge 720 ]]; then
                 echo "Waiting for server timed out"
                 exit_error
             fi
