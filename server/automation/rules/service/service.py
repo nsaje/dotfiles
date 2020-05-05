@@ -36,7 +36,7 @@ def execute_rules(rules: Sequence[Rule]) -> None:
         rules_by_target_type[rule.target_type].append(rule)
 
     for target_type, rules in rules_by_target_type.items():
-        rules_map = helpers.get_rules_by_ad_group_map(rules)
+        rules_map = helpers.get_rules_by_ad_group_map(rules, filter_active=False)
         _apply_rules(target_type, rules_map)
 
 
