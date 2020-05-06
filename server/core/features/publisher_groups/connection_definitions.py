@@ -21,7 +21,7 @@ CONNECTION_TYPE_ACCOUNT_WHITELIST = "accountWhitelist"
 CONNECTION_TYPE_CAMPAIGN_BLACKLIST = "campaignBlacklist"
 CONNECTION_TYPE_CAMPAIGN_WHITELIST = "campaignWhitelist"
 CONNECTION_TYPE_AD_GROUP_BLACKLIST = "adGroupBlacklist"
-CONNECTION_TYPE_AD_GROUP_WHITELIST = "adGgroupWhitelist"
+CONNECTION_TYPE_AD_GROUP_WHITELIST = "adGroupWhitelist"
 
 CONNECTION_TYPE_MAP: Dict[str, ModelAttributeDict] = {
     CONNECTION_TYPE_AGENCY_BLACKLIST: {"model": models.Agency, "attribute": "blacklist_publisher_groups"},
