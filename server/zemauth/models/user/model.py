@@ -377,4 +377,5 @@ class User(
             ("can_use_placement_targeting", "User can use publisher placement targeting."),
             ("can_see_new_publisher_library", "User can see the new Publishers & Placements library."),
             ("can_see_add_to_pub_plac_button", "User can see the Add to Publishers and Placements button"),
+            ("fea_use_entity_permission", "User can use entity permissions."),
         )
