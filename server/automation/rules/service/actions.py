@@ -201,7 +201,8 @@ def add_to_publisher_group(target: str, rule: Rule, ad_group: core.models.AdGrou
     publisher, source_id = target.split("__")
     source = core.models.Source.objects.get(id=source_id)
 
-    core.features.publisher_groups.PublisherGroupEntry.objects.create(
-        publisher_group=rule.publisher_group, publisher=publisher, source=source, include_subdomains=False
+    entries = [{"publisher": publisher, "source": source, "include_subdomains": False}]
+    core.features.publisher_groups.add_publisher_group_entries(
+        None, rule.publisher_group, entries, should_write_history=False
     )
     return ValueChangeData(target=target, old_value=None, new_value="Added to publisher group")

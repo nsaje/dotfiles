@@ -757,6 +757,21 @@ class AddToPublisherGroupTestCase(TestCase):
             [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
         )
 
+    def test_add_to_publisher_group_twice(self):
+        rule = magic_mixer.blend(
+            Rule,
+            agency=self.agency,
+            publisher_group=self.publisher_group,
+            action_type=constants.ActionType.ADD_TO_PUBLISHER_GROUP,
+            target_type=constants.TargetType.PUBLISHER,
+        )
+        actions.add_to_publisher_group("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+        actions.add_to_publisher_group("publisher1.com__" + str(self.source.id), rule, self.ad_group)
+        self.assertCountEqual(
+            self.publisher_group.entries.all().values("publisher", "include_subdomains", "source"),
+            [{"publisher": "publisher1.com", "source": self.source.id, "include_subdomains": False}],
+        )
+
     def test_invalid_action_type(self):
         rule = magic_mixer.blend(
             Rule,

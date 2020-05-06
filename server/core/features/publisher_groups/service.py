@@ -522,7 +522,8 @@ def get_or_create_publisher_group(
     )
 
 
-def add_publisher_group_entries(request, publisher_group, entry_dicts):
+@transaction.atomic
+def add_publisher_group_entries(request, publisher_group, entry_dicts, should_write_history=True):
     if not entry_dicts:
         return models.PublisherGroupEntry.objects.none()
 
@@ -530,7 +531,8 @@ def add_publisher_group_entries(request, publisher_group, entry_dicts):
     models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group).filter_by_publisher_source(
         entry_dicts
     ).delete()
-    write_history(request, None, entries, None)
+    if should_write_history:
+        write_history(request, None, entries, None)
     return models.PublisherGroupEntry.objects.bulk_create(entries)
 
 
