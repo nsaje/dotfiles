@@ -19,19 +19,6 @@ class Command(Z1Command):
 
     def handle(self, *args, **options):
         maintenance.update_dynamic_audience()
-        self._check_campaign_status(options)
-
-    def _check_campaign_status(self, options):
-        running, bluekai_campaign = maintenance.is_bluekai_campaign_running(maintenance.NEW_CAMPAIGN_ID)
-        if not running:
-            message = (
-                'Campaign "{}" (id: {}) status is set to "{}", not "active". '
-                "The campaign data may not be syncing. Check https://partner.bluekai.com/rails/campaigns/{}.".format(
-                    bluekai_campaign["name"], bluekai_campaign["id"], bluekai_campaign["status"], bluekai_campaign["id"]
-                )
-            )
-            self._log_error_message(options, message, type=utils.slack.MESSAGE_TYPE_CRITICAL)
-            raise BluekaiMonitoringException("Bluekai campaign is not running")
 
     def _log_error_message(self, options, message, type=utils.slack.MESSAGE_TYPE_WARNING):
         if message and options.get("verbose"):
