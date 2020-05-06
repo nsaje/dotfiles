@@ -451,7 +451,6 @@ class TestStatsConverter(TestCase):
             {"type": constants.BidModifierType.COUNTRY, "to": "_to_country_target", "from": "_from_country_target"},
             {"type": constants.BidModifierType.STATE, "to": "_to_state_target", "from": "_from_state_target"},
             {"type": constants.BidModifierType.DMA, "to": "_to_dma_target", "from": "_from_dma_target"},
-            {"type": constants.BidModifierType.SOURCE, "to": "_to_source_target", "from": "_from_source_target"},
         ]
         for test_case in test_cases:
             with mock.patch.object(target_converter, test_case["to"]) as mock_to_target:
@@ -485,3 +484,11 @@ class TestStatsConverter(TestCase):
         self.converter.from_target(constants.BidModifierType.ENVIRONMENT, 1)
         mock_to_target.assert_called_once_with(1)
         mock_from_target.assert_called_once_with(1)
+
+    def test_source(self):
+        source = magic_mixer.blend(core.models.Source)
+        resolved_to_target = self.converter.to_target(constants.BidModifierType.SOURCE, source.id)
+        self.assertEqual(resolved_to_target, str(source.id))
+
+        resolved_from_target = self.converter.from_target(constants.BidModifierType.SOURCE, source.id)
+        self.assertEqual(resolved_from_target, str(source.id))

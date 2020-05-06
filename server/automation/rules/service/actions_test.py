@@ -81,7 +81,7 @@ class ActionsTest(TestCase):
             },
             {
                 "target_type": constants.TargetType.SOURCE,
-                "target": source.bidder_slug,
+                "target": str(source.id),
                 "bid_modifier_type": core.features.bid_modifiers.constants.BidModifierType.SOURCE,
                 "bid_modifier_target": str(source.id),
             },

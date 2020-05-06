@@ -273,9 +273,7 @@ class DashboardConverter(TargetConverter):
     def _to_source_target(cls, value):
         try:
             return str(models.Source.objects.filter(name=value).only("id").get().id)
-        except models.Source.DoesNotExist:
-            raise exceptions.BidModifierTargetInvalid("Invalid Source")
-        except models.Source.MultipleObjectsReturned:
+        except (models.Source.DoesNotExist, models.Source.MultipleObjectsReturned):
             raise exceptions.BidModifierTargetInvalid("Invalid Source")
 
     @classmethod
@@ -307,3 +305,16 @@ class StatsConverter(TargetConverter):
     @classmethod
     def _from_environment_target(cls, target):
         return DashboardConverter._from_environment_target(target)
+
+    @classmethod
+    def _to_source_target(cls, value):
+        source = models.Source.objects.filter(id=value).only("id").first()
+
+        if source is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+
+        return str(source.id)
+
+    @classmethod
+    def _from_source_target(cls, target):
+        return str(target)
