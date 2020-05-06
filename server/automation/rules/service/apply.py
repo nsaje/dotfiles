@@ -201,7 +201,7 @@ def _prepare_settings_operands(condition, settings_dict):
         constants.ValueType.CONSTANT,
     ]  # TODO: support remaining right operand types
     field_name = constants.METRIC_SETTINGS_MAPPING[condition.left_operand_type]
-    left_value = settings_dict[field_name]
+    left_value = _get_settings_field(field_name, settings_dict)
     right_value = condition.right_operand_value
     if condition.left_operand_type in config.INT_OPERANDS:
         right_value = int(right_value)
@@ -214,6 +214,17 @@ def _prepare_settings_operands(condition, settings_dict):
     elif condition.left_operand_type in config.DECIMAL_OPERANDS:
         right_value = decimal.Decimal(right_value)
     return left_value, right_value
+
+
+def _get_settings_field(field_name, settings_dict):
+    ad_group_end_date_field = constants.METRIC_SETTINGS_MAPPING[constants.MetricType.AD_GROUP_END_DATE]
+    if field_name == ad_group_end_date_field:
+        if settings_dict[ad_group_end_date_field] is None:
+            campaign_budget_end_date_field = constants.METRIC_SETTINGS_MAPPING[
+                constants.MetricType.CAMPAIGN_BUDGET_END_DATE
+            ]
+            return settings_dict[campaign_budget_end_date_field]
+    return settings_dict[field_name]
 
 
 def _meets_condition(operator: int, left_value, right_value) -> bool:

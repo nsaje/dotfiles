@@ -515,3 +515,28 @@ class SettingsOperandTest(TestCase):
         )
         settings_dict = {"campaign_type": dash.constants.CampaignType.CONTENT}
         self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+
+    def test_left_operand_ad_group_end_date(self):
+        RuleCondition.objects.create(
+            rule=self.rule,
+            left_operand_type=constants.MetricType.AD_GROUP_END_DATE,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="2002-01-01",
+        )
+        settings_dict = {
+            "ad_group_end_date": datetime.date(2003, 1, 1),
+            "campaign_budget_end_date": datetime.date(2000, 1, 1),
+        }
+        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+
+    def test_left_operand_ad_group_end_date_none(self):
+        RuleCondition.objects.create(
+            rule=self.rule,
+            left_operand_type=constants.MetricType.AD_GROUP_END_DATE,
+            operator=constants.Operator.LESS_THAN,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_value="2002-01-01",
+        )
+        settings_dict = {"ad_group_end_date": None, "campaign_budget_end_date": datetime.date(2000, 1, 1)}
+        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
