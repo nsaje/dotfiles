@@ -25,11 +25,13 @@ describe('BulkBlacklistActionsComponent', () => {
 
     const selectedPublisherRows: PublisherInfo[] = [
         {
-            source: 12,
+            sourceId: 12,
+            sourceSlug: '12',
             publisher: 'www.zemanta.com',
         },
         {
-            source: 34,
+            sourceId: 34,
+            sourceSlug: '34',
             publisher: 'www.outbrain.com',
         },
     ];

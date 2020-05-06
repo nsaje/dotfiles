@@ -3,9 +3,9 @@ import {Observable, throwError} from 'rxjs';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {RequestStateUpdater} from 'one/app/shared/types/request-state-updater';
 import {catchError, map} from 'rxjs/operators';
-import {UpdateBlacklistStatusesRequest} from '../types/update-blacklist-statuses-request';
+import {PublisherTargeting} from '../types/publisher-targeting';
 import {PUBLISHERS_CONFIG} from './publishers.config';
-import {UpdateBlacklistStatusesResponse} from '../types/update-blacklist-statuses-response';
+import {PublisherTargetingResponse} from '../types/publisher-targeting-response';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {isPrimitive} from '../../../shared/helpers/common.helpers';
 
@@ -14,7 +14,7 @@ export class PublishersEndpoint {
     constructor(private http: HttpClient) {}
 
     updateBlacklistStatuses(
-        statusUpdates: UpdateBlacklistStatusesRequest,
+        statusUpdates: PublisherTargeting,
         requestStateUpdater: RequestStateUpdater
     ): Observable<boolean> {
         const request =
@@ -25,7 +25,7 @@ export class PublishersEndpoint {
         const snakeCased: any = this.camelObjectToSnakeCase(statusUpdates);
 
         return this.http
-            .post<ApiResponse<UpdateBlacklistStatusesResponse>>(
+            .post<ApiResponse<PublisherTargetingResponse>>(
                 `${request.url}`,
                 snakeCased
             )

@@ -376,4 +376,5 @@ class User(
             ("can_see_internal_deals", "User can see and edit internal deals in the library."),
             ("can_use_placement_targeting", "User can use publisher placement targeting."),
             ("can_see_new_publisher_library", "User can see the new Publishers & Placements library."),
+            ("can_see_add_to_pub_plac_button", "User can see the Add to Publishers and Placements button"),
         )

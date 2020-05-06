@@ -20,13 +20,13 @@
 >
     <div
         class="zem-message zem-message--bubble zem-message--help zem-message--with-icon"
-        *ngIf="publisherGroup.includeSubdomains"
+        *ngIf="showFileUpload && publisherGroup.includeSubdomains"
     >
         The domains should be listed without prefixes http://, https:// or www.
     </div>
 </zem-content-form-group>
 <zem-content-form-group
-    *ngIf="!isDisabled"
+    *ngIf="showFileUpload && !isDisabled"
     class="zem-content-form-group zem-publisher-group-edit-form__item zem-publisher-group-edit-form__content-form-group"
     [label]="showNewLabels ? 'CSV file' : 'CSV file with publishers'"
 >

@@ -27,23 +27,27 @@ describe('BulkBlacklistActionsStore', () => {
 
         mockedPublisherRows = [
             {
-                source: 12,
+                sourceId: 12,
+                sourceSlug: '12',
                 publisher: 'www.zemanta.com',
             },
             {
-                source: 34,
+                sourceId: 34,
+                sourceSlug: '34',
                 publisher: 'www.outbrain.com',
             },
         ];
 
         mockedPlacementRows = [
             {
-                source: 12,
+                sourceId: 12,
+                sourceSlug: '12',
                 publisher: 'www.zemanta.com',
                 placement: '00000000-0008-d469-0000-000000000106',
             },
             {
-                source: 34,
+                sourceId: 34,
+                sourceSlug: '34',
                 publisher: 'www.outbrain.com',
                 placement: '00000000-0008-d469-0000-000000000107',
             },

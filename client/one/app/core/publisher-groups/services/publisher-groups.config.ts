@@ -37,6 +37,10 @@ export const PUBLISHER_GROUPS_CONFIG: {
                 name: 'downloadExample',
                 url: `${publisherGroupsLegacyApiUrl}/download/example/`,
             },
+            addEntries: {
+                name: 'addEntries',
+                url: `${publisherGroupsInternalApiUrl}/add/`,
+            },
         },
     },
 };

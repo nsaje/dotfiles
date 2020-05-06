@@ -16,6 +16,7 @@ import {
     isPrimitive,
 } from '../../../shared/helpers/common.helpers';
 import * as deepmerge from 'deepmerge';
+import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
 
 @Injectable()
 export class PublisherGroupsEndpoint {
@@ -215,6 +216,40 @@ export class PublisherGroupsEndpoint {
         const request =
             PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.downloadExample;
         window.open(request.url, '_blank');
+    }
+
+    addEntries(
+        publisherGroupWithEntries: PublisherGroupWithEntries,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroupWithEntries> {
+        const request =
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.addEntries;
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .post<ApiResponse<PublisherGroupWithEntries>>(
+                request.url,
+                publisherGroupWithEntries
+            )
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     /** This is temporary until the backend gets updated */
