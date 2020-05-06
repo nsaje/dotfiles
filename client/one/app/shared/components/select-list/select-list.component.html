@@ -43,6 +43,7 @@
     [searchFn]="searchFn"
     [dropdownPosition]="'top'"
     [debounceTime]="1000"
+    [groupByValue]="groupByValue"
     (valueChange)="onItemSelect($event)"
     (search)="onSearch($event)"
     (open)="open.emit()"
@@ -57,6 +58,16 @@
             "
         ></ng-container>
     </ng-template>
+    <ng-template #optionGroupTemplate let-item="item">
+        <ng-container
+            *ngTemplateOutlet="
+                selectGroupTemplate
+                    ? selectGroupTemplate
+                    : defaultSelectGroupTemplate;
+                context: {item: item}
+            "
+        ></ng-container>
+    </ng-template>
 </zem-select-input>
 
 <ng-template #defaultEmptyItemsTemplate>
@@ -66,4 +77,7 @@
 </ng-template>
 <ng-template #defaultSelectItemTemplate let-item="item" let-search="search">
     <span [zemTextHighlight]="search">{{ item[bindLabel] }}</span>
+</ng-template>
+<ng-template #defaultSelectGroupTemplate let-item="item">
+    {{ item[groupByValue] }}
 </ng-template>

@@ -33,6 +33,8 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     isLoading: boolean = false;
     @Input('selectSearchFn')
     searchFn: Function;
+    @Input('selectGroupByValue')
+    groupByValue: string;
     @Output()
     itemSelect = new EventEmitter<any>();
     @Output()
@@ -51,6 +53,9 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
 
     @ContentChild('selectItemTemplate', {read: TemplateRef, static: false})
     selectItemTemplate: TemplateRef<any>;
+
+    @ContentChild('selectGroupTemplate', {read: TemplateRef, static: false})
+    selectGroupTemplate: TemplateRef<any>;
 
     availableItemsFiltered: any[] = [];
 
