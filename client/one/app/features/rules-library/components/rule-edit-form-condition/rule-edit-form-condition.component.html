@@ -60,6 +60,23 @@
         [hasError]="conditionErrors?.value?.value"
         (inputBlur)="updateValueValue($event)"
     ></zem-integer-input>
+    <zem-prefixed-input
+        class="zem-prefixed-input zem-rule-edit-form-condition__absolute-value-input"
+        *ngIf="
+            selectedValueConfig &&
+            selectedValueConfig.hasValue &&
+            selectedValueConfig.unit &&
+            selectedValueConfig.dataType === DataType.Integer
+        "
+        [prefix]="getUnitText(selectedValueConfig.unit)"
+        [hasError]="conditionErrors?.value?.value"
+    >
+        <zem-integer-input
+            class="zem-decimal-input"
+            [value]="ruleCondition.value.value"
+            (inputBlur)="updateValueValue($event)"
+        ></zem-integer-input>
+    </zem-prefixed-input>
     <zem-decimal-input
         class="zem-decimal-input zem-rule-edit-form-condition__absolute-value-input"
         *ngIf="
