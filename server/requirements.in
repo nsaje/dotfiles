@@ -118,6 +118,7 @@ django-queryinspect==1.0.0
 django-debug-toolbar==1.10.1
 django-debug-toolbar-template-profiler==1.0.2
 django-silk==3.0.1
+typing-extensions==3.7.4
 
 PyJWT==1.6.4
 

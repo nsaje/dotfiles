@@ -1,9 +1,19 @@
 import re
 from collections import defaultdict
 from decimal import Decimal
+from functools import reduce
+from typing import Callable
+from typing import List
+from typing import Union
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import CharField
+from django.db.models import QuerySet
+from django.db.models import Value
+from django.http import HttpRequest
+from rest_framework.request import Request as DrfRequest
+from typing_extensions import TypedDict
 
 from dash import constants
 from dash import history_helpers
@@ -12,8 +22,19 @@ from dash.views import helpers
 from utils import email_helper
 from utils import k1_helper
 from utils import zlogging
+from zemauth.models import User
 
+from . import connection_definitions
 from . import exceptions
+
+Request = Union[HttpRequest, DrfRequest]
+
+
+class ConnectionDict(TypedDict):
+    id: int
+    name: str
+    location: str
+
 
 logger = zlogging.getLogger(__name__)
 
@@ -511,6 +532,117 @@ def add_publisher_group_entries(request, publisher_group, entry_dicts):
     ).delete()
     write_history(request, None, entries, None)
     return models.PublisherGroupEntry.objects.bulk_create(entries)
+
+
+def get_publisher_group_connections(user: User, publisher_group_id: int) -> List[ConnectionDict]:
+    reducing_func: Callable[[QuerySet, QuerySet], QuerySet] = lambda x, y: x.union(y)
+    return list(
+        reduce(
+            reducing_func,
+            [
+                (
+                    models.Agency.objects.filter_by_user(user)
+                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.Agency.objects.filter_by_user(user)
+                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.Account.objects.filter_by_user(user)
+                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.Account.objects.filter_by_user(user)
+                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.Campaign.objects.filter_by_user(user)
+                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.Campaign.objects.filter_by_user(user)
+                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.AdGroup.objects.filter_by_user(user)
+                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+                (
+                    models.AdGroup.objects.filter_by_user(user)
+                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                    .annotate(
+                        location=Value(
+                            connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()
+                        )
+                    )
+                    .order_by("created_dt")
+                    .values("id", "name", "location")
+                ),
+            ],
+        )
+    )
+
+
+def remove_publisher_group_connection(request: Request, publisher_group_id: int, location: str, entity_id: int) -> None:
+    connection_type = connection_definitions.CONNECTION_TYPE_MAP.get(location)
+    if connection_type is None:
+        raise connection_definitions.InvalidConnectionType("Invalid location")
+
+    entity = connection_type["model"].objects.filter_by_user(request.user).get(id=entity_id)
+    publisher_group_ids = getattr(entity.settings, connection_type["attribute"]).copy()
+    publisher_group_ids.remove(publisher_group_id)
+
+    entity.settings.update(request, **{connection_type["attribute"]: publisher_group_ids})
 
 
 def _ping_k1(obj):

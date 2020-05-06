@@ -1,5 +1,6 @@
 import rest_framework.response
 import rest_framework.status
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import permissions
@@ -84,3 +85,29 @@ class AddToPublisherGroupViewSet(RESTAPIBaseViewSet):
             raise utils.exc.ValidationError(errors={"agencyId": [str(e)]})
         except dash.models.Account.DoesNotExist as e:
             raise utils.exc.ValidationError(errors={"accountId": [str(e)]})
+
+
+class PublisherGroupConnectionsViewSet(RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def list_connections(self, request, publisher_group_id):
+        publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+        connections = core.features.publisher_groups.get_publisher_group_connections(request.user, publisher_group.id)
+        return self.response_ok(serializers.PublisherGroupConnectionSerializer(connections, many=True).data)
+
+    def remove_connection(self, request, publisher_group_id, location, entity_id):
+        try:
+            publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+            core.features.publisher_groups.remove_publisher_group_connection(
+                request, publisher_group.id, location, entity_id
+            )
+            return rest_framework.response.Response(None, status=204)
+        except utils.exc.MissingDataError:
+            raise utils.exc.ValidationError(errors={"publisher_group_id": ["Publisher group does not exist"]})
+        except ValueError:
+            raise utils.exc.ValidationError(errors={"publisher_group_id": ["Publisher group does not exist"]})
+        except core.features.publisher_groups.InvalidConnectionType:
+            # Should not happen, since location is already validated in urls
+            raise utils.exc.ValidationError(errors={"location": ["Location does not exist"]})
+        except ObjectDoesNotExist:
+            raise utils.exc.ValidationError(errors={"entity_id": ["Connection does not exist"]})

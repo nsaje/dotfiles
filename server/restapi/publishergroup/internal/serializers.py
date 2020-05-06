@@ -45,3 +45,11 @@ class AddToPublisherGroupSerializer(restapi.publishergroup.v1.serializers.Publis
         if len(value) == 0:
             raise serializers.ValidationError("At least one entry is required")
         return value
+
+
+class PublisherGroupConnectionSerializer(
+    restapi.serializers.serializers.DataNodeSerializerMixin, serializers.Serializer
+):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    name = restapi.serializers.fields.PlainCharField(max_length=256)
+    location = restapi.serializers.fields.PlainCharField(max_length=18)

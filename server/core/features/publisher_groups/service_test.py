@@ -11,9 +11,11 @@ import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
+from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 
+from . import connection_definitions
 from . import csv_helper
 from . import exceptions
 from . import service
@@ -935,3 +937,174 @@ class AddPublisherGroupEntriesTest(TestCase):
 
         self.assertFalse(self.publisher_group_2.entries.filter(id__in=[self.pge_1.id, self.pge_2.id]).exists())
         self.assertTrue(self.publisher_group_2.entries.filter(id=self.pge_3.id).exists())
+
+
+class PublisherGroupConnectionsTest(TestCase):
+    def setUp(self):
+        self.request = magic_mixer.blend_request_user()
+        self.agency = magic_mixer.blend(models.Agency)
+        self.agency.users.add(self.request.user)
+        self.account = magic_mixer.blend(models.Account, agency=self.agency)
+        self.campaign = magic_mixer.blend(models.Campaign, account=self.account)
+        self.ad_group = magic_mixer.blend(models.AdGroup, campaign=self.campaign)
+        self.publisher_group_1 = magic_mixer.blend(models.PublisherGroup, account=self.account)
+        self.publisher_group_2 = magic_mixer.blend(models.PublisherGroup, agency=self.agency)
+
+    def test_get_connections(self):
+        self.agency.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_2.id])
+        self.account.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_1.id])
+        self.campaign.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_1.id])
+        self.ad_group.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_2.id])
+
+        with self.assertNumQueries(1):
+            connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_2.id)
+
+        self.assertCountEqual(
+            connections,
+            [
+                {
+                    "id": self.agency.id,
+                    "name": self.agency.name,
+                    "location": connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+                },
+                {
+                    "id": self.ad_group.id,
+                    "name": self.ad_group.name,
+                    "location": connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                },
+            ],
+        )
+
+        with self.assertNumQueries(1):
+            connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_1.id)
+
+        self.assertCountEqual(
+            connections,
+            [
+                {
+                    "id": self.account.id,
+                    "name": self.account.name,
+                    "location": connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST,
+                },
+                {
+                    "id": self.campaign.id,
+                    "name": self.campaign.name,
+                    "location": connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST,
+                },
+            ],
+        )
+
+    def test_get_connections_foreign_entities(self):
+        foreign_agency = magic_mixer.blend(models.Agency)
+        foreign_account = magic_mixer.blend(models.Account, agency=foreign_agency)
+        foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
+        foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
+
+        # extra 2 queries for permission checks
+        with self.assertNumQueries(3):
+            connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
+
+        self.assertCountEqual(connections, [])
+
+    def test_get_connections_foreign_entities_can_see_all_accounts(self):
+        test_helper.add_permissions(self.request.user, ["can_see_all_accounts"])
+        foreign_agency = magic_mixer.blend(models.Agency)
+        foreign_account = magic_mixer.blend(models.Account, agency=foreign_agency)
+        foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
+        foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
+
+        # extra 2 queries for permission checks
+        with self.assertNumQueries(3):
+            connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
+
+        self.assertCountEqual(
+            connections,
+            [
+                {
+                    "id": foreign_agency.id,
+                    "name": foreign_agency.name,
+                    "location": connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+                }
+            ],
+        )
+
+    def test_remove_agency_whitelist_connections(self):
+        self.agency.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_2.id])
+
+        self.assertEqual(self.agency.settings.whitelist_publisher_groups, [self.publisher_group_2.id])
+
+        service.remove_publisher_group_connection(
+            self.request,
+            self.publisher_group_2.id,
+            connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+            self.agency.id,
+        )
+
+        self.agency.refresh_from_db()
+        self.assertEqual(self.agency.settings.whitelist_publisher_groups, [])
+
+    def test_remove_account_blacklist_connections(self):
+        self.account.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_1.id])
+
+        self.assertEqual(self.account.settings.blacklist_publisher_groups, [self.publisher_group_1.id])
+
+        service.remove_publisher_group_connection(
+            self.request,
+            self.publisher_group_1.id,
+            connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST,
+            self.account.id,
+        )
+
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.settings.blacklist_publisher_groups, [])
+
+    def test_remove_campaign_whitelist_connections(self):
+        self.campaign.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_1.id])
+
+        self.assertEqual(self.campaign.settings.whitelist_publisher_groups, [self.publisher_group_1.id])
+
+        service.remove_publisher_group_connection(
+            self.request,
+            self.publisher_group_1.id,
+            connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST,
+            self.campaign.id,
+        )
+
+        self.campaign.refresh_from_db()
+        self.assertEqual(self.campaign.settings.whitelist_publisher_groups, [])
+
+    def test_remove_ad_group_blacklist_connections(self):
+        self.ad_group.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_2.id])
+
+        self.assertEqual(self.ad_group.settings.blacklist_publisher_groups, [self.publisher_group_2.id])
+
+        service.remove_publisher_group_connection(
+            self.request,
+            self.publisher_group_2.id,
+            connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+            self.ad_group.id,
+        )
+
+        self.ad_group.refresh_from_db()
+        self.assertEqual(self.ad_group.settings.blacklist_publisher_groups, [])
+
+    def test_remove_connections_invalid_location(self):
+        with self.assertRaises(connection_definitions.InvalidConnectionType):
+            service.remove_publisher_group_connection(
+                self.request, self.publisher_group_2.id, "invalid location", self.ad_group.id
+            )
+
+    def test_remove_connections_invalid_connection_id(self):
+        with self.assertRaises(models.AdGroup.DoesNotExist):
+            service.remove_publisher_group_connection(
+                self.request, self.publisher_group_2.id, connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, -1
+            )
+
+    def test_remove_connections_invalid_publisher_group_id(self):
+        with self.assertRaises(ValueError):
+            service.remove_publisher_group_connection(
+                self.request,
+                self.publisher_group_2.id,
+                connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                self.ad_group.id,
+            )

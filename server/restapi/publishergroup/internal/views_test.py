@@ -1,6 +1,7 @@
 import rest_framework.status
 from django.db.models import Q
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 import core.features.history
 import core.features.publisher_groups
@@ -8,6 +9,7 @@ import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class PublisherGroupTest(RESTAPITest):
@@ -577,3 +579,144 @@ class AddToPublisherGroupTest(RESTAPITest):
         history_entries = list(_get_history_entries())
         self.assertEqual(len(history_entries), 1)
         self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
+
+
+class PublisherGroupConnectionsTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.agency.users.add(self.user)
+        self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        self.publisher_group_1 = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=self.account)
+        self.publisher_group_2 = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, agency=self.agency)
+        self.agency.settings.update(None, whitelist_publisher_groups=[self.publisher_group_2.id])
+        self.account.settings.update(None, blacklist_publisher_groups=[self.publisher_group_1.id])
+        self.campaign.settings.update(None, whitelist_publisher_groups=[self.publisher_group_1.id])
+        self.ad_group.settings.update(None, blacklist_publisher_groups=[self.publisher_group_2.id])
+
+    def test_get_publisher_group_connections(self):
+        r = self.client.get(
+            reverse(
+                "restapi.publishergroup.internal:publishergroup_connections",
+                kwargs={"publisher_group_id": self.publisher_group_2.id},
+            ),
+            format="json",
+        )
+        response = self.assertResponseValid(r, data_type=list, status_code=rest_framework.status.HTTP_200_OK)
+        self.assertCountEqual(
+            response["data"],
+            [
+                {
+                    "id": str(self.agency.id),
+                    "name": self.agency.name,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AGENCY_WHITELIST,
+                },
+                {
+                    "id": str(self.ad_group.id),
+                    "name": self.ad_group.name,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                },
+            ],
+        )
+
+    def test_get_publisher_group_connections_foreign_entities(self):
+        client = APIClient()
+        user = magic_mixer.blend(User)
+        client.force_authenticate(user=user)
+        r = client.get(
+            reverse(
+                "restapi.publishergroup.internal:publishergroup_connections",
+                kwargs={"publisher_group_id": self.publisher_group_2.id},
+            ),
+            format="json",
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_404_NOT_FOUND)
+        response = self.assertResponseError(r, "MissingDataError")
+        self.assertEqual(response["details"], "Publisher group does not exist")
+
+    def test_remove_publisher_group_connection(self):
+        r = self.client.delete(
+            reverse(
+                "restapi.publishergroup.internal:remove_publishergroup_connection",
+                kwargs={
+                    "publisher_group_id": self.publisher_group_2.id,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "entity_id": self.ad_group.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_204_NO_CONTENT)
+        self.assertEqual(r.content, b"")
+
+        r = self.client.get(
+            reverse(
+                "restapi.publishergroup.internal:publishergroup_connections",
+                kwargs={"publisher_group_id": self.publisher_group_2.id},
+            ),
+            format="json",
+        )
+        response = self.assertResponseValid(r, data_type=list, status_code=rest_framework.status.HTTP_200_OK)
+        self.assertCountEqual(
+            response["data"],
+            [
+                {
+                    "id": str(self.agency.id),
+                    "name": self.agency.name,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AGENCY_WHITELIST,
+                }
+            ],
+        )
+
+    def test_remove_publisher_group_connection_wrong_publisher_group_id(self):
+        r = self.client.delete(
+            reverse(
+                "restapi.publishergroup.internal:remove_publishergroup_connection",
+                kwargs={
+                    "publisher_group_id": self.publisher_group_1.id,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "entity_id": self.ad_group.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"publisherGroupId": ["Publisher group does not exist"]})
+
+    def test_remove_publisher_group_connection_wrong_entity_id(self):
+        r = self.client.delete(
+            reverse(
+                "restapi.publishergroup.internal:remove_publishergroup_connection",
+                kwargs={
+                    "publisher_group_id": self.publisher_group_2.id,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "entity_id": self.campaign.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"entityId": ["Connection does not exist"]})
+
+    def test_remove_publisher_group_connection_foreign_entities(self):
+        client = APIClient()
+        user = magic_mixer.blend(User)
+        client.force_authenticate(user=user)
+        r = client.delete(
+            reverse(
+                "restapi.publishergroup.internal:remove_publishergroup_connection",
+                kwargs={
+                    "publisher_group_id": self.publisher_group_2.id,
+                    "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "entity_id": self.ad_group.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"publisherGroupId": ["Publisher group does not exist"]})

@@ -13,7 +13,7 @@ class PublisherGroupSerializer(serializers.DataNodeSerializerMixin, rest_framewo
         list_serializer_class = serializers.DataNodeListSerializer
 
     id = restapi.serializers.fields.IdField(read_only=True)
-    name = restapi.serializers.fields.PlainCharField(max_length=127)
+    name = restapi.serializers.fields.PlainCharField(max_length=255)
     account_id = restapi.serializers.fields.IdField(read_only=True)
 
     def create(self, validated_data):

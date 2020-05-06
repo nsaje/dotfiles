@@ -149,6 +149,7 @@ tblib==1.3.2
 termcolor==1.1.0
 text-unidecode==1.2
 traitlets==4.3.2
+typing-extensions==3.7.4
 ua-parser==0.8.0
 unicodecsv==0.14.1
 unidecode==1.0.23
@@ -164,4 +165,4 @@ xlwt==1.3.0
 yappi==1.0
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==42.0.1
+# setuptools
