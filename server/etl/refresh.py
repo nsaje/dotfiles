@@ -132,7 +132,7 @@ def mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, accou
         async_thread = threads.AsyncFunction(async_func)
         async_thread.start()
         update_threads.append(async_thread)
-    if mv_class not in (materialize.MasterView, materialize.MasterPublishersView, materialize.MVAdGroupPlacementView):
+    if mv_class not in (materialize.MasterView, materialize.MasterPublishersView, materialize.MVAdGroupPlacement):
         # do not copy mv_master, mv_master_pubs and mv_adgroup_placement into postgres, too large
         for db_name in settings.STATS_DB_POSTGRES:
             async_func = partial(

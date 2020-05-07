@@ -7,10 +7,10 @@ from django.test import override_settings
 import backtosql
 import utils.test_helper
 
-from .mv_adgroup_placement import MVAdGroupPlacementView
+from .mv_adgroup_placement import MVAdGroupPlacement
 
 
-class MVAdGroupPlacementViewTest(TestCase, backtosql.TestSQLMixin):
+class MVAdGroupPlacementTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ["test_materialize_views"]
 
@@ -21,7 +21,7 @@ class MVAdGroupPlacementViewTest(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        mv = MVAdGroupPlacementView("asd", date_from, date_to, account_id=None)
+        mv = MVAdGroupPlacement("asd", date_from, date_to, account_id=None)
         mv.generate()
 
         insert_into_mv_adgroup_placement_sql = mock.ANY
@@ -49,7 +49,7 @@ class MVAdGroupPlacementViewTest(TestCase, backtosql.TestSQLMixin):
         )
 
 
-class MVAdGroupPlacementViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
+class MVAdGroupPlacementTestByAccountId(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ["test_materialize_views"]
 
@@ -61,7 +61,7 @@ class MVAdGroupPlacementViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
         date_to = datetime.date(2016, 7, 3)
         account_id = 1
 
-        mv = MVAdGroupPlacementView("asd", date_from, date_to, account_id=account_id)
+        mv = MVAdGroupPlacement("asd", date_from, date_to, account_id=account_id)
         mv.generate()
 
         insert_into_mv_adgroup_placement_sql = mock.ANY

@@ -164,6 +164,11 @@ class MVPublishers(MVMaster):
     external_id = backtosql.Column("external_id", BREAKDOWN)
 
 
+class MVAdGroupPlacement(MVMaster):
+    placement = backtosql.Column("placement", BREAKDOWN, null=True)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
+
+
 class MVConversions(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column("date", BREAKDOWN)
     source_id = backtosql.Column("source_id", BREAKDOWN)
@@ -197,8 +202,8 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     content_ad_id = backtosql.Column("content_ad_id", BREAKDOWN)
     publisher = backtosql.Column("publisher", BREAKDOWN)
     publisher_source_id = backtosql.Column("publisher_source_id", BREAKDOWN)
-    placement = backtosql.Column("placement", BREAKDOWN)
-    placement_type = backtosql.Column("placement_type", BREAKDOWN)
+    placement = backtosql.Column("placement", BREAKDOWN, null=True)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
 
     device_type = backtosql.Column("device_type", BREAKDOWN)
     device_os = backtosql.Column("device_os", BREAKDOWN)

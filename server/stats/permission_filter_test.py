@@ -663,8 +663,11 @@ class BreakdownAllowedTest(TestCase):
         self.add_permission_and_test(Level.ACCOUNTS, ["campaign_id"], ["account_campaigns_view"])
         self.add_permission_and_test(Level.ACCOUNTS, ["source_id"], ["account_sources_view"])
 
+        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
+        self.add_permission_and_test(Level.ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
         self.add_permission_and_test(Level.CAMPAIGNS, ["placement_id"], ["can_use_placement_targeting"])
         self.add_permission_and_test(Level.AD_GROUPS, ["placement_id"], ["can_use_placement_targeting"])
+
         self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
 
         user = User.objects.get(pk=1)
@@ -678,6 +681,10 @@ class BreakdownAllowedTest(TestCase):
         user = User.objects.get(pk=1)
 
         with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["placement_type"])
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(Level.ACCOUNTS, user, ["placement_type"])
+        with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, ["placement_type"])
         with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.AD_GROUPS, user, ["placement_type"])
@@ -685,7 +692,11 @@ class BreakdownAllowedTest(TestCase):
         user = User.objects.get(pk=1)
         test_helper.add_permissions(user, ["can_use_placement_targeting", "can_see_top_level_delivery_breakdowns"])
 
-        # invalid base dimension for the campaign and ad group level breakdown
+        # invalid base dimension
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["placement_type"])
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(Level.ACCOUNTS, user, ["placement_type"])
         with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, ["placement_type"])
         with self.assertRaises(exc.MissingDataError):

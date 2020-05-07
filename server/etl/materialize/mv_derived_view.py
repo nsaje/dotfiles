@@ -8,6 +8,7 @@ from redshiftapi import db
 from utils import zlogging
 
 from .materialize import Materialize
+from .mv_adgroup_placement import MVAdGroupPlacement
 from .mv_conversions import MVConversions
 from .mv_master import MasterView
 from .mv_master_publishers import MasterPublishersView
@@ -143,6 +144,15 @@ class MasterPublishersDerivedView(MasterDerivedView):
     @cached_property
     def model(self):
         return models.MVPublishers()
+
+
+class AdGroupPlacementDerivedView(MasterDerivedView):
+    SOURCE_VIEW = MVAdGroupPlacement.TABLE_NAME
+    TEMPLATE = "etl/migrations/redshift/mv_adgroup_placement.sql"
+
+    @cached_property
+    def model(self):
+        return models.MVAdGroupPlacement()
 
 
 class ConversionsDerivedView(MasterDerivedView):

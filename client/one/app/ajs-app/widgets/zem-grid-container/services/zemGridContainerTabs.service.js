@@ -40,10 +40,6 @@ angular
                         breakdown: constants.breakdown.PLACEMENT,
                         permissions: 'zemauth.can_use_placement_targeting',
                         isNewFeature: true,
-                        displayOnEntityTypes: [
-                            constants.entityType.CAMPAIGN,
-                            constants.entityType.AD_GROUP,
-                        ],
                     },
                     {
                         name: 'Media Sources',

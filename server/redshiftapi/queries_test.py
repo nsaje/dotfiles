@@ -93,7 +93,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
     )
     def test_query_all_base_placement(self, _):
         sql, params, _ = queries.prepare_query_all_base(
-            ["account_id", "source_id", "placement_id", "placement_type"],
+            ["campaign_id", "source_id", "placement_id", "placement_type"],
             {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             [{"account_id": 1, "source_id": 2}],
             True,
@@ -103,20 +103,20 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
+            base_table.campaign_id AS campaign_id,
             base_table.source_id AS source_id,
             base_table.publisher AS publisher,
             base_table.placement AS placement,
             base_table.placement_type AS placement_type,
             SUM(base_table.clicks) clicks,
             MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
-        FROM mv_adgroup_placement base_table
+        FROM mv_campaign_placement base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
         ORDER BY
             clicks DESC NULLS LAST,
-            account_id ASC NULLS LAST,
+            campaign_id ASC NULLS LAST,
             source_id ASC NULLS LAST,
             placement_id ASC NULLS LAST,
             placement_type ASC NULLS LAST
@@ -228,7 +228,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
             MAX(base_table.publisher_source_id) publisher_id,
             MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
-        FROM mv_adgroup_placement base_table
+        FROM mv_account_placement base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
@@ -420,7 +420,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
     def test_query_structure_with_stats_placement(self):
         sql, params, _ = queries.prepare_query_structure_with_stats(
-            ["account_id", "source_id", "placement_id", "placement_type"],
+            ["ad_group_id", "source_id", "placement_id", "placement_type"],
             {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             use_publishers_view=True,
         )
@@ -429,7 +429,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         SELECT
-            base_table.account_id AS account_id,
+            base_table.ad_group_id AS ad_group_id,
             base_table.source_id AS source_id,
             base_table.publisher AS publisher,
             base_table.placement AS placement,
@@ -625,7 +625,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   sum(a.clicks) clicks,
                   sum(a.total_time_on_site) total_seconds,
                   max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
-           FROM mv_adgroup_placement a
+           FROM mv_account_placement a
            WHERE (a.date>=%s
                   AND a.date<=%s)
            GROUP BY 1, 2, 3, 4) temp_base
@@ -644,10 +644,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-           FROM mv_adgroup_placement a
+           FROM mv_account_placement a
            WHERE (a.date=%s)
            GROUP BY 1, 2, 3, 4) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-        AND temp_base.placement = temp_yesterday.placement
+        AND (temp_base.placement = temp_yesterday.placement OR temp_base.placement IS NULL AND temp_yesterday.placement IS NULL)
         AND temp_base.source_id = temp_yesterday.source_id
         AND (temp_base.placement_type = temp_yesterday.placement_type OR temp_base.placement_type IS NULL AND temp_yesterday.placement_type IS NULL)
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
@@ -962,7 +962,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
                         max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
-                 FROM mv_adgroup_placement a
+                 FROM mv_account_placement a
                  WHERE (a.date>=%s
                         AND a.date<=%s)
                  GROUP BY 1,
@@ -982,7 +982,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
                         (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
                         (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                 FROM mv_adgroup_placement a
+                 FROM mv_account_placement a
                  WHERE (a.date=%s)
                  GROUP BY 1,
                           2,

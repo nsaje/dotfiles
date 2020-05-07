@@ -1,5 +1,6 @@
-from .mv_adgroup_placement import MVAdGroupPlacementView
+from .mv_adgroup_placement import MVAdGroupPlacement
 from .mv_conversions import MVConversions
+from .mv_derived_view import AdGroupPlacementDerivedView
 from .mv_derived_view import ConversionsDerivedView
 from .mv_derived_view import MasterDerivedView
 from .mv_derived_view import MasterPublishersDerivedView
@@ -26,8 +27,8 @@ MATERIALIZED_VIEWS = [
     MVHelpersCurrencyExchangeRates,
     # Must be done before master, it is used there to generate empty rows for conversions
     MVTouchpointConversions,
-    # Placement view
-    MVAdGroupPlacementView,
+    # VIEW: Ad Group, TAB: Placement
+    MVAdGroupPlacement,
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_placement",
         breakdown=AD_GROUP_BREAKDOWN
@@ -37,6 +38,40 @@ MATERIALIZED_VIEWS = [
         + ["publisher_source_id", "placement_type", "placement"]
         + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
+    ),
+    # VIEW: Campaign, TAB: Placement
+    AdGroupPlacementDerivedView.create(
+        table_name="mv_campaign_placement",
+        breakdown=CAMPAIGN_BREAKDOWN + ["publisher", "publisher_source_id", "placement_type", "placement"],
+        sortkey=CAMPAIGN_BREAKDOWN + ["publisher_source_id", "placement_type", "placement"],
+        distkey="campaign_id",
+    ),
+    TouchpointConversionsDerivedView.create(
+        table_name="mv_campaign_touch_placement",
+        breakdown=CAMPAIGN_BREAKDOWN
+        + ["publisher", "publisher_source_id", "placement_type", "placement"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=CAMPAIGN_BREAKDOWN
+        + ["publisher_source_id", "placement_type", "placement"]
+        + ["slug", "conversion_window", "conversion_label"],
+        distkey="campaign_id",
+    ),
+    # VIEW: Account, TAB: Placement
+    AdGroupPlacementDerivedView.create(
+        table_name="mv_account_placement",
+        breakdown=ACCOUNT_BREAKDOWN + ["publisher", "publisher_source_id", "placement_type", "placement"],
+        sortkey=ACCOUNT_BREAKDOWN + ["publisher_source_id", "placement_type", "placement"],
+        distkey="account_id",
+    ),
+    TouchpointConversionsDerivedView.create(
+        table_name="mv_account_touch_placement",
+        breakdown=ACCOUNT_BREAKDOWN
+        + ["publisher", "publisher_source_id", "placement_type", "placement"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
+        sortkey=ACCOUNT_BREAKDOWN
+        + ["publisher_source_id", "placement_type", "placement"]
+        + ["slug", "conversion_window", "conversion_label"],
+        distkey="account_id",
     ),
     # Master view
     MVHelpersNormalizedStats,

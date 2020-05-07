@@ -137,6 +137,8 @@ class AuditSpendIntegrity(TestCase):
             alarms,
             [
                 (datetime.date(2015, 10, 29), "mv_adgroup_placement", "fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_placement", "fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account_placement", "fee", -20000000000),
                 (datetime.date(2015, 10, 29), "mv_master", "fee", -20000000000),
                 (datetime.date(2015, 10, 29), "mv_contentad", "fee", -20000000000),
                 (datetime.date(2015, 10, 29), "mv_contentad_device", "fee", -20000000000),

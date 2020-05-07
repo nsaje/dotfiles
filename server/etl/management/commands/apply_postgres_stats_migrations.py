@@ -45,11 +45,7 @@ class Command(BaseCommand):
         for mv_class in MATERIALIZED_VIEWS:
             if mv_class.IS_TEMPORARY_TABLE:
                 continue
-            if mv_class in (
-                materialize.MasterView,
-                materialize.MasterPublishersView,
-                materialize.MVAdGroupPlacementView,
-            ):
+            if mv_class in (materialize.MasterView, materialize.MasterPublishersView, materialize.MVAdGroupPlacement):
                 # do not copy mv_master, mv_master_pubs and mv_adgroup_placement into postgres, too large
                 continue
             yield mv_class

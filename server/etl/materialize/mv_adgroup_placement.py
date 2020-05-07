@@ -9,7 +9,7 @@ from .materialize import Materialize
 logger = zlogging.getLogger(__name__)
 
 
-class MVAdGroupPlacementView(Materialize):
+class MVAdGroupPlacement(Materialize):
     TABLE_NAME = "mv_adgroup_placement"
 
     def generate(self, **kwargs):

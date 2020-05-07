@@ -39,6 +39,8 @@ PUBLISHER_VIEWS = [
     ["mv_campaign_pubs", CAMPAIGN_N_ABOVE | PUBLISHER],
     ["mv_adgroup_pubs", AD_GROUP_N_ABOVE | PUBLISHER],
     ["mv_master_pubs", AD_GROUP_N_ABOVE | PUBLISHER | ENVIRONMENT | DEVICE | GEO | DEMO | OTHER],
+    ["mv_account_placement", ACCOUNT | PUBLISHER | PLACEMENT],
+    ["mv_campaign_placement", CAMPAIGN_N_ABOVE | PUBLISHER | PLACEMENT],
     ["mv_adgroup_placement", AD_GROUP_N_ABOVE | PUBLISHER | PLACEMENT],
 ]
 
@@ -59,10 +61,18 @@ TOUCHPOINT_VIEWS = [
     ["mv_account_touch_device", TOUCH_BASE | ACCOUNT | DEVICE],
     ["mv_account_touch_environment", TOUCH_BASE | ACCOUNT | TOUCH_ENVIRONMENT],
     ["mv_account_touch_geo", TOUCH_BASE | ACCOUNT | GEO],
+    [
+        "mv_account_touch_placement",
+        TOUCH_BASE | ACCOUNT | PLACEMENT,
+    ],  # TODO: plac: add PUBLISHER back after table correctly replicated
     ["mv_campaign_touch", TOUCH_BASE | CAMPAIGN_N_ABOVE],
     ["mv_campaign_touch_device", TOUCH_BASE | CAMPAIGN_N_ABOVE | DEVICE],
     ["mv_campaign_touch_environment", TOUCH_BASE | CAMPAIGN_N_ABOVE | TOUCH_ENVIRONMENT],
     ["mv_campaign_touch_geo", TOUCH_BASE | CAMPAIGN_N_ABOVE | GEO],
+    [
+        "mv_campaign_touch_placement",
+        TOUCH_BASE | CAMPAIGN_N_ABOVE | PLACEMENT,
+    ],  # TODO: plac: add PUBLISHER back after table correctly replicated
     ["mv_adgroup_touch", TOUCH_BASE | AD_GROUP_N_ABOVE],
     ["mv_adgroup_touch_device", TOUCH_BASE | AD_GROUP_N_ABOVE | DEVICE],
     ["mv_adgroup_touch_environment", TOUCH_BASE | AD_GROUP_N_ABOVE | TOUCH_ENVIRONMENT],
@@ -70,7 +80,7 @@ TOUCHPOINT_VIEWS = [
     [
         "mv_adgroup_touch_placement",
         TOUCH_BASE | AD_GROUP_N_ABOVE | PLACEMENT,
-    ],  # TODO: add PUBLISHER back after table correctly replicated
+    ],  # TODO: plac: add PUBLISHER back after table correctly replicated
     ["mv_contentad_touch", TOUCH_BASE | CONTENT_AD_N_ABOVE],
     ["mv_contentad_touch_device", TOUCH_BASE | CONTENT_AD_N_ABOVE | DEVICE],
     ["mv_contentad_touch_environment", TOUCH_BASE | CONTENT_AD_N_ABOVE | TOUCH_ENVIRONMENT],

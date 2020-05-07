@@ -18,36 +18,29 @@ describe('component: zemGridContainerTabsService', function() {
         ]);
     }));
 
-    it('should filter additional breakdowns by entity type', function() {
-        var tabOptions = service.createTabOptions(undefined);
-        var additionalBreakDownsTab = findBreakdown(tabOptions, 'publisher');
+    it('should allow placement breakdown on all entity levels', function() {
+        var levels = [
+            undefined,
+            {type: constants.entityType.ACCOUNT},
+            {type: constants.entityType.CAMPAIGN},
+            {type: constants.entityType.AD_GROUP},
+        ];
 
-        expect(
-            findBreakdown(additionalBreakDownsTab.options, 'placement')
-        ).toEqual(undefined);
+        for (var i = 0; i < levels.length; i++) {
+            var tabOptions = service.createTabOptions(levels[i]);
+            var additionalBreakDownsTab = findBreakdown(
+                tabOptions,
+                'publisher'
+            );
 
-        tabOptions = service.createTabOptions({
-            type: constants.entityType.ACCOUNT,
-        });
-        additionalBreakDownsTab = findBreakdown(tabOptions, 'publisher');
-
-        expect(
-            findBreakdown(additionalBreakDownsTab.options, 'placement')
-        ).toEqual(undefined);
-
-        tabOptions = service.createTabOptions({
-            type: constants.entityType.AD_GROUP,
-        });
-        additionalBreakDownsTab = findBreakdown(tabOptions, 'publisher');
-
-        expect(
-            findBreakdown(additionalBreakDownsTab.options, 'placement')
-        ).toEqual({
-            name: 'Placements',
-            breakdown: 'placement',
-            permissions: 'zemauth.can_use_placement_targeting',
-            isNewFeature: true,
-            displayOnEntityTypes: ['campaign', 'adGroup'],
-        });
+            expect(
+                findBreakdown(additionalBreakDownsTab.options, 'placement')
+            ).toEqual({
+                name: 'Placements',
+                breakdown: 'placement',
+                permissions: 'zemauth.can_use_placement_targeting',
+                isNewFeature: true,
+            });
+        }
     });
 });
