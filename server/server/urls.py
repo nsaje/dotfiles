@@ -370,6 +370,11 @@ urlpatterns += [
         name="account_sources_daily_stats",
     ),
     url(
+        r"^api/accounts/(?P<account_id>\d+)/placements/daily_stats/$",
+        login_required(dash.features.daily_stats.views.AccountPlacementsDailyStats.as_view()),
+        name="account_placements_daily_stats",
+    ),
+    url(
         r"^api/accounts/(?P<account_id>\d+)/publishers/daily_stats/$",
         login_required(dash.features.daily_stats.views.AccountPublishersDailyStats.as_view()),
         name="account_publishers_daily_stats",
@@ -395,6 +400,11 @@ urlpatterns += [
         r"^api/all_accounts/publishers/daily_stats/$",
         login_required(dash.features.daily_stats.views.AllAccountsPublishersDailyStats.as_view()),
         name="accounts_publishers_daily_stats",
+    ),
+    url(
+        r"^api/all_accounts/placements/daily_stats/$",
+        login_required(dash.features.daily_stats.views.AllAccountsPlacementsDailyStats.as_view()),
+        name="accounts_placements_daily_stats",
     ),
     url(
         r"^api/all_accounts/(?P<delivery_dimension>({}))/daily_stats/$".format(

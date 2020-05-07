@@ -233,6 +233,10 @@ angular
             }
 
             function updateSelection() {
+                // Daily stats placement query takes too long so the selection
+                // should not be synchronized with zemSelectionService
+                if (breakdown === constants.breakdown.PLACEMENT) return;
+
                 var selection = zemGridIntegrationSelectionService.createCoreSelection(
                     grid.api
                 );

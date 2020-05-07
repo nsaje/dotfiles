@@ -278,6 +278,24 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         )
 
 
+class AllAccountsPlacementsDailyStats(AllAccountsPublishersDailyStats):
+    @newrelic.agent.function_trace()
+    def get(self, request):
+        if not request.user.has_perm("zemauth.can_use_placement_targeting"):
+            raise exc.MissingDataError()
+
+        self.view_filter = forms.ViewFilterForm(request.GET)
+        if not self.view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(self.view_filter.errors))
+        uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
+
+        self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)
+
+        self.selected_objects = None
+
+        return self.create_api_response(self.get_stats(request, None, should_use_publishers_view=True))
+
+
 class AllAccountsDeliveryDailyStats(AllAccountsDailyStatsView):
     @newrelic.agent.function_trace()
     def get(self, request, delivery_dimension):
@@ -395,6 +413,25 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
                     should_use_publishers_view=True,
                 ),
                 self.get_goals(request, pixels=pixels),
+            )
+        )
+
+
+class AccountPlacementsDailyStats(AccountPublishersDailyStats):
+    def get(self, request, account_id):
+        if not request.user.has_perm("zemauth.can_use_placement_targeting"):
+            raise exc.MissingDataError()
+
+        self.account = dash.views.helpers.get_account(request.user, account_id)
+
+        pixels = self.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
+
+        self.selected_objects = None
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(request, None, should_use_publishers_view=True), self.get_goals(request, pixels=pixels)
             )
         )
 
@@ -560,16 +597,11 @@ class CampaignPlacementsDailyStats(CampaignPublishersDailyStats):
             uses_bcm_v2=self.campaign.account.uses_bcm_v2,
         )
 
-        self.selected_objects = request.GET.getlist("selected_ids")
+        self.selected_objects = None
 
         return self.create_api_response(
             helpers.merge(
-                self.get_stats(
-                    request,
-                    "placement_id",
-                    object_mapping_fn=partial(helpers.get_delivery_mapping, None),
-                    should_use_publishers_view=True,
-                ),
+                self.get_stats(request, None, should_use_publishers_view=True),
                 self.get_goals(request, conversion_goals=conversion_goals, campaign=self.campaign, pixels=pixels),
             )
         )
@@ -748,16 +780,11 @@ class AdGroupPlacementsDailyStats(AdGroupPublishersDailyStats):
             uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2,
         )
 
-        self.selected_objects = request.GET.getlist("selected_ids")
+        self.selected_objects = None
 
         return self.create_api_response(
             helpers.merge(
-                self.get_stats(
-                    request,
-                    "placement_id",
-                    object_mapping_fn=partial(helpers.get_delivery_mapping, None),
-                    should_use_publishers_view=True,
-                ),
+                self.get_stats(request, None, should_use_publishers_view=True),
                 self.get_goals(
                     request, conversion_goals=conversion_goals, campaign=self.ad_group.campaign, pixels=pixels
                 ),

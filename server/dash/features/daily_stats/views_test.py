@@ -1503,6 +1503,84 @@ class AccountPublishersDailyStatsTest(TestCase):
 
 
 @patch("stats.api_dailystats.query")
+class AccountPlacementsDailyStatsTest(TestCase):
+    fixtures = ["test_views"]
+
+    def setUp(self):
+        password = "secret"
+        self.user = User.objects.get(pk=1)
+
+        self.client.login(username=self.user.email, password=password)
+
+    def test_get(self, mock_query):
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [
+            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+        ]
+
+        params = {
+            "metrics": ["cpc", "clicks"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "totals": "true",
+        }
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+        response = self.client.get(
+            reverse("account_placements_daily_stats", kwargs={"account_id": 1}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.USD,
+                    "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                },
+                "success": True,
+            },
+        )
+
+        mock_query.return_value = copy.deepcopy(mock_stats)
+        response = self.client.get(
+            reverse("account_placements_daily_stats", kwargs={"account_id": 2}), params, follow=True
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.EUR,
+                },
+                "success": True,
+            },
+        )
+
+
+@patch("stats.api_dailystats.query")
 class AllAccountsPublishersDailyStatsTest(TestCase):
     fixtures = ["test_views"]
 
@@ -1531,6 +1609,57 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
         }
 
         response = self.client.get(reverse("accounts_publishers_daily_stats"), params, follow=True)
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                "data": {
+                    "chart_data": [
+                        {
+                            "id": "totals",
+                            "name": "Totals",
+                            "series_data": {
+                                "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
+                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                            },
+                        }
+                    ],
+                    "currency": constants.Currency.USD,
+                },
+                "success": True,
+            },
+        )
+
+
+@patch("stats.api_dailystats.query")
+class AllAccountsPlacementsDailyStatsTest(TestCase):
+    fixtures = ["test_views"]
+
+    def setUp(self):
+        password = "secret"
+        self.user = User.objects.get(pk=1)
+
+        self.client.login(username=self.user.email, password=password)
+
+    def test_get(self, mock_query):
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+
+        mock_stats = [
+            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+        ]
+
+        mock_query.return_value = mock_stats
+
+        params = {
+            "metrics": ["cpc", "clicks"],
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "totals": "true",
+        }
+
+        response = self.client.get(reverse("accounts_placements_daily_stats"), params, follow=True)
 
         self.assertJSONEqual(
             response.content,
