@@ -129,8 +129,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
     def _get_selected_objects(self, request, objects):
         select_all = request.GET.get("select_all", False)
         select_batch_id = request.GET.get("select_batch")
-        selected_ids = [int(id) for id in request.GET.getlist("selected_ids")]
-        not_selected_ids = [int(id) for id in request.GET.getlist("not_selected_ids")]
+        selected_ids = [int(id) for id in request.GET.getlist("selected_ids") if id.isdigit()]
+        not_selected_ids = [int(id) for id in request.GET.getlist("not_selected_ids") if id.isdigit()]
         return dash.views.helpers.get_selected_entities(
             objects, select_all, selected_ids, not_selected_ids, True, select_batch_id
         )
