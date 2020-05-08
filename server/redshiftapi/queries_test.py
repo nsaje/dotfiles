@@ -109,7 +109,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.placement AS placement,
             base_table.placement_type AS placement_type,
             SUM(base_table.clicks) clicks,
-            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
+            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', COALESCE(base_table.placement, '')))) placement_id
         FROM mv_campaign_placement base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -227,7 +227,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
             (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
             MAX(base_table.publisher_source_id) publisher_id,
-            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', base_table.placement))) placement_id
+            MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', COALESCE(base_table.placement, '')))) placement_id
         FROM mv_account_placement base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -379,7 +379,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
             SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
             MAX(base_table.publisher_source_id) publisher_id,
-            MAX(concat(base_table.publisher_source_id, concat('__', base_table.placement))) placement_id
+            MAX(concat(base_table.publisher_source_id, concat('__', coalesce(base_table.placement, '')))) placement_id
         FROM mv_touchpointconversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -624,7 +624,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.placement_type AS placement_type,
                   sum(a.clicks) clicks,
                   sum(a.total_time_on_site) total_seconds,
-                  max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
+                  max(concat(a.publisher_source_id, concat('__', coalesce(a.placement, '')))) placement_id
            FROM mv_account_placement a
            WHERE (a.date>=%s
                   AND a.date<=%s)
@@ -961,7 +961,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         a.placement_type AS placement_type,
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
-                        max(concat(a.publisher_source_id, concat('__', a.placement))) placement_id
+                        max(concat(a.publisher_source_id, concat('__', coalesce(a.placement, '')))) placement_id
                  FROM mv_account_placement a
                  WHERE (a.date>=%s
                         AND a.date<=%s)
