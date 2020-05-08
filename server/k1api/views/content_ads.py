@@ -9,6 +9,7 @@ from dash import constants
 from utils import dates_helper
 from utils import db_router
 from utils import metrics_compat
+from utils import sspd_client
 from utils import zlogging
 
 from .base import K1APIView
@@ -137,6 +138,7 @@ class ContentAdsView(K1APIView):
 
         if updates:
             content_ad.update(None, write_history=False, **updates)
+            sspd_client.sync_content_ads([content_ad])
 
         return self.response_ok(data)
 
