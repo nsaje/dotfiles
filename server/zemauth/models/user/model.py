@@ -378,4 +378,7 @@ class User(
             ("can_see_new_publisher_library", "User can see the new Publishers & Placements library."),
             ("can_see_add_to_pub_plac_button", "User can see the Add to Publishers and Placements button"),
             ("fea_use_entity_permission", "User can use entity permissions."),
+            ("can_see_mrc50_metrics", "User can see the MRC50 viewability metrics"),
+            ("can_see_mrc100_metrics", "User can see the MRC100 viewability metrics"),
+            ("can_see_vast4_metrics", "User can see the VAST4 viewability metrics"),
         )
