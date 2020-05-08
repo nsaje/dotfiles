@@ -62,6 +62,13 @@ CREATE TABLE mv_master (
        local_effective_cost_nano bigint encode zstd,
        local_effective_data_cost_nano bigint encode zstd,
        local_license_fee_nano bigint encode zstd,
-       local_margin_nano bigint encode zstd
+       local_margin_nano bigint encode zstd,
+
+       mrc50_measurable integer encode AZ64,
+       mrc50_viewable integer encode AZ64,
+       mrc100_measurable integer encode AZ64,
+       mrc100_viewable integer encode AZ64,
+       vast4_measurable integer encode AZ64,
+       vast4_viewable integer encode AZ64
        -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id);

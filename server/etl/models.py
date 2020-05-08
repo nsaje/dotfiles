@@ -122,6 +122,13 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     )  # noqa
     local_margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_margin_nano"}, AGGREGATES)
 
+    mrc50_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_measurable"}, AGGREGATES)
+    mrc50_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_viewable"}, AGGREGATES)
+    mrc100_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc100_measurable"}, AGGREGATES)
+    mrc100_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc100_viewable"}, AGGREGATES)
+    vast4_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "vast4_measurable"}, AGGREGATES)
+    vast4_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "vast4_viewable"}, AGGREGATES)
+
     def get_ordered_aggregates(self):
         """
         Returns aggregates in order as it is used in materialized view table definitions.
@@ -156,6 +163,12 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                 "local_effective_data_cost_nano",
                 "local_license_fee_nano",
                 "local_margin_nano",
+                "mrc50_measurable",
+                "mrc50_viewable",
+                "mrc100_measurable",
+                "mrc100_viewable",
+                "vast4_measurable",
+                "vast4_viewable",
             ]
         )
 

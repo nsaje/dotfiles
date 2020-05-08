@@ -78,7 +78,14 @@ INSERT INTO mv_adgroup_placement (
         null as pageviews,
         null as total_time_on_site,
         null as users,
-        null as returning_users
+        null as returning_users,
+
+        d.mrc50_measurable as mrc50_measurable,
+        d.mrc50_viewable as mrc50_viewable,
+        d.mrc100_measurable as mrc100_measurable,
+        d.mrc100_viewable as mrc100_viewable,
+        d.vast4_measurable as vast4_measurable,
+        d.vast4_viewable as vast4_viewable
     FROM
         (
             (
@@ -111,7 +118,14 @@ INSERT INTO mv_adgroup_placement (
                         SUM(video_midpoint) AS video_midpoint,
                         SUM(video_third_quartile) AS video_third_quartile,
                         SUM(video_complete) AS video_complete,
-                        SUM(video_progress_3s) AS video_progress_3s
+                        SUM(video_progress_3s) AS video_progress_3s,
+
+                        SUM(mrc50_measurable) as mrc50_measurable,
+                        SUM(mrc50_viewable) as mrc50_viewable,
+                        SUM(mrc100_measurable) as mrc100_measurable,
+                        SUM(mrc100_viewable) as mrc100_viewable,
+                        SUM(vast4_measurable) as vast4_measurable,
+                        SUM(vast4_viewable) as vast4_viewable
                     FROM (SELECT * from stats_placement_diff UNION ALL SELECT * FROM stats_placement) AS stats_placement
                     WHERE
                         ((hour IS NULL AND date>=%(date_from)s AND date<=%(date_to)s)

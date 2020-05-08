@@ -62,7 +62,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     local_effective_cost_nano bigint encode zstd,
                     local_effective_data_cost_nano bigint encode zstd,
                     local_license_fee_nano bigint encode zstd,
-                    local_margin_nano bigint encode zstd
+                    local_margin_nano bigint encode zstd,
+                    mrc50_measurable integer encode AZ64,
+                    mrc50_viewable integer encode AZ64,
+                    mrc100_measurable integer encode AZ64,
+                    mrc100_viewable integer encode AZ64,
+                    vast4_measurable integer encode AZ64,
+                    vast4_viewable integer encode AZ64
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """
@@ -108,7 +114,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     local_effective_cost_nano,
                     local_effective_data_cost_nano,
                     local_license_fee_nano,
-                    local_margin_nano
+                    local_margin_nano,
+                    mrc50_measurable,
+                    mrc50_viewable,
+                    mrc100_measurable,
+                    mrc100_viewable,
+                    vast4_measurable,
+                    vast4_viewable
                 )
                 (SELECT
                     date AS date,
@@ -141,7 +153,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(local_effective_cost_nano) local_effective_cost_nano,
                     SUM(local_effective_data_cost_nano) local_effective_data_cost_nano,
                     SUM(local_license_fee_nano) local_license_fee_nano,
-                    SUM(local_margin_nano) local_margin_nano
+                    SUM(local_margin_nano) local_margin_nano,
+                    SUM(mrc50_measurable) mrc50_measurable,
+                    SUM(mrc50_viewable) mrc50_viewable,
+                    SUM(mrc100_measurable) mrc100_measurable,
+                    SUM(mrc100_viewable) mrc100_viewable,
+                    SUM(vast4_measurable) vast4_measurable,
+                    SUM(vast4_viewable) vast4_viewable
                 FROM mv_master
                 WHERE (date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id
@@ -213,7 +231,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     local_effective_cost_nano,
                     local_effective_data_cost_nano,
                     local_license_fee_nano,
-                    local_margin_nano
+                    local_margin_nano,
+                    mrc50_measurable,
+                    mrc50_viewable,
+                    mrc100_measurable,
+                    mrc100_viewable,
+                    vast4_measurable,
+                    vast4_viewable
                 )
                 (SELECT
                     date AS date,
@@ -246,7 +270,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(local_effective_cost_nano) local_effective_cost_nano,
                     SUM(local_effective_data_cost_nano) local_effective_data_cost_nano,
                     SUM(local_license_fee_nano) local_license_fee_nano,
-                    SUM(local_margin_nano) local_margin_nano
+                    SUM(local_margin_nano) local_margin_nano,
+                    SUM(mrc50_measurable) mrc50_measurable,
+                    SUM(mrc50_viewable) mrc50_viewable,
+                    SUM(mrc100_measurable) mrc100_measurable,
+                    SUM(mrc100_viewable) mrc100_viewable,
+                    SUM(vast4_measurable) vast4_measurable,
+                    SUM(vast4_viewable) vast4_viewable
                 FROM mv_master
                 WHERE (account_id=%s AND date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id

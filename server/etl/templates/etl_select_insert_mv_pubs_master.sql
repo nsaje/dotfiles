@@ -58,7 +58,14 @@ INSERT INTO mv_master_pubs(
         SUM(local_effective_cost_nano) as local_effective_cost_nano,
         SUM(local_effective_data_cost_nano) as local_effective_data_cost_nano,
         SUM(local_license_fee_nano) as local_license_fee_nano,
-        SUM(local_margin_nano) as local_margin_nano
+        SUM(local_margin_nano) as local_margin_nano,
+
+        SUM(mrc50_measurable) as mrc50_measurable,
+        SUM(mrc50_viewable) as mrc50_viewable,
+        SUM(mrc100_measurable) as mrc100_measurable,
+        SUM(mrc100_viewable) as mrc100_viewable,
+        SUM(vast4_measurable) as vast4_measurable,
+        SUM(vast4_viewable) as vast4_viewable
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND source_id <> 3
           {% if account_id %}

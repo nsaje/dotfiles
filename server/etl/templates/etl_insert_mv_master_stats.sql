@@ -97,7 +97,14 @@ INSERT INTO mv_master (
                   ) * cf.pct_license_fee::decimal(10, 8)
               ) * cf.pct_margin::decimal(10, 8) * 1000
           )::bigint * cer.exchange_rate::decimal(10, 4)
-      ) as local_margin_nano
+      ) as local_margin_nano,
+
+      d.mrc50_measurable as mrc50_measurable,
+      d.mrc50_viewable as mrc50_viewable,
+      d.mrc100_measurable as mrc100_measurable,
+      d.mrc100_viewable as mrc100_viewable,
+      d.vast4_measurable as vast4_measurable,
+      d.vast4_viewable as vast4_viewable
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)

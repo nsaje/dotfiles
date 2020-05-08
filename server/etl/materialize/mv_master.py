@@ -177,6 +177,12 @@ class MasterView(Materialize):
                         None,  # local_effective_data_cost_nano
                         None,  # local_license_fee_nano
                         None,  # local_margin_nano
+                        None,  # mrc50_measurable
+                        None,  # mrc50_viewable
+                        None,  # mrc100_measurable
+                        None,  # mrc100_viewable
+                        None,  # vast4_measurable
+                        None,  # vast4_viewable
                     ),
                     (row.conversions, row.postclick_source),
                 )

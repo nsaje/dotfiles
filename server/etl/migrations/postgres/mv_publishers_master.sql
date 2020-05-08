@@ -60,7 +60,14 @@ CREATE TABLE IF NOT EXISTS mv_master_pubs (
         local_effective_cost_nano bigint,
         local_effective_data_cost_nano bigint,
         local_license_fee_nano bigint,
-        local_margin_nano bigint
+        local_margin_nano bigint,
+
+        mrc50_measurable integer,
+        mrc50_viewable integer,
+        mrc100_measurable integer,
+        mrc100_viewable integer,
+        vast4_measurable integer,
+        vast4_viewable integer
         -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_pubs_main_idx ON mv_master_pubs (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, date);

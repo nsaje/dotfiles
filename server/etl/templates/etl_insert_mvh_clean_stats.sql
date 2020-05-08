@@ -89,7 +89,13 @@ INSERT INTO mvh_clean_stats (
       SUM(video_midpoint) as video_midpoint,
       SUM(video_third_quartile) as video_third_quartile,
       SUM(video_complete) as video_complete,
-      SUM(video_progress_3s) as video_progress_3s
+      SUM(video_progress_3s) as video_progress_3s,
+      SUM(mrc50_measurable) as mrc50_measurable,
+      SUM(mrc50_viewable) as mrc50_viewable,
+      SUM(mrc100_measurable) as mrc100_measurable,
+      SUM(mrc100_viewable) as mrc100_viewable,
+      SUM(vast4_measurable) as vast4_measurable,
+      SUM(vast4_viewable) as vast4_viewable
   FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
   WHERE
       ((hour is null and date>=%(date_from)s AND date<=%(date_to)s)
