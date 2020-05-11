@@ -489,6 +489,7 @@ class ContentAdLoaderTest(TestCase):
             1: {1: {"status": constants.ContentAdSubmissionStatus.REJECTED, "reason": "Inappropriate content"}}
         }
         loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
+        self.maxDiff = None
         self.assertDictEqual(
             loader.per_source_status_map,
             {
@@ -505,22 +506,23 @@ class ContentAdLoaderTest(TestCase):
         )
 
     @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
-    def test_sspd_status_not_available(self):
+    def test_sspd_status_ignored(self):
         content_ads = models.ContentAd.objects.all()
         sources = models.Source.objects.filter(pk=1)
 
         sspd_client.get_content_ad_status.return_value = None
         loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
+        self.maxDiff = None
         self.assertDictEqual(
             loader.per_source_status_map,
             {
                 1: {
                     1: {
                         "source_id": 1,
-                        "submission_status": 5,
+                        "submission_status": 1,
                         "source_name": "AdsNative",
                         "source_status": 1,
-                        "submission_errors": "",
+                        "submission_errors": None,
                     }
                 }
             },

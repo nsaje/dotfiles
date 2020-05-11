@@ -552,18 +552,18 @@ class ContentAdsLoader(Loader):
             )
 
     def _get_submission_status_for_native_ads(self, content_ad, content_ad_source, content_ad_submission_policy):
-        if self.sspd_status_map is None:
+        sspd_status = None
+        if self.sspd_status_map:
+            sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
+
+        if sspd_status is None and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
             return constants.ContentAdSubmissionStatus.NOT_AVAILABLE, ""
-        sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)
-        if not sspd_status and content_ad_source.source_id in SOURCES_SSPD_REQUIRED:
-            return constants.ContentAdSubmissionStatus.PENDING, ""
-        elif sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
+        if sspd_status and sspd_status.get("status") == constants.ContentAdSubmissionStatus.REJECTED:
             return sspd_status["status"], sspd_status["reason"]
-        elif self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
             return outbrain_content_ad_source.get_submission_status(), outbrain_content_ad_source.submission_errors
-        else:
-            return content_ad_source.get_submission_status(), content_ad_source.submission_errors
+        return content_ad_source.get_submission_status(), content_ad_source.submission_errors
 
     def _get_source_link(self, content_ad, content_ad_submission_policy):
         if self.user.has_perm("zemauth.can_see_amplify_review_link") and self._should_use_amplify_review(
