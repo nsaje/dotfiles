@@ -217,6 +217,8 @@ IMAGE_THUMBNAIL_URL = "https://images2.zemanta.com/"
 BROKER_TRANSPORT = "sqs"
 BROKER_URL = BROKER_TRANSPORT + "://"
 
+CELERY_RESULT_BACKEND = "django-db"
+
 CELERY_TASK_SERIALIZER = "pickle"
 CELERY_ACCEPT_CONTENT = ["pickle"]
 
@@ -224,6 +226,7 @@ CELERY_ROUTES = {
     "reports_execute": {"queue": "reports"},
     "upload_lambda_execute": {"queue": "upload-lambda"},
     "redshift_background_cache": {"queue": "redshift-background-cache"},
+    "campaign_cloning": {"queue": "campaign-cloning"},
 }
 
 QUEUE_NAME_PREFIX = "demo"
@@ -240,6 +243,7 @@ BROKER_TRANSPORT_OPTIONS = {
 
 USE_CELERY_FOR_REPORTS = False
 USE_CELERY_FOR_UPLOAD_LAMBDAS = False
+USE_CELERY_FOR_CAMPAIGN_CLONING = False
 
 R1_DEMO_MODE = True
 R1_API_SIGN_KEY = Secret("").get()

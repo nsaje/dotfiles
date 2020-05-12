@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "dev",
     "demo",
     "drf_yasg",
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [

@@ -18,7 +18,7 @@ xlrd==1.1.0
 python-slugify==1.2.6
 newrelic==4.4.1.104
 boto==2.49.0
-celery==4.3.0
+celery==4.4.0
 requests==2.21.0
 django-timezone-field==3.0
 uWSGI==2.0.17.1
@@ -89,6 +89,7 @@ termcolor==1.1.0
 pycurl==7.43.0.2
 redis==2.10.6
 django-redis==4.10.0
+django-celery-results==1.2.1
 
 # user agent parser
 ua-parser==0.8.0

@@ -1,5 +1,7 @@
+import celery.exceptions
 import rest_framework.permissions
 import rest_framework.serializers
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Prefetch
 
@@ -97,14 +99,27 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         serializer = serializers.CloneCampaignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        try:
-            campaign = dash.features.clonecampaign.service.clone(
-                request, restapi.access.get_campaign(request.user, campaign_id), **data
-            )
-        except dash.features.clonecampaign.exceptions.CanNotCloneAds as error:
-            raise utils.exc.ValidationError(error)
+        campaign = restapi.access.get_campaign(request.user, campaign_id)
 
-        return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data, status=201)
+        if settings.USE_CELERY_FOR_CAMPAIGN_CLONING:
+            result = dash.features.clonecampaign.service.clone_async.delay(
+                request, campaign_id=campaign.id, send_email=True, **data
+            )
+            try:
+                cloned_campaign_id = result.get(timeout=10)
+                cloned_campaign = restapi.access.get_campaign(request.user, cloned_campaign_id)
+            except celery.exceptions.TimeoutError:
+                return self.response_ok(None)
+
+        else:
+            try:
+                cloned_campaign = dash.features.clonecampaign.service.clone(request, campaign, **data)
+            except dash.features.clonecampaign.exceptions.CanNotCloneAds as error:
+                raise utils.exc.ValidationError(error)
+
+        return self.response_ok(
+            self.serializer(cloned_campaign.settings, context={"request": request}).data, status=201
+        )
 
     @property
     def serializer(self):

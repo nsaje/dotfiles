@@ -1803,6 +1803,8 @@ class EmailTemplateType(ConstantBase):
     AUTOMATION_RULE_RUN = 35
     AUTOMATION_RULE_NO_CHANGES = 36
     AUTOMATION_RULE_ERRORS = 37
+    CAMPAIGN_CLONED_SUCCESS = 38
+    CAMPAIGN_CLONED_ERROR = 39
 
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
@@ -1840,6 +1842,8 @@ class EmailTemplateType(ConstantBase):
         AUTOMATION_RULE_RUN: "Automation rule run",
         AUTOMATION_RULE_NO_CHANGES: "Automation rule run without changes",
         AUTOMATION_RULE_ERRORS: "Automation rule run with errors",
+        CAMPAIGN_CLONED_SUCCESS: "Campaign cloned successfully",
+        CAMPAIGN_CLONED_ERROR: "Campaign cloned error",
     }
 
 

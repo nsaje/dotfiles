@@ -744,3 +744,25 @@ def send_campaign_created_email(request, campaign):
         recipient_list=emails,
         **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CREATED, **args),
     )
+
+
+def send_campaign_cloned_success_email(request, source_campaign_name, cloned_campaign_name):
+
+    args = {"source_campaign_name": source_campaign_name, "cloned_campaign_name": cloned_campaign_name}
+
+    send_official_email(
+        agency_or_user=request.user,
+        recipient_list=[request.user.email],
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CLONED_SUCCESS, **args),
+    )
+
+
+def send_campaign_cloned_error_email(request, source_campaign_name, cloned_campaign_name):
+
+    args = {"source_campaign_name": source_campaign_name, "cloned_campaign_name": cloned_campaign_name}
+
+    send_official_email(
+        agency_or_user=request.user,
+        recipient_list=[request.user.email],
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CLONED_ERROR, **args),
+    )

@@ -140,7 +140,7 @@ class CloneServiceTest(TestCase):
             exceptions.CanNotCloneAds,
             service.clone,
             self.request,
-            self.campaign,
+            self.campaign.id,
             "Cloned Campaign",
             clone_ad_groups=False,
             clone_ads=True,
