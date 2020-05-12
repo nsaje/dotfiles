@@ -312,7 +312,6 @@ VALID_OPERATORS = {
     constants.MetricType.CAMPAIGN_REMAINING_BUDGET: VALID_NUMBER_OPERATORS,
 }
 
-
 STATS_FIELDS_DEFAULTS = {
     "clicks": 0,
     "impressions": 0,

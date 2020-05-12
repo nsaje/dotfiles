@@ -1,3 +1,5 @@
+from collections import defaultdict
+from typing import DefaultDict
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -9,9 +11,11 @@ import core.features.bid_modifiers.constants
 import core.features.goals
 import core.models
 import dash.constants
+import dash.features.geolocation
 import redshiftapi.api_rules
 from utils import sort_helper
 
+from ... import config
 from ... import constants
 from ... import models
 
@@ -24,7 +28,8 @@ def query_stats(
     cpa_ad_groups = _get_cpa_ad_groups(rules_map)
     conversion_stats = redshiftapi.api_rules.query_conversions(target_type, cpa_ad_groups)
     merged_stats = _merge(target_type, cpa_ad_groups, raw_stats, conversion_stats)
-    return _format(target_type, merged_stats)
+    formatted_stats = _format(target_type, merged_stats)
+    return _add_missing_targets(target_type, ad_groups, formatted_stats)
 
 
 def _get_cpa_ad_groups(rules_map):
@@ -125,3 +130,61 @@ def _format(target_type: int, stats: Sequence[Dict]) -> Dict[int, Dict[str, Dict
             formatted_stats[ad_group_id][target_key][metric][window_key] = value
 
     return formatted_stats
+
+
+def _add_missing_targets(
+    target_type: int,
+    ad_groups: List[core.models.AdGroup],
+    stats: Dict[int, Dict[str, Dict[str, Dict[int, Optional[float]]]]],
+):
+    all_possible_targets = _get_all_possible_targets_per_ad_group(target_type, ad_groups)
+    for ad_group in ad_groups:
+        possible_targets = set(all_possible_targets[ad_group.id])
+        actual_targets = set(stats[ad_group.id].keys() if ad_group.id in stats else [])
+        for target_key in possible_targets - actual_targets:
+            for metric, value in config.STATS_FIELDS_DEFAULTS.items():
+                for window_key in constants.MetricWindow.get_all():
+                    stats.setdefault(ad_group.id, {})
+                    stats[ad_group.id].setdefault(target_key, {})
+                    stats[ad_group.id][target_key].setdefault(metric, {})
+                    stats[ad_group.id][target_key][metric][window_key] = value
+    return stats
+
+
+def _get_all_possible_targets_per_ad_group(target_type: int, ad_groups: List[core.models.AdGroup]):
+    if target_type == constants.TargetType.AD_GROUP:
+        return {ad_group.id: [str(ad_group.id)] for ad_group in ad_groups}
+    elif target_type == constants.TargetType.AD:
+        content_ads = (
+            core.models.ContentAd.objects.filter(ad_group_id__in=[ag.id for ag in ad_groups])
+            .exclude_archived()
+            .filter_active()
+            .values("id", "ad_group_id")
+        )
+        content_ad_ids_map: DefaultDict[int, List[str]] = defaultdict(list)
+        for content_ad in content_ads:
+            content_ad_ids_map[content_ad["ad_group_id"]].append(str(content_ad["id"]))
+        return content_ad_ids_map
+    elif target_type == constants.TargetType.SOURCE:
+        ad_group_sources = (
+            core.models.AdGroupSource.objects.filter(ad_group_id__in=[ag.id for ag in ad_groups])
+            .filter_active()
+            .values("source_id", "ad_group_id")
+        )
+        source_ids_map: DefaultDict[int, List[str]] = defaultdict(list)
+        for ad_group_source in ad_group_sources:
+            source_ids_map[ad_group_source["ad_group_id"]].append(str(ad_group_source["source_id"]))
+        return source_ids_map
+    elif target_type in [
+        constants.TargetType.PUBLISHER,
+        constants.TargetType.DEVICE,
+        constants.TargetType.COUNTRY,
+        constants.TargetType.STATE,
+        constants.TargetType.DMA,
+        constants.TargetType.OS,
+        constants.TargetType.ENVIRONMENT,
+    ]:
+        # NOTE:  not known in advance
+        return defaultdict(list)
+    else:
+        raise Exception("Unknown target type - should not be left unhandled")
