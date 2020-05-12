@@ -1568,17 +1568,6 @@ export const APP_CONSTANTS = {
         COUPONS: 'coupons',
         SHOPPING: 'shopping',
     },
-    geolocationType: {
-        COUNTRY: 'COUNTRY',
-        REGION: 'REGION',
-        DMA: 'DMA',
-        CITY: 'CITY',
-        ZIP: 'ZIP',
-    },
-    zipTargetingType: {
-        INCLUDE: 'include',
-        EXCLUDE: 'exclude',
-    },
     costMode: {
         LEGACY: 'legacy',
         PUBLIC: 'public',
@@ -1594,7 +1583,6 @@ export const APP_CONSTANTS = {
     campaignGoalValueText: {},
     automaticallyOptimizedKPIGoals: {},
     defaultAccountTypes: [{}],
-    geolocationTypeText: [{}],
     hackLevel: HackLevel,
 };
 
@@ -1732,15 +1720,6 @@ APP_CONSTANTS.defaultAccountTypes = [
         name: 'PAAS',
     },
 ];
-
-APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.COUNTRY] =
-    'Country';
-APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.REGION] =
-    'State / Region';
-APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.DMA] = 'DMA®';
-APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.CITY] = 'City';
-APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.ZIP] =
-    'Postal Code';
 
 // [Workaround - Webpack] Make constants global
 // AngularJS (backward compatibility)

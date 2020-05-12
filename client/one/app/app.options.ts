@@ -3120,10 +3120,6 @@ export const APP_OPTIONS = {
             internal: true,
         },
     ],
-    zipTargetingTypes: [
-        {name: 'Include', value: APP_CONSTANTS.zipTargetingType.INCLUDE},
-        {name: 'Exclude', value: APP_CONSTANTS.zipTargetingType.EXCLUDE},
-    ],
     adTypes: [
         {
             name: 'Content ad',
