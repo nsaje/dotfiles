@@ -27,6 +27,7 @@ import {RequestStateUpdater} from '../../../../shared/types/request-state-update
 import {Geotargeting} from '../../types/geotargeting';
 import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
+import {GeolocationsByType} from '../../types/geolocations-by-type';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -832,13 +833,31 @@ describe('AdGroupSettingsStore', () => {
             includeExcludeType: IncludeExcludeType.INCLUDE,
         };
 
-        store.patchState([], 'selectedGeotargetingLocations');
-        expect(store.state.selectedGeotargetingLocations).toEqual([]);
+        const emptyLocationsByType: GeolocationsByType = {
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        };
+
+        store.patchState(
+            emptyLocationsByType,
+            'selectedIncludedLocationsByType'
+        );
+        store.patchState(
+            emptyLocationsByType,
+            'selectedExcludedLocationsByType'
+        );
 
         store.addGeotargeting(mockedGeotargeting);
-        expect(store.state.selectedGeotargetingLocations).toEqual([
-            mockedLocations[0],
-        ]);
+        expect(store.state.selectedIncludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [mockedLocations[0]],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: ['AU'],
@@ -861,10 +880,20 @@ describe('AdGroupSettingsStore', () => {
             includeExcludeType: IncludeExcludeType.EXCLUDE,
         };
         store.addGeotargeting(mockedGeotargeting);
-        expect(store.state.selectedGeotargetingLocations).toEqual([
-            mockedLocations[0],
-            mockedLocations[1],
-        ]);
+        expect(store.state.selectedIncludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [mockedLocations[0]],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
+        expect(store.state.selectedExcludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [mockedLocations[1]],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: ['AU'],
@@ -924,6 +953,22 @@ describe('AdGroupSettingsStore', () => {
             },
         ];
 
+        const mockedIncludedLocationsByType: GeolocationsByType = {
+            [GeolocationType.COUNTRY]: [mockedLocations[0]],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        };
+
+        const mockedExcludedLocationsByType: GeolocationsByType = {
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [mockedLocations[1]],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        };
+
         let mockedGeotargeting: Geotargeting = {
             selectedLocation: mockedLocations[0],
             includeExcludeType: IncludeExcludeType.INCLUDE,
@@ -938,13 +983,25 @@ describe('AdGroupSettingsStore', () => {
                     geo: mockedGeo,
                 },
             },
-            selectedGeotargetingLocations: mockedLocations,
+            selectedIncludedLocationsByType: mockedIncludedLocationsByType,
+            selectedExcludedLocationsByType: mockedExcludedLocationsByType,
         });
 
         store.removeGeotargeting(mockedGeotargeting);
-        expect(store.state.selectedGeotargetingLocations).toEqual([
-            mockedLocations[1],
-        ]);
+        expect(store.state.selectedIncludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
+        expect(store.state.selectedExcludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [mockedLocations[1]],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: [],
@@ -967,7 +1024,13 @@ describe('AdGroupSettingsStore', () => {
             includeExcludeType: IncludeExcludeType.EXCLUDE,
         };
         store.removeGeotargeting(mockedGeotargeting);
-        expect(store.state.selectedGeotargetingLocations).toEqual([]);
+        expect(store.state.selectedExcludedLocationsByType).toEqual({
+            [GeolocationType.COUNTRY]: [],
+            [GeolocationType.REGION]: [],
+            [GeolocationType.DMA]: [],
+            [GeolocationType.CITY]: [],
+            [GeolocationType.ZIP]: [],
+        });
         expect(store.state.entity.targeting.geo).toEqual({
             included: {
                 countries: [],

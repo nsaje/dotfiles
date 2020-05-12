@@ -1,0 +1,49 @@
+@import 'variables';
+
+.zem-geo-targeting {
+    display: block;
+}
+
+.zem-geo-targeting__title {
+    font-size: 15px;
+}
+
+.zem-geo-targeting__title--included {
+    color: @color--success;
+}
+
+.zem-geo-targeting__title--excluded {
+    color: @color--danger;
+}
+
+.zem-geo-targeting__item {
+    display: block;
+    margin-top: @zem-form-group__items-spacing--default;
+}
+
+.zem-geo-targeting__add-excluded {
+    margin-top: @spacing--default;
+}
+
+.zem-geo-targeting__link {
+    color: @color--secondary;
+
+    &:hover {
+        color: @color--secondary;
+    }
+}
+
+.zem-geo-targeting__list-title {
+    color: @text-color--lighter;
+}
+
+.zem-geo-targeting__list-item {
+    margin: 3px;
+    margin-left: @spacing--small;
+    display: flex;
+    align-items: center;
+}
+
+.zem-geo-targeting__list-item--search {
+    margin: 0;
+}

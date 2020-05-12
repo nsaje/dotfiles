@@ -504,13 +504,17 @@
                     </div>
                     <zem-geo-targeting
                         class="zem-geo-targeting zem-settings-section__item"
-                        [includedLocations]="
-                            state.entity.targeting.geo.included
+                        [includedLocationsByType]="
+                            state.selectedIncludedLocationsByType
                         "
-                        [excludedLocations]="
-                            state.entity.targeting.geo.excluded
+                        [excludedLocationsByType]="
+                            state.selectedExcludedLocationsByType
                         "
-                        (onUpdate)="store.setLocationTargeting($event.$event)"
+                        [searchedLocations]="state.searchedLocations"
+                        (locationSearch)="store.searchLocations($event)"
+                        (locationOpen)="store.clearSearchedLocations()"
+                        (addGeotargeting)="store.addGeotargeting($event)"
+                        (removeGeotargeting)="store.removeGeotargeting($event)"
                     ></zem-geo-targeting>
                 </div>
                 <zem-expandable-section

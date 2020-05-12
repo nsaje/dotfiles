@@ -1,6 +1,9 @@
 import {IncludedExcluded} from '../../../core/entities/types/common/included-excluded';
 import {TargetRegions} from '../../../core/entities/types/common/target-regions';
 import * as geolocationHelpers from './geolocations.helpers';
+import {GeolocationsByType} from '../types/geolocations-by-type';
+import {GeolocationType} from '../../../app.constants';
+import {Geolocation} from '../../../core/geolocations/types/geolocation';
 
 describe('geolocationHelpers', () => {
     it('should retreive locations keys from geolocations included/excluded object', () => {
@@ -65,5 +68,86 @@ describe('geolocationHelpers', () => {
 
         zipCode = 'SI';
         expect(geolocationHelpers.getZipCodeNumber(zipCode)).toEqual('');
+    });
+
+    it('should map targeting location keys to geolocations and group them by type', () => {
+        const mockedTargetRegions: TargetRegions = {
+            countries: ['SI'],
+            regions: ['AT-2'],
+            dma: ['516'],
+            cities: ['217'],
+            postalCodes: ['SI:1000'],
+        };
+
+        const geolocationData = {
+            outbrainId: '123',
+            woeid: '123',
+            facebookKey: '123',
+        };
+
+        const countryLocation: Geolocation = {
+            key: 'SI',
+            type: GeolocationType.COUNTRY,
+            name: 'Slovenia',
+            ...geolocationData,
+        };
+
+        const regionLocation: Geolocation = {
+            key: 'AT-2',
+            type: GeolocationType.REGION,
+            name: 'Lower Austria, Austria',
+            ...geolocationData,
+        };
+
+        const dmaLocation: Geolocation = {
+            key: '516',
+            type: GeolocationType.DMA,
+            name: '513 Flint-Saginaw-Bay City, MI',
+            ...geolocationData,
+        };
+
+        const cityLocation: Geolocation = {
+            key: '217',
+            type: GeolocationType.CITY,
+            name: 'Faro, Portugal',
+            ...geolocationData,
+        };
+
+        const mockedSelectedLocations = [
+            countryLocation,
+            regionLocation,
+            dmaLocation,
+            cityLocation,
+        ];
+
+        const locationsByType: GeolocationsByType = {
+            [GeolocationType.COUNTRY]: [countryLocation],
+            [GeolocationType.REGION]: [regionLocation],
+            [GeolocationType.DMA]: [dmaLocation],
+            [GeolocationType.CITY]: [cityLocation],
+            [GeolocationType.ZIP]: [countryLocation],
+        };
+
+        expect(
+            geolocationHelpers.mapGeolocationsAndGroupByType(
+                mockedTargetRegions,
+                mockedSelectedLocations
+            )
+        ).toEqual(locationsByType);
+    });
+
+    it('should correctly add badges', () => {
+        const location: Geolocation = {
+            key: 'SI',
+            type: GeolocationType.COUNTRY,
+            name: 'Slovenia',
+            outbrainId: '',
+            woeid: '',
+            facebookKey: 'SI',
+        };
+
+        expect(
+            geolocationHelpers.getGeolocationBadges(location).length
+        ).toEqual(2);
     });
 });

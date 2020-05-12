@@ -12,6 +12,7 @@ import {AccountSettingsDrawerView} from './views/account-settings-drawer/account
 import {DeliveryTypeSettingComponent} from './components/delivery-type-setting/delivery-type-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
+import {GeoTargetingLocationComponent} from './components/geo-targeting-location/geo-targeting-location.component';
 import {ZipTargetingComponent} from './components/zip-targeting/zip-targeting.component';
 import {OperatingSystemListComponent} from './components/operating-system-list/operating-system-list.component';
 import {OperatingSystemComponent} from './components/operating-system/operating-system.component';
@@ -56,6 +57,7 @@ import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySe
         BiddingTypeSettingComponent,
         DemographicTargetingComponent,
         GeoTargetingComponent,
+        GeoTargetingLocationComponent,
         ZipTargetingComponent,
         OperatingSystemListComponent,
         OperatingSystemComponent,

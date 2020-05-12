@@ -1,0 +1,162 @@
+<div *ngIf="hasNoTargeting">Location targeting is set to Worldwide.</div>
+<div class="zem-geo-targeting__item zem-geo-targeting__list-container">
+    <zem-select-list
+        class="zem-select-list zem-geo-targeting__list"
+        [selectedItems]="includedListItems"
+        [availableItems]="searchedListItems"
+        [selectBindValue]="'key'"
+        [selectBindLabel]="'name'"
+        [selectPlaceholder]="'Add location'"
+        [selectGroupByValue]="'type'"
+        (itemSelect)="onAddIncludedGeotargeting($event)"
+        (search)="onLocationSearch($event)"
+        (open)="locationOpen.emit()"
+    >
+        <ng-template #headerTemplate>
+            <div
+                class="zem-geo-targeting__title zem-geo-targeting__title--included"
+            >
+                Included Locations
+            </div>
+        </ng-template>
+        <ng-template
+            #selectItemTemplate
+            let-location="item"
+            let-search="search"
+        >
+            <zem-geo-targeting-location
+                class="zem-geo-targeting-location zem-geo-targeting__list-item zem-geo-targeting__list-item--search"
+                [location]="location"
+                [highlightText]="search"
+                [canRemoveLocation]="false"
+            ></zem-geo-targeting-location>
+        </ng-template>
+        <ng-template #selectGroupTemplate let-item="item">
+            {{ geolocationTypeNames[item.type] }}
+        </ng-template>
+        <ng-template #itemTemplate let-item="item" let-index="index">
+            <div class="zem-geo-targeting__list-title">{{ item.name }}</div>
+            <ng-container
+                *ngFor="
+                    let location of item.locations;
+                    let locationIndex = index
+                "
+            >
+                <zem-geo-targeting-location
+                    *ngIf="
+                        expandedTypes[includeExcludeType.INCLUDE][item.type] ||
+                        locationIndex < itemListLimit
+                    "
+                    class="zem-geo-targeting-location zem-geo-targeting__list-item"
+                    [location]="location"
+                    (removeLocation)="onRemoveIncludedGeotargeting($event)"
+                ></zem-geo-targeting-location>
+            </ng-container>
+            <div
+                *ngIf="
+                    item.locations.length > itemListLimit &&
+                    !expandedTypes[includeExcludeType.INCLUDE][item.type]
+                "
+                class="zem-geo-targeting__list-item"
+            >
+                <a
+                    class="zem-geo-targeting__link"
+                    (click)="
+                        expandedTypes[includeExcludeType.INCLUDE][
+                            item.type
+                        ] = true
+                    "
+                    >Show all ({{ item.locations.length }})
+                </a>
+            </div>
+        </ng-template>
+    </zem-select-list>
+    <zem-select-list
+        *ngIf="isExcludedVisible"
+        class="zem-select-list zem-geo-targeting__list"
+        [selectedItems]="excludedListItems"
+        [availableItems]="searchedListItems"
+        [selectBindValue]="'key'"
+        [selectBindLabel]="'name'"
+        [selectPlaceholder]="'Add location'"
+        [selectGroupByValue]="'type'"
+        (itemSelect)="onAddExcludedGeotargeting($event)"
+        (search)="onLocationSearch($event)"
+        (open)="locationOpen.emit()"
+    >
+        <ng-template #headerTemplate>
+            <div
+                class="zem-geo-targeting__title zem-geo-targeting__title--excluded"
+            >
+                Excluded Locations
+            </div>
+        </ng-template>
+        <ng-template
+            #selectItemTemplate
+            let-location="item"
+            let-search="search"
+        >
+            <zem-geo-targeting-location
+                class="zem-geo-targeting-location zem-geo-targeting__list-item zem-geo-targeting__list-item--search"
+                [location]="location"
+                [highlightText]="search"
+                [canRemoveLocation]="false"
+            ></zem-geo-targeting-location>
+        </ng-template>
+        <ng-template #selectGroupTemplate let-item="item">
+            {{ geolocationTypeNames[item.type] }}
+        </ng-template>
+        <ng-template #itemTemplate let-item="item" let-index="index">
+            <div class="zem-geo-targeting__list-title">{{ item.name }}</div>
+            <ng-container
+                *ngFor="
+                    let location of item.locations;
+                    let locationIndex = index
+                "
+            >
+                <zem-geo-targeting-location
+                    *ngIf="
+                        expandedTypes[includeExcludeType.EXCLUDE][item.type] ||
+                        locationIndex < itemListLimit
+                    "
+                    class="zem-geo-targeting-location zem-geo-targeting__list-item"
+                    [location]="location"
+                    (removeLocation)="onRemoveExcludedGeotargeting($event)"
+                ></zem-geo-targeting-location>
+            </ng-container>
+            <div
+                *ngIf="
+                    item.locations.length > itemListLimit &&
+                    !expandedTypes[includeExcludeType.EXCLUDE][item.type]
+                "
+                class="zem-geo-targeting__list-item"
+            >
+                <a
+                    class="zem-geo-targeting__link"
+                    (click)="
+                        expandedTypes[includeExcludeType.EXCLUDE][
+                            item.type
+                        ] = true
+                    "
+                    >Show all ({{ item.locations.length }})
+                </a>
+            </div>
+        </ng-template>
+    </zem-select-list>
+</div>
+<div class="zem-geo-targeting__item zem-geo-targeting__add-excluded">
+    <a
+        class="zem-geo-targeting__link"
+        *ngIf="!isExcludedVisible"
+        (click)="isExcludedVisible = true"
+        >Add excluded list</a
+    >
+</div>
+<div
+    *ngIf="hasDifferentLocationTypes"
+    class="zem-geo-targeting__item zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+>
+    You are using different geographical features (city, country, ...). Note
+    that if for example both the country United States and the city of New York
+    are included, the whole US will be targeted.
+</div>

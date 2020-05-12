@@ -3,6 +3,8 @@ import {TargetRegions} from '../../../core/entities/types/common/target-regions'
 import {GeolocationType, IncludeExcludeType} from '../../../app.constants';
 import {isEmpty} from '../../../shared/helpers/array.helpers';
 import {getValueOrDefault} from '../../../shared/helpers/common.helpers';
+import {Geolocation} from '../../../core/geolocations/types/geolocation';
+import {GeolocationsByType} from '../types/geolocations-by-type';
 
 export function getGeolocationsKeys(
     geotargeting: IncludedExcluded<TargetRegions>
@@ -81,4 +83,69 @@ export function areAllSameCountries(zipCodes: string[]): boolean {
     return zipCodes.every(
         (zipCode: string) => getZipCodeCountry(zipCode) === zipCodeFirstCountry
     );
+}
+
+export function mapGeolocationsAndGroupByType(
+    geolocationTargeting: TargetRegions,
+    geolocations: Geolocation[]
+): GeolocationsByType {
+    const geolocationsByType: GeolocationsByType = {
+        [GeolocationType.COUNTRY]: [],
+        [GeolocationType.REGION]: [],
+        [GeolocationType.DMA]: [],
+        [GeolocationType.CITY]: [],
+        [GeolocationType.ZIP]: [],
+    };
+
+    [
+        GeolocationType.COUNTRY,
+        GeolocationType.REGION,
+        GeolocationType.DMA,
+        GeolocationType.CITY,
+    ].forEach(geolocationType => {
+        const geolocationPropertyName = getGeotargetingLocationPropertyFromGeolocationType(
+            geolocationType
+        );
+        geolocationsByType[geolocationType] = geolocationTargeting[
+            geolocationPropertyName
+        ].map((geolocationKey: string) => {
+            const geolocation = geolocations.find(
+                geolocation => geolocation.key === geolocationKey
+            );
+            return geolocation;
+        });
+    });
+
+    if (!isEmpty(geolocationTargeting.postalCodes)) {
+        geolocationsByType.ZIP = [
+            geolocations.find(
+                geolocation =>
+                    geolocation.key ===
+                    getZipCodeCountry(geolocationTargeting.postalCodes[0])
+            ),
+        ];
+    }
+    return geolocationsByType;
+}
+
+export function getGeolocationBadges(
+    geolocation: Geolocation
+): {
+    class: string;
+    text: string;
+}[] {
+    const badges = [];
+    if (!geolocation.outbrainId) {
+        badges.push({
+            class: 'outbrain',
+            text: 'Not supported by Outbrain',
+        });
+    }
+    if (!geolocation.woeid) {
+        badges.push({
+            class: 'yahoo',
+            text: 'Not supported by Yahoo',
+        });
+    }
+    return badges;
 }
