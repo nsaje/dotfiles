@@ -1,8 +1,14 @@
 <div class="modal__header">
-    <div class="modal__title">Cloning successful</div>
+    <div ng-if="!!$ctrl.resolve.campaign" class="modal__title">
+        Cloning successful
+    </div>
+    <div ng-if="!$ctrl.resolve.campaign" class="modal__title">
+        Clone campaign
+    </div>
 </div>
-<div class="modal__body">
-    <div ng-if="!!$ctrl.resolve.campaign">
+
+<div ng-if="!!$ctrl.resolve.campaign" class="modal__body">
+    <div>
         Campaign <strong>{{ $ctrl.resolve.campaign.name }}</strong> was
         successfully cloned.
     </div>
@@ -14,6 +20,13 @@
         >
             Visit newly created campaign
         </button>
+    </div>
+</div>
+<div ng-if="!$ctrl.resolve.campaign" class="modal__body">
+    <div>
+        Campaign clone is under way and will take a bit more time to process
+        than usual. We’ll send you an email once it’s done. You can safely close
+        this dialog.
     </div>
 </div>
 <div class="modal__footer buttons-panel">

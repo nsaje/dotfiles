@@ -32,6 +32,7 @@
             class="zem-radio-input"
             [value]="adGroupState.value"
             [groupModel]="state.campaignCloneSettings.adGroupStateOverride"
+            [isDisabled]="!state.campaignCloneSettings.cloneAdGroups"
             (select)="store.setAdGroupStateOverride($event)"
         >
             {{ adGroupState.description }}
@@ -46,6 +47,7 @@
             class="zem-radio-input"
             [value]="adState.value"
             [groupModel]="state.campaignCloneSettings.adStateOverride"
+            [isDisabled]="!state.campaignCloneSettings.cloneAds"
             (select)="store.setAdStateOverride($event)"
         >
             {{ adState.description }}

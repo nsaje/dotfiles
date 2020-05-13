@@ -1,4 +1,5 @@
 require('./zemCloneCampaignModal.component.less');
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
 
 angular.module('one.widgets').component('zemCloneCampaignModal', {
     bindings: {
@@ -31,7 +32,9 @@ angular.module('one.widgets').component('zemCloneCampaignModal', {
                 .executeClone()
                 .then(
                     function(newCampaign) {
-                        reloadCache(newCampaign);
+                        if (commonHelpers.isDefined(newCampaign)) {
+                            reloadCache(newCampaign);
+                        }
                         zemCloneCampaignService.openResultsModal(newCampaign);
                         $ctrl.modalInstance.close();
                     },
