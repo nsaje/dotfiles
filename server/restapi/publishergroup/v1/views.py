@@ -1,8 +1,9 @@
 import rest_framework.viewsets
+from rest_framework import status
+from rest_framework.response import Response
 
 import core.features.publisher_groups
 import restapi.access
-import utils.exc
 from restapi.common import pagination
 from restapi.common.permissions import CanEditPublisherGroupsPermission
 from restapi.common.views_base import RESTAPIBaseViewSet
@@ -36,8 +37,6 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelVie
         serializer.save(request=self.request, account_id=self.kwargs["account_id"])
 
     def destroy(self, request, *args, **kwargs):
-        publisher_group = self.get_object()
-        if not publisher_group.can_delete():
-            raise utils.exc.ValidationError("This publisher group can not be deleted")
-
-        return super(PublisherGroupViewSet, self).destroy(request, *args, **kwargs)
+        instance = self.get_object()
+        instance.delete(request)
+        return Response(status=status.HTTP_204_NO_CONTENT)

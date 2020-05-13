@@ -218,8 +218,8 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                     () => {
                         resolve();
                     },
-                    error => {
-                        reject();
+                    (error: HttpErrorResponse) => {
+                        reject(error.error.details);
                     }
                 );
         });

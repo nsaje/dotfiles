@@ -949,6 +949,12 @@ class PublisherGroupConnectionsTest(TestCase):
         self.ad_group = magic_mixer.blend(models.AdGroup, campaign=self.campaign)
         self.publisher_group_1 = magic_mixer.blend(models.PublisherGroup, account=self.account)
         self.publisher_group_2 = magic_mixer.blend(models.PublisherGroup, agency=self.agency)
+        self.hidden_agency = magic_mixer.blend(models.Agency)
+        self.hidden_account = magic_mixer.blend(models.Account, agency=self.hidden_agency)
+        self.hidden_campaign = magic_mixer.blend(models.Campaign, account=self.hidden_account)
+        self.hidden_ad_group = magic_mixer.blend(models.AdGroup, campaign=self.hidden_campaign)
+        self.hidden_publisher_group_1 = magic_mixer.blend(models.PublisherGroup, account=self.hidden_account)
+        self.hidden_publisher_group_2 = magic_mixer.blend(models.PublisherGroup, agency=self.hidden_agency)
 
     def test_get_connections(self):
         self.agency.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_2.id])
@@ -966,11 +972,13 @@ class PublisherGroupConnectionsTest(TestCase):
                     "id": self.agency.id,
                     "name": self.agency.name,
                     "location": connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+                    "user_access": True,
                 },
                 {
                     "id": self.ad_group.id,
                     "name": self.ad_group.name,
                     "location": connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "user_access": True,
                 },
             ],
         )
@@ -985,11 +993,73 @@ class PublisherGroupConnectionsTest(TestCase):
                     "id": self.account.id,
                     "name": self.account.name,
                     "location": connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST,
+                    "user_access": True,
                 },
                 {
                     "id": self.campaign.id,
                     "name": self.campaign.name,
                     "location": connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST,
+                    "user_access": True,
+                },
+            ],
+        )
+
+    def test_get_hidden_connections_authorized(self):
+        self.hidden_agency.settings.update(None, whitelist_publisher_groups=[self.hidden_publisher_group_2.id])
+        self.hidden_account.settings.update(None, blacklist_publisher_groups=[self.hidden_publisher_group_1.id])
+        self.hidden_campaign.settings.update(None, whitelist_publisher_groups=[self.hidden_publisher_group_1.id])
+        self.hidden_ad_group.settings.update(None, blacklist_publisher_groups=[self.hidden_publisher_group_2.id])
+
+        connections = service.get_publisher_group_connections(self.request.user, self.hidden_publisher_group_2.id)
+
+        self.assertCountEqual(connections, [])
+
+        connections = service.get_publisher_group_connections(self.request.user, self.hidden_publisher_group_1.id)
+
+        self.assertCountEqual(connections, [])
+
+    def test_get_hidden_connections_unauthorized(self):
+        self.hidden_agency.settings.update(None, whitelist_publisher_groups=[self.hidden_publisher_group_2.id])
+        self.hidden_account.settings.update(None, blacklist_publisher_groups=[self.hidden_publisher_group_1.id])
+        self.hidden_campaign.settings.update(None, whitelist_publisher_groups=[self.hidden_publisher_group_1.id])
+        self.hidden_ad_group.settings.update(None, blacklist_publisher_groups=[self.hidden_publisher_group_2.id])
+
+        connections = service.get_publisher_group_connections(self.request.user, self.hidden_publisher_group_2.id, True)
+
+        self.assertCountEqual(
+            connections,
+            [
+                {
+                    "id": self.hidden_agency.id,
+                    "name": self.hidden_agency.name,
+                    "location": connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+                    "user_access": False,
+                },
+                {
+                    "id": self.hidden_ad_group.id,
+                    "name": self.hidden_ad_group.name,
+                    "location": connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
+                    "user_access": False,
+                },
+            ],
+        )
+
+        connections = service.get_publisher_group_connections(self.request.user, self.hidden_publisher_group_1.id, True)
+
+        self.assertCountEqual(
+            connections,
+            [
+                {
+                    "id": self.hidden_account.id,
+                    "name": self.hidden_account.name,
+                    "location": connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST,
+                    "user_access": False,
+                },
+                {
+                    "id": self.hidden_campaign.id,
+                    "name": self.hidden_campaign.name,
+                    "location": connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST,
+                    "user_access": False,
                 },
             ],
         )
@@ -1024,6 +1094,7 @@ class PublisherGroupConnectionsTest(TestCase):
                     "id": foreign_agency.id,
                     "name": foreign_agency.name,
                     "location": connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST,
+                    "user_access": True,
                 }
             ],
         )

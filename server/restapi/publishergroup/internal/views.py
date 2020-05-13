@@ -53,7 +53,7 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
 
     def remove(self, request, publisher_group_id):
         publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
-        publisher_group.delete()
+        publisher_group.delete(request)
         return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)
 
 

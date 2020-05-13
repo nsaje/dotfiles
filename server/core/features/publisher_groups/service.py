@@ -8,7 +8,10 @@ from typing import Union
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import BooleanField
 from django.db.models import CharField
+from django.db.models import Exists
+from django.db.models import OuterRef
 from django.db.models import QuerySet
 from django.db.models import Value
 from django.http import HttpRequest
@@ -34,6 +37,7 @@ class ConnectionDict(TypedDict):
     id: int
     name: str
     location: str
+    user_access: bool
 
 
 logger = zlogging.getLogger(__name__)
@@ -536,103 +540,181 @@ def add_publisher_group_entries(request, publisher_group, entry_dicts, should_wr
     return models.PublisherGroupEntry.objects.bulk_create(entries)
 
 
-def get_publisher_group_connections(user: User, publisher_group_id: int) -> List[ConnectionDict]:
+def get_publisher_group_connections(
+    user: User, publisher_group_id: int, show_unauthorized: bool = False
+) -> List[ConnectionDict]:
     reducing_func: Callable[[QuerySet, QuerySet], QuerySet] = lambda x, y: x.union(y)
-    return list(
-        reduce(
-            reducing_func,
-            [
-                (
-                    models.Agency.objects.filter_by_user(user)
-                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.Agency.objects.filter_by_user(user)
-                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.Account.objects.filter_by_user(user)
-                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.Account.objects.filter_by_user(user)
-                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.Campaign.objects.filter_by_user(user)
-                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.Campaign.objects.filter_by_user(user)
-                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.AdGroup.objects.filter_by_user(user)
-                    .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-                (
-                    models.AdGroup.objects.filter_by_user(user)
-                    .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
-                    .annotate(
-                        location=Value(
-                            connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()
-                        )
-                    )
-                    .order_by("created_dt")
-                    .values("id", "name", "location")
-                ),
-            ],
-        )
-    )
+
+    query_sets: List[QuerySet]
+
+    if show_unauthorized:
+        query_sets = [
+            (
+                models.Agency.objects.all()
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()),
+                    user_access=Exists(models.Agency.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Agency.objects.all()
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()),
+                    user_access=Exists(models.Agency.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Account.objects.all()
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()),
+                    user_access=Exists(models.Account.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Account.objects.all()
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()),
+                    user_access=Exists(models.Account.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Campaign.objects.all()
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()),
+                    user_access=Exists(models.Campaign.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Campaign.objects.all()
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()),
+                    user_access=Exists(models.Campaign.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.AdGroup.objects.all()
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()),
+                    user_access=Exists(models.AdGroup.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.AdGroup.objects.all()
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()),
+                    user_access=Exists(models.AdGroup.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                )
+                .order_by("id")
+                .values("id", "name", "location", "user_access")
+            ),
+        ]
+    else:
+        query_sets = [
+            (
+                models.Agency.objects.filter_by_user(user)
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Agency.objects.filter_by_user(user)
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Account.objects.filter_by_user(user)
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Account.objects.filter_by_user(user)
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Campaign.objects.filter_by_user(user)
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.Campaign.objects.filter_by_user(user)
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.AdGroup.objects.filter_by_user(user)
+                .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+            (
+                models.AdGroup.objects.filter_by_user(user)
+                .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
+                .annotate(
+                    location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()),
+                    user_access=Value(True, BooleanField()),
+                )
+                .order_by("created_dt")
+                .values("id", "name", "location", "user_access")
+            ),
+        ]
+
+    return list(reduce(reducing_func, query_sets))
 
 
 def remove_publisher_group_connection(request: Request, publisher_group_id: int, location: str, entity_id: int) -> None:

@@ -34,6 +34,17 @@ CONNECTION_TYPE_MAP: Dict[str, ModelAttributeDict] = {
     CONNECTION_TYPE_AD_GROUP_WHITELIST: {"model": models.AdGroup, "attribute": "whitelist_publisher_groups"},
 }
 
+CONNECTION_NAMES_MAP: Dict[str, str] = {
+    CONNECTION_TYPE_AGENCY_BLACKLIST: "blacklisted in agency",
+    CONNECTION_TYPE_AGENCY_WHITELIST: "whitelisted in agency",
+    CONNECTION_TYPE_ACCOUNT_BLACKLIST: "blacklisted in account",
+    CONNECTION_TYPE_ACCOUNT_WHITELIST: "whitelisted in account",
+    CONNECTION_TYPE_CAMPAIGN_BLACKLIST: "blacklisted in campaign",
+    CONNECTION_TYPE_CAMPAIGN_WHITELIST: "whitelisted in campaign",
+    CONNECTION_TYPE_AD_GROUP_BLACKLIST: "blacklisted in ad group",
+    CONNECTION_TYPE_AD_GROUP_WHITELIST: "whitelisted in ad group",
+}
+
 
 class InvalidConnectionType(Exception):
     pass

@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.test import TestCase
 
 import core.features.publisher_groups
@@ -309,3 +311,87 @@ class PublisherGroupInstanceTestCase(TestCase):
 
         with self.assertRaises(ValidationError):
             publisher_group.save(request)
+
+    @mock.patch(
+        "core.features.publisher_groups.get_publisher_group_connections", mock.MagicMock(return_value=[], autospec=True)
+    )
+    def test_delete_unused_publisher_group(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        account = magic_mixer.blend(core.models.Account, users=[request.user], agency=agency)
+        name = "Test publisher group"
+
+        publisher_group = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account, name=name)
+
+        try:
+            publisher_group.delete(request)
+        except ValidationError:
+            self.fail("delete() raised ValidationError unexpectedly!")
+
+    @mock.patch(
+        "core.features.publisher_groups.get_publisher_group_connections",
+        mock.MagicMock(
+            return_value=[{"id": 766811, "name": "Mobile", "location": "adGroupWhitelist", "user_access": True}],
+            autospec=True,
+        ),
+    )
+    def test_delete_used_publisher_group(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        account = magic_mixer.blend(core.models.Account, users=[request.user], agency=agency)
+        name = "Test publisher group"
+
+        publisher_group = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account, name=name)
+
+        with self.assertRaises(ValidationError) as err:
+            publisher_group.delete(request)
+        self.assertEqual(
+            'This publisher group can not be deleted, because it is whitelisted in ad group "Mobile".',
+            str(err.exception),
+        )
+
+    @mock.patch(
+        "core.features.publisher_groups.get_publisher_group_connections",
+        mock.MagicMock(
+            return_value=[{"id": 766811, "name": "Mobile", "location": "adGroupWhitelist", "user_access": False}],
+            autospec=True,
+        ),
+    )
+    def test_delete_publisher_group_with_other_usage(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        account = magic_mixer.blend(core.models.Account, users=[request.user], agency=agency)
+        name = "Test publisher group"
+
+        publisher_group = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account, name=name)
+
+        with self.assertRaises(ValidationError) as err:
+            publisher_group.delete(request)
+        self.assertEqual(
+            "This publisher group can not be deleted, because it is used in 1 locations.", str(err.exception)
+        )
+
+    @mock.patch(
+        "core.features.publisher_groups.get_publisher_group_connections",
+        mock.MagicMock(
+            return_value=[
+                {"id": 766811, "name": "Mobile", "location": "adGroupWhitelist", "user_access": True},
+                {"id": 766812, "name": "Desktop", "location": "adGroupWhitelist", "user_access": False},
+            ],
+            autospec=True,
+        ),
+    )
+    def test_delete_publisher_group_with_user_and_other_usages(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        account = magic_mixer.blend(core.models.Account, users=[request.user], agency=agency)
+        name = "Test publisher group"
+
+        publisher_group = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account, name=name)
+
+        with self.assertRaises(ValidationError) as err:
+            publisher_group.delete(request)
+        self.assertEqual(
+            'This publisher group can not be deleted, because it is whitelisted in ad group "Mobile", used in 1 other locations.',
+            str(err.exception),
+        )

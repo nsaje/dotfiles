@@ -25,6 +25,7 @@ import {
 } from '../../../../shared/helpers/grid.helpers';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {NotificationService} from '../../../../core/notification/services/notification.service';
 
 @Component({
     selector: 'zem-publisher-groups-view',
@@ -54,6 +55,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         public store: PublisherGroupsStore,
         private route: ActivatedRoute,
         private service: PublisherGroupsService,
+        private notificationService: NotificationService,
         @Inject('zemPermissions') private zemPermissions: any
     ) {
         this.context = {
@@ -103,10 +105,18 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         if (
             confirm(`Are you sure you wish to delete ${publisherGroup.name}?`)
         ) {
-            this.store.deleteEntity(publisherGroup.id).then(() => {
-                this.gridApi.showLoadingOverlay();
-                this.store.loadEntities();
-            });
+            this.store
+                .deleteEntity(publisherGroup.id)
+                .then(() => {
+                    this.gridApi.showLoadingOverlay();
+                    this.store.loadEntities();
+                })
+                .catch(reason =>
+                    this.notificationService.error(
+                        reason,
+                        'This publisher group can not be deleted'
+                    )
+                );
         }
     }
 

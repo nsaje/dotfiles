@@ -28,3 +28,6 @@ class PublisherGroupManager(models.Manager):
         publisher_group.save(request)
 
         return publisher_group
+
+    def delete(self):
+        raise AssertionError("Bulk deletion of publisher groups is not allowed.")
