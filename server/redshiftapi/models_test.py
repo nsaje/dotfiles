@@ -30,7 +30,7 @@ ALL_AGGREGATES = [
     "etf_cost",
     "local_etf_cost",
     "etfm_cost",
-    "local_etfm_cost",  # noqa
+    "local_etfm_cost",
     "total_cost",
     "local_total_cost",
     "billing_cost",
@@ -70,37 +70,37 @@ ALL_AGGREGATES = [
     "avg_et_cost_per_minute",
     "local_avg_et_cost_per_minute",
     "avg_etfm_cost_per_minute",
-    "local_avg_etfm_cost_per_minute",  # noqa
+    "local_avg_etfm_cost_per_minute",
     "avg_cost_per_non_bounced_visit",
     "local_avg_cost_per_non_bounced_visit",
     "avg_et_cost_per_non_bounced_visit",
     "local_avg_et_cost_per_non_bounced_visit",
     "avg_etfm_cost_per_non_bounced_visit",
-    "local_avg_etfm_cost_per_non_bounced_visit",  # noqa
+    "local_avg_etfm_cost_per_non_bounced_visit",
     "avg_cost_per_pageview",
     "local_avg_cost_per_pageview",
     "avg_et_cost_per_pageview",
     "local_avg_et_cost_per_pageview",
     "avg_etfm_cost_per_pageview",
-    "local_avg_etfm_cost_per_pageview",  # noqa
+    "local_avg_etfm_cost_per_pageview",
     "avg_cost_for_new_visitor",
     "local_avg_cost_for_new_visitor",
     "avg_et_cost_for_new_visitor",
     "local_avg_et_cost_for_new_visitor",
     "avg_etfm_cost_for_new_visitor",
-    "local_avg_etfm_cost_for_new_visitor",  # noqa
+    "local_avg_etfm_cost_for_new_visitor",
     "avg_cost_per_visit",
     "local_avg_cost_per_visit",
     "avg_et_cost_per_visit",
     "local_avg_et_cost_per_visit",
     "avg_etfm_cost_per_visit",
-    "local_avg_etfm_cost_per_visit",  # noqa
+    "local_avg_etfm_cost_per_visit",
     "video_start",
     "video_first_quartile",
     "video_midpoint",
     "video_third_quartile",
     "video_complete",
-    "video_progress_3s",  # noqa
+    "video_progress_3s",
     "video_cpv",
     "local_video_cpv",
     "video_et_cpv",
@@ -112,7 +112,46 @@ ALL_AGGREGATES = [
     "video_et_cpcv",
     "local_video_et_cpcv",
     "video_etfm_cpcv",
-    "local_video_etfm_cpcv",  # noqa
+    "local_video_etfm_cpcv",
+    "mrc50_measurable",
+    "mrc50_viewable",
+    "mrc50_non_measurable",
+    "mrc50_non_viewable",
+    "mrc50_measurable_percent",
+    "mrc50_viewable_percent",
+    "mrc50_viewable_distribution",
+    "mrc50_non_measurable_distribution",
+    "mrc50_non_viewable_distribution",
+    "et_mrc50_vcpm",
+    "local_et_mrc50_vcpm",
+    "etfm_mrc50_vcpm",
+    "local_etfm_mrc50_vcpm",
+    "mrc100_measurable",
+    "mrc100_viewable",
+    "mrc100_non_measurable",
+    "mrc100_non_viewable",
+    "mrc100_measurable_percent",
+    "mrc100_viewable_percent",
+    "mrc100_viewable_distribution",
+    "mrc100_non_measurable_distribution",
+    "mrc100_non_viewable_distribution",
+    "et_mrc100_vcpm",
+    "local_et_mrc100_vcpm",
+    "etfm_mrc100_vcpm",
+    "local_etfm_mrc100_vcpm",
+    "vast4_measurable",
+    "vast4_viewable",
+    "vast4_non_measurable",
+    "vast4_non_viewable",
+    "vast4_measurable_percent",
+    "vast4_viewable_percent",
+    "vast4_viewable_distribution",
+    "vast4_non_measurable_distribution",
+    "vast4_non_viewable_distribution",
+    "et_vast4_vcpm",
+    "local_et_vast4_vcpm",
+    "etfm_vast4_vcpm",
+    "local_etfm_vast4_vcpm",
 ]
 
 
@@ -455,51 +494,51 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2"),
                 backtosql.SQLMatcher(
                     "local_e_media_cost / NULLIF(conversion_goal_2, 0) local_avg_cost_per_conversion_goal_2"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_2, 0) avg_et_cost_per_conversion_goal_2"),
                 backtosql.SQLMatcher(
                     "local_et_cost / NULLIF(conversion_goal_2, 0) local_avg_et_cost_per_conversion_goal_2"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_2, 0) avg_etfm_cost_per_conversion_goal_2"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_2, 0) local_avg_etfm_cost_per_conversion_goal_2"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3"),
                 backtosql.SQLMatcher(
                     "local_e_media_cost / NULLIF(conversion_goal_3, 0) local_avg_cost_per_conversion_goal_3"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_3, 0) avg_et_cost_per_conversion_goal_3"),
                 backtosql.SQLMatcher(
                     "local_et_cost / NULLIF(conversion_goal_3, 0) local_avg_et_cost_per_conversion_goal_3"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_3, 0) avg_etfm_cost_per_conversion_goal_3"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_3, 0) local_avg_etfm_cost_per_conversion_goal_3"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4"),
                 backtosql.SQLMatcher(
                     "local_e_media_cost / NULLIF(conversion_goal_4, 0) local_avg_cost_per_conversion_goal_4"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_4, 0) avg_et_cost_per_conversion_goal_4"),
                 backtosql.SQLMatcher(
                     "local_et_cost / NULLIF(conversion_goal_4, 0) local_avg_et_cost_per_conversion_goal_4"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_4, 0) avg_etfm_cost_per_conversion_goal_4"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_4, 0) local_avg_etfm_cost_per_conversion_goal_4"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5"),
                 backtosql.SQLMatcher(
                     "local_e_media_cost / NULLIF(conversion_goal_5, 0) local_avg_cost_per_conversion_goal_5"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_5, 0) avg_et_cost_per_conversion_goal_5"),
                 backtosql.SQLMatcher(
                     "local_et_cost / NULLIF(conversion_goal_5, 0) local_avg_et_cost_per_conversion_goal_5"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_5, 0) avg_etfm_cost_per_conversion_goal_5"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_5, 0) local_avg_etfm_cost_per_conversion_goal_5"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_24, 0) local_avg_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_24, 0) avg_et_cost_per_pixel_1_24"),
@@ -508,13 +547,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_24, 0) local_avg_etfm_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_168, 0) local_avg_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_168, 0) avg_et_cost_per_pixel_1_168"),
@@ -523,13 +562,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_168, 0) local_avg_etfm_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_168"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_168"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_168"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_720, 0) local_avg_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_720, 0) avg_et_cost_per_pixel_1_720"),
@@ -538,13 +577,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_720, 0) local_avg_etfm_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_720"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_720"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_720"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_2160, 0) local_avg_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_2160, 0) avg_et_cost_per_pixel_1_2160"),
@@ -553,13 +592,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_2160, 0) local_avg_etfm_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_2160"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_2160"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_2160"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24_view, 0) avg_cost_per_pixel_1_24_view"),
                 backtosql.SQLMatcher(
                     "local_e_media_cost / NULLIF(pixel_1_24_view, 0) local_avg_cost_per_pixel_1_24_view"
@@ -574,13 +613,13 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24_view"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24_view"
-                ),  # noqa
+                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24_view"
-                ),  # noqa
+                ),
             ],
         )
 

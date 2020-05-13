@@ -12,7 +12,10 @@
                 class="dropdown-menu__category"
                 ng-repeat="category in $ctrl.categories"
             >
-                <div class="dropdown-menu__category-name">
+                <div
+                    class="dropdown-menu__category-name"
+                    zem-new-feature="{{ category.isNewFeature === true }}"
+                >
                     {{ category.name }}
                 </div>
                 <div

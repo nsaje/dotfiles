@@ -118,6 +118,7 @@ angular.module('one.widgets').factory('zemGridApi', function(zemGridUIService) {
                 type: category.type,
                 subcategories: subcategories,
                 columns: categoryColumns,
+                isNewFeature: category.isNewFeature,
             };
         }
 

@@ -141,6 +141,33 @@ _FIELD_MAPPING = {
     "campaign_tags": ("Campaign Tags",),
     "ad_group_tags": ("Ad Group Tags",),
     "source_tags": ("Source Tags",),
+    "mrc50_measurable": ("Measurable Impressions",),
+    "mrc50_viewable": ("Viewable Impressions",),
+    "mrc50_non_measurable": ("Not-Measurable Impressions",),
+    "mrc50_non_viewable": ("Not-Viewable Impressions",),
+    "mrc50_measurable_percent": ("% Measurable Impressions",),
+    "mrc50_viewable_percent": ("% Viewable Impressions",),
+    "mrc50_viewable_distribution": ("Impression Distribution (Viewable)",),
+    "mrc50_non_measurable_distribution": ("Impression Distribution (Not-Measurable)",),
+    "mrc50_non_viewable_distribution": ("Impression Distribution (Not-Viewable)",),
+    "mrc100_measurable": ("MRC100 Measurable Impressions",),
+    "mrc100_viewable": ("MRC100 Viewable Impressions",),
+    "mrc100_non_measurable": ("MRC100 Not-Measurable Impressions",),
+    "mrc100_non_viewable": ("MRC100 Not-Viewable Impressions",),
+    "mrc100_measurable_percent": ("% MRC100 Measurable Impressions",),
+    "mrc100_viewable_percent": ("% MRC100 Viewable Impressions",),
+    "mrc100_viewable_distribution": ("MRC100 Impression Distribution (Viewable)",),
+    "mrc100_non_measurable_distribution": ("MRC100 Impression Distribution (Not-Measurable)",),
+    "mrc100_non_viewable_distribution": ("MRC100 Impression Distribution (Not-Viewable)",),
+    "vast4_measurable": ("VAST4 Measurable Impressions",),
+    "vast4_viewable": ("VAST4 Viewable Impressions",),
+    "vast4_non_measurable": ("VAST4 Non-Measurable",),
+    "vast4_non_viewable": ("VAST4 Non-Viewable",),
+    "vast4_measurable_percent": ("% VAST4 Measurable Impressions",),
+    "vast4_viewable_percent": ("% VAST4 Viewable Impressions",),
+    "vast4_viewable_distribution": ("VAST4 Impression Distribution (Viewable)",),
+    "vast4_non_measurable_distribution": ("VAST4 Impression Distribution (Not-Measurable)",),
+    "vast4_non_viewable_distribution": ("VAST4 Impression Distribution (Not-Viewable)",),
 }
 
 _FIELD_MAPPING_BCMV2_OVERRIDES = {
@@ -173,6 +200,12 @@ _FIELD_MAPPING_BCMV2_OVERRIDES = {
     "video_et_cpv": ("Avg. Platform CPV",),
     "video_etfm_cpcv": ("Avg. CPCV",),
     "video_et_cpcv": ("Avg. Platform CPCV",),
+    "et_mrc50_vcpm": ("Avg. Platform VCPM",),
+    "etfm_mrc50_vcpm": ("Avg. VCPM",),
+    "et_mrc100_vcpm": ("Avg. MRC100 Platform VCPM",),
+    "etfm_mrc100_vcpm": ("Avg. MRC100 VCPM",),
+    "et_vast4_vcpm": ("Avg. VAST4 Platform VCPM",),
+    "etfm_vast4_vcpm": ("Avg. VAST4 VCPM",),
 }
 
 #  - same name as source, figure out how to solve this
@@ -242,6 +275,12 @@ _COST_FIELDS = (
     "video_et_cpv",
     "video_etfm_cpcv",
     "video_et_cpcv",
+    "et_mrc50_vcpm",
+    "etfm_mrc50_vcpm",
+    "et_mrc100_vcpm",
+    "etfm_mrc100_vcpm",
+    "et_vast4_vcpm",
+    "etfm_vast4_vcpm",
 )
 
 _DYNAMIC_COST_FIELDS_PREFIXES = (

@@ -15,6 +15,9 @@ angular
 
         var COSTS_CATEGORY_NAME = 'Costs';
         var TRAFFIC_CATEGORY_NAME = 'Traffic Acquisition';
+        var MRC50_CATEGORY_NAME = 'Viewability';
+        var MRC100_CATEGORY_NAME = 'MRC100 Viewability';
+        var VAST4_CATEGORY_NAME = 'VAST4 Viewability';
         var AUDIENCE_CATEGORY_NAME = 'Audience Metrics';
         var VIDEO_CATEGORY_NAME = 'Video Metrics';
         var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
@@ -455,7 +458,6 @@ angular
                 internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpv',
             },
-
             VIDEO_CPCV: {
                 name: 'Avg. CPCV',
                 value: 'video_cpcv',
@@ -491,6 +493,292 @@ angular
                 internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpcv',
             },
+            MRC50_MEASURABLE: {
+                name: 'Measurable Impressions',
+                value: 'mrc50_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Measurable',
+            },
+            MRC50_VIEWABLE: {
+                name: 'Viewable Impressions',
+                value: 'mrc50_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Viewable',
+            },
+            MRC50_NON_MEASURABLE: {
+                name: 'Not-Measurable Impressions',
+                value: 'mrc50_non_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Not-Measurable',
+            },
+            MRC50_NON_VIEWABLE: {
+                name: 'Not-Viewable Impressions',
+                value: 'mrc50_non_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Not-Viewable',
+            },
+            MRC50_MEASURABLE_PERCENT: {
+                name: '% Measurable Impressions',
+                value: 'mrc50_measurable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: '% Measurable',
+            },
+            MRC50_VIEWABLE_PERCENT: {
+                name: '% Viewable Impressions',
+                value: 'mrc50_viewable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: '% Viewable',
+            },
+            MRC50_VIEWABLE_DISTRIBUTION: {
+                name: 'Impression Distribution (Viewable)',
+                value: 'mrc50_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Viewable Dist.',
+            },
+            MRC50_NON_MEASURABLE_DISTRIBUTION: {
+                name: 'Impression Distribution (Not-Measurable)',
+                value: 'mrc50_non_measurable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Non-Measurable Dist.',
+            },
+            MRC50_NON_VIEWABLE_DISTRIBUTION: {
+                name: 'Impression Distribution (Not-Viewable)',
+                value: 'mrc50_non_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                shortName: 'Non-Viewable Dist.',
+            },
+            ET_MRC50_VCPM: {
+                name: 'Avg. Platform VCPM',
+                value: 'et_mrc50_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                costMode: constants.costMode.PLATFORM,
+                fieldGroup: 'mrc50_vcpm',
+                shortName: 'Avg. Platform VCPM',
+            },
+            ETFM_MRC50_VCPM: {
+                name: 'Avg. VCPM',
+                value: 'etfm_mrc50_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_mrc50_metrics'],
+                costMode: constants.costMode.PUBLIC,
+                fieldGroup: 'mrc50_vcpm',
+                shortName: 'Avg. VCPM',
+            },
+            MRC100_MEASURABLE: {
+                name: 'MRC100 Measurable Impressions',
+                value: 'mrc100_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Measurable',
+            },
+            MRC100_VIEWABLE: {
+                name: 'MRC100 Viewable Impressions',
+                value: 'mrc100_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Viewable',
+            },
+            MRC100_NON_MEASURABLE: {
+                name: 'MRC100 Not-Measurable Impressions',
+                value: 'mrc100_non_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Not-Measurable',
+            },
+            MRC100_NON_VIEWABLE: {
+                name: 'MRC100 Not-Viewable Impressions',
+                value: 'mrc100_non_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Not-Viewable',
+            },
+            MRC100_MEASURABLE_PERCENT: {
+                name: '% MRC100 Measurable Impressions',
+                value: 'mrc100_measurable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: '% Measurable',
+            },
+            MRC100_VIEWABLE_PERCENT: {
+                name: '% MRC100 Viewable Impressions',
+                value: 'mrc100_viewable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: '% Viewable',
+            },
+            MRC100_VIEWABLE_DISTRIBUTION: {
+                name: 'MRC100 Impression Distribution (Viewable)',
+                value: 'mrc100_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Viewable Dist.',
+            },
+            MRC100_NON_MEASURABLE_DISTRIBUTION: {
+                name: 'MRC100 Impression Distribution (Not-Measurable)',
+                value: 'mrc100_non_measurable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Non-Measurable Dist.',
+            },
+            MRC100_NON_VIEWABLE_DISTRIBUTION: {
+                name: 'MRC100 Impression Distribution (Not-Viewable)',
+                value: 'mrc100_non_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                internal: 'zemauth.can_see_mrc100_metrics',
+                shortName: 'Non-Viewable Dist.',
+            },
+            ET_MRC100_VCPM: {
+                name: 'Avg. MRC100 Platform VCPM',
+                value: 'et_mrc100_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                costMode: constants.costMode.PLATFORM,
+                internal: 'zemauth.can_see_mrc100_metrics',
+                fieldGroup: 'mrc100_vcpm',
+                shortName: 'Avg. Platform VCPM',
+            },
+            ETFM_MRC100_VCPM: {
+                name: 'Avg. MRC100 VCPM',
+                value: 'etfm_mrc100_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_mrc100_metrics'],
+                costMode: constants.costMode.PUBLIC,
+                internal: 'zemauth.can_see_mrc100_metrics',
+                fieldGroup: 'mrc100_vcpm',
+                shortName: 'Avg. VCPM',
+            },
+            VAST4_MEASURABLE: {
+                name: 'VAST4 Measurable Impressions',
+                value: 'vast4_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Measurable',
+            },
+            VAST4_VIEWABLE: {
+                name: 'VAST4 Viewable Impressions',
+                value: 'vast4_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Viewable',
+            },
+            VAST4_NON_MEASURABLE: {
+                name: 'VAST4 Non-Measurable',
+                value: 'vast4_non_measurable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Not-Measurable',
+            },
+            VAST4_NON_VIEWABLE: {
+                name: 'VAST4 Non-Viewable',
+                value: 'vast4_non_viewable',
+                type: TYPE_NUMBER,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Not-Viewable',
+            },
+            VAST4_MEASURABLE_PERCENT: {
+                name: '% VAST4 Measurable Impressions',
+                value: 'vast4_measurable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: '% Measurable',
+            },
+            VAST4_VIEWABLE_PERCENT: {
+                name: '% VAST4 Viewable Impressions',
+                value: 'vast4_viewable_percent',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: '% Viewable',
+            },
+            VAST4_VIEWABLE_DISTRIBUTION: {
+                name: 'VAST4 Impression Distribution (Viewable)',
+                value: 'vast4_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Viewable Dist.',
+            },
+            VAST4_NON_MEASURABLE_DISTRIBUTION: {
+                name: 'VAST4 Impression Distribution (Not-Measurable)',
+                value: 'vast4_non_measurable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Non-Measurable Dist.',
+            },
+            VAST4_NON_VIEWABLE_DISTRIBUTION: {
+                name: 'VAST4 Impression Distribution (Not-Viewable)',
+                value: 'vast4_non_viewable_distribution',
+                type: 'percent',
+                fractionSize: 2,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                internal: 'zemauth.can_see_vast4_metrics',
+                shortName: 'Non-Viewable Dist.',
+            },
+            ET_VAST4_VCPM: {
+                name: 'Avg. VAST4 Platform VCPM',
+                value: 'et_vast4_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                costMode: constants.costMode.PLATFORM,
+                internal: 'zemauth.can_see_vast4_metrics',
+                fieldGroup: 'vast4_vcpm',
+                shortName: 'Avg. Platform VCPM',
+            },
+            ETFM_VAST4_VCPM: {
+                name: 'Avg. VAST4 VCPM',
+                value: 'etfm_vast4_vcpm',
+                type: TYPE_CURRENCY,
+                fractionSize: 3,
+                shown: ['zemauth.can_see_vast4_metrics'],
+                costMode: constants.costMode.PUBLIC,
+                internal: 'zemauth.can_see_vast4_metrics',
+                fieldGroup: 'vast4_vcpm',
+                shortName: 'Avg. VCPM',
+            },
         };
         /* eslint-enable max-len */
 
@@ -504,6 +792,48 @@ angular
             METRICS.CPM,
             METRICS.ET_CPM,
             METRICS.ETFM_CPM,
+        ];
+
+        var MRC50_VIEWABILITY_METRICS = [
+            METRICS.MRC50_MEASURABLE,
+            METRICS.MRC50_VIEWABLE,
+            METRICS.MRC50_NON_MEASURABLE,
+            METRICS.MRC50_NON_VIEWABLE,
+            METRICS.MRC50_MEASURABLE_PERCENT,
+            METRICS.MRC50_VIEWABLE_PERCENT,
+            METRICS.MRC50_VIEWABLE_DISTRIBUTION,
+            METRICS.MRC50_NON_MEASURABLE_DISTRIBUTION,
+            METRICS.MRC50_NON_VIEWABLE_DISTRIBUTION,
+            METRICS.ET_MRC50_VCPM,
+            METRICS.ETFM_MRC50_VCPM,
+        ];
+
+        var MRC100_VIEWABILITY_METRICS = [
+            METRICS.MRC100_MEASURABLE,
+            METRICS.MRC100_VIEWABLE,
+            METRICS.MRC100_NON_MEASURABLE,
+            METRICS.MRC100_NON_VIEWABLE,
+            METRICS.MRC100_MEASURABLE_PERCENT,
+            METRICS.MRC100_VIEWABLE_PERCENT,
+            METRICS.MRC100_VIEWABLE_DISTRIBUTION,
+            METRICS.MRC100_NON_MEASURABLE_DISTRIBUTION,
+            METRICS.MRC100_NON_VIEWABLE_DISTRIBUTION,
+            METRICS.ET_MRC100_VCPM,
+            METRICS.ETFM_MRC100_VCPM,
+        ];
+
+        var VAST4_VIEWABILITY_METRICS = [
+            METRICS.VAST4_MEASURABLE,
+            METRICS.VAST4_VIEWABLE,
+            METRICS.VAST4_NON_MEASURABLE,
+            METRICS.VAST4_NON_VIEWABLE,
+            METRICS.VAST4_MEASURABLE_PERCENT,
+            METRICS.VAST4_VIEWABLE_PERCENT,
+            METRICS.VAST4_VIEWABLE_DISTRIBUTION,
+            METRICS.VAST4_NON_MEASURABLE_DISTRIBUTION,
+            METRICS.VAST4_NON_VIEWABLE_DISTRIBUTION,
+            METRICS.ET_VAST4_VCPM,
+            METRICS.ETFM_VAST4_VCPM,
         ];
 
         var COST_METRICS = [
@@ -583,6 +913,21 @@ angular
                 metrics: createMetrics(TRAFFIC_ACQUISITION),
             });
             categories.push({
+                name: MRC50_CATEGORY_NAME,
+                metrics: createMetrics(MRC50_VIEWABILITY_METRICS),
+                isNewFeature: true,
+            });
+            categories.push({
+                name: MRC100_CATEGORY_NAME,
+                metrics: createMetrics(MRC100_VIEWABILITY_METRICS),
+                isNewFeature: true,
+            });
+            categories.push({
+                name: VAST4_CATEGORY_NAME,
+                metrics: createMetrics(VAST4_VIEWABILITY_METRICS),
+                isNewFeature: true,
+            });
+            categories.push({
                 name: AUDIENCE_CATEGORY_NAME,
                 metrics: createMetrics(AUDIENCE_METRICS),
             });
@@ -595,7 +940,7 @@ angular
         }
 
         function checkPermissions(metrics) {
-            // Go trough all metrics and convert permissions to boolean, when needed
+            // Go through all the metrics and convert permissions to boolean when needed
 
             var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
             var newCostModes = [

@@ -34,7 +34,12 @@
         class="dropdown-menu__category"
         ng-repeat="category in $ctrl.filteredCategories track by category.name"
     >
-        <div class="dropdown-menu__category-name">{{ category.name }}</div>
+        <div
+            class="dropdown-menu__category-name"
+            zem-new-feature="{{ category.isNewFeature === true }}"
+        >
+            {{ category.name }}
+        </div>
         <div
             class="dropdown-menu__category-description"
             ng-if="category.description && !category.subcategories.length > 0"

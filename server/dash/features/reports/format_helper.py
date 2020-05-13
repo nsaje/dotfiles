@@ -56,6 +56,12 @@ FORMAT_4_DECIMALS = [
     "avg_etfm_cost_per_pageview",
     "avg_etfm_cost_for_new_visitor",
     "avg_etfm_cost_per_visit",
+    "et_mrc50_vcpm",
+    "etfm_mrc50_vcpm",
+    "et_mrc100_vcpm",
+    "etfm_mrc100_vcpm",
+    "et_vast4_vcpm",
+    "etfm_vast4_vcpm",
 ]
 FORMAT_DIVIDE_100 = ["percent_new_users", "bounce_rate", "ctr", "click_discrepancy", "pacing"]
 FORMAT_EMPTY_TO_0 = [

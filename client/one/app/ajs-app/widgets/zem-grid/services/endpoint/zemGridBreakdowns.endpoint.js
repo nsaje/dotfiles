@@ -50,7 +50,6 @@ angular
                 report_query: 'Placement',
                 shown: true,
             },
-
             age: {
                 name: 'Age',
                 query: 'age',

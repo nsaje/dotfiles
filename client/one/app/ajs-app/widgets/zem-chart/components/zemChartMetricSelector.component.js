@@ -58,6 +58,7 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
                 description: category.description,
                 subcategories: subcategories,
                 metrics: categoryColumns,
+                isNewFeature: category.isNewFeature,
             };
         }
 
