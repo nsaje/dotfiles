@@ -1,5 +1,7 @@
 from typing import List
 
+from django.utils.functional import cached_property
+
 import core.models
 import utils
 from core.features.publisher_groups import CONNECTION_NAMES_MAP
@@ -7,6 +9,30 @@ from dash import constants
 
 
 class PublisherGroupMixin(object):
+    @property
+    def type(self):
+        type_ = self.publisher_group_origin[0]
+        return type_
+
+    @property
+    def level(self):
+        level = self.publisher_group_origin[1]
+        return level
+
+    @property
+    def level_id(self):
+        obj = self.publisher_group_origin[2]
+        return obj.id if obj else None
+
+    @property
+    def level_name(self):
+        obj_name = self.publisher_group_origin[3]
+        return obj_name
+
+    @cached_property
+    def publisher_group_origin(self):
+        return core.features.publisher_groups.parse_default_publisher_group_origin(self)
+
     def save(self, request, *args, **kwargs):
         if request and request.user:
             self.modified_by = request.user

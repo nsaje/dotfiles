@@ -21,7 +21,7 @@ describe('PublisherGroupsService', () => {
     beforeEach(() => {
         publisherGroupsEndpointStub = jasmine.createSpyObj(
             PublisherGroupsEndpoint.name,
-            ['search', 'list', 'upload', 'addEntries']
+            ['listImplicit', 'listExplicit', 'upload', 'addEntries']
         );
         service = new PublisherGroupsService(publisherGroupsEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -36,8 +36,8 @@ describe('PublisherGroupsService', () => {
             includeSubdomains: null,
             implicit: null,
             size: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,
@@ -75,53 +75,35 @@ describe('PublisherGroupsService', () => {
         mockedPublisherGroups = [mockedPublisherGroup];
     });
 
-    it('should allow to search publisher groups via endpoint', () => {
+    it('should allow to list publisher groups via endpoint', () => {
         const limit = 10;
         const offset = 0;
         const keyword = 'blue';
-        publisherGroupsEndpointStub.search.and
+        publisherGroupsEndpointStub.listImplicit.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
 
         service
-            .search(
+            .listImplicit(
                 mockedAgencyId,
                 null,
                 keyword,
                 offset,
                 limit,
-                true,
                 requestStateUpdater
             )
             .subscribe(publisherGroups => {
                 expect(publisherGroups).toEqual(mockedPublisherGroups);
             });
-        expect(publisherGroupsEndpointStub.search).toHaveBeenCalledTimes(1);
-        expect(publisherGroupsEndpointStub.search).toHaveBeenCalledWith(
+        expect(publisherGroupsEndpointStub.listImplicit).toHaveBeenCalledTimes(
+            1
+        );
+        expect(publisherGroupsEndpointStub.listImplicit).toHaveBeenCalledWith(
             mockedAgencyId,
             null,
             keyword,
             offset,
             limit,
-            true,
-            requestStateUpdater
-        );
-    });
-
-    it('should allow to read list of publisher groups via endpoint', () => {
-        publisherGroupsEndpointStub.list.and
-            .returnValue(of(mockedPublisherGroups, asapScheduler))
-            .calls.reset();
-
-        service
-            .list(null, mockedAccountId, requestStateUpdater)
-            .subscribe(publisherGroups => {
-                expect(publisherGroups).toEqual(mockedPublisherGroups);
-            });
-        expect(publisherGroupsEndpointStub.list).toHaveBeenCalledTimes(1);
-        expect(publisherGroupsEndpointStub.list).toHaveBeenCalledWith(
-            null,
-            mockedAccountId,
             requestStateUpdater
         );
     });
@@ -226,8 +208,8 @@ describe('PublisherGroupsService', () => {
             includeSubdomains: true,
             implicit: null,
             size: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,

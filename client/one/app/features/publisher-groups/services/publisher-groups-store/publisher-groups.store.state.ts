@@ -3,13 +3,16 @@ import {Account} from '../../../../core/entities/types/account/account';
 import {PublisherGroupFieldsErrorsState} from '../../types/publisher-group-fields-errors-state';
 import {RequestState} from '../../../../shared/types/request-state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
+import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 
 export class PublisherGroupsStoreState {
     agencyId: string = null;
     accountId: string = null;
     hasAgencyScope: boolean = null;
-    entities: PublisherGroup[] = [];
-    systemEntities: PublisherGroup[] = [];
+    explicitEntities: PublisherGroup[] = [];
+    implicitEntities: PublisherGroup[] = [];
+    explicitPaginationOptions: PaginationOptions;
+    implicitPaginationOptions: PaginationOptions;
     activeEntity = {
         entity: {
             id: null,
@@ -18,8 +21,8 @@ export class PublisherGroupsStoreState {
             agencyId: null,
             includeSubdomains: null,
             implicit: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,
@@ -35,8 +38,8 @@ export class PublisherGroupsStoreState {
         list: {} as RequestState,
     };
     requests = {
-        search: {} as RequestState,
-        list: {} as RequestState,
+        listExplicit: {} as RequestState,
+        listImplicit: {} as RequestState,
         upload: {} as RequestState,
     };
 }

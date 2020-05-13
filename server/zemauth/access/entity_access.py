@@ -197,7 +197,7 @@ def get_refund_line_item(refund_id: str, credit: core.features.bcm.CreditLineIte
         raise utils.exc.MissingDataError("Refund does not exist")
 
 
-def get_publisher_group(user: zemauth.models.User, permission: str, publisher_group_id: str):
+def get_publisher_group(user: zemauth.models.User, permission: str, publisher_group_id: str, **kwargs: Any):
     try:
         queryset_user_perm = core.features.publisher_groups.PublisherGroup.objects.all().filter_by_user(user)
         queryset_entity_perm = core.features.publisher_groups.PublisherGroup.objects.all().filter_by_entity_permission(
@@ -207,6 +207,11 @@ def get_publisher_group(user: zemauth.models.User, permission: str, publisher_gr
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, publisher_group_id
         )
+
+        annotate_entities = kwargs.get("annotate_entities", None)
+        if annotate_entities:
+            queryset = queryset.annotate_entities_count()
+
         return queryset.get(id=int(publisher_group_id))
     except core.features.publisher_groups.PublisherGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Publisher group does not exist")

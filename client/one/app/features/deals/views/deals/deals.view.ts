@@ -24,7 +24,7 @@ import {FieldErrors} from 'one/app/shared/types/field-errors';
 import {Deal} from '../../../../core/deals/types/deal';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {DealsStore} from '../../services/deals-store/deals.store';
-import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/types/pagination-change-event';
+import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {DealActionsCellComponent} from '../../components/deal-actions-cell/deal-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
@@ -226,7 +226,7 @@ export class DealsView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    onPaginationChange($event: PaginationChangeEvent) {
+    onPaginationChange($event: PaginationState) {
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: $event,

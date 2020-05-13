@@ -30,7 +30,7 @@ import * as commonHelpers from '../../helpers/common.helpers';
 import * as arrayHelpers from '../../helpers/array.helpers';
 import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
-import {PaginationChangeEvent} from './types/pagination-change-event';
+import {PaginationState} from './types/pagination-state';
 import {DOCUMENT} from '@angular/common';
 import {ResizeObserverHelper} from '../../helpers/resize-observer.helper';
 
@@ -59,7 +59,7 @@ export class SmartGridComponent implements OnInit, AfterViewInit, OnDestroy {
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
-    paginationChange = new EventEmitter<PaginationChangeEvent>();
+    paginationChange = new EventEmitter<PaginationState>();
 
     isGridReady: boolean;
     gridOptions: GridOptions;

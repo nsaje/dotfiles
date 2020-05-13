@@ -25,7 +25,7 @@ describe('RulesLibraryStore', () => {
         rulesServiceStub = jasmine.createSpyObj(RulesService.name, ['save']);
         publisherGroupsServiceStub = jasmine.createSpyObj(
             PublisherGroupsService.name,
-            ['search']
+            ['listImplicit', 'listExplicit']
         );
 
         store = new RuleEditFormStore(
@@ -63,8 +63,8 @@ describe('RulesLibraryStore', () => {
                 includeSubdomains: null,
                 size: null,
                 implicit: null,
-                modified: null,
-                created: null,
+                modifiedDt: null,
+                createdDt: null,
                 type: null,
                 level: null,
                 levelName: null,
@@ -144,9 +144,9 @@ describe('RulesLibraryStore', () => {
         ]);
     }));
 
-    it('should search for publisher groups via publisher group service', fakeAsync(() => {
+    it('should list publisher groups via publisher group service', fakeAsync(() => {
         const keyword = 'blue';
-        publisherGroupsServiceStub.search.and
+        publisherGroupsServiceStub.listExplicit.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
         store.loadAvailablePublisherGroups(keyword);
@@ -155,6 +155,8 @@ describe('RulesLibraryStore', () => {
         expect(store.state.availablePublisherGroups).toEqual(
             mockedPublisherGroups
         );
-        expect(publisherGroupsServiceStub.search).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.listExplicit).toHaveBeenCalledTimes(
+            1
+        );
     }));
 });

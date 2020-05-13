@@ -37,6 +37,15 @@ class PublisherGroupTest(RESTAPITest):
                     "accountId": None,
                     "includeSubdomains": True,
                     "agencyId": str(agency.id),
+                    "agencyName": publisher_group_1.agency.name,
+                    "createdDt": publisher_group_1.created_dt.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "implicit": publisher_group_1.implicit,
+                    "level": None,
+                    "levelId": None,
+                    "levelName": "",
+                    "modifiedDt": publisher_group_1.modified_dt.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "size": 0,
+                    "type": None,
                 },
                 {
                     "id": str(publisher_group_2.id),
@@ -44,6 +53,15 @@ class PublisherGroupTest(RESTAPITest):
                     "accountId": str(account.id),
                     "includeSubdomains": False,
                     "agencyId": None,
+                    "accountName": publisher_group_2.account.settings.name,
+                    "createdDt": publisher_group_2.created_dt.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "implicit": publisher_group_2.implicit,
+                    "level": None,
+                    "levelId": None,
+                    "levelName": "",
+                    "modifiedDt": publisher_group_2.modified_dt.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "size": 0,
+                    "type": None,
                 },
             ],
         )
@@ -128,8 +146,7 @@ class PublisherGroupTest(RESTAPITest):
         )
 
         r = self.client.get(
-            reverse("restapi.publishergroup.internal:publishergroup_list"),
-            {"agencyId": agency.id, "includeImplicit": False},
+            reverse("restapi.publishergroup.internal:publishergroup_list"), {"agencyId": agency.id, "implicit": False}
         )
         self.assertEqual(r.status_code, 200)
         response = self.assertResponseValid(r, data_type=list, status_code=200)

@@ -2,7 +2,7 @@ import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
 import {takeUntil} from 'rxjs/operators';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
-import {Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {PublisherGroupsStoreState} from './publisher-groups.store.state';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
@@ -14,6 +14,7 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
+import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 
 @Injectable()
 export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
@@ -39,48 +40,110 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
 
     setStore(
         agencyId: string | null,
-        accountId: string | null
-    ): Promise<boolean> {
-        return new Promise<boolean>(resolve => {
-            Promise.all([
-                this.loadPublisherGroups(agencyId, accountId),
-                this.loadAccounts(agencyId),
-            ])
-                .then((values: [PublisherGroup[], Account[]]) => {
-                    const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
-                        values[0]
-                    );
+        accountId: string | null,
+        explicitPaginationOptions: PaginationOptions,
+        implicitPaginationOptions: PaginationOptions
+    ): Promise<void> {
+        // If Account ID and Agency ID have changed, reload everything
+        if (
+            this.state.agencyId !== agencyId ||
+            this.state.accountId !== accountId
+        ) {
+            return new Promise<void>((resolve, reject) => {
+                Promise.all([
+                    this.loadPublisherGroups(
+                        agencyId,
+                        accountId,
+                        false,
+                        explicitPaginationOptions.page,
+                        explicitPaginationOptions.pageSize
+                    ),
+                    this.loadPublisherGroups(
+                        agencyId,
+                        accountId,
+                        true,
+                        implicitPaginationOptions.page,
+                        implicitPaginationOptions.pageSize
+                    ),
+                    this.loadAccounts(agencyId),
+                ])
+                    .then(
+                        (
+                            values: [
+                                PublisherGroup[],
+                                PublisherGroup[],
+                                Account[]
+                            ]
+                        ) => {
+                            this.setState({
+                                ...this.state,
+                                agencyId: agencyId,
+                                accountId: accountId,
+                                hasAgencyScope: this.zemPermissions.hasAgencyScope(
+                                    agencyId
+                                ),
+                                explicitEntities: values[0],
+                                implicitEntities: values[1],
+                                explicitPaginationOptions,
+                                implicitPaginationOptions,
+                                accounts: values[2],
+                            });
+                            resolve();
+                        }
+                    )
+                    .catch(() => reject());
+            });
+        }
 
-                    this.setState({
-                        ...this.state,
-                        agencyId: agencyId,
-                        accountId: accountId,
-                        hasAgencyScope: this.zemPermissions.hasAgencyScope(
-                            agencyId
-                        ),
-                        entities: splitRows[0],
-                        systemEntities: splitRows[1],
-                        accounts: values[1],
-                    });
-                    resolve(true);
-                })
-                .catch(() => resolve(false));
+        // If Account ID and Agency ID are the same as before, only reload grid(s) with changed pagination
+        const promises: Promise<void>[] = [];
+
+        if (
+            this.isPaginationChanged(
+                this.state.explicitPaginationOptions,
+                explicitPaginationOptions
+            )
+        ) {
+            promises.push(this.loadEntities(false, explicitPaginationOptions));
+        }
+
+        if (
+            this.isPaginationChanged(
+                this.state.implicitPaginationOptions,
+                implicitPaginationOptions
+            )
+        ) {
+            promises.push(this.loadEntities(true, implicitPaginationOptions));
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            Promise.all(promises)
+                .then(x => resolve())
+                .catch(() => reject());
         });
     }
 
-    loadEntities(): Promise<void> {
+    loadEntities(
+        implicit: boolean,
+        paginationOptions: PaginationOptions
+    ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadPublisherGroups(
                 this.state.agencyId,
-                this.state.accountId
+                this.state.accountId,
+                implicit,
+                paginationOptions.page,
+                paginationOptions.pageSize
             ).then(
                 (publisherGroups: PublisherGroup[]) => {
-                    const splitRows: PublisherGroup[][] = this.postProcessLegacyServiceResponse(
-                        publisherGroups
-                    );
-
-                    this.patchState(splitRows[0], 'entities');
-                    this.patchState(splitRows[1], 'systemEntities');
+                    const stateKey = implicit
+                        ? 'implicitEntities'
+                        : 'explicitEntities';
+                    this.patchState(publisherGroups, stateKey);
+                    const paginationOptionsKey = implicit
+                        ? 'implicitPaginationOptions'
+                        : 'explicitPaginationOptions';
+                    this.patchState(paginationOptions, paginationOptionsKey);
                     resolve();
                 },
                 () => {
@@ -230,13 +293,54 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
         this.ngUnsubscribe$.complete();
     }
 
+    private isPaginationChanged(
+        oldPagination: PaginationOptions,
+        newPagination: PaginationOptions
+    ) {
+        if (
+            !oldPagination ||
+            !newPagination ||
+            oldPagination.page !== newPagination.page ||
+            oldPagination.pageSize !== newPagination.pageSize
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private loadPublisherGroups(
         agencyId: string | null,
-        accountId: string | null
+        accountId: string | null,
+        implicit: boolean,
+        page: number,
+        pageSize: number
     ): Promise<PublisherGroup[]> {
         return new Promise<PublisherGroup[]>((resolve, reject) => {
-            this.publisherGroupsService
-                .list(agencyId, accountId, this.requestStateUpdater)
+            const offset = this.getOffset(page, pageSize);
+            const serviceMethod: (
+                agencyId: string | null,
+                accountId: string | null,
+                keyword: string | null,
+                offset: number | null,
+                limit: number | null,
+                requestStateUpdater: RequestStateUpdater
+            ) => Observable<PublisherGroup[]> = implicit
+                ? this.publisherGroupsService.listImplicit.bind(
+                      this.publisherGroupsService
+                  )
+                : this.publisherGroupsService.listExplicit.bind(
+                      this.publisherGroupsService
+                  );
+
+            serviceMethod(
+                agencyId,
+                accountId,
+                null,
+                offset,
+                pageSize,
+                this.requestStateUpdater
+            )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (publisherGroups: PublisherGroup[]) => {
@@ -273,16 +377,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
         });
     }
 
-    /*This method is temporary and will be removed after the backend is updated. It simulates some aspects of the new service's responses:
-     * - the list of publisher groups is split into user and system publishers*/
-    private postProcessLegacyServiceResponse(
-        publisherGroups: PublisherGroup[]
-    ): PublisherGroup[][] {
-        const splitRows: PublisherGroup[][] = [[], []];
-
-        splitRows[0] = publisherGroups.filter(pg => pg.implicit === false);
-        splitRows[1] = publisherGroups.filter(pg => pg.implicit === true);
-
-        return splitRows;
+    private getOffset(page: number, pageSize: number): number {
+        return (page - 1) * pageSize;
     }
 }

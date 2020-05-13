@@ -24,8 +24,11 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
 
         agency_id = query_params.validated_data.get("agency_id")
         account_id = query_params.validated_data.get("account_id")
+        implicit = query_params.validated_data.get("implicit")
 
-        publisher_groups_items = core.features.publisher_groups.PublisherGroup.objects.order_by("-created_dt", "name")
+        publisher_groups_items = core.features.publisher_groups.PublisherGroup.objects.order_by(
+            "-created_dt", "name"
+        ).annotate_entities_count()
 
         if account_id is not None:
             account = restapi.access.get_account(request.user, account_id)
@@ -38,8 +41,8 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
         else:
             raise utils.exc.ValidationError("Either agency id or account id must be provided.")
 
-        if not query_params.validated_data["include_implicit"]:
-            publisher_groups_items = publisher_groups_items.filter_explicit()
+        if implicit is not None:
+            publisher_groups_items = publisher_groups_items.filter_by_implicit(implicit)
 
         keyword = query_params.validated_data.get("keyword")
         if keyword is not None:

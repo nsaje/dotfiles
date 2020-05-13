@@ -13,7 +13,7 @@ class PublisherGroupQueryParamsExpectations(restapi.serializers.serializers.Quer
     offset = fields.IntegerField(default=0)
     agency_id = restapi.serializers.fields.IdField(default=None)
     account_id = restapi.serializers.fields.IdField(default=None)
-    include_implicit = fields.BooleanField(default=True)
+    implicit = fields.BooleanField(required=False)
 
 
 class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):
@@ -21,11 +21,30 @@ class PublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGr
         fields = restapi.publishergroup.v1.serializers.PublisherGroupSerializer.Meta.fields + (
             "include_subdomains",
             "agency_id",
+            "size",
+            "implicit",
+            "modified_dt",
+            "created_dt",
+            "agency_name",
+            "account_name",
+            "type",
+            "level",
+            "level_name",
+            "level_id",
         )
 
     agency_id = restapi.serializers.fields.IdField(read_only=True)
-    # TODO temporary renaming field for easier front-end migration
     include_subdomains = serializers.BooleanField(source="default_include_subdomains")
+    size = serializers.IntegerField(source="entities_count", read_only=True)
+    implicit = serializers.BooleanField()
+    modified_dt = serializers.DateTimeField(read_only=True)
+    created_dt = serializers.DateTimeField(read_only=True)
+    agency_name = serializers.CharField(source="agency.name", read_only=True)
+    account_name = serializers.CharField(source="account.settings.name", read_only=True)
+    type = serializers.CharField()
+    level = serializers.CharField()
+    level_name = serializers.CharField()
+    level_id = serializers.IntegerField()
 
 
 class AddToPublisherGroupSerializer(restapi.publishergroup.v1.serializers.PublisherGroupSerializer):

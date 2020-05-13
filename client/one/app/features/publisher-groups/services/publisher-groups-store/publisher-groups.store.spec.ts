@@ -23,7 +23,7 @@ describe('PublisherGroupsStore', () => {
     beforeEach(() => {
         publisherGroupsServiceStub = jasmine.createSpyObj(
             PublisherGroupsService.name,
-            ['list', 'upload', 'remove']
+            ['listImplicit', 'listExplicit', 'upload', 'remove']
         );
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
@@ -47,8 +47,8 @@ describe('PublisherGroupsStore', () => {
                 includeSubdomains: false,
                 implicit: false,
                 size: 3,
-                modified: new Date(),
-                created: new Date(),
+                modifiedDt: new Date(),
+                createdDt: new Date(),
                 type: 'Blacklist',
                 level: 'Campaign',
                 levelName: 'Test campaign',
@@ -63,8 +63,8 @@ describe('PublisherGroupsStore', () => {
                 includeSubdomains: false,
                 implicit: false,
                 size: 2,
-                modified: new Date(),
-                created: new Date(),
+                modifiedDt: new Date(),
+                createdDt: new Date(),
                 type: null,
                 level: null,
                 levelName: '',
@@ -79,8 +79,8 @@ describe('PublisherGroupsStore', () => {
                 includeSubdomains: false,
                 implicit: false,
                 size: 2,
-                modified: new Date(),
-                created: new Date(),
+                modifiedDt: new Date(),
+                createdDt: new Date(),
                 type: null,
                 level: null,
                 levelName: '',
@@ -96,34 +96,138 @@ describe('PublisherGroupsStore', () => {
     });
 
     it('should correctly initialize store', fakeAsync(() => {
-        publisherGroupsServiceStub.list.and
+        publisherGroupsServiceStub.listImplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        publisherGroupsServiceStub.listExplicit.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
         accountsServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
 
-        store.setStore(mockedAgencyId, mockedAccountId);
+        store.setStore(
+            mockedAgencyId,
+            mockedAccountId,
+            {type: 'server', page: 1, pageSize: 10},
+            {type: 'server', page: 1, pageSize: 10}
+        );
         tick();
 
-        expect(store.state.entities).toEqual(mockedPublisherGroups);
+        expect(store.state.explicitEntities).toEqual(mockedPublisherGroups);
         expect(store.state.agencyId).toEqual(mockedAgencyId);
         expect(store.state.accountId).toEqual(mockedAccountId);
         expect(store.state.accounts).toEqual(mockedAccounts);
 
-        expect(publisherGroupsServiceStub.list).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.listImplicit).toHaveBeenCalledTimes(
+            1
+        );
+        expect(publisherGroupsServiceStub.listExplicit).toHaveBeenCalledTimes(
+            1
+        );
         expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
     }));
 
-    it('should list publisher groups via service', fakeAsync(() => {
-        publisherGroupsServiceStub.list.and
+    it('should only call listImplicit a second time if only implicit pagination has changed', fakeAsync(() => {
+        publisherGroupsServiceStub.listImplicit.and
             .returnValue(of(mockedPublisherGroups, asapScheduler))
             .calls.reset();
-        store.loadEntities();
+        publisherGroupsServiceStub.listExplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        accountsServiceStub.list.and
+            .returnValue(of(mockedAccounts, asapScheduler))
+            .calls.reset();
+
+        store.setStore(
+            mockedAgencyId,
+            mockedAccountId,
+            {type: 'server', page: 1, pageSize: 10},
+            {type: 'server', page: 1, pageSize: 10}
+        );
+
         tick();
 
-        expect(store.state.entities).toEqual(mockedPublisherGroups);
-        expect(publisherGroupsServiceStub.list).toHaveBeenCalledTimes(1);
+        store.setStore(
+            mockedAgencyId,
+            mockedAccountId,
+            {type: 'server', page: 1, pageSize: 10},
+            {type: 'server', page: 2, pageSize: 10}
+        );
+
+        tick();
+
+        expect(publisherGroupsServiceStub.listImplicit).toHaveBeenCalledTimes(
+            2
+        );
+        expect(publisherGroupsServiceStub.listExplicit).toHaveBeenCalledTimes(
+            1
+        );
+        expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
+    }));
+
+    it('should only call listExplicit a second time if only explicit pagination has changed', fakeAsync(() => {
+        publisherGroupsServiceStub.listImplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        publisherGroupsServiceStub.listExplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        accountsServiceStub.list.and
+            .returnValue(of(mockedAccounts, asapScheduler))
+            .calls.reset();
+
+        store.setStore(
+            mockedAgencyId,
+            mockedAccountId,
+            {type: 'server', page: 1, pageSize: 10},
+            {type: 'server', page: 1, pageSize: 10}
+        );
+
+        tick();
+
+        store.setStore(
+            mockedAgencyId,
+            mockedAccountId,
+            {type: 'server', page: 1, pageSize: 20},
+            {type: 'server', page: 1, pageSize: 10}
+        );
+
+        tick();
+
+        expect(publisherGroupsServiceStub.listImplicit).toHaveBeenCalledTimes(
+            1
+        );
+        expect(publisherGroupsServiceStub.listExplicit).toHaveBeenCalledTimes(
+            2
+        );
+        expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
+    }));
+
+    it('should list implicit publisher groups via service', fakeAsync(() => {
+        publisherGroupsServiceStub.listImplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        store.loadEntities(true, {type: 'server', page: 1, pageSize: 10});
+        tick();
+
+        expect(store.state.implicitEntities).toEqual(mockedPublisherGroups);
+        expect(publisherGroupsServiceStub.listImplicit).toHaveBeenCalledTimes(
+            1
+        );
+    }));
+
+    it('should list explicit publisher groups via service', fakeAsync(() => {
+        publisherGroupsServiceStub.listExplicit.and
+            .returnValue(of(mockedPublisherGroups, asapScheduler))
+            .calls.reset();
+        store.loadEntities(false, {type: 'server', page: 1, pageSize: 10});
+        tick();
+
+        expect(store.state.explicitEntities).toEqual(mockedPublisherGroups);
+        expect(publisherGroupsServiceStub.listExplicit).toHaveBeenCalledTimes(
+            1
+        );
     }));
 
     it('should upload publisher groups via service', fakeAsync(() => {

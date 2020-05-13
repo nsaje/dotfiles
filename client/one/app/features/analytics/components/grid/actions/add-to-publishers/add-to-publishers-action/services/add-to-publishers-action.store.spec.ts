@@ -15,10 +15,10 @@ describe('AddToPublishersActionStore', () => {
 
     beforeEach(() => {
         serviceStub = jasmine.createSpyObj(PublisherGroupsService.name, [
-            'search',
+            'listExplicit',
             'addEntries',
         ]);
-        serviceStub.search.and.returnValue(of([]));
+        serviceStub.listExplicit.and.returnValue(of([]));
         serviceStub.addEntries.and.returnValue(
             of({name: 'test', defaultIncludeSubdomains: false, entries: []})
         );
@@ -60,8 +60,8 @@ describe('AddToPublishersActionStore', () => {
             includeSubdomains: true,
             implicit: null,
             size: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,
@@ -77,8 +77,8 @@ describe('AddToPublishersActionStore', () => {
             includeSubdomains: false,
             implicit: null,
             size: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,
@@ -90,13 +90,12 @@ describe('AddToPublishersActionStore', () => {
     it('should correctly call search on the service', () => {
         store.search('123', 'test');
 
-        expect(serviceStub.search).toHaveBeenCalledWith(
+        expect(serviceStub.listExplicit).toHaveBeenCalledWith(
             null,
             '123',
             'test',
             0,
             10,
-            false,
             jasmine.any(Function)
         );
     });
@@ -110,8 +109,8 @@ describe('AddToPublishersActionStore', () => {
             includeSubdomains: true,
             implicit: null,
             size: null,
-            modified: null,
-            created: null,
+            modifiedDt: null,
+            createdDt: null,
             type: null,
             level: null,
             levelName: null,

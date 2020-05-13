@@ -1,3 +1,4 @@
+from django.db.models import Count
 from rest_framework import permissions
 
 import core.features.bcm
@@ -209,14 +210,17 @@ def get_refund_line_item(user, refund_id, credit) -> core.features.bcm.RefundLin
     return zemauth.access.get_refund_line_item(refund_id, credit)
 
 
-def get_publisher_group(user, publisher_group_id, permission: str = None):
+def get_publisher_group(user, publisher_group_id, permission: str = None, annotate_entities=False):
     """
     @deprecated: use zemauth.access.get_publisher_group
     """
     if permission:
-        return zemauth.access.get_publisher_group(user, permission, publisher_group_id)
+        return zemauth.access.get_publisher_group(user, permission, publisher_group_id, annotate_entities)
     try:
-        publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(id=int(publisher_group_id))
+        publisher_group_qs = core.features.publisher_groups.PublisherGroup.objects.all()
+        if annotate_entities:
+            publisher_group_qs = publisher_group_qs.annotate_entities_count()
+        publisher_group = publisher_group_qs.get(id=int(publisher_group_id))
 
         if publisher_group.agency is not None:
             get_agency(user, publisher_group.agency.id, permission=permission)

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Count
 
 import core.models
 import zemauth.features.entity_permission.shortcuts
@@ -11,8 +12,8 @@ ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
 class PublisherGroupQuerySet(
     zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet
 ):
-    def filter_explicit(self):
-        return self.filter(implicit=False)
+    def filter_by_implicit(self, implicit):
+        return self.filter(implicit=implicit)
 
     def filter_by_user(self, user):
         if user.has_perm("zemauth.can_see_all_accounts"):
@@ -62,6 +63,9 @@ class PublisherGroupQuerySet(
 
     def search(self, search_expression):
         return self.filter(name__icontains=search_expression)
+
+    def annotate_entities_count(self):
+        return self.annotate(entities_count=Count("entries"))
 
     def _get_query_path_to_account(self) -> str:
         return "account"

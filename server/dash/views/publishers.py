@@ -3,7 +3,6 @@ import os
 
 import slugify
 from django.conf import settings
-from django.db.models import Count
 from django.db.models import Q
 
 import core.features.publisher_groups
@@ -17,10 +16,7 @@ from utils import s3helpers
 
 def serialize_publisher_group(publisher_group):
     type_, level, obj, obj_name = core.features.publisher_groups.parse_default_publisher_group_origin(publisher_group)
-    if hasattr(publisher_group, "num_entries"):
-        entries_count = publisher_group.num_entries
-    else:
-        entries_count = publisher_group.entries.all().count()
+
     return {
         "id": publisher_group.id,
         "agency_id": str(publisher_group.agency.id) if publisher_group.agency else None,
@@ -30,7 +26,7 @@ def serialize_publisher_group(publisher_group):
         "name": publisher_group.name,
         "include_subdomains": publisher_group.default_include_subdomains,
         "implicit": publisher_group.implicit,
-        "size": entries_count,
+        "size": publisher_group.entities_count if publisher_group.entities_count else None,
         "modified": publisher_group.modified_dt,
         "created": publisher_group.created_dt,
         "type": type_,
@@ -72,14 +68,12 @@ class PublisherGroups(api_common.BaseApiView):
 
         if account_id is not None:
             account = helpers.get_account(request.user, account_id)
-            publisher_groups_q = models.PublisherGroup.objects.filter_by_account(account).annotate(
-                num_entries=Count("entries")
-            )
+            publisher_groups_q = models.PublisherGroup.objects.filter_by_account(account).annotate_entities_count()
         elif agency_id is not None:
             agency = helpers.get_agency(request.user, agency_id)
             publisher_groups_q = models.PublisherGroup.objects.filter(
                 Q(agency=agency) | Q(account__agency=agency)
-            ).annotate(num_entries=Count("entries"))
+            ).annotate_entities_count()
         else:
             raise exc.ValidationError(errors={"non_field_errors": "Either agency id or account id must be provided."})
 
@@ -148,6 +142,7 @@ class PublisherGroupsUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         entries = form.cleaned_data.get("entries")
+        entities_count = 0
         if entries:
             include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
 
@@ -161,8 +156,10 @@ class PublisherGroupsUpload(api_common.BaseApiView):
                 raise exc.ValidationError(errors={"errors_csv_key": errors_csv_key})
 
             core.features.publisher_groups.clean_entry_sources(entries)
+            entities_count = len(validated_entries)
 
         publisher_group = core.features.publisher_groups.upsert_publisher_group(request, form.cleaned_data, entries)
+        publisher_group.entities_count = entities_count
 
         return self.create_api_response(serialize_publisher_group(publisher_group))
 

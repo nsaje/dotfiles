@@ -11,32 +11,40 @@ import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
 export class PublisherGroupsService {
     constructor(private endpoint: PublisherGroupsEndpoint) {}
 
-    search(
+    listImplicit(
         agencyId: string | null,
         accountId: string | null,
         keyword: string | null,
         offset: number | null,
         limit: number | null,
-        includeImplicit: boolean,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        return this.endpoint.search(
+        return this.endpoint.listImplicit(
             agencyId,
             accountId,
             keyword,
             offset,
             limit,
-            includeImplicit,
             requestStateUpdater
         );
     }
 
-    list(
+    listExplicit(
         agencyId: string | null,
         accountId: string | null,
+        keyword: string | null,
+        offset: number | null,
+        limit: number | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        return this.endpoint.list(agencyId, accountId, requestStateUpdater);
+        return this.endpoint.listExplicit(
+            agencyId,
+            accountId,
+            keyword,
+            offset,
+            limit,
+            requestStateUpdater
+        );
     }
 
     upload(

@@ -3,23 +3,24 @@ import {HttpRequestInfo} from '../../../shared/types/http-request-info';
 
 const publisherGroupsInternalApiUrl = `${APP_CONFIG.apiRestInternalUrl}/publishergroups`;
 const publisherGroupsLegacyApiUrl = `${APP_CONFIG.apiLegacyUrl}/publisher_groups`;
+const listUrl = `${publisherGroupsInternalApiUrl}/`;
 
 export const PUBLISHER_GROUPS_CONFIG: {
     requests: {publisherGroups: {[key: string]: HttpRequestInfo}};
 } = {
     requests: {
         publisherGroups: {
-            search: {
-                name: 'search',
-                url: `${publisherGroupsInternalApiUrl}/`,
+            listImplicit: {
+                name: 'listImplicit',
+                url: listUrl,
+            },
+            listExplicit: {
+                name: 'listExplicit',
+                url: listUrl,
             },
             remove: {
                 name: 'remove',
                 url: `${publisherGroupsInternalApiUrl}/{publisherGroupId}/`,
-            },
-            list: {
-                name: 'list',
-                url: `${publisherGroupsLegacyApiUrl}/`,
             },
             upload: {
                 name: 'upload',

@@ -71,13 +71,12 @@ export class AddToPublishersActionStore
     search(accountId: string, keyword: string | null) {
         const isKeywordDefined = commonHelpers.isDefined(keyword);
         this.publisherGroupsService
-            .search(
+            .listExplicit(
                 null,
                 accountId,
                 !isKeywordDefined ? null : keyword.trim(),
                 0,
                 10,
-                false,
                 this.requestStateUpdater
             )
             .pipe(takeUntil(this.ngUnsubscribe$))

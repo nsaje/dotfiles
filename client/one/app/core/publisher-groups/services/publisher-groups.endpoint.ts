@@ -16,27 +16,67 @@ import {
     isPrimitive,
 } from '../../../shared/helpers/common.helpers';
 import * as deepmerge from 'deepmerge';
+import {HttpRequestInfo} from '../../../shared/types/http-request-info';
 import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
 
 @Injectable()
 export class PublisherGroupsEndpoint {
     constructor(private http: HttpClient) {}
 
-    search(
+    listImplicit(
         agencyId: string | null,
         accountId: string | null,
         keyword: string | null,
         offset: number | null,
         limit: number | null,
-        includeImplicit: boolean,
         requestStateUpdater: RequestStateUpdater
     ): Observable<PublisherGroup[]> {
-        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.search;
+        return this.list(
+            agencyId,
+            accountId,
+            keyword,
+            offset,
+            limit,
+            true,
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.listImplicit,
+            requestStateUpdater
+        );
+    }
 
+    listExplicit(
+        agencyId: string | null,
+        accountId: string | null,
+        keyword: string | null,
+        offset: number | null,
+        limit: number | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroup[]> {
+        return this.list(
+            agencyId,
+            accountId,
+            keyword,
+            offset,
+            limit,
+            false,
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.listExplicit,
+            requestStateUpdater
+        );
+    }
+
+    private list(
+        agencyId: string | null,
+        accountId: string | null,
+        keyword: string | null,
+        offset: number | null,
+        limit: number | null,
+        implicit: boolean,
+        request: HttpRequestInfo,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroup[]> {
         const params = {
             offset: `${offset}`,
             limit: `${limit}`,
-            includeImplicit: `${includeImplicit}`,
+            ...(commonHelpers.isDefined(implicit) && {implicit: `${implicit}`}),
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
             ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(keyword) && {keyword}),
@@ -59,47 +99,6 @@ export class PublisherGroupsEndpoint {
                         previous: response.previous,
                     });
                     return response.data;
-                }),
-                catchError((error: HttpErrorResponse) => {
-                    requestStateUpdater(request.name, {
-                        inProgress: false,
-                        error: true,
-                        errorMessage: error.message,
-                    });
-                    return throwError(error);
-                })
-            );
-    }
-
-    list(
-        agencyId: string | null,
-        accountId: string | null,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<PublisherGroup[]> {
-        const request = PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.list;
-
-        const params: any = {
-            ...(commonHelpers.isDefined(agencyId) && {agency_id: agencyId}),
-            ...(commonHelpers.isDefined(accountId) && {account_id: accountId}),
-        };
-
-        requestStateUpdater(request.name, {
-            inProgress: true,
-        });
-
-        return this.http
-            .get<ApiResponse<any>>(request.url, {params})
-            .pipe(
-                map(response => {
-                    requestStateUpdater(request.name, {
-                        inProgress: false,
-                        count: response.count,
-                        next: response.next,
-                        previous: response.previous,
-                    });
-                    return this.snakeObjectToCamelCase<PublisherGroup[]>(
-                        response.data.publisher_groups
-                    );
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {

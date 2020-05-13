@@ -22,10 +22,13 @@
         </div>
         <zem-smart-grid
             class="zem-smart-grid zem-publisher-groups-view__item"
-            [rowData]="store.state.entities"
+            [rowData]="store.state.explicitEntities"
             [columnDefs]="columnDefs"
             [context]="context"
-            (gridReady)="onGridReady($event)"
+            [paginationOptions]="explicitPaginationOptions"
+            [paginationCount]="state.requests.listExplicit.count"
+            (paginationChange)="onPaginationChange($event, false)"
+            (gridReady)="onExplicitGridReady($event)"
         >
         </zem-smart-grid>
         <zem-expandable-section
@@ -62,10 +65,13 @@
                 <zem-smart-grid
                     class="zem-smart-grid zem-publisher-groups-view__item"
                     *ngIf="systemPublisherGroupsSection.expanded"
-                    [rowData]="store.state.systemEntities"
-                    [columnDefs]="systemColumnDefs"
+                    [rowData]="store.state.implicitEntities"
+                    [columnDefs]="implicitColumnDefs"
                     [context]="context"
-                    (gridReady)="onSystemGridReady($event)"
+                    [paginationOptions]="implicitPaginationOptions"
+                    [paginationCount]="state.requests.listImplicit.count"
+                    (paginationChange)="onPaginationChange($event, true)"
+                    (gridReady)="onImplicitGridReady($event)"
                 >
                 </zem-smart-grid>
             </div>

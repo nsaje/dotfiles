@@ -240,13 +240,12 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
             this.publisherGroupsService
-                .search(
+                .listExplicit(
                     this.state.agencyId,
                     null,
                     !isKeywordDefined ? null : keyword.trim(),
                     0,
                     10,
-                    false,
                     this.publisherGroupsRequestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

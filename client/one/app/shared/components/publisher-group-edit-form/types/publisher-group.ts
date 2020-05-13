@@ -6,8 +6,8 @@ export interface PublisherGroup {
     includeSubdomains: boolean;
     implicit: boolean;
     size: number;
-    modified: Date;
-    created: Date;
+    modifiedDt: Date;
+    createdDt: Date;
     type: string;
     level: string;
     levelName: string;

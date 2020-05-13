@@ -9,9 +9,15 @@ import {
     ViewChild,
     Inject,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {Subject} from 'rxjs';
-import {filter, takeUntil} from 'rxjs/operators';
+import {ActivatedRoute, ParamMap, Router} from '@angular/router';
+import {merge, Observable, Subject} from 'rxjs';
+import {
+    distinctUntilChanged,
+    filter,
+    map,
+    takeUntil,
+    tap,
+} from 'rxjs/operators';
 import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupsStore} from '../../services/publisher-groups-store/publisher-groups.store';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
@@ -26,6 +32,22 @@ import {
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 import {NotificationService} from '../../../../core/notification/services/notification.service';
+import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
+import {PageSizeConfig} from '../../../../shared/components/smart-grid/types/page-size-config';
+import {PublisherGroupsStoreState} from '../../services/publisher-groups-store/publisher-groups.store.state';
+import {RequestState} from '../../../../shared/types/request-state';
+import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
+
+const EXPLICIT_PAGINATION_URL_PARAMS: {
+    [key: string]: keyof PaginationState;
+} = {page: 'page', pageSize: 'pageSize'};
+const IMPLICIT_PAGINATION_URL_PARAMS: {
+    [key: string]: keyof PaginationState;
+} = {implicitPage: 'page', implicitPageSize: 'pageSize'};
+const DEFAULT_PAGINATION: PaginationState = {
+    page: 1,
+    pageSize: 20,
+};
 
 @Component({
     selector: 'zem-publisher-groups-view',
@@ -40,20 +62,39 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     editPublisherGroupModal: ModalComponent;
 
     columnDefs: ColDef[] = [];
-    systemColumnDefs: ColDef[] = [];
+    implicitColumnDefs: ColDef[] = [];
 
     context: any;
+
+    PAGE_SIZE_OPTIONS: PageSizeConfig[] = [
+        {name: '10', value: 10},
+        {name: '20', value: 20},
+        {name: '50', value: 50},
+    ];
+
+    explicitPaginationOptions: PaginationOptions = {
+        type: 'server',
+        pageSizeOptions: this.PAGE_SIZE_OPTIONS,
+        ...DEFAULT_PAGINATION,
+    };
+
+    implicitPaginationOptions: PaginationOptions = {
+        type: 'server',
+        pageSizeOptions: this.PAGE_SIZE_OPTIONS,
+        ...DEFAULT_PAGINATION,
+    };
 
     showNewLabels: boolean = false;
     addPublisherGroupModalTitle: string;
     editPublisherGroupModalTitle: string;
-    private gridApi: GridApi;
-    private systemGridApi: GridApi;
+    private explicitGridApi: GridApi;
+    private implicitGridApi: GridApi;
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         public store: PublisherGroupsStore,
         private route: ActivatedRoute,
+        private router: Router,
         private service: PublisherGroupsService,
         private notificationService: NotificationService,
         @Inject('zemPermissions') private zemPermissions: any
@@ -64,6 +105,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.subscribeToStateUpdates();
         this.showNewLabels = this.zemPermissions.hasPermission(
             'zemauth.can_see_new_publisher_library'
         );
@@ -92,13 +134,27 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
-
-    onGridReady($event: DetailGridInfo) {
-        this.gridApi = $event.api;
+    onExplicitGridReady($event: DetailGridInfo) {
+        this.explicitGridApi = $event.api;
     }
 
-    onSystemGridReady($event: DetailGridInfo) {
-        this.systemGridApi = $event.api;
+    onImplicitGridReady($event: DetailGridInfo) {
+        this.implicitGridApi = $event.api;
+    }
+
+    onPaginationChange($event: PaginationState, implicit: boolean) {
+        if (implicit) {
+            $event = {
+                implicitPage: $event.page,
+                implicitPageSize: $event.pageSize,
+            } as any;
+        }
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: $event,
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
     }
 
     delete(publisherGroup: PublisherGroup) {
@@ -108,8 +164,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             this.store
                 .deleteEntity(publisherGroup.id)
                 .then(() => {
-                    this.gridApi.showLoadingOverlay();
-                    this.store.loadEntities();
+                    this.store.loadEntities(
+                        false,
+                        this.explicitPaginationOptions
+                    );
                 })
                 .catch(reason =>
                     this.notificationService.error(
@@ -143,8 +201,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     savePublisherGroup() {
         this.store.saveActiveEntity().then(() => {
             this.editPublisherGroupModal.close();
-            this.showGridLoadingOverlays();
-            this.store.loadEntities();
+            this.store.loadEntities(false, this.explicitPaginationOptions);
         });
     }
 
@@ -161,18 +218,21 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     private updateInternalState(queryParams: any) {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;
+        this.explicitPaginationOptions = {
+            ...this.explicitPaginationOptions,
+            ...this.getPreselectedPagination(EXPLICIT_PAGINATION_URL_PARAMS),
+        };
+        this.implicitPaginationOptions = {
+            ...this.implicitPaginationOptions,
+            ...this.getPreselectedPagination(IMPLICIT_PAGINATION_URL_PARAMS),
+        };
 
-        this.showGridLoadingOverlays();
-        this.store.setStore(agencyId, accountId);
-    }
-
-    private showGridLoadingOverlays() {
-        if (commonHelpers.isDefined(this.gridApi)) {
-            this.gridApi.showLoadingOverlay();
-        }
-        if (commonHelpers.isDefined(this.systemGridApi)) {
-            this.systemGridApi.showLoadingOverlay();
-        }
+        this.store.setStore(
+            agencyId,
+            accountId,
+            this.explicitPaginationOptions,
+            this.implicitPaginationOptions
+        );
     }
 
     private initColumnDefs() {
@@ -196,14 +256,14 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: 'Modified',
-                field: 'modified',
+                field: 'modifiedDt',
                 width: 220,
                 minWidth: 134,
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
             },
             {
                 headerName: 'Created',
-                field: 'created',
+                field: 'createdDt',
                 width: 220,
                 minWidth: 134,
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
@@ -232,7 +292,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
         ];
 
-        this.systemColumnDefs = [
+        this.implicitColumnDefs = [
             {headerName: 'ID', field: 'id', width: 60, minWidth: 60},
             {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
             {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
@@ -262,14 +322,14 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: 'Modified',
-                field: 'modified',
+                field: 'modifiedDt',
                 width: 134,
                 minWidth: 134,
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
             },
             {
                 headerName: 'Created',
-                field: 'created',
+                field: 'createdDt',
                 width: 134,
                 minWidth: 134,
                 valueFormatter: dateTimeFormatter('M/D/YYYY h:mm A'),
@@ -309,6 +369,58 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 return 'Whitelisted';
             default:
                 return value;
+        }
+    }
+
+    private getPreselectedPagination(paginationParams: {
+        [key: string]: keyof PaginationState;
+    }): PaginationState {
+        const pagination: PaginationState = {...DEFAULT_PAGINATION};
+        Object.keys(paginationParams).forEach(paramName => {
+            const queryParams: ParamMap = this.route.snapshot.queryParamMap;
+            const paramValue: string = queryParams.get(paramName);
+            if (paramValue) {
+                const paramKey: keyof PaginationState =
+                    paginationParams[paramName];
+                pagination[paramKey] = Number(paramValue);
+            }
+        });
+        return pagination;
+    }
+
+    private subscribeToStateUpdates() {
+        merge(
+            this.getGridProgressUpdater(
+                state => state.requests.listExplicit,
+                this.explicitGridApi
+            ),
+            this.getGridProgressUpdater(
+                state => state.requests.listImplicit,
+                this.implicitGridApi
+            )
+        )
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe();
+    }
+
+    private getGridProgressUpdater(
+        requestStateGetter: (x: PublisherGroupsStoreState) => RequestState,
+        gridApi: GridApi
+    ): Observable<boolean> {
+        return this.store.state$.pipe(
+            map(state => requestStateGetter(state).inProgress),
+            distinctUntilChanged(),
+            tap(inProgress => this.toggleLoadingOverlay(inProgress, gridApi))
+        );
+    }
+
+    private toggleLoadingOverlay(show: boolean, gridApi: GridApi) {
+        if (gridApi) {
+            if (show) {
+                gridApi.showLoadingOverlay();
+            } else {
+                gridApi.hideOverlay();
+            }
         }
     }
 }
