@@ -270,7 +270,7 @@ def extract_order_field(order, target_dimension, primary_goals=None):
         else:
             order_field = "clicks"
 
-    if target_dimension == "publisher_id":
+    if target_dimension in ("publisher_id", "placement_id"):
         if order_field == "status":
             order_field = "clicks"
 
@@ -296,6 +296,9 @@ def extract_rs_order_field(order, target_dimension):
 
     if target_dimension == "publisher_id" and order_field == "name":
         order_field = "publisher"
+
+    if target_dimension == "placement_id" and order_field == "name":
+        order_field = "placement"
 
     # all delivery dimensions are sorted by targeted dimension ids
     if target_dimension in constants.DeliveryDimension._ALL:

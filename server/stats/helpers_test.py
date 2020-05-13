@@ -157,6 +157,7 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_order_field("clicks", "ad_group_id"), "clicks")
 
         self.assertEqual(helpers.extract_order_field("name", "publisher_id"), "name")
+        self.assertEqual(helpers.extract_order_field("name", "placement_id"), "name")
         self.assertEqual(helpers.extract_order_field("name", "dma"), "name")
         self.assertEqual(helpers.extract_order_field("name", "gender"), "name")
         self.assertEqual(helpers.extract_order_field("name", "country"), "name")
@@ -164,6 +165,7 @@ class HelpersTest(TestCase):
 
         # we don't know how to order publishers by status yet
         self.assertEqual(helpers.extract_order_field("-status", "publisher_id"), "-clicks")
+        self.assertEqual(helpers.extract_order_field("-status", "placement_id"), "-clicks")
 
         self.assertEqual(helpers.extract_order_field("-status", "dma"), "-status")
         self.assertEqual(helpers.extract_order_field("-status", "gender"), "-status")
@@ -238,12 +240,14 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_rs_order_field("name", "age"), "age")
         self.assertEqual(helpers.extract_rs_order_field("name", "age_gender"), "age_gender")
         self.assertEqual(helpers.extract_rs_order_field("name", "publisher_id"), "publisher")
+        self.assertEqual(helpers.extract_rs_order_field("name", "placement_id"), "placement")
         self.assertEqual(helpers.extract_rs_order_field("name", "dma"), "dma")
         self.assertEqual(helpers.extract_rs_order_field("name", "gender"), "gender")
         self.assertEqual(helpers.extract_rs_order_field("name", "country"), "country")
         self.assertEqual(helpers.extract_rs_order_field("name", "region"), "region")
 
         self.assertEqual(helpers.extract_rs_order_field("-status", "publisher_id"), "-status")
+        self.assertEqual(helpers.extract_rs_order_field("-status", "placement_id"), "-status")
 
         self.assertEqual(helpers.extract_rs_order_field("-status", "dma"), "-clicks")
         self.assertEqual(helpers.extract_rs_order_field("-status", "gender"), "-clicks")
@@ -267,6 +271,8 @@ class HelpersTest(TestCase):
 
         self.assertFalse(helpers.should_query_dashapi_first("name", "publisher_id"))
         self.assertFalse(helpers.should_query_dashapi_first("status", "publisher_id"))
+        self.assertFalse(helpers.should_query_dashapi_first("name", "placement_id"))
+        self.assertFalse(helpers.should_query_dashapi_first("status", "placement_id"))
 
         for dimension in constants.DeliveryDimension._ALL + constants.TimeDimension._ALL:
             self.assertFalse(helpers.should_query_dashapi_first("name", dimension), dimension)
