@@ -23,8 +23,8 @@ class GATrackingSerializer(rest_framework.serializers.Serializer):
     def validate(self, data):
         if (
             data.get("enable_ga_tracking")
-            and data["ga_tracking_type"] == constants.GATrackingType.API
-            and not data["ga_property_id"]
+            and data.get("ga_tracking_type") == constants.GATrackingType.API
+            and not data.get("ga_property_id")
         ):
             raise rest_framework.serializers.ValidationError(
                 {"web_property_id": "Web property ID should not be empty."}
