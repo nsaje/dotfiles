@@ -69,6 +69,9 @@ CREATE TABLE mv_master (
        mrc100_measurable integer encode AZ64,
        mrc100_viewable integer encode AZ64,
        vast4_measurable integer encode AZ64,
-       vast4_viewable integer encode AZ64
+       vast4_viewable integer encode AZ64,
+
+       ssp_cost_nano bigint encode AZ64,
+       local_ssp_cost_nano bigint encode AZ64
        -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id);

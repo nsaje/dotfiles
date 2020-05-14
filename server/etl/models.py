@@ -95,9 +95,10 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     effective_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "effective_cost_nano"}, AGGREGATES)
     effective_data_cost_nano = backtosql.TemplateColumn(
         "part_sum.sql", {"column_name": "effective_data_cost_nano"}, AGGREGATES
-    )  # noqa
+    )
     license_fee_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "license_fee_nano"}, AGGREGATES)
     margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "margin_nano"}, AGGREGATES)
+    ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "ssp_cost_nano"}, AGGREGATES)
 
     users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "users"}, AGGREGATES)
     returning_users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "returning_users"}, AGGREGATES)
@@ -113,14 +114,15 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     local_data_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_data_cost_nano"}, AGGREGATES)
     local_effective_cost_nano = backtosql.TemplateColumn(
         "part_sum.sql", {"column_name": "local_effective_cost_nano"}, AGGREGATES
-    )  # noqa
+    )
     local_effective_data_cost_nano = backtosql.TemplateColumn(
         "part_sum.sql", {"column_name": "local_effective_data_cost_nano"}, AGGREGATES
-    )  # noqa
+    )
     local_license_fee_nano = backtosql.TemplateColumn(
         "part_sum.sql", {"column_name": "local_license_fee_nano"}, AGGREGATES
-    )  # noqa
+    )
     local_margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_margin_nano"}, AGGREGATES)
+    local_ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_ssp_cost_nano"}, AGGREGATES)
 
     mrc50_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_measurable"}, AGGREGATES)
     mrc50_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_viewable"}, AGGREGATES)
@@ -169,6 +171,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                 "mrc100_viewable",
                 "vast4_measurable",
                 "vast4_viewable",
+                "ssp_cost_nano",
+                "local_ssp_cost_nano",
             ]
         )
 
@@ -235,7 +239,7 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     conversion_count = backtosql.TemplateColumn("part_sum.sql", {"column_name": "conversion_count"}, AGGREGATES)
     conversion_value_nano = backtosql.TemplateColumn(
         "part_sum.sql", {"column_name": "conversion_value_nano"}, AGGREGATES
-    )  # noqa
+    )
 
     type = backtosql.Column("type", BREAKDOWN)
 

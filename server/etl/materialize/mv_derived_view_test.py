@@ -68,7 +68,9 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     mrc100_measurable integer encode AZ64,
                     mrc100_viewable integer encode AZ64,
                     vast4_measurable integer encode AZ64,
-                    vast4_viewable integer encode AZ64
+                    vast4_viewable integer encode AZ64,
+                    ssp_cost_nano bigint encode AZ64,
+                    local_ssp_cost_nano bigint encode AZ64
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """
@@ -120,7 +122,9 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     mrc100_measurable,
                     mrc100_viewable,
                     vast4_measurable,
-                    vast4_viewable
+                    vast4_viewable,
+                    ssp_cost_nano,
+                    local_ssp_cost_nano
                 )
                 (SELECT
                     date AS date,
@@ -159,7 +163,9 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(mrc100_measurable) mrc100_measurable,
                     SUM(mrc100_viewable) mrc100_viewable,
                     SUM(vast4_measurable) vast4_measurable,
-                    SUM(vast4_viewable) vast4_viewable
+                    SUM(vast4_viewable) vast4_viewable,
+                    SUM(ssp_cost_nano) ssp_cost_nano,
+                    SUM(local_ssp_cost_nano) local_ssp_cost_nano
                 FROM mv_master
                 WHERE (date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id
@@ -237,7 +243,9 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     mrc100_measurable,
                     mrc100_viewable,
                     vast4_measurable,
-                    vast4_viewable
+                    vast4_viewable,
+                    ssp_cost_nano,
+                    local_ssp_cost_nano
                 )
                 (SELECT
                     date AS date,
@@ -276,7 +284,9 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(mrc100_measurable) mrc100_measurable,
                     SUM(mrc100_viewable) mrc100_viewable,
                     SUM(vast4_measurable) vast4_measurable,
-                    SUM(vast4_viewable) vast4_viewable
+                    SUM(vast4_viewable) vast4_viewable,
+                    SUM(ssp_cost_nano) ssp_cost_nano,
+                    SUM(local_ssp_cost_nano) local_ssp_cost_nano
                 FROM mv_master
                 WHERE (account_id=%s AND date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id

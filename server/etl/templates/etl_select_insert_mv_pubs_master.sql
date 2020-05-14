@@ -65,7 +65,10 @@ INSERT INTO mv_master_pubs(
         SUM(mrc100_measurable) as mrc100_measurable,
         SUM(mrc100_viewable) as mrc100_viewable,
         SUM(vast4_measurable) as vast4_measurable,
-        SUM(vast4_viewable) as vast4_viewable
+        SUM(vast4_viewable) as vast4_viewable,
+
+        SUM(ssp_cost_nano) as ssp_cost_nano,
+        SUM(local_ssp_cost_nano) as local_ssp_cost_nano        
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND source_id <> 3
           {% if account_id %}

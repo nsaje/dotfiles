@@ -104,7 +104,10 @@ INSERT INTO mv_master (
       d.mrc100_measurable as mrc100_measurable,
       d.mrc100_viewable as mrc100_viewable,
       d.vast4_measurable as vast4_measurable,
-      d.vast4_viewable as vast4_viewable
+      d.vast4_viewable as vast4_viewable,
+
+      d.ssp_spend::bigint * 1000 as ssp_cost_nano,
+      round(d.ssp_spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_ssp_cost_nano
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)

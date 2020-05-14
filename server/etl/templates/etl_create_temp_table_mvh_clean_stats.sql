@@ -40,5 +40,7 @@ CREATE TEMP TABLE mvh_clean_stats (
     mrc100_measurable integer encode AZ64,
     mrc100_viewable integer encode AZ64,
     vast4_measurable integer encode AZ64,
-    vast4_viewable integer encode AZ64
+    vast4_viewable integer encode AZ64,
+
+    ssp_spend bigint encode AZ64
 ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)

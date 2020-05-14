@@ -85,7 +85,10 @@ INSERT INTO mv_adgroup_placement (
         d.mrc100_measurable as mrc100_measurable,
         d.mrc100_viewable as mrc100_viewable,
         d.vast4_measurable as vast4_measurable,
-        d.vast4_viewable as vast4_viewable
+        d.vast4_viewable as vast4_viewable,
+
+        d.ssp_spend::bigint * 1000 as ssp_cost_nano,
+        round(d.ssp_spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_ssp_cost_nano
     FROM
         (
             (
@@ -125,7 +128,9 @@ INSERT INTO mv_adgroup_placement (
                         SUM(mrc100_measurable) as mrc100_measurable,
                         SUM(mrc100_viewable) as mrc100_viewable,
                         SUM(vast4_measurable) as vast4_measurable,
-                        SUM(vast4_viewable) as vast4_viewable
+                        SUM(vast4_viewable) as vast4_viewable,
+
+                        SUM(ssp_spend) as ssp_spend
                     FROM (SELECT * from stats_placement_diff UNION ALL SELECT * FROM stats_placement) AS stats_placement
                     WHERE
                         ((hour IS NULL AND date>=%(date_from)s AND date<=%(date_to)s)

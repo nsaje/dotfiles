@@ -50,7 +50,10 @@ CREATE TABLE IF NOT EXISTS mv_adgroup_placement (
     mrc100_measurable integer,
     mrc100_viewable integer,
     vast4_measurable integer,
-    vast4_viewable integer
+    vast4_viewable integer,
+
+    ssp_cost_nano bigint,
+    local_ssp_cost_nano bigint
     -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_adgroup_placement_main_idx ON mv_adgroup_placement (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, placement_type, placement, date);

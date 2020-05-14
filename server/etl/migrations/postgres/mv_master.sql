@@ -68,7 +68,10 @@ CREATE TABLE IF NOT EXISTS mv_master (
        mrc100_measurable integer,
        mrc100_viewable integer,
        vast4_measurable integer,
-       vast4_viewable integer
+       vast4_viewable integer,
+
+       ssp_cost_nano bigint,
+       local_ssp_cost_nano bigint
        -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_main_idx ON mv_master (source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, date);

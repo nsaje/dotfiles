@@ -95,7 +95,8 @@ INSERT INTO mvh_clean_stats (
       SUM(mrc100_measurable) as mrc100_measurable,
       SUM(mrc100_viewable) as mrc100_viewable,
       SUM(vast4_measurable) as vast4_measurable,
-      SUM(vast4_viewable) as vast4_viewable
+      SUM(vast4_viewable) as vast4_viewable,
+      SUM(ssp_spend) as ssp_spend
   FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
   WHERE
       ((hour is null and date>=%(date_from)s AND date<=%(date_to)s)
