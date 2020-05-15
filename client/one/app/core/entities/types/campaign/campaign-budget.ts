@@ -17,4 +17,6 @@ export interface CampaignBudget {
     canEditStartDate: boolean;
     canEditEndDate: boolean;
     canEditAmount: boolean;
+    allocatedAmount?: string;
+    campaignName?: string;
 }
