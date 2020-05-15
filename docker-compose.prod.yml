@@ -140,6 +140,18 @@ services:
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P solo -c 1"
 
+    einsworker_campaign_cloning:
+        extends: eins-base
+        scale: 3
+        environment:
+          NEW_RELIC_APP_NAME: "Zemanta One (Campaign cloning)"
+        mem_reservation: 128m
+        mem_limit: 512m
+        labels:
+          SERVICE_IGNORE: "true"
+        entrypoint: ""
+        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-campaign-cloning -l INFO -f /app/logs/eins_celery_campaign_cloning.log --prefetch-multiplier 0 -P solo -c 1"
+
     einsworker_redshift_background_cache:
         extends: eins-base
         environment:

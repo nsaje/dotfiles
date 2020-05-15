@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.http import HttpRequest
 
 import core.models
 import dash.features.cloneadgroup.service
@@ -44,8 +45,9 @@ def clone(
 
 @celery.app.task(acks_late=True, name="campaign_cloning", soft_time_limit=39 * 60)
 def clone_async(
-    request,
+    user,
     source_campaign_id,
+    source_campaign_name,
     destination_campaign_name,
     clone_ad_groups,
     clone_ads,
@@ -53,6 +55,8 @@ def clone_async(
     ad_state_override=None,
     send_email=False,
 ):
+    request = HttpRequest()
+    request.user = user
     try:
         source_campaign = dash.views.helpers.get_campaign(request.user, source_campaign_id)
         cloned_campaign = clone(
@@ -70,7 +74,7 @@ def clone_async(
     except Exception as err:
         if send_email:
             utils.email_helper.send_campaign_cloned_error_email(
-                request, source_campaign.name, destination_campaign_name
+                request, source_campaign_name, destination_campaign_name
             )
         raise err
 

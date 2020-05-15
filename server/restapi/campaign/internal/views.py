@@ -103,7 +103,11 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         if settings.USE_CELERY_FOR_CAMPAIGN_CLONING:
             result = dash.features.clonecampaign.service.clone_async.delay(
-                request, campaign_id=campaign.id, send_email=True, **data
+                request.user,
+                source_campaign_name=campaign.name,
+                source_campaign_id=campaign.id,
+                send_email=True,
+                **data
             )
             try:
                 cloned_campaign_id = result.get(timeout=10)

@@ -3,13 +3,19 @@
 from django.conf import settings
 from django.db import models
 
+from . import entity_permission
 from . import instance
 from . import manager
 from . import queryset
 from . import validation
 
 
-class PublisherGroup(validation.PublisherGroupValidatorMixin, instance.PublisherGroupMixin, models.Model):
+class PublisherGroup(
+    entity_permission.EntityPermissionMixin,
+    validation.PublisherGroupValidatorMixin,
+    instance.PublisherGroupMixin,
+    models.Model,
+):
     class Meta:
         app_label = "dash"
         ordering = ("pk",)

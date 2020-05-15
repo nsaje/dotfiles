@@ -1,10 +1,11 @@
-from django.db.models import Q
-
 import core.models
 import dash.features.custom_flags
 import dash.models
 import restapi.common.helpers
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 import zemauth.models
+from zemauth.features.entity_permission.constants import Permission
 
 SUBAGENCY_MAP = {198: (196, 198)}
 
@@ -22,10 +23,10 @@ def get_extra_data(user, account):
         extra["account_managers"] = get_account_managers(user, account)
 
     if user.has_perm("zemauth.can_set_account_sales_representative"):
-        extra["sales_representatives"] = get_sales_representatives(account)
+        extra["sales_representatives"] = get_sales_representatives(user, account)
 
     if user.has_perm("zemauth.can_set_account_cs_representative"):
-        extra["cs_representatives"] = get_cs_representatives(account)
+        extra["cs_representatives"] = get_cs_representatives(user, account)
 
     if user.has_perm("zemauth.can_set_account_ob_representative"):
         extra["ob_representatives"] = get_ob_representatives()
@@ -45,20 +46,18 @@ def get_extra_data(user, account):
 
 
 def get_agencies(user, account):
-    agencies = core.models.Agency.objects.filter(Q(users__in=[user]) | Q(id=account.agency_id)).distinct()
-    if user.has_perm("zemauth.can_see_all_accounts"):
-        agencies = core.models.Agency.objects.all()
-    return list(
-        agencies.values(
-            "id",
-            "name",
-            "sales_representative",
-            "cs_representative",
-            "ob_sales_representative",
-            "ob_account_manager",
-            "default_account_type",
-        )
-    )
+    values = [
+        "id",
+        "name",
+        "sales_representative",
+        "cs_representative",
+        "ob_sales_representative",
+        "ob_account_manager",
+        "default_account_type",
+    ]
+
+    queryset = zemauth.access.get_agencies(user, Permission.WRITE)
+    return list(queryset.values(*values).distinct())
 
 
 def get_account_managers(user, account):
@@ -66,19 +65,33 @@ def get_account_managers(user, account):
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-def get_sales_representatives(account):
+def get_sales_representatives(user, account):
     users = zemauth.models.User.objects.get_users_with_perm("campaign_settings_sales_rep").filter(is_active=True)
     if account.agency_id in SUBAGENCY_MAP:
         subagencies = core.models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
-        users &= zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
+        queryset_user_permission = zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
+        queryset_entity_permission = zemauth.models.User.objects.filter(
+            entitypermission__agency__in=subagencies, entitypermission__permission=Permission.READ
+        ).distinct()
+        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, queryset_user_permission, queryset_entity_permission
+        )
+        users &= queryset
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-def get_cs_representatives(account):
+def get_cs_representatives(user, account):
     users = zemauth.models.User.objects.get_users_with_perm("campaign_settings_cs_rep").filter(is_active=True)
     if account.agency_id in SUBAGENCY_MAP:
         subagencies = core.models.Agency.objects.filter(pk__in=SUBAGENCY_MAP[account.agency_id])
-        users &= zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
+        queryset_user_permission = zemauth.models.User.objects.filter(agency__in=subagencies).distinct()
+        queryset_entity_permission = zemauth.models.User.objects.filter(
+            entitypermission__agency__in=subagencies, entitypermission__permission=Permission.READ
+        ).distinct()
+        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, queryset_user_permission, queryset_entity_permission
+        )
+        users &= queryset
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 
 

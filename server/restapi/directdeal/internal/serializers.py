@@ -5,6 +5,8 @@ import rest_framework.serializers
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 
 class DirectDealConnectionAccountSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -57,12 +59,12 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         value = super().to_internal_value(data)
 
         value["agency"] = (
-            restapi.access.get_agency(self.context["request"].user, value.get("agency_id"))
+            zemauth.access.get_agency(self.context["request"].user, Permission.READ, value.get("agency_id"))
             if value.get("agency_id")
             else None
         )
         value["account"] = (
-            restapi.access.get_account(self.context["request"].user, value.get("account_id"))
+            zemauth.access.get_account(self.context["request"].user, Permission.READ, value.get("account_id"))
             if value.get("account_id")
             else None
         )

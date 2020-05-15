@@ -14,6 +14,7 @@ from core.models import tags
 from utils.settings_fields import CachedOneToOneField
 
 from . import bcm_mixin
+from . import entity_permission
 from . import instance
 from . import manager
 from . import queryset
@@ -21,6 +22,7 @@ from . import validation
 
 
 class Campaign(
+    entity_permission.EntityPermissionMixin,
     validation.CampaignValidatorMixin,
     instance.CampaignInstanceMixin,
     core.common.PermissionMixin,

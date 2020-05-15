@@ -14,6 +14,7 @@ from core.models.image_asset import ImageAsset
 from dash import constants
 from dash import image_helper
 
+from . import entity_permission
 from . import instance
 from . import manager
 from . import prodops_mixin
@@ -22,7 +23,11 @@ from . import validation
 
 
 class ContentAd(
-    validation.ContentAdValidatorMixin, instance.ContentAdInstanceMixin, models.Model, prodops_mixin.ProdopsMixin
+    entity_permission.EntityPermissionMixin,
+    validation.ContentAdValidatorMixin,
+    instance.ContentAdInstanceMixin,
+    models.Model,
+    prodops_mixin.ProdopsMixin,
 ):
     class Meta:
         get_latest_by = "created_dt"

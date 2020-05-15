@@ -3,13 +3,16 @@
 from django.conf import settings
 from django.db import models
 
+from . import entity_permission
 from . import instance
 from . import manager
 from . import queryset
 from . import validation
 
 
-class DirectDeal(instance.DirectDealMixin, validation.DirectDealValidatorMixin, models.Model):
+class DirectDeal(
+    entity_permission.EntityPermissionMixin, instance.DirectDealMixin, validation.DirectDealValidatorMixin, models.Model
+):
     class Meta:
         app_label = "dash"
 

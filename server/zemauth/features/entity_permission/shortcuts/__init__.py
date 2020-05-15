@@ -1,2 +1,4 @@
+from .instance import EntityPermissionMixin
+from .instance_test import EntityPermissionTestCaseMixin
 from .queryset import HasEntityPermissionQuerySetMixin
 from .queryset_test import HasEntityPermissionQuerySetTestCaseMixin

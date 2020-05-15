@@ -9,6 +9,9 @@ import mock
 from django.contrib.auth.models import Permission
 from django.test.client import RequestFactory
 
+import core.models
+import zemauth.features.entity_permission
+
 
 def add_permissions(user, permissions):
     """ utility intended to be used in unit tests only """
@@ -20,6 +23,30 @@ def remove_permissions(user, permissions):
     """ utility intended to be used in unit tests only """
     for permission in permissions:
         user.user_permissions.remove(Permission.objects.get(codename=permission))
+
+
+def add_entity_permissions(user, permissions, entity):
+    """ utility intended to be used in unit tests only """
+    for permission in permissions:
+        if isinstance(entity, core.models.Agency):
+            entity_permission = zemauth.features.entity_permission.EntityPermission(
+                user=user, permission=permission, agency=entity
+            )
+            entity_permission.save()
+        elif isinstance(entity, core.models.Account):
+            entity_permission = zemauth.features.entity_permission.EntityPermission(
+                user=user, permission=permission, account=entity
+            )
+            entity_permission.save()
+
+
+def remove_entity_permissions(user, permissions, entity):
+    """ utility intended to be used in unit tests only """
+    for permission in permissions:
+        if isinstance(entity, core.models.Agency):
+            user.entitypermission_set.filter(permission=permission, agency=entity).delete()
+        elif isinstance(entity, core.models.Account):
+            user.entitypermission_set.filter(permission=permission, account=entity).delete()
 
 
 def fake_request(user, url=""):
