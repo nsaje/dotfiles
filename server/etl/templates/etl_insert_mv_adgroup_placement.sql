@@ -109,7 +109,7 @@ INSERT INTO mv_adgroup_placement (
                         ad_group_id,
                         LOWER(publisher) AS publisher,
                         NULLIF(placement_type, 0) AS placement_type,
-                        CASE WHEN TRIM(placement)='' THEN NULL ELSE placement END AS placement
+                        CASE WHEN TRIM(placement)='' THEN NULL ELSE placement END AS placement,
                         
                         SUM(impressions) AS impressions,
                         SUM(clicks) AS clicks,
