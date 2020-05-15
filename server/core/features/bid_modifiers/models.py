@@ -1,11 +1,12 @@
 from django.db import models
 
 from . import constants
+from . import entity_permission
 from . import manager
 from . import queryset
 
 
-class BidModifier(models.Model):
+class BidModifier(entity_permission.EntityPermissionMixin, models.Model):
     class Meta:
         app_label = "dash"
         unique_together = ("type", "ad_group", "source_slug", "target")

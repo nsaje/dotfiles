@@ -15,11 +15,12 @@ from utils.settings_fields import CachedOneToOneField
 
 from . import manager
 from . import queryset
+from .entity_permission import EntityPermissionMixin
 from .instance import AccountInstanceMixin
 from .validation import AccountValidatorMixin
 
 
-class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
+class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin, models.Model):
     class Meta:
         ordering = ("-created_dt",)
 

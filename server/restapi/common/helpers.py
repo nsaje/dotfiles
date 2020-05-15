@@ -1,5 +1,7 @@
 import core.models
+import zemauth.features.entity_permission.helpers
 import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 def get_applied_deals_dict(configured_deals):
@@ -29,18 +31,29 @@ def get_users_for_manager(user, account, current_manager=None):
         users_queryset = zemauth.models.User.objects.all()
     else:
         if account.id is not None:
-            users_queryset = account.users.all()
+            queryset_user_permission = account.users.all()
+            queryset_entity_permission = account.get_users_with(Permission.READ)
+            queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+                user, Permission.READ, queryset_user_permission, queryset_entity_permission
+            )
+            users_queryset = queryset
         if account.is_agency():
+            queryset_user_permission = account.agency.users.all()
+            queryset_entity_permission = account.agency.get_users_with(Permission.READ)
+            queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+                user, Permission.READ, queryset_user_permission, queryset_entity_permission
+            )
             if users_queryset is not None:
-                users_queryset |= account.agency.users.all()
+                users_queryset |= queryset
             else:
-                users_queryset = account.agency.users.all()
+                users_queryset = queryset
 
     if current_manager is not None:
+        queryset = zemauth.models.User.objects.filter(pk=current_manager.id)
         if users_queryset is not None:
-            users_queryset |= zemauth.models.User.objects.filter(pk=current_manager.id)
+            users_queryset |= queryset
         else:
-            users_queryset = zemauth.models.User.objects.filter(pk=current_manager.id)
+            users_queryset = queryset
 
     return users_queryset.filter(is_active=True).distinct() if users_queryset is not None else []
 

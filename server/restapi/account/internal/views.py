@@ -4,10 +4,12 @@ from django.db import transaction
 import core.features.deals
 import core.models
 import dash.constants
-import restapi.access
 import restapi.account.v1.views
 import restapi.common.helpers
 import utils.exc
+import zemauth.access
+import zemauth.features.entity_permission.helpers
+from zemauth.features.entity_permission.constants import Permission
 
 from . import helpers
 from . import serializers
@@ -23,8 +25,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         return self.response_ok(None)
 
     def defaults(self, request):
-        agency = core.models.Agency.objects.all().filter_by_user(request.user).first()
-        account = core.models.Account.objects.get_default(request, agency)
+        queryset = zemauth.access.get_agencies(request.user, Permission.WRITE)
+        account = core.models.Account.objects.get_default(request, queryset.first())
         self._augment_account(request, account)
         extra_data = helpers.get_extra_data(request.user, account)
         return self.response_ok(
@@ -33,7 +35,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         )
 
     def get(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         self._augment_account(request, account)
         extra_data = helpers.get_extra_data(request.user, account)
         return self.response_ok(
@@ -42,7 +44,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         )
 
     def put(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data.get("settings", {})
@@ -68,7 +70,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         agency_id = serializer.validated_data.get("agency_id")
-        agency = restapi.access.get_agency(request.user, agency_id) if agency_id is not None else None
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
 
         with transaction.atomic():
             new_account = core.models.Account.objects.create(
@@ -153,7 +155,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         for item in data:
             if item.get("id") is not None:
                 try:
-                    new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
+                    new_deals.append(zemauth.access.get_direct_deal(request.user, Permission.READ, item.get("id")))
                     errors.append(None)
                 except utils.exc.MissingDataError as err:
                     errors.append({"id": [str(err)]})

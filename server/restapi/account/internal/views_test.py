@@ -5,11 +5,13 @@ import core.features.deals
 import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AccountViewSetTest(RESTAPITest):
+class LegacyAccountViewSetTest(RESTAPITest):
     @classmethod
     def account_repr(
         cls,
@@ -76,7 +78,7 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_default(self, mock_get_extra_data):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
@@ -234,8 +236,8 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency()
+        account = self.mix_account(user=self.user, permissions=[Permission.READ], agency=agency, name="Generic account")
         default_icon = magic_mixer.blend(
             core.models.ImageAsset, image_id="icon_id", image_hash="icon_hash", width=150, height=150, file_size=1000
         )
@@ -471,7 +473,7 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_internal_deals_no_permission(self, mock_get_extra_data):
-        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        account = self.mix_account(user=self.user, permissions=[Permission.READ], name="Generic account")
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
@@ -482,7 +484,7 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_internal_deals_permission(self, mock_get_extra_data):
-        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        account = self.mix_account(user=self.user, permissions=[Permission.READ], name="Generic account")
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
         magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
@@ -495,8 +497,8 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("utils.slack.publish")
     def test_put(self, mock_slack_publish):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user], id=1)
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE], id=1)
+        account = self.mix_account(agency=agency, name="Generic account")
         account.settings.update_unsafe(
             None,
             name=account.name,
@@ -601,8 +603,10 @@ class AccountViewSetTest(RESTAPITest):
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
     def test_put_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency()
+        account = self.mix_account(
+            user=self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency, name="Generic account"
+        )
 
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
@@ -718,8 +722,8 @@ class AccountViewSetTest(RESTAPITest):
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
     def test_put_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(agency=agency, name="Generic account")
 
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
@@ -812,7 +816,7 @@ class AccountViewSetTest(RESTAPITest):
 
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
@@ -877,7 +881,7 @@ class AccountViewSetTest(RESTAPITest):
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
     def test_post_default_icon(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
 
         mock_external_validation.return_value = {
             "status": "ok",
@@ -982,7 +986,7 @@ class AccountViewSetTest(RESTAPITest):
     @mock.patch("utils.lambda_helper.invoke_lambda")
     @mock.patch("utils.slack.publish")
     def test_post_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
 
         new_account = self.account_repr(
             agency_id=agency.id,
@@ -1053,8 +1057,8 @@ class AccountViewSetTest(RESTAPITest):
     @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
     @mock.patch("utils.slack.publish")
     def test_put_allowed_sources_error(self, mock_slack_publish, mock_get_non_removable_sources_ids):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(agency=agency, name="Generic account")
         account.settings.update_unsafe(
             None,
             name=account.name,
@@ -1108,8 +1112,9 @@ class AccountViewSetTest(RESTAPITest):
         )
 
     def test_put_deals_error(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(agency=agency, name="Generic account")
+
         account.settings.update_unsafe(
             None,
             name=account.name,
@@ -1153,3 +1158,7 @@ class AccountViewSetTest(RESTAPITest):
         r = self.assertResponseError(r, "ValidationError")
 
         self.assertIn("Deal does not exist", r["details"]["deals"][1]["id"])
+
+
+class AccountViewSetTest(RESTAPITestCase, LegacyAccountViewSetTest):
+    pass

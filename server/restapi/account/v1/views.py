@@ -3,11 +3,13 @@ import functools
 from django.db import transaction
 
 import core.models
-import restapi.access
 import utils.converters
 import utils.exc
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from restapi.account.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission.constants import Permission
 
 UPDATABLE_SETTINGS_FIELDS = (
     "name",
@@ -23,11 +25,11 @@ class AccountViewSet(RESTAPIBaseViewSet):
     serializer = serializers.AccountSerializer
 
     def get(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def put(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data.get("settings", {})
@@ -40,21 +42,19 @@ class AccountViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def list(self, request):
-        accounts = core.models.Account.objects.all().filter_by_user(request.user)
+        queryset = zemauth.access.get_accounts(request.user, Permission.READ)
         agency_id = request.GET.get("agencyId")
         if agency_id:
-            accounts = accounts.filter(agency_id=agency_id)
+            queryset = queryset.filter(agency_id=agency_id)
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            accounts = accounts.exclude_archived()
-        return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
+            queryset = queryset.exclude_archived()
+        return self.response_ok(self.serializer(queryset, many=True, context={"request": request}).data)
 
     def create(self, request):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        agency = None
         agency_id = serializer.validated_data.get("agency_id")
-        if agency_id:
-            agency = restapi.access.get_agency(request.user, agency_id)
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
 
         with transaction.atomic():
             new_account = core.models.Account.objects.create(

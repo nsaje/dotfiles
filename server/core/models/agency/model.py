@@ -16,11 +16,12 @@ from utils.settings_fields import CachedOneToOneField
 
 from . import manager
 from . import queryset
+from .entity_permission import EntityPermissionMixin
 from .instance import AgencyInstanceMixin
 from .validation import AgencyValidatorMixin
 
 
-class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
+class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
     class Meta:
         app_label = "dash"
         verbose_name_plural = "Agencies"
