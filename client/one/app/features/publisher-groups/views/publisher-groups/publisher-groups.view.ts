@@ -31,6 +31,7 @@ import {
 } from '../../../../shared/helpers/grid.helpers';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {NotificationService} from '../../../../core/notification/services/notification.service';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PageSizeConfig} from '../../../../shared/components/smart-grid/types/page-size-config';
@@ -60,6 +61,8 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     cssClass = 'zem-publisher-groups-view';
     @ViewChild('editPublisherGroupModal', {static: false})
     editPublisherGroupModal: ModalComponent;
+    @ViewChild('connectionsModal', {static: false})
+    connectionsModal: ModalComponent;
 
     columnDefs: ColDef[] = [];
     implicitColumnDefs: ColDef[] = [];
@@ -215,6 +218,18 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         });
     }
 
+    openConnectionsModal(publisherGroup: Partial<PublisherGroup>) {
+        this.store.setActiveEntity(publisherGroup);
+        this.store.loadActiveEntityConnections();
+        this.connectionsModal.open();
+    }
+
+    removeConnection(connection: PublisherGroupConnection) {
+        this.store.deleteActiveEntityConnection(connection).then(() => {
+            this.store.loadActiveEntityConnections();
+        });
+    }
+
     private updateInternalState(queryParams: any) {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;
@@ -284,7 +299,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             },
             {
                 headerName: '',
-                width: 105,
+                width: 135,
                 suppressSizeToFit: true,
                 resizable: false,
                 cellRendererFramework: PublisherGroupActionsCellComponent,

@@ -24,6 +24,10 @@ export class PublisherGroupActionsCellComponent
             commonHelpers.isDefined(this.publisherGroup.agencyId);
     }
 
+    openConnectionsModal() {
+        this.parent.openConnectionsModal(this.publisherGroup);
+    }
+
     openEditPublisherGroupModal() {
         this.parent.openEditPublisherGroupModal(this.publisherGroup);
     }

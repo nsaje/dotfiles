@@ -197,4 +197,45 @@
             </div>
         </ng-container>
     </zem-modal>
+    <zem-modal
+        #connectionsModal
+        class="zem-modal zem-publisher-groups-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="connectionsModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ state.activeEntity.entity.name }} connections
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <zem-publisher-group-connections-list
+                    class="zem-publisher-group-connections-list"
+                    [connections]="state.activeEntity.connections"
+                    (removeConnection)="removeConnection($event)"
+                ></zem-publisher-group-connections-list>
+            </div>
+            <div
+                class="zem-modal__footer zem-buttons-panel zem-publisher-groups-view__buttons-panel"
+            >
+                <button
+                    class="zem-button zem-button--outlined"
+                    (click)="connectionsModal.close()"
+                >
+                    Close
+                </button>
+                <div
+                    *ngIf="
+                        store.state.requests.listConnections.errorMessage ||
+                        store.state.requests.removeConnection.errorMessage
+                    "
+                    class="zem-message zem-message--error zem-publisher-groups-view__connections-error"
+                >
+                    {{ store.state.requests.listConnections.errorMessage }}
+                    {{ store.state.requests.removeConnection.errorMessage }}
+                </div>
+            </div>
+        </ng-container>
+    </zem-modal>
 </ng-container>

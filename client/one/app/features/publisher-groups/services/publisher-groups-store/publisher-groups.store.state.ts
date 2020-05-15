@@ -4,6 +4,7 @@ import {PublisherGroupFieldsErrorsState} from '../../types/publisher-group-field
 import {RequestState} from '../../../../shared/types/request-state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
+import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 
 export class PublisherGroupsStoreState {
     agencyId: string = null;
@@ -21,6 +22,7 @@ export class PublisherGroupsStoreState {
             agencyId: null,
             includeSubdomains: null,
             implicit: null,
+            size: null,
             modifiedDt: null,
             createdDt: null,
             type: null,
@@ -31,6 +33,7 @@ export class PublisherGroupsStoreState {
         } as PublisherGroup,
         scopeState: null as ScopeSelectorState,
         isReadOnly: null as boolean,
+        connections: [] as PublisherGroupConnection[],
         fieldsErrors: new PublisherGroupFieldsErrorsState(),
     };
     accounts: Account[] = [];
@@ -41,5 +44,7 @@ export class PublisherGroupsStoreState {
         listExplicit: {} as RequestState,
         listImplicit: {} as RequestState,
         upload: {} as RequestState,
+        listConnections: {} as RequestState,
+        removeConnection: {} as RequestState,
     };
 }

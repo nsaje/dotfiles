@@ -10,17 +10,19 @@ import {
     EventEmitter,
 } from '@angular/core';
 import {ColDef} from 'ag-grid-community';
-import {ConnectionActionsCellComponent} from '../connection-actions-cell/connection-actions-cell.component';
+import {ConnectionActionsCellComponent} from '../../../../shared/components/connection-actions-cell/connection-actions-cell.component';
 import {DealConnectionRowData} from '../../types/deal-connection-row-data';
 import {DealConnection} from 'one/app/core/deals/types/deal-connection';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
 
 @Component({
     selector: 'zem-connections-list',
     templateUrl: './connections-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConnectionsListComponent implements OnChanges {
+export class ConnectionsListComponent
+    implements OnChanges, ConnectionRowParentComponent<DealConnectionRowData> {
     @Input()
     connections: DealConnection[];
     @Input()

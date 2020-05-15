@@ -1,5 +1,10 @@
 <div class="zem-publisher-group-actions-cell">
     <button
+        [hidden]="this.publisherGroup.implicit"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--connections-icon zem-publisher-group-actions-cell__item"
+        (click)="openConnectionsModal()"
+    ></button>
+    <button
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--download-icon zem-publisher-group-actions-cell__item"
         (click)="download()"
     ></button>

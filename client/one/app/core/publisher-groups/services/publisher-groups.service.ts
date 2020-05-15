@@ -6,6 +6,7 @@ import {PublisherGroup} from '../types/publisher-group';
 import {PublisherInfo} from '../../publishers/types/publisher-info';
 import {isDefined} from '../../../shared/helpers/common.helpers';
 import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
+import {PublisherGroupConnection} from '../types/publisher-group-connection';
 
 @Injectable()
 export class PublisherGroupsService {
@@ -97,6 +98,28 @@ export class PublisherGroupsService {
 
         return this.endpoint.addEntries(
             publisherGroupWithEntries,
+            requestStateUpdater
+        );
+    }
+
+    listConnections(
+        publisherGroupId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroupConnection[]> {
+        return this.endpoint.listConnections(
+            publisherGroupId,
+            requestStateUpdater
+        );
+    }
+
+    removeConnection(
+        publisherGroupId: string,
+        connection: PublisherGroupConnection,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.removeConnection(
+            publisherGroupId,
+            connection,
             requestStateUpdater
         );
     }

@@ -2,18 +2,17 @@ import './connection-actions-cell.component.less';
 
 import {Component} from '@angular/core';
 import {ICellRendererAngularComp} from 'ag-grid-angular';
-import {DealConnectionRowDataRendererParams} from '../../types/deal-connection-row-data.renderer-params';
-import {DealConnectionRowData} from '../../types/deal-connection-row-data';
+import {ConnectionRowDataRendererParams} from './types/connection-row-data.renderer-params';
 
 @Component({
     templateUrl: './connection-actions-cell.component.html',
 })
 export class ConnectionActionsCellComponent
     implements ICellRendererAngularComp {
-    params: DealConnectionRowDataRendererParams;
-    connection: DealConnectionRowData;
+    params: ConnectionRowDataRendererParams<any, any>;
+    connection: any;
 
-    agInit(params: DealConnectionRowDataRendererParams) {
+    agInit(params: ConnectionRowDataRendererParams<any, any>) {
         this.params = params;
         this.connection = params.data;
     }

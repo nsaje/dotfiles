@@ -5,6 +5,8 @@ import {PublisherGroupsService} from './publisher-groups.service';
 import {PublisherGroup} from '../types/publisher-group';
 import {PublisherInfo} from '../../publishers/types/publisher-info';
 import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
+import {fakeAsync, tick} from '@angular/core/testing';
+import {PublisherGroupConnection} from '../types/publisher-group-connection';
 
 describe('PublisherGroupsService', () => {
     let service: PublisherGroupsService;
@@ -13,6 +15,7 @@ describe('PublisherGroupsService', () => {
 
     let mockedPublisherGroup: PublisherGroup;
     let mockedPublisherGroups: PublisherGroup[];
+    let mockedPublisherGroupConnection: PublisherGroupConnection;
     let mockedPublisherRows: PublisherInfo[];
     let mockedPlacementRows: PublisherInfo[];
     let mockedAgencyId: string;
@@ -21,7 +24,14 @@ describe('PublisherGroupsService', () => {
     beforeEach(() => {
         publisherGroupsEndpointStub = jasmine.createSpyObj(
             PublisherGroupsEndpoint.name,
-            ['listImplicit', 'listExplicit', 'upload', 'addEntries']
+            [
+                'listImplicit',
+                'listExplicit',
+                'upload',
+                'addEntries',
+                'listConnections',
+                'removeConnection',
+            ]
         );
         service = new PublisherGroupsService(publisherGroupsEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -43,6 +53,12 @@ describe('PublisherGroupsService', () => {
             levelName: null,
             levelId: null,
             entries: null,
+        };
+
+        mockedPublisherGroupConnection = {
+            id: 1,
+            name: 'test1',
+            location: 'agencyBlacklist',
         };
 
         mockedPublisherRows = [
@@ -252,4 +268,42 @@ describe('PublisherGroupsService', () => {
             requestStateUpdater
         );
     });
+
+    it('should list publisher group connections via endpoint', fakeAsync(() => {
+        publisherGroupsEndpointStub.listConnections.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+        service.listConnections('1', requestStateUpdater);
+        tick();
+
+        expect(
+            publisherGroupsEndpointStub.listConnections
+        ).toHaveBeenCalledTimes(1);
+        expect(
+            publisherGroupsEndpointStub.listConnections
+        ).toHaveBeenCalledWith('1', requestStateUpdater);
+    }));
+
+    it('should remove publisher group connection via endpoint', fakeAsync(() => {
+        publisherGroupsEndpointStub.removeConnection.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+        service.removeConnection(
+            '1',
+            mockedPublisherGroupConnection,
+            requestStateUpdater
+        );
+        tick();
+
+        expect(
+            publisherGroupsEndpointStub.removeConnection
+        ).toHaveBeenCalledTimes(1);
+        expect(
+            publisherGroupsEndpointStub.removeConnection
+        ).toHaveBeenCalledWith(
+            '1',
+            mockedPublisherGroupConnection,
+            requestStateUpdater
+        );
+    }));
 });

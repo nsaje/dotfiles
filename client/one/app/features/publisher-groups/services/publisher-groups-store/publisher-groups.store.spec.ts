@@ -9,6 +9,7 @@ import * as mockHelpers from '../../../../testing/mock.helpers';
 import * as clone from 'clone';
 import {PublisherGroupsStoreState} from './publisher-groups.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
+import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 
 describe('PublisherGroupsStore', () => {
     let publisherGroupsServiceStub: jasmine.SpyObj<PublisherGroupsService>;
@@ -16,6 +17,7 @@ describe('PublisherGroupsStore', () => {
     let zemPermissionsStub: any;
     let store: PublisherGroupsStore;
     let mockedPublisherGroups: PublisherGroup[];
+    let mockedPublisherGroupConnection: PublisherGroupConnection;
     let mockedAgencyId: string;
     let mockedAccountId: string;
     let mockedAccounts: Account[];
@@ -23,7 +25,14 @@ describe('PublisherGroupsStore', () => {
     beforeEach(() => {
         publisherGroupsServiceStub = jasmine.createSpyObj(
             PublisherGroupsService.name,
-            ['listImplicit', 'listExplicit', 'upload', 'remove']
+            [
+                'listImplicit',
+                'listExplicit',
+                'upload',
+                'remove',
+                'listConnections',
+                'removeConnection',
+            ]
         );
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
@@ -88,6 +97,12 @@ describe('PublisherGroupsStore', () => {
                 entries: undefined,
             },
         ];
+
+        mockedPublisherGroupConnection = {
+            id: 1,
+            name: 'test1',
+            location: 'agencyBlacklist',
+        };
 
         mockedAgencyId = '10';
         mockedAccountId = '525';
@@ -401,4 +416,45 @@ describe('PublisherGroupsStore', () => {
             ScopeSelectorState.AGENCY_SCOPE
         );
     });
+
+    it('should list publisher group connections via service', fakeAsync(() => {
+        const mockedPublisherGroup = clone(mockedPublisherGroups[0]);
+
+        publisherGroupsServiceStub.listConnections.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+        store.setActiveEntity(mockedPublisherGroup);
+        store.loadActiveEntityConnections();
+        tick();
+
+        expect(
+            publisherGroupsServiceStub.listConnections
+        ).toHaveBeenCalledTimes(1);
+        expect(publisherGroupsServiceStub.listConnections).toHaveBeenCalledWith(
+            mockedPublisherGroup.id,
+            (<any>store).requestStateUpdater
+        );
+    }));
+
+    it('should remove publisher group connection via service', fakeAsync(() => {
+        const mockedPublisherGroup = clone(mockedPublisherGroups[0]);
+
+        publisherGroupsServiceStub.removeConnection.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+        store.setActiveEntity(mockedPublisherGroup);
+        store.deleteActiveEntityConnection(mockedPublisherGroupConnection);
+        tick();
+
+        expect(
+            publisherGroupsServiceStub.removeConnection
+        ).toHaveBeenCalledTimes(1);
+        expect(
+            publisherGroupsServiceStub.removeConnection
+        ).toHaveBeenCalledWith(
+            mockedPublisherGroup.id,
+            mockedPublisherGroupConnection,
+            (<any>store).requestStateUpdater
+        );
+    }));
 });

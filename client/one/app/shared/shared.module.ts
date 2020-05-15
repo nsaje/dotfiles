@@ -68,6 +68,7 @@ import {NewFeatureDirective} from './directives/new-feature/new-feature.directiv
 import {LoadingOverlayDirective} from './directives/loading-overlay/loading-overlay.directive';
 import {ItemScopeCellComponent} from './components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {PublisherGroupEditFormComponent} from './components/publisher-group-edit-form/publisher-group-edit-form.component';
+import {ConnectionActionsCellComponent} from './components/connection-actions-cell/connection-actions-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -129,6 +130,7 @@ const EXPORTED_DECLARATIONS = [
     ExpandableSectionComponent,
     ItemScopeCellComponent,
     PublisherGroupEditFormComponent,
+    ConnectionActionsCellComponent,
 ];
 
 @NgModule({
@@ -159,5 +161,6 @@ const EXPORTED_DECLARATIONS = [
         HighchartsChartModule,
         ...EXPORTED_DECLARATIONS,
     ],
+    entryComponents: [ConnectionActionsCellComponent],
 })
 export class SharedModule {}

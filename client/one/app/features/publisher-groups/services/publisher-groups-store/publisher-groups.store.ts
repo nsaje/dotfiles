@@ -15,6 +15,7 @@ import {AccountService} from '../../../../core/entities/services/account/account
 import {Account} from '../../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
+import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 
 @Injectable()
 export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
@@ -36,6 +37,11 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
             this,
             'accountsRequests'
         );
+    }
+
+    ngOnDestroy() {
+        this.ngUnsubscribe$.next();
+        this.ngUnsubscribe$.complete();
     }
 
     setStore(
@@ -288,9 +294,48 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
         });
     }
 
-    ngOnDestroy() {
-        this.ngUnsubscribe$.next();
-        this.ngUnsubscribe$.complete();
+    loadActiveEntityConnections(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.publisherGroupsService
+                .listConnections(
+                    this.state.activeEntity.entity.id,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (connections: PublisherGroupConnection[]) => {
+                        this.patchState(
+                            connections,
+                            'activeEntity',
+                            'connections'
+                        );
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    deleteActiveEntityConnection(connection: PublisherGroupConnection) {
+        return new Promise<void>((resolve, reject) => {
+            this.publisherGroupsService
+                .removeConnection(
+                    this.state.activeEntity.entity.id,
+                    connection,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
     }
 
     private isPaginationChanged(

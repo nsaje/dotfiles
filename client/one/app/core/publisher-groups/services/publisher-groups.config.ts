@@ -42,6 +42,14 @@ export const PUBLISHER_GROUPS_CONFIG: {
                 name: 'addEntries',
                 url: `${publisherGroupsInternalApiUrl}/add/`,
             },
+            listConnections: {
+                name: 'listConnections',
+                url: `${publisherGroupsInternalApiUrl}/{publisherGroupId}/connections/`,
+            },
+            removeConnection: {
+                name: 'removeConnection',
+                url: `${publisherGroupsInternalApiUrl}/{publisherGroupId}/connections/{location}/{entityId}`,
+            },
         },
     },
 };

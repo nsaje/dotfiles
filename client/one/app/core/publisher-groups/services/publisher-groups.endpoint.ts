@@ -18,6 +18,7 @@ import {
 import * as deepmerge from 'deepmerge';
 import {HttpRequestInfo} from '../../../shared/types/http-request-info';
 import {PublisherGroupWithEntries} from '../types/publisher-group-with-entries';
+import {PublisherGroupConnection} from '../types/publisher-group-connection';
 
 @Injectable()
 export class PublisherGroupsEndpoint {
@@ -239,6 +240,76 @@ export class PublisherGroupsEndpoint {
                         inProgress: false,
                     });
                     return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    listConnections(
+        publisherGroupId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<PublisherGroupConnection[]> {
+        const request = replaceUrl(
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.listConnections,
+            {publisherGroupId: publisherGroupId}
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<PublisherGroupConnection[]>>(request.url)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    removeConnection(
+        publisherGroupId: string,
+        connection: PublisherGroupConnection,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = replaceUrl(
+            PUBLISHER_GROUPS_CONFIG.requests.publisherGroups.removeConnection,
+            {
+                publisherGroupId: publisherGroupId,
+                location: connection.location.toString(),
+                entityId: connection.id.toString(),
+            }
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .delete<ApiResponse<PublisherGroupConnection>>(request.url)
+            .pipe(
+                map(() => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {
