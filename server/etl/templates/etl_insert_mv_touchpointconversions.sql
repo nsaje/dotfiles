@@ -79,7 +79,7 @@ INSERT INTO mv_touchpointconversions (
         SUM(a.conversion_value_nano) as conversion_value_nano,
 
         a.type as type,
-        NULLIF(TRIM(a.placement), '') as placement,
+        CASE WHEN TRIM(a.placement)='' THEN NULL ELSE a.placement END AS placement
         NULLIF(a.placement_type, 0) as placement_type
     FROM (
         SELECT
