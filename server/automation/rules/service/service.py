@@ -54,7 +54,7 @@ def execute_rules_daily_run() -> None:
             "ad_groups_included", "conditions"
         )
 
-        rules_map = helpers.get_rules_by_ad_group_map(rules)
+        rules_map = helpers.get_rules_by_ad_group_map(rules, exclude_inactive_yesterday=True)
         _apply_rules(target_type, rules_map)
 
     RulesDailyJobLog.objects.create()

@@ -20,6 +20,7 @@ from .actions import ValueChangeData
 from .apply import ErrorData
 
 
+@mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
 class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("core.features.bid_modifiers.converters.TargetConverter.from_target")
@@ -309,6 +310,7 @@ class ExecuteRulesDailyRunTest(TestCase):
 
 @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
 @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+@mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
 @mock.patch("utils.email_helper.send_official_email")
 class NotificationEmailTestCase(TestCase):
     def setUp(self):
@@ -494,6 +496,7 @@ class NotificationEmailTestCase(TestCase):
 @mock.patch("automation.rules.service.service.apply_rule", return_value=([], []))
 @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
 @mock.patch("redshiftapi.api_rules.query", mock.MagicMock(return_value={}))
+@mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
 class FetchSettingsTest(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)

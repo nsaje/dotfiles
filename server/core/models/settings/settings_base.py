@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
@@ -62,7 +62,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
             self._create_copy()
 
         self.created_by = user
-        self.created_dt = datetime.datetime.utcnow()
+        self.created_dt = datetime.utcnow()
         if update_fields is not None:
             update_fields.extend(["created_by", "created_dt"])
         if self.has_field("system_user"):
