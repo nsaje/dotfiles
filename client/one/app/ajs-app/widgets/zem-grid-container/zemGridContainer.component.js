@@ -14,7 +14,8 @@ angular.module('one.widgets').component('zemGridContainer', {
         zemGridIntegrationService,
         zemGridContainerTabsService,
         zemLocalStorageService,
-        zemBidModifierUpdatesService
+        zemBidModifierUpdatesService,
+        zemSelectionService
     ) {
         var $ctrl = this;
 
@@ -72,6 +73,7 @@ angular.module('one.widgets').component('zemGridContainer', {
         }
 
         function activateGridTab(tab) {
+            zemSelectionService.setSelection([]);
             if (!tab.activated) {
                 $timeout(function() {
                     var $childScope = $scope.$new();
