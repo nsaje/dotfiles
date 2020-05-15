@@ -110,7 +110,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 targetType: targetActionType.targetType,
                 actionType: null,
                 actionFrequency: null,
-                conditions: [],
                 changeStep: null,
                 changeLimit: null,
                 sendEmailRecipients: [],
@@ -127,7 +126,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     targetType: targetActionType.targetType,
                     actionType: targetActionType.actionType,
                     actionFrequency: null,
-                    conditions: [],
                 },
             });
         } else {
