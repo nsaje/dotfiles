@@ -231,7 +231,9 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET], agency=agency
+        )
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r)
@@ -306,7 +308,16 @@ class LegacyCampaignViewSetTest(RESTAPITest):
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account = self.mix_account(
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.BUDGET,
+                Permission.BUDGET_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+            ],
+            agency=agency,
+        )
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
         )
@@ -631,7 +642,16 @@ class LegacyCampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post(self, mock_send, mock_autopilot):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        agency = self.mix_agency(
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.WRITE,
+                Permission.BUDGET,
+                Permission.BUDGET_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+            ],
+        )
         account = magic_mixer.blend(core.models.Account, agency=agency)
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
@@ -754,7 +774,16 @@ class LegacyCampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_put(self, mock_send, mock_autopilot):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        agency = self.mix_agency(
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.WRITE,
+                Permission.BUDGET,
+                Permission.BUDGET_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+            ],
+        )
         account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT

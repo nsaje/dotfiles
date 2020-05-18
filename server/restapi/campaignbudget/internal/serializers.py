@@ -5,16 +5,27 @@ import rest_framework.serializers
 import restapi.campaignbudget.v1.serializers
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 
-class CampaignBudgetSerializer(
-    restapi.serializers.serializers.PermissionedFieldsMixin,
-    restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer,
-):
-    class Meta:
-        permissioned_fields = {
-            "license_fee": "zemauth.can_view_platform_cost_breakdown",
-            "margin": "zemauth.can_manage_agency_margin",
+class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer):
+    class Meta(restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer.Meta):
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("credit_id"),
+                "entity_access_fn": zemauth.access.get_credit_line_item,
+            },
+            "fields": {
+                "margin": {
+                    "permission": Permission.BUDGET_MARGIN,
+                    "fallback_permission": "zemauth.can_manage_agency_margin",
+                },
+                "license_fee": {
+                    "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                    "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
+                },
+            },
         }
 
     id = restapi.serializers.fields.IdField(required=False, allow_null=True)

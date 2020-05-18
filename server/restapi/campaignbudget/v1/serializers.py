@@ -5,10 +5,30 @@ import rest_framework.serializers
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import zemauth.access
 from dash import constants
+from zemauth.features.entity_permission import Permission
 
 
-class CampaignBudgetSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class CampaignBudgetSerializer(
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin,
+    restapi.serializers.serializers.PermissionedFieldsMixin,
+    restapi.serializers.base.RESTAPIBaseSerializer,
+):
+    class Meta:
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("credit_id"),
+                "entity_access_fn": zemauth.access.get_credit_line_item,
+            },
+            "fields": {
+                "margin": {
+                    "permission": Permission.BUDGET_MARGIN,
+                    "fallback_permission": "zemauth.can_manage_agency_margin",
+                }
+            },
+        }
+
     id = restapi.serializers.fields.IdField(read_only=True)
     credit_id = restapi.serializers.fields.IdField(source="credit.id")
     start_date = rest_framework.serializers.DateField()

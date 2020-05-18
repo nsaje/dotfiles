@@ -74,7 +74,9 @@ class CampaignTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer
 
 
 class CampaignSerializer(
-    restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin,
+    restapi.serializers.serializers.PermissionedFieldsMixin,
+    restapi.serializers.base.RESTAPIBaseSerializer,
 ):
     class Meta:
         permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}

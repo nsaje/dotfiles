@@ -31,7 +31,7 @@ def get_extra_data(user, campaign):
     if user.has_perm("zemauth.can_see_deals_in_ui"):
         extra["deals"] = get_deals(campaign)
 
-    if user.has_perm("zemauth.can_see_new_budgets"):
+    if user.has_budget_perm_on(campaign, fallback_permission="zemauth.can_see_new_budgets"):
         active_budget_items = campaign.settings.budgets
         budget_items = get_budget_items(campaign)
         credit_items = get_credit_items(campaign)
@@ -81,7 +81,7 @@ def get_budgets_overview(user, campaign, active_budget_items, budget_items, cred
         data["data_spend"] = Decimal("0.0000")
         data["license_fee"] = Decimal("0.0000")
 
-    if should_add_agency_costs(user):
+    if should_add_agency_costs(user, campaign):
         data["margin"] = Decimal("0.0000")
 
     for item in credit_items:
@@ -105,18 +105,20 @@ def get_budgets_overview(user, campaign, active_budget_items, budget_items, cred
             data["data_spend"] += spend_data["data"]
             data["license_fee"] += spend_data["license_fee"]
 
-        if should_add_agency_costs(user):
+        if should_add_agency_costs(user, campaign):
             data["margin"] += spend_data["margin"]
 
     return data
 
 
 def should_add_platform_costs(user, campaign):
-    return not campaign.account.uses_bcm_v2 or user.has_perm("zemauth.can_view_platform_cost_breakdown")
+    return not campaign.account.uses_bcm_v2 or user.has_media_cost_data_cost_and_licence_fee_perm_on(
+        campaign, fallback_permission="zemauth.can_view_platform_cost_breakdown"
+    )
 
 
-def should_add_agency_costs(user):
-    return user.has_perm("zemauth.can_manage_agency_margin")
+def should_add_agency_costs(user, campaign):
+    return user.has_agency_spend_and_margin_perm_on(campaign, fallback_permission="zemauth.can_manage_agency_margin")
 
 
 def get_depleted_budgets(budget_items):

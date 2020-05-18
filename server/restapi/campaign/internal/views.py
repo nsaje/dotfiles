@@ -136,7 +136,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         if request.user.has_perm("zemauth.can_see_campaign_goals"):
             campaign.settings.goals = self._get_campaign_goals(campaign)
         campaign.settings.budgets = []
-        if request.user.has_perm("zemauth.can_see_new_budgets"):
+        if request.user.has_budget_perm_on(campaign, fallback_permission="zemauth.can_see_new_budgets"):
             campaign.settings.budgets = self._get_campaign_budgets(campaign)
         campaign.settings.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):

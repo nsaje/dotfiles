@@ -15,10 +15,11 @@ def get_agency(user: zemauth.models.User, permission: str, agency_id: str) -> co
     try:
         queryset_user_perm = core.models.Agency.objects.filter_by_user(user)
         queryset_entity_perm = core.models.Agency.objects.filter_by_entity_permission(user, permission)
+
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, agency_id
         )
-        return queryset.get(id=int(agency_id))
+        return queryset.get(id=agency_id)
     except core.models.Agency.DoesNotExist:
         raise utils.exc.MissingDataError("Agency does not exist")
 
@@ -54,7 +55,7 @@ def get_account(user: zemauth.models.User, permission: str, account_id: str, **k
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, account_id
         )
-        return queryset.get(id=int(account_id))
+        return queryset.get(id=account_id)
     except core.models.Account.DoesNotExist:
         raise utils.exc.MissingDataError("Account does not exist")
 
@@ -80,7 +81,7 @@ def get_campaign(user: zemauth.models.User, permission: str, campaign_id: str, *
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, campaign_id
         )
-        return queryset.get(id=int(campaign_id))
+        return queryset.get(id=campaign_id)
     except core.models.Campaign.DoesNotExist:
         raise utils.exc.MissingDataError("Campaign does not exist")
 
@@ -106,7 +107,7 @@ def get_ad_group(user: zemauth.models.User, permission: str, ad_group_id: str, *
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, ad_group_id
         )
-        return queryset.get(id=int(ad_group_id))
+        return queryset.get(id=ad_group_id)
     except core.models.AdGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Ad Group does not exist")
 
@@ -125,7 +126,7 @@ def get_content_ad(user: zemauth.models.User, permission: str, content_ad_id: st
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, content_ad_id
         )
-        return queryset.get(id=int(content_ad_id))
+        return queryset.get(id=content_ad_id)
     except core.models.ContentAd.DoesNotExist:
         raise utils.exc.MissingDataError("Content Ad does not exist")
 
@@ -158,7 +159,7 @@ def get_direct_deal(user: zemauth.models.User, permission: str, deal_id: str) ->
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, deal_id
         )
-        deal = queryset.get(id=int(deal_id))
+        deal = queryset.get(id=deal_id)
 
         if deal.is_internal and not user.has_perm("zemauth.can_see_internal_deals"):
             raise utils.exc.AuthorizationError()
@@ -178,7 +179,7 @@ def get_direct_deal_connection(
         deal_connection = (
             core.features.deals.DirectDealConnection.objects.select_related("deal", "account", "campaign", "adgroup")
             .filter_by_deal(deal)
-            .get(id=int(deal_connection_id))
+            .get(id=deal_connection_id)
         )
         return deal_connection
     except core.features.deals.DirectDealConnection.DoesNotExist:
@@ -189,7 +190,7 @@ def get_credit_line_item(
     user: zemauth.models.User, permission: str, credit_id: str
 ) -> core.features.bcm.CreditLineItem:
     try:
-        credit = core.features.bcm.CreditLineItem.objects.prefetch_related("budgets").get(id=int(credit_id))
+        credit = core.features.bcm.CreditLineItem.objects.prefetch_related("budgets").get(id=credit_id)
         if credit.agency_id:
             get_agency(user, permission, credit.agency_id)
         else:
@@ -204,7 +205,7 @@ def get_refund_line_item(refund_id: str, credit: core.features.bcm.CreditLineIte
         refund = (
             core.features.bcm.RefundLineItem.objects.select_related("credit", "account")
             .filter_by_credit(credit)
-            .get(id=int(refund_id))
+            .get(id=refund_id)
         )
         return refund
     except core.features.bcm.RefundLineItem.DoesNotExist:
@@ -226,7 +227,7 @@ def get_publisher_group(user: zemauth.models.User, permission: str, publisher_gr
         if annotate_entities:
             queryset = queryset.annotate_entities_count()
 
-        return queryset.get(id=int(publisher_group_id))
+        return queryset.get(id=publisher_group_id)
     except core.features.publisher_groups.PublisherGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Publisher group does not exist")
 

@@ -1,11 +1,14 @@
 import warnings
+from collections import OrderedDict
 
 from django.http.request import QueryDict
 from djangorestframework_camel_case.util import camel_to_underscore
 from rest_framework import serializers
 
 import restapi.serializers.fields
+import utils.exc
 import utils.list_helper
+import zemauth.models
 
 
 class QueryParamsExpectations(serializers.Serializer):
@@ -52,6 +55,77 @@ class PermissionedFieldsMixin(object):
                 fields.pop(field, None)
 
         return fields
+
+
+class EntityPermissionedFieldsMixin(object):
+    """
+    A serializer mixin that takes a `request` argument and info about entity permissions on Meta,
+    then controls which fields should be displayed.
+    """
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not hasattr(self.Meta, "entity_permissioned_fields"):
+            return data
+
+        ret = OrderedDict()
+        for field in data.keys():
+            if self.has_entity_permission_on_field(field, data):
+                ret[field] = data[field]
+        return ret
+
+    def to_internal_value(self, data):
+        if not hasattr(self.Meta, "entity_permissioned_fields"):
+            return super().to_internal_value(data)
+
+        ret = OrderedDict()
+        for field in data.keys():
+            if self.has_entity_permission_on_field(field, data):
+                ret[field] = data[field]
+        return super().to_internal_value(ret)
+
+    def has_entity_permission_on_field(self, field: str, data: OrderedDict) -> bool:
+        try:
+            request = self.context["request"]
+        except KeyError:
+            warnings.warn("Context does not have access to request")
+            return True
+
+        config = self.Meta.entity_permissioned_fields.get("config")
+        if config is None:
+            return True
+
+        fields = self.Meta.entity_permissioned_fields.get("fields")
+        if fields is None:
+            return True
+
+        permission = fields.get(field)
+        if permission is None:
+            return True
+
+        return self._has_entity_permission(request.user, permission, config, data)
+
+    @staticmethod
+    def _has_entity_permission(
+        user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        entity_id_getter_fn = config.get("entity_id_getter_fn")
+        if entity_id_getter_fn is None:
+            return True
+
+        entity_access_fn = config.get("entity_access_fn")
+        if entity_access_fn is None:
+            return True
+
+        if user.has_perm("zemauth.fea_use_entity_permission"):
+            try:
+                entity_id = entity_id_getter_fn(data)
+                entity_access_fn(user, permission["permission"], entity_id)
+                return True
+            except utils.exc.MissingDataError:
+                return False
+        else:
+            return user.has_perm(permission["fallback_permission"])
 
 
 class DataNodeSerializerMixin(object):

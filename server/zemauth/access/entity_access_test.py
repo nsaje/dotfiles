@@ -95,6 +95,8 @@ class ObjectAccessTestCaseMixin(object):
         user.entitypermission_set.all().delete()
         with self.assertRaises(utils.exc.MissingDataError):
             entity_access_fn(user, permission, model.id)
+        with self.assertRaises(utils.exc.MissingDataError):
+            entity_access_fn(user, permission, None)
 
 
 class AgencyAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
