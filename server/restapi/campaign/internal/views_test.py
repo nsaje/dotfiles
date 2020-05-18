@@ -12,11 +12,13 @@ import dash.models
 import dash.views.helpers
 import restapi.serializers.targeting
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class CampaignViewSetTest(RESTAPITest):
+class LegacyCampaignViewSetTest(RESTAPITest):
     @classmethod
     def campaign_repr(
         cls,
@@ -229,7 +231,7 @@ class CampaignViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r)
@@ -304,7 +306,7 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
         )
@@ -573,7 +575,7 @@ class CampaignViewSetTest(RESTAPITest):
             "credits": [],
         }
 
-        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
@@ -615,7 +617,7 @@ class CampaignViewSetTest(RESTAPITest):
             "credits": [],
         }
 
-        account = magic_mixer.blend(core.models.Account, name="Generic account", users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account, source=source, is_internal=True)
@@ -629,8 +631,8 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post(self, mock_send, mock_autopilot):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
         credit = magic_mixer.blend(
             dash.models.CreditLineItem,
             account=account,
@@ -727,7 +729,7 @@ class CampaignViewSetTest(RESTAPITest):
 
     def test_post_campaign_manager_error(self):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
 
         new_campaign = self.campaign_repr(account_id=account.id, campaign_manager=904324)
 
@@ -740,7 +742,7 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_post_goals_error(self, mock_send, mock_autopilot):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
 
         new_campaign = self.campaign_repr(account_id=account.id, campaign_manager=self.user.id, goals=[])
 
@@ -752,8 +754,8 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_put(self, mock_send, mock_autopilot):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
         )
@@ -902,9 +904,8 @@ class CampaignViewSetTest(RESTAPITest):
 
     @mock.patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
     def test_clone(self, mock_clone):
-        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         cloned_campaign = magic_mixer.blend(core.models.Campaign)
         mock_clone.return_value = cloned_campaign
@@ -919,7 +920,6 @@ class CampaignViewSetTest(RESTAPITest):
             }
         )
 
-        self.client.force_authenticate(user=user)
         r = self.client.post(
             reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
             data=data,
@@ -941,9 +941,8 @@ class CampaignViewSetTest(RESTAPITest):
 
     @mock.patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
     def test_clone_with_empty_values(self, mock_clone):
-        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         cloned_campaign = magic_mixer.blend(core.models.Campaign)
         mock_clone.return_value = cloned_campaign
@@ -957,7 +956,6 @@ class CampaignViewSetTest(RESTAPITest):
             }
         )
 
-        self.client.force_authenticate(user=user)
         r = self.client.post(
             reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
             data=data,
@@ -977,9 +975,8 @@ class CampaignViewSetTest(RESTAPITest):
         )
 
     def test_clone_with_exception(self):
-        user = magic_mixer.blend_user(permissions=["can_clone_campaigns"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         data = self.normalize(
@@ -992,10 +989,37 @@ class CampaignViewSetTest(RESTAPITest):
             }
         )
 
-        self.client.force_authenticate(user=user)
         r = self.client.post(
             reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
             data=data,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
+
+    def test_clone_no_permission(self):
+        test_helper.remove_permissions(self.user, permissions=["can_clone_campaigns"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        data = self.normalize(
+            {
+                "destinationCampaignName": "New campaign clone",
+                "cloneAdGroups": False,
+                "cloneAds": True,
+                "adGroupStateOverride": "ACTIVE",
+                "adStateOverride": "ACTIVE",
+            }
+        )
+
+        r = self.client.post(
+            reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
+            data=data,
+            format="json",
+        )
+        self.assertEqual(r.status_code, 401)
+        self.assertResponseError(r, "AuthorizationError")
+
+
+class CampaignViewSetTest(RESTAPITestCase, LegacyCampaignViewSetTest):
+    pass

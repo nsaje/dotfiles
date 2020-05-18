@@ -2,11 +2,12 @@ from django.db import transaction
 
 import core.models
 import prodops.hacks
-import restapi.access
 import utils.converters
 import utils.exc
+import zemauth.access
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -15,11 +16,11 @@ class CampaignViewSet(RESTAPIBaseViewSet):
     serializer = serializers.CampaignSerializer
 
     def get(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def put(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
@@ -31,18 +32,19 @@ class CampaignViewSet(RESTAPIBaseViewSet):
     def list(self, request):
         qpe = serializers.CampaignQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
+
+        campaigns = zemauth.access.get_campaigns(request.user, Permission.READ)
+
         account_id = qpe.validated_data.get("account_id", None)
-        only_ids = qpe.validated_data.get("only_ids", False)
         if account_id:
-            account = restapi.access.get_account(request.user, account_id)
-            campaigns = core.models.Campaign.objects.filter(account=account)
-        else:
-            campaigns = core.models.Campaign.objects.all().filter_by_user(request.user)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            campaigns = campaigns.filter(account=account)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             campaigns = campaigns.exclude_archived()
 
         paginator = StandardPagination()
+        only_ids = qpe.validated_data.get("only_ids", False)
         if only_ids:
             campaigns_paginated = paginator.paginate_queryset(campaigns, request)
             return paginator.get_paginated_response(
@@ -60,7 +62,9 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
+        account = zemauth.access.get_account(
+            request.user, Permission.WRITE, settings.get("campaign", {}).get("account_id")
+        )
 
         with transaction.atomic():
             try:

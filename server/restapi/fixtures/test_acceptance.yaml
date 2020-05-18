@@ -60,6 +60,7 @@
       - ['can_see_direct_deals_section', 'zemauth', 'user']
       - ['can_use_creative_icon', 'zemauth', 'user']
       - ['account_credit_view', 'zemauth', 'user']
+      - ['can_clone_campaigns', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

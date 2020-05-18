@@ -15,9 +15,10 @@ import dash.features.clonecampaign.exceptions
 import dash.features.clonecampaign.service
 import dash.views.navigation_helpers
 import prodops.hacks
-import restapi.access
 import restapi.campaign.v1.views
 import utils.exc
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 from . import helpers
 from . import serializers
@@ -36,7 +37,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         qpe = serializers.CampaignInternalQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         account_id = qpe.validated_data.get("account_id")
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         campaign = core.models.Campaign.objects.get_default(request, account)
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
@@ -46,7 +47,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         )
 
     def get(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
         return self.response_ok(
@@ -55,7 +56,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         )
 
     def put(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
@@ -76,7 +77,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
+        account = zemauth.access.get_account(
+            request.user, Permission.WRITE, settings.get("campaign", {}).get("account_id")
+        )
 
         with transaction.atomic():
             new_campaign = core.models.Campaign.objects.create(
@@ -99,7 +102,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         serializer = serializers.CloneCampaignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
 
         if settings.USE_CELERY_FOR_CAMPAIGN_CLONING:
             result = dash.features.clonecampaign.service.clone_async.delay(
@@ -111,10 +114,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             )
             try:
                 cloned_campaign_id = result.get(timeout=10)
-                cloned_campaign = restapi.access.get_campaign(request.user, cloned_campaign_id)
+                cloned_campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, cloned_campaign_id)
             except celery.exceptions.TimeoutError:
                 return self.response_ok(None)
-
         else:
             try:
                 cloned_campaign = dash.features.clonecampaign.service.clone(request, campaign, **data)
@@ -379,7 +381,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         for item in data:
             if item.get("id") is not None:
                 try:
-                    new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
+                    new_deals.append(zemauth.access.get_direct_deal(request.user, Permission.READ, item.get("id")))
                     errors.append(None)
                 except utils.exc.MissingDataError as err:
                     errors.append({"id": [str(err)]})

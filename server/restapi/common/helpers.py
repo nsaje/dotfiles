@@ -1,5 +1,4 @@
 import core.models
-import zemauth.features.entity_permission.helpers
 import zemauth.models
 from zemauth.features.entity_permission import Permission
 

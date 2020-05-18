@@ -3,21 +3,24 @@ import json
 import mock
 from django.urls import reverse
 
+import core.models
 import dash.models
 import restapi.serializers
 import utils.test_helper
 from automation import autopilot
 from dash import constants
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class CampaignViewSetTest(RESTAPITest):
+class LegacyCampaignViewSetTest(RESTAPITest):
     @classmethod
     def campaign_repr(
         cls,
-        id=123,
-        account_id=321,
+        id=None,
+        account_id=None,
         archived=False,
         autopilot=False,
         iab_category=constants.IABCategory.IAB1_1,
@@ -29,16 +32,16 @@ class CampaignViewSetTest(RESTAPITest):
         ga_property_id="",
         enable_adobe_tracking=False,
         adobe_tracking_param="cid",
-        whitelist_publisher_groups=[153],
-        blacklist_publisher_groups=[154],
+        whitelist_publisher_groups=[],
+        blacklist_publisher_groups=[],
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}, {"name": constants.OperatingSystem.LINUX}],
         frequency_capping=None,
     ):
         representation = {
-            "id": str(id),
-            "accountId": str(account_id),
+            "id": str(id) if id is not None else None,
+            "accountId": str(account_id) if account_id is not None else None,
             "archived": archived,
             "autopilot": autopilot,
             "iabCategory": constants.IABCategory.get_name(iab_category),
@@ -92,14 +95,20 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(expected, campaign)
 
     def test_campaigns_get(self):
-        r = self.client.get(reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}))
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_campaigns_put(self):
-        test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!", frequency_capping=33)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        test_campaign = self.campaign_repr(
+            id=campaign.id, account_id=account.id, name="My test campaign!", frequency_capping=33
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
@@ -111,18 +120,26 @@ class CampaignViewSetTest(RESTAPITest):
 
     def test_campaigns_put_empty(self):
         put_data = {}
-        settings_count = dash.models.CampaignSettings.objects.filter(campaign_id=608).count()
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        settings_count = dash.models.CampaignSettings.objects.filter(campaign_id=campaign.id).count()
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}), data=put_data, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
+            data=put_data,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
-        self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
+        self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=campaign.id).count())
 
     @mock.patch.object(autopilot, "recalculate_budgets_campaign", autospec=True)
     def test_campaigns_put_autopilot(self, mock_autopilot):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT, autopilot=False
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data={"autopilot": True},
             format="json",
         )
@@ -131,8 +148,12 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["autopilot"], True)
 
     def test_campaigns_put_archive_restore(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT, archived=False
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data={"archived": True},
             format="json",
         )
@@ -141,7 +162,7 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["archived"], True)
 
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data={"archived": False},
             format="json",
         )
@@ -151,14 +172,17 @@ class CampaignViewSetTest(RESTAPITest):
 
     # TODO: PLAC: remove after legacy grace period
     def test_campaign_put_environment_targeting_legacy(self):
-        campaign = dash.models.Campaign.objects.get(id=308)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
+        campaign.settings.update_unsafe(None, target_environments=None)
+
         self.assertIsNone(campaign.settings.target_environments)
 
-        campaign_data = self.campaign_repr()
+        campaign_data = self.campaign_repr(id=campaign.id, account_id=account.id)
         del campaign_data["targeting"]["environments"]
         campaign_data["targeting"]["placements"] = ["SITE"]
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=campaign_data,
             format="json",
         )
@@ -169,9 +193,11 @@ class CampaignViewSetTest(RESTAPITest):
         campaign.refresh_from_db()
         self.assertEqual([dash.constants.AdTargetEnvironment.SITE], campaign.settings.target_environments)
 
-        campaign_data = self.campaign_repr(target_environments=[constants.Environment.APP])
+        campaign_data = self.campaign_repr(
+            id=campaign.id, account_id=account.id, target_environments=[constants.Environment.APP]
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=campaign_data,
             format="json",
         )
@@ -182,11 +208,11 @@ class CampaignViewSetTest(RESTAPITest):
         campaign.refresh_from_db()
         self.assertEqual([dash.constants.AdTargetEnvironment.APP], campaign.settings.target_environments)
 
-        campaign_data = self.campaign_repr()
+        campaign_data = self.campaign_repr(id=campaign.id, account_id=account.id)
         campaign_data["targeting"]["environments"] = ["APP"]
         campaign_data["targeting"]["placements"] = ["SITE"]
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=campaign_data,
             format="json",
         )
@@ -197,10 +223,12 @@ class CampaignViewSetTest(RESTAPITest):
         campaign.refresh_from_db()
         self.assertEqual([dash.constants.AdTargetEnvironment.APP], campaign.settings.target_environments)
 
-        campaign_data = self.campaign_repr(target_environments=[constants.Environment.SITE])
+        campaign_data = self.campaign_repr(
+            id=campaign.id, account_id=account.id, target_environments=[constants.Environment.SITE]
+        )
         campaign_data["targeting"]["placements"] = ["SITE"]
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=campaign_data,
             format="json",
         )
@@ -212,8 +240,18 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual([dash.constants.AdTargetEnvironment.SITE], campaign.settings.target_environments)
 
     def test_campaigns_list(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        account_no_access = magic_mixer.blend(core.models.Account)
+        campaigns = magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
+        campaigns_no_access = magic_mixer.cycle(5).blend(core.models.Campaign, account=account_no_access)
+
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_ids = [x.get("id") for x in resp_json["data"]]
+        for item in campaigns:
+            self.assertTrue(str(item.id) in resp_json_ids)
+        for item in campaigns_no_access:
+            self.assertTrue(str(item.id) not in resp_json_ids)
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
@@ -230,6 +268,8 @@ class CampaignViewSetTest(RESTAPITest):
 
     def test_campaigns_list_permissionless(self):
         utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
@@ -238,17 +278,20 @@ class CampaignViewSetTest(RESTAPITest):
             self.validate_against_db(item)
 
     def test_campaigns_list_account_id(self):
-        account_id = 186
-        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": account_id})
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": account.id})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
-            self.assertEqual(int(item["accountId"]), account_id)
+            self.assertEqual(int(item["accountId"]), account.id)
 
     def test_campaigns_list_only_id(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
-        r_only_ids = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyId": True})
         resp_json = self.assertResponseValid(r, data_type=list)
+        r_only_ids = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyId": True})
         resp_json_only_ids = self.assertResponseValid(r_only_ids, data_type=list)
         self.assertEqual(
             list([campaign["id"] for campaign in resp_json["data"]]),
@@ -256,11 +299,12 @@ class CampaignViewSetTest(RESTAPITest):
         )
 
     def test_campaigns_list_account_id_invalid(self):
-        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": 1000})
+        account = magic_mixer.blend(core.models.Account)
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": account.id})
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_list_pagination(self):
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.cycle(10).blend(dash.models.Campaign, account=account)
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id})
         r_paginated = self.client.get(
@@ -271,7 +315,7 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
     def test_campaigns_list_exclude_archived(self):
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
         magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id})
@@ -282,7 +326,7 @@ class CampaignViewSetTest(RESTAPITest):
             self.assertFalse(item["archived"])
 
     def test_campaigns_list_include_archived(self):
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
         magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
         r = self.client.get(
@@ -296,15 +340,10 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post(self, mock_send, mock_autopilot):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         new_campaign = self.campaign_repr(
-            account_id=186,
-            name="All About Testing",
-            type=constants.CampaignType.VIDEO,
-            whitelist_publisher_groups=[153, 154],
-            blacklist_publisher_groups=[],
-            frequency_capping=33,
+            account_id=account.id, name="All About Testing", type=constants.CampaignType.VIDEO, frequency_capping=33
         )
-        del new_campaign["id"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
@@ -318,7 +357,7 @@ class CampaignViewSetTest(RESTAPITest):
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post_account_archived(self, mock_send, mock_autopilot):
-        account = magic_mixer.blend(dash.models.Account, users=[self.user], archived=True)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], archived=True)
         new_campaign = self.campaign_repr(
             account_id=account.id,
             name="All About Testing",
@@ -327,7 +366,6 @@ class CampaignViewSetTest(RESTAPITest):
             blacklist_publisher_groups=[],
             frequency_capping=33,
         )
-        del new_campaign["id"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "ValidationError")
         self.assertEqual(
@@ -337,8 +375,8 @@ class CampaignViewSetTest(RESTAPITest):
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     def test_campaigns_post_no_type(self, mock_autopilot):
-        new_campaign = self.campaign_repr(account_id=186, name="All About Testing", frequency_capping=33)
-        del new_campaign["id"]
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        new_campaign = self.campaign_repr(account_id=account.id, name="All About Testing", frequency_capping=33)
         del new_campaign["type"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
@@ -352,58 +390,67 @@ class CampaignViewSetTest(RESTAPITest):
 
     def test_campaigns_post_no_account_id(self):
         new_campaign = self.campaign_repr(
-            name="Its me, Account", whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[]
+            name="Its me, Account", whitelist_publisher_groups=[], blacklist_publisher_groups=[]
         )
-        del new_campaign["id"]
-        del new_campaign["accountId"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_campaigns_post_wrong_account_id(self):
+        account = magic_mixer.blend(core.models.Account)
         new_campaign = self.campaign_repr(
-            account_id=1000, name="Over 9000", whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[]
+            account_id=account.id, name="Over 9000", whitelist_publisher_groups=[], blacklist_publisher_groups=[]
         )
-        del new_campaign["id"]
         r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "MissingDataError")
 
     def test_iab_tier_1(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
         test_campaign = self.campaign_repr(
-            id=608, account_id=186, name="My test campaign!", iab_category=constants.IABCategory.IAB21
+            id=campaign.id, account_id=account.id, name="My test campaign!", iab_category=constants.IABCategory.IAB21
         )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_ga_property_id_validation(self):
-        test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!", ga_property_id="PID")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        test_campaign = self.campaign_repr(
+            id=campaign.id, account_id=account.id, name="My test campaign!", ga_property_id="PID"
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_language_validation(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, language=constants.Language.ENGLISH)
+        magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         test_campaign = self.campaign_repr(
-            id=608, account_id=186, name="My test campaign!", language=constants.Language.ARABIC
+            id=campaign.id, account_id=account.id, name="My test campaign!", language=constants.Language.ARABIC
         )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_adobe_tracking_parameter_blank(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
         test_campaign = self.campaign_repr(
-            id=608, account_id=186, name="Adobe tracking campaign", adobe_tracking_param=""
+            id=campaign.id, account_id=account.id, name="Adobe tracking campaign", adobe_tracking_param=""
         )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
@@ -411,40 +458,61 @@ class CampaignViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_campaigns_publisher_groups(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_no_access = magic_mixer.blend(core.models.Account)
+
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        pg_one = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account)
+        pg_two = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account)
+        pg_no_access = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=account_no_access)
+
         test_campaign = self.campaign_repr(
-            id=608, account_id=186, whitelist_publisher_groups=[153], blacklist_publisher_groups=[154]
+            id=campaign.id,
+            account_id=account.id,
+            whitelist_publisher_groups=[pg_one.id],
+            blacklist_publisher_groups=[pg_two.id],
         )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
-        test_campaign = self.campaign_repr(id=608, account_id=186, whitelist_publisher_groups=[1])
+        test_campaign = self.campaign_repr(
+            id=campaign.id, account_id=account.id, whitelist_publisher_groups=[pg_no_access.id]
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
-        test_campaign = self.campaign_repr(id=608, account_id=186, blacklist_publisher_groups=[2])
+        test_campaign = self.campaign_repr(
+            id=campaign.id, account_id=account.id, blacklist_publisher_groups=[pg_no_access.id]
+        )
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_type_validation(self):
-        campaign = dash.models.Campaign.objects.get(id=608)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, type=constants.CampaignType.VIDEO)
         magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
-        test_campaign = self.campaign_repr(id=608, account_id=186, type=constants.CampaignType.DISPLAY)
+        test_campaign = self.campaign_repr(id=campaign.id, account_id=account.id, type=constants.CampaignType.DISPLAY)
         r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
             data=test_campaign,
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
+
+
+class CampaignViewSetTest(RESTAPITestCase, LegacyCampaignViewSetTest):
+    pass

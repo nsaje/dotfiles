@@ -6,7 +6,6 @@ import core.models
 import utils.converters
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from restapi.account.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission.constants import Permission
@@ -42,13 +41,13 @@ class AccountViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def list(self, request):
-        queryset = zemauth.access.get_accounts(request.user, Permission.READ)
+        accounts = zemauth.access.get_accounts(request.user, Permission.READ)
         agency_id = request.GET.get("agencyId")
         if agency_id:
-            queryset = queryset.filter(agency_id=agency_id)
+            accounts = accounts.filter(agency_id=agency_id)
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            queryset = queryset.exclude_archived()
-        return self.response_ok(self.serializer(queryset, many=True, context={"request": request}).data)
+            accounts = accounts.exclude_archived()
+        return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
 
     def create(self, request):
         serializer = self.serializer(data=request.data, context={"request": request})

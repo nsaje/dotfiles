@@ -3,7 +3,6 @@ import dash.features.custom_flags
 import dash.models
 import restapi.common.helpers
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 import zemauth.models
 from zemauth.features.entity_permission.constants import Permission
 

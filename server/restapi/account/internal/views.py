@@ -8,7 +8,6 @@ import restapi.account.v1.views
 import restapi.common.helpers
 import utils.exc
 import zemauth.access
-import zemauth.features.entity_permission.helpers
 from zemauth.features.entity_permission.constants import Permission
 
 from . import helpers
@@ -25,8 +24,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         return self.response_ok(None)
 
     def defaults(self, request):
-        queryset = zemauth.access.get_agencies(request.user, Permission.WRITE)
-        account = core.models.Account.objects.get_default(request, queryset.first())
+        agencies = zemauth.access.get_agencies(request.user, Permission.WRITE)
+        account = core.models.Account.objects.get_default(request, agencies.first())
         self._augment_account(request, account)
         extra_data = helpers.get_extra_data(request.user, account)
         return self.response_ok(
