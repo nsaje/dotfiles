@@ -12,7 +12,7 @@ class HasEntityPermissionQuerySetMixin(metaclass=abc.ABCMeta):
         if user.has_perm_on_all_entities(permission):
             return self
 
-        return self._filter_by_entity_permission(user, permission)
+        return self._filter_by_entity_permission(user, permission).distinct()
 
     @abc.abstractmethod
     def _get_query_path_to_account(self) -> str:
