@@ -288,6 +288,7 @@ class CreateContentAd(TestCase):
         mock_insert_redirects.assert_not_called()
 
     def test_create_oen_additional_data(self, mock_insert_redirects):
+        core.models.Account.objects.filter(id=305).delete()
         account = magic_mixer.blend(core.models.Account, id=305)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
