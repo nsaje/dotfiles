@@ -32,6 +32,9 @@ run:	## runs whole stack with docker-compose
 run_devenv:	## runs only development environment (i.e. services that are needed by z1)
 	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
 
+run_clientless:	## runs whole stack except for the client (saves resources when client is not needed)
+	docker-compose up --force-recreate -d postgres statspostgres memcached telegraf server
+
 stop:	## stops the whole stack
 	docker-compose stop
 

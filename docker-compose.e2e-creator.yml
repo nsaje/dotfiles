@@ -22,7 +22,6 @@ services:
           - "statspostgres:statsdb"
           - "memcached:memcached"
           - "telegraf"
-          - "client"
         volumes:
           - "./server/:/app/z1/"
           - ".:/src:ro"
