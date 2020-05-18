@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
 
+import core.models
 from core.models.source import model as source_model
 from dash import constants as dash_constants
 from utils import decimal_helpers
@@ -170,7 +171,10 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
 def _update_ad_group_source_settings(
     ad_group, target, modifier, user, write_history=True, propagate_to_k1=False, skip_validation=False
 ):
-    ad_group_source = ad_group.adgroupsource_set.select_related("settings").get(source__id=int(target))
+    try:
+        ad_group_source = ad_group.adgroupsource_set.select_related("settings").get(source__id=int(target))
+    except core.models.AdGroupSource.DoesNotExist:
+        return
 
     updates = {}
     if ad_group.bidding_type == dash_constants.BiddingType.CPC:
