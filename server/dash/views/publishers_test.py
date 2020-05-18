@@ -499,6 +499,7 @@ class PublisherGroupsUploadTest(TestCase):
             {"Publisher": "", "Placement": "widget1", "Source": ""},
             {"Publisher": "", "Placement": "widget1", "Source": "asw"},
             {"Publisher": "", "Placement": "", "Source": "asw"},
+            {"Publisher": "qwe", "Placement": "Not reported", "Source": ""},
         ]
 
         mock_file = test_helper.mock_file("asd.csv", self._create_file_content(rows))
@@ -526,6 +527,12 @@ class PublisherGroupsUploadTest(TestCase):
                     "Error": "Publisher is required; Unknown source",
                 },
                 {"Publisher": "", "Placement": "", "Source": "asw", "Error": "Publisher is required; Unknown source"},
+                {
+                    "Publisher": "qwe",
+                    "Placement": "Not reported",
+                    "Source": "",
+                    "Error": 'Invalid placement: "Not reported"',
+                },
             ],
         )
 

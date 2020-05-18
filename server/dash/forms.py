@@ -24,6 +24,8 @@ from django.core import exceptions
 import core.features.multicurrency
 import core.features.deals.direct_deal_connection.exceptions
 import core.features.bcm
+import core.features.publisher_groups
+import utils.exc
 from dash import constants
 from dash import models
 from dash.views import helpers
@@ -2032,8 +2034,10 @@ class PublisherGroupEntryForm(forms.Form):
             if self.data.get("placement") is not None:
                 raise exceptions.ValidationError("Invalid field: placement")
 
-        if self.data.get("placement") == "":
-            raise exceptions.ValidationError("Placement can not be empty")
+        try:
+            core.features.publisher_groups.validate_placement(self.data.get("placement"))
+        except utils.exc.ValidationError as e:
+            raise exceptions.ValidationError(str(e))
 
         if self.cleaned_data["placement"] == "":
             # If data["placement"] is None, cleaned_data will have an empty string

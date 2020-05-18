@@ -2508,7 +2508,7 @@ class PublisherTargetingFormTestCase(TestCase):
         )
 
         self.assertFalse(f.is_valid())
-        self.assertEqual(f.errors["entries"], ["Placement can not be empty"])
+        self.assertEqual(f.errors["entries"], ["Placement must not be empty"])
 
     def test_form_empty_placement_no_permission(self):
         f = forms.PublisherTargetingForm(
@@ -2525,3 +2525,20 @@ class PublisherTargetingFormTestCase(TestCase):
 
         self.assertFalse(f.is_valid())
         self.assertEqual(f.errors["entries"], ["Invalid field: placement"])
+
+    def test_form_not_reported_placement(self):
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
+        f = forms.PublisherTargetingForm(
+            self.user,
+            {
+                "entries": [
+                    {"publisher": "cnn.com", "placement": "Not reported", "source": None, "include_subdomains": False},
+                    {"publisher": "cnn2.com", "placement": "Not reported", "source": 1, "include_subdomains": True},
+                ],
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "ad_group": 1,
+            },
+        )
+
+        self.assertFalse(f.is_valid())
+        self.assertEqual(f.errors["entries"], ['Invalid placement: "Not reported"'])

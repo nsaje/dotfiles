@@ -1,6 +1,8 @@
 import dash.constants
 from core.features import bid_modifiers
 
+NOT_REPORTED = "Not reported"
+
 
 class StructureDimension:
     ACCOUNT = "account_id"

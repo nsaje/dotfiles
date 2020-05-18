@@ -71,9 +71,7 @@ def dissect_placement_id(publisher_source_placement_id):
         raise InvalidLookupKeyFormat("PublisherPlacement: {}".format(publisher_source_placement_id))
 
     publisher, source_id = dissect_publisher_id(publisher_source_id)
-    if source_id == "all":
-        return publisher, source_id, placement or None
-    return publisher, int(source_id) if source_id else None, placement or None
+    return publisher, source_id, placement or None
 
 
 def strip_prefix(publisher, prefixes=("http://", "https://")):

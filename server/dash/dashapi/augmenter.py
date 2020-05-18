@@ -558,7 +558,7 @@ def augment_placement(row, loader, is_base_level=False):
 
     row.update(
         {
-            "name": row["placement"],
+            "name": row["placement"] or stats.constants.NOT_REPORTED,
             "source_id": source.id,
             "source_name": source.name,
             "source_slug": source.bidder_slug,

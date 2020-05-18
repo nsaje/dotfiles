@@ -132,6 +132,15 @@ class PublisherGroupEntryTest(RESTAPITest):
         response = self.assertResponseError(r, "ValidationError")
         self.assertEqual(response["details"], {"placement": ["This field may not be blank."]})
 
+    def test_create_new_not_reported_placement(self):
+        r = self.client.post(
+            reverse("restapi.publishergroupentry.v1:publisher_group_entry_list", kwargs={"publisher_group_id": 1}),
+            data={"publisher": "test", "source": "adsnative", "includeSubdomains": False, "placement": "Not reported"},
+            format="json",
+        )
+        response = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(response["details"], {"placement": ['Invalid placement: "Not reported"']})
+
     def test_bulk_create_new(self):
         r = self.client.post(
             reverse("restapi.publishergroupentry.v1:publisher_group_entry_list", kwargs={"publisher_group_id": 1}),

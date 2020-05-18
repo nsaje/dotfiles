@@ -5,10 +5,13 @@ import string
 
 from django.conf import settings
 
+import utils.exc
 from core import models
 from utils import csv_utils
 from utils import s3helpers
 from utils import zlogging
+
+from .models import validate_placement
 
 logger = zlogging.getLogger(__name__)
 
@@ -156,6 +159,11 @@ def validate_entries(entry_dicts, include_placement=False):
                 error.append("'/' should not be used")
         else:
             error.append("Publisher is required")
+
+        try:
+            validate_placement(entry.get("placement"))
+        except utils.exc.ValidationError as e:
+            error.append(str(e))
 
         validated_entry = copy.copy(entry)
         if "error" in validated_entry:

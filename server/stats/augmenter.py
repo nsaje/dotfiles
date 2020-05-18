@@ -6,8 +6,6 @@ from stats import constants
 from stats import fields
 from stats import helpers
 
-UNKNOWN = "Not reported"
-
 
 def augment(breakdown, rows):
     target_dimension = constants.get_target_dimension(breakdown)
@@ -103,10 +101,10 @@ def _augment_row_delivery(row, target_dimension, target_dimension_mapping):
         if target_dimension == constants.DeliveryDimension.DMA:
             value = str(value) if value else None
 
-        row["name"] = target_dimension_mapping.get(value) or value or UNKNOWN
+        row["name"] = target_dimension_mapping.get(value) or value or constants.NOT_REPORTED
 
     else:
-        row["name"] = row.get(target_dimension) or UNKNOWN  # when we don't have a designated mapping
+        row["name"] = row.get(target_dimension) or constants.NOT_REPORTED  # when we don't have a designated mapping
 
 
 def augment_placement_type(row):

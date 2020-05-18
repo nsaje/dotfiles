@@ -4,6 +4,7 @@ import core.models
 
 from .. import PublisherGroup
 from . import model
+from . import validation
 
 
 class PublisherGroupEntryManager(models.Manager):
@@ -15,8 +16,9 @@ class PublisherGroupEntryManager(models.Manager):
                 publisher_group.account_id,
                 create_count=len(objs),
             )
-            if any(obj.placement == "" for obj in objs):
-                raise ValueError("Placement must not be empty")
+            for obj in objs:
+                validation.validate_placement(obj.placement)
+
         return super().bulk_create(objs, batch_size)
 
     def create(self, **kwargs):
