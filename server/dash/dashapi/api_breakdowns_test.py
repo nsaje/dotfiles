@@ -156,6 +156,7 @@ CONTENT_AD_1 = {
     "image_urls": {
         "square": "/100.jpg?w=300&h=300&fit=crop&crop=center",
         "landscape": "/100.jpg?w=720&h=450&fit=crop&crop=center",
+        "portrait": "/100.jpg?w=375&h=480&fit=crop&crop=center",
         "icon": "/1000.jpg?w=300&h=300&fit=crop&crop=center",
         "image": "/100.jpg?w=200&h=300&fit=crop&crop=center",
         "ad_tag": None,
@@ -210,6 +211,7 @@ CONTENT_AD_2 = {
     "image_urls": {
         "square": "/200.jpg?w=300&h=300&fit=crop&crop=center",
         "landscape": "/200.jpg?w=720&h=450&fit=crop&crop=center",
+        "portrait": "/200.jpg?w=375&h=480&fit=crop&crop=center",
         "icon": "/d/icons/IAB24.jpg?w=300&h=300&fit=crop&crop=center",
         "image": "/200.jpg?w=200&h=300&fit=crop&crop=center",
         "ad_tag": None,
@@ -339,6 +341,7 @@ SOURCE_1__CONTENT_AD_1 = {
     "image_urls": {
         "square": "/100.jpg?w=300&h=300&fit=crop&crop=center",
         "landscape": "/100.jpg?w=720&h=450&fit=crop&crop=center",
+        "portrait": "/100.jpg?w=375&h=480&fit=crop&crop=center",
         "icon": "/1000.jpg?w=300&h=300&fit=crop&crop=center",
         "image": "/100.jpg?w=200&h=300&fit=crop&crop=center",
         "ad_tag": None,

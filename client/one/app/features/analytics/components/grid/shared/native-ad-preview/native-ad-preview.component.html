@@ -322,6 +322,76 @@
                 <div
                     class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--album zem-native-ad-preview__mobile-content-item"
                 ></div>
+                <div
+                    class="zem-native-ad-preview__card zem-native-ad-preview__mobile-content-item zem-native-ad-preview__portrait-ad-card"
+                    *ngIf="nativeAdPreviewConfig.showMobilePortraitAd"
+                >
+                    <div
+                        class="zem-native-ad-preview__header zem-native-ad-preview__card-item zem-native-ad-preview__portrait-ad-header"
+                    >
+                        <div
+                            class="zem-native-ad-preview__icon-placeholder zem-native-ad-preview__header-item zem-native-ad-preview__link"
+                            (click)="openUrl()"
+                        >
+                            <img
+                                class="zem-native-ad-preview__icon"
+                                src="{{ hostedIconUrl }}"
+                            />
+                        </div>
+                        <div
+                            class="zem-native-ad-preview__header-item zem-native-ad-preview__link"
+                            (click)="openUrl()"
+                        >
+                            <div class="zem-native-ad-preview__sponsored-by">
+                                Sponsored by
+                            </div>
+                            <div
+                                class="zem-native-ad-preview__small-brand-name"
+                            >
+                                {{ brandName || 'Brand name' }}
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="zem-native-ad-preview__image-placeholder zem-native-ad-preview__card-item zem-native-ad-preview__link zem-native-ad-preview__portrait-ad-image-placeholder"
+                        (click)="openUrl()"
+                    >
+                        <img
+                            class="zem-native-ad-preview__image"
+                            src="{{
+                                portraitHostedImageUrl ||
+                                    APP_CONFIG.staticUrl +
+                                        '/one/images/empty-pixel.png'
+                            }}"
+                        />
+                    </div>
+                    <div
+                        class="zem-native-ad-preview__title zem-native-ad-preview__card-item zem-native-ad-preview__link zem-native-ad-preview__portrait-ad-title"
+                        (click)="openUrl()"
+                    >
+                        {{ title || 'Ad Title' }}
+                    </div>
+                    <div
+                        class="zem-native-ad-preview__description zem-native-ad-preview__card-item zem-native-ad-preview__link zem-native-ad-preview__portrait-ad-description"
+                        (click)="openUrl()"
+                    >
+                        {{ description || 'Description' }}
+                    </div>
+                    <div
+                        class="zem-native-ad-preview__call-to-action zem-native-ad-preview__card-item"
+                    >
+                        <button
+                            class="zem-button zem-button--outlined zem-native-ad-preview__portrait-ad-button"
+                            (click)="openUrl()"
+                        >
+                            {{ callToAction || 'Call to action' }}
+                        </button>
+                    </div>
+                </div>
+                <div
+                    *ngIf="nativeAdPreviewConfig.showMobilePortraitAd"
+                    class="zem-native-ad-preview__empty-content zem-native-ad-preview__empty-content--news zem-native-ad-preview__mobile-content-item"
+                ></div>
             </div>
         </div>
     </div>

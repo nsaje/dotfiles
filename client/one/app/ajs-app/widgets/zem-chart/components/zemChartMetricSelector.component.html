@@ -38,7 +38,7 @@
                             is-internal="{{ metric.internal }}"
                             ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
                         >
-                            {{ metric.name }}
+                            {{ metric.shortName || metric.name }}
                         </div>
                     </li>
                 </ul>

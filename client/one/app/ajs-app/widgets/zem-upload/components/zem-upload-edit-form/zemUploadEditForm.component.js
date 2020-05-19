@@ -77,6 +77,7 @@ angular
         vm.api.close = refreshAndClose;
 
         vm.showDesktop = true;
+        vm.nativeAdPreviewConfig = {showMobilePortraitAd: true};
 
         function open(candidate) {
             vm.requestFailed = false;

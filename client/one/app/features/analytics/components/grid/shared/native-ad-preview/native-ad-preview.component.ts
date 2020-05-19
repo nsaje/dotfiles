@@ -19,6 +19,8 @@ export class NativeAdPreviewComponent implements OnInit {
     @Input()
     landscapeHostedImageUrl: string;
     @Input()
+    portraitHostedImageUrl: string;
+    @Input()
     hostedImageUrl: string;
     @Input()
     title: string;

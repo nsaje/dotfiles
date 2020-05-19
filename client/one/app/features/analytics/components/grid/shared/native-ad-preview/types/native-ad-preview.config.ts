@@ -3,4 +3,5 @@ export interface NativeAdPreviewConfig {
     showSquareAdWithIcon?: boolean;
     showHorizontalAd?: boolean;
     showHorizontalAdWithIcon?: boolean;
+    showMobilePortraitAd?: boolean;
 }

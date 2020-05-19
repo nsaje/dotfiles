@@ -1734,6 +1734,9 @@
                 [landscape-hosted-image-url]="
                     ctrl.selectedCandidate.landscapeHostedImageUrl
                 "
+                [portrait-hosted-image-url]="
+                    ctrl.selectedCandidate.portraitHostedImageUrl
+                "
                 [hosted-image-url]="ctrl.selectedCandidate.hostedImageUrl"
                 [hosted-icon-url]="ctrl.selectedCandidate.hostedIconUrl"
                 [title]="ctrl.selectedCandidate.title"
@@ -1743,6 +1746,7 @@
                 [call-to-action]="ctrl.selectedCandidate.callToAction"
                 [show-desktop-view]="ctrl.showDesktop"
                 [show-mobile-view]="!ctrl.showDesktop"
+                [native-ad-preview-config]="ctrl.nativeAdPreviewConfig"
             ></zem-native-ad-preview>
             <!-- DISPLAY CREATIVES -->
             <zem-display-ad-preview

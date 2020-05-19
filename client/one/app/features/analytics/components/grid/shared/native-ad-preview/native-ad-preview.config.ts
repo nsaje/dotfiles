@@ -5,4 +5,5 @@ export const DEFAULT_NATIVE_AD_PREVIEW_CONFIG: NativeAdPreviewConfig = {
     showSquareAdWithIcon: true,
     showHorizontalAd: true,
     showHorizontalAdWithIcon: true,
+    showMobilePortraitAd: false,
 };

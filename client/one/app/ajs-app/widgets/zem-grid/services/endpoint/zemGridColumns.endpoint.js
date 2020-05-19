@@ -1708,12 +1708,14 @@ angular
             placementType: {
                 name: 'Placement Type',
                 field: 'placement_type',
+                order: true,
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 shown: true,
             },
             publisher: {
                 name: 'Publisher',
                 field: 'publisher',
+                order: true,
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 shown: true,
             },
@@ -1741,7 +1743,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonMeasurable: {
-                name: 'Not-Measurable Impressions',
+                name: 'Not-Measurable Impr.',
                 field: 'mrc50_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_mrc50_metrics'],

@@ -25,6 +25,8 @@ import {DropdownDirective} from '../../../../../../shared/components/dropdown/dr
 import {isEmpty} from '../../../../../../shared/helpers/array.helpers';
 import {PublisherInfo} from '../../../../../../core/publishers/types/publisher-info';
 import {PublishersService} from '../../../../../../core/publishers/services/publishers.service';
+import {equalsIgnoreCase} from '../../../../../../shared/helpers/string.helpers';
+import {GRID_ITEM_NOT_REPORTED} from '../../../../analytics.constants';
 
 @Component({
     selector: 'zem-bulk-blacklist-actions',
@@ -52,6 +54,7 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
     dropdownsDisabled: boolean = false;
     blacklistActions: PublisherBlacklistAction[] = [];
     blacklistLevels: PublisherBlacklistActionLevel[] = [];
+    filteredSelectedRows: PublisherInfo[] = [];
 
     constructor(
         public store: BulkBlacklistActionsStore,
@@ -70,7 +73,10 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.selectedRows) {
-            this.dropdownsDisabled = isEmpty(this.selectedRows);
+            this.filteredSelectedRows = this.selectedRows.filter(
+                row => !equalsIgnoreCase(row.placement, GRID_ITEM_NOT_REPORTED)
+            );
+            this.dropdownsDisabled = isEmpty(this.filteredSelectedRows);
         }
         if (changes.adGroupId || changes.campaignId || changes.accountId) {
             this.blacklistLevels = this.service.getBlacklistLevels(
@@ -99,7 +105,12 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
 
         const entityId: number = this.getEntityIdForLevel(level);
         this.store
-            .updateBlacklistStatuses(this.selectedRows, status, level, entityId)
+            .updateBlacklistStatuses(
+                this.filteredSelectedRows,
+                status,
+                level,
+                entityId
+            )
             .then((success: boolean) => {
                 this.actionSuccess.emit(success);
             });

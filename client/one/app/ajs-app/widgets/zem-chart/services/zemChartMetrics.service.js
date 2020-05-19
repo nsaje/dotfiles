@@ -508,7 +508,7 @@ angular
                 shortName: 'Viewable',
             },
             MRC50_NON_MEASURABLE: {
-                name: 'Not-Measurable Impressions',
+                name: 'Not-Measurable Impr.',
                 value: 'mrc50_non_measurable',
                 type: TYPE_NUMBER,
                 shown: ['zemauth.can_see_mrc50_metrics'],
