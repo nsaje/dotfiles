@@ -145,4 +145,42 @@ describe('stringHelpers', () => {
             stringHelpers.replaceStringBetweenIndexes('12345', -3, -2, '999')
         ).toEqual('12345');
     });
+
+    it('should consider two undefined strings equal-ignore-case', () => {
+        expect(stringHelpers.equalsIgnoreCase(null, null)).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase(null, undefined)).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase(undefined, null)).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase(null, undefined)).toBeTrue();
+    });
+
+    it('should not consider an undefined and a defined string equal-ignore-case', () => {
+        expect(stringHelpers.equalsIgnoreCase(null, 'null')).toBeFalse();
+        expect(
+            stringHelpers.equalsIgnoreCase('undefined', undefined)
+        ).toBeFalse();
+        expect(stringHelpers.equalsIgnoreCase('', null)).toBeFalse();
+        expect(stringHelpers.equalsIgnoreCase(undefined, '')).toBeFalse();
+    });
+
+    it('should consider two equal strings to be equal-ignore-case', () => {
+        expect(stringHelpers.equalsIgnoreCase('', '')).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase('test', 'test')).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase('tešt', 'tešt')).toBeTrue();
+    });
+
+    it('should consider two equal strings with different case to be equal-ignore-case', () => {
+        expect(stringHelpers.equalsIgnoreCase('Test', 'test')).toBeTrue();
+        expect(stringHelpers.equalsIgnoreCase('tešt', 'teŠt')).toBeTrue();
+    });
+
+    it('should not consider two different strings to be equal-ignore-case', () => {
+        expect(stringHelpers.equalsIgnoreCase('test', '')).toBeFalse();
+        expect(stringHelpers.equalsIgnoreCase('test', 'tešt')).toBeFalse();
+        expect(
+            stringHelpers.equalsIgnoreCase(
+                'this is a test',
+                'This is a test!!!'
+            )
+        ).toBeFalse();
+    });
 });

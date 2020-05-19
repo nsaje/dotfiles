@@ -51,3 +51,10 @@ export function replaceStringBetweenIndexes(
 
     return stringBeginning + valueToInsert + stringEnd;
 }
+
+export function equalsIgnoreCase(a: string, b: string): boolean {
+    if (!isDefined(a) || !isDefined(b)) {
+        return !isDefined(a) && !isDefined(b);
+    }
+    return a.toLowerCase() === b.toLowerCase();
+}

@@ -1,6 +1,9 @@
 var commonHelpers = require('../../../../shared/helpers/common.helpers');
+var stringHelpers = require('../../../../shared/helpers/string.helpers');
 var ENTITY_MANAGER_CONFIG = require('../../../../features/entity-manager/entity-manager.config')
     .ENTITY_MANAGER_CONFIG;
+var GRID_ITEM_NOT_REPORTED = require('../../../../features/analytics/analytics.constants')
+    .GRID_ITEM_NOT_REPORTED;
 
 angular
     .module('one.widgets')
@@ -123,37 +126,39 @@ angular
                 buttons.push(BUTTONS.download);
                 addArchiveUnarchive();
             } else if (breakdown === constants.breakdown.PUBLISHER || breakdown === constants.breakdown.PLACEMENT) {
-                var blacklistingActions = zemPublishersService.getBlacklistActions();
-                var blacklistItemAction = blacklistingActions.find(function(action) {
-                    return action.status === constants.publisherTargetingStatus.BLACKLISTED;
-                });
-                var unlistItemAction = blacklistingActions.find(function(action) {
-                    return action.status === constants.publisherTargetingStatus.UNLISTED;
-                });
-                var blacklistLevels = zemPublishersService.getBlacklistLevels(
-                    zemNavigationNewService.getActiveEntityByType(constants.entityType.ACCOUNT),
-                    zemNavigationNewService.getActiveEntityByType(constants.entityType.CAMPAIGN),
-                    zemNavigationNewService.getActiveEntityByType(constants.entityType.AD_GROUP)
-                );
+                if (!row.data.stats.breakdown_name || !row.data.stats.breakdown_name.value || !stringHelpers.equalsIgnoreCase(row.data.stats.breakdown_name.value, GRID_ITEM_NOT_REPORTED)) {
+                    var blacklistingActions = zemPublishersService.getBlacklistActions();
+                    var blacklistItemAction = blacklistingActions.find(function (action) {
+                        return action.status === constants.publisherTargetingStatus.BLACKLISTED;
+                    });
+                    var unlistItemAction = blacklistingActions.find(function (action) {
+                        return action.status === constants.publisherTargetingStatus.UNLISTED;
+                    });
+                    var blacklistLevels = zemPublishersService.getBlacklistLevels(
+                        zemNavigationNewService.getActiveEntityByType(constants.entityType.ACCOUNT),
+                        zemNavigationNewService.getActiveEntityByType(constants.entityType.CAMPAIGN),
+                        zemNavigationNewService.getActiveEntityByType(constants.entityType.AD_GROUP)
+                    );
 
-                if (
-                    row.data.stats.status &&
-                    row.data.stats.status.value ===
+                    if (
+                        row.data.stats.status &&
+                        row.data.stats.status.value ===
                         constants.publisherTargetingStatus.BLACKLISTED
-                ) {
+                    ) {
+                        addBlacklistActions(
+                            row,
+                            breakdown,
+                            unlistItemAction,
+                            blacklistLevels
+                        );
+                    }
                     addBlacklistActions(
                         row,
                         breakdown,
-                        unlistItemAction,
+                        blacklistItemAction,
                         blacklistLevels
                     );
                 }
-                addBlacklistActions(
-                    row,
-                    breakdown,
-                    blacklistItemAction,
-                    blacklistLevels
-                );
             }
             return buttons;
         }

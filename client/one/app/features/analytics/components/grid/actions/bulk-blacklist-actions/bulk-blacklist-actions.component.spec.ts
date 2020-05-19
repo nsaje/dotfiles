@@ -36,9 +36,38 @@ describe('BulkBlacklistActionsComponent', () => {
         },
     ];
 
-    function changeComponent(
-        component: OnChanges,
-        changes: {[key: string]: any}
+    const reportedPlacementRows: PublisherInfo[] = [
+        {
+            sourceId: 12,
+            sourceSlug: '12',
+            publisher: 'www.zemanta.com',
+            placement: '1234-5678',
+        },
+        {
+            sourceId: 34,
+            sourceSlug: '34',
+            publisher: 'www.outbrain.com',
+            placement: '2345-6789',
+        },
+    ];
+
+    const notReportedPlacementRows: PublisherInfo[] = [
+        {
+            sourceId: 56,
+            sourceSlug: '56',
+            publisher: 'www.taboola.com',
+            placement: 'Not reported',
+        },
+    ];
+
+    const selectedPlacementRows: PublisherInfo[] = [
+        ...reportedPlacementRows,
+        ...notReportedPlacementRows,
+    ];
+
+    function changeComponent<T extends OnChanges>(
+        component: T,
+        changes: Partial<T>
     ) {
         const simpleChanges: SimpleChanges = {};
 
@@ -104,9 +133,19 @@ describe('BulkBlacklistActionsComponent', () => {
         expect(component.dropdownsDisabled).toBeTrue();
     });
 
-    it('should enable dropdowns if rows are selected', () => {
+    it('should enable dropdowns if publisher rows are selected', () => {
         changeComponent(component, {selectedRows: selectedPublisherRows});
         expect(component.dropdownsDisabled).toBeFalse();
+    });
+
+    it('should enable dropdowns if placement rows are selected', () => {
+        changeComponent(component, {selectedRows: selectedPlacementRows});
+        expect(component.dropdownsDisabled).toBeFalse();
+    });
+
+    it('should disable dropdowns if only not-reported placements are selected', () => {
+        changeComponent(component, {selectedRows: notReportedPlacementRows});
+        expect(component.dropdownsDisabled).toBeTrue();
     });
 
     it('should display all allowed actions', () => {
@@ -261,6 +300,30 @@ describe('BulkBlacklistActionsComponent', () => {
             PublisherTargetingStatus.BLACKLISTED,
             PublisherBlacklistLevel.GLOBAL,
             undefined
+        );
+    }));
+
+    it('should not send not-reported placements to service', fakeAsync(() => {
+        changeComponent(component, {
+            selectedRows: selectedPlacementRows,
+            adGroupId: 1,
+            campaignId: 2,
+            accountId: 3,
+        });
+        component.dropdowns = [];
+
+        component.updateBlacklistStatuses(
+            PublisherTargetingStatus.BLACKLISTED,
+            PublisherBlacklistLevel.ADGROUP
+        );
+
+        tick();
+
+        expect(storeStub.updateBlacklistStatuses).toHaveBeenCalledWith(
+            reportedPlacementRows, // Important: this is not the same value that we used for selectedRows
+            PublisherTargetingStatus.BLACKLISTED,
+            PublisherBlacklistLevel.ADGROUP,
+            1
         );
     }));
 });

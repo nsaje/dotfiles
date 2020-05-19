@@ -1708,12 +1708,14 @@ angular
             placementType: {
                 name: 'Placement Type',
                 field: 'placement_type',
+                order: true,
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 shown: true,
             },
             publisher: {
                 name: 'Publisher',
                 field: 'publisher',
+                order: true,
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 shown: true,
             },
