@@ -1,4 +1,5 @@
 import backtosql
+from etl.helpers import get_local_date_query
 from redshiftapi import db
 from utils import zlogging
 
@@ -47,6 +48,16 @@ def stats_min_date():
         c.execute(sql)
         result = c.fetchone()[0]
     logger.info("Finished querying earliest date in stats table")
+    return result
+
+
+def check_existing_data_by_hours(date):
+    logger.info("Querying count of distinct hours for date in stats table")
+    sql = f"select count(distinct hour) from stats where {get_local_date_query(date)}"
+    with db.get_write_stats_cursor() as c:
+        c.execute(sql)
+        result = c.fetchone()[0]
+    logger.info("Finished querying count of distinct hours for date in stats table")
     return result
 
 

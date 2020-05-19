@@ -14,6 +14,7 @@ from etl import maintenance
 from etl import materialization_run
 from etl import materialize
 from etl import redshift
+from utils import dates_helper
 from utils import metrics_compat
 from utils import threads
 from utils import zlogging
@@ -39,6 +40,7 @@ def refresh(update_since, account_id=None, skip_daily_statements=False, dump_and
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
         _post_to_slack("started", update_since, account_id)
+    etl_books_closed, date_books_closed_date = _check_if_yesterdays_data_exists()
     _refresh(
         update_since,
         materialize.MATERIALIZED_VIEWS,
@@ -49,13 +51,13 @@ def refresh(update_since, account_id=None, skip_daily_statements=False, dump_and
     )
     if do_post_to_slack or account_id:
         _post_to_slack("finished", update_since, account_id)
+    materialization_run.write_etl_books_status(etl_books_closed, date_books_closed_date)
     materialization_run.create_done()
 
 
 @newrelic.agent.function_trace()
 def _refresh(update_since, views, account_id=None, skip_daily_statements=False, dump_and_abort=None, update_to=None):
     metrics_compat.incr("etl.refresh_k1.refresh_k1_reports", 1)
-
     validate_update_since_date(update_since)
 
     if account_id:
@@ -207,3 +209,9 @@ def validate_update_since_date(update_since):
     min_date = maintenance.stats_min_date()
     if update_since.date() < min_date:
         raise Exception("Missing raw data in stats table for selected date range")
+
+
+def _check_if_yesterdays_data_exists():
+    yesterday = dates_helper.local_yesterday()
+    number_of_hours_with_data = maintenance.check_existing_data_by_hours(yesterday)
+    return number_of_hours_with_data == 24, yesterday

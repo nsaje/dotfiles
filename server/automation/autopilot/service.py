@@ -46,7 +46,7 @@ def run_autopilot(
         # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
         from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
 
-        if not etl.materialization_run.materialization_completed_for_local_today():
+        if not etl.materialization_run.etl_data_complete_for_date(dates_helper.local_yesterday()):
             logger.info("Autopilot daily run was aborted since materialized data is not yet available.")
             return
 

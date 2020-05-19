@@ -47,6 +47,10 @@ def local_yesterday():
     return day_before(local_today())
 
 
+def utc_yesterday():
+    return day_before(utc_today())
+
+
 def tz_today(tz):
     return utc_to_tz_datetime(utc_now(), tz).date()
 

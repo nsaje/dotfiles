@@ -45,7 +45,7 @@ def execute_rules_daily_run() -> None:
         logger.info("Execution of rules was aborted since the daily run was already completed.")
         return
 
-    if not etl.materialization_run.materialization_completed_for_local_today():
+    if not etl.materialization_run.etl_data_complete_for_date(dates_helper.local_yesterday()):
         logger.info("Execution of rules was aborted since materialized data is not yet available.")
         return
 

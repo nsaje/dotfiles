@@ -11,6 +11,13 @@ class MaterializationRun(models.Model):
     finished_dt = models.DateTimeField(auto_now_add=True, verbose_name="Finished at")
 
 
+class EtlBooksClosed(models.Model):
+    id = models.AutoField(primary_key=True)
+    date = models.DateTimeField()
+    modified_dt = models.DateTimeField(auto_now_add=True)
+    etl_books_closed = models.BooleanField(default=False)
+
+
 class RSBreakdownMixin(object):
     """
     Mixin that defines breakdowns specific model features.

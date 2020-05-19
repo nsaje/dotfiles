@@ -8,6 +8,7 @@ import automation.models
 import core.models
 import dash.constants
 import etl.models
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import Rule
@@ -27,6 +28,7 @@ class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_execute_rules_daily_run(self, mock_stats, mock_format, mock_apply, mock_from_target):
         ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
@@ -84,7 +86,6 @@ class ExecuteRulesDailyRunTest(TestCase):
             target_type=constants.TargetType.PUBLISHER,
             ad_groups_included=ad_groups,
         )
-        magic_mixer.blend(etl.models.MaterializationRun)
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
         service.execute_rules_daily_run()
@@ -176,7 +177,7 @@ class ExecuteRulesDailyRunTest(TestCase):
             )
 
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
-    @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
@@ -219,6 +220,7 @@ class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_execute_rules_daily_run_fail(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
@@ -234,7 +236,7 @@ class ExecuteRulesDailyRunTest(TestCase):
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
             ad_groups_included=[ad_group],
         )
-        magic_mixer.blend(etl.models.MaterializationRun)
+
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
@@ -251,6 +253,7 @@ class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
     @mock.patch("redshiftapi.api_rules.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_execute_rules_daily_run_no_changes(self, mock_stats, mock_format, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
@@ -260,7 +263,6 @@ class ExecuteRulesDailyRunTest(TestCase):
         for target_type in constants.TargetType.get_all():
             magic_mixer.blend(Rule, target_type=target_type, ad_groups_included=[ad_group])
 
-        magic_mixer.blend(etl.models.MaterializationRun)
         self.assertFalse(RuleHistory.objects.exists())
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
@@ -274,9 +276,9 @@ class ExecuteRulesDailyRunTest(TestCase):
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("redshiftapi.api_rules.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_execute_rules_daily_run_completed(self, mock_stats, mock_time):
         magic_mixer.blend(automation.models.RulesDailyJobLog)
-        magic_mixer.blend(etl.models.MaterializationRun)
 
         service.execute_rules_daily_run()
 
@@ -288,20 +290,19 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
         self.assertFalse(etl.models.MaterializationRun.objects.exists())
 
+        materialization_data = magic_mixer.blend(
+            etl.models.EtlBooksClosed, date=dates_helper.local_yesterday(), etl_books_closed=False
+        )
         service.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        etl_run = magic_mixer.blend(etl.models.MaterializationRun)
-        etl_run.finished_dt = "2018-12-31 09:59:59"
-        etl_run.save()
-
         service.execute_rules_daily_run()
         mock_stats.assert_not_called()
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
-        etl_run.finished_dt = "2018-12-31 10:00:00"
-        etl_run.save()
+        materialization_data.etl_books_closed = True
+        materialization_data.save()
 
         service.execute_rules_daily_run()
         self.assertEqual(10, mock_stats.call_count)
@@ -309,8 +310,10 @@ class ExecuteRulesDailyRunTest(TestCase):
 
 
 @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
+@mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
 @mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
 @mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
+@mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
 @mock.patch("utils.email_helper.send_official_email")
 class NotificationEmailTestCase(TestCase):
     def setUp(self):
@@ -494,7 +497,7 @@ class NotificationEmailTestCase(TestCase):
 
 
 @mock.patch("automation.rules.service.service.apply_rule", return_value=([], []))
-@mock.patch("etl.materialization_run.materialization_completed_for_local_today", mock.MagicMock(return_value=True))
+@mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
 @mock.patch("redshiftapi.api_rules.query", mock.MagicMock(return_value={}))
 @mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
 class FetchSettingsTest(TestCase):

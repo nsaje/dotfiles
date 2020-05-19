@@ -2,6 +2,7 @@ import datetime
 import traceback
 from collections import defaultdict
 from decimal import Decimal
+from unittest import mock
 
 from django import test
 from mock import call
@@ -11,7 +12,6 @@ import dash.constants
 import dash.models
 from automation import models
 from core.features.goals import campaign_goal
-from etl import models as etl_models
 from utils import dates_helper
 from utils import pagerduty_helper
 from utils.magic_mixer import magic_mixer
@@ -121,6 +121,7 @@ class AutopilotPlusTestCase(test.TestCase):
             for ad_group in dash.models.AdGroup.objects.all()
         }
 
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @patch(
         "django.utils.timezone.now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
@@ -146,8 +147,6 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
-
-        etl_models.MaterializationRun.objects.create()
 
         service.run_autopilot(daily_run=True, report_to_influx=True)
 
@@ -187,6 +186,7 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_influx_adgroups.assert_called_once_with(*self._influx_input())
         mock_influx_budgets.assert_called_once_with(self._influx_input()[0])
 
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @patch(
         "django.utils.timezone.now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
@@ -203,8 +203,6 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
-
-        etl_models.MaterializationRun.objects.create()
 
         original_save_changes = service._save_changes
         original_get_budget_predictions_for_campaign = service._get_budget_predictions_for_campaign
@@ -263,6 +261,7 @@ class AutopilotPlusTestCase(test.TestCase):
             ]
         )
 
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @patch(
         "django.utils.timezone.now",
         return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
@@ -283,7 +282,6 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
-        etl_models.MaterializationRun.objects.create()
         models.AutopilotLog(
             campaign=dash.models.Campaign.objects.get(id=3),
             ad_group=dash.models.AdGroup.objects.get(id=3),
