@@ -21,13 +21,15 @@ describe('CreditsService', () => {
     const offset = 0;
     const date = new Date(1970, 1, 1);
 
-    const mockedTotals: CreditTotal = {
-        total: '100.00',
-        allocated: '100.00',
-        past: '0.00',
-        available: '0.00',
-        currency: Currency.USD,
-    };
+    const mockedTotals: CreditTotal[] = [
+        {
+            total: '100.00',
+            allocated: '100.00',
+            past: '0.00',
+            available: '0.00',
+            currency: Currency.USD,
+        },
+    ];
 
     const mockedCredits: Credit[] = [
         {
