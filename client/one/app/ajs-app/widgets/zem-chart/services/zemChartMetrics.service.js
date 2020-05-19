@@ -551,7 +551,7 @@ angular
                 type: 'percent',
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc50_metrics'],
-                shortName: 'Non-Measurable Dist.',
+                shortName: 'Not-Measurable Dist.',
             },
             MRC50_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'Impression Distribution (Not-Viewable)',
@@ -559,7 +559,7 @@ angular
                 type: 'percent',
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc50_metrics'],
-                shortName: 'Non-Viewable Dist.',
+                shortName: 'Not-Viewable Dist.',
             },
             ET_MRC50_VCPM: {
                 name: 'Avg. Platform VCPM',
@@ -647,7 +647,7 @@ angular
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
-                shortName: 'Non-Measurable Dist.',
+                shortName: 'Not-Measurable Dist.',
             },
             MRC100_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'MRC100 Impression Distribution (Not-Viewable)',
@@ -656,7 +656,7 @@ angular
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
-                shortName: 'Non-Viewable Dist.',
+                shortName: 'Not-Viewable Dist.',
             },
             ET_MRC100_VCPM: {
                 name: 'Avg. MRC100 Platform VCPM',
@@ -746,7 +746,7 @@ angular
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
-                shortName: 'Non-Measurable Dist.',
+                shortName: 'Not-Measurable Dist.',
             },
             VAST4_NON_VIEWABLE_DISTRIBUTION: {
                 name: 'VAST4 Impression Distribution (Not-Viewable)',
@@ -755,7 +755,7 @@ angular
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
-                shortName: 'Non-Viewable Dist.',
+                shortName: 'Not-Viewable Dist.',
             },
             ET_VAST4_VCPM: {
                 name: 'Avg. VAST4 Platform VCPM',
