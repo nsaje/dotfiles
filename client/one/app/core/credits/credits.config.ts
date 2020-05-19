@@ -5,8 +5,12 @@ const creditsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/credits`;
 export const CREDITS_CONFIG = {
     requests: {
         credits: {
-            list: {
-                name: 'list',
+            listActive: {
+                name: 'listActive',
+                url: `${creditsApiUrl}/`,
+            },
+            listPast: {
+                name: 'listPast',
                 url: `${creditsApiUrl}/`,
             },
             create: {
@@ -27,7 +31,7 @@ export const CREDITS_CONFIG = {
             },
             listRefunds: {
                 name: 'listRefunds',
-                url: `${creditsApiUrl}/refunds/`,
+                url: `${creditsApiUrl}/{creditId}/refunds/`,
             },
             createRefund: {
                 name: 'createRefund',

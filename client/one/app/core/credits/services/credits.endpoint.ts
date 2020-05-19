@@ -21,11 +21,13 @@ export class CreditsEndpoint {
         agencyId: string | null,
         accountId: string | null,
         active: boolean | null,
-        limit: number,
         offset: number,
+        limit: number,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Credit[]> {
-        const request = CREDITS_CONFIG.requests.credits.list;
+        const request = active
+            ? CREDITS_CONFIG.requests.credits.listActive
+            : CREDITS_CONFIG.requests.credits.listPast;
 
         const params = {
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
@@ -130,7 +132,7 @@ export class CreditsEndpoint {
         agencyId: string | null,
         accountId: string | null,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<CreditTotal> {
+    ): Observable<CreditTotal[]> {
         const request = CREDITS_CONFIG.requests.credits.totals;
 
         requestStateUpdater(request.name, {
@@ -143,7 +145,7 @@ export class CreditsEndpoint {
         };
 
         return this.http
-            .get<ApiResponse<CreditTotal>>(request.url, {params})
+            .get<ApiResponse<CreditTotal[]>>(request.url, {params})
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -194,17 +196,17 @@ export class CreditsEndpoint {
     }
 
     listRefunds(
-        agencyId: string | null,
-        accountId: string | null,
-        limit: number,
+        creditId: string,
         offset: number,
+        limit: number,
         requestStateUpdater: RequestStateUpdater
     ): Observable<CreditRefund[]> {
-        const request = CREDITS_CONFIG.requests.credits.listRefunds;
+        const request = replaceUrl(
+            CREDITS_CONFIG.requests.credits.listRefunds,
+            {creditId: creditId}
+        );
 
         const params = {
-            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
-            ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(limit) && {
                 limit: `${limit}`,
             }),
