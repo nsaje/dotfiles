@@ -36,6 +36,7 @@ class ContentAdCandidateMixin:
             "url_status": self.url_status,
             "hosted_image_url": self.get_image_url(300, 300),
             "landscape_hosted_image_url": self.get_image_url(720, 450),
+            "portrait_hosted_image_url": self.get_image_url(375, 480),
             "display_hosted_image_url": self.get_image_url(),
             "hosted_icon_url": self.get_hosted_icon_url(300) if can_use_icon else None,
             "primary_tracker_url": self.primary_tracker_url,

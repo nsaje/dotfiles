@@ -315,6 +315,14 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                             candidate.landscapeHostedImageUrl =
                                 updatedCandidate.landscapeHostedImageUrl;
                         }
+                        if (
+                            updatedCandidate.hasOwnProperty(
+                                'portraitHostedImageUrl'
+                            )
+                        ) {
+                            candidate.portraitHostedImageUrl =
+                                updatedCandidate.portraitHostedImageUrl;
+                        }
                     }
 
                     if (

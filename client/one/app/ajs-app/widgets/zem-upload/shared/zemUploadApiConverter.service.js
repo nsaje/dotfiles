@@ -132,6 +132,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             hostedImageUrl: candidate.hosted_image_url,
             hostedIconUrl: candidate.hosted_icon_url,
             landscapeHostedImageUrl: candidate.landscape_hosted_image_url,
+            portraitHostedImageUrl: candidate.portrait_hosted_image_url,
             displayHostedImageUrl: candidate.display_hosted_image_url,
             displayUrl: candidate.display_url,
             brandName: candidate.brand_name,
