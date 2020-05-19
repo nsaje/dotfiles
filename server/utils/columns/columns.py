@@ -143,7 +143,7 @@ _FIELD_MAPPING = {
     "source_tags": ("Source Tags",),
     "mrc50_measurable": ("Measurable Impressions",),
     "mrc50_viewable": ("Viewable Impressions",),
-    "mrc50_non_measurable": ("Not-Measurable Impressions",),
+    "mrc50_non_measurable": ("Not-Measurable Impressions", "Not-Measurable Impr."),
     "mrc50_non_viewable": ("Not-Viewable Impressions",),
     "mrc50_measurable_percent": ("% Measurable Impressions",),
     "mrc50_viewable_percent": ("% Viewable Impressions",),

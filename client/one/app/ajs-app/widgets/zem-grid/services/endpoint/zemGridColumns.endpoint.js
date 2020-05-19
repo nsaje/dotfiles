@@ -1743,7 +1743,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             mrc50NonMeasurable: {
-                name: 'Not-Measurable Impressions',
+                name: 'Not-Measurable Impr.',
                 field: 'mrc50_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_mrc50_metrics'],
