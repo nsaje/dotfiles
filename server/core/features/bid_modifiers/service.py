@@ -281,9 +281,9 @@ def clean_entries(entries):
             has_error = True
             continue
 
-        if modifier_type == constants.BidModifierType.PUBLISHER:
+        if modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT):
             source = helpers.clean_source_bidder_slug_input(entry["Source Slug"], sources_by_slug, errors)
-            if entry[target_column_name] == "all publishers":
+            if modifier_type == constants.BidModifierType.PUBLISHER and entry[target_column_name] == "all publishers":
                 # We don't add 'all publishers' row to cleaned entries.
                 if modifier is not None:
                     errors.append("'all publishers' can not have a bid modifier set")
@@ -319,10 +319,18 @@ def parse_csv_file_entries(csv_file, modifier_type=None):
     else:
         modifier_type = detected_modifier_type
 
-    if modifier_type == constants.BidModifierType.PUBLISHER and "Source Slug" not in csv_reader.fieldnames:
+    if (
+        modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT)
+        and "Source Slug" not in csv_reader.fieldnames
+    ):
         raise exceptions.InvalidBidModifierFile("Source Slug column missing in CSV file")
-    elif modifier_type != constants.BidModifierType.PUBLISHER and "Source Slug" in csv_reader.fieldnames:
-        raise exceptions.InvalidBidModifierFile("Source Slug should exist only in publisher bid modifier CSV file")
+    elif (
+        modifier_type not in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT)
+        and "Source Slug" in csv_reader.fieldnames
+    ):
+        raise exceptions.InvalidBidModifierFile(
+            "Source Slug should exist only in publisher or placement bid modifier CSV file"
+        )
 
     if "Bid Modifier" not in csv_reader.fieldnames:
         raise exceptions.InvalidBidModifierFile("Bid Modifier column missing in CSV file")
@@ -331,7 +339,7 @@ def parse_csv_file_entries(csv_file, modifier_type=None):
 
     for row in csv_reader:
         entry = {target_column_name: row[target_column_name], "Bid Modifier": row["Bid Modifier"]}
-        if modifier_type == constants.BidModifierType.PUBLISHER:
+        if modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT):
             entry.update({"Source Slug": row["Source Slug"]})
 
         entries.append(entry)
@@ -453,7 +461,7 @@ def make_csv_file(modifier_type, cleaned_entries):
                 "Bid Modifier": str(entry["modifier"]),
             }
 
-            if modifier_type == constants.BidModifierType.PUBLISHER:
+            if modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT):
                 row.update({"Source Slug": helpers.output_source_bidder_slug(entry["source"])})
 
             yield row
@@ -510,6 +518,9 @@ def make_csv_example_file(modifier_type):
 
     modifier_type_map = {
         constants.BidModifierType.PUBLISHER: [{target_column_name: "example.com", "Source Slug": "some_slug"}],
+        constants.BidModifierType.PLACEMENT: [
+            {target_column_name: "example.com__1__someplacement", "Source Slug": "some_slug"}
+        ],
         constants.BidModifierType.SOURCE: [{target_column_name: "b1_outbrain"}],
         constants.BidModifierType.DEVICE: [
             {target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.DESKTOP)},

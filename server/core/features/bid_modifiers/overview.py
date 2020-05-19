@@ -127,6 +127,7 @@ def _calculate_min_max(
         constants.BidModifierType.COUNTRY,
         constants.BidModifierType.STATE,
         constants.BidModifierType.DMA,
+        constants.BidModifierType.PLACEMENT,
     ):
         # for these dimensions we can not easily deduce exact min and max, thus we are expanding the range with 1 if applicable
         min_value, max_value = _min_max_with_ones(min_value, max_value)

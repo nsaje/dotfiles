@@ -1114,6 +1114,9 @@ class AdGroupBreakdownTestCase(TestCase):
             {
                 "data": [
                     {
+                        "autopilot_state": "ACTIVE_CPC_BUDGET",
+                        "bid": "1.0000",
+                        "bidding_type": "CPC",
                         "currency": "USD",
                         "pagination": {"count": 33, "limit": 0, "offset": 33},
                         "rows": {},
@@ -1126,6 +1129,7 @@ class AdGroupBreakdownTestCase(TestCase):
                             {"id": "conversion_goal_5", "name": "test conversion goal 5"},
                         ],
                         "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                        "type_summaries": [{"count": 8, "max": 1.0, "min": 1.0, "type": "SOURCE"}],
                     }
                 ],
                 "success": True,

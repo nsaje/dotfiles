@@ -14,6 +14,7 @@ class BidModifierType(ConstantBase):
     DMA = 8
     AD = 9
     DAY_HOUR = 10
+    PLACEMENT = 11
 
     _VALUES = {
         PUBLISHER: "Publisher",
@@ -26,4 +27,5 @@ class BidModifierType(ConstantBase):
         DMA: "DMA",
         AD: "Ad",
         DAY_HOUR: "Day - Hour",
+        PLACEMENT: "Placement",
     }

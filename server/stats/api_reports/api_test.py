@@ -4,6 +4,7 @@ from django.test import TestCase
 from mock import patch
 
 import dash.models
+from core.features import bid_modifiers
 from dash import publisher_helpers
 from stats import api_reports
 from stats.api_reports import constraints_helper
@@ -295,12 +296,22 @@ class PlacementBreakdownQueryTest(TestCase):
                     "publisher_status": "ACTIVE",
                     "source": "Gravity",
                     "placement_type": "In feed",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": None,
                 }
             ],
         )
 
     @patch("redshiftapi.api_breakdowns.query")
     def test_include_with_no_spend(self, mock_rs_query):
+        bid_modifier, _ = bid_modifiers.set(
+            dash.models.AdGroup.objects.get(id=1),
+            bid_modifiers.BidModifierType.PLACEMENT,
+            "pub2.com__2__plac2",
+            dash.models.Source.objects.get(id=2),
+            0.75,
+        )
+
         self._convert_to_placement_entries()
 
         mock_rs_query.return_value = [
@@ -421,6 +432,8 @@ class PlacementBreakdownQueryTest(TestCase):
                     "clicks": 1,
                     "publisher_id": "pub2.com__2",
                     "placement_type": "In article page",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": 0.75,
                 },
                 {
                     "ad_group_id": 1,
@@ -452,6 +465,8 @@ class PlacementBreakdownQueryTest(TestCase):
                     "clicks": 1,
                     "publisher_id": "pub5.com__2",
                     "placement_type": "Ads section",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": None,
                 },
                 {
                     "ad_group_id": 1,
@@ -480,6 +495,8 @@ class PlacementBreakdownQueryTest(TestCase):
                     "notifications": {"message": "Blacklisted globally"},
                     "source": "AdsNative",
                     "publisher_status": "BLACKLISTED",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": None,
                 },
             ],
         )

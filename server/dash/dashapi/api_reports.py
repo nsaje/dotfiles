@@ -12,7 +12,7 @@ def annotate(rows, user, breakdown, constraints, level, loader_cache=None):
     if loader_cache is None:
         loader_cache = {}
 
-    for dimension in breakdown:
+    for dimension in _exclude_unnecessary_dimensions(breakdown):
         loader = loader_cache.get(dimension, {}).get(level)
         if loader is None:
             loader_cls = loaders.get_loader_for_dimension(dimension, level)
@@ -101,3 +101,11 @@ def _extend_rows(rows, dimension_rows):
             new_row.update(dimension_row)
             new_rows.append(new_row)
     return new_rows
+
+
+def _exclude_unnecessary_dimensions(breakdown):
+    if constants.is_placement_breakdown(breakdown) and constants.StructureDimension.PUBLISHER in breakdown:
+        # publisher augmentation should not happen for placement breakdown
+        return [dimension for dimension in breakdown if dimension != constants.StructureDimension.PUBLISHER]
+
+    return breakdown

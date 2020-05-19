@@ -238,4 +238,5 @@ TargetDimensionToBidModifierTypeMap = {
     DeliveryDimension.REGION: bid_modifiers.BidModifierType.STATE,
     DeliveryDimension.DMA: bid_modifiers.BidModifierType.DMA,
     StructureDimension.CONTENT_AD: bid_modifiers.BidModifierType.AD,
+    StructureDimension.PLACEMENT: bid_modifiers.BidModifierType.PLACEMENT,
 }

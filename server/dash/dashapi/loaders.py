@@ -63,6 +63,8 @@ def get_loader_for_dimension(target_dimension, level):
             return PublisherBidModifierLoader
         return PublisherBlacklistLoader
     elif target_dimension == "placement_id":
+        if level == constants.Level.AD_GROUPS:
+            return PlacementBidModifierLoader
         return PlacementLoader
     elif stats.constants.is_top_level_delivery_dimension(target_dimension):
         return DeliveryLoader
@@ -957,7 +959,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
 
     @cached_property
     def modifier_map(self):
-        modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=self.ad_group)
+        modifiers = bid_modifiers.BidModifier.objects.filter_publisher_bid_modifiers().filter(ad_group=self.ad_group)
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
         return {(x.source_id, x.target): x for x in modifiers}
 
@@ -1005,3 +1007,11 @@ class PlacementLoader(PublisherBlacklistLoader):
 
     def _get_publisher_group_entry_map_key(self, row):
         return row["placement_id"]
+
+
+class PlacementBidModifierLoader(PlacementLoader, PublisherBidModifierLoader):
+    @cached_property
+    def modifier_map(self):
+        modifiers = bid_modifiers.BidModifier.objects.filter_placement_bid_modifiers().filter(ad_group=self.ad_group)
+        modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
+        return {x.target: x for x in modifiers}

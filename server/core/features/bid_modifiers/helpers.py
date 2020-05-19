@@ -27,6 +27,7 @@ _BREAKDOWN_NAME_MAP = {
     stats_constants.DeliveryDimension.REGION: constants.BidModifierType.STATE,
     stats_constants.DeliveryDimension.DMA: constants.BidModifierType.DMA,
     stats_constants.DimensionIdentifier.CONTENT_AD: constants.BidModifierType.AD,
+    stats_constants.DimensionIdentifier.PLACEMENT: constants.BidModifierType.PLACEMENT,
 }
 
 
@@ -46,7 +47,7 @@ def get_source_slug(modifier_type, source):
     if modifier_type not in constants.BidModifierType.get_all():
         raise exceptions.BidModifierTypeInvalid("Invalid bid modifier type")
 
-    if modifier_type is constants.BidModifierType.PUBLISHER:
+    if modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT):
         if source is None:
             raise exceptions.BidModifierSourceInvalid("Source is required for publisher bid modifier")
 
@@ -161,7 +162,7 @@ def make_csv_file_columns(modifier_type):
     target_column_name = output_modifier_type(modifier_type)
     csv_columns = [target_column_name, "Bid Modifier"]
 
-    if modifier_type == constants.BidModifierType.PUBLISHER:
+    if modifier_type in (constants.BidModifierType.PUBLISHER, constants.BidModifierType.PLACEMENT):
         csv_columns.insert(1, "Source Slug")
 
     return csv_columns

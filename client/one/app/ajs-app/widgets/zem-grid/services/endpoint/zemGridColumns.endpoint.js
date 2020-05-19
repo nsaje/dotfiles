@@ -584,6 +584,10 @@ angular
                         breakdowns: [constants.breakdown.PUBLISHER],
                     },
                     {
+                        permissions: ['zemauth.can_use_placement_targeting'],
+                        breakdowns: [constants.breakdown.PLACEMENT],
+                    },
+                    {
                         permissions: ['zemauth.can_set_source_bid_modifiers'],
                         breakdowns: [constants.breakdown.MEDIA_SOURCE],
                     },
@@ -2711,6 +2715,7 @@ angular
             constants.breakdown.ENVIRONMENT,
             constants.breakdown.OPERATING_SYSTEM,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.PLACEMENT,
             constants.breakdown.MEDIA_SOURCE,
         ];
         COLUMNS.bidModifier.exceptions.levels = [constants.level.AD_GROUPS];

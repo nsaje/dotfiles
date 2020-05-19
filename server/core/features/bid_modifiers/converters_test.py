@@ -3,6 +3,7 @@ from django.test import TestCase
 
 import core.models
 from dash import constants as dash_constants
+from dash import publisher_helpers
 from dash.features import geolocation
 from utils.magic_mixer import magic_mixer
 
@@ -35,6 +36,34 @@ class TestTargetConverter(TestCase):
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.PUBLISHER, "")
         self.assertEqual(str(ctx.exception), "Publisher should not be empty")
+
+    def test_placement(self):
+        # full circle test
+        source = magic_mixer.blend(core.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
+        publisher_domain = "example.com"
+        placement = "100001-1001633"
+
+        placement_id = publisher_helpers.create_placement_id(publisher_domain, source.id, placement)
+
+        output_value = self.converter.from_target(constants.BidModifierType.PLACEMENT, placement_id)
+        self.assertEqual(output_value, placement_id)
+
+        target_value = self.converter.to_target(constants.BidModifierType.PLACEMENT, output_value)
+        self.assertEqual(target_value, placement_id)
+
+        with self.assertRaisesMessage(exceptions.BidModifierTargetInvalid, "Invalid Placement Target"):
+            self.converter.to_target(constants.BidModifierType.PLACEMENT, "")
+
+        with self.assertRaisesMessage(exceptions.BidModifierTargetInvalid, "Invalid Placement Target"):
+            self.converter.to_target(constants.BidModifierType.PLACEMENT, f"{publisher_domain}__{source.id}__")
+
+        with self.assertRaisesMessage(exceptions.BidModifierTargetInvalid, "Invalid Placement Target"):
+            self.converter.to_target(
+                constants.BidModifierType.PLACEMENT, f"{publisher_domain}__{source.id}__Not reported"
+            )
+
+        with self.assertRaisesMessage(exceptions.BidModifierTargetInvalid, "Invalid Source"):
+            self.converter.to_target(constants.BidModifierType.PLACEMENT, f"{publisher_domain}__-1__{placement}")
 
     def test_source(self):
         # full circle test

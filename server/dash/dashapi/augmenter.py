@@ -585,6 +585,49 @@ def augment_placement(row, loader, is_base_level=False):
             }
         )
 
+    if loader.has_bid_modifiers:
+        modifier = loader.modifier_map.get(row["placement_id"])
+
+        editable = True
+        message = None
+
+        if modifier is not None:
+            row.update(
+                {
+                    "bid_modifier": _create_bid_modifier_dict(
+                        modifier,
+                        modifier_type=core.features.bid_modifiers.BidModifierType.get_name(modifier.type),
+                        target=core.features.bid_modifiers.ApiConverter.from_target(modifier.type, modifier.target),
+                        source_slug=modifier.source_slug,
+                    )
+                }
+            )
+        elif not row["placement"]:
+            editable = False
+            message = "Bid modifier can not be applied if placement is not reported"
+            row.update({"bid_modifier": None})
+        else:
+            row.update(
+                {
+                    "bid_modifier": _create_bid_modifier_dict(
+                        None,
+                        modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
+                            core.features.bid_modifiers.BidModifierType.PLACEMENT
+                        ),
+                        target=core.features.bid_modifiers.ApiConverter.from_target(
+                            core.features.bid_modifiers.BidModifierType.PLACEMENT, row["placement_id"]
+                        ),
+                        source_slug=source.bidder_slug,
+                    )
+                }
+            )
+
+        if source.source_type.type in [constants.SourceType.YAHOO, constants.SourceType.OUTBRAIN]:
+            editable = False
+            message = "This source does not support bid modifiers."
+
+        row.update({"editable_fields": {"bid_modifier": {"enabled": editable, "message": message}}})
+
 
 def augment_placement_for_report(row, loader, is_base_level=False):
     source_id = row["source_id"]
@@ -601,6 +644,10 @@ def augment_placement_for_report(row, loader, is_base_level=False):
             ).upper(),
         }
     )
+
+    if loader.has_bid_modifiers:
+        modifier = loader.modifier_map.get(row["placement_id"])
+        row.update({"bid_modifier": modifier.modifier if modifier else None})
 
 
 def augment_delivery(row, loader, is_base_level=True):

@@ -47,7 +47,7 @@ class TestBidModifierService(TestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.ad_group = magic_mixer.blend(dash.models.AdGroup)
-        self.source = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug")
+        self.source = magic_mixer.blend(dash.models.Source, id=1, bidder_slug="some_slug")
         self.ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
 
     def test_get(self):

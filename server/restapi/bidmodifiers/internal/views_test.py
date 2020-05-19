@@ -957,7 +957,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "Publisher,Bid Modifier\r\n",
                 "example.com,1.1\r\n",
                 "\r\n",
-                "Source Slug should exist only in publisher bid modifier CSV file\r\n",
+                "Source Slug should exist only in publisher or placement bid modifier CSV file\r\n",
                 "Source,Source Slug,Bid Modifier\r\n",
                 "{},{},1.2\r\n".format(self.outbrain.bidder_slug, self.source.bidder_slug),
                 "\r\n",

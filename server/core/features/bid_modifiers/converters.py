@@ -1,6 +1,9 @@
 import utils.cache_helper
+import utils.exc
+from core.features import publisher_groups
 from dash import constants as dash_constants
 from dash import models
+from dash import publisher_helpers
 from dash.features import geolocation
 
 from . import constants
@@ -21,6 +24,7 @@ class TargetConverter:
         constants.BidModifierType.DMA: "_from_dma_target",
         constants.BidModifierType.AD: "_from_content_ad_target",
         constants.BidModifierType.DAY_HOUR: "_from_day_hour_target",
+        constants.BidModifierType.PLACEMENT: "_from_placement_target",
     }
     _to_target_map = {
         constants.BidModifierType.PUBLISHER: "_to_publisher_target",
@@ -33,6 +37,7 @@ class TargetConverter:
         constants.BidModifierType.DMA: "_to_dma_target",
         constants.BidModifierType.AD: "_to_content_ad_target",
         constants.BidModifierType.DAY_HOUR: "_to_day_hour_target",
+        constants.BidModifierType.PLACEMENT: "_to_placement_target",
     }
 
     @classmethod
@@ -59,6 +64,23 @@ class TargetConverter:
 
     @classmethod
     def _from_publisher_target(cls, target):
+        return target
+
+    @classmethod
+    def _to_placement_target(cls, value):
+        try:
+            publisher, source_id, placement = publisher_helpers.dissect_placement_id(value)
+            if not placement:
+                raise ValueError()
+            publisher_groups.validate_placement(placement)
+        except Exception:
+            raise exceptions.BidModifierTargetInvalid("Invalid Placement Target")
+        if not models.Source.objects.filter(id=source_id).exists():
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+        return value
+
+    @classmethod
+    def _from_placement_target(cls, target):
         return target
 
     @classmethod

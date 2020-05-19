@@ -132,7 +132,7 @@ class BidModifierTestCase(TestCase):
             target=self.target,
         )
 
-        models.BidModifier.publisher_objects.update_or_create(
+        models.BidModifier.objects.filter_publisher_bid_modifiers().update_or_create(
             defaults={"modifier": 7, "type": constants.BidModifierType.PUBLISHER, "source": self.source},
             ad_group=self.ad_group,
             source_slug=self.source.bidder_slug,

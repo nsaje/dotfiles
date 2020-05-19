@@ -5,6 +5,7 @@ from django.conf import settings
 from django.test import TestCase
 
 import dash.constants
+from core.features import bid_modifiers
 from dash import models
 from dash import publisher_helpers
 from stats import api_breakdowns
@@ -445,6 +446,14 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pub1.com__1__plac1",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac1",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": None,
+                        "modifier": None,
+                        "source_slug": "adsnative",
+                        "target": "pub1.com__1__plac1",
+                        "type": "PLACEMENT",
+                    },
                 },
                 {
                     "placement_id": "pub2.com__2__plac2",
@@ -468,6 +477,14 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pub2.com__2__plac2",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac2",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": None,
+                        "modifier": None,
+                        "source_slug": "gravity",
+                        "target": "pub2.com__2__plac2",
+                        "type": "PLACEMENT",
+                    },
                 },
                 {
                     "placement_id": "pub5.com__2__plac5",
@@ -491,6 +508,14 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pub5.com__2__plac5",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac5",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": None,
+                        "modifier": None,
+                        "source_slug": "gravity",
+                        "target": "pub5.com__2__plac5",
+                        "type": "PLACEMENT",
+                    },
                 },
             ],
         )
@@ -577,6 +602,14 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pub1.com__1__plac1",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac1",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": None,
+                        "modifier": None,
+                        "source_slug": "adsnative",
+                        "target": "pub1.com__1__plac1",
+                        "type": "PLACEMENT",
+                    },
                 },
                 {
                     "placement_id": "pub5.com__2__plac5",
@@ -600,13 +633,28 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pub5.com__2__plac5",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac5",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": None,
+                        "modifier": None,
+                        "source_slug": "gravity",
+                        "target": "pub5.com__2__plac5",
+                        "type": "PLACEMENT",
+                    },
                 },
             ],
         )
 
     @mock.patch("redshiftapi.api_breakdowns.query_structure_with_stats")
     @mock.patch("redshiftapi.api_breakdowns.query")
-    def test_ad_group_no_placement_entires(self, mock_rs_query, mock_str_w_stats):
+    def test_ad_group_no_placement_entries(self, mock_rs_query, mock_str_w_stats):
+        bid_modifier, _ = bid_modifiers.set(
+            dash.models.AdGroup.objects.get(id=1),
+            bid_modifiers.BidModifierType.PLACEMENT,
+            "pubx.com__2__plac1",
+            dash.models.Source.objects.get(id=2),
+            0.75,
+        )
         mock_rs_query.return_value = [
             {
                 "ad_group_id": 1,
@@ -692,6 +740,14 @@ class PlacementBreakdownQueryTest(TestCase):
                     "breakdown_id": "pubx.com__2__plac1",
                     "parent_breakdown_id": "",
                     "breakdown_name": "plac1",
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                    "bid_modifier": {
+                        "id": bid_modifier.id,
+                        "modifier": 0.75,
+                        "source_slug": "gravity",
+                        "target": "pubx.com__2__plac1",
+                        "type": "PLACEMENT",
+                    },
                 }
             ],
         )

@@ -1,3 +1,4 @@
+import copy
 import datetime
 from decimal import Decimal
 
@@ -1017,15 +1018,21 @@ class QueryTest(TestCase):
         )
 
         def create_publisher_source_for_placement(publisher_source):
-            publisher_source = publisher_source.copy()
-            del publisher_source["editable_fields"]
-            del publisher_source["bid_modifier"]
+            publisher_source = copy.deepcopy(publisher_source)
             del publisher_source["publisher_id"]
             placement_id = publisher_helpers.create_placement_id(
                 publisher_source["publisher"], publisher_source["source_id"], "someplacement"
             )
             publisher_source.update(
                 {"placement_id": placement_id, "name": "someplacement", "placement": "someplacement"}
+            )
+            publisher_source["bid_modifier"].update(
+                {
+                    "target": placement_id,
+                    "type": core.features.bid_modifiers.BidModifierType.get_name(
+                        core.features.bid_modifiers.BidModifierType.PLACEMENT
+                    ),
+                }
             )
             return publisher_source
 
