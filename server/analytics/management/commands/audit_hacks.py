@@ -20,6 +20,7 @@ class Command(utils.command_helpers.Z1Command):
 
     def handle(self, *args, **options):
         self.verbose = options["verbose"]
+        output = ""
         for hack, spend in analytics.monitor.audit_custom_hacks():
             entity = hack.get_entity()
 
@@ -27,6 +28,7 @@ class Command(utils.command_helpers.Z1Command):
                 message = ALERT_MSG_GLOBAL.format(hack.summary)
             else:
                 message = ALERT_MSG_ENTITY.format(hack, entity.name, entity.pk)
+            output += message + "\n"
             self._print(message)
-            if options.get("slack"):
-                utils.slack.publish(message, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username=utils.slack.USER_HACKS)
+        if options.get("slack"):
+            utils.slack.publish(output, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username=utils.slack.USER_HACKS)
