@@ -2,6 +2,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import ipware.ip
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import tokens as auth_tokens
@@ -42,7 +43,7 @@ class UserView(APIView):
 
 
 @metrics_compat.timer("auth.signin_response_time")
-@ratelimit(key=lambda r: r.META.get("HTTP_X_FORWARDED_FOR", r.META["REMOTE_ADDR"]), rate="20/m", method="POST")
+@ratelimit(key=lambda g, r: ipware.ip.get_ip(r), rate="20/m", method="POST")
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
