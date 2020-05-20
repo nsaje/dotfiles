@@ -16,6 +16,7 @@ import {NotificationService} from './notification/services/notification.service'
 import {ExceptionHandlerService} from './exception-handler/services/exception-handler.service';
 import {PublishersModule} from './publishers/publishers.module';
 import {GeolocationsModule} from './geolocations/geolocations.module';
+import {CreditsModule} from './credits/credits.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -41,6 +42,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         PublisherGroupsModule,
         PublishersModule,
         GeolocationsModule,
+        CreditsModule,
     ],
     providers: [
         GoogleAnalyticsService,
