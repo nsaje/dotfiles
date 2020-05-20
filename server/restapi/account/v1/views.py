@@ -6,6 +6,7 @@ import core.models
 import utils.converters
 import utils.exc
 import zemauth.access
+import zemauth.features.entity_permission.helpers
 from restapi.account.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission.constants import Permission
@@ -41,12 +42,23 @@ class AccountViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def list(self, request):
-        accounts = zemauth.access.get_accounts(request.user, Permission.READ)
+        queryset_user_perm = core.models.Account.objects.filter_by_user(request.user)
+        queryset_entity_perm = core.models.Account.objects.filter_by_entity_permission(request.user, Permission.READ)
+
         agency_id = request.GET.get("agencyId")
         if agency_id:
-            accounts = accounts.filter(agency_id=agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            queryset_user_perm = queryset_user_perm.filter(agency=agency)
+            queryset_entity_perm = queryset_entity_perm.filter(agency=agency)
+
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            accounts = accounts.exclude_archived()
+            queryset_user_perm = queryset_user_perm.exclude_archived()
+            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
+        )
+
         return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
 
     def create(self, request):

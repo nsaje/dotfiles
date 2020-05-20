@@ -5,6 +5,7 @@ import prodops.hacks
 import utils.converters
 import utils.exc
 import zemauth.access
+import zemauth.features.entity_permission.helpers
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
@@ -33,19 +34,27 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         qpe = serializers.CampaignQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
 
-        campaigns = zemauth.access.get_campaigns(request.user, Permission.READ)
+        queryset_user_perm = core.models.Campaign.objects.filter_by_user(request.user)
+        queryset_entity_perm = core.models.Campaign.objects.filter_by_entity_permission(request.user, Permission.READ)
 
         account_id = qpe.validated_data.get("account_id", None)
         if account_id:
             account = zemauth.access.get_account(request.user, Permission.READ, account_id)
-            campaigns = campaigns.filter(account=account)
+            queryset_user_perm = queryset_user_perm.filter(account=account)
+            queryset_entity_perm = queryset_entity_perm.filter(account=account)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            campaigns = campaigns.exclude_archived()
+            queryset_user_perm = queryset_user_perm.exclude_archived()
+            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+
+        campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
+        )
 
         paginator = StandardPagination()
         only_ids = qpe.validated_data.get("only_ids", False)
         if only_ids:
+            campaigns = campaigns.values("id")
             campaigns_paginated = paginator.paginate_queryset(campaigns, request)
             return paginator.get_paginated_response(
                 serializers.CampaignIdsSerializer(campaigns_paginated, many=True, context={"request": request}).data

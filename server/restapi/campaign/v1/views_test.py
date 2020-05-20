@@ -289,14 +289,14 @@ class LegacyCampaignViewSetTest(RESTAPITest):
     def test_campaigns_list_only_id(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
         magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
+
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
-        r_only_ids = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyId": True})
+
+        r_only_ids = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyIds": True})
         resp_json_only_ids = self.assertResponseValid(r_only_ids, data_type=list)
-        self.assertEqual(
-            list([campaign["id"] for campaign in resp_json["data"]]),
-            list([campaign["id"] for campaign in resp_json_only_ids["data"]]),
-        )
+
+        self.assertEqual([{"id": campaign["id"]} for campaign in resp_json["data"]], resp_json_only_ids["data"])
 
     def test_campaigns_list_account_id_invalid(self):
         account = magic_mixer.blend(core.models.Account)
