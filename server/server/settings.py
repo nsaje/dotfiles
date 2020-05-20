@@ -405,6 +405,8 @@ DCRON = {
         "create_demand_report": dcron_constants.Severity.HIGH,
         "handle_auto_save_batches": dcron_constants.Severity.HIGH,
         "monitor_dailystatement_holes": dcron_constants.Severity.HIGH,
+        "refresh_partnerstats": dcron_constants.Severity.HIGH,
+        "send_supply_report_emails": dcron_constants.Severity.HIGH,
     },
     # Job ownersip overrides.
     "ownerships": {
@@ -425,6 +427,8 @@ DCRON = {
         "post_delivery_statuses": dcron_constants.Ownership.PRODOPS,
         "publisher_classification": dcron_constants.Ownership.PRODOPS,
         "send_daily_management_report": dcron_constants.Ownership.PRODOPS,
+        "refresh_partnerstats": dcron_constants.Ownership.PRODOPS,
+        "send_supply_report_emails": dcron_constants.Ownership.PRODOPS,
     },
     # How long to wait before warning alert if job execution is late.
     "default_warning_wait": 300,  # 5 min

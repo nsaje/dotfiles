@@ -8,6 +8,7 @@ from django.db import connections
 import backtosql
 import dash.models
 import utils.dates_helper
+from etl import maintenance
 from utils import csv_utils
 from utils import metrics_compat
 from utils import zlogging
@@ -15,8 +16,20 @@ from utils.email_helper import send_supply_report_email
 
 logger = zlogging.getLogger(__name__)
 
-ALL_SOURCES_QUERY = backtosql.generate_sql("sql/all_sources_stats_query.sql", None)
 TIMEZONE = "EST"
+
+
+def get_crossvalidation_stats(start_date, end_date):
+    query = backtosql.generate_sql(
+        "sql/query_partnerstats.sql",
+        dict(breakdown="exchange", start_date=start_date.strftime("%Y-%m-%d"), end_date=end_date.strftime("%Y-%m-%d")),
+    )
+    stats = []
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
+        c.execute(query)
+        for exchange, impressions, clicks, spend in c:
+            stats.append((exchange, impressions, clicks, spend))
+    return stats
 
 
 def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False, overwrite_recipients_email=None):
@@ -52,8 +65,8 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
             daily=str(recipient.daily_breakdown_report),
             obpubs=str(bool(recipient.outbrain_publisher_ids)),
         ):
-            stats_id = (recipient.source.pk,) + tuple(sorted(recipient.outbrain_publisher_ids or []))
-            source_stats = {yesterday_str: _get_stats_obj()}
+            stats_id = (recipient.source.bidder_slug,) + tuple(sorted(recipient.outbrain_publisher_ids or []))
+            source_stats = {yesterday: _get_stats_obj()}
             if stats_id in all_sources_stats:
                 source_stats = all_sources_stats[stats_id]
             elif recipient.outbrain_publisher_ids:
@@ -64,8 +77,8 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
             mtd_impressions = None
             mtd_cost = None
 
-            impressions = source_stats.get(yesterday_str, {"impressions": 0})["impressions"]
-            cost = source_stats.get(yesterday_str, {"cost": 0})["cost"]
+            impressions = source_stats.get(yesterday, {"impressions": 0})["impressions"]
+            cost = source_stats.get(yesterday, {"cost": 0})["cost"]
 
             if recipient.mtd_report:
                 if stats_id not in mtd_stats:
@@ -85,7 +98,7 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
 
                 if publisher_stats[stats_id]:
                     publisher_report = _create_csv(
-                        ["Date", "Publisher", "Impressions", "Clicks", "Spend"], publisher_stats[stats_id]
+                        ["Date", "Publisher", "Impressions", "Spend"], publisher_stats[stats_id]
                     )
 
             daily_breakdown_report = None
@@ -123,20 +136,39 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
                 recipient.save()
 
 
+def refresh_partnerstats():
+    with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
+        c.execute(backtosql.generate_sql("sql/etl_delete_partnerstats.sql", None))
+        c.execute(backtosql.generate_sql("sql/etl_insert_into_partnerstats.sql", None))
+    maintenance.vacuum("partnerstats", db_name=settings.STATS_DB_HOT_CLUSTER)
+    maintenance.analyze("partnerstats", db_name=settings.STATS_DB_HOT_CLUSTER)
+
+
 def _get_source_stats_from_query(date_from_str, date_to_str):
-    query = ALL_SOURCES_QUERY.format(date_from=date_from_str, date_to=date_to_str)
+    query = backtosql.generate_sql(
+        "sql/query_partnerstats.sql", dict(breakdown="date, exchange", start_date=date_from_str, end_date=date_to_str)
+    )
     source_stats = defaultdict(dict)
 
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
-        for date, source_id, impressions, spend in c:
-            stats_id = (source_id,)
+        for date, exchange, impressions, _, spend in c:
+            stats_id = (exchange,)
             source_stats[stats_id][date] = _get_stats_obj(impressions, spend)
     return source_stats
 
 
-def _get_source_stats_for_outbrain_publishers(recipient, start_date, end_date):
-    query = _get_custom_stats_query(recipient, "date", start_date, end_date)
+def _get_source_stats_for_outbrain_publishers(recipient, start_date_str, end_date_str):
+    query = backtosql.generate_sql(
+        "sql/query_partnerstats.sql",
+        dict(
+            breakdown="date",
+            bidder_slug=recipient.source.bidder_slug,
+            outbrain_publisher_ids=_get_outbrain_publisher_ids(recipient),
+            start_date=start_date_str,
+            end_date=end_date_str,
+        ),
+    )
     out = {}
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
@@ -146,36 +178,31 @@ def _get_source_stats_for_outbrain_publishers(recipient, start_date, end_date):
     return []
 
 
-def _get_publisher_stats(recipient, date):
-    query = (
-        _get_custom_stats_query(recipient, "date,publisher", date, date)
-        if recipient.outbrain_publisher_ids
-        else backtosql.generate_sql(
-            "sql/publisher_stats_query.sql", dict(source_id=recipient.source.pk, date=date.isoformat())
-        )
+def _get_publisher_stats(recipient, date_str):
+    query = backtosql.generate_sql(
+        "sql/query_partnerstats.sql",
+        dict(
+            breakdown="date, publisher",
+            bidder_slug=recipient.source.bidder_slug,
+            outbrain_publisher_ids=_get_outbrain_publisher_ids(recipient),
+            start_date=date_str,
+            end_date=date_str,
+        ),
     )
     result = []
 
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
-        for date, domain, impressions, clicks, cost in c.fetchall():
-            result.append([date, domain, impressions, clicks, cost])
+        for date, domain, impressions, _, cost in c.fetchall():
+            result.append([date, domain, impressions, cost])
 
     return result
 
 
-def _get_custom_stats_query(recipient, breakdown, start_date, end_date):
-    return backtosql.generate_sql(
-        "sql/custom_stats_query.sql",
-        dict(
-            bidder_slug=recipient.source.bidder_slug,
-            breakdown=breakdown,
-            outbrain_publisher_ids=",".join("'{}'".format(pubid) for pubid in recipient.outbrain_publisher_ids),
-            timezone=TIMEZONE,
-            start_date=start_date,
-            end_date=end_date,
-        ),
-    )
+def _get_outbrain_publisher_ids(recipient):
+    if not recipient.outbrain_publisher_ids:
+        return ""
+    return ",".join("'{}'".format(pub_id) for pub_id in recipient.outbrain_publisher_ids)
 
 
 def _get_stats_obj(impressions=None, cost=None):
