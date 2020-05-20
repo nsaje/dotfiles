@@ -381,4 +381,8 @@ class User(
             ("can_see_mrc50_metrics", "User can see the MRC50 viewability metrics"),
             ("can_see_mrc100_metrics", "User can see the MRC100 viewability metrics"),
             ("can_see_vast4_metrics", "User can see the VAST4 viewability metrics"),
+            (
+                "can_see_service_fee",
+                "User can view platform costs broken down into base media, base data and service fee.",
+            ),
         )
