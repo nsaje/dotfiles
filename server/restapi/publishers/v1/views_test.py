@@ -9,7 +9,6 @@ import core.models
 import dash.constants
 import restapi.common.views_base_test
 from utils import test_helper
-
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 

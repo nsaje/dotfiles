@@ -26,6 +26,7 @@ For the description of how the client code is organized and written, please view
 
 - clone this repository
 - make sure you have `git` and `docker`, `docker-compose` installed (tested with Docker CE 17.06.0 on both Linux & macOS)
+- (optional) if you want to be able to build the docker images locally, you have to run `docker run -d --restart=always -v /var/run/docker.sock:/var/run/docker.sock:ro --privileged --net=host robbertkl/ipv6nat` (from [robbertkl/docker-ipv6nat](https://github.com/robbertkl/docker-ipv6nat) to be able to access artifactory.outbrain.com via Meta VPN
 - make sure `awscli` is installed and AWS credentials configured (test with `aws s3 ls s3://z1-demo/`)
 - run `make pull` (in addition to AWS keys, you need to specify a region e.g. "us-east-1")
 - create the network zemanta using `docker network create zemanta`

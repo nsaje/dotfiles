@@ -140,7 +140,7 @@ login:	## login to ECR
 ifdef ${LOGGED_IN}
 	@echo "Already logged in"
 else
-	$$(aws ecr get-login --no-include-email)
+	$$(aws ecr get-login --no-include-email 2>/dev/null) || aws ecr get-login-password | docker login --username AWS --password-stdin $(ECR_BASE)
 	$(eval LOGGED_IN=yes)
 endif
 
