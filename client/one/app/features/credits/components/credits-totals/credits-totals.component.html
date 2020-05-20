@@ -1,0 +1,33 @@
+<div
+    *ngFor="let total of formattedCreditTotals"
+    class="zem-credits-totals__overview"
+>
+    <div class="zem-credits-totals__overview-item">
+        <span class="zem-credits-totals__overview-item-name">Total value: </span
+        ><span class="zem-credits-totals__overview-item-value">{{
+            total.total
+        }}</span>
+    </div>
+    <div class="zem-credits-totals__overview-item">
+        <span class="zem-credits-totals__overview-item-name"
+            >Allocated To Budget Items: </span
+        ><span class="zem-credits-totals__overview-item-value">{{
+            total.allocated
+        }}</span>
+    </div>
+    <div class="zem-credits-totals__overview-item">
+        <span class="zem-credits-totals__overview-item-name">Past Credit: </span
+        ><span class="zem-credits-totals__overview-item-value">{{
+            total.allocated
+        }}</span>
+    </div>
+    <div
+        class="zem-credits-totals__overview-item zem-credits-totals__overview-item--highlighted"
+    >
+        <span class="zem-credits-totals__overview-item-name"
+            >Available Credit: </span
+        ><span class="zem-credits-totals__overview-item-value">{{
+            total.allocated
+        }}</span>
+    </div>
+</div>

@@ -3,3 +3,28 @@
 .zem-credits-view {
     display: block;
 }
+
+@media only screen and (min-width: 768px) {
+    .zem-credits-totals__overview {
+        display: flex;
+    }
+
+    .zem-credits-totals__overview-item {
+        flex: 1 1 auto;
+        flex-basis: 25%;
+        text-align: center;
+        border-right: 1px solid @color--lighter-neutral;
+    }
+
+    .zem-credits-totals__overview-item:last-child {
+        border-right: 0px;
+    }
+
+    .zem-credits-totals__overview-item-value {
+        display: block;
+    }
+
+    .zem-credits-totals__overview-item--highlighted {
+        margin-top: 0px;
+    }
+}
