@@ -42,7 +42,7 @@ class UserView(APIView):
 
 
 @metrics_compat.timer("auth.signin_response_time")
-@ratelimit(key="ip", rate="20/m", method="POST")
+@ratelimit(key=lambda r: r.META.get("HTTP_X_FORWARDED_FOR", r.META["REMOTE_ADDR"]), rate="20/m", method="POST")
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
