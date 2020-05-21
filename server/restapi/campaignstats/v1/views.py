@@ -1,12 +1,13 @@
 import redshiftapi.api_quickstats
-import restapi.access
+import zemauth.access
 from restapi.campaignstats.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 
 class CampaignStatsViewSet(RESTAPIBaseViewSet):
     def get(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         qpe = serializers.CampaignStatsQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         from_date = qpe.validated_data.get("from_")
