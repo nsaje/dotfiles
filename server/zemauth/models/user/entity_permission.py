@@ -31,9 +31,14 @@ class EntityPermissionMixin(object):
     def has_user_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.USER, entity)
 
-    def has_budget_perm_on(self, entity: Entity, fallback_permission: str = None) -> bool:
+    def has_budget_perm_on(
+        self, entity: Entity, fallback_permission: str = None, negate_fallback_permission: bool = False
+    ) -> bool:
         return self._has_perm_on_and_log_differences(
-            zemauth.features.entity_permission.Permission.BUDGET, entity, fallback_permission=fallback_permission
+            zemauth.features.entity_permission.Permission.BUDGET,
+            entity,
+            fallback_permission=fallback_permission,
+            negate_fallback_permission=negate_fallback_permission,
         )
 
     def has_budget_margin_perm_on(self, entity: Entity, fallback_permission: str = None) -> bool:
@@ -67,11 +72,13 @@ class EntityPermissionMixin(object):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 
     def _has_perm_on_and_log_differences(
-        self, permission: str, entity: Entity, fallback_permission: str = None
+        self, permission: str, entity: Entity, fallback_permission: str = None, negate_fallback_permission: bool = False
     ) -> bool:
         has_entity_permission = self._has_perm_on(permission, entity)
         if fallback_permission is not None:
             has_fallback_permission = self.has_perm(fallback_permission)
+            if negate_fallback_permission:
+                has_fallback_permission = not has_fallback_permission
             if has_entity_permission != has_fallback_permission:
                 logger.warning(
                     LOG_MESSAGE,

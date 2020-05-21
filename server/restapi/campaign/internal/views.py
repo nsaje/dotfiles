@@ -135,9 +135,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         campaign.settings.goals = []
         if request.user.has_perm("zemauth.can_see_campaign_goals"):
             campaign.settings.goals = self._get_campaign_goals(campaign)
-        campaign.settings.budgets = []
-        if request.user.has_budget_perm_on(campaign, fallback_permission="zemauth.can_see_new_budgets"):
-            campaign.settings.budgets = self._get_campaign_budgets(campaign)
+        campaign.settings.budgets = self._get_campaign_budgets(campaign)
         campaign.settings.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
             campaign.settings.deals = campaign.get_deals(request)
@@ -174,7 +172,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             prodops.hacks.apply_campaign_goals_change_hacks(request, campaign)
 
     def _handle_campaign_budgets(self, request, campaign, data):
-        if request.user.has_perm("zemauth.disable_budget_management"):
+        if not request.user.has_budget_perm_on(
+            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
+        ):
             raise utils.exc.AuthorizationError()
 
         campaign_budgets = self._get_campaign_budgets(campaign)

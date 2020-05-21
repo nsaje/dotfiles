@@ -16,7 +16,6 @@ import restapi.serializers.serializers
 import restapi.serializers.user
 import zemauth.access
 import zemauth.models
-from zemauth.features.entity_permission import Permission
 
 
 class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -91,15 +90,6 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
             "campaign_manager": "zemauth.can_modify_campaign_manager",
             "goals": "zemauth.can_see_campaign_goals",
             "deals": "zemauth.can_see_direct_deals_section",
-        }
-        entity_permissioned_fields = {
-            "config": {
-                "entity_id_getter_fn": lambda data: data.get("account_id"),
-                "entity_access_fn": zemauth.access.get_account,
-            },
-            "fields": {
-                "budgets": {"permission": Permission.BUDGET, "fallback_permission": "zemauth.can_see_new_budgets"}
-            },
         }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)

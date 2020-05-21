@@ -1,12 +1,13 @@
 from django.db import transaction
 
 import core.models
-import restapi.access
 import utils.exc
+import zemauth.access
 from core.features.bcm import exceptions
 from dash import constants
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -15,22 +16,24 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     serializer = serializers.CampaignBudgetSerializer
 
     def get(self, request, campaign_id, budget_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         budget = self._get_budget(campaign, budget_id)
-        return self.response_ok(self.serializer(budget).data)
+        return self.response_ok(self.serializer(budget, context={"request": request}).data)
 
     def put(self, request, campaign_id, budget_id):
-        if request.user.has_perm("zemauth.disable_budget_management"):
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
+        if not request.user.has_budget_perm_on(
+            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
+        ):
             raise utils.exc.AuthorizationError()
-        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
-        serializer = self.serializer(data=request.data, partial=True)
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         budget = self._get_budget(campaign, budget_id)
         self._update_budget(budget.update, request=request, **serializer.validated_data)
-        return self.response_ok(self.serializer(budget).data)
+        return self.response_ok(self.serializer(budget, context={"request": request}).data)
 
     def list(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         budgets = (
             core.features.bcm.BudgetLineItem.objects.filter(campaign=campaign)
             .select_related("credit", "campaign__account")
@@ -43,14 +46,17 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
         ]
         paginator = StandardPagination()
         budgets_paginated = paginator.paginate_queryset(active_budgets, request)
-        return paginator.get_paginated_response(self.serializer(budgets_paginated, many=True).data)
+        return paginator.get_paginated_response(
+            self.serializer(budgets_paginated, many=True, context={"request": request}).data
+        )
 
     def create(self, request, campaign_id):
-        if request.user.has_perm("zemauth.disable_budget_management"):
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
+        if not request.user.has_budget_perm_on(
+            campaign, fallback_permission="zemauth.disable_budget_management", negate_fallback_permission=True
+        ):
             raise utils.exc.AuthorizationError()
-
-        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
-        serializer = self.serializer(data=request.data)
+        serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         new_budget_data = serializer.validated_data
         credit = self._get_credit(campaign, new_budget_data.get("credit", {}).get("id"))
@@ -65,7 +71,7 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
             margin=new_budget_data.get("margin"),
             comment=new_budget_data.get("comment"),
         )
-        return self.response_ok(self.serializer(new_budget).data, status=201)
+        return self.response_ok(self.serializer(new_budget, context={"request": request}).data, status=201)
 
     @staticmethod
     def _get_budget(campaign, budget_id):

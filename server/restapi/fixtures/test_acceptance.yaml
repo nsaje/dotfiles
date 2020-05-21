@@ -43,7 +43,6 @@
       - ['can_set_bid_modifiers', 'zemauth', 'user']
       - ['can_modify_campaign_manager', 'zemauth', 'user']
       - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
-      - ['can_see_new_budgets', 'zemauth', 'user']
       - ['all_accounts_accounts_add_account', 'zemauth', 'user']
       - ['can_set_agency_for_account', 'zemauth', 'user']
       - ['can_modify_account_type', 'zemauth', 'user']
@@ -61,6 +60,7 @@
       - ['can_use_creative_icon', 'zemauth', 'user']
       - ['account_credit_view', 'zemauth', 'user']
       - ['can_clone_campaigns', 'zemauth', 'user']
+      - ["can_see_backend_hacks", "zemauth", "user"]
 
 - model: oauth2_provider.application
   pk: 1

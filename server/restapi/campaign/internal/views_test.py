@@ -133,6 +133,7 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             "createdDt": createdDt,
             "licenseFee": licenseFee,
         }
+
         return cls.normalize(representation)
 
     @classmethod
@@ -203,6 +204,19 @@ class LegacyCampaignViewSetTest(RESTAPITest):
 
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get_default(self, mock_get_extra_data):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.WRITE,
+                Permission.BUDGET_MARGIN,
+                Permission.AGENCY_SPEND_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+            ],
+            agency=agency,
+        )
+
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
@@ -224,16 +238,14 @@ class LegacyCampaignViewSetTest(RESTAPITest):
                 "available_budgets_sum": decimal.Decimal("0.0000"),
                 "unallocated_credit": decimal.Decimal("0.0000"),
                 "campaign_spend": decimal.Decimal("0.0000"),
+                "media_spend": decimal.Decimal("0.0000"),
+                "data_spend": decimal.Decimal("0.0000"),
+                "license_fee": decimal.Decimal("0.0000"),
                 "margin": decimal.Decimal("0.0000"),
             },
             "budgets_depleted": [],
             "credits": [],
         }
-
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(
-            self.user, permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET], agency=agency
-        )
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r)
@@ -279,6 +291,9 @@ class LegacyCampaignViewSetTest(RESTAPITest):
                     "availableBudgetsSum": "0.0000",
                     "unallocatedCredit": "0.0000",
                     "campaignSpend": "0.0000",
+                    "mediaSpend": "0.0000",
+                    "dataSpend": "0.0000",
+                    "licenseFee": "0.0000",
                     "margin": "0.0000",
                 },
                 "budgetsDepleted": [],
@@ -312,8 +327,8 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             self.user,
             permissions=[
                 Permission.READ,
-                Permission.BUDGET,
                 Permission.BUDGET_MARGIN,
+                Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
             ],
             agency=agency,
@@ -555,7 +570,55 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         )
 
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
-    def test_get_internal_deals_no_permission(self, mock_get_extra_data):
+    def test_get_limited(self, mock_get_extra_data):
+        test_helper.remove_permissions(
+            self.user, permissions=["can_manage_agency_margin", "can_view_platform_cost_breakdown"]
+        )
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+        campaign.settings.update_unsafe(
+            None,
+            name=campaign.name,
+            language=dash.constants.Language.ENGLISH,
+            autopilot=True,
+            iab_category=dash.constants.IABCategory.IAB24,
+            campaign_manager=self.user,
+        )
+
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            agency=None,
+            account=account,
+            start_date=datetime.date.today() - datetime.timedelta(30),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        inactive_budget = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() - datetime.timedelta(20),
+            end_date=datetime.date.today() - datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+        )
+        active_budget = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() - datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+        )
+
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
@@ -577,15 +640,108 @@ class LegacyCampaignViewSetTest(RESTAPITest):
                 "available_budgets_sum": decimal.Decimal("10.0000"),
                 "unallocated_credit": decimal.Decimal("10.0000"),
                 "campaign_spend": decimal.Decimal("10.0000"),
-                "media_spend": decimal.Decimal("220.0000"),
-                "data_spend": decimal.Decimal("100.0000"),
-                "license_fee": decimal.Decimal("5.0000"),
-                "margin": decimal.Decimal("2.0000"),
             },
-            "budgets_depleted": [],
-            "credits": [],
+            "budgets_depleted": [inactive_budget],
+            "credits": [credit],
         }
 
+        r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
+        resp_json = self.assertResponseValid(r)
+
+        campaign_budget_repr = self.campaign_budget_repr(
+            id=active_budget.id,
+            creditId=active_budget.credit.id,
+            amount=active_budget.amount,
+            comment=active_budget.comment,
+            startDate=active_budget.start_date,
+            endDate=active_budget.end_date,
+            state=active_budget.state(),
+            spend=active_budget.get_local_spend_data_bcm(),
+            available=active_budget.get_local_available_data_bcm(),
+            canEditStartDate=active_budget.can_edit_start_date(),
+            canEditEndDate=active_budget.can_edit_end_date(),
+            canEditAmount=active_budget.can_edit_amount(),
+            createdBy=active_budget.created_by,
+            createdDt=active_budget.created_dt,
+        )
+        del campaign_budget_repr["margin"]
+        del campaign_budget_repr["licenseFee"]
+
+        depleted_campaign_budget_repr = self.campaign_budget_repr(
+            id=inactive_budget.id,
+            creditId=inactive_budget.credit.id,
+            amount=inactive_budget.amount,
+            comment=inactive_budget.comment,
+            startDate=inactive_budget.start_date,
+            endDate=inactive_budget.end_date,
+            state=inactive_budget.state(),
+            spend=inactive_budget.get_local_spend_data_bcm(),
+            available=inactive_budget.get_local_available_data_bcm(),
+            canEditStartDate=inactive_budget.can_edit_start_date(),
+            canEditEndDate=inactive_budget.can_edit_end_date(),
+            canEditAmount=inactive_budget.can_edit_amount(),
+            createdBy=inactive_budget.created_by,
+            createdDt=inactive_budget.created_dt,
+        )
+        del depleted_campaign_budget_repr["margin"]
+        del depleted_campaign_budget_repr["licenseFee"]
+
+        credit_item_repr = self.credit_item_repr(
+            id=credit.pk,
+            createdOn=credit.get_creation_date(),
+            createdBy=credit.created_by,
+            status=credit.status,
+            agencyId=credit.agency_id,
+            agencyName=credit.agency.name if credit.agency is not None else None,
+            accountId=credit.account_id,
+            accountName=credit.account.settings.name if credit.account is not None else None,
+            startDate=credit.start_date,
+            endDate=credit.end_date,
+            licenseFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
+            amount=credit.amount,
+            total=credit.effective_amount(),
+            allocated=credit.get_allocated_amount(),
+            available=credit.get_available_amount(),
+            currency=credit.currency,
+            contractId=credit.contract_id,
+            contractNumber=credit.contract_number,
+            comment=credit.comment,
+            salesforceUrl=credit.get_salesforce_url(),
+            isAvailable=credit.is_available(),
+        )
+        del credit_item_repr["licenseFee"]
+
+        self.assertEqual(resp_json["data"]["budgets"], [campaign_budget_repr])
+        self.assertEqual(
+            resp_json["extra"],
+            {
+                "archived": False,
+                "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
+                "canArchive": True,
+                "canRestore": True,
+                "agencyId": "12345",
+                "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
+                "goalsDefaults": {
+                    dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.TIME_ON_SITE): "30.00",
+                    dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE): "75.00",
+                },
+                "campaignManagers": [
+                    {"id": "123", "name": "manager1@outbrain.com"},
+                    {"id": "456", "name": "manager2@outbrain.com"},
+                ],
+                "hacks": [],
+                "deals": [],
+                "budgetsOverview": {
+                    "availableBudgetsSum": "10.0000",
+                    "unallocatedCredit": "10.0000",
+                    "campaignSpend": "10.0000",
+                },
+                "budgetsDepleted": [depleted_campaign_budget_repr],
+                "credits": [credit_item_repr],
+            },
+        )
+
+    def test_get_internal_deals_no_permission(self):
         account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
@@ -596,38 +752,7 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(len(resp_json["data"]["deals"]), 0)
 
-    @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
-    def test_get_internal_deals_permission(self, mock_get_extra_data):
-        mock_get_extra_data.return_value = {
-            "archived": False,
-            "language": dash.constants.Language.ENGLISH,
-            "can_archive": True,
-            "can_restore": True,
-            "agency_id": 12345,
-            "currency": dash.constants.Currency.USD,
-            "goals_defaults": {
-                dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
-                dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
-            },
-            "campaign_managers": [
-                {"id": 123, "name": "manager1@outbrain.com"},
-                {"id": 456, "name": "manager2@outbrain.com"},
-            ],
-            "hacks": [],
-            "deals": [],
-            "budgets_overview": {
-                "available_budgets_sum": decimal.Decimal("10.0000"),
-                "unallocated_credit": decimal.Decimal("10.0000"),
-                "campaign_spend": decimal.Decimal("10.0000"),
-                "media_spend": decimal.Decimal("220.0000"),
-                "data_spend": decimal.Decimal("100.0000"),
-                "license_fee": decimal.Decimal("5.0000"),
-                "margin": decimal.Decimal("2.0000"),
-            },
-            "budgets_depleted": [],
-            "credits": [],
-        }
-
+    def test_get_internal_deals_permission(self):
         account = self.mix_account(self.user, permissions=[Permission.READ], name="Generic account")
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
