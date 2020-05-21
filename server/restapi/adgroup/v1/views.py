@@ -2,12 +2,14 @@ from django.db import transaction
 
 import core.models
 import core.models.ad_group.exceptions
-import restapi.access
 import utils.converters
 import utils.exc
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from core.models.settings.ad_group_settings import exceptions
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -16,11 +18,11 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
     serializer = serializers.AdGroupSerializer
 
     def get(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
@@ -33,15 +35,23 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
     def list(self, request):
         qpe = serializers.AdGroupQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
+
+        queryset_user_perm = core.models.AdGroup.objects.filter_by_user(request.user)
+        queryset_entity_perm = core.models.AdGroup.objects.filter_by_entity_permission(request.user, Permission.READ)
+
         campaign_id = qpe.validated_data.get("campaign_id", None)
         if campaign_id:
-            campaign = restapi.access.get_campaign(request.user, campaign_id)
-            ad_groups = core.models.AdGroup.objects.filter(campaign=campaign)
-        else:
-            ad_groups = core.models.AdGroup.objects.all().filter_by_user(request.user)
+            campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
+            queryset_user_perm = queryset_user_perm.filter(campaign=campaign)
+            queryset_entity_perm = queryset_entity_perm.filter(campaign=campaign)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
-            ad_groups = ad_groups.exclude_archived()
+            queryset_user_perm = queryset_user_perm.exclude_archived()
+            queryset_entity_perm = queryset_entity_perm.exclude_archived()
+
+        ad_groups = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
+        )
 
         ad_groups = ad_groups.select_related("settings").order_by("pk")
         paginator = StandardPagination()
@@ -55,7 +65,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
+        campaign = zemauth.access.get_campaign(
+            request.user, Permission.WRITE, settings.get("ad_group", {}).get("campaign_id")
+        )
 
         with transaction.atomic():
             new_ad_group = self._handle_update_create_exceptions(

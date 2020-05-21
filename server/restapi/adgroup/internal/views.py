@@ -4,10 +4,11 @@ from django.db import transaction
 
 import core.models
 import prodops.hacks
-import restapi.access
 import restapi.adgroup.v1.views
 import utils.exc
+import zemauth.access
 from dash import constants
+from zemauth.features.entity_permission import Permission
 
 from . import helpers
 from . import serializers
@@ -26,7 +27,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         qpe = serializers.AdGroupInternalQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         campaign_id = qpe.validated_data.get("campaign_id")
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         ad_group = core.models.AdGroup.objects.get_default(request, campaign)
         self._augment_ad_group(request, ad_group)
         extra_data = helpers.get_extra_data(request.user, ad_group)
@@ -36,7 +37,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         )
 
     def get(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         self._augment_ad_group(request, ad_group)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
@@ -45,7 +46,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         )
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         if ad_group.settings.b1_sources_group_enabled != request.data.get(
             "manage_rtb_sources_as_one", ad_group.settings.b1_sources_group_enabled
         ):
@@ -70,7 +71,9 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
-        campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
+        campaign = zemauth.access.get_campaign(
+            request.user, Permission.WRITE, settings.get("ad_group", {}).get("campaign_id")
+        )
 
         with transaction.atomic():
             try:
@@ -108,7 +111,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         for item in data:
             if item.get("id") is not None:
                 try:
-                    new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
+                    new_deals.append(zemauth.access.get_direct_deal(request.user, Permission.READ, item.get("id")))
                     errors.append(None)
                 except utils.exc.MissingDataError as err:
                     errors.append({"id": [str(err)]})

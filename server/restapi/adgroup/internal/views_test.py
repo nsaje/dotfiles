@@ -6,11 +6,13 @@ import core.models
 import dash.constants
 from core.features import bid_modifiers
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AdGroupViewSetTest(RESTAPITest):
+class LegacyAdGroupViewSetTest(RESTAPITest):
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -54,7 +56,7 @@ class AdGroupViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
@@ -136,7 +138,7 @@ class AdGroupViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -222,7 +224,7 @@ class AdGroupViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -261,7 +263,7 @@ class AdGroupViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -278,7 +280,7 @@ class AdGroupViewSetTest(RESTAPITest):
     @mock.patch.object(core.models.settings.AdGroupSettings, "update")
     def test_ad_group_state_set_to_inactive_on_b1_sources_group_enabled_update(self, mock_ad_group_settings_update):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
@@ -297,8 +299,8 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)
 
     def test_put_deals(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
 
@@ -367,7 +369,7 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_get_bid_modifier_type_summaries(self):
         test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
 
@@ -420,7 +422,7 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_get_default_bid_modifier_type_summaries(self):
         test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
@@ -431,7 +433,7 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_get_bid_modifier_type_summaries_no_permission(self):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
 
@@ -450,3 +452,7 @@ class AdGroupViewSetTest(RESTAPITest):
 
         self.assertTrue("extra" in resp_json)
         self.assertFalse("bidModifierTypeSummaries" in resp_json["extra"])
+
+
+class AdGroupViewSetTest(RESTAPITestCase, LegacyAdGroupViewSetTest):
+    pass
