@@ -20,6 +20,7 @@ CAMPAIGN_BREAKDOWN = ["date", "source_id", "account_id", "campaign_id"]
 ACCOUNT_BREAKDOWN = ["date", "source_id", "account_id"]
 
 MATERIALIZED_VIEWS = [
+    # NOTE: Run "create_derived_view" command manually after adding a new derived view to this list.
     # Views that help construct master view
     MVHelpersSource,
     MVHelpersAdGroupStructure,

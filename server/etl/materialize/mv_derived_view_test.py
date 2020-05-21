@@ -29,55 +29,6 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls(
             [
                 mock.call(
-                    backtosql.SQLMatcher(
-                        """
-                CREATE TABLE IF NOT EXISTS newtable (
-                    date date not null encode delta,
-                    source_id int2 encode zstd,
-                    account_id integer encode zstd,
-
-                    impressions integer encode zstd,
-                    clicks integer encode zstd,
-                    cost_nano bigint encode zstd,
-                    data_cost_nano bigint encode zstd,
-                    visits integer encode zstd,
-                    new_visits integer encode zstd,
-                    bounced_visits integer encode zstd,
-                    pageviews integer encode zstd,
-                    total_time_on_site integer encode zstd,
-                    effective_cost_nano bigint encode zstd,
-                    effective_data_cost_nano bigint encode zstd,
-                    license_fee_nano bigint encode zstd,
-                    margin_nano bigint encode zstd,
-                    users integer encode lzo,
-                    returning_users integer encode lzo,
-                    video_start integer encode lzo,
-                    video_first_quartile integer encode lzo,
-                    video_midpoint integer encode lzo,
-                    video_third_quartile integer encode lzo,
-                    video_complete integer encode lzo,
-                    video_progress_3s integer encode lzo,
-                    local_cost_nano bigint encode zstd,
-                    local_data_cost_nano bigint encode zstd,
-                    local_effective_cost_nano bigint encode zstd,
-                    local_effective_data_cost_nano bigint encode zstd,
-                    local_license_fee_nano bigint encode zstd,
-                    local_margin_nano bigint encode zstd,
-                    mrc50_measurable integer encode AZ64,
-                    mrc50_viewable integer encode AZ64,
-                    mrc100_measurable integer encode AZ64,
-                    mrc100_viewable integer encode AZ64,
-                    vast4_measurable integer encode AZ64,
-                    vast4_viewable integer encode AZ64,
-                    ssp_cost_nano bigint encode AZ64,
-                    local_ssp_cost_nano bigint encode AZ64
-                )
-                diststyle key distkey(source_id) sortkey(date, source_id, account_id)
-                """
-                    )
-                ),
-                mock.call(backtosql.SQLMatcher("SELECT count(1) FROM newtable")),
-                mock.call(
                     backtosql.SQLMatcher("DELETE FROM newtable WHERE (date BETWEEN %(date_from)s AND %(date_to)s);"),
                     {"date_from": datetime.date(2016, 7, 1), "date_to": datetime.date(2016, 7, 3)},
                 ),
@@ -194,12 +145,10 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
         mock_cursor().__enter__().execute.assert_has_calls(
             [
-                mock.call(mock.ANY),
-                mock.call(mock.ANY),
                 mock.call(
                     backtosql.SQLMatcher(
                         "DELETE FROM newtable WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;"
-                    ),  # noqa
+                    ),
                     {"date_from": datetime.date(2016, 7, 1), "date_to": datetime.date(2016, 7, 3), "account_id": 1},
                 ),
                 mock.call(
@@ -308,12 +257,20 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
             sortkey=["date", "source_id", "account_id"],
             distkey="source_id",
         )
-        mv = mv_cls("jobid", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+        date_from = datetime.date(2016, 7, 1)
+        date_to = datetime.date(2016, 7, 3)
+        mv = mv_cls("jobid", date_from, date_to, account_id=None)
 
         mv.generate()
 
         mock_cursor().__enter__().execute.assert_has_calls(
-            [mock.call(mock.ANY), mock.call(mock.ANY), mock.call(mock.ANY, [])]
+            [
+                mock.call(
+                    backtosql.SQLMatcher("DELETE FROM newtable WHERE (date BETWEEN %(date_from)s AND %(date_to)s);"),
+                    {"date_from": date_from, "date_to": date_to},
+                ),
+                mock.call(mock.ANY, [date_from, date_to]),
+            ]
         )
 
     def test_prepare_insert_query(self, mock_transaction, mock_cursor):

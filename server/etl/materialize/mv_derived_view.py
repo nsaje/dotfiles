@@ -43,50 +43,27 @@ class MasterDerivedView(Materialize):
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
             with db.get_write_stats_cursor() as c:
+                logger.info(
+                    "Deleting data from table",
+                    table=self.TABLE_NAME,
+                    date_from=self.date_from,
+                    date_to=self.date_to,
+                    job_id=self.job_id,
+                )
+                sql, params = redshift.prepare_date_range_delete_query(
+                    self.TABLE_NAME, self.date_from, self.date_to, self.account_id
+                )
+                c.execute(sql, params)
 
                 logger.info(
-                    "Create materialized view table if not exists",
+                    "Inserting data into table",
                     table=self.TABLE_NAME,
-                    breakdown=self.BREAKDOWN,
+                    date_from=self.date_from,
+                    date_to=self.date_to,
                     job_id=self.job_id,
-                )  # noqa
-                sql = self.prepare_create_table()
-                c.execute(sql)
-
-                c.execute("SELECT count(1) FROM {}".format(self.TABLE_NAME))
-                count = c.fetchone()[0]
-
-                if not count:
-                    logger.info(
-                        "Fill empty materialized view",
-                        table=self.TABLE_NAME,
-                        breakdown=self.BREAKDOWN,
-                        job_id=self.job_id,
-                    )  # noqa
-                    sql, params = self.prepare_insert_query(None, None)
-                    c.execute(sql, params)
-                else:
-                    logger.info(
-                        "Deleting data from table",
-                        table=self.TABLE_NAME,
-                        date_from=self.date_from,
-                        date_to=self.date_to,
-                        job_id=self.job_id,
-                    )
-                    sql, params = redshift.prepare_date_range_delete_query(
-                        self.TABLE_NAME, self.date_from, self.date_to, self.account_id
-                    )
-                    c.execute(sql, params)
-
-                    logger.info(
-                        "Inserting data into table",
-                        table=self.TABLE_NAME,
-                        date_from=self.date_from,
-                        date_to=self.date_to,
-                        job_id=self.job_id,
-                    )
-                    sql, params = self.prepare_insert_query(self.date_from, self.date_to)
-                    c.execute(sql, params)
+                )
+                sql, params = self.prepare_insert_query(self.date_from, self.date_to)
+                c.execute(sql, params)
 
     @classmethod
     def prepare_create_table(cls):

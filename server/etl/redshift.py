@@ -19,7 +19,13 @@ logger = zlogging.getLogger(__name__)
 
 
 def unload_table(
-    job_id, table_name, date_from, date_to, account_id=None, prefix=MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX
+    job_id,
+    table_name,
+    date_from,
+    date_to,
+    account_id=None,
+    prefix=MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX,
+    db_name=None,
 ):
     s3_path = os.path.join(
         prefix,
@@ -27,7 +33,7 @@ def unload_table(
         table_name,
         "{}-{}-{}-{}".format(table_name, date_from.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"), account_id or 0),
     )
-    with db.get_write_stats_cursor() as c:
+    with db.get_write_stats_cursor(db_name) as c:
         logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
         sql, params = prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id)
         c.execute(sql, params)
