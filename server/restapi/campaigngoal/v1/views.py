@@ -3,23 +3,24 @@ from django.db.models import Prefetch
 from rest_framework.response import Response
 
 import core.features.goals
-import restapi.access
 import utils.exc
+import zemauth.access
 from dash import campaign_goals
 from dash import constants
 from restapi.campaigngoal.v1 import serializers
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 
 class CampaignGoalViewSet(RESTAPIBaseViewSet):
     def get(self, request, campaign_id, goal_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         goal = self._get_campaign_goal(campaign, goal_id)
         return self.response_ok(serializers.CampaignGoalSerializer(goal).data)
 
     def put(self, request, campaign_id, goal_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         serializer = serializers.CampaignGoalSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         goal = self._get_campaign_goal(campaign, goal_id)
@@ -27,20 +28,20 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializers.CampaignGoalSerializer(goal).data)
 
     def remove(self, request, campaign_id, goal_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         goal = self._get_campaign_goal(campaign, goal_id)
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
         return Response(None, status=204)
 
     def list(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         goals = self._get_campaign_goals_list(campaign)
         paginator = StandardPagination()
         goals_paginated = paginator.paginate_queryset(goals, request)
         return paginator.get_paginated_response(serializers.CampaignGoalSerializer(goals_paginated, many=True).data)
 
     def create(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         serializer = serializers.CampaignGoalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
