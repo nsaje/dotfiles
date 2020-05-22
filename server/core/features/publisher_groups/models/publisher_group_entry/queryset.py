@@ -21,7 +21,25 @@ class PublisherGroupEntryQuerySet(models.QuerySet):
             q |= models.Q(publisher=entry["publisher"], source=entry["source"], placement=entry.get("placement"))
         return self.filter(q)
 
-    def annotate_publisher_id(self):
+    def filter_publisher_or_placement(self, is_placement):
+        if is_placement:
+            return self.exclude(placement=None)
+
+        return self.filter(placement=None)
+
+    def annotate_entry_id(self, is_placement=False):
+        if is_placement:
+            return self.annotate(
+                entry_id=Concat(
+                    "publisher",
+                    models.Value("__"),
+                    "source_id",
+                    models.Value("__"),
+                    "placement",
+                    output_field=models.CharField(),
+                )
+            )
+
         return self.annotate(
-            publisher_id=Concat("publisher", models.Value("__"), "source_id", output_field=models.CharField())
+            entry_id=Concat("publisher", models.Value("__"), "source_id", output_field=models.CharField())
         )

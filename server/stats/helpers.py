@@ -114,17 +114,28 @@ def extract_stats_constraints(constraints, breakdown):
     if ("publisher_id" in breakdown or "placement_id" in breakdown) and constraints[
         "publisher_blacklist_filter"
     ] != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
+        is_placement = constants.is_placement_breakdown(breakdown)
+        constraints_entry_field = "placement_id" if is_placement else "publisher_id"
         if constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-            new_constraints["publisher_id__neq"] = list(
-                constraints["publisher_blacklist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            new_constraints[f"{constraints_entry_field}__neq"] = list(
+                constraints["publisher_blacklist"]
+                .filter_publisher_or_placement(is_placement)
+                .annotate_entry_id(is_placement=is_placement)
+                .values_list("entry_id", flat=True)
             )
         elif constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            new_constraints["publisher_id"] = list(
-                constraints["publisher_blacklist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            new_constraints[constraints_entry_field] = list(
+                constraints["publisher_blacklist"]
+                .filter_publisher_or_placement(is_placement)
+                .annotate_entry_id(is_placement=is_placement)
+                .values_list("entry_id", flat=True)
             )
         elif constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_WHITELISTED:
-            new_constraints["publisher_id"] = list(
-                constraints["publisher_whitelist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            new_constraints[constraints_entry_field] = list(
+                constraints["publisher_whitelist"]
+                .filter_publisher_or_placement(is_placement)
+                .annotate_entry_id(is_placement=is_placement)
+                .values_list("entry_id", flat=True)
             )
 
     return new_constraints

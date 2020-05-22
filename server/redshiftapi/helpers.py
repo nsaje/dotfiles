@@ -39,7 +39,26 @@ def inflate_parent_constraints(parents):
     new_parents = []
 
     for parent in parents:
-        if "publisher_id" in parent:
+        if "placement_id" in parent:
+
+            placement_ids = parent["placement_id"]
+            if not isinstance(placement_ids, list):
+                placement_ids = [placement_ids]
+
+            for placement_id in placement_ids:
+                publisher, source_id, placement = publisher_helpers.dissect_placement_id(placement_id)
+
+                new_parent = {}
+                new_parent["publisher"] = publisher
+
+                if source_id:
+                    new_parent["source_id"] = source_id
+
+                if placement:
+                    new_parent["placement"] = placement
+
+                new_parents.append(new_parent)
+        elif "publisher_id" in parent:
 
             publisher_ids = parent["publisher_id"]
             if not isinstance(publisher_ids, list):

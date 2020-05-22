@@ -105,7 +105,7 @@ def all_subdomains(publisher):
 class PublisherIdLookupMap(object):
     def _filter_publisher_group_entries(self, entries):
         if isinstance(entries, QuerySet):
-            return entries.filter(placement=None)
+            return entries.filter_publisher_or_placement(False)
 
         return [e for e in entries if e.placement is None]
 
@@ -169,7 +169,7 @@ class PublisherIdLookupMap(object):
 class PublisherPlacementLookupMap(PublisherIdLookupMap):
     def _filter_publisher_group_entries(self, entries):
         if isinstance(entries, QuerySet):
-            return entries.exclude(placement=None)
+            return entries.filter_publisher_or_placement(True)
 
         return [e for e in entries if e.placement is not None]
 

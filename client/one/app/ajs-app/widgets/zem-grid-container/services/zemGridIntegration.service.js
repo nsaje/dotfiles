@@ -192,7 +192,10 @@ angular
                     );
                 }
 
-                if (breakdown === constants.breakdown.PUBLISHER) {
+                if (
+                    breakdown === constants.breakdown.PUBLISHER ||
+                    breakdown === constants.breakdown.PLACEMENT
+                ) {
                     grid.dataSource.setFilter(
                         FILTER.SHOW_BLACKLISTED_PUBLISHERS,
                         filteredPublisherStatus

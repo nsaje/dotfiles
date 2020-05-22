@@ -157,8 +157,10 @@ angular
                                 '/' +
                                 RoutePathName.ANALYTICS
                         ) &&
-                        activatedRoute.snapshot.params.breakdown ===
-                            constants.breakdownParam.PUBLISHERS
+                        (activatedRoute.snapshot.params.breakdown ===
+                            constants.breakdownParam.PUBLISHERS ||
+                            activatedRoute.snapshot.params.breakdown ===
+                                constants.breakdownParam.PLACEMENTS)
                     );
                 },
             },

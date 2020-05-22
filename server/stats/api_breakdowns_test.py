@@ -12,6 +12,7 @@ from stats import api_breakdowns
 from stats import constants
 from utils import test_helper
 from utils import threads
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 
@@ -524,6 +525,16 @@ class PlacementBreakdownQueryTest(TestCase):
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_ad_group_blacklisted_only(self, mock_rs_query, mock_str_w_stats):
         self._convert_to_placement_entries()
+        # add some publisher group entries that should not appear in the query
+        magic_mixer.blend(
+            models.PublisherGroupEntry, publisher_group_id=1, publisher="pub1.com", source_id=1, placement=None
+        )
+        magic_mixer.blend(
+            models.PublisherGroupEntry, publisher_group_id=3, publisher="pub3.com", source=None, placement=None
+        )
+        magic_mixer.blend(
+            models.PublisherGroupEntry, publisher_group_id=5, publisher="pub5.com", source_id=2, placement=None
+        )
 
         mock_rs_query.return_value = self._create_rs_rows([1, 3, 5], ad_group_id=1)
 
@@ -567,7 +578,9 @@ class PlacementBreakdownQueryTest(TestCase):
                 "date__gte": datetime.date(2016, 8, 1),
                 "date__lte": datetime.date(2016, 8, 5),
                 "source_id": test_helper.ListMatcher([1, 2]),
-                "publisher_id": test_helper.ListMatcher(["pub1.com__1", "pub3.com__", "pub5.com__2"]),
+                "placement_id": test_helper.ListMatcher(
+                    ["pub1.com__1__plac1", "pub3.com____plac3", "pub5.com__2__plac5"]
+                ),
             },
             None,
             goals,
