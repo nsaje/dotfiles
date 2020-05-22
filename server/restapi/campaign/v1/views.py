@@ -54,7 +54,7 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         paginator = StandardPagination()
         only_ids = qpe.validated_data.get("only_ids", False)
         if only_ids:
-            campaigns = campaigns.values("id")
+            campaigns = campaigns.only("id")
             campaigns_paginated = paginator.paginate_queryset(campaigns, request)
             return paginator.get_paginated_response(
                 serializers.CampaignIdsSerializer(campaigns_paginated, many=True, context={"request": request}).data

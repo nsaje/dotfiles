@@ -286,7 +286,7 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             self.validate_against_db(item)
             self.assertEqual(int(item["accountId"]), account.id)
 
-    def test_campaigns_list_only_id(self):
+    def test_campaigns_list_only_ids(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
         magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
 
@@ -297,6 +297,33 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         resp_json_only_ids = self.assertResponseValid(r_only_ids, data_type=list)
 
         self.assertEqual([{"id": campaign["id"]} for campaign in resp_json["data"]], resp_json_only_ids["data"])
+
+    def test_campaigns_list_offset_pagination_only_ids(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
+
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyIds": True})
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        r_paginated = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), data={"limit": 2, "offset": 5, "onlyIds": True}
+        )
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+
+        self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+
+    def test_campaigns_list_marker_pagination_only_ids(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        campaigns = magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
+        campaigns_ids = sorted([x.id for x in campaigns])
+
+        r_paginated = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"),
+            data={"limit": 2, "marker": campaigns_ids[5], "onlyIds": True},
+        )
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+
+        self.assertEqual([{"id": str(campaigns_ids[6])}, {"id": str(campaigns_ids[7])}], resp_json_paginated["data"])
 
     def test_campaigns_list_account_id_invalid(self):
         account = magic_mixer.blend(core.models.Account)
