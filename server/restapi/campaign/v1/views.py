@@ -47,9 +47,12 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             queryset_user_perm = queryset_user_perm.exclude_archived()
             queryset_entity_perm = queryset_entity_perm.exclude_archived()
 
-        campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
-        )
+        if request.user.id == 886:  # HACK(nsaje): skip entity perms for OEN due to performance
+            campaigns = queryset_user_perm
+        else:
+            campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+                request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
+            )
 
         paginator = StandardPagination()
         only_ids = qpe.validated_data.get("only_ids", False)
