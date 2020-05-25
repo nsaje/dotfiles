@@ -9,10 +9,12 @@ from core.models import all_rtb
 from dash import constants
 from dash import models
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AdGroupSourcesRTBTest(RESTAPITest):
+class LegacyAdGroupSourcesRTBTest(RESTAPITest):
     @classmethod
     def adgroupsourcertb_repr(
         cls,
@@ -50,79 +52,132 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         self.assertEqual(expected, agsrtb)
 
     def test_adgroups_sources_rtb_get_cpc(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         r = self.client.get(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040})
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id})
         )
         resp_json = self.assertResponseValid(r)
         self.assertIsNotNone(resp_json["data"]["cpc"])
         self.assertIsNone(resp_json["data"]["cpm"])
-        self.validate_against_db(2040, resp_json["data"])
+        self.validate_against_db(ad_group.id, resp_json["data"])
 
     def test_adgroups_sources_rtb_get_cpm(self):
-        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
-        ad_group.bidding_type = constants.BiddingType.CPM
-        ad_group.save(None)
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         r = self.client.get(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040})
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id})
         )
         resp_json = self.assertResponseValid(r)
         self.assertIsNone(resp_json["data"]["cpc"])
         self.assertIsNotNone(resp_json["data"]["cpm"])
-        self.validate_against_db(2040, resp_json["data"])
+        self.validate_against_db(ad_group.id, resp_json["data"])
 
     def test_adgroups_sources_rtb_put_cpc(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         test_rtbs = self.adgroupsourcertb_repr(
             group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpc="0.1230"
         )
         r = self.client.put(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}),
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_rtbs,
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.assertEquals("0.1230", resp_json["data"]["cpc"])
         self.assertIsNone(resp_json["data"]["cpm"])
-        self.validate_against_db(2040, resp_json["data"])
+        self.validate_against_db(ad_group.id, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
     def test_adgroups_sources_rtb_put_cpm(self):
-        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
-        ad_group.bidding_type = constants.BiddingType.CPM
-        ad_group.save(None)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         test_rtbs = self.adgroupsourcertb_repr(
             group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpm="1.1230"
         )
         r = self.client.put(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}),
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_rtbs,
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.assertIsNone(resp_json["data"]["cpc"])
         self.assertEquals("1.1230", resp_json["data"]["cpm"])
-        self.validate_against_db(2040, resp_json["data"])
+        self.validate_against_db(ad_group.id, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
     def test_adgroups_sources_rtb_put_default_values(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         test_rtbs = self.adgroupsourcertb_repr(group_enabled=True, state=constants.AdGroupSettingsState.ACTIVE)
         r = self.client.put(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}),
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_rtbs,
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.assertIsNotNone(resp_json["data"]["cpc"])
         self.assertIsNone(resp_json["data"]["cpm"])
-        self.validate_against_db(2040, resp_json["data"])
+        self.validate_against_db(ad_group.id, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
     def test_adgroups_sources_rtb_bidding_type_fail(self):
-        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_cpc_cc = Decimal("1.0100")
+        settings.local_b1_sources_group_cpm = Decimal("1.0100")
+        settings.save(None)
+
         test_rtbs = self.adgroupsourcertb_repr()
         test_rtbs["cpm"] = "1.11"
 
         r = self.client.put(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}),
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_rtbs,
             format="json",
         )
@@ -131,8 +186,9 @@ class AdGroupSourcesRTBTest(RESTAPITest):
 
         ad_group.bidding_type = constants.BiddingType.CPM
         ad_group.save(None)
+
         r = self.client.put(
-            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}),
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             data=test_rtbs,
             format="json",
         )
@@ -143,7 +199,8 @@ class AdGroupSourcesRTBTest(RESTAPITest):
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
     def test_adgroups_sources_rtb_rounding_cpc(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
-        ad_group = magic_mixer.blend(models.AdGroup, campaign__account__users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(models.AdGroup, campaign__account=account)
         ad_group.settings.update_unsafe(
             None, cpc=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
@@ -190,9 +247,8 @@ class AdGroupSourcesRTBTest(RESTAPITest):
 
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpm", return_value=0.1211)
     def test_adgroups_sources_rtb_rounding_cpm(self, min_cpm_mock):
-        ad_group = magic_mixer.blend(
-            models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
-        )
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM)
         ad_group.settings.update_unsafe(
             None, cpm=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
         )
@@ -216,3 +272,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("Maximum CPM on RTB Sources is" in json.loads(r.content)["details"]["cpm"][0])
+
+
+class AdGroupSourcesRTBTest(RESTAPITestCase, LegacyAdGroupSourcesRTBTest):
+    pass

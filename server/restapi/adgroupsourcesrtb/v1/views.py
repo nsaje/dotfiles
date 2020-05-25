@@ -2,15 +2,16 @@ import decimal
 
 import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
-import restapi.access
 import utils.exc
+import zemauth.access
 from restapi.adgroupsourcesrtb.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 
 class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
     def get(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         return self.response_ok(
             serializers.AdGroupSourcesRTBSerializer(
                 ad_group.settings, context={"request": request, "ad_group": ad_group}
@@ -18,7 +19,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         )
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         serializer = serializers.AdGroupSourcesRTBSerializer(
             data=request.data, partial=True, context={"request": request, "ad_group": ad_group}
         )
