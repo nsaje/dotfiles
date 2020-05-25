@@ -60,6 +60,10 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     searchFn: Function;
     @Input()
+    addCustomItemFn: (term: string) => any | Promise<any>;
+    @Input()
+    addCustomItemText: string;
+    @Input()
     dropdownPosition: 'bottom' | 'top' | 'auto' = 'auto';
     @Input()
     debounceTime: number;

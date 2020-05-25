@@ -51,6 +51,10 @@ export class SelectFormGroupComponent implements OnChanges {
     @Input()
     searchFn: Function;
     @Input()
+    addCustomItemFn: (term: string) => any | Promise<any>;
+    @Input()
+    addCustomItemText: string;
+    @Input()
     debounceTime: number;
     @Input()
     errors: string[];
