@@ -4,18 +4,20 @@ from django.db import transaction
 
 import core.features.multicurrency
 import core.models.ad_group_source
-import restapi.access
 import utils.exc
 import utils.lc_helper
 import utils.string_helper
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from core.models.settings.ad_group_source_settings import exceptions
 from restapi.adgroupsource.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 
 class AdGroupSourceViewSet(RESTAPIBaseViewSet):
     def list(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         settings = (
             core.models.settings.ad_group_source_settings.AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group=ad_group
@@ -29,7 +31,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         serializer = serializers.AdGroupSourceSerializer(
             data=request.data, many=True, context={"request": request, "ad_group": ad_group}
@@ -60,7 +62,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         return self.list(request, ad_group.id)
 
     def create(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         is_many = isinstance(request.data, list)
         serializer = serializers.AdGroupSourceSerializer(data=request.data, many=is_many)
         serializer.is_valid(raise_exception=True)

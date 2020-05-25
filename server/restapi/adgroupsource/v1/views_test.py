@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 import mock
 from django.urls import reverse
@@ -7,10 +8,12 @@ import core.models.source_type.model
 import dash.models
 from dash import constants
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AdGroupSourcesTest(RESTAPITest):
+class LegacyAdGroupSourcesTest(RESTAPITest):
     @classmethod
     def adgroupsource_repr(
         cls,
@@ -47,27 +50,61 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertEqual(expected, adgroupsourcesettings)
 
     def test_adgroups_sources_list_cpc(self):
-        r = self.client.get(reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": 2040}))
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
+        )
+
+        ad_group_sources = magic_mixer.cycle(3).blend(
+            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+        )
+        for ad_group_source in ad_group_sources:
+            settings = ad_group_source.get_current_settings().copy_settings()
+            settings.state = constants.AdGroupSettingsState.ACTIVE
+            settings.local_cpc_cc = Decimal("0.1200")
+            settings.local_cpm = Decimal("1.1200")
+            settings.save(None)
+
+        r = self.client.get(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id})
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.assertIsNotNone(item["cpc"])
             self.assertIsNone(item["cpm"])
-            self.validate_against_db(2040, item)
+            self.validate_against_db(ad_group.id, item)
 
     def test_adgroups_sources_list_cpm(self):
-        ad_group = dash.models.AdGroup.objects.get(id=2040)
-        ad_group.bidding_type = constants.BiddingType.CPM
-        ad_group.save(None)
-        r = self.client.get(reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": 2040}))
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
+        )
+
+        ad_group_sources = magic_mixer.cycle(3).blend(
+            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+        )
+        for ad_group_source in ad_group_sources:
+            settings = ad_group_source.get_current_settings().copy_settings()
+            settings.state = constants.AdGroupSettingsState.ACTIVE
+            settings.local_cpc_cc = Decimal("0.1200")
+            settings.local_cpm = Decimal("1.1200")
+            settings.save(None)
+
+        r = self.client.get(
+            reverse("restapi.adgroupsource.v1:adgroups_sources_list", kwargs={"ad_group_id": ad_group.id})
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.assertIsNone(item["cpc"])
             self.assertIsNotNone(item["cpm"])
-            self.validate_against_db(2040, item)
+            self.validate_against_db(ad_group.id, item)
 
     def test_adgroups_sources_put_cpc(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPC
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
@@ -102,8 +139,9 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertEqual(test_ags[1], resp_c)
 
     def test_adgroups_sources_put_cpm(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
@@ -137,7 +175,8 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertEqual(test_ags[1], resp_c)
 
     def test_adgroups_sources_put_cpc_source_not_present(self):
-        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
         )
@@ -164,8 +203,9 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_sources_put_cpm_source_not_present(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
@@ -193,8 +233,9 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
     def text_adgroups_sources_put_cpc_bidding_type_error(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPC
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
@@ -222,8 +263,9 @@ class AdGroupSourcesTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
     def text_adgroups_sources_put_cpm_bidding_type_error(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
             dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
@@ -254,7 +296,7 @@ class AdGroupSourcesTest(RESTAPITest):
         credentials = magic_mixer.blend(dash.models.SourceCredentials)
         source = magic_mixer.blend(dash.models.Source, source_credentials=credentials, bidder_slug="a")
         magic_mixer.blend(dash.models.DefaultSourceSettings, credentials=credentials, source=source)
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         account.allowed_sources.add(source)
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
 
@@ -276,7 +318,7 @@ class AdGroupSourcesTest(RESTAPITest):
 
     def test_adgroups_sources_post_error(self):
         source = magic_mixer.blend(dash.models.Source, bidder_slug="a")
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
 
         test_ags = self.adgroupsource_repr(
@@ -301,7 +343,7 @@ class AdGroupSourcesTest(RESTAPITest):
         magic_mixer.cycle(3).blend(
             dash.models.DefaultSourceSettings, credentials=credentials, source=(s for s in sources)
         )
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         account.allowed_sources.add(*sources)
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
 
@@ -346,7 +388,7 @@ class AdGroupSourcesTest(RESTAPITest):
 
     def test_adgroups_sources_post_multiple_error(self):
         sources = magic_mixer.cycle(2).blend(dash.models.Source, bidder_slug=(slug for slug in ["a", "b"]))
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
 
         test_ags = [
@@ -380,7 +422,8 @@ class AdGroupSourcesTest(RESTAPITest):
     def test_adgroups_sources_cpc_daily_budget_rounding(
         self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock
     ):
-        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         ad_group.settings.update_unsafe(None, cpc_cc=0.7792)
         ad_group_sources = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=("a",))
 
@@ -416,8 +459,9 @@ class AdGroupSourcesTest(RESTAPITest):
 
     @mock.patch.object(core.models.source_type.model.SourceType, "get_min_cpm", return_value=0.1211)
     def test_adgroups_sources_cpm_rounding(self, min_cpm_mock):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(
-            dash.models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
+            dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group.settings.update_unsafe(None, max_cpm=0.7792)
         ad_group_sources = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=("a",))
@@ -431,3 +475,7 @@ class AdGroupSourcesTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
+
+
+class AdGroupSourcesTest(RESTAPITestCase, LegacyAdGroupSourcesTest):
+    pass
