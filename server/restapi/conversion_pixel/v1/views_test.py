@@ -90,31 +90,31 @@ class ConversionPixelViewSetTest(RESTAPITest):
 
     def test_pixels_list(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
-        magic_mixer.cycle(5).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=False
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test1", audience_enabled=False, additional_pixel=False
         )
-        magic_mixer.cycle(2).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=True, additional_pixel=False
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test2", audience_enabled=True, additional_pixel=False
         )
-        magic_mixer.cycle(1).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=True
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test3", audience_enabled=False, additional_pixel=True
         )
         r = self.client.get(reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
-        self.assertEqual(8, len(resp_json["data"]))
+        self.assertEqual(3, len(resp_json["data"]))
 
     def test_pixels_list_audience_enabled_only(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
-        magic_mixer.cycle(5).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=False
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test1", audience_enabled=False, additional_pixel=False
         )
-        magic_mixer.cycle(2).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=True, additional_pixel=False
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test2", audience_enabled=True, additional_pixel=False
         )
-        magic_mixer.cycle(1).blend(
-            core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=True
+        magic_mixer.blend(
+            core.models.ConversionPixel, account=account, slug="test3", audience_enabled=False, additional_pixel=True
         )
         r = self.client.get(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
@@ -123,7 +123,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
-        self.assertEqual(3, len(resp_json["data"]))
+        self.assertEqual(2, len(resp_json["data"]))
 
     def test_get_permissioned(self):
         utils.test_helper.remove_permissions(

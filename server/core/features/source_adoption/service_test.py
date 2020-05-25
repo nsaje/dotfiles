@@ -17,11 +17,12 @@ from . import unrelease_source
 class SourceAdoptionCommandTest(django.test.TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        self.account = magic_mixer.blend(core.models.Account)
+        self.account = magic_mixer.blend(core.models.Account, id=1234)
         campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         self.ad_group.settings.update_unsafe(
             None,
+            archived=False,
             b1_sources_group_enabled=True,
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         )
