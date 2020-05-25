@@ -54,12 +54,13 @@ export class CreditsStoreState {
 
     requests = {
         listActive: {} as RequestState,
-        listpast: {} as RequestState,
+        listPast: {} as RequestState,
         create: {} as RequestState,
         edit: {} as RequestState,
         totals: {} as RequestState,
         listBudgets: {} as RequestState,
         listRefunds: {} as RequestState,
+        createRefund: {} as RequestState,
     };
     accountsRequests = {
         list: {} as RequestState,

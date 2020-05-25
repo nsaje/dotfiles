@@ -14,11 +14,12 @@ import {CreditsService} from '../../../../core/credits/services/credits.service'
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {CreditsStoreFieldsErrorsState} from './credits.store.fields-errors-state';
-import {CreditStatus} from '../../../../app.constants';
+import {CreditStatus, Currency} from '../../../../app.constants';
 
 @Injectable()
 export class CreditsStore extends Store<CreditsStoreState>
@@ -240,6 +241,10 @@ export class CreditsStore extends Store<CreditsStoreState>
     }
 
     loadCreditActiveEntityBudgets(): Promise<void> {
+        if (!commonHelpers.isDefined(this.state.creditActiveEntity.entity.id)) {
+            return new Promise<void>(reject => reject());
+        }
+
         return new Promise<void>((resolve, reject) => {
             this.creditsService
                 .listBudgets(
@@ -396,6 +401,18 @@ export class CreditsStore extends Store<CreditsStoreState>
             'creditRefundActiveEntity',
             'entity'
         );
+    }
+
+    getDefaultCurrency() {
+        if (
+            !arrayHelpers.isEmpty(this.state.accounts) &&
+            commonHelpers.isDefined(this.state.accountId)
+        ) {
+            return this.state.accounts.filter(account => {
+                return account.id === this.state.accountId;
+            })[0].currency;
+        }
+        return Currency.USD;
     }
 
     ngOnDestroy(): void {

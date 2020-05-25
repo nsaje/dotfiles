@@ -1,8 +1,149 @@
 <h1 class="zem-main-container__view-title">Credits</h1>
+<ng-container *ngIf="store.state$ | async as state">
+    <div class="zem-panel zem-panel--with-padding zem-credits-view__panel">
+        <div class="zem-credits-view__panel-title">
+            Overview
+        </div>
+        <div class="zem-credits-view__panel-description">
+            Credit is the basis of allocating any budget to any campaign. Valid
+            credit items are used by campaign budget items in the order they are
+            listed.
+        </div>
+        <zem-credits-totals [creditTotals]="state.totals"></zem-credits-totals>
+    </div>
+    <div class="zem-panel zem-panel--with-padding zem-credits-view__panel">
+        <div class="zem-credits-view__panel-title">
+            Active Credit Items
+        </div>
+        <div class="zem-credits-view__panel-actions">
+            <button
+                class="zem-credits-view__action zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
+                (click)="addCreditItem()"
+            >
+                Add Credit Item
+            </button>
+        </div>
+        <!-- active grid -->
+    </div>
+    <div class="zem-panel zem-panel--with-padding zem-credits-view__panel">
+        <div class="zem-credits-view__panel-title">
+            Past Credit Items
+        </div>
+        <!-- past grid -->
+    </div>
 
-<zem-credits
-    class="zem-credits"
-    *ngIf="isInitialized"
-    [agencyId]="agencyId"
-    [accountId]="accountId"
-></zem-credits>
+    <zem-modal
+        #creditItemModal
+        class="zem-modal zem-credits-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="creditItemModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ creditItemModalTitle }}
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <!-- credit item form -->
+                <!-- campaign budget list -->
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    *ngIf="
+                        state.requests.create.inProgress ||
+                        state.requests.edit.inProgress
+                    "
+                    class="zem-button zem-button--highlighted zem-button--loading"
+                    disabled
+                ></button>
+                <button
+                    *ngIf="
+                        !state.requests.create.inProgress &&
+                        !state.requests.edit.inProgress
+                    "
+                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                    [disabled]="state.creditActiveEntity.isReadOnly"
+                    (click)="saveCreditItem()"
+                >
+                    Save
+                </button>
+                <button
+                    class="zem-button zem-button--outlined"
+                    [disabled]="
+                        state.requests.create.inProgress ||
+                        state.requests.edit.inProgress
+                    "
+                    (click)="creditItemModal.close()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
+
+    <zem-modal
+        #creditRefundCreateModal
+        class="zem-modal zem-credits-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="creditRefundCreateModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ creditRefundCreateModalTitle }}
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <!-- credit refund form -->
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    *ngIf="state.requests.createRefund.inProgress"
+                    class="zem-button zem-button--highlighted zem-button--loading"
+                    disabled
+                ></button>
+                <button
+                    *ngIf="!state.requests.createRefund.inProgress"
+                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                    (click)="saveCreditRefund()"
+                >
+                    Save
+                </button>
+                <button
+                    class="zem-button zem-button--outlined"
+                    [disabled]="state.requests.createRefund.inProgress"
+                    (click)="creditRefundCreateModal.close()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
+
+    <zem-modal
+        #creditRefundListModal
+        class="zem-modal zem-credits-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="creditRefundListModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ creditRefundListModalTitle }}
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <!-- refund grid -->
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    class="zem-button zem-button--outlined"
+                    (click)="creditRefundListModal.close()"
+                >
+                    Close
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
+</ng-container>
