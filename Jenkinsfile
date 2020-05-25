@@ -113,7 +113,7 @@ node {
     if (env.BRANCH_NAME == 'master') {
       committer = sh (script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
       commit_message = sh (script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
-      slackSend channel: "#rnd-z1", color: "#FF0000", failOnError: true, message: "Build Failed - ${committer}: ${commit_message} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+      slackSend channel: "#rnd-z1", color: "#FF0000", failOnError: true, message: "Build Failed - ${committer}: ${commit_message} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
     }
     throw e
   }
