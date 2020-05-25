@@ -300,17 +300,15 @@ class LegacyCampaignViewSetTest(RESTAPITest):
 
     def test_campaigns_list_offset_pagination_only_ids(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
-        magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
+        campaigns = magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
 
-        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyIds": True})
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"),
+            data={"limit": 2, "offset": 5, "accountId": account.id, "onlyIds": True},
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
 
-        r_paginated = self.client.get(
-            reverse("restapi.campaign.v1:campaigns_list"), data={"limit": 2, "offset": 5, "onlyIds": True}
-        )
-        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
-
-        self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+        self.assertEqual([{"id": str(x.id)} for x in campaigns[5:7]], resp_json["data"])
 
     def test_campaigns_list_marker_pagination_only_ids(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
@@ -319,7 +317,7 @@ class LegacyCampaignViewSetTest(RESTAPITest):
 
         r_paginated = self.client.get(
             reverse("restapi.campaign.v1:campaigns_list"),
-            data={"limit": 2, "marker": campaigns_ids[5], "onlyIds": True},
+            data={"limit": 2, "marker": campaigns_ids[5], "accountId": account.id, "onlyIds": True},
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
 
