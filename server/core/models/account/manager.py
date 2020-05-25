@@ -23,6 +23,7 @@ class AccountManager(core.common.BaseManager):
         if agency is not None:
             core.common.entity_limits.enforce(model.Account.objects.filter(agency=agency).exclude_archived())
         self._validate_externally_managed(user, agency)
+        self._validate_currency(kwargs.get("currency", None))
 
         account = self._prepare(name=name, agency=agency, currency=kwargs.pop("currency", None))
         account.save(request)
@@ -78,6 +79,10 @@ class AccountManager(core.common.BaseManager):
                 raise exceptions.CreatingAccountNotAllowed(
                     "Creating accounts for an externally managed agency is prohibited."
                 )
+
+    def _validate_currency(self, currency):
+        if currency is None:
+            raise exceptions.CreatingAccountNotAllowed("Currency is required on account creation.")
 
     def _log_new_account_to_slack(self, account):
         if "New account" not in account.name:

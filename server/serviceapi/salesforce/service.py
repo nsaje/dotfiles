@@ -67,7 +67,7 @@ def create_client(request, data):
     cs = zemauth.models.User.objects.get(email=constants.DEFAULT_CS_REPRESENTATIVE)
     sales = zemauth.models.User.objects.get(email=constants.DEFAULT_SALES_REPRESENTATIVE)
 
-    client = CLIENT_TYPE_OBJECT_MAP[data["type"]].objects.create(request, data["name"])
+    client = CLIENT_TYPE_OBJECT_MAP[data["type"]].objects.create(request, data["name"], currency=data["currency"])
     if data["type"] == constants.CLIENT_TYPE_AGENCY:
         client.default_account_type = constants.DEFAULT_ACCOUNT_TYPE
         client.sales_representative = sales

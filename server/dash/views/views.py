@@ -736,7 +736,10 @@ class Account(api_common.BaseApiView):
         agency = models.Agency.objects.all().filter(users=request.user).first()
 
         account = models.Account.objects.create(
-            request, name=core.models.helpers.create_default_name(models.Account.objects, "New account"), agency=agency
+            request,
+            name=core.models.helpers.create_default_name(models.Account.objects, "New account"),
+            agency=agency,
+            currency=constants.Currency.USD,
         )
 
         response = {"name": account.name, "id": account.id}

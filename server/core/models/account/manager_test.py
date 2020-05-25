@@ -19,12 +19,12 @@ class AccountManagerTestCase(TestCase):
         cls.source_unreleased = magic_mixer.blend(core.models.Source, released=False)
 
     def test_create_name(self):
-        account = Account.objects.create(self.request, name="Test", agency=None)
+        account = Account.objects.create(self.request, name="Test", agency=None, currency=dash.constants.Currency.EUR)
         self.assertEqual(account.name, "Test")
         self.assertEqual(account.settings.name, "Test")
 
     def test_create_add_allowed_sources(self):
-        account = Account.objects.create(self.request, name="Test", agency=None)
+        account = Account.objects.create(self.request, name="Test", agency=None, currency=dash.constants.Currency.EUR)
 
         self.assertTrue(self.source_released in account.allowed_sources.all())
         self.assertFalse(self.source_unreleased in account.allowed_sources.all())
@@ -35,9 +35,10 @@ class AccountManagerTestCase(TestCase):
         self.assertEqual(dash.constants.Currency.EUR, account.currency)
 
     def test_create_no_currency(self):
-        account = Account.objects.create(self.request, name="Test", agency=None)
-
-        self.assertEqual(None, account.currency)
+        with self.assertRaisesMessage(
+            exceptions.CreatingAccountNotAllowed, "Currency is required on account creation."
+        ):
+            Account.objects.create(self.request, name="Test", agency=None)
 
     def test_set_user_defaults_from_agency(self):
         sales_representative = magic_mixer.blend(zemauth.models.User)
@@ -54,7 +55,7 @@ class AccountManagerTestCase(TestCase):
         self.assertEqual(ob_sales_representative, agency.ob_sales_representative)
         self.assertEqual(ob_account_manager, agency.ob_account_manager)
 
-        account = Account.objects.create(self.request, name="Test", agency=agency)
+        account = Account.objects.create(self.request, name="Test", agency=agency, currency=dash.constants.Currency.EUR)
 
         self.assertEqual(sales_representative, account.settings.default_sales_representative)
         self.assertEqual(cs_representative, account.settings.default_cs_representative)
@@ -72,7 +73,7 @@ class AccountManagerTestCase(TestCase):
     def test_create_externally_managed_agency_valid(self):
         agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", is_externally_managed=True)
         self.request.user.email = "outbrain-salesforce@service.zemanta.com"
-        Account.objects.create(self.request, name="Account 1", agency=agency)
+        Account.objects.create(self.request, name="Account 1", agency=agency, currency=dash.constants.Currency.EUR)
         self.assertIsNotNone(core.models.Account.objects.filter(name="Account 1").first())
 
     def test_create_account_sources(self):
@@ -82,7 +83,9 @@ class AccountManagerTestCase(TestCase):
         source4 = magic_mixer.blend(core.models.Source, id=4, name="source4", released=False)
 
         agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", allowed_sources=[], available_sources=[])
-        account = Account.objects.create(self.request, name="Account 1", agency=agency)
+        account = Account.objects.create(
+            self.request, name="Account 1", agency=agency, currency=dash.constants.Currency.EUR
+        )
         self.assertIsNotNone(account.allowed_sources.all())
 
         agency = magic_mixer.blend(
@@ -92,7 +95,9 @@ class AccountManagerTestCase(TestCase):
             allowed_sources=[source1, source2],
             available_sources=[source1, source2, source3, source4],
         )
-        account = Account.objects.create(self.request, name="Account 2", agency=agency)
+        account = Account.objects.create(
+            self.request, name="Account 2", agency=agency, currency=dash.constants.Currency.EUR
+        )
         self.assertEqual(set(account.allowed_sources.all()), {source1, source2})
 
         agency = magic_mixer.blend(
@@ -102,10 +107,16 @@ class AccountManagerTestCase(TestCase):
             available_sources=[source1, source2, source3, source4],
             allowed_sources=[],
         )
-        account = Account.objects.create(self.request, name="Account 3", agency=agency)
+        account = Account.objects.create(
+            self.request, name="Account 3", agency=agency, currency=dash.constants.Currency.EUR
+        )
         self.assertEqual(set(account.allowed_sources.all()), set())
 
         account = Account.objects.create(
-            self.request, name="Account 4", agency=agency, allowed_sources=[source1, source4]
+            self.request,
+            name="Account 4",
+            agency=agency,
+            currency=dash.constants.Currency.EUR,
+            allowed_sources=[source1, source4],
         )
         self.assertEqual(set(account.allowed_sources.all()), {source1, source4})

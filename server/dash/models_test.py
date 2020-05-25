@@ -1304,7 +1304,7 @@ class HistoryTest(TestCase):
 
     def test_create_account(self):
         req = test_helper.fake_request(self.u)
-        models.Account.objects.create(req, "")
+        models.Account.objects.create(req, "", currency=constants.Currency.EUR)
 
         hist = models.History.objects.all().order_by("-created_dt").first()
         self.assertIn("Created settings", hist.changes_text)
