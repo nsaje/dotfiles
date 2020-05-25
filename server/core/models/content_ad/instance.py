@@ -9,8 +9,6 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
-OEN_ACCOUNT_ID = 305
-
 VALID_UPDATE_FIELDS = set(
     [
         "type",
