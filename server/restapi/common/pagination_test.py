@@ -153,6 +153,40 @@ class MarkerOffsetPaginationTestCase(TestCase):
         )
         self.assertEqual(accounts[0].id, 0)
 
+    def test_dict_list_zero_id(self):
+        magic_mixer.cycle(120).blend(Account, id=magic_mixer.sequence(lambda x: str(x)))
+        account_qs = Account.objects.order_by("id").values("id")
+        request = Request(factory.get("/"))
+        page = self.pagination.paginate_queryset(account_qs, request)
+        content = self.pagination.get_paginated_response(page).data
+        accounts = list(account_qs[0:100])
+        self.maxDiff = None
+        self.assertDictEqual(
+            content,
+            {
+                "count": 120,
+                "next": "http://testserver/?limit=100&marker={}".format(accounts[len(accounts) - 1]["id"]),
+                "data": accounts,
+            },
+        )
+        self.assertEqual(accounts[0]["id"], 0)
+
+        account_qs = Account.objects.order_by("pk").values("pk")
+        request = Request(factory.get("/"))
+        page = self.pagination.paginate_queryset(account_qs, request)
+        content = self.pagination.get_paginated_response(page).data
+        accounts = list(account_qs[0:100])
+        self.maxDiff = None
+        self.assertDictEqual(
+            content,
+            {
+                "count": 120,
+                "next": "http://testserver/?limit=100&marker={}".format(accounts[len(accounts) - 1]["pk"]),
+                "data": accounts,
+            },
+        )
+        self.assertEqual(accounts[0]["pk"], 0)
+
     def test_last_page(self):
         account_qs = [Account(id=x) for x in range(120)]
         request = Request(factory.get("/", {"marker": account_qs[99].id}))
