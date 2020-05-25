@@ -76,16 +76,33 @@ class RuleValidationMixin:
             )
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
             action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
+            sign = self._get_sign(action_type_config)
             if change_step is None:
                 raise exceptions.InvalidChangeStep("Please provide change step")
             elif change_step < action_type_config.min_step:
+                min_step = self._get_action_type_min_step_amount(action_type_config)
                 raise exceptions.InvalidChangeStep(
-                    f"Change step is too small. Please provide a value greater or equal to {action_type_config.min_step:.2f}{self._get_sign(action_type_config)}."
+                    f"Change step is too small. Please provide a value greater or equal to {min_step:.2f}{sign}."
                 )
             elif change_step > action_type_config.max_step:
+                max_step = self._get_action_type_max_step_amount(action_type_config)
                 raise exceptions.InvalidChangeStep(
-                    f"Change step is too big. Please provide a value lower than {action_type_config.max_step:.2f}{self._get_sign(action_type_config)}."
+                    f"Change step is too big. Please provide a value lower than {max_step:.2f}{sign}."
                 )
+
+    def _get_action_type_max_step_amount(self, action_type_config):
+        return self._get_action_type_step_value(action_type_config.max_step, action_type_config.type)
+
+    def _get_action_type_min_step_amount(self, action_type_config):
+        return self._get_action_type_step_value(action_type_config.min_step, action_type_config.type)
+
+    def _get_action_type_step_value(self, value, type_):
+        if type_ == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
+            return value
+        elif type_ == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
+            return value * 100
+        else:
+            raise Exception("Unknown type")
 
     def _validate_change_limit(self, changes, change_limit):
         action_type = changes.get("action_type", self.action_type)
@@ -96,21 +113,38 @@ class RuleValidationMixin:
             )
         if action_type in config.ADJUSTEMENT_ACTION_TYPES:
             action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
+            sign = self._get_sign(action_type_config)
             if change_limit is None:
                 raise exceptions.InvalidChangeLimit("Please provide change limit")
             elif change_limit < action_type_config.min_limit:
+                min_limit = self._get_action_type_min_limit_amount(action_type_config)
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too small. Please provide a value greater or equal to {action_type_config.min_limit:.2f}{self._get_sign(action_type_config)}."
+                    f"Change limit is too small. Please provide a value greater or equal to {min_limit:.2f}{sign}."
                 )
             elif change_limit > action_type_config.max_limit:
+                max_limit = self._get_action_type_max_limit_amount(action_type_config)
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too big. Please provide a value lower than {action_type_config.max_limit:.2f}{self._get_sign(action_type_config)}."
+                    f"Change limit is too big. Please provide a value lower than {max_limit:.2f}{sign}."
                 )
 
+    def _get_action_type_max_limit_amount(self, action_type_config):
+        return self._get_action_type_limit_value(action_type_config.max_limit, action_type_config.type)
+
+    def _get_action_type_min_limit_amount(self, action_type_config):
+        return self._get_action_type_limit_value(action_type_config.min_limit, action_type_config.type)
+
+    def _get_action_type_limit_value(self, value, type_):
+        if type_ == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
+            return value
+        elif type_ == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
+            return (value - 1) * 100
+        else:
+            raise Exception("Unknown type")
+
     def _get_sign(self, action_type_config):
-        if action_type_config.sign == "percentage":
+        if action_type_config.type == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
             return "%"
-        if action_type_config.sign == "currency":
+        if action_type_config.type == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
             return "$"
         return ""
 

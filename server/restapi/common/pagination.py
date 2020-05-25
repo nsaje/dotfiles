@@ -80,27 +80,28 @@ class MarkerOffsetPagination(pagination.BasePagination):
         self.count = self.get_count(queryset)
         self.request = request
 
-        if isinstance(queryset, QuerySet):
-            page = queryset.order_by("id")
-            if self.marker is not None:
-                page = page.filter(id__gt=self.marker)
-            page = list(page[: self.limit])
-
-        elif isinstance(queryset, collections.abc.Iterable):
-
-            try:
-                page = sorted(queryset, key=lambda x: x.id)
+        try:
+            if isinstance(queryset, QuerySet):
+                page = queryset.order_by("id")
                 if self.marker is not None:
-                    page = [x for x in page if x.id > self.marker]
+                    page = page.filter(id__gt=self.marker)
+                page = list(page[: self.limit])
+
+            elif isinstance(queryset, collections.abc.Iterable):
+                page = sorted(queryset, key=lambda x: _extract_id(x))
+                if self.marker is not None:
+                    page = [x for x in page if _extract_id(x) > self.marker]
 
                 page = page[: self.limit]
-            except AttributeError:
-                raise ValueError("MarkerOffsetPagination can not handle objects without a primary key")
 
-        else:
-            raise ValueError("MarkerOffsetPagination can not handle type {} queryset".format(type(queryset)))
+            else:
+                raise ValueError("MarkerOffsetPagination can not handle type {} queryset".format(type(queryset)))
 
-        self.new_marker = page[-1].id if len(page) == self.limit else None
+            self.new_marker = _extract_id(page[-1]) if len(page) == self.limit else None
+
+        except AttributeError:
+            raise ValueError("MarkerOffsetPagination can not handle objects without a primary key")
+
         return page
 
     def get_paginated_response(self, data):
@@ -145,3 +146,13 @@ class MarkerOffsetPagination(pagination.BasePagination):
             return queryset.count()
         except (AttributeError, TypeError):
             return len(queryset)
+
+
+def _extract_id(obj):
+    if isinstance(obj, collections.abc.Mapping):
+        if "id" in obj or "pk" in obj:
+            return obj.get("id") or obj.get("pk")
+
+        raise ValueError(f"Can not extract primary key from {obj}")
+
+    return obj.id
