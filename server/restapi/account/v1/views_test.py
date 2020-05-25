@@ -66,15 +66,37 @@ class LegacyAccountViewSetTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
-    def test_accounts_list_filter_agency(self):
-        agency = self.mix_agency(user=self.user, permissions=[Permission.READ])
-        agency2 = magic_mixer.blend(core.models.Agency)
-        magic_mixer.cycle(3).blend(core.models.Account, agency=agency)
-        magic_mixer.cycle(5).blend(core.models.Account, agency=agency2)
+    def test_accounts_list_filter_by_agency_id(self):
+        agency_one = self.mix_agency(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(3).blend(core.models.Account, agency=agency_one)
+
+        agency_two = self.mix_agency(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency_two)
+
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"agencyId": agency_one.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 3)
+
+    def test_accounts_list_filter_by_agency_id_with_account_access(self):
+        agency = magic_mixer.blend(core.models.Agency)
+
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency)
 
         r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"agencyId": agency.id})
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(len(resp_json["data"]), 3)
+
+    def test_accounts_list_filter_by_agency_id_with_agency_access(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency)
+
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 5)
 
     def test_accounts_list_exclude_archived(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ])

@@ -47,9 +47,8 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
         agency_id = request.GET.get("agencyId")
         if agency_id:
-            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
-            queryset_user_perm = queryset_user_perm.filter(agency=agency)
-            queryset_entity_perm = queryset_entity_perm.filter(agency=agency)
+            queryset_user_perm = queryset_user_perm.filter(agency_id=agency_id)
+            queryset_entity_perm = queryset_entity_perm.filter(agency_id=agency_id)
 
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             queryset_user_perm = queryset_user_perm.exclude_archived()
