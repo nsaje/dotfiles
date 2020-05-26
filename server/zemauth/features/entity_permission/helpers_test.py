@@ -2,6 +2,7 @@ import mock
 from django.contrib.auth.models import ContentType
 from django.contrib.auth.models import Permission
 from django.test import TestCase
+from rest_framework import pagination
 
 import core.models
 from utils.magic_mixer import magic_mixer
@@ -9,6 +10,15 @@ from utils.magic_mixer import magic_mixer
 from . import constants
 from . import helpers
 from . import model
+
+
+class LogDifferencesPaginator(pagination.BasePagination):
+    def __init__(self, offset, limit):
+        self.offset = offset
+        self.limit = limit
+
+    def paginate_queryset(self, queryset, request, view=None):
+        return list(queryset[self.offset : self.offset + self.limit])
 
 
 class HelpersTestCase(TestCase):
@@ -43,6 +53,27 @@ class HelpersTestCase(TestCase):
         mock_logger.warning.assert_not_called()
 
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
+    def test_query_paginated_for_agency_manager(self, mock_logger):
+        paginator = LogDifferencesPaginator(offset=5, limit=2)
+
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        magic_mixer.cycle(10).blend(core.models.Account, agency=agency)
+        permission = constants.Permission.READ
+        magic_mixer.blend(model.EntityPermission, user=request.user, agency=agency, permission=permission)
+
+        accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(request.user)
+        accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(
+            request.user, permission
+        )
+
+        helpers.log_paginated_differences_and_get_queryset(
+            request, paginator, permission, accounts_by_user_permission, accounts_by_entity_permission
+        )
+
+        mock_logger.warning.assert_not_called()
+
+    @mock.patch("zemauth.features.entity_permission.helpers.logger")
     def test_query_all_for_account_manager(self, mock_logger):
         user = magic_mixer.blend_user()
         agency = magic_mixer.blend(core.models.Agency)
@@ -59,6 +90,28 @@ class HelpersTestCase(TestCase):
         )
 
         self.assertEqual(sorted([x.id for x in accounts]), sorted([x.id for x in queryset]))
+        mock_logger.warning.assert_not_called()
+
+    @mock.patch("zemauth.features.entity_permission.helpers.logger")
+    def test_query_paginated_for_account_manager(self, mock_logger):
+        paginator = LogDifferencesPaginator(offset=5, limit=2)
+
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        accounts = magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[request.user])
+        permission = constants.Permission.READ
+        for account in accounts:
+            magic_mixer.blend(model.EntityPermission, user=request.user, account=account, permission=permission)
+
+        accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(request.user)
+        accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(
+            request.user, permission
+        )
+
+        helpers.log_paginated_differences_and_get_queryset(
+            request, paginator, permission, accounts_by_user_permission, accounts_by_entity_permission
+        )
+
         mock_logger.warning.assert_not_called()
 
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
@@ -87,6 +140,34 @@ class HelpersTestCase(TestCase):
         )
 
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
+    def test_query_paginated_difference_for_agency_manager(self, mock_logger):
+        paginator = LogDifferencesPaginator(offset=5, limit=2)
+
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        magic_mixer.cycle(10).blend(core.models.Account, agency=agency)
+        permission = constants.Permission.READ
+
+        accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(request.user)
+        accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(
+            request.user, permission
+        )
+
+        queryset = helpers.log_paginated_differences_and_get_queryset(
+            request, paginator, permission, accounts_by_user_permission, accounts_by_entity_permission
+        )
+
+        mock_logger.warning.assert_called_once_with(
+            helpers.LOG_MESSAGE,
+            user_email=request.user.email,
+            permission=permission,
+            rows_ids_by_user_permission=[x.id for x in queryset[5:7]],
+            rows_ids_by_entity_permission=[],
+            user_permission_queryset_model_name=core.models.Account.__name__,
+            entity_permission_queryset_model_name=core.models.Account.__name__,
+        )
+
+    @mock.patch("zemauth.features.entity_permission.helpers.logger")
     def test_query_all_difference_for_account_manager(self, mock_logger):
         user = magic_mixer.blend_user()
         agency = magic_mixer.blend(core.models.Agency)
@@ -107,6 +188,34 @@ class HelpersTestCase(TestCase):
             permission=permission,
             rows_ids_by_user_permission=set([x.id for x in queryset]),
             rows_ids_by_entity_permission=set(),
+            user_permission_queryset_model_name=core.models.Account.__name__,
+            entity_permission_queryset_model_name=core.models.Account.__name__,
+        )
+
+    @mock.patch("zemauth.features.entity_permission.helpers.logger")
+    def test_query_paginated_difference_for_account_manager(self, mock_logger):
+        paginator = LogDifferencesPaginator(offset=5, limit=2)
+
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[request.user])
+        permission = constants.Permission.READ
+
+        accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(request.user)
+        accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(
+            request.user, permission
+        )
+
+        queryset = helpers.log_paginated_differences_and_get_queryset(
+            request, paginator, permission, accounts_by_user_permission, accounts_by_entity_permission
+        )
+
+        mock_logger.warning.assert_called_once_with(
+            helpers.LOG_MESSAGE,
+            user_email=request.user.email,
+            permission=permission,
+            rows_ids_by_user_permission=[x.id for x in queryset[5:7]],
+            rows_ids_by_entity_permission=[],
             user_permission_queryset_model_name=core.models.Account.__name__,
             entity_permission_queryset_model_name=core.models.Account.__name__,
         )

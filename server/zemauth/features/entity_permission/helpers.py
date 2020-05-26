@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.db import models
+from rest_framework import pagination
 
 import zemauth.models
 from utils import zlogging
@@ -21,6 +24,21 @@ def log_differences_and_get_queryset(
         _log_all(user, permission, user_permission_queryset, entity_permission_queryset)
     return (
         entity_permission_queryset if user.has_perm("zemauth.fea_use_entity_permission") else user_permission_queryset
+    )
+
+
+def log_paginated_differences_and_get_queryset(
+    request: Any,
+    paginator: pagination.BasePagination,
+    permission: str,
+    user_permission_queryset: models.QuerySet,
+    entity_permission_queryset: models.QuerySet,
+) -> models.QuerySet:
+    _log_all_paginated(request, paginator, permission, user_permission_queryset, entity_permission_queryset)
+    return (
+        entity_permission_queryset
+        if request.user.has_perm("zemauth.fea_use_entity_permission")
+        else user_permission_queryset
     )
 
 
@@ -68,6 +86,28 @@ def _log_all(
             permission=permission,
             rows_ids_by_user_permission=rows_ids_by_user_permission,
             rows_ids_by_entity_permission=rows_ids_by_entity_permission,
+            user_permission_queryset_model_name=user_permission_queryset.model.__name__,
+            entity_permission_queryset_model_name=entity_permission_queryset.model.__name__,
+        )
+
+
+def _log_all_paginated(
+    request: Any,
+    paginator: pagination.BasePagination,
+    permission: str,
+    user_permission_queryset: models.QuerySet,
+    entity_permission_queryset: models.QuerySet,
+):
+    rows_ids_by_user_permission = paginator.paginate_queryset(user_permission_queryset.values("id"), request)
+    rows_ids_by_entity_permission = paginator.paginate_queryset(entity_permission_queryset.values("id"), request)
+
+    if rows_ids_by_user_permission != rows_ids_by_entity_permission:
+        logger.warning(
+            LOG_MESSAGE,
+            user_email=request.user.email,
+            permission=permission,
+            rows_ids_by_user_permission=[x.get("id") for x in rows_ids_by_user_permission],
+            rows_ids_by_entity_permission=[x.get("id") for x in rows_ids_by_entity_permission],
             user_permission_queryset_model_name=user_permission_queryset.model.__name__,
             entity_permission_queryset_model_name=entity_permission_queryset.model.__name__,
         )
