@@ -250,11 +250,22 @@
                                 )
                             "
                         >
-                            Publishers
+                            {{
+                                zemPermissions.hasPermission(
+                                    'zemauth.can_see_new_publisher_library'
+                                )
+                                    ? 'Publishers & Placements'
+                                    : 'Publishers'
+                            }}
                         </div>
                         <div class="zem-settings-section__description">
-                            Define your publisher targeting by whitelisting or
-                            blacklisting publisher groups.
+                            {{
+                                zemPermissions.hasPermission(
+                                    'zemauth.can_see_new_publisher_library'
+                                )
+                                    ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement groups.'
+                                    : 'Define your publisher targeting by whitelisting or blacklisting publisher groups.'
+                            }}
                         </div>
                     </div>
                     <zem-publisher-group-targeting
@@ -270,6 +281,21 @@
                             store.setPublisherGroupsTargeting($event.$event)
                         "
                     ></zem-publisher-group-targeting>
+                    <div
+                        *ngIf="
+                            false &&
+                            zemPermissions.hasPermission(
+                                'zemauth.can_see_new_publisher_library'
+                            )
+                        "
+                        class="zem-settings-section__description"
+                    >
+                        If you are using different level whitelists, it means
+                        you are targeting only whitelisted placements from
+                        whitelisted publishers and additionally all placements
+                        on whitelisted publishers that are not included in
+                        placement list.
+                    </div>
                 </div>
             </div>
 
