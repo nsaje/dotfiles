@@ -2,10 +2,12 @@
     <button
         [hidden]="this.publisherGroup.implicit"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--connections-icon zem-publisher-group-actions-cell__item"
+        title="Connections"
         (click)="openConnectionsModal()"
     ></button>
     <button
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--download-icon zem-publisher-group-actions-cell__item"
+        title="Download"
         (click)="download()"
     ></button>
     <button
@@ -14,12 +16,14 @@
             isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
         "
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-deal-actions-cell__item"
+        title="Edit"
         (click)="openEditPublisherGroupModal()"
     ></button>
     <button
         [hidden]="this.publisherGroup.implicit"
         [disabled]="isReadOnly"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-publisher-group-actions-cell__item"
+        title="Delete"
         (click)="delete()"
     ></button>
 </div>

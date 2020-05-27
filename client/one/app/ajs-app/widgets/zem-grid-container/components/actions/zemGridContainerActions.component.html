@@ -30,9 +30,16 @@
         "
     ></zem-bulk-blacklist-actions>
 
+    <zem-rule-actions
+        ng-if="$ctrl.areRuleActionsVisible()"
+        class="zem-rule-actions button-bar-item"
+        [entity-id]="$ctrl.entity.id"
+        [entity-type]="$ctrl.entity.type"
+    ></zem-rule-actions>
+
     <zem-add-to-publishers-action
         ng-if="$ctrl.isAddToPublishersAndPlacementsButtonVisible()"
-        class="zem-add-to-publishers-action"
+        class="zem-add-to-publishers-action button-bar-item"
         [selected-rows]="$ctrl.selectedRows"
         [account-id]="$ctrl.accountId"
         (action-success)="$ctrl.gridApi.clearSelection()"
@@ -45,13 +52,6 @@
         [breakdown]="$ctrl.breakdown"
         (import-success)="$ctrl.gridApi.reload()"
     ></zem-bid-modifier-actions>
-
-    <zem-rule-actions
-        ng-if="$ctrl.areRuleActionsVisible()"
-        class="zem-rule-actions button-bar-item"
-        [entity-id]="$ctrl.entity.id"
-        [entity-type]="$ctrl.entity.type"
-    ></zem-rule-actions>
 
     <zem-grid-export
         ng-if="$ctrl.isGridExportVisible()"

@@ -69,6 +69,7 @@ import {LoadingOverlayDirective} from './directives/loading-overlay/loading-over
 import {ItemScopeCellComponent} from './components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {PublisherGroupEditFormComponent} from './components/publisher-group-edit-form/publisher-group-edit-form.component';
 import {ConnectionActionsCellComponent} from './components/connection-actions-cell/connection-actions-cell.component';
+import {IconTooltipCellComponent} from './components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -129,6 +130,7 @@ const EXPORTED_DECLARATIONS = [
     ImageCheckboxInputGroupComponent,
     ExpandableSectionComponent,
     ItemScopeCellComponent,
+    IconTooltipCellComponent,
     PublisherGroupEditFormComponent,
     ConnectionActionsCellComponent,
 ];
@@ -150,6 +152,7 @@ const EXPORTED_DECLARATIONS = [
             NoRowsOverlayComponent,
             HelpPopoverHeaderComponent,
             ItemScopeCellComponent,
+            IconTooltipCellComponent,
         ]),
         NgbPaginationModule,
     ],

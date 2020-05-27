@@ -1,0 +1,11 @@
+<span
+    *ngIf="tooltip"
+    class="zem-icon-tooltip-cell__icon {{ icon }}"
+    [zemPopover]="tooltip"
+    [placement]="placement"
+    triggers="mouseenter:mouseleave"
+    container="body"
+></span>
+<ng-container *ngIf="!tooltip">
+    N/A
+</ng-container>

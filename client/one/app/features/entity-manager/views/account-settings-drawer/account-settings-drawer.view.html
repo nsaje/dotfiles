@@ -483,7 +483,7 @@
                                 zemPermissions.hasPermission(
                                     'zemauth.can_see_new_publisher_library'
                                 )
-                                    ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement groups.'
+                                    ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement lists.'
                                     : 'Define your publisher targeting by whitelisting or blacklisting publisher groups.'
                             }}
                         </div>
@@ -496,6 +496,11 @@
                         "
                         [blacklistedPublisherGroups]="
                             state.entity.targeting.publisherGroups.excluded
+                        "
+                        [showNewLabels]="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_see_new_publisher_library'
+                            )
                         "
                         (onUpdate)="
                             store.setPublisherGroupsTargeting($event.$event)

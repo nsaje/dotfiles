@@ -7,6 +7,7 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         blacklistedPublisherGroups: '<',
         whitelistedPublisherGroupsErrors: '<',
         blacklistedPublisherGroupsErrors: '<',
+        showNewLabels: '<',
         onUpdate: '&',
     },
     template: require('./zemPublisherGroupTargeting.component.html'), // eslint-disable-line max-len
@@ -27,6 +28,18 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onChanges = function(changes) {
+            if (changes.showNewLabels) {
+                $ctrl.texts.selectedIncludedTitle = $ctrl.showNewLabels
+                    ? 'Whitelisted publisher & placements list'
+                    : 'Whitelisted publisher groups';
+                $ctrl.texts.selectedExcludedTitle = $ctrl.showNewLabels
+                    ? 'Blacklisted publisher & placements list'
+                    : 'Blacklisted publisher groups';
+                $ctrl.texts.selectTargetingButton = $ctrl.showNewLabels
+                    ? 'Select list'
+                    : 'Add publisher group';
+            }
+
             if (
                 changes.whitelistedPublisherGroups ||
                 changes.blacklistedPublisherGroups
