@@ -35,7 +35,8 @@ export class CreditsStoreState {
             comment: null,
         } as Credit,
         scopeState: null as ScopeSelectorState,
-        isReadOnly: null as boolean,
+        isReadOnly: false as boolean,
+        isSigned: false as boolean,
         campaignBudgets: [] as CampaignBudget[],
         fieldsErrors: new CreditsStoreFieldsErrorsState(),
     };

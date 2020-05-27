@@ -45,7 +45,80 @@
                 </div>
             </div>
             <div class="zem-modal__body">
-                <!-- credit item form -->
+                <zem-credit-edit-form
+                    class="zem-credit-edit-form"
+                    [credit]="state.creditActiveEntity.entity"
+                    [isReadOnly]="state.creditActiveEntity.isReadOnly"
+                    [isSigned]="state.creditActiveEntity.isSigned"
+                    [creditErrors]="state.creditActiveEntity.fieldsErrors"
+                    (creditChange)="store.changeCreditActiveEntity($event)"
+                >
+                    <div class="zem-credits-view__splitter"></div>
+                    <zem-scope-selector
+                        class="zem-credit-edit-form__item zem-scope-selector"
+                        [scopeState]="state.creditActiveEntity.scopeState"
+                        [agencyErrors]="
+                            state.creditActiveEntity.fieldsErrors?.agencyId
+                        "
+                        [accountErrors]="
+                            state.creditActiveEntity.fieldsErrors?.accountId
+                        "
+                        [isAgencyScopeDisabled]="
+                            !state.hasAgencyScope ||
+                            state.creditActiveEntity.isReadOnly ||
+                            state.creditActiveEntity.isSigned
+                        "
+                        [isAccountScopeDisabled]="
+                            state.creditActiveEntity.isReadOnly ||
+                            state.creditActiveEntity.isSigned
+                        "
+                        (scopeStateChange)="
+                            store.setCreditActiveEntityScope($event)
+                        "
+                    >
+                        <ng-template #agencyScopeHeaderTemplate>
+                            <strong>Agency</strong><br />
+                            <span
+                                class="zem-radio-input__deemphasized-label-text"
+                                >You will be able to use credit on the entire
+                                agency and all accounts, campaigns and ad
+                                groups.</span
+                            >
+                        </ng-template>
+                        <ng-template #accountScopeHeaderTemplate>
+                            <strong>Account</strong><br />
+                            <span
+                                class="zem-radio-input__deemphasized-label-text"
+                                >You will be able to use credit on the selected
+                                account and all campaigns and ad groups
+                                belonging to the selected account.</span
+                            >
+                        </ng-template>
+                        <ng-template #accountScopeContentTemplate>
+                            <zem-select-input
+                                class="zem-select-input"
+                                [items]="state.accounts"
+                                [placeholder]="'Select account'"
+                                [value]="
+                                    state.creditActiveEntity.entity.accountId
+                                "
+                                [bindLabel]="'name'"
+                                [bindValue]="'id'"
+                                [isClearable]="false"
+                                [isSearchable]="true"
+                                [isDisabled]="
+                                    state.creditActiveEntity.isReadOnly ||
+                                    state.creditActiveEntity.isSigned
+                                "
+                                (valueChange)="
+                                    store.setCreditActiveEntityAccount($event)
+                                "
+                            >
+                            </zem-select-input>
+                        </ng-template>
+                    </zem-scope-selector>
+                    <div class="zem-credits-view__splitter"></div>
+                </zem-credit-edit-form>
                 <!-- campaign budget list -->
             </div>
             <div class="zem-modal__footer zem-buttons-panel">

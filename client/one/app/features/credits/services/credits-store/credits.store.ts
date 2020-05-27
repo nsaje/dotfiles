@@ -300,6 +300,10 @@ export class CreditsStore extends Store<CreditsStoreState>
                     ...newActiveEntity.entity,
                     ...entity,
                 }),
+                isSigned: this.isSigned({
+                    ...newActiveEntity.entity,
+                    ...entity,
+                }),
                 entity: {
                     ...newActiveEntity.entity,
                     ...entity,
@@ -337,11 +341,20 @@ export class CreditsStore extends Store<CreditsStoreState>
     }
 
     changeCreditActiveEntity(event: ChangeEvent<Credit>): void {
-        this.patchState(
-            {...event.target, ...event.changes},
-            'creditActiveEntity',
-            'entity'
-        );
+        this.setState({
+            ...this.state,
+            creditActiveEntity: {
+                ...this.state.creditActiveEntity,
+                isSigned: this.isSigned({
+                    ...event.target,
+                    ...event.changes,
+                }),
+                entity: {
+                    ...event.target,
+                    ...event.changes,
+                },
+            },
+        });
     }
 
     setCreditRefundActiveEntity(entity: Partial<CreditRefund>): void {
@@ -491,6 +504,10 @@ export class CreditsStore extends Store<CreditsStoreState>
                     }
                 );
         });
+    }
+
+    private isSigned(credit: Credit): boolean {
+        return credit.status === CreditStatus.SIGNED;
     }
 
     private isReadOnly(credit: Credit): boolean {

@@ -6,6 +6,7 @@ import {CreditsView} from './views/credits/credits.view';
 import {CreditsComponent} from './components/credits/credits.component';
 import {CreditsScopeSelectorComponent} from './components/credits-scope-selector/credits-scope-selector.component';
 import {CreditsTotalsComponent} from './components/credits-totals/credits-totals.component';
+import {CreditEditFormComponent} from './components/credit-edit-form/credit-edit-form.component';
 
 @NgModule({
     declarations: [
@@ -14,6 +15,7 @@ import {CreditsTotalsComponent} from './components/credits-totals/credits-totals
         CreditsComponent,
         CreditsScopeSelectorComponent,
         CreditsTotalsComponent,
+        CreditEditFormComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

@@ -1,0 +1,102 @@
+<div
+    class="zem-credit-edit-form__item zem-credit-edit-form__owner-details"
+    *ngIf="credit.id"
+>
+    Created by <strong>{{ credit.createdBy }}</strong> on
+    <strong>{{ createdOnDate }}</strong>
+</div>
+<zem-date-form-group
+    class="zem-credit-edit-form__item zem-date-form-group zem-credit-edit-form__date-form-group"
+    [isDisabled]="isReadOnly || isSigned"
+    [label]="'Valid from'"
+    [value]="credit.startDate"
+    [minDate]="minStartDate"
+    [errors]="creditErrors?.startDate"
+    (valueChange)="onStartDateChange($event)"
+></zem-date-form-group>
+<zem-date-form-group
+    class="zem-credit-edit-form__item zem-date-form-group zem-credit-edit-form__date-form-group"
+    [isDisabled]="isReadOnly"
+    [label]="'Valid to'"
+    [value]="credit.endDate"
+    [minDate]="minEndDate"
+    [errors]="creditErrors?.endDate"
+    (valueChange)="onEndDateChange($event)"
+></zem-date-form-group>
+<zem-select-form-group
+    class="zem-credit-edit-form__item zem-select-form-group zem-credit-edit-form__select-form-group"
+    [isDisabled]="isReadOnly || isSigned"
+    [label]="'License Fee (%)'"
+    [value]="credit.licenseFee"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="licenseFeeItems"
+    [isSearchable]="true"
+    [addCustomItemFn]="addLicenseFeeItem"
+    [errors]="creditErrors?.licenseFee"
+    (valueChange)="onLicenseFeeChange($event)"
+></zem-select-form-group>
+<zem-select-form-group
+    class="zem-credit-edit-form__item zem-select-form-group zem-credit-edit-form__select-form-group"
+    [isDisabled]="isReadOnly || isSigned"
+    [label]="'Currency'"
+    [value]="credit.currency"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="CURRENCIES"
+    [isSearchable]="true"
+    [isClearable]="false"
+    [orderByValue]="'name'"
+    [errors]="creditErrors?.currency"
+    (valueChange)="onCurrencyChange($event)"
+></zem-select-form-group>
+<zem-currency-form-group
+    class="zem-credit-edit-form__item zem-currency-form-group zem-credit-edit-form__currency-form-group"
+    [isDisabled]="isReadOnly || isSigned"
+    [label]="'Credit'"
+    [value]="credit.amount"
+    [currencySymbol]="currencySymbol"
+    [errors]="creditErrors?.amount"
+    (valueChange)="onAmountChange($event)"
+></zem-currency-form-group>
+<zem-textarea-form-group
+    class="zem-credit-edit-form__item zem-textarea-form-group zem-credit-edit-form__textarea-form-group"
+    [isDisabled]="isReadOnly"
+    [label]="'Custom Notes'"
+    [value]="credit.comment"
+    [errors]="creditErrors?.comment"
+    (valueChange)="onCommentChange($event)"
+></zem-textarea-form-group>
+<zem-text-form-group
+    class="zem-credit-edit-form__item zem-text-form-group zem-credit-edit-form__text-form-group"
+    [isDisabled]="isReadOnly"
+    [label]="'Contract ID'"
+    [placeholder]="'123456ABC789NgQAAU'"
+    [value]="credit.contractId"
+    [errors]="creditErrors?.contractId"
+    (valueChange)="onContractIdChange($event)"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-credit-edit-form__item zem-text-form-group zem-credit-edit-form__text-form-group"
+    [isDisabled]="isReadOnly"
+    [label]="'Contract ID'"
+    [placeholder]="'123456789'"
+    [value]="credit.contractNumber"
+    [errors]="creditErrors?.contractNumber"
+    (valueChange)="onContractNumberChange($event)"
+></zem-text-form-group>
+
+<ng-content></ng-content>
+
+<div class="zem-credit-edit-form__item">
+    By signing the credit line item, no more future changes to the amount, fee,
+    start date and scope will be possible.
+</div>
+<zem-checkbox-input
+    class="zem-credit-edit-form__item zem-checkbox-input zem-credit-edit-form__checkbox-input"
+    [isDisabled]="isReadOnly || wasSigned"
+    [isChecked]="isSigned"
+    (toggle)="onSignedToggle($event)"
+>
+    Signed
+</zem-checkbox-input>
