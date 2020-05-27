@@ -246,6 +246,23 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_adgroups_list_account_id(self):
+        account_one = self.mix_account(self.user, permissions=[Permission.READ])
+        account_two = self.mix_account(self.user, permissions=[Permission.READ])
+
+        ad_groups_one = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account=account_one)
+        magic_mixer.cycle(5).blend(core.models.AdGroup, account=account_two)
+
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"accountId": account_one.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_ids = sorted([x.get("id") for x in resp_json["data"]])
+        ad_groups_one_ids = sorted([str(x.id) for x in ad_groups_one])
+        self.assertEqual(resp_json_ids, ad_groups_one_ids)
+        for item in resp_json["data"]:
+            self.validate_against_db(item)
+            db_item = core.models.AdGroup.objects.get(pk=item["id"])
+            self.assertEqual(db_item.campaign.account_id, account_one.id)
+
     def test_adgroups_list_campaign_id(self):
         account = self.mix_account(self.user, permissions=[Permission.READ])
 

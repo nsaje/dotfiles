@@ -268,4 +268,5 @@ class AdGroupQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     campaign_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
     include_archived = rest_framework.serializers.BooleanField(default=False, required=False)

@@ -1320,9 +1320,10 @@ maxBid            | [money][#money]                     | the maximum allowed bi
 
     + Attributes (AdGroupResponse)
 
-### List ad groups [GET /rest/v1/adgroups/{?campaignId,includeArchived}]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived}]
 
 + Parameters
+    + accountId: 168 (number, optional) - Optional account ID.
     + campaignId: 608 (number, optional) - Optional campaign ID.
     + includeArchived (bool, optional) - Set to true to retrieve archived ad groups.
         + Default: false

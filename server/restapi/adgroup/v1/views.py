@@ -39,6 +39,11 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         queryset_user_perm = core.models.AdGroup.objects.filter_by_user(request.user)
         queryset_entity_perm = core.models.AdGroup.objects.filter_by_entity_permission(request.user, Permission.READ)
 
+        account_id = qpe.validated_data.get("account_id", None)
+        if account_id:
+            queryset_user_perm = queryset_user_perm.filter(campaign__account_id=account_id)
+            queryset_entity_perm = queryset_entity_perm.filter(campaign__account_id=account_id)
+
         campaign_id = qpe.validated_data.get("campaign_id", None)
         if campaign_id:
             campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
