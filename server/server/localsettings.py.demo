@@ -15,7 +15,7 @@ SECRET_KEY = "=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l"
 DATABASE_READ_REPLICAS = []
 
 # Stats databases
-STATS_DB_POSTGRES_MAX_DAYS = 62
+STATS_DB_POSTGRES_MAX_DAYS = 50
 STATS_DB_POSTGRES = ["stats-postgres"]
 STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
 STATS_DB_HOT_CLUSTER = "stats"
