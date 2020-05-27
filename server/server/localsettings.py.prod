@@ -591,6 +591,7 @@ REST_FRAMEWORK = {
     "DEFAULT_OVERRIDE_THROTTLE_RATES": {
         "oendev@outbrain.com": "320/second",
         "filippo.portolano@inpwrd.com": "30/second",
+        "orz@cortexmg.com": "30/second",
     },
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
