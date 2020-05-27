@@ -26,6 +26,21 @@
         * `tab.gridIntegrationService` stores entity and breakdown internally
         * `tab.gridIntegrationService.createDataSource` adds new data source to `tab.gridIntegrationService`'s `DATA_SOURCE_CACHE` if datasource for tab's entity and breakdown doesn't exist
             * create metadata via `zemGridEndpointService.createMetaData(level, entityId, breakdown)`
+                * `breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown)`
+                * `columns = zemGridEndpointColumns.createColumns(level, breakdownGroups)`
+                * `categories = zemGridEndpointColumns.createCategories(columns)`
+                * returns:
+                ```plain
+                {
+                    id: entityId,
+                    level: level,
+                    breakdown: breakdown,
+                    columns: columns,
+                    categories: categories,
+                    breakdownGroups: breakdownGroups,
+                    ext: {}, // extensions placeholder
+                };
+                ```
             * create endpoint via `zemGridEndpointService.createEndpoint(metadata)`
             * create data source via `zemDataSourceService.createInstance(endpoint, $scope)` (`$scope` is used for pub-sub notification broadcasting in this instance of data source)
         * `grid.dataSource` is then set to data source created or data source loaded form `DATA_SOURCE_CACHE`
@@ -36,32 +51,130 @@
 
 ## `zemGrid` initialization
 
-* new `$ctrl.grid` object gets created in `zemGrid.$onInit()` (`$onInit` is always triggered when switching tabs) via `zemGridObject.createGrid()`
-    * `$ctrl.grid: zemGridObject`
-        * main data structure holding entire grid state that is passed to the grid components and services
-        * `$ctrl.grid.meta.pubsub = zemGridPubSub.createInstance($scope)`
-            * pub-sub service enabling communication between different grid's components and services
-        * `$ctrl.grid.meta.dataService = zemGridDataService.createInstance($ctrl.grid, $ctrl.dataSource)`
-            * a service (wrapper) responsible for requesting and parsing data (and metadata) correctly from tab's `$ctrl.dataSource`
-            * listens to `dataSource.onStatsUpdated` and `dataSource.onDataUpdated` and acts accordingly
-            * `dataService.replaceDataSource` should be used to swap data sources used by grids in different tabs, but it's not relevant, because grid `$onInit` is always executed when switching tabs (?)
-        * `$ctrl.grid.meta.columnsService = zemGridColumnsService.createInstance($ctrl.grid)`
-            * responsible for calculating which columns are visible in grid
-            * different events trigger recalculation of visible columns:
-                * `EVENTS.METADATA_UPDATED` and `EVENTS.DATA_UPDATED`
-                * `zemCostModeService.onCostModeUpdate`
-                * `zemNavigationNewService.onUsesBCMv2Update`
-                * `zemNavigationNewService.onHierarchyUpdate`
-            * exposes methods to get/set columns visibility
-        * `$ctrl.grid.meta.orderService = zemGridOrderService.createInstance($ctrl.grid)`
-            * synchronizes `grid.meta.dataService` order and order indicator in `zemGridHeaderCellData`
-        * `$ctrl.grid.meta.collapseService = zemGridCollapseService.createInstance($ctrl.grid)`
-            * manages visibility of grid's rows - `zemGridCellBreakdownField` collapse/expand row toggle
-        * `$ctrl.grid.meta.selectionService = zemGridSelectionService.createInstance($ctrl.grid)`
-            * provides selection functionality used by checkbox directives (header and cell)
-        * `$ctrl.grid.meta.api = zemGridApi.createInstance($ctrl.grid)`
-            * `zemGridApi` provides interface for interaction with `zemGrid` - reference can be sent to non-grid components (e.g. `zemGridColumnSelector`, `zemGridBreakdownSelector` etc.)
+* `$onInit` hook is triggered when switching tabs and tab was not activated yet
+    * new `$ctrl.grid` object gets created via `zemGridObject.createGrid()`
+        * `$ctrl.grid: zemGridObject`
+            * main data structure holding entire grid state that is passed to the grid components and services
+                * `zemGridObject` structure:
+                ```plain
+                {
+                    this.header = {
+                        // zem-grid header
+                        columns: [], // array of visible columns (atm. subset of meta.data.columns)
+                        ui: createUiObject(),
+                    };
+                    this.body = {
+                        // zem-grid body
+                        rows: [], // flatten DataSource data (breakdown tree); see createRow() for row fields def.
+                        ui: createUiObject(),
+                    };
+                    this.footer = {
+                        // zem-grid footer
+                        row: null, // footer is actually one special row
+                        ui: createUiObject(),
+                    };
+
+                    this.meta = {
+                        // meta information and functionality
+                        api: null, // zemGridApi - api for exposed/public zem-grid functionality
+                        options: null, // Options (enableSelection, maxSelectedRows, etc.)
+                        service: null, // zemGridDataService - access to data
+                        pubsub: null, // zemGridPubSub - internal message queue
+                        data: null, // meta-data retrieved through Endpoint - columns definitions
+                        scope: null, // zem-grid scope used for running $digest and $emit internally
+                    };
+
+                    this.ui = {
+                        element: null, // zem-grid dom element
+                        columnsWidths: [], // columns widths used by grid cells
+                    };
+
+                    this.ext = {
+                        // extension objects (placeholder)
+                        selection: null, // selection extensions
+                        costMode: constants.costMode.PUBLIC, // cost mode extensions
+                    };
+                }
+                ```
+                * `zemGridObject`.`header`.`columns` structure:
+                ```plain
+                {
+                    type: data.type, // Reuse data type - type of column (text, link, icon, etc.)
+                    field: data.field, // Reuse data field - some kind of id  (data retrieval, storage, etc.)
+                    data: angular.copy(data), // Column metadata retrieved from endpoint (cloned to prevent circular references)
+                    visible: true, // Visibility flag
+                }
+                ```
+                * `zemGridObject`.`body`.`rows` structure:
+                    ```plain
+                    {
+                        id: id, // Row id
+                        type: type, // Type of a row (STATS, BREAKDOWN)
+                        entity: data.entity, // Which entity's stats does row display (account, campaign, ad_group, content_ad)
+                        data: data, // Data that corresponds to this row (stats or breakdown object - see DataSource)
+                        level: level, // Level of data in breakdown tree which this row represents
+                        parent: parent, // Parent row - row on which breakdown has been made
+                        collapsed: false, // Collapse flag used by collapsing feature
+                        visible: true, // Visibility flag - row can be hidden for different reasons (e.g. collapsed parent)
+                    }
+                    ``` 
+            * `$ctrl.grid.meta.pubsub = zemGridPubSub.createInstance($scope)`
+                * pub-sub service enabling communication between different grid's components and services
+            * `$ctrl.grid.meta.dataService = zemGridDataService.createInstance($ctrl.grid, $ctrl.dataSource)`
+                * a service (wrapper) responsible for requesting and parsing data (and metadata) correctly from tab's `$ctrl.dataSource`
+                * listens to `dataSource.onStatsUpdated` and `dataSource.onDataUpdated` and acts accordingly
+                * `dataService.replaceDataSource` should be used to swap data sources used by grids in different tabs
+            * `$ctrl.grid.meta.columnsService = zemGridColumnsService.createInstance($ctrl.grid)`
+                * responsible for calculating which columns are visible in grid
+                * different events trigger recalculation of visible columns:
+                    * `EVENTS.METADATA_UPDATED` and `EVENTS.DATA_UPDATED`
+                    * `zemCostModeService.onCostModeUpdate`
+                    * `zemNavigationNewService.onUsesBCMv2Update`
+                    * `zemNavigationNewService.onHierarchyUpdate`
+                * exposes methods to get/set columns visibility
+            * `$ctrl.grid.meta.orderService = zemGridOrderService.createInstance($ctrl.grid)`
+                * synchronizes `grid.meta.dataService` order and order indicator in `zemGridHeaderCellData`
+            * `$ctrl.grid.meta.collapseService = zemGridCollapseService.createInstance($ctrl.grid)`
+                * manages visibility of grid's rows - `zemGridCellBreakdownField` collapse/expand row toggle
+            * `$ctrl.grid.meta.selectionService = zemGridSelectionService.createInstance($ctrl.grid)`
+                * provides selection functionality used by checkbox directives (header and cell)
+            * `$ctrl.grid.meta.api = zemGridApi.createInstance($ctrl.grid)`
+                * `zemGridApi` provides interface for interaction with `zemGrid` - reference can be sent to non-grid components (e.g. `zemGridColumnSelector`, `zemGridBreakdownSelector` etc.)
+* `$onChanges` hook is triggered when switching tabs and tab is already activated
+    * on the existing `$ctrl.grid` object the `dataSource` is replaced via:
+    `$ctrl.grid.meta.dataService.replaceDataSource($ctrl.dataSource);`
 * `onInitialized` output is used to set grid api via `tab.gridIntegrationService.setGridApi(gridApi)` once `zemGrid` is initialized
+
+## `zemGridEndpointColumns` factory
+
+* `API`:
+    ```plain
+    {
+        COLUMNS: COLUMNS,
+        findColumnByField: findColumnByField, // NOT USED (DEPRECATED)
+        isAudienceMetricColumn: isAudienceMetricColumn, 
+        createColumns: createColumns,
+        createCategories: createCategories,
+        setDynamicColumns: setDynamicColumns,
+    }
+    ```
+* `COLUMNS`: object representing columns
+    * column structure:
+        ```plain
+        {
+            nameCssClass: string, // additional css classes to be added to header column
+            internal: string || string[], // apply zem-internal-feature directive to column if permissions are internal
+            shown: string || string[], // show or hide column based on permissions
+            order: boolean, // mark if the column can be ordered
+            orderField: string, // (optional) applied only if order == true
+            initialOrder: zemGridConstants.gridColumnOrder, // (optional) applied only if order == true
+            name: string, // text to be displayed as column header text
+            field: string, // name of the property where data is located
+            type: zemGridConstants.gridColumnTypes,
+            help: string, // text to be displayed in the help-popover component 
+            totalRow: boolean, // mark if the column has total data
+        }
+        ```
 
 # `zemReportDownload` 
 
