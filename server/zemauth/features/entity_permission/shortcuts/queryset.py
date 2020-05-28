@@ -29,13 +29,16 @@ class HasEntityPermissionQuerySetMixin(metaclass=abc.ABCMeta):
             raise ValueError("Query path to account must be provided.")
 
         query_path_to_account = f"{query_path_to_account}__" if query_path_to_account != "" else query_path_to_account
-        query_set = self.filter(
-            models.Q(**{f"{query_path_to_account}entitypermission__user": user})
-            & models.Q(**{f"{query_path_to_account}entitypermission__permission": permission})
+
+        accounts_ids = user.entitypermission_set.filter(permission=permission, account__isnull=False).values_list(
+            "account_id", flat=True
         )
-        query_set |= self.filter(
-            models.Q(**{f"{query_path_to_account}agency__entitypermission__user": user})
-            & models.Q(**{f"{query_path_to_account}agency__entitypermission__permission": permission})
+        agencies_ids = user.entitypermission_set.filter(permission=permission, agency__isnull=False).values_list(
+            "agency_id", flat=True
+        )
+        query_set = self.filter(
+            models.Q(**{f"{query_path_to_account}id__in": accounts_ids})
+            | models.Q(**{f"{query_path_to_account}agency_id__in": agencies_ids})
         )
 
         return query_set
