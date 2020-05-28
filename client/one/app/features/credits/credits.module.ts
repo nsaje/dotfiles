@@ -7,6 +7,7 @@ import {CreditsComponent} from './components/credits/credits.component';
 import {CreditsScopeSelectorComponent} from './components/credits-scope-selector/credits-scope-selector.component';
 import {CreditsTotalsComponent} from './components/credits-totals/credits-totals.component';
 import {CreditEditFormComponent} from './components/credit-edit-form/credit-edit-form.component';
+import {CampaignBudgetsGridComponent} from './components/campaign-budgets-grid/campaign-budgets-grid.component';
 
 @NgModule({
     declarations: [
@@ -16,6 +17,7 @@ import {CreditEditFormComponent} from './components/credit-edit-form/credit-edit
         CreditsScopeSelectorComponent,
         CreditsTotalsComponent,
         CreditEditFormComponent,
+        CampaignBudgetsGridComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

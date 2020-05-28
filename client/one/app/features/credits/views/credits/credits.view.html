@@ -119,7 +119,22 @@
                     </zem-scope-selector>
                     <div class="zem-credits-view__splitter"></div>
                 </zem-credit-edit-form>
-                <!-- campaign budget list -->
+                <ng-container *ngIf="state.creditActiveEntity.entity.id">
+                    <div class="zem-credits-view__splitter"></div>
+                    <div class="zem-credits-view__modal-body-title">
+                        Allocated budget items
+                    </div>
+                    <zem-campaign-budgets-grid
+                        class="zem-campaign-budgets-grid"
+                        [campaignBudgets]="
+                            state.creditActiveEntity.campaignBudgets
+                        "
+                        [currency]="state.creditActiveEntity.entity.currency"
+                        [context]="context"
+                        [isLoading]="state.requests.listBudgets.inProgress"
+                    >
+                    </zem-campaign-budgets-grid>
+                </ng-container>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button
