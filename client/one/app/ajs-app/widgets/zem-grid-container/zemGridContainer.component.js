@@ -20,6 +20,7 @@ angular.module('one.widgets').component('zemGridContainer', {
         var $ctrl = this;
 
         var LOCAL_STORAGE_KEY_NAMESPACE = 'zemGridContainer';
+        var bidModifierUpdatesSubscription;
 
         $ctrl.constants = constants;
         $ctrl.onGridInitialized = onGridInitialized;
@@ -31,6 +32,12 @@ angular.module('one.widgets').component('zemGridContainer', {
 
             var tab = getTab($ctrl.breakdown);
             activateTab(tab);
+        };
+
+        $ctrl.$onDestroy = function() {
+            if (bidModifierUpdatesSubscription) {
+                bidModifierUpdatesSubscription.unsubscribe();
+            }
         };
 
         function getInitializedTabs() {
@@ -165,7 +172,11 @@ angular.module('one.widgets').component('zemGridContainer', {
         function onGridInitialized(tab, gridApi) {
             tab.gridIntegrationService.setGridApi(gridApi);
 
-            zemBidModifierUpdatesService
+            if (bidModifierUpdatesSubscription) {
+                bidModifierUpdatesSubscription.unsubscribe();
+                bidModifierUpdatesSubscription = undefined;
+            }
+            bidModifierUpdatesSubscription = zemBidModifierUpdatesService
                 .getAllUpdates$()
                 .subscribe(markOtherTabsForRefresh);
         }
