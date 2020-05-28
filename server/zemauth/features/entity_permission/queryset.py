@@ -11,6 +11,9 @@ class EntityPermissionQuerySet(models.QuerySet):
             entity_permission_qs |= self.filter_by_agency(account.agency)
         return entity_permission_qs
 
+    def filter_by_accounts(self, accounts):
+        return self.filter(account__in=accounts)
+
     def filter_by_campaign(self, campaign):
         return self.filter(models.Q(agency__account__campaign=campaign) | models.Q(account__campaign=campaign))
 

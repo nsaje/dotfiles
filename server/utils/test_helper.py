@@ -28,7 +28,10 @@ def remove_permissions(user, permissions):
 def add_entity_permissions(user, permissions, entity):
     """ utility intended to be used in unit tests only """
     for permission in permissions:
-        if isinstance(entity, core.models.Agency):
+        if entity is None:
+            entity_permission = zemauth.features.entity_permission.EntityPermission(user=user, permission=permission)
+            entity_permission.save()
+        elif isinstance(entity, core.models.Agency):
             entity_permission = zemauth.features.entity_permission.EntityPermission(
                 user=user, permission=permission, agency=entity
             )

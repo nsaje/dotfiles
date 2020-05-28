@@ -28,6 +28,7 @@ import restapi.publishers.urls
 import restapi.report.urls
 import restapi.rules.urls
 import restapi.source.urls
+import restapi.user.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
 
@@ -65,3 +66,4 @@ urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
 urlpatterns += core.features.videoassets.urls.urlpatterns
+urlpatterns += restapi.user.urls.urlpatterns
