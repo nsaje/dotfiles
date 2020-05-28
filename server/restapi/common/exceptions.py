@@ -8,6 +8,7 @@ from rest_framework import serializers
 from rest_framework.response import Response
 
 from utils import exc
+from utils import request_context
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
@@ -42,6 +43,7 @@ def custom_exception_handler(exception, context):
     logger.exception("REST API exception")
     error_data["errorCode"] = "ServerError"
     error_data["details"] = "An error occurred."
+    error_data["traceId"] = request_context.get("trace_id")
     if settings.DEBUG or settings.TESTING:
         error_data["stackTrace"] = traceback.format_exc()
     status_code = 500
