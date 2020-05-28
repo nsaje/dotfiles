@@ -14,7 +14,7 @@ from utils.command_helpers import Z1Command
 logger = zlogging.getLogger(__name__)
 
 
-POSTGRES_KEEP_DAYS = 52
+POSTGRES_KEEP_DAYS = 64
 SKIP_TABLES = ["mv_master", "mv_master_pubs", "mv_adgroup_placement"]  # not on postgres
 
 
