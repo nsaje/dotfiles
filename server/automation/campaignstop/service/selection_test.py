@@ -9,6 +9,7 @@ import dash.constants
 from core.models.settings.ad_group_settings import AdGroupSettings
 from core.models.settings.ad_group_source_settings import AdGroupSourceSettings
 from utils import dates_helper
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import CampaignStopState
@@ -22,19 +23,7 @@ from . import selection
 class UpdateAlmostDepletedTestCase(TestCase):
     def setUp(self):
         self._setup_initial_state()
-        self._prepare_threadpoolexecutor_mock()
-
-    def _prepare_threadpoolexecutor_mock(self):
-        # NOTE: Code ran in a separate thread would use a separate transaction which would make testing hard. In order
-        # to avoid this we use sequential map instead of threads to produce results.
-        def _eager_map(fun, iter_):
-            return list(map(fun, iter_))
-
-        patcher = mock.patch("concurrent.futures.ThreadPoolExecutor")
-        mock_threadpoolexecutor = patcher.start()
-
-        mock_threadpoolexecutor.return_value.__enter__.return_value.map = _eager_map
-        self.addCleanup(patcher.stop)
+        test_helper.prepare_threadpoolexecutor_mock(self)
 
     def mocked_afternoon_est_now():
         today = datetime.today()

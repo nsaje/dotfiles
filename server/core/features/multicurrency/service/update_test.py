@@ -6,6 +6,7 @@ from mock import patch
 import core.features.goals
 import core.models
 import dash.constants
+import utils.test_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import CurrencyExchangeRate
@@ -55,6 +56,7 @@ class UpdateExchangeRatesTestCase(TestCase):
             local_cpc_cc="0.62",
             local_daily_budget_cc=28,
         )
+        utils.test_helper.prepare_threadpoolexecutor_mock(self)
 
     def test_initial_settings(self):
         self.ad_group.settings.refresh_from_db()

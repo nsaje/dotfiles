@@ -1,3 +1,5 @@
+import concurrent.futures
+
 from django.db import transaction
 
 import core.models
@@ -51,24 +53,24 @@ def _update_exchange_rate(currency, rate):
 
 def _update_accounts(currency):
     currency_accounts = core.models.Account.objects.filter(currency=currency)
-    for account in currency_accounts:
-        _update_account(account)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        executor.map(_update_account, currency_accounts.all())
 
 
 @transaction.atomic
 def _update_account(account):
-    for campaign in account.campaign_set.all():
+    for campaign in account.campaign_set.iterator(100):
         _recalculate_goals(campaign)
         _recalculate_ad_group_amounts(campaign)
 
 
 def _recalculate_goals(campaign):
-    for goal in campaign.campaigngoal_set.all():
+    for goal in campaign.campaigngoal_set.iterator(100):
         goal.add_local_value(None, goal.get_current_value().local_value, skip_history=True)
 
 
 def _recalculate_ad_group_amounts(campaign):
-    for ad_group in campaign.adgroup_set.all():
+    for ad_group in campaign.adgroup_set.iterator(200):
         _recalculate_ad_group_settings_amounts(ad_group)
         _recalculate_ad_group_sources_amounts(ad_group)
 
