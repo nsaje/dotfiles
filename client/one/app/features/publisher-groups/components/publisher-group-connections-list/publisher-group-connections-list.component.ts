@@ -30,12 +30,12 @@ export class PublisherGroupConnectionsListComponent
 
     context: any;
     columnDefs: ColDef[] = [
+        {headerName: 'Connection name', field: 'name'},
         {
             headerName: 'Connection type',
             field: 'location',
             valueFormatter: this.connectionLocationFormatter,
         },
-        {headerName: 'Connection name', field: 'name'},
         {
             headerName: '',
             width: 40,
