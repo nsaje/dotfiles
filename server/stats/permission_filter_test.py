@@ -193,6 +193,10 @@ class FilterTestCase(TestCase):
             "roas_pixel_1_2160",
             "roas_pixel_1_24",
             "roas_pixel_1_720",
+            "conversion_rate_per_pixel_1_24",
+            "conversion_rate_per_pixel_1_168",
+            "conversion_rate_per_pixel_1_720",
+            "conversion_rate_per_pixel_1_2160",
             "video_cpcv",
             "local_video_cpcv",
             "video_cpv",
@@ -415,6 +419,7 @@ class FilterTestCase(TestCase):
                 "pacing",
                 "spend_projection",
                 "pixel_1_24_view",
+                "conversion_rate_per_pixel_1_24_view",
                 "avg_et_cost_per_pixel_1_24_view",
                 "local_avg_et_cost_per_pixel_1_24_view",
                 "et_roas_pixel_1_24_view",
@@ -530,7 +535,16 @@ class FilterTestCase(TestCase):
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
-            ["conversion_goal_2", "conversion_goal_3", "conversion_goal_4", "conversion_goal_5"],
+            [
+                "conversion_goal_2",
+                "conversion_goal_3",
+                "conversion_goal_4",
+                "conversion_goal_5",
+                "conversion_rate_per_conversion_goal_2",
+                "conversion_rate_per_conversion_goal_3",
+                "conversion_rate_per_conversion_goal_4",
+                "conversion_rate_per_conversion_goal_5",
+            ],
         )
 
     def test_filter_columns_by_permission_projections(self):
@@ -605,6 +619,7 @@ class FilterTestCase(TestCase):
                 "avg_et_cost_per_pixel_1_24_view",
                 "local_avg_et_cost_per_pixel_1_24_view",
                 "et_roas_pixel_1_24_view",
+                "conversion_rate_per_pixel_1_24_view",
             ],
         )
 
@@ -616,7 +631,10 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(
             user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
         )
-        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, ["pixel_1_24_view"])
+        self.assertCountEqual(
+            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            ["pixel_1_24_view", "conversion_rate_per_pixel_1_24_view"],
+        )
 
     def test_filter_columns_by_permission_placement(self):
         uses_bcm_v2 = False

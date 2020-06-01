@@ -215,6 +215,7 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
 
             if conversion_row:
                 count = conversion_row["count"] if conversion_row else None
+                conversion_rate = count / row["clicks"] * 100.0 if count is not None and row["clicks"] else None
                 avg_cost = (float(row["e_media_cost"] or 0) / count) if count else None
                 local_avg_cost = (float(row["local_e_media_cost"] or 0) / count) if count else None
 
@@ -224,6 +225,7 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
                 local_avg_etfm_cost = (float(row["local_etfm_cost"] or 0) / count) if count else None
             else:
                 count = None
+                conversion_rate = None
                 avg_cost = None
                 local_avg_cost = None
                 avg_et_cost = None
@@ -234,6 +236,7 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
             row.update(
                 {
                     conversion_key: count,
+                    "conversion_rate_per_" + conversion_key: conversion_rate,
                     "avg_cost_per_" + conversion_key: avg_cost,
                     "local_avg_cost_per_" + conversion_key: local_avg_cost,
                     "avg_et_cost_per_" + conversion_key: avg_et_cost,
@@ -276,6 +279,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
             for conversion_window in conversion_windows:
                 if pixel_rows:
                     count = sum(x["count" + (suffix or "")] for x in pixel_rows if x["window"] <= conversion_window)
+                    conversion_rate = count / row["clicks"] * 100.0 if row["clicks"] else None
 
                     avg_cost = float(cost) / count if count else None
                     local_avg_cost = float(local_cost) / count if count else None
@@ -297,6 +301,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                     etfm_roas = value / float(local_etfm_cost) if local_etfm_cost else None
                 else:
                     count = None
+                    conversion_rate = None
                     avg_cost = None
                     local_avg_cost = None
                     avg_et_cost = None
@@ -312,6 +317,7 @@ def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_
                 row.update(
                     {
                         pixel_key: count,
+                        "conversion_rate_per_" + pixel_key: conversion_rate,
                         "avg_cost_per_" + pixel_key: avg_cost,
                         "local_avg_cost_per_" + pixel_key: local_avg_cost,
                         "avg_et_cost_per_" + pixel_key: avg_et_cost,

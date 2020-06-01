@@ -7,6 +7,7 @@ angular
         zemUtils
     ) {
         // eslint-disable-line max-len
+        var CONVERSION_RATE_PREFIX = 'conversion_rate_per_';
         var AVG_COST_PREFIX = 'avg_cost_per_';
         var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
         var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
@@ -1506,6 +1507,15 @@ angular
             conversionCount: {
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 help: 'Number of completions of the conversion goal',
+                shown: false,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            },
+            conversionRate: {
+                type: zemGridConstants.gridColumnTypes.PERCENT,
+                help: 'Conversion rate',
                 shown: false,
                 internal: false,
                 totalRow: true,
@@ -3157,6 +3167,7 @@ angular
             attribution
         ) {
             var conversionsHelp = '';
+            var conversionRateHelp = '';
             var cpaHelp = '';
             var roasHelp =
                 'Return on ad spend (ROAS) is calculated by dividing revenue with advertising cost (ROAS = revenue / agency spend).\n' +
@@ -3164,6 +3175,8 @@ angular
             if (attribution === 'Click attribution') {
                 conversionsHelp =
                     'The number of conversions attributed to your campaign based on user clicks.';
+                conversionRateHelp =
+                    'Conversion rate measures the % conversions per user click. Only conversions attributed to your campaign based on user click are counted. Calculated as 100 * Conversions / Click.';
                 cpaHelp =
                     'Average cost per acquisition calculated from conversions based on user clicks.';
             }
@@ -3172,6 +3185,8 @@ angular
                     'The number of conversions attributed to your campaign based on user viewing your ads.\n' +
                     "Conversions are based on viewable impressions. If the media source doesn't support viewable impressions the conversions are based on standard impressions.\n" +
                     "Conversions in this column don't include conversions that were attributed to a user's click.";
+                conversionRateHelp =
+                    'Conversion rate measures the % conversions per impression. Only conversions attributed to your campaign based on impression are counted. Calculated as 100 * Conversions / Impressions.';
                 cpaHelp =
                     'Average cost per acquisition calculated from conversions based on user viewing your ads.';
             }
@@ -3180,6 +3195,7 @@ angular
                     pixel.prefix + '_' + window.value + attributionSuffix;
 
                 var conversionsField = pixelSuffix;
+                var conversionRateField = CONVERSION_RATE_PREFIX + pixelSuffix;
                 var cpaField = AVG_COST_PREFIX + pixelSuffix;
                 var etCpaField = AVG_ET_COST_PREFIX + pixelSuffix;
                 var etfmCpaField = AVG_ETFM_COST_PREFIX + pixelSuffix;
@@ -3189,6 +3205,7 @@ angular
 
                 pixel.fields.push(
                     conversionsField,
+                    conversionRateField,
                     cpaField,
                     etCpaField,
                     etfmCpaField,
@@ -3220,6 +3237,25 @@ angular
                         help: conversionsHelp,
                         performance: 'Conversions',
                         field: conversionsField,
+                        shown: true,
+                        goal: false,
+                    }
+                );
+                var conversionRateNewColumn = Object.assign(
+                    {},
+                    COLUMNS.conversionRate,
+                    newColumn,
+                    {
+                        restApiName: 'Conversion rate (' + name + ')',
+                        name:
+                            'Conversion rate / ' +
+                            attribution +
+                            ' (' +
+                            pixel.name +
+                            ')',
+                        help: conversionRateHelp,
+                        performance: 'Conversion rate',
+                        field: conversionRateField,
                         shown: true,
                         goal: false,
                     }
@@ -3336,6 +3372,7 @@ angular
 
                 newColumns.push(
                     conversionsNewColumn,
+                    conversionRateNewColumn,
                     cpaNewColumn,
                     etCpaNewColumn,
                     etfmCpaNewColumn,

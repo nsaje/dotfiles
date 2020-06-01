@@ -216,8 +216,16 @@ def get_query_name(breakdown, extra_name=""):
 
 
 def is_pixel_metric(metric):
-    return metric.startswith("pixel_") or PIXEL_METRIC_REGEX.match(metric)
+    return (
+        metric.startswith("pixel_")
+        or metric.startswith("conversion_rate_per_pixel_")
+        or PIXEL_METRIC_REGEX.match(metric)
+    )
 
 
 def is_conversion_goal_metric(metric):
-    return metric.startswith("conversion_goal_") or CONVERSION_GOAL_REGEX.match(metric)
+    return (
+        metric.startswith("conversion_goal_")
+        or metric.startswith("conversion_rate_per_conversion_goal_")
+        or CONVERSION_GOAL_REGEX.match(metric)
+    )

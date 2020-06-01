@@ -393,51 +393,6 @@ def get_pixels_list(pixels):
     return pixels_list
 
 
-def copy_stats_to_row(stat, row):
-    for key in [
-        "impressions",
-        "clicks",
-        "data_cost",
-        "cpc",
-        "ctr",
-        "cpm",
-        "visits",
-        "click_discrepancy",
-        "pageviews",
-        "media_cost",
-        "percent_new_users",
-        "bounce_rate",
-        "pv_per_visit",
-        "avg_tos",
-        "e_media_cost",
-        "e_data_cost",
-        "billing_cost",
-        "license_fee",
-        "margin",
-        "agency_cost",
-        "unique_users",
-        "returning_users",
-        "new_users",
-        "bounced_visits",
-        "total_seconds",
-        "avg_cost_per_minute",
-        "non_bounced_visits",
-        "avg_cost_per_non_bounced_visit",
-        "avg_cost_per_pageview",
-        "avg_cost_for_new_visitor",
-        "avg_cost_per_visit",
-    ]:
-        row[key] = stat.get(key)
-
-    for key in list(stat.keys()):
-        if key.startswith("conversion_goal_") or key.startswith("pixel_") or key.startswith("avg_cost_per_pixel_"):
-            row[key] = stat.get(key)
-
-    for key in SPECIAL_COLUMNS:
-        if key in stat:
-            row[key] = stat[key]
-
-
 def get_editable_fields(
     user, ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, campaign_settings, allowed_sources
 ):

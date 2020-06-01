@@ -384,6 +384,7 @@ def _generate_pixel_fields(pixels, conversion_windows, uses_bcm_v2, column_suffi
             for column_suffix in column_suffixes:
                 column_name = "{} {}".format(pixel.name, window_title) + column_suffix
                 mapping[column_name] = field_name
+                mapping.update(_get_conversion_rate_field_names_mapping(field_name, column_name))
                 mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
                 mapping.update(_get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2))
 
@@ -396,9 +397,14 @@ def _get_conversion_goals_field_names_mapping(conversion_goals, uses_bcm_v2):
         field_name = goal.get_view_key(conversion_goals)
         column_name = goal.name
         mapping[column_name] = field_name
+        mapping.update(_get_conversion_rate_field_names_mapping(field_name, column_name))
         mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
 
     return mapping
+
+
+def _get_conversion_rate_field_names_mapping(field_name, column_name):
+    return {"Conversion rate ({})".format(column_name): "conversion_rate_per_{}".format(field_name)}
 
 
 def _get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2):

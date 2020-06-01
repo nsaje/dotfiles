@@ -722,6 +722,15 @@ class MVJointMaster(MVMaster):
                 )
             )
 
+            self.add_column(
+                backtosql.TemplateColumn(
+                    "part_div.sql",
+                    {"column_name": conversion_key, "divisor": "clicks", "divisor_modifier": 0.01},
+                    alias="conversion_rate_per_" + conversion_key,
+                    group=AFTER_JOIN_AGGREGATES,
+                )
+            )
+
             # FIXME: Remove the following columns after new margins are completely migrated to
             self.add_column(
                 backtosql.TemplateColumn(
@@ -817,6 +826,25 @@ class MVJointMaster(MVMaster):
                         group=TOUCHPOINTS_AGGREGATES,
                     )
                 )
+
+                if suffix == "_view":
+                    self.add_column(
+                        backtosql.TemplateColumn(
+                            "part_div.sql",
+                            {"column_name": pixel_key, "divisor": "impressions", "divisor_modifier": 0.01},
+                            alias="conversion_rate_per_" + pixel_key,
+                            group=AFTER_JOIN_AGGREGATES,
+                        )
+                    )
+                else:
+                    self.add_column(
+                        backtosql.TemplateColumn(
+                            "part_div.sql",
+                            {"column_name": pixel_key, "divisor": "clicks", "divisor_modifier": 0.01},
+                            alias="conversion_rate_per_" + pixel_key,
+                            group=AFTER_JOIN_AGGREGATES,
+                        )
+                    )
 
                 # FIXME: Remove the following columns after new margins are completely migrated to
                 self.add_column(

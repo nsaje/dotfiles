@@ -45,6 +45,7 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
 
     METRICS_OPTIONS_CLICK: PixelMetric[] = [
         {attribution: 'Click attribution', performance: 'Conversions'},
+        {attribution: 'Click attribution', performance: 'Conversion rate'},
         {attribution: 'Click attribution', performance: 'CPA'},
     ];
 
@@ -70,6 +71,10 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
         ) {
             this.METRICS_OPTIONS_VIEW.push(
                 {attribution: 'View attribution', performance: 'Conversions'},
+                {
+                    attribution: 'View attribution',
+                    performance: 'Conversion rate',
+                },
                 {attribution: 'View attribution', performance: 'CPA'}
             );
         }

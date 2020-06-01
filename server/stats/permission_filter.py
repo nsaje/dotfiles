@@ -336,7 +336,11 @@ def _get_allowed_conversion_goals_fields(user, conversion_goals):
     """
 
     if user.has_perm("zemauth.can_see_redshift_postclick_statistics"):
-        return set(cg.get_view_key(conversion_goals) for cg in conversion_goals)
+        allowed_fields = set(cg.get_view_key(conversion_goals) for cg in conversion_goals)
+        allowed_fields |= set(
+            "conversion_rate_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
+        )
+        return allowed_fields
 
     return set()
 
@@ -368,6 +372,7 @@ def _generate_allowed_pixel_fields(user, pixels, conversion_windows, uses_bcm_v2
         for conversion_window in conversion_windows:
             view_key = pixel.get_view_key(conversion_window) + (suffix or "")
             allowed.add(view_key)
+            allowed.add("conversion_rate_per_{}".format(view_key))
 
             if not uses_bcm_v2:
                 allowed.add("avg_cost_per_" + view_key)
