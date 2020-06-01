@@ -165,7 +165,6 @@ export const CAMPAIGN_TYPES: CampaignTypeConfig[] = [
 ];
 
 export const IAB_CATEGORIES: IabCategoryConfig[] = [
-    {name: 'Uncategorized (IAB24)', value: IabCategory.IAB24},
     {
         name: 'Books & Literature (IAB1-1)',
         value: IabCategory.IAB1_1,

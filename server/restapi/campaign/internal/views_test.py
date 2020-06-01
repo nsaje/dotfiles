@@ -918,7 +918,7 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             name=campaign.name,
             language=dash.constants.Language.ENGLISH,
             autopilot=True,
-            iab_category=dash.constants.IABCategory.IAB24,
+            iab_category=dash.constants.IABCategory.IAB4_6,
             campaign_manager=self.user,
         )
 
@@ -1055,6 +1055,22 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["deals"][1]["numOfAdgroups"], 0)
         self.assertEqual(resp_json["data"]["deals"][1]["agencyId"], None)
         self.assertEqual(resp_json["data"]["deals"][1]["accountId"], str(account.id))
+
+    def test_put_undefined_iab_category(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
+        )
+
+        put_data = {"iab_category": dash.constants.IABCategory.IAB24}
+        response = self.client.put(
+            reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseError(response, error_code="ValidationError")
+        self.assertEqual(resp_json["details"], {"iabCategory": ["Invalid IAB category."]})
 
     @mock.patch.object(dash.features.clonecampaign.service, "clone", autospec=True)
     def test_clone(self, mock_clone):

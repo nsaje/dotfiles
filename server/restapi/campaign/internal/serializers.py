@@ -108,6 +108,11 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
             raise rest_framework.serializers.ValidationError(["Invalid campaign manager."])
         return value
 
+    def validate_iab_category(self, value):
+        if value == dash.constants.IABCategory.IAB24:
+            raise rest_framework.serializers.ValidationError(["Invalid IAB category."])
+        return value
+
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
         value["campaign_manager"] = self.to_internal_value_campaign_manager(data.get("campaign_manager"))

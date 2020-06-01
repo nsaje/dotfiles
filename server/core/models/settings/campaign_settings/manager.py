@@ -8,7 +8,6 @@ class CampaignSettingsManager(core.common.QuerySetManager):
     def get_default(self, request, campaign, autopilot=False):
         new_settings = model.CampaignSettings(campaign=campaign)
         new_settings.name = campaign.name
-        new_settings.iab_category = dash.constants.IABCategory.IAB24
         new_settings.language = dash.constants.Language.ENGLISH
         new_settings.autopilot = autopilot
         new_settings.target_devices = dash.constants.AdTargetDevice.get_all()
