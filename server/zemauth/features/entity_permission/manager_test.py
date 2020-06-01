@@ -31,21 +31,3 @@ class EntityPermissionManagerTestCase(TestCase):
 
         with self.assertRaises(ValidationError):
             EntityPermission.objects.create(user, permission, agency=agency, account=account)
-
-    def test_get_or_create(self):
-        user = magic_mixer.blend_user()
-        agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account)
-        permission = Permission.READ
-
-        entity_permission = EntityPermission.objects.create(user, permission, agency=agency)
-        entity_permission_duplicate = EntityPermission.objects.create(user, permission, agency=agency)
-        self.assertEqual(entity_permission.id, entity_permission_duplicate.id)
-
-        entity_permission = EntityPermission.objects.create(user, permission, account=account)
-        entity_permission_duplicate = EntityPermission.objects.create(user, permission, account=account)
-        self.assertEqual(entity_permission.id, entity_permission_duplicate.id)
-
-        entity_permission = EntityPermission.objects.create(user, permission, agency=None, account=None)
-        entity_permission_duplicate = EntityPermission.objects.create(user, permission, agency=None, account=None)
-        self.assertEqual(entity_permission.id, entity_permission_duplicate.id)
