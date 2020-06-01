@@ -27,3 +27,8 @@ class UserQuerySet(models.QuerySet):
         return self.filter(
             models.Q(entitypermission__agency=agency) | models.Q(entitypermission__account__agency=agency)
         ).distinct()
+
+    def filter_by_internal(self):
+        return self.filter(
+            models.Q(entitypermission__agency=None) & models.Q(entitypermission__account=None)
+        ).distinct()

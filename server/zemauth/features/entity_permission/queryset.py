@@ -24,3 +24,6 @@ class EntityPermissionQuerySet(models.QuerySet):
 
     def filter_by_user(self, user):
         return self.filter(user=user)
+
+    def filter_by_internal(self):
+        return self.filter(models.Q(agency=None) & models.Q(account=None))

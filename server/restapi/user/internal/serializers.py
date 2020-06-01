@@ -4,9 +4,13 @@ import restapi.serializers.base
 import restapi.serializers.serializers
 
 
-class UserQueryParamsExpectations(restapi.serializers.serializers.QueryParamsExpectations):
+class UserQueryParamsExpectations(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
     agency_id = restapi.serializers.fields.IdField(default=None)
     account_id = restapi.serializers.fields.IdField(default=None)
+    show_internal = rest_framework.serializers.NullBooleanField(required=False)
+    keyword = restapi.serializers.fields.PlainCharField(required=False)
 
 
 class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
