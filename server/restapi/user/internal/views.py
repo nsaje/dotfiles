@@ -1,3 +1,5 @@
+import rest_framework.response
+import rest_framework.status
 from django.db.models import Q
 from rest_framework import permissions
 
@@ -23,19 +25,10 @@ class UserViewSet(RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, CanUseEntityPermission)
 
     def list(self, request):
-        calling_user: ZemUser = request.user
-
-        query_params = serializers.UserQueryParamsExpectations(data=request.query_params)
-        query_params.is_valid(raise_exception=True)
-
-        agency_id: int = query_params.validated_data.get("agency_id")
-        account_id: int = query_params.validated_data.get("account_id")
-        show_internal: bool = query_params.validated_data.get("show_internal")
-        keyword: str = query_params.validated_data.get("keyword")
+        account_id, agency_id, show_internal, keyword, calling_user = self._get_request_params(request)
 
         agency: Agency = None
         account: Account = None
-
         all_users = ZemUser.objects.order_by("first_name", "last_name")
 
         if account_id is not None:
@@ -72,17 +65,30 @@ class UserViewSet(RESTAPIBaseViewSet):
         return self.response_ok(None)
 
     def get(self, request, user_id):
-        calling_user: ZemUser = request.user
-        requested_user: ZemUser = None
+        requested_user = self._get_user(request, user_id)
+        return self.response_ok(self.serializer(requested_user, context={"request": request}).data)
 
-        query_params = serializers.UserQueryParamsExpectations(data=request.query_params)
-        query_params.is_valid(raise_exception=True)
+    def put(self, request, user_id):
+        return self.response_ok(None)
 
-        agency_id: int = query_params.validated_data.get("agency_id")
-        account_id: int = query_params.validated_data.get("account_id")
+    def remove(self, request, user_id):
+        requested_user = self._get_user(request, user_id)
+        requested_user.entity_permissions.all().delete()
+
+        return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)
+
+    def resendemail(self, request, user_id):
+        return self.response_ok(None)
+
+    def validate(self, request):
+        return self.response_ok(None)
+
+    def _get_user(self, request, user_id):
+        account_id, agency_id, show_internal, keyword, calling_user = self._get_request_params(request)
 
         agency: Agency = None
         account: Account = None
+        requested_user: ZemUser = None
 
         if account_id is not None:
             account = zemauth.access.get_account(calling_user, Permission.USER, account_id)
@@ -92,21 +98,18 @@ class UserViewSet(RESTAPIBaseViewSet):
             requested_user = ZemUser.objects.filter_by_agency_and_related_accounts(agency).get(pk=user_id)
         else:
             raise ValidationError(errors={"non_field_errors": "Either agency id or account id must be provided."})
-
         self._augment_user(calling_user, requested_user, agency, account)
-        return self.response_ok(self.serializer(requested_user, context={"request": request}).data)
+        return requested_user
 
-    def put(self, request, user_id):
-        return self.response_ok(None)
-
-    def remove(self, request, user_id):
-        return self.response_ok(None)
-
-    def resendemail(self, request, user_id):
-        return self.response_ok(None)
-
-    def validate(self, request):
-        return self.response_ok(None)
+    def _get_request_params(self, request):
+        calling_user: ZemUser = request.user
+        query_params = serializers.UserQueryParamsExpectations(data=request.query_params)
+        query_params.is_valid(raise_exception=True)
+        agency_id: int = query_params.validated_data.get("agency_id")
+        account_id: int = query_params.validated_data.get("account_id")
+        show_internal: bool = query_params.validated_data.get("show_internal")
+        keyword: str = query_params.validated_data.get("keyword")
+        return account_id, agency_id, show_internal, keyword, calling_user
 
     @staticmethod
     def _augment_user(calling_user: ZemUser, requested_user: ZemUser, agency: Agency, account: Account):

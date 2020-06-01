@@ -32,3 +32,15 @@ class UserQuerySet(models.QuerySet):
         return self.filter(
             models.Q(entitypermission__agency=None) & models.Q(entitypermission__account=None)
         ).distinct()
+
+    def filter_by_entity_permission_account(self, account):
+        if not account:
+            return self
+        return self.filter(entitypermission_set__account=account)
+
+    def filter_by_entity_permission_agency(self, agency):
+        if not agency:
+            return self
+        return self.filter(
+            models.Q(entitypermission_set__agency=agency) | models.Q(entitypermission_set__account__agency=agency)
+        )

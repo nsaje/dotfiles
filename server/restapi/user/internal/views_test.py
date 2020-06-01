@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Permission as DjangoPermission
 from django.urls import reverse
+from django.utils.http import urlencode
 
 import core.models
 import zemauth.models
@@ -46,6 +47,211 @@ class UserViewSetTestBase(RESTAPITestCase):
 
     def _sees_whole_agency(self, caller_role):
         return caller_role == "internal_usr" or caller_role == "agency_mgr"
+
+    def _prepare_agency_manager_test_case(self, calling_user, requested_user, caller_role):
+        # output permissions:
+        # [0],[1]: permissions on the same agency
+        # [2],[3]: permissions on a different agency
+        # [4],[5]: permissions on an account in a different agency
+        account, agency = self._prepare_callers_permissions(calling_user, caller_role)
+
+        permissions = [None] * 2
+        permissions[0] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=agency,
+            account=None,
+            permission=Permission.READ,
+        )
+        permissions[1] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=agency,
+            account=None,
+            permission=Permission.BUDGET,
+        )
+
+        permissions.extend(self._prepare_hidden_agency_data(requested_user))
+
+        return agency, permissions
+
+    def _prepare_account_manager_test_case(self, calling_user, requested_user, caller_role):
+        # output permissions:
+        # [0],[1]: permissions on the same account
+        # [2],[3]: permissions on the same agency, but on a different account
+        # [4],[5]: permissions on a different agency
+        # [6],[7]: permissions on an account in a different agency
+        account, agency = self._prepare_callers_permissions(calling_user, caller_role)
+
+        permissions = [None] * 4
+
+        permissions[0] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=account,
+            permission=Permission.READ,
+        )
+        permissions[1] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=account,
+            permission=Permission.BUDGET_MARGIN,
+        )
+
+        hidden_account = self.mix_account(agency=agency)
+        permissions[2] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=hidden_account,
+            permission=Permission.READ,
+        )
+        permissions[3] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=hidden_account,
+            permission=Permission.AGENCY_SPEND_MARGIN,
+        )
+
+        permissions.extend(self._prepare_hidden_agency_data(requested_user))
+
+        return account, agency, permissions
+
+    def _prepare_hidden_agency_data(self, requested_user):
+        permissions = [None] * 4
+
+        hidden_agency1 = self.mix_agency()
+        permissions[0] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=hidden_agency1,
+            account=None,
+            permission=Permission.READ,
+        )
+        permissions[1] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=hidden_agency1,
+            account=None,
+            permission=Permission.USER,
+        )
+        hidden_agency2 = self.mix_agency()
+        hidden_account = magic_mixer.blend(core.models.Account, agency=hidden_agency2, name="Hidden account")
+        permissions[2] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=hidden_account,
+            permission=Permission.READ,
+        )
+        permissions[3] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=hidden_account,
+            permission=Permission.AGENCY_SPEND_MARGIN,
+        )
+
+        return permissions
+
+
+class UserViewSetDeleteTest(UserViewSetTestBase):
+    def test_delete_account_manager_by_agency_manager_by_agency_id(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        account, agency, permissions = self._prepare_account_manager_test_case(
+            calling_user, requested_user, "agency_mgr"
+        )
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions)
+
+        r = self._call_delete(requested_user, agency)
+
+        self.assertEqual(r.status_code, 204)
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions[4:8])
+
+    def test_delete_account_manager_by_agency_manager_by_account_id(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        account, agency, permissions = self._prepare_account_manager_test_case(
+            calling_user, requested_user, "agency_mgr"
+        )
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions)
+
+        r = self._call_delete(requested_user, agency, account)
+
+        self.assertEqual(r.status_code, 204)
+
+        # IMPORTANT: even though we retrieved this user by account ID, the delete operation must delete permissions on all accounts of this agency, because the calling user is an agency manager
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions[4:8])
+
+    def test_delete_account_manager_by_account_manager(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        account, agency, permissions = self._prepare_account_manager_test_case(
+            calling_user, requested_user, "account_mgr"
+        )
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions)
+
+        r = self._call_delete(requested_user, agency, account)
+
+        self.assertEqual(r.status_code, 204)
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions[2:8])
+
+    def test_delete_agency_manager_by_agency_manager(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions)
+
+        r = self._call_delete(requested_user, agency)
+
+        self.assertEqual(r.status_code, 204)
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions[2:6])
+
+    def test_delete_agency_manager_by_account_manager(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "account_mgr")
+
+        self.assertCountEqual(list(requested_user.entitypermission_set.all()), permissions)
+
+        r = self._call_delete(requested_user, agency)
+
+        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+
+    def _call_delete(self, requested_user, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agency_id"] = agency.id
+        if account is not None:
+            query_params["account_id"] = account.id
+
+        """r = self.client.delete(
+            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}), query_params
+        )"""
+        r = self.client.delete(
+            u"%s?%s"
+            % (
+                reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
+                urlencode(query_params),
+            )
+        )
+        return r
 
 
 class UserViewSetListTest(UserViewSetTestBase):
@@ -392,39 +598,39 @@ class UserViewSetGetTest(UserViewSetTestBase):
         # calling_user is agency manager and is searching by agency_id, requested user is agency manager
         calling_user, requested_user = self._setup_test()
 
-        agency, perm1, perm2 = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
 
         r = self._call_get(requested_user, agency)
-        self._validate_agency_manager_response(requested_user, r, perm1, perm2)
+        self._validate_agency_manager_response(requested_user, r, permissions)
 
     def test_get_agency_manager_by_agency_manager_with_account_id(self):
         # calling_user is agency manager and is searching by account_id, requested user is agency manager
         calling_user, requested_user = self._setup_test()
 
-        agency, perm1, perm2 = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
         account = self.mix_account(agency=agency)
 
         r = self._call_get(requested_user, agency, account)
-        self._validate_agency_manager_response(requested_user, r, perm1, perm2)
+        self._validate_agency_manager_response(requested_user, r, permissions)
 
     def test_get_agency_manager_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id, requested user is agency manager
         calling_user, requested_user = self._setup_test()
 
-        agency, perm1, perm2 = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
 
         r = self._call_get(requested_user, agency)
-        self._validate_agency_manager_response(requested_user, r, perm1, perm2)
+        self._validate_agency_manager_response(requested_user, r, permissions)
 
     def test_get_agency_manager_by_internal_user_with_account_id(self):
         # calling_user is internal user and is searching by account_id, requested user is agency manager
         calling_user, requested_user = self._setup_test()
 
-        agency, perm1, perm2 = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
         account = self.mix_account(agency=agency)
 
         r = self._call_get(requested_user, agency, account)
-        self._validate_agency_manager_response(requested_user, r, perm1, perm2)
+        self._validate_agency_manager_response(requested_user, r, permissions)
 
     def test_get_account_manager_by_account_manager(self):
         # calling_user is account manager and is searching by agency_id, requested user is account manager
@@ -498,60 +704,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
         return calling_user, requested_user
 
-    def _prepare_agency_manager_test_case(self, calling_user, requested_user, caller_role):
-        account, agency = self._prepare_callers_permissions(calling_user, caller_role)
-
-        self._prepare_hidden_agency_data(requested_user)
-        perm1 = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=agency,
-            account=None,
-            permission=Permission.READ,
-        )
-        perm2 = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=agency,
-            account=None,
-            permission=Permission.BUDGET,
-        )
-        return agency, perm1, perm2
-
-    def _prepare_hidden_agency_data(self, requested_user):
-        hidden_agency1 = self.mix_agency()
-        magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=hidden_agency1,
-            account=None,
-            permission=Permission.READ,
-        )
-        magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=hidden_agency1,
-            account=None,
-            permission=Permission.BUDGET,
-        )
-        hidden_agency2 = self.mix_agency()
-        hidden_account = magic_mixer.blend(core.models.Account, agency=hidden_agency2, name="Hidden account")
-        magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=hidden_account,
-            permission=Permission.READ,
-        )
-        magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=hidden_account,
-            permission=Permission.BUDGET,
-        )
-
-    def _validate_agency_manager_response(self, requested_user, r, perm1, perm2):
+    def _validate_agency_manager_response(self, requested_user, r, permissions):
         resp_json = self.assertResponseValid(r)
 
         resp_user = resp_json["data"]
@@ -561,48 +714,8 @@ class UserViewSetGetTest(UserViewSetTestBase):
         self.assertEqual(resp_user["lastName"], requested_user.last_name)
         self.assertCountEqual(
             resp_user["entityPermissions"],
-            [self._expected_permission_response(perm1), self._expected_permission_response(perm2)],
+            [self._expected_permission_response(permissions[0]), self._expected_permission_response(permissions[1])],
         )
-
-    def _prepare_account_manager_test_case(self, calling_user, requested_user, caller_role):
-        account, agency = self._prepare_callers_permissions(calling_user, caller_role)
-
-        self._prepare_hidden_agency_data(requested_user)
-
-        permissions = [None] * 4
-
-        permissions[0] = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=account,
-            permission=Permission.READ,
-        )
-        permissions[1] = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=account,
-            permission=Permission.BUDGET,
-        )
-
-        hidden_account = self.mix_account(agency=agency)
-        permissions[2] = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=hidden_account,
-            permission=Permission.READ,
-        )
-        permissions[3] = magic_mixer.blend(
-            zemauth.models.EntityPermission,
-            user=requested_user,
-            agency=None,
-            account=hidden_account,
-            permission=Permission.BUDGET,
-        )
-
-        return account, agency, permissions
 
     def _validate_account_manager_response(self, r, requested_user, permissions, caller_role):
         resp_json = self.assertResponseValid(r)
