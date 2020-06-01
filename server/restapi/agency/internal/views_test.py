@@ -2,15 +2,36 @@ from django.urls import reverse
 
 import core.models
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AgencyViewSetTest(RESTAPITest):
+class LegacyAgencyViewSetTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        self.user.account_set.remove(*self.user.account_set.all())
+        self.user.agency_set.remove(*self.user.agency_set.all())
+
     def test_agency_list(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency_read_access = self.mix_agency(self.user, permissions=[Permission.READ])
+
+        agency_no_read_access = magic_mixer.blend(core.models.Agency)
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency_no_read_access)
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency_no_read_access)
+        self.mix_account(self.user, permissions=[Permission.READ], agency=agency_no_read_access)
+
         magic_mixer.cycle(5).blend(core.models.Agency)
 
         r = self.client.get(reverse("restapi.agency.internal:agencies_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertGreater(len(resp_json["data"]), 1)
-        self.assertTrue(any(item.get("name") == agency.name for item in resp_json["data"]))
+
+        resp_json_ids = [int(x.get("id")) for x in resp_json["data"]]
+
+        self.assertEqual(len(resp_json_ids), 2)
+        self.assertTrue(agency_read_access.id in resp_json_ids)
+        self.assertTrue(agency_no_read_access.id in resp_json_ids)
+
+
+class AgencyViewSetTest(RESTAPITestCase, LegacyAgencyViewSetTest):
+    pass
