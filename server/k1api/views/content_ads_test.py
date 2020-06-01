@@ -558,6 +558,31 @@ class ContentAdsTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         self.assertEqual(set([cadss[3].id]), set([ca["id"] for ca in data["response"]]))
 
+        # block even if approved
+        set_blocked(mock_amplify, cadss[0:3])
+        cadss[0].submission_status = dash.constants.ContentAdSubmissionStatus.APPROVED
+        cadss[0].save()
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set([cadss[3].id]), set([ca["id"] for ca in data["response"]]))
+
+        # do not block if aproved and TL - some blocked, but were already approved in the past
+        tl = magic_mixer.blend(dash.models.Source, bidder_slug="triplelift")
+        tl_cad = magic_mixer.blend(dash.models.ContentAd)
+        tl_cadss = magic_mixer.cycle(4).blend(dash.models.ContentAdSource, content_ad=tl_cad, source=tl)
+        set_blocked(mock_amplify, tl_cadss[0:3])
+        tl_cadss[0].submission_status = dash.constants.ContentAdSubmissionStatus.APPROVED
+        tl_cadss[0].save()
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": tl_cad.id, "include_blocked": "false"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set([tl_cadss[0].id, tl_cadss[3].id]), set([ca["id"] for ca in data["response"]]))
+
     def test_update_content_ad_status(self):
         cas = dash.models.ContentAdSource.objects.get(pk=1)
         cas.source_content_ad_id = None

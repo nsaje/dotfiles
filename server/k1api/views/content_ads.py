@@ -18,6 +18,7 @@ logger = zlogging.getLogger(__name__)
 
 
 OUTBRAIN_SOURCE_SLUG = "outbrain"
+TRIPLELIFT_SOURCE_SLUG = "triplelift"
 BIZWIRE_CAMPAIGN_ID = 1096
 
 
@@ -221,7 +222,10 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = [
                 content_ad_source
                 for content_ad_source in content_ad_sources
-                if not (self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses))
+                if (
+                    self._is_blocked_conditionally_allowed(content_ad_source)
+                    or not self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses)
+                )
             ]
 
         response = []
@@ -255,6 +259,15 @@ class ContentAdSourcesView(K1APIView):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source["state"]
+
+    @staticmethod
+    def _is_blocked_conditionally_allowed(content_ad_source):
+        if content_ad_source["source__bidder_slug"] == TRIPLELIFT_SOURCE_SLUG:
+            return content_ad_source["submission_status"] in (
+                constants.ContentAdSubmissionStatus.PENDING,
+                constants.ContentAdSubmissionStatus.APPROVED,
+            )
+        return False
 
     @staticmethod
     def _is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
