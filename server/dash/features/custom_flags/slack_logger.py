@@ -26,13 +26,14 @@ class SlackLoggerMixin(object):
                         modified_by="Modified by: {}".format(user) if user else "",
                     )
                 )
-        text = "\n".join(messages)
 
-        if text.strip():
-            try:
-                slack.publish(text, channel=slack.CHANNEL_ZEM_FEED_HACKS)
-            except Exception:
-                logger.exception("Connection Error with Slack")
+        if not messages:
+            return
+        text = "\n".join(messages)
+        try:
+            slack.publish(text, channel=slack.CHANNEL_ZEM_FEED_HACKS)
+        except Exception:
+            logger.exception("Connection Error with Slack")
 
     def entity_admin_url_builder(self, entity, domain="https://one.zemanta.com", anchor_tag="edit"):
         entity_name = entity.__class__.__name__.lower()

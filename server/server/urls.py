@@ -88,6 +88,11 @@ urlpatterns += [
     url(r"^oauth2callback", zemauth.views.google_callback, name="zemauth.views.google_callback"),
     url(r"^supply_dash/", login_required(dash.views.views.supply_dash_redirect), name="supply_dash_redirect"),
     url(r"^user/", zemauth.views.UserView.as_view(), name="user_details"),
+    url(
+        r"^push_metrics/(?P<ad_group_id>\d+)/(?P<switch>(enable|disable))/$",
+        login_required(dash.views.views.PushMetrics.as_view()),
+        name="push_metrics",
+    ),
 ]
 
 # Oauth2 provider

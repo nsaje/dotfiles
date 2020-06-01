@@ -34,6 +34,7 @@ from dash import constants
 from dash import forms
 from dash import infobox_helpers
 from dash import models
+from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from dash.views import helpers
 from prodops import hacks
 from utils import api_common
@@ -1132,7 +1133,7 @@ class Demo(api_common.BaseApiView):
         email_helper.send_official_email(
             agency_or_user=request.user,
             recipient_list=[request.user.email],
-            **email_helper.params_from_template(constants.EmailTemplateType.DEMO_RUNNING, url=url, password=password)
+            **email_helper.params_from_template(constants.EmailTemplateType.DEMO_RUNNING, url=url, password=password),
         )
 
         return self.create_api_response({"url": url, "password": password})
@@ -1214,3 +1215,18 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse("admin:dash_sourcecredentials_change", args=(credentials.id,)))
+
+
+class PushMetrics(api_common.BaseApiView, SlackLoggerMixin):
+    def get(self, request, ad_group_id, switch):
+        ad_group = models.AdGroup.objects.get(id=ad_group_id)
+        old_ad_group = models.AdGroup.objects.get(id=ad_group_id)
+        if not request.user.has_perm("zemauth.can_enable_push_metrics"):
+            raise exc.AuthorizationError()
+        if ad_group.custom_flags is None:
+            ad_group.custom_flags = {}
+        ad_group.custom_flags["b1_push_metrics"] = switch == "enable"
+        ad_group.save(None)
+        self.log_custom_flags_event_to_slack(old_ad_group, ad_group, user=request.user.email)
+        url = f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id={ad_group_id}"
+        return redirect(url)

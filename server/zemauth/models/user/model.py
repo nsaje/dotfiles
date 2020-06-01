@@ -385,4 +385,5 @@ class User(
                 "can_see_service_fee",
                 "User can view platform costs broken down into base media, base data and service fee.",
             ),
+            ("can_enable_push_metrics", "User can enable push metrics through special link"),
         )

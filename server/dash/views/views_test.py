@@ -1233,3 +1233,47 @@ class DemoTest(TestCase):
         response = self._get_client(has_permission=False).get(reversed_url, follow=True)
         self.assertEqual(404, response.status_code)
         self.assertTemplateUsed(response, "404.html")
+
+
+class PushMetrics(TestCase):
+    def setUp(self):
+        magic_mixer.blend(core.models.AdGroup, pk=1000, custom_flags=None)
+        user = magic_mixer.blend(zemauth.models.User, pk=500, username="bres@test.com", email="bres@test.com")
+        user.set_password("12345")
+        permission = Permission.objects.get(codename="can_enable_push_metrics")
+        user.user_permissions.add(permission)
+        user.save()
+        self.user = user
+        self.client = Client()
+        self.client.login(username="bres@test.com", password="12345")
+
+    def _toggle(self, switch):
+        url = reverse("push_metrics", kwargs={"ad_group_id": "1000", "switch": switch})
+        self.client.get(url)
+        ad_group = models.AdGroup.objects.get(pk=1000)
+        response = self.client.get(url)
+        return ad_group.custom_flags["b1_push_metrics"], response
+
+    def test_toggle_push_metrics(self):
+        self.assertTrue(self._toggle("enable")[0])
+        self.assertFalse(self._toggle("disable")[0])
+
+    def test_toggle_redirect(self):
+        self.assertRedirects(
+            self._toggle("enable")[1],
+            "https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000",
+            fetch_redirect_response=False,
+        )
+        self.assertRedirects(
+            self._toggle("disable")[1],
+            "https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000",
+            fetch_redirect_response=False,
+        )
+
+    def test_permission(self):
+        permission = Permission.objects.get(codename="can_enable_push_metrics")
+        self.user.user_permissions.remove(permission)
+        self.user.save()
+        url = reverse("push_metrics", kwargs={"ad_group_id": "1000", "switch": "enable"})
+        response = self.client.get(url)
+        self.assertEqual(401, response.status_code)
