@@ -63,3 +63,19 @@ class RuleInstanceTest(TestCase):
         self.assertEqual(None, condition.right_operand_window)
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)
         self.assertEqual("100", condition.right_operand_value)
+
+    def test_archive(self):
+        request = magic_mixer.blend_request_user()
+        rule = magic_mixer.blend(model.Rule)
+        self.assertEqual(rule.archived, False)
+
+        rule.archive(request)
+        self.assertEqual(rule.archived, True)
+
+    def test_restore(self):
+        request = magic_mixer.blend_request_user()
+        rule = magic_mixer.blend(model.Rule, archived=True)
+        self.assertEqual(rule.archived, True)
+
+        rule.restore(request)
+        self.assertEqual(rule.archived, False)

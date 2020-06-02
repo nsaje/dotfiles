@@ -278,6 +278,6 @@ def _get_errors_text(errors: Sequence[ErrorData], include_generic_error=True) ->
             ).format(count=autopilot_error_count, suffix="" if autopilot_error_count == 1 else "s")
         )
     if has_generic_errors and include_generic_error:
-        messages.append("An error has occured.")
+        messages.append("An error has occurred.")
 
     return " ".join(messages)

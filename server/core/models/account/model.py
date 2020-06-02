@@ -90,7 +90,7 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
     salesforce_id = models.IntegerField(null=True, blank=True, help_text="Outbrain custom Salesforce ID.")
 
-    # migration to the new system introduced by margings and fees project
+    # migration to the new system introduced by margins and fees project
     uses_bcm_v2 = models.BooleanField(
         default=False,
         verbose_name="Margins v2",

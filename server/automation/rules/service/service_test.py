@@ -172,7 +172,7 @@ class ExecuteRulesDailyRunTest(TestCase):
                 + "To change the autopilot daily budget the autopilot goal optimization must be active. "
                 + "To change the source bid modifier the campaign budget optimization and autopilot goal optimization must not be active; "
                 + "rule failed to make changes on 2 sources. "
-                + "An error has occured.",
+                + "An error has occurred.",
                 fail_history.changes_text,
             )
 
@@ -247,7 +247,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(rule, history.rule)
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual({"test": {"message": "error message", "stack_trace": "traceback"}}, history.changes)
-        self.assertEqual("An error has occured.", history.changes_text)
+        self.assertEqual("An error has occurred.", history.changes_text)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")

@@ -35,7 +35,7 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
     def list(self, request, agency_id, credit_id=None):
         agency = restapi.access.get_agency(request.user, agency_id)
-        rules = automation.rules.Rule.objects.filter(agency=agency).order_by("id")
+        rules = automation.rules.Rule.objects.filter(agency=agency).exclude_archived().order_by("id")
         paginator = StandardPagination()
         rules_paginated = paginator.paginate_queryset(rules, request)
         return paginator.get_paginated_response(

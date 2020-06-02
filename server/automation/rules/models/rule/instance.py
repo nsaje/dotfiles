@@ -15,6 +15,14 @@ class RuleInstanceMixin:
                 self.modified_by = request.user
         super().save(*args, **kwargs)
 
+    @transaction.atomic
+    def archive(self, request):
+        self.update(request, archived=True)
+
+    @transaction.atomic
+    def restore(self, request):
+        self.update(request, archived=False)
+
     @cached_property
     def requires_cpa_stats(self):
         return self._has_cpa_operands() or self._has_cpa_macros()

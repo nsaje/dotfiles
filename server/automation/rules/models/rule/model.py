@@ -8,12 +8,13 @@ from core.features.publisher_groups import PublisherGroup
 from ... import constants
 from . import instance
 from . import manager
+from . import queryset
 from . import validation
 
 
 class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Model):
 
-    objects = manager.RuleManager()
+    objects = manager.RuleManager.from_queryset(queryset.RuleQuerySet)()
 
     _update_fields = [
         "name",
@@ -30,6 +31,7 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
         "window",
         "notification_type",
         "notification_recipients",
+        "archived",
     ]
 
     id = models.AutoField(primary_key=True)
@@ -37,6 +39,7 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
 
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     state = models.IntegerField(default=constants.RuleState.ENABLED, choices=constants.RuleState.get_choices())
+    archived = models.BooleanField(default=False)
 
     ad_groups_included = models.ManyToManyField(core.models.AdGroup)
 
