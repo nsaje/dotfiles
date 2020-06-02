@@ -15,6 +15,6 @@ INSERT INTO partnerstats
          SUM(original_spend)*1000 AS original_cost_nano,
          SUM(ssp_spend)*1000 AS ssp_cost_nano
    FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
-   WHERE date >= (current_date - interval '1 day') AND media_source NOT IN ('outbrain', 'yahoo')
+   WHERE date >= (current_date - interval '2 day') AND media_source NOT IN ('outbrain', 'yahoo')
    GROUP BY 1, 2, 3, 4, 5, 6, 7
 );

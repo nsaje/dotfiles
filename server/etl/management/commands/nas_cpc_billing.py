@@ -16,7 +16,7 @@ class Command(Z1Command):
         parser.add_argument(
             "--from",
             type=str,
-            default=3,
+            default=1,
             help="Start of the billing period to process. Date ('%Y-%m-%d') or number of days to process.",
         )
         parser.add_argument("--until", type=str, help="End date of the billing period to process.")
