@@ -37,6 +37,8 @@ export class DateFormGroupComponent implements OnChanges {
     @Input()
     isFocused: boolean = false;
     @Input()
+    type: 'month' | 'date' = 'date';
+    @Input()
     errors: string[];
     @Output()
     valueChange = new EventEmitter<Date>();

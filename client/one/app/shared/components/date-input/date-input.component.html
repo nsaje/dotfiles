@@ -4,7 +4,9 @@
     Create custom zem-date-input styles which set the icon as prefix.
 -->
 <div
-    class="zem-prefixed-input zem-prefixed-input--with-icon zem-calendar-bg-icon"
+    class="zem-prefixed-input zem-prefixed-input--with-icon zem-calendar-bg-icon zem-date-input__container zem-date-input__container--{{
+        type
+    }}"
     [ngClass]="{'zem-prefixed-input--error': hasError}"
 >
     <input
@@ -21,7 +23,9 @@
         [disabled]="isDisabled"
         [zemFocus]="isFocused"
         [dayTemplate]="zemDateInputDay"
+        [footerTemplate]="type === 'month' ? zemMonthTypeFooter : null"
         (dateSelect)="onDateSelect($event)"
+        (navigate)="onNavigate($event)"
         (click)="zemDatepicker.toggle()"
         (keydown.arrowdown)="zemDatepicker.toggle()"
     />
@@ -46,4 +50,21 @@
     >
         {{ date.day }}
     </span>
+</ng-template>
+
+<ng-template #zemMonthTypeFooter>
+    <div class="zem-buttons-panel">
+        <button
+            class="zem-button zem-button--small zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+            (click)="onConfirmMonthSelection()"
+        >
+            Select
+        </button>
+        <button
+            class="zem-button zem-button--small"
+            (click)="zemDatepicker.close()"
+        >
+            Close
+        </button>
+    </div>
 </ng-template>

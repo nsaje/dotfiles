@@ -21,6 +21,7 @@
                     [appendTo]="appendTo"
                     [isDisabled]="isManualOverrideEnabled || isDisabled"
                     [isFocused]="isFocused"
+                    [type]="type"
                     [hasError]="errors && errors.length > 0"
                     (valueChange)="onValueChange($event)"
                 ></zem-date-input>

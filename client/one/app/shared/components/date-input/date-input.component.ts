@@ -16,6 +16,7 @@ import {
     NgbDate,
     NgbDateParserFormatter,
     NgbInputDatepicker,
+    NgbDatepickerNavigateEvent,
 } from '@ng-bootstrap/ng-bootstrap';
 import {DateInputFormatter} from './date-input.formatter';
 import * as commonHelpers from '../../helpers/common.helpers';
@@ -43,6 +44,8 @@ export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
     isFocused: boolean = false;
     @Input()
     hasError: boolean = false;
+    @Input()
+    type: 'month' | 'date' = 'date';
     @Output()
     valueChange = new EventEmitter<Date>();
 
@@ -52,6 +55,7 @@ export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
     minDate: NgbDate;
     maxDate: NgbDate;
     model: NgbDate;
+    currentNavigateEvent: NgbDatepickerNavigateEvent;
 
     private onWindowScrollCallback: any;
 
@@ -92,6 +96,17 @@ export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
         this.valueChange.emit(this.convertFromNgbDateToDate($event));
     }
 
+    onConfirmMonthSelection(): void {
+        this.onDateSelect(
+            new NgbDate(
+                this.currentNavigateEvent.next.year,
+                this.currentNavigateEvent.next.month,
+                1
+            )
+        );
+        this.zemDatepicker.close();
+    }
+
     onWindowScroll($event: any): void {
         if (
             !commonHelpers.isDefined(this.zemDatepicker) ||
@@ -109,6 +124,10 @@ export class DateInputComponent implements OnInit, OnChanges, OnDestroy {
             return;
         }
         this.zemDatepicker.close();
+    }
+
+    onNavigate($event: NgbDatepickerNavigateEvent): void {
+        this.currentNavigateEvent = $event;
     }
 
     private convertFromDateToNgbDate(value: Date): NgbDate {
