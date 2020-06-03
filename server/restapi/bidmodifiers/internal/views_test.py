@@ -12,12 +12,14 @@ from dash import constants
 from dash.features import geolocation
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(BidModifierCSVTest, self).setUp()
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        super(LegacyBidModifierCSVTest, self).setUp()
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="source_slug")
 
         self.outbrain = magic_mixer.blend(core.models.Source, name="Outbrain", bidder_slug="b1_outbrain")
@@ -1003,9 +1005,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         )
 
 
-class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
+class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierCSVTest):
+    pass
+
+
+class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(NoPermissionTest, self).setUp()
+        super(LegacyNoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
 
     def test_download_modifiers(self):
@@ -1099,10 +1105,15 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         )
 
 
-class BidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITest):
+class NoPermissionTest(restapi.common.views_base_test.RESTAPITestCase, LegacyNoPermissionTest):
+    pass
+
+
+class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(BidModifierTypeSummariesTest, self).setUp()
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        super(LegacyBidModifierTypeSummariesTest, self).setUp()
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         bid_modifiers.service.set_bulk(
             self.ad_group,
             [
@@ -1135,3 +1146,7 @@ class BidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITest):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"errorCode": "MissingDataError", "details": "Ad Group does not exist"})
+
+
+class BidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierTypeSummariesTest):
+    pass

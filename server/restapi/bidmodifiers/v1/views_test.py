@@ -9,17 +9,19 @@ from dash.features import geolocation
 from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyBidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(BidModifierViewSetTest, self).setUp()
+        super(LegacyBidModifierViewSetTest, self).setUp()
         self.request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
         self.content_ad = magic_mixer.blend(core.models.ContentAd)
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
-        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.foreign_ad_group = magic_mixer.blend(core.models.AdGroup)
 
         self.us = magic_mixer.blend(
@@ -945,9 +947,13 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         return self.client.get(reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": ad_group_id, "pk": pk}))
 
 
-class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
+class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierViewSetTest):
+    pass
+
+
+class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(NoPermissionTest, self).setUp()
+        super(LegacyNoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
 
     def test_list(self):
@@ -995,3 +1001,7 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
         )
+
+
+class NoPermissionTest(restapi.common.views_base_test.RESTAPITestCase, LegacyNoPermissionTest):
+    pass

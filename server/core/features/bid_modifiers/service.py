@@ -10,11 +10,13 @@ from django.db import transaction
 from django.db.models import Count
 
 import core.models
+import zemauth.features.entity_permission.helpers
 from core.models.source import model as source_model
 from dash import constants as dash_constants
 from utils import decimal_helpers
 from utils import k1_helper
 from utils import s3helpers
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 from . import exceptions
@@ -191,7 +193,7 @@ def _update_ad_group_source_settings(
 def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True, propagate_to_k1=True):
     bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group.id)
     if user:
-        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+        bid_modifiers_qs = _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, Permission.WRITE)
     bid_modifiers_qs = bid_modifiers_qs.filter(id__in=input_bid_modifier_ids)
 
     bid_modifier_ids = bid_modifiers_qs.values_list("id", flat=True)
@@ -217,7 +219,7 @@ def delete_types(ad_group, types_list, user=None, write_history=True, propagate_
 
     bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group.id, type__in=types_list)
     if user:
-        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+        bid_modifiers_qs = _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, Permission.WRITE)
 
     num_deleted, _ = bid_modifiers_qs.delete()
     if write_history:
@@ -239,7 +241,7 @@ def count_types(ad_group_id, types_list, user=None):
 
     bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group_id, type__in=types_list)
     if user:
-        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+        bid_modifiers_qs = _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, Permission.READ)
 
     return bid_modifiers_qs.values("type").annotate(count=Count("type"))
 
@@ -578,4 +580,12 @@ def _write_upload_history(ad_group, number_of_deleted, number_of_created, user=N
 
     ad_group.write_history(
         " ".join(messages), user=user, action_type=dash_constants.HistoryActionType.BID_MODIFIER_UPDATE
+    )
+
+
+def _filter_bid_modifiers_by_user_access(bid_modifiers_qs, user, permission):
+    bid_modifiers_user_permission_qs = bid_modifiers_qs.filter_by_user(user)
+    bid_modifiers_entity_permission_qs = bid_modifiers_qs.filter_by_entity_permission(user, permission)
+    return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+        user, permission, bid_modifiers_user_permission_qs, bid_modifiers_entity_permission_qs
     )

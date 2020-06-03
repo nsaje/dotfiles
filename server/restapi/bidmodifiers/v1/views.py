@@ -2,12 +2,14 @@ from rest_framework import permissions
 from rest_framework import status
 
 import core.features.bid_modifiers
-import restapi.access
 import restapi.common.views_base
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from dash import models
 from restapi.common import pagination
 from restapi.common import permissions as restapi_permissions
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -15,11 +17,21 @@ from . import serializers
 class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
-    def _filter_bid_modifiers(self, ad_group_id, user):
-        return models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
+    def _filter_bid_modifiers(self, ad_group_id, user, permission):
+        user_permission_qs = models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
+        entity_permission_qs = models.BidModifier.objects.filter_by_entity_permission(user, permission).filter(
+            ad_group__id=ad_group_id
+        )
+        return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, permission, user_permission_qs, entity_permission_qs
+        )
 
     def list(self, request, ad_group_id):
-        bid_modifiers = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").order_by("pk")
+        bid_modifiers = (
+            self._filter_bid_modifiers(ad_group_id, request.user, Permission.READ)
+            .select_related("source")
+            .order_by("pk")
+        )
 
         if "type" in request.GET:
             modifier_type = core.features.bid_modifiers.BidModifierType.get_constant_value(request.GET["type"])
@@ -39,10 +51,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
         input_data = serializer.validated_data
 
-        try:
-            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError("Ad Group does not exist")
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         try:
             bid_modifier, _ = core.features.bid_modifiers.set(
@@ -60,7 +69,11 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
     def retrieve(self, request, ad_group_id, pk=None):
         try:
-            bid_modifier = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").get(pk=pk)
+            bid_modifier = (
+                self._filter_bid_modifiers(ad_group_id, request.user, Permission.READ)
+                .select_related("source")
+                .get(pk=pk)
+            )
         except models.BidModifier.DoesNotExist:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
@@ -73,7 +86,11 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         input_data = serializer.validated_data
 
         try:
-            bid_modifier = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").get(id=pk)
+            bid_modifier = (
+                self._filter_bid_modifiers(ad_group_id, request.user, Permission.WRITE)
+                .select_related("source")
+                .get(id=pk)
+            )
         except models.BidModifier.DoesNotExist:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
@@ -89,7 +106,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
 
     def update_bulk(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         serializer = serializers.BidModifierSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
@@ -121,7 +138,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return None
 
     def destroy(self, request, ad_group_id, pk=None):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         if pk is not None:
             self._delete_single(request, ad_group, pk)
