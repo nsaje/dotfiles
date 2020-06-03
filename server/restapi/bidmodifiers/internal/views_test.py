@@ -582,21 +582,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             response.json(),
             {
                 "data": {
-                    "deleted": {
-                        "count": 9,
-                        "dimensions": 9,
-                        "summary": [
-                            {"type": "PUBLISHER", "count": 1},
-                            {"type": "SOURCE", "count": 1},
-                            {"type": "DEVICE", "count": 1},
-                            {"type": "OPERATING_SYSTEM", "count": 1},
-                            {"type": "ENVIRONMENT", "count": 1},
-                            {"type": "COUNTRY", "count": 1},
-                            {"type": "STATE", "count": 1},
-                            {"type": "DMA", "count": 1},
-                            {"type": "AD", "count": 1},
-                        ],
-                    },
+                    "deleted": {"count": 0, "dimensions": 0, "summary": []},
                     "created": {
                         "count": 9,
                         "dimensions": 9,

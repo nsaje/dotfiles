@@ -95,8 +95,8 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
                 )
                 delete_type_counts = [{"type": modifier_type, "count": number_of_deleted}]
             else:
-                delete_type_counts = bid_modifiers.count_types(
-                    ad_group, bid_modifiers.BidModifierType.get_all(), user=request.user
+                delete_type_counts = list(
+                    bid_modifiers.count_types(ad_group, bid_modifiers.BidModifierType.get_all(), user=request.user)
                 )
 
                 number_of_deleted, instances, csv_error_key = bid_modifiers.service.process_bulk_csv_file_upload(
