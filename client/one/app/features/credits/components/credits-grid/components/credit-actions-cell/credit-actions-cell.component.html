@@ -1,0 +1,15 @@
+<div class="zem-credit-actions-cell">
+    <button
+        *ngIf="!isCanceled"
+        [ngClass]="
+            isReadOnly ? 'zem-button--magnifier-icon' : 'zem-button--edit-icon'
+        "
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-credit-actions-cell__item"
+        (click)="openCreditItemModal()"
+    ></button>
+    <button
+        *ngIf="isSigned && !isReadOnly"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-credit-actions-cell__item"
+        (click)="cancelCreditItem()"
+    ></button>
+</div>

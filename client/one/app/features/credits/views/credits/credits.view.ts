@@ -7,8 +7,9 @@ import {
     HostBinding,
     OnDestroy,
     ViewChild,
+    Inject,
 } from '@angular/core';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Subject} from 'rxjs';
 import {takeUntil, filter} from 'rxjs/operators';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
@@ -16,14 +17,15 @@ import {CreditsStore} from '../../services/credits-store/credits.store';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
-import {Credit} from '../../../../core/entities/types/common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 import {
     DEFAULT_PAGINATION,
     ACTIVE_PAGINATION_URL_PARAMS,
     PAST_PAGINATION_URL_PARAMS,
     DEFAULT_PAGINATION_OPTIONS,
-} from '../../credtis.config';
+} from '../../credits.config';
 import {CreditStatus} from '../../../../app.constants';
+import {CreditGridType} from '../../credits.constants';
 
 @Component({
     selector: 'zem-credits-view',
@@ -54,9 +56,16 @@ export class CreditsView implements OnInit, OnDestroy {
     creditRefundListModalTitle: string;
     creditItemModalTitle: string;
 
+    creditGridType = CreditGridType;
+
     private ngUnsubscribe$: Subject<void> = new Subject();
 
-    constructor(public store: CreditsStore, private route: ActivatedRoute) {
+    constructor(
+        public store: CreditsStore,
+        private route: ActivatedRoute,
+        private router: Router,
+        @Inject('zemPermissions') public zemPermissions: any
+    ) {
         this.context = {
             componentParent: this,
         };
@@ -135,6 +144,15 @@ export class CreditsView implements OnInit, OnDestroy {
         this.store.saveCreditRefundActiveEntity().then(() => {
             this.creditRefundCreateModal.close();
             this.store.loadEntities(true, this.activePaginationOptions);
+        });
+    }
+
+    onPaginationChange($event: PaginationState) {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: $event,
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
         });
     }
 

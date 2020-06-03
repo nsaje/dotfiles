@@ -1,0 +1,12 @@
+<div class="zem-refund-actions-cell">
+    <button
+        *ngIf="canManageRefunds"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--magnifier-icon zem-refund-actions-cell__item"
+        (click)="openCreditRefundListModal()"
+    ></button>
+    <button
+        *ngIf="canManageRefunds && !isCanceled && !isPast"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--add-icon zem-refund-actions-cell__item"
+        (click)="openCreditRefundCreateModal()"
+    ></button>
+</div>

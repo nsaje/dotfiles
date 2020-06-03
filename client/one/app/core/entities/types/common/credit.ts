@@ -9,6 +9,7 @@ export interface Credit {
     startDate: Date;
     endDate: Date;
     licenseFee: string;
+    flatFee: string;
     amount: number;
     total: string;
     allocated: string;

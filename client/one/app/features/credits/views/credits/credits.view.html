@@ -23,13 +23,31 @@
                 Add Credit Item
             </button>
         </div>
-        <!-- active grid -->
+        <zem-credits-grid
+            [credits]="state.activeCredits"
+            [context]="context"
+            [isLoading]="state.requests.listActive.inProgress"
+            [creditGridType]="creditGridType.ACTIVE"
+            [paginationOptions]="activePaginationOptions"
+            [paginationCount]="state.requests.listActive.count"
+            (paginationChange)="onPaginationChange($event)"
+        >
+        </zem-credits-grid>
     </div>
     <div class="zem-panel zem-panel--with-padding zem-credits-view__panel">
         <div class="zem-credits-view__panel-title">
             Past Credit Items
         </div>
-        <!-- past grid -->
+        <zem-credits-grid
+            [credits]="state.pastCredits"
+            [context]="context"
+            [isLoading]="state.requests.listPast.inProgress"
+            [creditGridType]="creditGridType.PAST"
+            [paginationOptions]="pastPaginationOptions"
+            [paginationCount]="state.requests.listPast.count"
+            (paginationChange)="onPaginationChange($event)"
+        >
+        </zem-credits-grid>
     </div>
 
     <zem-modal

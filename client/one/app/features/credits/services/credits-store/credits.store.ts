@@ -119,7 +119,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                 pastPaginationOptions
             )
         ) {
-            promises.push(this.loadEntities(true, pastPaginationOptions));
+            promises.push(this.loadEntities(false, pastPaginationOptions));
         }
 
         return new Promise<void>((resolve, reject) => {
