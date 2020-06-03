@@ -144,17 +144,15 @@ class RefreshBluekaiCategoriesTestCase(TestCase):
         mock_get_existing.return_value = self.existing_categories
 
         maintenance.refresh_bluekai_categories()
-        # FIXME: uncomment when reenabling adding categories
-        # mock_category_create.assert_called_once_with(
-        #     category_id=TEST_TAXONOMY[1]["id"],
-        #     parent_category_id=TEST_TAXONOMY[1]["parentCategory"]["id"],
-        #     name=TEST_TAXONOMY[1]["name"],
-        #     description=TEST_TAXONOMY[1]["description"],
-        #     reach=TEST_TAXONOMY[1]["stats"]["reach"],
-        #     price=TEST_TAXONOMY[1]["categoryPrice"],
-        #     navigation_only=TEST_TAXONOMY[1]["isForNavigationOnlyFlag"],
-        # )
-        self.assertFalse(mock_category_create.called)
+        mock_category_create.assert_called_once_with(
+            category_id=TEST_TAXONOMY[1]["id"],
+            parent_category_id=TEST_TAXONOMY[1]["parentCategory"]["id"],
+            name=TEST_TAXONOMY[1]["name"],
+            description=TEST_TAXONOMY[1]["description"],
+            reach=TEST_TAXONOMY[1]["stats"]["reach"],
+            price=TEST_TAXONOMY[1]["categoryPrice"],
+            navigation_only=TEST_TAXONOMY[1]["isForNavigationOnlyFlag"],
+        )
         mock_category_update.assert_called_once_with(
             ANY,
             name=TEST_TAXONOMY[0]["name"],
