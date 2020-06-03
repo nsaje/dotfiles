@@ -2,11 +2,12 @@ from rest_framework import permissions
 
 import core.features.audiences
 import core.models
-import restapi.access
 import utils.converters
 import utils.exc
+import zemauth.access
 from restapi.audience.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 
 class CanManageCustomAudiencesPermission(permissions.BasePermission):
@@ -18,12 +19,12 @@ class AudienceViewSet(RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, CanManageCustomAudiencesPermission)
 
     def get(self, request, account_id, audience_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         audience = self._get_audience(account, audience_id)
         return self.response_ok(serializers.AudienceSerializer(audience).data)
 
     def list(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         audiences = (
             core.features.audiences.Audience.objects.filter(pixel__account=account)
             .prefetch_related("audiencerule_set")
@@ -35,7 +36,7 @@ class AudienceViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializers.AudienceSerializer(audiences, many=True).data)
 
     def put(self, request, account_id, audience_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = serializers.AudienceSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         audience = self._get_audience(account, audience_id)
@@ -48,7 +49,7 @@ class AudienceViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializers.AudienceSerializer(audience).data)
 
     def create(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = serializers.AudienceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data

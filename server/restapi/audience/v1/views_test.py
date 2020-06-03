@@ -6,10 +6,12 @@ import dash.constants
 import utils.dates_helper
 import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class AudiencesTest(RESTAPITest):
+class LegacyAudiencesTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
@@ -54,11 +56,12 @@ class AudiencesTest(RESTAPITest):
 
     def test_audience_get(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
+
         r = self.client.get(
             reverse(
                 "restapi.audience.v1:audiences_details", kwargs={"account_id": account.id, "audience_id": audience.id}
@@ -70,10 +73,11 @@ class AudiencesTest(RESTAPITest):
     def test_no_account_access(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.models.Account)
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
+
         r = self.client.get(
             reverse(
                 "restapi.audience.v1:audiences_details", kwargs={"account_id": account.id, "audience_id": audience.id}
@@ -83,14 +87,15 @@ class AudiencesTest(RESTAPITest):
 
     def test_audiences_list(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         core.features.audiences.Audience.objects.create(
-            request, "test1", pixel, 10, 20, [{"type": 2, "value": "test_rule1"}]
+            request, "test1", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule1"}]
         )
         core.features.audiences.Audience.objects.create(
-            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule2"}]
+            request, "test2", pixel, 30, 40, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule2"}]
         )
+
         r = self.client.get(reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
@@ -99,18 +104,19 @@ class AudiencesTest(RESTAPITest):
 
     def test_audiences_list_exclude_archived(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         core.features.audiences.Audience.objects.create(
-            request, "test1", pixel, 10, 20, [{"type": 2, "value": "test_rule1"}]
+            request, "test1", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule1"}]
         )
         core.features.audiences.Audience.objects.create(
-            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule2"}]
+            request, "test2", pixel, 30, 40, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule2"}]
         )
         audience = core.features.audiences.Audience.objects.create(
-            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule3"}]
+            request, "test2", pixel, 30, 40, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule3"}]
         )
         audience.update(request, archived=True)
+
         r = self.client.get(reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
@@ -119,18 +125,19 @@ class AudiencesTest(RESTAPITest):
 
     def test_audiences_list_include_archived(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         core.features.audiences.Audience.objects.create(
-            request, "test1", pixel, 10, 20, [{"type": 2, "value": "test_rule1"}]
+            request, "test1", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule1"}]
         )
         core.features.audiences.Audience.objects.create(
-            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule2"}]
+            request, "test2", pixel, 30, 40, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule2"}]
         )
         audience = core.features.audiences.Audience.objects.create(
-            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule3"}]
+            request, "test2", pixel, 30, 40, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule3"}]
         )
         audience.update(request, archived=True)
+
         r = self.client.get(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}), {"includeArchived": "T"}
         )
@@ -140,8 +147,8 @@ class AudiencesTest(RESTAPITest):
         self.assertEqual(3, len(resp_json["data"]))
 
     def test_post(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={
@@ -161,7 +168,7 @@ class AudiencesTest(RESTAPITest):
         self.assertEqual("test_rule", resp_json["data"]["rules"][0]["value"])
 
     def test_post_blank(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}), data={}, format="json"
         )
@@ -172,7 +179,7 @@ class AudiencesTest(RESTAPITest):
         self.assertEqual(["Please select a rule."], resp_json["details"]["rules"])
 
     def test_post_invalid(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={
@@ -195,7 +202,7 @@ class AudiencesTest(RESTAPITest):
         )
 
     def test_post_pixel_does_not_exist(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={"pixel_id": 1000, "name": "posty", "ttl": 10, "rules": [{"type": "CONTAINS", "value": "test_rule"}]},
@@ -204,8 +211,8 @@ class AudiencesTest(RESTAPITest):
         self.assertResponseError(r, "MissingDataError")
 
     def test_post_pixel_archived_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=True)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, archived=True)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={
@@ -221,10 +228,10 @@ class AudiencesTest(RESTAPITest):
 
     def test_post_ttl_rules_error(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
@@ -243,8 +250,8 @@ class AudiencesTest(RESTAPITest):
         )
 
     def test_post_rule_multiple_values(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={
@@ -289,11 +296,11 @@ class AudiencesTest(RESTAPITest):
             },
             format="json",
         )
-        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertResponseError(r, "ValidationError")
 
     def test_post_rule_visit(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={"pixel_id": pixel.id, "name": "posty", "ttl": 10, "rules": [{"type": "VISIT", "value": ""}]},
@@ -311,8 +318,8 @@ class AudiencesTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_post_rule_type_missing_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={"pixel_id": pixel.id, "name": "posty", "ttl": 10, "rules": [{"value": "test"}]},
@@ -322,8 +329,8 @@ class AudiencesTest(RESTAPITest):
         self.assertEqual(["Please select the type of the rule."], resp_json["details"]["rules"][0]["type"])
 
     def test_post_rule_value_missing_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={"pixel_id": pixel.id, "name": "posty", "ttl": 10, "rules": [{"type": "CONTAINS", "value": ""}]},
@@ -349,8 +356,8 @@ class AudiencesTest(RESTAPITest):
         self.assertEqual(["Please enter conditions for the audience."], resp_json["details"]["rules"][0]["value"])
 
     def test_post_rule_url_invalid_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         r = self.client.post(
             reverse("restapi.audience.v1:audiences_list", kwargs={"account_id": account.id}),
             data={
@@ -366,11 +373,11 @@ class AudiencesTest(RESTAPITest):
 
     def test_put(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
-        pixel2 = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel2")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        pixel2 = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         old_id = audience.id
         r = self.client.put(
@@ -397,10 +404,10 @@ class AudiencesTest(RESTAPITest):
 
     def test_put_archived(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         self.assertFalse(audience.archived)
         r = self.client.put(
@@ -429,11 +436,11 @@ class AudiencesTest(RESTAPITest):
 
     def test_put_can_not_archive_error(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.settings.update(request, audience_targeting=[audience.id])
@@ -451,7 +458,7 @@ class AudiencesTest(RESTAPITest):
         )
 
     def test_put_audience_does_not_exist(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         r = self.client.put(
             reverse("restapi.audience.v1:audiences_details", kwargs={"account_id": account.id, "audience_id": 1000}),
             data={"name": "new name"},
@@ -461,10 +468,10 @@ class AudiencesTest(RESTAPITest):
 
     def test_unsetting_blank(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         r = self.client.put(
             reverse(
@@ -488,10 +495,10 @@ class AudiencesTest(RESTAPITest):
 
     def test_unsetting_null(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request, "test", pixel, 10, 20, [{"type": dash.constants.AudienceRuleType.CONTAINS, "value": "test_rule"}]
         )
         r = self.client.put(
             reverse(
@@ -510,3 +517,7 @@ class AudiencesTest(RESTAPITest):
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
+
+
+class AudiencesTest(RESTAPITestCase, LegacyAudiencesTest):
+    pass
