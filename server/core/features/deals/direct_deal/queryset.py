@@ -1,6 +1,7 @@
 from django.db import models
 
 import zemauth.features.entity_permission.shortcuts
+import zemauth.models
 
 
 class DirectDealQuerySet(

@@ -8,12 +8,13 @@ from django.utils.translation import ugettext_lazy as _
 
 import core.models
 import utils.exc
+import zemauth.features.entity_permission
 
 from . import models
 
 
 class EntityPermissionUserInline(admin.TabularInline):
-    model = models.EntityPermission
+    model = zemauth.features.entity_permission.EntityPermission
     autocomplete_fields = ("agency", "account")
     extra = 0
 
@@ -113,4 +114,4 @@ class EntityPermissionAdmin(admin.ModelAdmin):
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.InternalGroup, InternalGroupAdmin)
 admin.site.register(Permission, PermissionAdmin)
-admin.site.register(models.EntityPermission, EntityPermissionAdmin)
+admin.site.register(zemauth.features.entity_permission.EntityPermission, EntityPermissionAdmin)
