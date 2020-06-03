@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.db import transaction
 
 import automation.campaignstop
@@ -15,7 +16,13 @@ logger = zlogging.getLogger(__name__)
 
 DAYS_INACTIVE = 90
 
-WHITELISTED_ACCOUNTS = [305, 490, 512, 513, 293]  # OEN  # InPowered  # -  # -  # BusinessWire
+WHITELISTED_ACCOUNTS = [
+    settings.HARDCODED_ACCOUNT_ID_OEN,
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_1,
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_2,
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_3,
+    settings.HARDCODED_ACCOUNT_ID_BUSINESSWIRE,
+]
 
 
 class Command(Z1Command):

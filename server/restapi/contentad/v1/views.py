@@ -1,4 +1,5 @@
 import rest_framework.serializers
+from django.conf import settings
 
 import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
@@ -11,8 +12,8 @@ from restapi.contentad.v1 import serializers
 from utils import dates_helper
 from utils import exc
 
-ACCOUNTS_CAN_EDIT_URL = [305]
-ACCOUNTS_CAN_EDIT_BRAND_NAME = [305]
+ACCOUNTS_CAN_EDIT_URL = [settings.HARDCODED_ACCOUNT_ID_OEN]
+ACCOUNTS_CAN_EDIT_BRAND_NAME = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
 class ContentAdViewList(RESTAPIBaseView):

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 
 import core.common
@@ -15,9 +16,13 @@ from . import model
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
-ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
+ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_1,
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_2,
+    settings.HARDCODED_ACCOUNT_ID_INPOWERED_3,
+}  # inPowered
 
-ACCOUNTS_WITH_AUTOPILOT_DISABLED = {305, 490}
+ACCOUNTS_WITH_AUTOPILOT_DISABLED = {settings.HARDCODED_ACCOUNT_ID_OEN, settings.HARDCODED_ACCOUNT_ID_INPOWERED_1}
 CAMPAIGN_AUTOPILOT_ENABLED_VALUE = True
 
 

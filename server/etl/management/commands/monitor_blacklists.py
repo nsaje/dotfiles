@@ -2,6 +2,7 @@ import collections
 import datetime
 
 import dateutil.parser
+from django.conf import settings
 
 import backtosql
 import core.features.publisher_groups
@@ -15,8 +16,6 @@ from utils import zlogging
 from utils.command_helpers import Z1Command
 
 logger = zlogging.getLogger(__name__)
-
-OEN = 305
 
 
 class Command(Z1Command):
@@ -45,7 +44,7 @@ class Command(Z1Command):
 
         ad_groups = models.AdGroup.objects.all().exclude_archived().filter_current_and_active()
         if not options["include_oen"]:
-            ad_groups = ad_groups.exclude(campaign__account__id=OEN)
+            ad_groups = ad_groups.exclude(campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN)
         if options.get("ad_group_ids") is not None:
             ad_group_ids = [int(x.strip()) for x in options["ad_group_ids"].split(",")]
             ad_groups = models.AdGroup.objects.filter(pk__in=ad_group_ids)

@@ -29,7 +29,7 @@ from . import dailystatement
 from . import exceptions
 from . import helpers
 
-EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305, 490)
+EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, settings.HARDCODED_ACCOUNT_ID_OEN, settings.HARDCODED_ACCOUNT_ID_INPOWERED_1)
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
 UPDATABLE_FIELDS = ("start_date", "end_date", "amount", "comment")
 

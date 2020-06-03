@@ -137,7 +137,7 @@ def _invoke_external_validation(candidate, batch):
 
     cleaned_urls = _get_cleaned_urls(candidate)
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
-    if batch.ad_group and batch.ad_group.campaign.account_id == 305:  # OEN
+    if batch.ad_group and batch.ad_group.campaign.account_id == settings.HARDCODED_ACCOUNT_ID_OEN:
         skip_url_validation = True
     data = {
         "namespace": settings.LAMBDA_CONTENT_UPLOAD_NAMESPACE,

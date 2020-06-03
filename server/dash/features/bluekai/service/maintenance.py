@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import core.models
 from dash.features.bluekai import models
 from utils import zlogging
@@ -7,7 +9,7 @@ from . import bluekaiapi
 logger = zlogging.getLogger(__name__)
 
 RECENCY_ALL = 500
-OEN_ACCOUNT_ID = 305
+
 AUDIENCE_ID = 549424
 CAMPAIGN_ID = 456928
 STATUS_ACTIVE = "active"
@@ -50,7 +52,7 @@ def _get_ad_group_settings_for_bluekai():
     active_ad_groups = (
         core.models.AdGroup.objects.filter_running_and_has_budget()
         .select_related("settings")
-        .exclude(campaign__account_id=OEN_ACCOUNT_ID)
+        .exclude(campaign__account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
         .exclude(settings__bluekai_targeting="")
         .exclude(settings__bluekai_targeting=[])
     )

@@ -1,6 +1,7 @@
 import datetime
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.cache import caches
 
 import dash.constants
@@ -13,9 +14,6 @@ from utils import zlogging
 from .base import K1APIView
 
 logger = zlogging.getLogger(__name__)
-
-
-OEN_ACCOUNT_ID = 305
 
 
 class GAAccountsView(K1APIView):
@@ -31,7 +29,12 @@ class GAAccountsView(K1APIView):
         if response is not None:
             return self.response_ok(response)
 
-        accounts = dash.models.Account.objects.all().exclude_archived().exclude(id__in=[OEN_ACCOUNT_ID]).order_by("id")
+        accounts = (
+            dash.models.Account.objects.all()
+            .exclude_archived()
+            .exclude(id__in=[settings.HARDCODED_ACCOUNT_ID_OEN])
+            .order_by("id")
+        )
         if marker:
             accounts = accounts.filter(pk__gt=int(marker))
         accounts = accounts[:limit]

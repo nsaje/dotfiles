@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
 DEFAULT_LIMITS = {
@@ -19,18 +20,23 @@ DEFAULT_LIMITS = {
 ACCOUNT_EXCEPTIONS = defaultdict(
     dict,
     {
-        "Campaign": {305: 2000000, 2323: 600},  # OEN
-        "AdGroup": {490: 1000, 512: 1000, 513: 1000, 293: 10000},  # inPowered  # inPowered  # inPowered  # Businesswire
+        "Campaign": {settings.HARDCODED_ACCOUNT_ID_OEN: 2000000, 2323: 600},  # OEN
+        "AdGroup": {
+            settings.HARDCODED_ACCOUNT_ID_INPOWERED_1: 1000,
+            settings.HARDCODED_ACCOUNT_ID_INPOWERED_2: 1000,
+            settings.HARDCODED_ACCOUNT_ID_INPOWERED_3: 1000,
+            settings.HARDCODED_ACCOUNT_ID_BUSINESSWIRE: 10000,
+        },  # inPowered  # inPowered  # inPowered  # Businesswire
         "ContentAd": {
             63: 10000,  # Allstate
             80: 10000,  # Dusan Test Account
             115: 10000,  # Luka's Test Account
-            293: 10000,  # Businesswire
-            305: 100000,  # OEN
+            settings.HARDCODED_ACCOUNT_ID_BUSINESSWIRE: 10000,
+            settings.HARDCODED_ACCOUNT_ID_OEN: 100000,
             950: 20000,  # MatchesFashion
         },
-        "PublisherGroup": {305: 2000000},  # OEN
-        "BudgetLineItem": {305: 1000},  # OEN
+        "PublisherGroup": {settings.HARDCODED_ACCOUNT_ID_OEN: 2000000},  # OEN
+        "BudgetLineItem": {settings.HARDCODED_ACCOUNT_ID_OEN: 1000},  # OEN
         "ConversionPixel": {4300: 25},  # GroupM/MAIF
     },
 )

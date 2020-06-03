@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 import core.features.bcm
@@ -6,7 +7,6 @@ import dash.constants
 import zemauth.features.entity_permission.shortcuts
 import zemauth.models
 
-OEN_ACCOUNT_ID = 305
 ZMS_TAG = "outbrain/sales/OutbrainSalesforce"
 NAS_TAG = "biz/NES"
 INTERNAL_TAG = "biz/internal"
@@ -39,7 +39,7 @@ class AccountQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
         predicate = models.Q()
         if dash.constants.Business.Z1 in business_types:
             if dash.constants.Business.OEN not in business_types:
-                predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
+                predicate = predicate | models.Q(id=settings.HARDCODED_ACCOUNT_ID_OEN)
             if dash.constants.Business.ZMS not in business_types:
                 predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
             if dash.constants.Business.NAS not in business_types:
@@ -49,7 +49,7 @@ class AccountQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
             return self.exclude(predicate)
         else:
             if dash.constants.Business.OEN in business_types:
-                predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
+                predicate = predicate | models.Q(id=settings.HARDCODED_ACCOUNT_ID_OEN)
             if dash.constants.Business.ZMS in business_types:
                 predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
             if dash.constants.Business.NAS in business_types:

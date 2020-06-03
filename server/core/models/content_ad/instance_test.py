@@ -1,4 +1,5 @@
 import mock
+from django.conf import settings
 from django.test import TestCase
 
 import core.models.content_ad_source.model
@@ -14,6 +15,7 @@ from . import instance
 from . import model
 
 
+@mock.patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class InstanceTest(TestCase):
     @mock.patch.object(redirector_helper, "update_redirect")
     @mock.patch.object(email_helper, "send_ad_group_notification_email")
@@ -69,7 +71,9 @@ class InstanceTest(TestCase):
 
     @mock.patch.object(k1_helper, "update_content_ad")
     def test_oen_document_data(self, mock_k1_update):
-        content_ad = magic_mixer.blend(model.ContentAd, ad_group__campaign__account__id=305)
+        content_ad = magic_mixer.blend(
+            model.ContentAd, ad_group__campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN
+        )
 
         additional_data = {
             "document_id": 12345,
@@ -90,7 +94,9 @@ class InstanceTest(TestCase):
 
     @mock.patch.object(k1_helper, "update_content_ad")
     def test_oen_document_data_change_only_features(self, mock_k1_update):
-        content_ad = magic_mixer.blend(model.ContentAd, ad_group__campaign__account__id=305, document_id=12345)
+        content_ad = magic_mixer.blend(
+            model.ContentAd, ad_group__campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN, document_id=12345
+        )
 
         additional_data = {
             "document_id": 12345,

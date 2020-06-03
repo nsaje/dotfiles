@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Q
 
 import core.models
@@ -73,7 +74,7 @@ def get_retargetable_ad_groups(user, ad_group, existing_targetings):
         return []
 
     account = ad_group.campaign.account
-    if account.id == 305:  # OEN
+    if account.id == settings.HARDCODED_ACCOUNT_ID_OEN:
         return []
 
     ad_groups = (

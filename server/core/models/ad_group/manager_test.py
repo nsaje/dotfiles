@@ -1,5 +1,6 @@
 import decimal
 
+from django.conf import settings
 from django.test import TestCase
 from mock import patch
 
@@ -14,13 +15,13 @@ from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
-from .manager import OEN_ACCOUNT_ID
 
 
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
+@patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class AdGroupCreate(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
@@ -44,7 +45,7 @@ class AdGroupCreate(TestCase):
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
 
     def test_create_oen(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):
-        campaign = magic_mixer.blend(core.models.Campaign, account__id=OEN_ACCOUNT_ID)
+        campaign = magic_mixer.blend(core.models.Campaign, account__id=settings.HARDCODED_ACCOUNT_ID_OEN)
         core.models.AdGroup.objects.create(self.request, campaign)
 
         self.assertFalse(mock_bulk_create.called)

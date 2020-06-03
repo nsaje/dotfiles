@@ -18,7 +18,6 @@ logger = zlogging.getLogger(__name__)
 
 DEPLETING_AVAILABLE_BUDGET_SCALAR = decimal.Decimal(1.5)
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"
-OEN_ACCOUNT_ID = 305
 
 
 @metrics_compat.timer("automation.campaignstop.simple.budget_campaigns", operation="notify_depleting")
@@ -212,7 +211,9 @@ def _get_total_daily_budget_amount(campaign):
 
 
 def _get_active_campaigns():
-    return _get_active_campaigns_subset(dash.models.Campaign.objects.exclude(account_id=OEN_ACCOUNT_ID))
+    return _get_active_campaigns_subset(
+        dash.models.Campaign.objects.exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
+    )
 
 
 def _get_active_ad_groups(campaign):
@@ -240,7 +241,7 @@ def _get_active_ad_group_sources_settings(adgroup):
 
 
 def _stop_campaign(campaign):
-    if campaign.account_id == OEN_ACCOUNT_ID:
+    if campaign.account_id == settings.HARDCODED_ACCOUNT_ID_OEN:
         return
     if campaign.real_time_campaign_stop:
         _stop_real_time(campaign)

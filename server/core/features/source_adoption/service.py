@@ -1,5 +1,6 @@
 import time
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
@@ -88,7 +89,7 @@ def complete_release(sources):
 
 
 def auto_add_new_ad_group_sources(source):
-    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=305).filter(
+    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN).filter(
         Q(campaign__account__settings__auto_add_new_sources=True)
         & Q(settings__archived=False)
         & (
@@ -100,7 +101,9 @@ def auto_add_new_ad_group_sources(source):
 
 
 def append_source(base_source, additional_source, append_to_all_accounts=False):
-    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=305).filter(settings__archived=False)
+    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN).filter(
+        settings__archived=False
+    )
     if not append_to_all_accounts:
         ad_groups = ad_groups.filter(campaign__account__settings__auto_add_new_sources=True)
     ad_groups = core.models.AdGroup.objects.filter(
@@ -108,7 +111,9 @@ def append_source(base_source, additional_source, append_to_all_accounts=False):
             ad_group__in=ad_groups, source=base_source, settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE
         ).values_list("ad_group_id", flat=True)
     ).exclude(
-        pk__in=core.models.AdGroupSource.objects.exclude(ad_group__campaign__account__id=305)
+        pk__in=core.models.AdGroupSource.objects.exclude(
+            ad_group__campaign__account__id=settings.HARDCODED_ACCOUNT_ID_OEN
+        )
         .filter(source=additional_source)
         .values_list("ad_group_id", flat=True)
     )

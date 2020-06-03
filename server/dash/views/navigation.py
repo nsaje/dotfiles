@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
+
 import automation.campaignstop
 from dash import forms
 from dash import models
@@ -12,7 +14,7 @@ from utils import zlogging
 logger = zlogging.getLogger(__name__)
 
 
-ACCOUNTS_EXCLUDED_FROM_SEARCH = [305]
+ACCOUNTS_EXCLUDED_FROM_SEARCH = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
 class UsesBCMV2View(api_common.BaseApiView):

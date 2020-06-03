@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 import botocore.exceptions
+from django.conf import settings
 
 import core.models
 from utils import zlogging
@@ -36,7 +37,12 @@ class Command(Z1Command):
             core.models.ContentAd.objects.filter(
                 image_present=image_present, created_dt__lt=datetime.datetime(2019, 4, 30)
             )
-            .exclude(ad_group__campaign__account_id__in=[305, 293])
+            .exclude(
+                ad_group__campaign__account_id__in=[
+                    settings.HARDCODED_ACCOUNT_ID_OEN,
+                    settings.HARDCODED_ACCOUNT_ID_BUSINESSWIRE,
+                ]
+            )
             .values_list("image_id", flat=True)
             .distinct("image_id")
         )

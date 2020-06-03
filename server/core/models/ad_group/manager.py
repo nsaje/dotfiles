@@ -14,8 +14,6 @@ import utils.redirector_helper
 from . import exceptions
 from . import model
 
-OEN_ACCOUNT_ID = 305
-
 
 class AdGroupManager(core.common.BaseManager):
     def create(
@@ -69,7 +67,7 @@ class AdGroupManager(core.common.BaseManager):
                 self._set_initial_bids_if_necessary(ad_group, settings_updates)
                 ad_group.settings.update(request, **settings_updates)
 
-            if campaign.account_id != OEN_ACCOUNT_ID:
+            if campaign.account_id != settings.HARDCODED_ACCOUNT_ID_OEN:
                 core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
                     request, ad_group, write_history=False, k1_sync=False, apply_ad_group_bids=apply_ad_group_bids
                 )

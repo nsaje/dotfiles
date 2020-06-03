@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.db.models import Q
 
 import dash.models
@@ -7,7 +8,6 @@ import prodops.audience_report
 import prodops.helpers
 import utils.command_helpers
 
-OEN = 305
 HEADER = ("Ad ID", "Brand / Agency", "Image URL", "Landing page", "Title", "Display URL", "Brand name", "Description")
 
 
@@ -76,7 +76,7 @@ class Command(utils.command_helpers.Z1Command):
             )
             flags.append("live")
         if options["is_not_oen"]:
-            cas_list = cas_list.exclude(content_ad__ad_group__campaign__account_id=OEN)
+            cas_list = cas_list.exclude(content_ad__ad_group__campaign__account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
             flags.append("exoen")
 
         cas_list = cas_list.select_related(

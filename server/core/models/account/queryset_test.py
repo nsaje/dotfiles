@@ -1,6 +1,8 @@
 from typing import Any
 
+from django.conf import settings
 from django.test import TestCase
+from mock import patch
 
 import core.models
 import dash.constants
@@ -15,6 +17,7 @@ from . import queryset
 class AccountQuerySetTestCase(
     zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetTestCaseMixin, TestCase
 ):
+    @patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
     def test_filter_by_business(self):
         ag_zms = magic_mixer.blend(core.models.Agency)
         ag_zms.entity_tags.add(queryset.ZMS_TAG)
@@ -22,7 +25,7 @@ class AccountQuerySetTestCase(
         ag_internal = magic_mixer.blend(core.models.Agency)
         ag_internal.entity_tags.add(queryset.INTERNAL_TAG)
 
-        acc_oen = magic_mixer.blend(model.Account, id=305)
+        acc_oen = magic_mixer.blend(model.Account, id=settings.HARDCODED_ACCOUNT_ID_OEN)
         acc_z1 = magic_mixer.blend(model.Account)
         acc_zms = magic_mixer.blend(model.Account, agency=ag_zms)
         acc_internal = magic_mixer.blend(model.Account, agency=ag_internal)

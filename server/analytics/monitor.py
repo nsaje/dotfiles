@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 
+from django.conf import settings
 from django.db.models import F
 from django.db.models import Sum
 
@@ -20,7 +21,7 @@ logger = zlogging.getLogger("stats.monitor")
 
 MAX_ERR = 10 ** 9  # 0.0001$
 
-API_ACCOUNTS = (293, 305)
+API_ACCOUNTS = (settings.HARDCODED_ACCOUNT_ID_BUSINESSWIRE, settings.HARDCODED_ACCOUNT_ID_OEN)
 
 
 def _get_rs_spend(table_name, date, account_id=None):

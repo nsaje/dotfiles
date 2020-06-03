@@ -21,7 +21,6 @@ from utils import zlogging
 logger = zlogging.getLogger(__name__)
 
 FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
-OEN_ACCOUNT_ID = 305
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -217,7 +216,7 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends)
     if campaign_spend is None:
         return 0, 0, 0
 
-    if campaign.account_id == OEN_ACCOUNT_ID:
+    if campaign.account_id == settings.HARDCODED_ACCOUNT_ID_OEN:
         return 1, 0, 0
 
     actual_spend_nano = campaign_spend["media_nano"] + campaign_spend["data_nano"]
@@ -313,7 +312,7 @@ def get_campaigns_with_spend(date_since, exclude_oen=True):
     )
     campaigns = dash.models.Campaign.objects.filter(pk__in=campaign_ids)
     if exclude_oen:
-        campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
+        campaigns = campaigns.exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
     return campaigns
 
 
@@ -321,7 +320,7 @@ def get_campaigns_with_budgets_in_timeframe(date_since):
     today = dates_helper.local_today()
     return dash.models.Campaign.objects.filter(
         budgets__start_date__lte=today, budgets__end_date__gte=date_since
-    ).exclude(account_id=OEN_ACCOUNT_ID)
+    ).exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
 
 
 def _query_ad_groups_with_spend(params):
@@ -378,7 +377,7 @@ def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
     campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
 
     if exclude_oen:
-        campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
+        campaigns = campaigns.exclude(account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements

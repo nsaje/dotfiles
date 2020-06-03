@@ -1,6 +1,7 @@
 import os.path
 from collections import OrderedDict
 
+from django.conf import settings
 from django.db.models import Case
 from django.db.models import CharField
 from django.db.models import F
@@ -212,7 +213,7 @@ class RDSContentAd(RDSModelization):
         ),
         video_vast_url="video_asset__vast_url",
     )
-    EXCLUDE = dict(ad_group__campaign__account_id=305)
+    EXCLUDE = dict(ad_group__campaign__account_id=settings.HARDCODED_ACCOUNT_ID_OEN)
 
 
 class RDSAdGroup(RDSModelization):

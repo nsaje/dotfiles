@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from utils import slack
 from utils import zlogging
 
@@ -7,7 +9,7 @@ AGENCY_URL = "https://one.zemanta.com/v2/credits?agencyId={agency_id}"
 ACCOUNT_URL = "https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}"
 CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{campaign_id}(drawer:settings)?settingsEntityType=campaign&settingsEntityId={campaign_id}"
 
-SLACK_SKIP_LOG_ACCOUNTS = (305,)
+SLACK_SKIP_LOG_ACCOUNTS = (settings.HARDCODED_ACCOUNT_ID_OEN,)
 
 SLACK_NEW_CREDIT_MSG = "New credit #{credit_id} added on account <{url}|{account_name}> with amount {currency_symbol}{amount} and end date {end_date}."
 SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG = "New credit #{credit_id} added on account <{url}|{account_name}> with amount {currency_symbol}{amount} and end date {end_date} *has been created without contract ID or contract Number!* {comment}"

@@ -4,6 +4,7 @@ import datetime
 import io
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import ValidationError
@@ -1193,6 +1194,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
 
 
+@patch("django.conf.settings.HARDCODED_ACCOUNT_ID_OEN", 305)
 class ContentAdFormTestCase(TestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.CONTENT)
@@ -1348,7 +1350,7 @@ class ContentAdFormTestCase(TestCase):
         self.assertEqual({"image_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
 
     def test_image_width_oen(self):
-        self.campaign.account.id = 305
+        self.campaign.account.id = settings.HARDCODED_ACCOUNT_ID_OEN
         data = self._get_valid_data()
         data["image_width"] = 1
         f = forms.ContentAdForm(self.campaign, data)
@@ -1369,7 +1371,7 @@ class ContentAdFormTestCase(TestCase):
         self.assertEqual({"image_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
 
     def test_image_height_oen(self):
-        self.campaign.account.id = 305
+        self.campaign.account.id = settings.HARDCODED_ACCOUNT_ID_OEN
         data = self._get_valid_data()
         data["image_height"] = 1
         f = forms.ContentAdForm(self.campaign, data)
@@ -1473,7 +1475,7 @@ class ContentAdFormTestCase(TestCase):
         self.assertEqual({"icon_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
 
     def test_icon_size_oen(self):
-        self.campaign.account.id = 305
+        self.campaign.account.id = settings.HARDCODED_ACCOUNT_ID_OEN
         data = self._get_valid_icon_data()
         data["icon_height"] = 1
         data["icon_width"] = 1

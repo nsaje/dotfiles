@@ -20,6 +20,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core import validators
 from django.utils.html import strip_tags
 from django.core import exceptions
+from django.conf import settings
 
 import core.features.multicurrency
 import core.features.deals.direct_deal_connection.exceptions
@@ -1696,7 +1697,7 @@ class ContentAdForm(ContentAdCandidateForm):
             return "Image could not be processed"
 
     def _validate_image_size(self, cleaned_data):
-        if self.campaign and self.campaign.account.id == 305:
+        if self.campaign and self.campaign.account.id == settings.HARDCODED_ACCOUNT_ID_OEN:
             return
 
         image_width = cleaned_data["image_width"]
@@ -1730,7 +1731,7 @@ class ContentAdForm(ContentAdCandidateForm):
             return "Image could not be processed"
 
     def _validate_icon_size(self, cleaned_data):
-        if self.campaign and self.campaign.account.id == 305:
+        if self.campaign and self.campaign.account.id == settings.HARDCODED_ACCOUNT_ID_OEN:
             return
 
         icon_width = cleaned_data["icon_width"]

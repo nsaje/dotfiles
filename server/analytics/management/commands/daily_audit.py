@@ -26,7 +26,6 @@ VALID_PACING_ACCOUNT_TYPES = (
 )
 
 TRIPLELIFT_SOURCE_ID = 34
-OEN = 305
 
 
 class Command(utils.command_helpers.Z1Command):
