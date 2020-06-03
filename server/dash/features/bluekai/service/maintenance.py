@@ -69,10 +69,8 @@ def refresh_bluekai_categories():
     existing_categories = _get_existing_categories()
     new_categories, updated_categories = _get_updated_categories(taxonomy, existing_categories)
 
-    # FIXME: we're currently unable to extend audience in BK, so we shouldn't add new
-    # ones because users can't access that traffic
-    # for category in new_categories:
-    #     models.BlueKaiCategory.objects.create(**category)
+    for category in new_categories:
+        models.BlueKaiCategory.objects.create(**category)
 
     for category in updated_categories:
         existing_categories[category["category_id"]].update(
