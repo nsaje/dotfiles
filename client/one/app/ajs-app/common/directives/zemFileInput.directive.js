@@ -21,6 +21,7 @@ angular.module('one.common').component('zemFileInput', {
             inputElement.bind('change', function() {
                 if (inputElement[0].files[0] === undefined) return; // happens when user presses cancel
                 $ctrl.callback({file: inputElement[0].files[0]});
+                inputElement[0].value = ''; // we need to clear the value, otherwise the change handler will not be triggered if the same file is uploaded again
             });
         };
     },
