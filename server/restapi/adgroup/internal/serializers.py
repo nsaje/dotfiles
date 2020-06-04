@@ -64,7 +64,6 @@ class ExtraDataCurrentBidsSerializer(restapi.serializers.base.RESTAPIBaseSeriali
 
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     action_is_waiting = rest_framework.serializers.BooleanField(default=False, required=False)
-    can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     is_campaign_autopilot_enabled = rest_framework.serializers.BooleanField(default=False, required=False)
     account_id = restapi.serializers.fields.IdField(required=False)

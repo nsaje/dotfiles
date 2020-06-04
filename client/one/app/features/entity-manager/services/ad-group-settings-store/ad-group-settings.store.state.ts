@@ -82,7 +82,6 @@ export class AdGroupSettingsStoreState {
     extras: AdGroupExtras = {
         agencyId: null,
         actionIsWaiting: null,
-        canArchive: null,
         canRestore: null,
         isCampaignAutopilotEnabled: false,
         accountId: null,

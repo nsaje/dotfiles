@@ -40,9 +40,6 @@ class AdGroupInstanceMixin:
     def get_current_settings(self):
         return self.settings
 
-    def can_archive(self):
-        return True
-
     def can_restore(self):
         if self.campaign.is_archived():
             return False

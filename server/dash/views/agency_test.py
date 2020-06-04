@@ -129,7 +129,6 @@ class AdGroupSettingsTest(TestCase):
             json_blob,
             {
                 "data": {
-                    "can_archive": True,
                     "can_restore": True,
                     "archived": False,
                     "action_is_waiting": False,

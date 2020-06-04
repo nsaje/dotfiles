@@ -1,9 +1,13 @@
+import datetime
+
 from django.contrib.postgres.fields import ArrayField
 from mixer.backend.django import mixer as mixer_base
 from mock import Mock
 
 import core.models
+import dash.constants
 import zemauth.models
+from utils import dates_helper
 from utils import test_helper
 
 
@@ -39,6 +43,34 @@ class MagicMixer(mixer_base.__class__):
         source = self.blend(core.models.Source, **{k: v for k, v in list(kwargs.items()) if not k.startswith(kw)})
         self.blend(core.models.DefaultSourceSettings, source=source, credentials=self.RANDOM, **dss_kwargs)
         return source
+
+    def blend_budget_line_item(self, **kwargs):
+        start_date = kwargs.pop("start_date", dates_helper.local_today())
+        end_date = kwargs.pop("end_date", dates_helper.local_today() + datetime.timedelta(days=3))
+        amount = kwargs.pop("amount", 500.0)
+        credit = kwargs.pop("credit", None)
+        if not credit:
+            campaign = kwargs.pop("campaign", None)
+            account = campaign.account if campaign else kwargs.pop("account", None)
+            if not account:
+                account = self.blend(core.models.Account)
+            credit = self.blend(
+                core.features.bcm.CreditLineItem,
+                start_date=start_date - datetime.timedelta(days=5),
+                end_date=end_date + datetime.timedelta(days=5),
+                amount=amount + 100.0,
+                status=dash.constants.CreditLineItemStatus.SIGNED,
+                account=account,
+            )
+        return self.blend(
+            core.features.bcm.BudgetLineItem,
+            credit=credit,
+            start_date=start_date,
+            end_date=end_date,
+            amount=amount,
+            campaign=campaign,
+            **kwargs
+        )
 
     def postprocess(self, target):
         if self.params.get("commit"):

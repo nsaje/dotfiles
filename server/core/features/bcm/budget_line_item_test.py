@@ -288,6 +288,117 @@ class TestBudgetLineItemManager(TestCase):
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
+class TestMinimizeAmountEndToday(TestCase):
+    def setUp(self):
+        self.account = magic_mixer.blend(core.models.Account)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account, real_time_campaign_stop=True)
+        self.credit = magic_mixer.blend(
+            CreditLineItem,
+            account=self.account,
+            start_date=datetime.date(2014, 12, 1),
+            end_date=datetime.date(2016, 3, 3),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal("0.10"),
+            margin=Decimal("0.10"),
+        )
+
+    @patch("automation.campaignstop.calculate_minimum_budget_amount")
+    def test_large_budget_ending_in_future(self, mock_min_amount):
+        t0 = dates_helper.local_today()
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 - datetime.timedelta(days=5),
+            end_date=t0 + datetime.timedelta(days=5),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        mock_min_amount.return_value = 20.0
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 20.0)
+        self.assertEqual(budget.end_date, dates_helper.local_today())
+
+    @patch("automation.campaignstop.calculate_minimum_budget_amount")
+    def test_large_budget_ending_in_past(self, mock_min_amount):
+        t0 = dates_helper.local_today()
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 - datetime.timedelta(days=5),
+            end_date=t0 - datetime.timedelta(days=2),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        mock_min_amount.return_value = 0.0
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 100.0)
+        self.assertEqual(budget.end_date, dates_helper.local_today() - datetime.timedelta(days=2))
+
+    @patch("automation.campaignstop.calculate_minimum_budget_amount")
+    def test_budget_starting_in_future(self, mock_min_amount):
+        t0 = dates_helper.local_today()
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 + datetime.timedelta(days=5),
+            end_date=t0 + datetime.timedelta(days=10),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        mock_min_amount.return_value = 0.0
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 0.0)
+        self.assertEqual(budget.end_date, budget.start_date)
+
+    @patch("automation.campaignstop.calculate_minimum_budget_amount")
+    def test_overspend(self, mock_min_amount):
+        t0 = dates_helper.local_today()
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 - datetime.timedelta(days=5),
+            end_date=t0 + datetime.timedelta(days=5),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        mock_min_amount.return_value = 120.0
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 100.0)
+        self.assertEqual(budget.end_date, dates_helper.local_today())
+
+    def test_no_realtime_campaignstop(self):
+        self.campaign.real_time_campaign_stop = False
+        t0 = dates_helper.local_today()
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 - datetime.timedelta(days=5),
+            end_date=t0 + datetime.timedelta(days=5),
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 100.0)
+        self.assertEqual(budget.end_date, dates_helper.local_today())
+
+
+@patch.object(dates_helper, "local_today", lambda: TODAY)
 class TestBudgetLineItemManagerTransactional(TransactionTestCase):
     def test_create_race_condition(self):
         self.user = magic_mixer.blend(zemauth.models.User)

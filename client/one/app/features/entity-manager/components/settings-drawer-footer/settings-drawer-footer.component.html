@@ -18,13 +18,11 @@
                 *ngIf="!isNewEntity && userHasPermissionToArchive"
                 [zemInternalFeature]="isArchiveActionInternal"
                 [zemPopover]="disabledArchiveActionText"
-                [disablePopover]="!isArchiveActionDisabled"
                 placement="top"
                 triggers="mouseenter:mouseleave"
             >
                 <button
                     class="zem-button zem-button--outlined"
-                    [disabled]="isArchiveActionDisabled"
                     (click)="archive.emit()"
                 >
                     <ng-container *ngIf="entityType === EntityType.ACCOUNT">

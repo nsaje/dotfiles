@@ -59,7 +59,6 @@ class CampaignBudgetSerializer(restapi.campaignbudget.internal.serializers.Campa
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     archived = rest_framework.serializers.BooleanField(default=False, required=False)
     language = restapi.serializers.fields.DashConstantField(dash.constants.Language, required=False)
-    can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     agency_id = restapi.serializers.fields.IdField(required=False)
     currency = restapi.serializers.fields.DashConstantField(

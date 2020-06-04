@@ -13,14 +13,8 @@ from . import spends_helper
 RESERVED_PROPORTION = decimal.Decimal("0.1")
 
 
-class CampaignStopValidationException(Exception):
-    def __init__(self, message, min_amount):
-        super().__init__(message)
-        self.min_amount = min_amount
-
-
 @newrelic.agent.function_trace()
-def validate_minimum_budget_amount(budget_line_item, amount):
+def calculate_minimum_budget_amount(budget_line_item):
     if not budget_line_item.campaign.real_time_campaign_stop:
         return
 
@@ -28,9 +22,8 @@ def validate_minimum_budget_amount(budget_line_item, amount):
 
     refresh.refresh_if_stale([budget_line_item.campaign])
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
-    log.add_context({"desired_amount": amount, "min_amount": min_amount})
-    if amount < min_amount:
-        raise CampaignStopValidationException("Budget amount has to be at least ${}".format(min_amount), min_amount)
+    log.add_context({"min_amount": min_amount})
+    return min_amount
 
 
 def _calculate_minimum_budget_amount(log, budget_line_item):

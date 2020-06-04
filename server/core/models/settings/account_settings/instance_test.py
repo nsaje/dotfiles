@@ -61,14 +61,6 @@ class AccountSettingsInstanceTestCase(test.TestCase):
         self.assertFalse(account.settings.archived)
         self.assertEqual(mock_campaign_archive.call_count, 0)
 
-    @patch.object(core.models.Campaign, "can_archive", return_value=False)
-    def test_cant_archive_campaign_fail(self, mock_campaign_can_archive):
-        account = magic_mixer.blend(core.models.Account)
-        magic_mixer.blend(core.models.Campaign, account=account)
-        with self.assertRaises(utils.exc.ForbiddenError):
-            account.settings.update(None, archived=True)
-        self.assertFalse(account.settings.archived)
-
     def test_update_archived_account(self):
         account = magic_mixer.blend(core.models.Account)
         account.archive(None)

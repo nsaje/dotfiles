@@ -29,10 +29,6 @@ class AccountSettingsMixin(object):
                     raise utils.exc.ForbiddenError("Account can not be restored")
             else:
                 raise utils.exc.ForbiddenError("Account must not be archived in order to update it.")
-        else:
-            if changes.get("archived"):
-                if not self.account.can_archive():
-                    raise utils.exc.ForbiddenError("Account can not be archived.")
 
     def _handle_archived(self, request, changes):
         if changes.get("archived"):

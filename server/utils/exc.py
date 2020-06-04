@@ -75,7 +75,8 @@ class UnknownFieldBreakdownError(BaseError):
 
 
 class MultipleValidationError(ValidationError):
-    pass
+    def __str__(self):
+        return ", ".join(str(e) for e in self.errors)
 
 
 class MulticurrencyValidationError(ValidationError):

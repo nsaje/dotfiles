@@ -33,7 +33,6 @@ class ExtraDataAgencySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     archived = rest_framework.serializers.BooleanField(default=False, required=False)
-    can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     is_externally_managed = rest_framework.serializers.BooleanField(default=False, required=False)
     agencies = rest_framework.serializers.ListField(child=ExtraDataAgencySerializer(), default=[], allow_empty=True)

@@ -551,9 +551,6 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(ag2.get_current_settings().archived)
         self.assertFalse(ag2.archived)
 
-        self.assertTrue(ag1.can_archive())
-        self.assertTrue(ag2.can_archive())
-
         ag1.archive(self.request)
         self.assertTrue(ag1.get_current_settings().archived)
         self.assertTrue(ag1.archived)
@@ -580,13 +577,6 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(c2.archived)
         self.assertFalse(c3.get_current_settings().archived)
         self.assertFalse(c3.archived)
-
-        self.assertTrue(c1.can_archive())
-        self.assertTrue(c2.can_archive())
-        self.assertFalse(c3.can_archive())
-
-        with self.assertRaises(exc.ForbiddenError):
-            c3.archive(self.request)
 
         c1.archive(self.request)
         self.assertTrue(c1.get_current_settings().archived)
@@ -633,12 +623,6 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(a1.get_current_settings().archived)
         self.assertFalse(a2.get_current_settings().archived)
 
-        self.assertFalse(a1.can_archive())
-        self.assertTrue(a2.can_archive())
-
-        with self.assertRaises(exc.ForbiddenError):
-            a1.archive(self.request)
-
         a2.archive(self.request)
         self.assertTrue(a2.get_current_settings().archived)
         self.assertTrue(a2.archived)
@@ -653,8 +637,6 @@ class ArchiveRestoreTestCase(TestCase):
 
     def test_restore_account(self):
         a = models.Account.objects.get(id=2)
-
-        self.assertTrue(a.can_archive())
         a.archive(self.request)
 
         self.assertTrue(a.can_restore())
@@ -674,7 +656,6 @@ class ArchiveRestoreTestCase(TestCase):
     def test_restore_campaign(self):
         c = models.Campaign.objects.get(id=2)
 
-        self.assertTrue(c.can_archive())
         c.archive(self.request)
 
         self.assertTrue(c.can_restore())
@@ -690,7 +671,6 @@ class ArchiveRestoreTestCase(TestCase):
     def test_restore_ad_group(self):
         ag = models.AdGroup.objects.get(id=2)
 
-        self.assertTrue(ag.can_archive())
         ag.archive(self.request)
 
         self.assertTrue(ag.can_restore())
@@ -742,48 +722,6 @@ class ArchiveRestoreTestCase(TestCase):
         ag.restore(self.request)
         self.assertFalse(ag.get_current_settings().archived)
         self.assertFalse(ag.archived)
-
-    def test_can_archive_ad_group_dates(self):
-        ag = models.AdGroup.objects.get(id=2)
-
-        cs = ag.get_current_settings()
-        self.assertFalse(cs.archived)
-        self.assertFalse(ag.archived)
-        self.assertTrue(ag.can_archive())
-
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
-            # enable it before
-            cs = cs.copy_settings()
-            cs.state = constants.AdGroupSettingsState.ACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 2)
-            cs.save(self.request)
-
-            # then pause
-            cs = cs.copy_settings()
-            cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
-            cs.save(self.request)
-
-        self.assertTrue(ag.can_archive())
-
-    def test_can_archive_ad_group_dates_if_never_enabled(self):
-        ag = models.AdGroup.objects.get(id=2)
-
-        cs = ag.get_current_settings()
-        self.assertFalse(cs.archived)
-        self.assertFalse(ag.archived)
-        self.assertTrue(ag.can_archive())
-        self.assertEqual(
-            [x for x in ag.adgroupsettings_set.all() if x.state == constants.AdGroupSettingsState.ACTIVE], []
-        )
-
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
-            cs = cs.copy_settings()
-            cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL - 1)
-            cs.save(self.request)
-
-        self.assertTrue(ag.can_archive())
 
 
 class AdGroupTestCase(TestCase):

@@ -3,7 +3,6 @@ import {AdGroupExtras} from '../../core/entities/types/ad-group/ad-group-extras'
 export const adGroupExtrasMock: AdGroupExtras = {
     agencyId: null,
     actionIsWaiting: null,
-    canArchive: null,
     canRestore: null,
     isCampaignAutopilotEnabled: false,
     accountId: null,

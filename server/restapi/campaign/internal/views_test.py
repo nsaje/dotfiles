@@ -220,7 +220,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
-            "can_archive": True,
             "can_restore": True,
             "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
@@ -273,7 +272,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             {
                 "archived": False,
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
-                "canArchive": True,
                 "canRestore": True,
                 "agencyId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
@@ -401,7 +399,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
-            "can_archive": True,
             "can_restore": True,
             "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
@@ -498,7 +495,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             {
                 "archived": False,
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
-                "canArchive": True,
                 "canRestore": True,
                 "agencyId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
@@ -622,7 +618,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
-            "can_archive": True,
             "can_restore": True,
             "agency_id": 12345,
             "currency": dash.constants.Currency.USD,
@@ -717,7 +712,6 @@ class LegacyCampaignViewSetTest(RESTAPITest):
             {
                 "archived": False,
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
-                "canArchive": True,
                 "canRestore": True,
                 "agencyId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),

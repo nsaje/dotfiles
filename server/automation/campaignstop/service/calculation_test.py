@@ -12,7 +12,7 @@ from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from .. import RealTimeCampaignDataHistory
-from . import validation
+from . import calculation
 
 
 class ValidateMinimumBudgetAmountTest(TestCase):
@@ -61,45 +61,39 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             RealTimeCampaignDataHistory, campaign=self.campaign, date=yesterday, etfm_spend=decimal.Decimal("220.0")
         )
 
-    def test_validate_minimum_budget_amount(self):
-        validation.validate_minimum_budget_amount(self.budget, 400)
+    def test_calculate_minimum_budget_amount(self):
+        self.assertEqual(400, calculation.calculate_minimum_budget_amount(self.budget))
 
-    def test_validate_minimum_budget_amount_high_rt_spend(self):
+    def test_calculate_minimum_budget_amount_high_rt_spend(self):
         self.rt_history_today.etfm_spend = decimal.Decimal("300.0")
         self.rt_history_today.save()
 
-        with self.assertRaises(validation.CampaignStopValidationException) as context:
-            validation.validate_minimum_budget_amount(self.budget, 399)
-        self.assertEqual(500, context.exception.min_amount)
+        self.assertEqual(500, calculation.calculate_minimum_budget_amount(self.budget))
 
     @mock.patch("utils.dates_helper.utc_now")
     @mock.patch("automation.campaignstop.service.refresh.refresh_if_stale", mock.MagicMock())
-    def test_validate_minimum_budget_amount_invalid_daily_statements(self, mock_utc_now):
+    def test_calculate_minimum_budget_amount_invalid_daily_statements(self, mock_utc_now):
         pm = datetime.datetime(self.today.year, self.today.month, self.today.day, 16)
         mock_utc_now.return_value = pm
 
         self.rt_history_today.created_dt = pm  # prevent refresh logic from triggering
         self.rt_history_today.save()
 
-        with self.assertRaises(validation.CampaignStopValidationException) as context:
-            validation.validate_minimum_budget_amount(self.budget, 399)
-        self.assertEqual(400, context.exception.min_amount)
+        self.assertEqual(400, calculation.calculate_minimum_budget_amount(self.budget))
 
     @mock.patch("utils.dates_helper.utc_now")
-    def test_validate_minimum_budget_amount_invalid_real_time_data(self, mock_utc_now):
+    def test_calculate_minimum_budget_amount_invalid_real_time_data(self, mock_utc_now):
         am = datetime.datetime(self.today.year, self.today.month, self.today.day, 6)
         mock_utc_now.return_value = am
 
         self.rt_history_today.created_dt = am  # prevent refresh logic from triggering
         self.rt_history_today.save()
 
-        with self.assertRaises(validation.CampaignStopValidationException) as context:
-            validation.validate_minimum_budget_amount(self.budget, 399)
-        self.assertEqual(400, context.exception.min_amount)
+        self.assertEqual(400, calculation.calculate_minimum_budget_amount(self.budget))
 
     def test_validate_without_real_time_campaign_stop(self):
         self.campaign.set_real_time_campaign_stop(is_enabled=False)
-        validation.validate_minimum_budget_amount(self.budget, 0)
+        self.assertIsNone(calculation.calculate_minimum_budget_amount(self.budget))
 
     def test_multicurrency(self):
         account = self.campaign.account
@@ -112,6 +106,4 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         core.features.multicurrency.CurrencyExchangeRate.objects.create(
             currency=self.credit.currency, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("2")
         )
-        with self.assertRaises(validation.CampaignStopValidationException) as context:
-            validation.validate_minimum_budget_amount(self.budget, 100)
-        self.assertEqual(500, context.exception.min_amount)
+        self.assertEqual(500, calculation.calculate_minimum_budget_amount(self.budget))

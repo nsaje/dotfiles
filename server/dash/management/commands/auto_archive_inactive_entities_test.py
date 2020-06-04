@@ -234,9 +234,9 @@ class AutoArchiveTest(TestCase):
         )
         campaign.refresh_from_db()
         campaign.settings.refresh_from_db()
-        self.assertFalse(campaign.archived)
-        self.assertFalse(campaign.settings.archived)
-        self.assertEqual(campaign_count, 0)
+        self.assertTrue(campaign.archived)
+        self.assertTrue(campaign.settings.archived)
+        self.assertEqual(campaign_count, 1)
         self.assertEqual(adgroup_count, 0)
 
     def test_whitelist_included(self, campaign_history_mock, ad_group_history_mock, spend_mock):

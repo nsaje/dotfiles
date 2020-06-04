@@ -73,7 +73,6 @@ class AdGroupSettings(api_common.BaseApiView):
                     request, ad_group, settings.audience_targeting + settings.exclusion_audience_targeting
                 ),
                 "warnings": self.get_warnings(request, settings),
-                "can_archive": ad_group.can_archive(),
                 "can_restore": ad_group.can_restore(),
             }
         )
@@ -570,7 +569,6 @@ class CampaignSettings(api_common.BaseApiView):
         if self.rest_proxy:
             return self.create_api_response(response)
 
-        response["can_archive"] = campaign.can_archive()
         response["can_restore"] = campaign.can_restore()
 
         if request.user.has_perm("zemauth.can_modify_campaign_manager"):
@@ -926,7 +924,6 @@ class AccountSettings(api_common.BaseApiView):
 
         response = {
             "settings": self.get_dict(request, account_settings, account),
-            "can_archive": account.can_archive(),
             "can_restore": account.can_restore(),
             "archived": account_settings.archived,
             "is_externally_managed": account.is_externally_managed,
@@ -959,11 +956,7 @@ class AccountSettings(api_common.BaseApiView):
 
         form = forms.AccountSettingsForm(account, resource.get("settings", {}))
         settings = self.save_settings(request, account, form)
-        response = {
-            "settings": self.get_dict(request, settings, account),
-            "can_archive": account.can_archive(),
-            "can_restore": account.can_restore(),
-        }
+        response = {"settings": self.get_dict(request, settings, account), "can_restore": account.can_restore()}
 
         self._add_agencies(request, response)
 

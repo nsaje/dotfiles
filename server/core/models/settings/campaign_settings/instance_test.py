@@ -46,10 +46,12 @@ class InstanceTestCase(TestCase):
         campaign.settings.update(None, autopilot=True)
         mock_autopilot.assert_called_once_with(campaign)
 
+    @patch.object(core.features.bcm.BudgetLineItem, "minimize_amount_and_end_today")
     @patch.object(core.models.AdGroup, "archive")
-    def test_archiving(self, mock_adgroup_archive):
+    def test_archiving(self, mock_adgroup_archive, mock_budget_archive):
         campaign = magic_mixer.blend(core.models.Campaign)
         magic_mixer.cycle(10).blend(core.models.AdGroup, campaign=campaign)
+        magic_mixer.blend_budget_line_item(campaign=campaign)
         self.assertFalse(campaign.archived)
         self.assertFalse(campaign.settings.archived)
 
@@ -57,22 +59,17 @@ class InstanceTestCase(TestCase):
         self.assertTrue(campaign.archived)
         self.assertTrue(campaign.settings.archived)
         self.assertEqual(mock_adgroup_archive.call_count, 10)
+        self.assertEqual(mock_budget_archive.call_count, 1)
 
         campaign.settings.update(None, archived=True)
 
         mock_adgroup_archive.reset_mock()
+        mock_budget_archive.reset_mock()
         campaign.settings.update(None, archived=False)
         self.assertFalse(campaign.archived)
         self.assertFalse(campaign.settings.archived)
         self.assertEqual(mock_adgroup_archive.call_count, 0)
-
-    @patch.object(core.models.AdGroup, "can_archive", return_value=False)
-    def test_cant_archive_adgroup_fail(self, mock_adgroup_can_archive):
-        campaign = magic_mixer.blend(core.models.Campaign)
-        magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        with self.assertRaises(utils.exc.ForbiddenError):
-            campaign.settings.update(None, archived=True)
-        self.assertFalse(campaign.settings.archived)
+        self.assertEqual(mock_budget_archive.call_count, 0)
 
     @patch.object(core.models.Account, "is_archived", return_value=True)
     def test_cant_restore_account_fail(self, mock_account_is_archived):

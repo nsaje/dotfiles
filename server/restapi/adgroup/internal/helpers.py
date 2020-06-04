@@ -27,7 +27,6 @@ def get_extra_data(user, ad_group):
 
     extra = {
         "action_is_waiting": False,
-        "can_archive": ad_group.can_archive(),
         "can_restore": ad_group.can_restore(),
         "is_campaign_autopilot_enabled": ad_group.campaign.settings.autopilot,
         "account_id": ad_group.campaign.account_id,

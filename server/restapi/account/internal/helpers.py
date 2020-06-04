@@ -12,7 +12,6 @@ SUBAGENCY_MAP = {198: (196, 198)}
 def get_extra_data(user, account):
     extra = {
         "archived": account.settings.archived,
-        "can_archive": account.can_archive(),
         "can_restore": account.can_restore(),
         "is_externally_managed": account.is_externally_managed,
         "agencies": get_agencies(user, account),

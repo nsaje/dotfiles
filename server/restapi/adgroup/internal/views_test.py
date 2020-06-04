@@ -33,7 +33,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
     def test_get_default(self, mock_get_extra_data):
         mock_get_extra_data.return_value = {
             "action_is_waiting": False,
-            "can_archive": False,
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
@@ -73,7 +72,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
             resp_json["extra"],
             {
                 "actionIsWaiting": False,
-                "canArchive": False,
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
                 "accountId": "12345",
@@ -115,7 +113,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
     def test_get(self, mock_get_extra_data):
         mock_get_extra_data.return_value = {
             "action_is_waiting": False,
-            "can_archive": False,
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
@@ -168,7 +165,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
             resp_json["extra"],
             {
                 "actionIsWaiting": False,
-                "canArchive": False,
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
                 "accountId": "12345",
@@ -201,7 +197,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
     def test_get_internal_deals_no_permission(self, mock_get_extra_data):
         mock_get_extra_data.return_value = {
             "action_is_waiting": False,
-            "can_archive": False,
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
@@ -240,7 +235,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
     def test_get_internal_deals_permission(self, mock_get_extra_data):
         mock_get_extra_data.return_value = {
             "action_is_waiting": False,
-            "can_archive": False,
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,

@@ -45,7 +45,6 @@ export class CampaignSettingsStoreState {
         agencyId: null,
         archived: null,
         language: null,
-        canArchive: null,
         canRestore: null,
         campaignManagers: [],
         currency: null,

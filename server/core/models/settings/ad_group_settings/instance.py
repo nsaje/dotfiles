@@ -213,11 +213,6 @@ class AdGroupSettingsMixin(object):
         elif self.ad_group.campaign.is_archived():
             raise exc.ForbiddenError("Account and campaign must not be archived in order to update an ad group.")
 
-        else:
-            if updates.get("archived"):
-                if not self.ad_group.can_archive():
-                    raise exc.ForbiddenError("Ad group can not be archived.")
-
     def _handle_archived(self, new_settings):
         if new_settings.archived:
             new_settings.state = constants.AdGroupSettingsState.INACTIVE

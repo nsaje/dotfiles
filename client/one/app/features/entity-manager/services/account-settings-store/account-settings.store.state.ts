@@ -34,7 +34,6 @@ export class AccountSettingsStoreState {
     };
     extras: AccountExtras = {
         archived: null,
-        canArchive: null,
         canRestore: null,
         isExternallyManaged: null,
         agencies: [],

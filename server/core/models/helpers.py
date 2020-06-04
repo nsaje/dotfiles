@@ -4,8 +4,6 @@ import core.models
 import dash.constants
 import dash.image_helper
 
-NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL = 3  # number of days an ad group is paused before it can be archived.
-
 
 def generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     """

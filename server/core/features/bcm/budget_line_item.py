@@ -286,6 +286,20 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             or self.state() == constants.BudgetLineItemState.ACTIVE
         )
 
+    def minimize_amount_and_end_today(self):
+        import automation.campaignstop
+
+        local_today = utils.dates_helper.local_today()
+        if self.end_date < local_today:
+            return
+
+        if self.campaign.real_time_campaign_stop:
+            min_amount = automation.campaignstop.calculate_minimum_budget_amount(self)
+            if min_amount < self.amount:
+                self.amount = min_amount
+        self.end_date = max(local_today, self.start_date)
+        self.save()
+
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError("Budget has to be inactive to be freed.")
@@ -528,13 +542,12 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if self.amount >= prev_amount:
             return
         if self.campaign.real_time_campaign_stop:
-            try:
-                automation.campaignstop.validate_minimum_budget_amount(self, self.amount)
-            except automation.campaignstop.CampaignStopValidationException as e:
+            min_amount = automation.campaignstop.calculate_minimum_budget_amount(self)
+            if self.amount < min_amount:
                 raise exceptions.BudgetAmountTooLow(
                     "Budget amount has to be at least {currency_symbol}{min_amount:.2f}.".format(
                         currency_symbol=core.features.multicurrency.get_currency_symbol(self.credit.currency),
-                        min_amount=e.min_amount,
+                        min_amount=min_amount,
                     )
                 )
         else:

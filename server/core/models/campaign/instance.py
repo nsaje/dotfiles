@@ -36,17 +36,6 @@ class CampaignInstanceMixin:
     def get_current_settings(self):
         return self.settings
 
-    def can_archive(self):
-        for ad_group in self.adgroup_set.all().select_related("settings"):
-            if not ad_group.can_archive():
-                return False
-
-        for budget in self.budgets.all().annotate_spend_data():
-            if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
-                return False
-
-        return True
-
     def can_restore(self):
         if self.account.is_archived():
             return False

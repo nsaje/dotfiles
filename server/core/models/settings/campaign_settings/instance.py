@@ -51,11 +51,6 @@ class CampaignSettingsMixin(object):
         elif self.campaign.account.is_archived():
             raise utils.exc.ForbiddenError("Account must not be archived in order to update a campaign.")
 
-        else:
-            if changes.get("archived"):
-                if not self.campaign.can_archive():
-                    raise utils.exc.ForbiddenError("Campaign can not be archived.")
-
     def _update_campaign(self, changes):
         if any(field in changes for field in ["name", "archived"]):
             if "name" in changes:
@@ -88,6 +83,8 @@ class CampaignSettingsMixin(object):
         if changes.get("archived"):
             for ad_group in self.campaign.adgroup_set.all():
                 ad_group.archive(request)
+            for budget in self.campaign.budgets.all():
+                budget.minimize_amount_and_end_today()
 
     def _propagate_settings(self, changes):
         campaign_ad_groups = self.campaign.adgroup_set.all().select_related("settings", "campaign__settings")

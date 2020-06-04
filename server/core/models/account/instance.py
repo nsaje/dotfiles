@@ -26,13 +26,6 @@ class AccountInstanceMixin:
     def get_current_settings(self):
         return self.settings
 
-    def can_archive(self):
-        for campaign in self.campaign_set.all():
-            if not campaign.can_archive():
-                return False
-
-        return True
-
     def can_restore(self):
         return True
 

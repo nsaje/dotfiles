@@ -27,8 +27,6 @@ export class SettingsDrawerFooterComponent implements OnChanges {
     @Input()
     isArchiveActionInternal: boolean;
     @Input()
-    isArchiveActionDisabled: boolean;
-    @Input()
     isLoading: boolean;
     @Input()
     hasError: boolean;

@@ -84,7 +84,6 @@ class LegacyAccountViewSetTest(RESTAPITest):
 
         mock_get_extra_data.return_value = {
             "archived": False,
-            "can_archive": True,
             "can_restore": True,
             "is_externally_managed": False,
             "agencies": [
@@ -177,7 +176,6 @@ class LegacyAccountViewSetTest(RESTAPITest):
             resp_json["extra"],
             {
                 "archived": False,
-                "canArchive": True,
                 "canRestore": True,
                 "isExternallyManaged": False,
                 "agencies": [
@@ -264,7 +262,6 @@ class LegacyAccountViewSetTest(RESTAPITest):
 
         mock_get_extra_data.return_value = {
             "archived": False,
-            "can_archive": True,
             "can_restore": True,
             "is_externally_managed": False,
             "agencies": [
@@ -402,7 +399,6 @@ class LegacyAccountViewSetTest(RESTAPITest):
             resp_json["extra"],
             {
                 "archived": False,
-                "canArchive": True,
                 "canRestore": True,
                 "isExternallyManaged": False,
                 "agencies": [

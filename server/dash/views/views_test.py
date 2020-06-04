@@ -605,9 +605,7 @@ class AdGroupArchiveRestoreTest(TestCase):
         with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
             new_ad_group_settings = ad_group_settings.copy_settings()
             new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
-            new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1
-            )
+            new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(days=1)
             new_ad_group_settings.save(None)
 
         self._post_archive_ad_group(1)
