@@ -3,10 +3,12 @@ from django.urls import reverse
 import core.models
 import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class ConversionPixelViewSetTest(RESTAPITest):
+class LegacyConversionPixelViewSetTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(
@@ -23,8 +25,8 @@ class ConversionPixelViewSetTest(RESTAPITest):
     @classmethod
     def pixel_repr(
         cls,
-        id=1,
-        account_id=1,
+        id=None,
+        account_id=None,
         name="test pixel",
         archived=False,
         audience_enabled=False,
@@ -36,8 +38,8 @@ class ConversionPixelViewSetTest(RESTAPITest):
         impressions=0,
     ):
         representation = {
-            "id": str(id),
-            "accountId": str(account_id),
+            "id": str(id) if id is not None else None,
+            "accountId": str(account_id) if account_id is not None else None,
             "name": name,
             "archived": archived,
             "audienceEnabled": audience_enabled,
@@ -68,7 +70,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual(expected, pixel)
 
     def test_pixel_get(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.get(
             reverse(
@@ -89,7 +91,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertResponseError(r, "MissingDataError")
 
     def test_pixels_list(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.blend(
             core.models.ConversionPixel, account=account, slug="test1", audience_enabled=False, additional_pixel=False
         )
@@ -106,7 +108,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual(3, len(resp_json["data"]))
 
     def test_pixels_list_audience_enabled_only(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.blend(
             core.models.ConversionPixel, account=account, slug="test1", audience_enabled=False, additional_pixel=False
         )
@@ -129,7 +131,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         utils.test_helper.remove_permissions(
             self.user, ["can_redirect_pixels", "can_see_pixel_notes", "can_see_pixel_traffic"]
         )
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.get(
             reverse(
@@ -148,7 +150,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_post(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
         r = self.client.post(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
@@ -170,7 +172,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual("posty notes", resp_json["data"]["notes"])
 
     def test_put(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         self.assertFalse(pixel.archived)
         r = self.client.put(
@@ -187,7 +189,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual("putty notes", resp_json["data"]["notes"])
 
     def test_put_archived(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         r = self.client.put(
             reverse(
@@ -202,7 +204,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
 
     def test_put_archived_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["archive_restore_entity"])
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         self.assertFalse(pixel.archived)
         r = self.client.put(
@@ -217,7 +219,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertFalse(resp_json["data"]["archived"])
 
     def test_put_additional_pixel(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
         pixel = magic_mixer.blend(
             core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
@@ -235,7 +237,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
 
     def test_put_additional_pixel_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["can_promote_additional_pixel"])
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
         pixel = magic_mixer.blend(
             core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
@@ -256,7 +258,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_unsetting_blank(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(
             core.models.ConversionPixel,
             account=account,
@@ -277,7 +279,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual("", resp_json["data"]["notes"])
 
     def test_unsetting_null(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(
             core.models.ConversionPixel,
             account=account,
@@ -306,7 +308,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual("", resp_json["data"]["redirectUrl"])
 
     def test_put_permissioned(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.put(
             reverse(
@@ -322,7 +324,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
 
     def test_put_permissioned_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["can_redirect_pixels", "can_see_pixel_notes"])
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.put(
             reverse(
@@ -339,7 +341,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_name_too_long_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.post(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
@@ -350,7 +352,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual(["Ensure this field has no more than 50 characters."], resp_json["details"]["name"])
 
     def test_duplicate_name_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.post(
             reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
@@ -361,7 +363,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         self.assertEqual(["Conversion pixel with name test pixel already exists."], resp_json["details"]["name"])
 
     def test_archived_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         audience_pixel = magic_mixer.blend(
             core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True
         )
@@ -394,7 +396,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         )
 
     def test_additional_audience_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(
             core.models.ConversionPixel,
             account=account,
@@ -416,7 +418,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         )
 
     def test_audience_already_exists_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         audience_pixel = magic_mixer.blend(
             core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True
         )
@@ -445,7 +447,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
         )
 
     def test_additional_no_audience_error(self):
-        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         pixel = magic_mixer.blend(
             core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
         )
@@ -463,3 +465,7 @@ class ConversionPixelViewSetTest(RESTAPITest):
             ],
             resp_json["details"]["additionalPixel"],
         )
+
+
+class ConversionPixelViewSetTest(RESTAPITestCase, LegacyConversionPixelViewSetTest):
+    pass

@@ -3,10 +3,11 @@ import functools
 from django.db.models import Q
 
 import core.models
-import restapi.access
 import utils.converters
 import utils.exc
+import zemauth.access
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -16,12 +17,12 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
     create_serializer = serializers.ConversionPixelCreateSerializer
 
     def get(self, request, account_id, pixel_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         pixel = self._get_pixel(account, pixel_id)
         return self.response_ok(self.serializer(pixel, context={"request": request}).data)
 
     def list(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         audience_enabled_only = utils.converters.x_to_bool(request.GET.get("audienceEnabledOnly"))
         pixels = core.models.ConversionPixel.objects.filter(account=account)
         if audience_enabled_only:
@@ -30,7 +31,7 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializer.data)
 
     def put(self, request, account_id, pixel_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         pixel = self._get_pixel(account, pixel_id)
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -39,7 +40,7 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(pixel, context={"request": request}).data)
 
     def create(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = self.create_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         pixel_create_fn = functools.partial(
