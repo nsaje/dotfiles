@@ -2,14 +2,19 @@ from django.urls import reverse
 
 import core.features.deals
 import core.models
+import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 
 
-class SourceViewSetTest(RESTAPITest):
+class LegacySourceViewSetTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        utils.test_helper.remove_permissions(self.user, ["can_see_all_available_sources"])
+
     def test_list(self):
-        self.user.user_permissions.clear()
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = magic_mixer.blend(core.models.Agency)
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.update(None, available_sources=[sources[0], sources[1], sources[2]])
 
@@ -39,3 +44,7 @@ class SourceViewSetTest(RESTAPITest):
                 },
             ],
         )
+
+
+class SourceViewSetTest(RESTAPITestCase, LegacySourceViewSetTest):
+    pass
