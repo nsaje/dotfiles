@@ -104,11 +104,11 @@ node {
             sh 'docker-compose kill; docker-compose rm -v -f'
         }
 
-        stage('Trigger e2e') {
-            if (env.BRANCH_NAME == 'master') {
-                build job: 'z1-e2e', wait: false
-            }
-        }
+        // stage('Trigger e2e') {
+        //     if (env.BRANCH_NAME == 'master') {
+        //         build job: 'z1-e2e', wait: false
+        //     }
+        // }
     }
   } catch(e) {
     if (!(e instanceof FlowInterruptedException) && env.BRANCH_NAME == 'master') {
