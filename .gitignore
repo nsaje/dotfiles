@@ -146,4 +146,4 @@ server/src/
 # dumps
 *.tar
 
-server/.mypy_cache/
+server/**/.mypy_cache/
