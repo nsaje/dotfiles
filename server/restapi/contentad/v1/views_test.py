@@ -1,34 +1,36 @@
 import json
 
 import mock
-from django.test import TestCase
-from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 import core.features.videoassets
+import core.models
 import dash.models
 import utils.test_helper
 from dash import constants
 from dash.features import contentupload
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from restapi.contentad.v1 import views
 from utils.magic_mixer import magic_mixer
-from zemauth.models import User
+from zemauth.features.entity_permission import Permission
 
 
-class ContentAdsTest(RESTAPITest):
+class LegacyContentAdsTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(
             self.user, ["fea_can_change_campaign_type_to_display", "can_use_creative_icon"]
         )
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
 
     @classmethod
     def contentad_repr(
         cls,
-        id=1,
-        ad_group_id=1,
+        id=None,
+        ad_group_id=None,
         state=constants.ContentAdSourceState.ACTIVE,
         url="https://www.example.com",
         title="My title",
@@ -43,8 +45,8 @@ class ContentAdsTest(RESTAPITest):
         tracker_urls=[],
     ):
         representation = {
-            "id": str(id),
-            "adGroupId": str(ad_group_id),
+            "id": str(id) if id is not None else None,
+            "adGroupId": str(ad_group_id) if ad_group_id is not None else None,
             "state": constants.ContentAdSourceState.get_name(state),
             "url": url,
             "title": title,
@@ -81,36 +83,39 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(expected, cad)
 
     def test_contentads_list(self):
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_list") + "?adGroupId=2040")
+        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group)
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": self.ad_group.id})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
     def test_contentads_list_invalid_params(self):
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), {"adGroupId": "NON-NUMERIC"})
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": "NON-NUMERIC"})
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual({"adGroupId": ["Invalid format"]}, resp_json["details"])
 
     def test_contentads_get(self):
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertNotIn("videoAssetId", resp_json["data"])
 
     def test_contentads_get_video_ad(self):
         video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
-        content_ad = dash.models.ContentAd.objects.get(id=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         content_ad.video_asset = video_asset
         content_ad.save()
         content_ad.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         content_ad.ad_group.campaign.save(None)
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
         resp_json = self.assertResponseValid(r)
         self.assertEqual(str(video_asset.id), resp_json["data"]["videoAssetId"])
 
     def test_contentads_get_permissioned(self):
         utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
         resp_json = self.assertResponseValid(r)
         self.assertIn("additionalData", resp_json["data"])
         self.assertNotIn("type", resp_json["data"])
@@ -120,16 +125,17 @@ class ContentAdsTest(RESTAPITest):
 
     def test_contentads_get_icon_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
         resp_json = self.assertResponseValid(r)
         self.assertNotIn("iconUrl", resp_json["data"])
 
     def test_contentads_get_permissioned_display(self):
         utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
-        content_ad = dash.models.ContentAd.objects.get(id=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         content_ad.ad_group.campaign.type = dash.constants.CampaignType.DISPLAY
         content_ad.ad_group.campaign.save(None)
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}))
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
         resp_json = self.assertResponseValid(r)
         self.assertIn("additionalData", resp_json["data"])
         self.assertIn("type", resp_json["data"])
@@ -138,8 +144,9 @@ class ContentAdsTest(RESTAPITest):
         self.assertIn("adHeight", resp_json["data"])
 
     def test_contentads_put(self):
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         r = self.client.put(
-            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}),
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
             data={"state": "INACTIVE", "label": "My new label"},
             format="json",
         )
@@ -149,16 +156,17 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["label"], "My new label")
 
     def test_contentads_put_permissioned(self):
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         self.client.put(
-            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": 16805}),
+            reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}),
             data={"additionalData": {"a": 1}},
             format="json",
         )
-        cad = dash.models.ContentAd.objects.get(pk=16805)
-        self.assertEqual(cad.additional_data, None)
+        content_ad.refresh_from_db()
+        self.assertEqual(content_ad.additional_data, None)
 
     def test_contentads_put_url(self):
-        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         views.ACCOUNTS_CAN_EDIT_URL.append(content_ad.ad_group.campaign.account_id)
         r = self.client.put(
             reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.pk}),
@@ -171,7 +179,7 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["url"], "https://example.com")
 
     def test_contentads_put_updates(self):
-        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         r = self.client.put(
             reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.pk}),
             data={"trackerUrls": ["test1", "test2"], "title": "newtitle"},
@@ -183,7 +191,7 @@ class ContentAdsTest(RESTAPITest):
         self.assertNotEqual(resp_json["data"]["title"], "newtitle")  # readonly
 
     def test_contentads_put_brand_name_allowed(self):
-        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         views.ACCOUNTS_CAN_EDIT_BRAND_NAME.append(content_ad.ad_group.campaign.account_id)
         r = self.client.put(
             reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.pk}),
@@ -195,7 +203,7 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["brandName"], "New Brand Name")
 
     def test_contentads_put_brand_name_not_allowed(self):
-        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
         old_brand_name = content_ad.brand_name
         views.ACCOUNTS_CAN_EDIT_BRAND_NAME = []
         r = self.client.put(
@@ -208,23 +216,22 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["brandName"], old_brand_name)
 
 
-@override_settings(R1_DEMO_MODE=True)
-class TestBatchUpload(TestCase):
-    fixtures = ["test_views.yaml"]
+class ContentAdsTest(RESTAPITestCase, LegacyContentAdsTest):
+    pass
+
+
+class LegacyTestBatchUpload(RESTAPITest):
+    fixtures = []
 
     def setUp(self):
-        self.user = User.objects.get(pk=2)
+        self.user = magic_mixer.blend_user()
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         utils.test_helper.add_permissions(
-            self.user,
-            [
-                "can_use_restapi",
-                "can_see_all_accounts",
-                "fea_can_change_campaign_type_to_display",
-                "can_use_creative_icon",
-            ],
+            self.user, ["can_use_restapi", "fea_can_change_campaign_type_to_display", "can_use_creative_icon"]
         )
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
 
     @staticmethod
     def _mock_content_ad(title, state="ACTIVE"):
@@ -298,7 +305,9 @@ class TestBatchUpload(TestCase):
         del ad2["iconUrl"]
         to_upload = [ad1, ad2, paused_ad]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            data=to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -347,7 +356,9 @@ class TestBatchUpload(TestCase):
         utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
         to_upload = [self._mock_content_ad("test1")]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         resp_json = json.loads(r.content)
 
@@ -374,9 +385,8 @@ class TestBatchUpload(TestCase):
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):
-        ad_group = dash.models.AdGroup.objects.get(id=987)
-        ad_group.campaign.type = dash.constants.CampaignType.VIDEO
-        ad_group.campaign.save(None)
+        self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        self.ad_group.campaign.save(None)
         video_asset_1 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
         video_asset_2 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
         ad1 = self._mock_content_ad("test1")
@@ -386,7 +396,9 @@ class TestBatchUpload(TestCase):
         to_upload = [ad1, ad2]
 
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -432,10 +444,13 @@ class TestBatchUpload(TestCase):
             self.assertEqual(saved_video_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
     def test_display_batch_upload_success(self):
-        dash.models.Campaign.objects.filter(adgroup__id=987).update(type=dash.constants.CampaignType.DISPLAY)
+        self.ad_group.campaign.type = dash.constants.CampaignType.DISPLAY
+        self.ad_group.campaign.save(None)
         to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -471,10 +486,11 @@ class TestBatchUpload(TestCase):
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
     def test_display_batch_upload_ad_group_archived(self):
-        ad_group = magic_mixer.blend(dash.models.AdGroup, archived=True)
+        self.ad_group.archived = True
+        self.ad_group.save(None)
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         resp = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(ad_group.id),
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
             to_upload,
             format="json",
         )
@@ -494,7 +510,9 @@ class TestBatchUpload(TestCase):
     def test_content_batch_upload_failure(self):
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -524,13 +542,14 @@ class TestBatchUpload(TestCase):
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_failure(self):
-        ad_group = dash.models.AdGroup.objects.get(id=987)
-        ad_group.campaign.type = dash.constants.CampaignType.VIDEO
-        ad_group.campaign.save(None)
+        self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        self.ad_group.campaign.save(None)
 
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -566,7 +585,9 @@ class TestBatchUpload(TestCase):
     def test_display_batch_upload_failure(self):
         to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
         r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId=987", to_upload, format="json"
+            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
+            to_upload,
+            format="json",
         )
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -593,3 +614,7 @@ class TestBatchUpload(TestCase):
         self.assertEqual(resp_json["data"]["status"], "FAILED")
         self.assertEqual(resp_json["data"]["approvedContentAds"], [])
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+
+class TestBatchUpload(RESTAPITestCase, LegacyTestBatchUpload):
+    pass

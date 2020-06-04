@@ -5,12 +5,13 @@ import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
 import dash.constants
 import dash.models
+import zemauth.access
 from dash.features import contentupload
-from dash.views import helpers
 from restapi.common.views_base import RESTAPIBaseView
 from restapi.contentad.v1 import serializers
 from utils import dates_helper
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 ACCOUNTS_CAN_EDIT_URL = [settings.HARDCODED_ACCOUNT_ID_OEN]
 ACCOUNTS_CAN_EDIT_BRAND_NAME = [settings.HARDCODED_ACCOUNT_ID_OEN]
@@ -21,7 +22,7 @@ class ContentAdViewList(RESTAPIBaseView):
         qpe = serializers.ContentAdQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         content_ads = (
             dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related("ad_group")
         )
@@ -31,12 +32,12 @@ class ContentAdViewList(RESTAPIBaseView):
 
 class ContentAdViewDetails(RESTAPIBaseView):
     def get(self, request, content_ad_id):
-        content_ad = helpers.get_content_ad(request.user, content_ad_id)
+        content_ad = zemauth.access.get_content_ad(request.user, Permission.READ, content_ad_id)
         serializer = serializers.ContentAdSerializer(content_ad, context={"request": request})
         return self.response_ok(serializer.data)
 
     def put(self, request, content_ad_id):
-        content_ad = helpers.get_content_ad(request.user, content_ad_id)
+        content_ad = zemauth.access.get_content_ad(request.user, Permission.WRITE, content_ad_id)
         serializer = serializers.ContentAdSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
@@ -63,7 +64,7 @@ class ContentAdBatchViewList(RESTAPIBaseView):
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         candidates_data = []
 
@@ -109,7 +110,7 @@ class ContentAdBatchViewDetails(RESTAPIBaseView):
             batch = dash.models.UploadBatch.objects.get(id=batch_id)
         except dash.models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError("Upload batch does not exist")
-        helpers.get_ad_group(request.user, batch.ad_group_id)  # permissions check
+        zemauth.access.get_ad_group(request.user, Permission.READ, batch.ad_group_id)  # permissions check
 
         batch_serializer = serializers.UploadBatchSerializer(batch, context={"request": request})
         return self.response_ok(batch_serializer.data)
