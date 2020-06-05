@@ -20,6 +20,18 @@ node {
             }
         }
 
+        stage('Check previous build status') {
+            Run previousBuild = currentBuild.rawBuild.getPreviousBuild()
+            while (previousBuild != null) {
+                String result = previousBuild.result.toString()
+                if (result == 'SUCCESS' || result == 'FAILURE') {
+                    env.PREVIOUS_BUILD_RESULT = result
+                    break
+                }
+                previousBuild = previousBuild.getPreviousBuild()
+            }
+        }
+
         stage('Setup') {
             sh 'export' // for debug purposes
             env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
@@ -32,6 +44,8 @@ node {
             checkout scm
             // make sure we don't have leftovers from previous builds
             sh 'sudo git clean --force -d -x'
+            env.GIT_AUTHOR = sh (script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
+            env.GIT_COMMIT_MESSAGE = sh (script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
 
             // Remove old lingering containsers and volumes
             sh 'docker-compose kill; docker-compose rm -v -f'
@@ -104,6 +118,12 @@ node {
             sh 'docker-compose kill; docker-compose rm -v -f'
         }
 
+        stage('Notify success') {
+            if (env.PREVIOUS_BUILD_RESULT == 'FAILURE' && env.BRANCH_NAME == 'master') {
+                slackSend channel: "#rnd-z1", color: "#8CC04F", failOnError: true, message: "Build Fixed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+            }
+        }
+
         // stage('Trigger e2e') {
         //     if (env.BRANCH_NAME == 'master') {
         //         build job: 'z1-e2e', wait: false
@@ -111,10 +131,8 @@ node {
         // }
     }
   } catch(e) {
-    if (!(e instanceof FlowInterruptedException) && env.BRANCH_NAME == 'master') {
-      committer = sh (script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
-      commit_message = sh (script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
-      slackSend channel: "#rnd-z1", color: "#FF0000", failOnError: true, message: "Build Failed - ${committer}: ${commit_message} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+    if (!(e instanceof FlowInterruptedException) && env.PREVIOUS_BUILD_RESULT == 'SUCCESS' && env.BRANCH_NAME == 'master') {
+      slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
     }
     throw e
   }
