@@ -19,6 +19,12 @@
     >
         TOTALS
     </span>
+    <zem-help-popover
+        ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL"
+        content="{{ ctrl.TOTALS_LABEL_HELP_TEXT }}"
+        placement="'top'"
+    >
+    </zem-help-popover>
     <span
         class="zem-grid-cell-base-breakdown-field"
         ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD"

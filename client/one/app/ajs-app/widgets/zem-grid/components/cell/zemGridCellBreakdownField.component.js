@@ -37,6 +37,8 @@ angular
                 vm.collapsed = false;
                 vm.toggleCollapse = toggleCollapse;
                 vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+                vm.TOTALS_LABEL_HELP_TEXT =
+                    'Totals displays the sum of all metrics and costs including those that incurred on archived ads, ad groups, campaigns or accounts.';
 
                 initialize();
 
