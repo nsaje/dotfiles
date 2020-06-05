@@ -37,12 +37,12 @@ class ViewSelectorTest(TestCase):
         self.assertEqual(view_selector.get_best_view_base(["content_ad_id", "source_id", "dma"], False), "mv_contentad_geo")
         self.assertEqual(view_selector.get_best_view_base(["content_ad_id", "publisher_id"], False), "mv_master")
 
-        self.assertEqual(view_selector.get_best_view_base(["account_id", "placement_id", "placement_type"], True), "mv_account_placement")
-        self.assertEqual(view_selector.get_best_view_base(["account_id", "publisher_id", "placement_id", "placement_type"], True), "mv_account_placement")
-        self.assertEqual(view_selector.get_best_view_base(["campaign_id", "placement_id", "placement_type"], True), "mv_campaign_placement")
-        self.assertEqual(view_selector.get_best_view_base(["account_id", "campaign_id", "publisher_id", "placement_id", "placement_type"], True), "mv_campaign_placement")
-        self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "placement_id", "placement_type"], True), "mv_adgroup_placement")
-        self.assertEqual(view_selector.get_best_view_base(["account_id", "campaign_id", "ad_group_id", "publisher_id", "placement_id", "placement_type"], True), "mv_adgroup_placement")
+        self.assertEqual(view_selector.get_best_view_base(["account_id", "placement_id"], True), "mv_account_placement")
+        self.assertEqual(view_selector.get_best_view_base(["account_id", "publisher_id", "placement_id"], True), "mv_account_placement")
+        self.assertEqual(view_selector.get_best_view_base(["campaign_id", "placement_id"], True), "mv_campaign_placement")
+        self.assertEqual(view_selector.get_best_view_base(["account_id", "campaign_id", "publisher_id", "placement_id"], True), "mv_campaign_placement")
+        self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "placement_id"], True), "mv_adgroup_placement")
+        self.assertEqual(view_selector.get_best_view_base(["account_id", "campaign_id", "ad_group_id", "publisher_id", "placement_id"], True), "mv_adgroup_placement")
 
     def test_get_best_view_conversions(self):
         self.assertEqual(view_selector.get_best_view_conversions(["account_id", "month"]), "mv_account_conv")
@@ -104,25 +104,21 @@ class ViewSelectorTest(TestCase):
             view_selector.get_best_view_touchpoints(["account_id", "campaign_id", "ad_group_id", "content_ad_id", "publisher_id", "placement_id"]),
             "mv_touchpointconversions",
         )
-        self.assertEqual(
-            view_selector.get_best_view_touchpoints(["account_id", "campaign_id", "ad_group_id", "content_ad_id", "publisher_id", "placement_id", "placement_type"]),
-            "mv_touchpointconversions",
-        )
 
         self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "publisher_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "publisher_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id"]), "mv_touchpointconversions")
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "placement_id", "placement_type"]), "mv_account_touch_placement")
-        self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "publisher_id", "placement_id", "placement_type"]), "mv_touchpointconversions")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "placement_id"]), "mv_account_touch_placement")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "publisher_id", "placement_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["account_id", "publisher_id", "dma"]), "mv_touchpointconversions")
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "placement_id", "placement_type"]), "mv_campaign_touch_placement")
-        self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "publisher_id", "placement_id", "placement_type"]), "mv_touchpointconversions")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "placement_id"]), "mv_campaign_touch_placement")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "publisher_id", "placement_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["campaign_id", "publisher_id", "dma"]), "mv_touchpointconversions")
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "placement_id", "placement_type"]), "mv_adgroup_touch_placement")
-        self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "placement_id", "placement_type"]), "mv_touchpointconversions")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "placement_id"]), "mv_adgroup_touch_placement")
+        self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "placement_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["ad_group_id", "publisher_id", "dma"]), "mv_touchpointconversions")
 
         self.assertEqual(view_selector.get_best_view_touchpoints(["content_ad_id", "month"]), "mv_contentad_touch")
@@ -131,7 +127,6 @@ class ViewSelectorTest(TestCase):
         self.assertEqual(view_selector.get_best_view_touchpoints(["content_ad_id", "source_id", "dma"]), "mv_contentad_touch_geo")
         self.assertEqual(view_selector.get_best_view_touchpoints(["content_ad_id", "publisher_id"]), "mv_touchpointconversions")
         self.assertEqual(view_selector.get_best_view_touchpoints(["content_ad_id", "placement_id"]), "mv_touchpointconversions")
-        self.assertEqual(view_selector.get_best_view_touchpoints(["content_ad_id", "placement_type"]), "mv_touchpointconversions")
 
     def test_supports_conversions(self):
         self.assertFalse(view_selector.supports_conversions("mv_master", None))

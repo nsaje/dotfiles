@@ -16,15 +16,10 @@ class ApiTest(TestCase):
         self.assertTrue(api_breakdowns.should_query_all(["account_id"]))
         self.assertFalse(api_breakdowns.should_query_all(["publisher_id"]))
         self.assertFalse(api_breakdowns.should_query_all(["placement_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["placement_type"]))
 
-        self.assertFalse(api_breakdowns.should_query_all(["placement_id", "placement_type"]))
         self.assertFalse(api_breakdowns.should_query_all(["publisher_id", "placement_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["publisher_id", "placement_type"]))
-        self.assertFalse(api_breakdowns.should_query_all(["publisher_id", "placement_id", "placement_type"]))
 
         self.assertFalse(api_breakdowns.should_query_all(["source_id", "placement_id"]))
-        self.assertFalse(api_breakdowns.should_query_all(["source_id", "placement_type"]))
 
         self.assertFalse(api_breakdowns.should_query_all(["account_id", "ad_group_id"]))
         self.assertFalse(api_breakdowns.should_query_all(["campaign_id", "content_ad_id"]))

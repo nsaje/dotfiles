@@ -23,7 +23,6 @@ class DeliveryDimension:
 
     ENVIRONMENT = "environment"
     ZEM_PLACEMENT_TYPE = "zem_placement_type"
-    PLACEMENT_TYPE = "placement_type"
     VIDEO_PLAYBACK_METHOD = "video_playback_method"
 
     COUNTRY = "country"
@@ -40,7 +39,6 @@ class DeliveryDimension:
         DEVICE_OS_VERSION,
         ENVIRONMENT,
         ZEM_PLACEMENT_TYPE,
-        PLACEMENT_TYPE,
         VIDEO_PLAYBACK_METHOD,
         COUNTRY,
         REGION,
@@ -51,7 +49,6 @@ class DeliveryDimension:
     ]
 
     _EXTENDED = [DEVICE_OS_VERSION, ZEM_PLACEMENT_TYPE, VIDEO_PLAYBACK_METHOD, AGE, GENDER, AGE_GENDER]
-    _PLACEMENT = [PLACEMENT_TYPE]
 
 
 class TimeDimension:
@@ -77,7 +74,6 @@ DEVICE_OS_VERSION = DeliveryDimension.DEVICE_OS_VERSION
 
 ENVIRONMENT = DeliveryDimension.ENVIRONMENT
 ZEM_PLACEMENT_TYPE = DeliveryDimension.ZEM_PLACEMENT_TYPE
-PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
 VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 COUNTRY = DeliveryDimension.COUNTRY
@@ -91,8 +87,6 @@ AGE_GENDER = DeliveryDimension.AGE_GENDER
 DAY = TimeDimension.DAY
 WEEK = TimeDimension.WEEK
 MONTH = TimeDimension.MONTH
-
-PLACEMENT_DIMENSIONS = [StructureDimension.PLACEMENT] + DeliveryDimension._PLACEMENT
 
 
 class TimeLimits:
@@ -172,21 +166,15 @@ def is_extended_delivery_dimension(dimension):
 
 
 def is_top_level_delivery_dimension(dimension):
-    return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED) - set(
-        DeliveryDimension._PLACEMENT
-    )
+    return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED)
 
 
 def is_placement_breakdown(breakdown):
-    return any(dimension in breakdown for dimension in PLACEMENT_DIMENSIONS)
+    return StructureDimension.PLACEMENT in breakdown
 
 
 def get_top_level_delivery_dimensions():
-    return [
-        dimension
-        for dimension in DeliveryDimension._ALL
-        if dimension not in DeliveryDimension._EXTENDED + DeliveryDimension._PLACEMENT
-    ]
+    return [dimension for dimension in DeliveryDimension._ALL if dimension not in DeliveryDimension._EXTENDED]
 
 
 def get_time_dimension(breakdown):

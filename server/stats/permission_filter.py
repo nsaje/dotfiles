@@ -485,17 +485,11 @@ def validate_breakdown_by_structure(breakdown):
         raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
 
     if constants.is_placement_breakdown(breakdown) and "content_ad_id" in breakdown:
-        raise exc.InvalidBreakdownError(
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type"
-        )
+        raise exc.InvalidBreakdownError("Unsupported breakdown - content ads can not be broken down by placement")
 
-    if (
-        delivery
-        and constants.is_placement_breakdown(breakdown)
-        and delivery != constants.DeliveryDimension.PLACEMENT_TYPE
-    ):
+    if delivery and constants.is_placement_breakdown(breakdown):
         raise exc.InvalidBreakdownError(
-            "Unsupported breakdown - placements/placement types can not be broken down by {}".format(delivery)
+            "Unsupported breakdown - placements can not be broken down by {}".format(delivery)
         )
 
     unsupported_breakdowns = set(breakdown) - set(clean_breakdown)

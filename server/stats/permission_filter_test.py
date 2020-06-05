@@ -758,28 +758,21 @@ class BreakdownAllowedTest(TestCase):
                 permission_filter.validate_breakdown_by_structure([field, field])
 
     def test_validate_breakdown_structure_placement(self):
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id", "placement_type", "week"])
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id", "placement_type"])
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id", "day"])
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_type", "week"])
+        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id", "week"])
         permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id"])
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_type"])
-        permission_filter.validate_breakdown_by_structure(["ad_group_id", "publisher_id", "placement_type", "week"])
+        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id", "day"])
+        permission_filter.validate_breakdown_by_structure(["ad_group_id", "week"])
+        permission_filter.validate_breakdown_by_structure(["ad_group_id", "placement_id"])
 
-        permission_filter.validate_breakdown_by_structure(["placement_id", "placement_type", "week"])
-        permission_filter.validate_breakdown_by_structure(["placement_id", "placement_type"])
-        permission_filter.validate_breakdown_by_structure(["placement_id", "day"])
         permission_filter.validate_breakdown_by_structure(["placement_id"])
-        permission_filter.validate_breakdown_by_structure(["publisher_id", "placement_type", "week"])
+        permission_filter.validate_breakdown_by_structure(["placement_id", "week"])
+        permission_filter.validate_breakdown_by_structure(["publisher_id", "placement_id", "week"])
 
-        permission_filter.validate_breakdown_by_structure(["publisher_id", "placement_id", "placement_type", "day"])
         permission_filter.validate_breakdown_by_structure(["placement_id", "publisher_id"])
 
-        # Placement type is not a top level delivery breakdown.
-        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
-            permission_filter.validate_breakdown_by_structure(["placement_type", "week"])
-        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
-            permission_filter.validate_breakdown_by_structure(["placement_type"])
+        # Placement type is not a valid breakdown
+        with self.assertRaises(exc.InvalidBreakdownError):
+            permission_filter.validate_breakdown_by_structure(["placement", "placement_type"])
 
         # Publisher and placement are both structure dimensions so ad group breakdown (on campaign level) by both is
         # currently not supported.
@@ -790,30 +783,16 @@ class BreakdownAllowedTest(TestCase):
 
         # Placement broken down by delivery breakdowns (except placement type) is currently not supported.
         with self.assertRaisesMessage(
-            exc.InvalidBreakdownError,
-            "Unsupported breakdown - placements/placement types can not be broken down by dma",
+            exc.InvalidBreakdownError, "Unsupported breakdown - placements can not be broken down by dma"
         ):
             permission_filter.validate_breakdown_by_structure(["placement_id", "dma"])
 
         # Content ad breakdown by placement dimensions is currently not supported due to data size concerns.
         with self.assertRaisesMessage(
-            exc.InvalidBreakdownError,
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type",
+            exc.InvalidBreakdownError, "Unsupported breakdown - content ads can not be broken down by placement"
         ):
             permission_filter.validate_breakdown_by_structure(["ad_group_id", "content_ad_id", "placement_id"])
         with self.assertRaisesMessage(
-            exc.InvalidBreakdownError,
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type",
+            exc.InvalidBreakdownError, "Unsupported breakdown - content ads can not be broken down by placement"
         ):
             permission_filter.validate_breakdown_by_structure(["content_ad_id", "placement_id"])
-
-        with self.assertRaisesMessage(
-            exc.InvalidBreakdownError,
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type",
-        ):
-            permission_filter.validate_breakdown_by_structure(["ad_group_id", "content_ad_id", "placement_type"])
-        with self.assertRaisesMessage(
-            exc.InvalidBreakdownError,
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type",
-        ):
-            permission_filter.validate_breakdown_by_structure(["content_ad_id", "placement_type"])

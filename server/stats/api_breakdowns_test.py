@@ -181,24 +181,15 @@ class ApiBreakdownQueryTest(TestCase):
         self.assertFalse(api_breakdowns.should_use_publishers_view([constants.AD_GROUP]))
         self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PUBLISHER]))
         self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PLACEMENT]))
-        self.assertTrue(api_breakdowns.should_use_publishers_view([constants.PLACEMENT_TYPE]))
         self.assertFalse(api_breakdowns.should_use_publishers_view([constants.CONTENT_AD, constants.PUBLISHER]))
         self.assertTrue(
-            api_breakdowns.should_use_publishers_view(
-                [constants.AD_GROUP, constants.PUBLISHER, constants.PLACEMENT, constants.PLACEMENT_TYPE]
-            )
+            api_breakdowns.should_use_publishers_view([constants.AD_GROUP, constants.PUBLISHER, constants.PLACEMENT])
         )
 
         # Breakdown by content_ad_id when querying placements is currently not supported.
         self.assertTrue(
             api_breakdowns.should_use_publishers_view(
-                [
-                    constants.AD_GROUP,
-                    constants.CONTENT_AD,
-                    constants.PUBLISHER,
-                    constants.PLACEMENT,
-                    constants.PLACEMENT_TYPE,
-                ]
+                [constants.AD_GROUP, constants.CONTENT_AD, constants.PUBLISHER, constants.PLACEMENT]
             )
         )
 

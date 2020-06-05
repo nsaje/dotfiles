@@ -77,8 +77,9 @@ class BreakdownsBase(backtosql.Model):
     publisher = backtosql.Column("publisher", BREAKDOWN)
     placement = backtosql.Column("placement", BREAKDOWN, null=True)
 
-    publisher_id = backtosql.TemplateColumn("part_publisher_id.sql")
+    publisher_id = backtosql.TemplateColumn("part_max.sql", {"column_name": "publisher_source_id"})
     placement_id = backtosql.TemplateColumn("part_placement_id.sql")
+    placement_type = backtosql.TemplateColumn("part_max.sql", {"column_name": "placement_type"}, null=True)
 
     def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
@@ -107,6 +108,7 @@ class BreakdownsBase(backtosql.Model):
 
         if "placement_id" in breakdown:
             columns.append(self.placement_id)
+            columns.append(self.placement_type)
 
         return columns
 
@@ -231,6 +233,7 @@ class BreakdownsBase(backtosql.Model):
             aggregates.append("publisher_id")
         if "placement_id" in breakdown:
             aggregates.append("placement_id")
+            aggregates.append("placement_type")
 
         return {
             "breakdown": self.get_breakdown(breakdown),
@@ -250,7 +253,6 @@ class MVMaster(BreakdownsBase):
     environment = backtosql.Column("environment", BREAKDOWN, null=True)
 
     zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN, null=True)
-    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
     video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN, null=True)
 
     country = backtosql.Column("country", BREAKDOWN, null=True)
@@ -630,16 +632,8 @@ class MVMaster(BreakdownsBase):
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
-    def get_breakdown(self, breakdown):
-        if "placement_id" in breakdown:
-            placement_idx = breakdown.index("placement_id")
-            breakdown = breakdown[: placement_idx + 1] + ["placement_type"] + breakdown[placement_idx + 1 :]
-
-        return super().get_breakdown(breakdown)
-
 
 class MVTouchpointConversions(BreakdownsBase):
-    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
     device_type = backtosql.Column("device_type", BREAKDOWN)
     device_os = backtosql.Column("device_os", BREAKDOWN)
     device_os_version = backtosql.Column("device_os_version", BREAKDOWN)

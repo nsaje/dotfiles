@@ -57,17 +57,11 @@ def validate_breakdown_by_structure(level, breakdown):
         raise exc.InvalidBreakdownError("Unsupported breakdown - only one delivery breakdown supported per report")
 
     if constants.is_placement_breakdown(breakdown) and "content_ad_id" in breakdown:
-        raise exc.InvalidBreakdownError(
-            "Unsupported breakdown - content ads can not be broken down by placement/placement type"
-        )
+        raise exc.InvalidBreakdownError("Unsupported breakdown - content ads can not be broken down by placement")
 
-    if (
-        delivery
-        and constants.is_placement_breakdown(breakdown)
-        and delivery[0] != constants.DeliveryDimension.PLACEMENT_TYPE
-    ):
+    if delivery and constants.is_placement_breakdown(breakdown):
         raise exc.InvalidBreakdownError(
-            "Unsupported breakdown - placements/placement types can not be broken down by {}".format(delivery[0])
+            "Unsupported breakdown - placements can not be broken down by {}".format(delivery[0])
         )
 
     clean_breakdown.extend(delivery)
