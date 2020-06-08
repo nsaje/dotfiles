@@ -105,6 +105,8 @@ export class CreditsView implements OnInit, OnDestroy {
 
     openCreditRefundListModal(credit: Credit): void {
         this.creditRefundListModalTitle = `Credit Item #${credit.id} refund list`;
+        this.refundPaginationOptions = DEFAULT_PAGINATION_OPTIONS;
+        this.store.setCreditActiveEntity(credit);
         this.store
             .loadRefunds(credit.id, this.refundPaginationOptions)
             .then(() => {
@@ -150,13 +152,24 @@ export class CreditsView implements OnInit, OnDestroy {
         });
     }
 
-    onPaginationChange($event: PaginationState) {
+    onCreditPaginationChange($event: PaginationState) {
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: $event,
             queryParamsHandling: 'merge',
             replaceUrl: true,
         });
+    }
+
+    onRefundPaginationChange($event: PaginationState) {
+        this.refundPaginationOptions = {
+            ...this.refundPaginationOptions,
+            ...$event,
+        };
+        this.store.loadRefunds(
+            this.store.state.creditActiveEntity.entity.id,
+            this.refundPaginationOptions
+        );
     }
 
     ngOnDestroy(): void {

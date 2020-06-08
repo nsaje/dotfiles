@@ -11,6 +11,7 @@ import {CreditsGridComponent} from './components/credits-grid/credits-grid.compo
 import {CreditActionsCellComponent} from './components/credits-grid/components/credit-actions-cell/credit-actions-cell.component';
 import {RefundActionsCellComponent} from './components/credits-grid/components/refund-actions-cell/refund-actions-cell.component';
 import {RefundFormComponent} from './components/refund-form/refund-form.component';
+import {RefundsGridComponent} from './components/refunds-grid/refunds-grid.component';
 
 @NgModule({
     declarations: [
@@ -25,6 +26,7 @@ import {RefundFormComponent} from './components/refund-form/refund-form.componen
         CreditActionsCellComponent,
         RefundActionsCellComponent,
         RefundFormComponent,
+        RefundsGridComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

@@ -20,6 +20,7 @@ import {CreditEditFormComponent} from '../../components/credit-edit-form/credit-
 import {CreditsTotalsComponent} from '../../components/credits-totals/credits-totals.component';
 import {CampaignBudgetsGridComponent} from '../../components/campaign-budgets-grid/campaign-budgets-grid.component';
 import {RefundFormComponent} from '../../components/refund-form/refund-form.component';
+import {RefundsGridComponent} from '../../components/refunds-grid/refunds-grid.component';
 
 describe('CreditsView', () => {
     let component: CreditsView;
@@ -43,6 +44,7 @@ describe('CreditsView', () => {
                 CreditActionsCellComponent,
                 RefundActionsCellComponent,
                 RefundFormComponent,
+                RefundsGridComponent,
             ],
             imports: [
                 FormsModule,

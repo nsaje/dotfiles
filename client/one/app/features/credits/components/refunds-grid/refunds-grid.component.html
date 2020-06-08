@@ -1,0 +1,15 @@
+<zem-smart-grid
+    class="zem-smart-grid zem-refunds-grid__item"
+    [rowData]="refunds"
+    [columnDefs]="columnDefs"
+    [context]="context"
+    [paginationOptions]="paginationOptions"
+    [paginationCount]="paginationCount"
+    (paginationChange)="paginationChange.emit($event)"
+    [gridOptions]="gridOptions"
+    (gridReady)="onGridReady($event)"
+>
+</zem-smart-grid>
+<div class="zem-refunds-grid__item zem-refunds-grid__total">
+    Credit total: {{ formattedCreditTotal }}
+</div>

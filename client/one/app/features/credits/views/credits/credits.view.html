@@ -30,7 +30,7 @@
             [creditGridType]="creditGridType.ACTIVE"
             [paginationOptions]="activePaginationOptions"
             [paginationCount]="state.requests.listActive.count"
-            (paginationChange)="onPaginationChange($event)"
+            (paginationChange)="onCreditPaginationChange($event)"
         >
         </zem-credits-grid>
     </div>
@@ -45,7 +45,7 @@
             [creditGridType]="creditGridType.PAST"
             [paginationOptions]="pastPaginationOptions"
             [paginationCount]="state.requests.listPast.count"
-            (paginationChange)="onPaginationChange($event)"
+            (paginationChange)="onCreditPaginationChange($event)"
         >
         </zem-credits-grid>
     </div>
@@ -251,7 +251,16 @@
                 </div>
             </div>
             <div class="zem-modal__body">
-                <!-- refund grid -->
+                <zem-refunds-grid
+                    class="zem-refunds-grid"
+                    [refunds]="state.creditRefunds"
+                    [credit]="state.creditActiveEntity.entity"
+                    [context]="context"
+                    [isLoading]="state.requests.listRefunds.inProgress"
+                    [paginationOptions]="refundPaginationOptions"
+                    [paginationCount]="state.requests.listRefunds.count"
+                    (paginationChange)="onRefundPaginationChange($event)"
+                ></zem-refunds-grid>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button
