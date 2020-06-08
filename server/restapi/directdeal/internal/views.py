@@ -5,10 +5,11 @@ from django.db.models import Q
 
 import core.features.deals
 import core.models
-import restapi.access
 import utils.exc
+import zemauth.access
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -23,7 +24,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(None)
 
     def get(self, request, deal_id):
-        deal = restapi.access.get_direct_deal(request.user, deal_id)
+        deal = zemauth.access.get_direct_deal(request.user, Permission.READ, deal_id)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def list(self, request):
@@ -35,14 +36,14 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         agency_only = qpe.validated_data.get("agency_only", None)
 
         if account_id is not None:
-            account = restapi.access.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
             deal_items = (
                 core.features.deals.DirectDeal.objects.filter_by_account(account)
                 .select_related("source", "account")
                 .order_by("-created_dt")
             )
         elif agency_id is not None:
-            agency = restapi.access.get_agency(request.user, agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             if agency_only is not None and agency_only:
                 deal_items = (
                     core.features.deals.DirectDeal.objects.filter_by_agency(agency)
@@ -83,12 +84,12 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        deal = restapi.access.get_direct_deal(request.user, deal_id)
+        deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
         deal.update(request, **data)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def remove(self, request, deal_id):
-        deal = restapi.access.get_direct_deal(request.user, deal_id)
+        deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
         deal.delete()
         return rest_framework.response.Response(None, status=204)
 
@@ -111,7 +112,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         return self.response_ok(self.serializer(new_deal, context={"request": request}).data, status=201)
 
     def list_connections(self, request, deal_id):
-        deal = restapi.access.get_direct_deal(request.user, deal_id)
+        deal = zemauth.access.get_direct_deal(request.user, Permission.READ, deal_id)
         deal_connection_items = (
             core.features.deals.DirectDealConnection.objects.filter_by_deal(deal)
             .select_related(
@@ -126,7 +127,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         )
 
     def remove_connection(self, request, deal_id, deal_connection_id):
-        deal = restapi.access.get_direct_deal(request.user, deal_id)
-        deal_connection = restapi.access.get_direct_deal_connection(request.user, deal_connection_id, deal=deal)
+        deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
+        deal_connection = zemauth.access.get_direct_deal_connection(deal_connection_id, deal)
         deal_connection.delete()
         return rest_framework.response.Response(None, status=204)
