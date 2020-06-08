@@ -43,10 +43,7 @@ class SourceViewSetTest(RESTAPITest):
     def test_list_with_pagination(self):
         self.user.user_permissions.clear()
         r = self.client.get(reverse("restapi.source.v1:sources_list"))
-        r_paginated = self.client.get(reverse("restapi.source.v1:sources_list"), {"limit": 2, "offset": 2})
+        r_paginated = self.client.get(reverse("restapi.source.v1:sources_list"), {"limit": 1, "offset": 3})
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
-        self.assertEqual(
-            sorted(sorted(entry.items()) for entry in resp_json["data"][2:4]),
-            sorted(sorted(entry.items()) for entry in resp_json_paginated["data"]),
-        )
+        self.assertEqual(resp_json["data"][3:4], resp_json_paginated["data"])
