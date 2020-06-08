@@ -10,6 +10,7 @@ import {CampaignBudgetsGridComponent} from './components/campaign-budgets-grid/c
 import {CreditsGridComponent} from './components/credits-grid/credits-grid.component';
 import {CreditActionsCellComponent} from './components/credits-grid/components/credit-actions-cell/credit-actions-cell.component';
 import {RefundActionsCellComponent} from './components/credits-grid/components/refund-actions-cell/refund-actions-cell.component';
+import {RefundFormComponent} from './components/refund-form/refund-form.component';
 
 @NgModule({
     declarations: [
@@ -23,6 +24,7 @@ import {RefundActionsCellComponent} from './components/credits-grid/components/r
         CreditsGridComponent,
         CreditActionsCellComponent,
         RefundActionsCellComponent,
+        RefundFormComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

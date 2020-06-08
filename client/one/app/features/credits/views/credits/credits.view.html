@@ -201,7 +201,18 @@
                 </div>
             </div>
             <div class="zem-modal__body">
-                <!-- credit refund form -->
+                <zem-refund-form
+                    class="zem-refund-form"
+                    [refund]="state.creditRefundActiveEntity.entity"
+                    [credit]="state.creditActiveEntity.entity"
+                    [creditScopeState]="state.creditActiveEntity.scopeState"
+                    [accounts]="state.accounts"
+                    [refundErrors]="state.creditRefundActiveEntity.fieldsErrors"
+                    (refundChange)="
+                        store.changeCreditRefundActiveEntity($event)
+                    "
+                >
+                </zem-refund-form>
             </div>
             <div class="zem-modal__footer zem-buttons-panel">
                 <button

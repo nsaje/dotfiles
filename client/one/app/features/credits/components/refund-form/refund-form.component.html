@@ -1,0 +1,94 @@
+<div
+    class="zem-refund-form__item zem-refund-form__owner-details"
+    *ngIf="credit.id"
+>
+    Refund for credit item created by <strong>{{ credit.createdBy }}</strong> on
+    <strong>{{ createdOnDate }}</strong>
+</div>
+<zem-date-form-group
+    class="zem-refund-form__item zem-date-form-group zem-refund-form__date-form-group"
+    [label]="'Refund for month'"
+    [value]="refund.startDate"
+    [minDate]="minDate"
+    [maxDate]="maxDate"
+    [type]="'month'"
+    [errors]="refundErrors?.startDate"
+    (valueChange)="onStartDateChange($event)"
+></zem-date-form-group>
+<zem-select-form-group
+    class="zem-refund-form__item zem-select-form-group zem-refund-form__select-form-group"
+    [isDisabled]="isAccountDisabled"
+    [label]="'Refunded Account'"
+    [value]="refund.accountId"
+    [bindLabel]="'name'"
+    [bindValue]="'id'"
+    [items]="accounts"
+    [isSearchable]="true"
+    [orderByValue]="'name'"
+    [errors]="refundErrors?.accountId"
+    (valueChange)="onAccountIdChange($event)"
+></zem-select-form-group>
+<zem-currency-form-group
+    class="zem-refund-form__item zem-currency-form-group zem-refund-form__currency-form-group"
+    [label]="'Refunded media amount'"
+    [value]="mediaAmount"
+    [currencySymbol]="currencySymbol"
+    (valueChange)="onMediaAmountChange($event)"
+></zem-currency-form-group>
+<zem-content-form-group
+    class="zem-refund-form__item zem-content-form-group zem-refund-form__text-only-form-group"
+    [label]="'Credit license fee'"
+>
+    {{ credit.licenseFee }}%
+</zem-content-form-group>
+<zem-content-form-group
+    class="zem-refund-form__item zem-content-form-group zem-refund-form__content-form-group"
+    [label]="'Refunded margin'"
+>
+    <zem-prefixed-input
+        class="zem-form-group__content-item zem-form-group__input zem-prefixed-input zem-refund-form__effective-margin"
+        [prefix]="'%'"
+        [hasError]="
+            refundErrors.effectiveMargin &&
+            refundErrors.effectiveMargin.length > 0
+        "
+    >
+        <zem-decimal-input
+            class="zem-decimal-input"
+            [value]="refund.effectiveMargin"
+            [minValue]="0"
+            [maxValue]="99"
+            fractionSize="2"
+            [hasError]="
+                refundErrors.effectiveMargin &&
+                refundErrors.effectiveMargin.length > 0
+            "
+            (inputBlur)="onEffectiveMarginChange($event)"
+        ></zem-decimal-input>
+    </zem-prefixed-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of refundErrors.effectiveMargin"
+    >
+        {{ error }}
+    </div>
+</zem-content-form-group>
+<zem-content-form-group
+    class="zem-refund-form__item zem-content-form-group zem-refund-form__text-only-form-group"
+    [label]="'Total refunded amount'"
+>
+    {{ formattedTotalRefundedAmount }}
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of refundErrors.amount"
+    >
+        {{ error }}
+    </div>
+</zem-content-form-group>
+<zem-textarea-form-group
+    class="zem-refund-form__item zem-textarea-form-group zem-refund-form__textarea-form-group"
+    [label]="'Custom Notes'"
+    [value]="refund.comment"
+    [errors]="refundErrors?.comment"
+    (valueChange)="onCommentChange($event)"
+></zem-textarea-form-group>

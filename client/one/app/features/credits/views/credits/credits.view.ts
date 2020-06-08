@@ -96,7 +96,10 @@ export class CreditsView implements OnInit, OnDestroy {
     openCreditRefundCreateModal(credit: Credit): void {
         this.creditRefundCreateModalTitle = `Credit Item #${credit.id} refund`;
         this.store.setCreditActiveEntity(credit);
-        this.store.setCreditRefundActiveEntity({});
+        this.store.setCreditRefundActiveEntity({
+            amount: 0,
+            accountId: credit.accountId,
+        });
         this.creditRefundCreateModal.open();
     }
 
