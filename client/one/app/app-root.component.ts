@@ -14,6 +14,7 @@ import {filter, takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {GoogleAnalyticsService} from './core/google-analytics/google-analytics.service';
 import {MixpanelService} from './core/mixpanel/mixpanel.service';
+import {EventManager} from '@angular/platform-browser';
 
 @Component({
     selector: 'zem-app-root',
@@ -28,6 +29,7 @@ export class AppRootComponent implements OnInit, OnDestroy {
     isRendered: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
+    private removeResizeEventListener: Function;
 
     constructor(
         private router: Router,
@@ -35,7 +37,8 @@ export class AppRootComponent implements OnInit, OnDestroy {
         private googleAnalyticsService: GoogleAnalyticsService,
         private mixpanelService: MixpanelService,
         @Inject('zemInitializationService')
-        private zemInitializationService: any
+        private zemInitializationService: any,
+        private eventManager: EventManager
     ) {}
 
     ngOnInit(): void {
@@ -57,10 +60,25 @@ export class AppRootComponent implements OnInit, OnDestroy {
                 this.ngUnsubscribe$.next();
                 this.ngUnsubscribe$.complete();
             });
+
+        this.setWindowHeightStyleProperty();
+        this.removeResizeEventListener = this.eventManager.addGlobalEventListener(
+            'window',
+            'resize',
+            this.setWindowHeightStyleProperty
+        );
     }
 
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+        this.removeResizeEventListener();
+    }
+
+    private setWindowHeightStyleProperty() {
+        document.documentElement.style.setProperty(
+            '--window-height',
+            `${window.innerHeight}px`
+        );
     }
 }

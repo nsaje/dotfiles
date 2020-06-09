@@ -228,6 +228,9 @@
     background-color: @header__background-color--right;
     right: 0;
     left: auto;
+    max-height: calc(100vh - @zem-header__height);
+    max-height: calc(var(--window-height, 100vh) - @zem-header__height);
+    overflow-y: auto;
 }
 
 .zem-header-navigation {
@@ -539,6 +542,13 @@
     .zem-header-date-range-picker-dropdown.dropdown-menu,
     .zem-header__dropdown-menu--header-menu {
         margin-top: 0;
+    }
+
+    .zem-header__dropdown-menu--header-menu {
+        max-height: calc(100vh - @zem-header__height--small-screen);
+        max-height: calc(
+            var(--window-height, 100vh) - @zem-header__height--small-screen
+        );
     }
 
     .zem-header-filter-selector-toggle {
