@@ -7,13 +7,14 @@ import core.features.bcm
 import core.features.bcm.bcm_slack
 import core.features.multicurrency
 import dash.constants
-import restapi.access
 import restapi.campaignbudget.internal.serializers
 import restapi.common.views_base
 import restapi.credit.v1.views
 import utils.exc
+import zemauth.access
 from restapi.common.pagination import StandardPagination
 from utils import dates_helper
+from zemauth.features.entity_permission import Permission
 
 from . import helpers
 from . import serializers
@@ -31,7 +32,7 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     serializer_budgets = restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer
 
     def get(self, request, credit_id):
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.READ, credit_id)
         return self.response_ok(self.serializer(credit, context={"request": request}).data)
 
     def list(self, request):
@@ -79,12 +80,12 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.WRITE, credit_id)
         credit.update(request, **data)
         return self.response_ok(self.serializer(credit, context={"request": request}).data)
 
     def list_budgets(self, request, credit_id):
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.READ, credit_id)
         budgets_qs = (
             core.features.bcm.BudgetLineItem.objects.filter(credit=credit)
             .select_related("credit", "campaign")
@@ -95,14 +96,14 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     @staticmethod
     def _get_credits_qs(request, account_id=None, agency_id=None):
         if account_id is not None:
-            account = restapi.access.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
             credits_qs = (
                 core.features.bcm.CreditLineItem.objects.filter_by_account(account)
                 .prefetch_related("budgets")
                 .order_by("-start_date", "-end_date", "-created_dt")
             )
         elif agency_id is not None:
-            agency = restapi.access.get_agency(request.user, agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             credits_qs = (
                 core.features.bcm.CreditLineItem.objects.filter(Q(agency=agency) | Q(account__agency=agency))
                 .prefetch_related("budgets")

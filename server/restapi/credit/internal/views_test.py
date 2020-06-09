@@ -9,13 +9,15 @@ import core.models
 import dash.constants
 import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class CreditViewSetTest(RESTAPITest):
+class LegacyCreditViewSetTest(RESTAPITest):
     def test_get(self):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             account=account,
@@ -62,7 +64,7 @@ class CreditViewSetTest(RESTAPITest):
     def test_get_no_permission(self):
         utils.test_helper.remove_permissions(self.user, ["account_credit_view"])
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             account=account,
@@ -84,7 +86,7 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_pagination_with_agency(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits
         magic_mixer.cycle(20).blend(
             core.features.bcm.CreditLineItem,
@@ -150,9 +152,9 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_pagination_with_account(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
-        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = magic_mixer.blend(core.models.Agency)
+        account_one = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        account_two = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         # credits on agency level
         agency_credits = magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
@@ -201,7 +203,7 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_active_pagination(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits
         active_credits = magic_mixer.cycle(20).blend(
             core.features.bcm.CreditLineItem,
@@ -252,7 +254,7 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_past_pagination(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits
         magic_mixer.cycle(20).blend(
             core.features.bcm.CreditLineItem,
@@ -303,7 +305,7 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_totals(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits EUR
         magic_mixer.cycle(10).blend(
             core.features.bcm.CreditLineItem,
@@ -365,7 +367,7 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
@@ -403,8 +405,8 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put_account(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             agency=agency,
@@ -439,8 +441,8 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put_error(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             agency=None,
@@ -475,9 +477,9 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put_account_error(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
-        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_one = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        account_two = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account_one, type=dash.constants.CampaignType.CONTENT
         )
@@ -526,9 +528,9 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_put_agency_error(self, mock_log_to_slack):
-        agency_one = magic_mixer.blend(core.models.Agency, users=[self.user])
-        agency_two = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency_one, users=[self.user])
+        agency_one = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        agency_two = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency_one)
         campaign = magic_mixer.blend(core.models.Campaign, account=account, type=dash.constants.CampaignType.CONTENT)
         credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
@@ -575,7 +577,9 @@ class CreditViewSetTest(RESTAPITest):
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_post(self, mock_log_to_slack):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(
+            self.user, permissions=[Permission.READ, Permission.WRITE, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE]
+        )
 
         post_data = {
             "status": dash.constants.CreditLineItemStatus.get_name(dash.constants.CreditLineItemStatus.SIGNED),
@@ -612,7 +616,7 @@ class CreditViewSetTest(RESTAPITest):
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_list_budgets(self, mock_log_to_slack):
         agency = magic_mixer.blend(core.models.Agency)
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(
             core.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
         )
@@ -645,3 +649,31 @@ class CreditViewSetTest(RESTAPITest):
         budgets_ids = sorted([item.id for item in budgets])
         resp_json_budgets_ids = sorted([int(item.get("id")) for item in resp_json["data"]])
         self.assertEqual(budgets_ids, resp_json_budgets_ids)
+
+
+class CreditViewSetTest(RESTAPITestCase, LegacyCreditViewSetTest):
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
+    def test_post_no_license_fee_permission(self, mock_log_to_slack):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        post_data = {
+            "status": dash.constants.CreditLineItemStatus.get_name(dash.constants.CreditLineItemStatus.SIGNED),
+            "agencyId": str(agency.id),
+            "startDate": self.normalize(datetime.date.today()),
+            "endDate": self.normalize(datetime.date.today() + datetime.timedelta(30)),
+            "amount": "100",
+            "licenseFee": "30",
+            "currency": dash.constants.Currency.get_name(dash.constants.Currency.EUR),
+            "comment": "Extra credit",
+        }
+
+        r = self.client.post(reverse("restapi.credit.internal:credits_list"), data=post_data, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertIsNotNone(resp_json["data"]["id"])
+        self.assertNotIn("licenseFee", resp_json["data"])
+
+        credit = core.features.bcm.CreditLineItem.objects.get(pk=resp_json["data"]["id"])
+        license_fee_field = core.features.bcm.CreditLineItem._meta.get_field("license_fee")
+
+        self.assertEqual(credit.license_fee, license_fee_field.default)

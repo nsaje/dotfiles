@@ -82,6 +82,8 @@ class EntityPermissionedFieldsMixin(object):
         for field in data.keys():
             if self.has_entity_permission_on_field(field, data):
                 ret[field] = data[field]
+            elif self.fields.get(field) is not None:
+                self.fields.pop(field)
         return super().to_internal_value(ret)
 
     def has_entity_permission_on_field(self, field: str, data: OrderedDict) -> bool:
@@ -103,11 +105,10 @@ class EntityPermissionedFieldsMixin(object):
         if permission is None:
             return True
 
-        return self._has_entity_permission(request.user, permission, config, data)
+        return self.has_entity_permission(request.user, permission, config, data)
 
-    @staticmethod
-    def _has_entity_permission(
-        user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
     ) -> bool:
         entity_id_getter_fn = config.get("entity_id_getter_fn")
         if entity_id_getter_fn is None:
@@ -124,8 +125,7 @@ class EntityPermissionedFieldsMixin(object):
                 return True
             except utils.exc.MissingDataError:
                 return False
-        else:
-            return user.has_perm(permission["fallback_permission"])
+        return user.has_perm(permission["fallback_permission"])
 
 
 class DataNodeSerializerMixin(object):

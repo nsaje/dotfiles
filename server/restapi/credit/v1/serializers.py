@@ -5,11 +5,26 @@ import rest_framework.serializers
 import dash.constants
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 
-class CreditSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, rest_framework.serializers.Serializer):
+class CreditSerializer(
+    restapi.serializers.serializers.EntityPermissionedFieldsMixin, rest_framework.serializers.Serializer
+):
     class Meta:
-        permissioned_fields = {"license_fee": "zemauth.can_view_platform_cost_breakdown"}
+        entity_permissioned_fields = {
+            "config": {
+                "entity_id_getter_fn": lambda data: data.get("id"),
+                "entity_access_fn": zemauth.access.get_credit_line_item,
+            },
+            "fields": {
+                "license_fee": {
+                    "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                    "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
+                }
+            },
+        }
 
     id = restapi.serializers.fields.IdField(read_only=True)
     created_on = rest_framework.serializers.DateField(source="get_creation_date", read_only=True)

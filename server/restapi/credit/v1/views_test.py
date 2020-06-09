@@ -1,15 +1,19 @@
 import datetime
+import decimal
 
 from django.urls import reverse
 
+import core.models
 import dash.constants
 import dash.models
 import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class CreditViewSetTest(RESTAPITest):
+class LegacyCreditViewSetTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown"])
@@ -17,25 +21,31 @@ class CreditViewSetTest(RESTAPITest):
     @classmethod
     def credit_repr(
         cls,
-        id=123,
+        id=None,
         createdOn=datetime.datetime.now(),
         startDate=datetime.date.today(),
         endDate=datetime.date.today(),
-        total="500",
-        allocated="200.0",
-        available="300.0",
+        total=None,
+        allocated=None,
+        available=None,
         license_fee=None,
         status=dash.constants.CreditLineItemStatus.SIGNED,
         currency=dash.constants.Currency.USD,
     ):
         resp = {
-            "id": id,
+            "id": str(id) if id is not None else None,
             "createdOn": createdOn,
             "startDate": startDate,
             "endDate": endDate,
-            "total": total,
-            "allocated": allocated,
-            "available": available,
+            "total": total.quantize(decimal.Decimal(".1") ** 4, rounding=decimal.ROUND_HALF_DOWN)
+            if total is not None
+            else None,
+            "allocated": allocated.quantize(decimal.Decimal(".1") ** 4, rounding=decimal.ROUND_HALF_DOWN)
+            if allocated is not None
+            else None,
+            "available": available.quantize(decimal.Decimal(".1") ** 4, rounding=decimal.ROUND_HALF_DOWN)
+            if available is not None
+            else None,
             "status": dash.constants.CreditLineItemStatus.get_name(status),
             "currency": currency,
         }
@@ -61,27 +71,45 @@ class CreditViewSetTest(RESTAPITest):
         self.assertEqual(expected, credit)
 
     def test_credits_get(self):
-        r = self.client.get(reverse("restapi.credit.v1:credits_details", kwargs={"account_id": 186, "credit_id": 861}))
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        credit = magic_mixer.blend(core.features.bcm.CreditLineItem, account=account, end_date=datetime.date.today())
+
+        r = self.client.get(
+            reverse("restapi.credit.v1:credits_details", kwargs={"account_id": account.id, "credit_id": credit.id})
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_credits_get_credit_doesnt_exist(self):
-        r = self.client.get(reverse("restapi.credit.v1:credits_details", kwargs={"account_id": 186, "credit_id": 1234}))
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+
+        r = self.client.get(
+            reverse("restapi.credit.v1:credits_details", kwargs={"account_id": account.id, "credit_id": 1234})
+        )
         self.assertResponseError(r, "DoesNotExist")
 
     def test_credits_get_account_doesnt_exist(self):
-        r = self.client.get(reverse("restapi.credit.v1:credits_details", kwargs={"account_id": 123, "credit_id": 861}))
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        credit = magic_mixer.blend(core.features.bcm.CreditLineItem, agency=agency, end_date=datetime.date.today())
+
+        r = self.client.get(
+            reverse("restapi.credit.v1:credits_details", kwargs={"account_id": 12345, "credit_id": credit.id})
+        )
         self.assertResponseError(r, "MissingDataError")
 
     def test_credits_list(self):
-        r = self.client.get(reverse("restapi.credit.v1:credits_list", kwargs={"account_id": 186}))
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.features.bcm.CreditLineItem, account=account, end_date=datetime.date.today())
+
+        r = self.client.get(reverse("restapi.credit.v1:credits_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
     def test_credits_pagination(self):
-        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ])
         magic_mixer.cycle(10).blend(dash.models.CreditLineItem, account=account, end_date=datetime.date.today())
+
         r = self.client.get(reverse("restapi.credit.v1:credits_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         marker_id = int(resp_json["data"][5]["id"]) - 1
@@ -94,6 +122,17 @@ class CreditViewSetTest(RESTAPITest):
 
     def test_license_fee_permissioned(self):
         utils.test_helper.add_permissions(self.user, ["can_view_platform_cost_breakdown"])
-        r = self.client.get(reverse("restapi.credit.v1:credits_details", kwargs={"account_id": 186, "credit_id": 861}))
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE]
+        )
+        credit = magic_mixer.blend(core.features.bcm.CreditLineItem, account=account, end_date=datetime.date.today())
+
+        r = self.client.get(
+            reverse("restapi.credit.v1:credits_details", kwargs={"account_id": account.id, "credit_id": credit.id})
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"], with_license_fee=True)
+
+
+class CreditViewSetTest(RESTAPITestCase, LegacyCreditViewSetTest):
+    pass

@@ -1,13 +1,17 @@
 import decimal
+from collections import OrderedDict
 
 import rest_framework.serializers
 
 import dash.constants
-import restapi.access
 import restapi.credit.v1.serializers
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import utils.exc
+import zemauth.access
+import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 class CreditTotalsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -81,15 +85,44 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
 
         agency_id = value.get("agency_id")
         value["agency"] = (
-            restapi.access.get_agency(self.context["request"].user, agency_id) if agency_id is not None else None
+            zemauth.access.get_agency(self.context["request"].user, Permission.WRITE, agency_id)
+            if agency_id is not None
+            else None
         )
 
         account_id = value.get("account_id")
         value["account"] = (
-            restapi.access.get_account(self.context["request"].user, account_id) if account_id is not None else None
+            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, account_id)
+            if account_id is not None
+            else None
         )
 
         return value
+
+    def has_entity_permission(
+        self, user: zemauth.models.User, permission: OrderedDict, config: OrderedDict, data: OrderedDict
+    ) -> bool:
+        credit_id = data.get("id")
+        if credit_id is not None:
+            return super().has_entity_permission(user, permission, config, data)
+
+        if user.has_perm("zemauth.fea_use_entity_permission"):
+            agency_id = data.get("agency_id")
+            if agency_id is not None:
+                try:
+                    zemauth.access.get_agency(user, permission["permission"], agency_id)
+                    return True
+                except utils.exc.MissingDataError:
+                    return False
+            account_id = data.get("account_id")
+            if account_id is not None:
+                try:
+                    zemauth.access.get_account(user, permission["permission"], account_id)
+                    return True
+                except utils.exc.MissingDataError:
+                    return False
+            return False
+        return user.has_perm(permission["fallback_permission"])
 
 
 class CreditQueryParams(
