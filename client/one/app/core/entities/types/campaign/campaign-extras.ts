@@ -4,7 +4,7 @@ import {Deal} from '../common/deal';
 import {CampaignGoalsDefaults} from './campaign-goals-defaults';
 import {CampaignBudgetsOverview} from './campaign-budgets-overview';
 import {CampaignBudget} from './campaign-budget';
-import {Credit} from '../common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 import {User} from '../common/user';
 
 export interface CampaignExtras {

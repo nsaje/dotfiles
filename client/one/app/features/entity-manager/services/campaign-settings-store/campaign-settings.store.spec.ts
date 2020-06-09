@@ -21,7 +21,7 @@ import {ConversionPixelsService} from '../../../../core/conversion-pixels/servic
 import {fakeAsync, tick} from '@angular/core/testing';
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
-import {Credit} from '../../../../core/entities/types/common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 import {DealsService} from '../../../../core/deals/services/deals.service';

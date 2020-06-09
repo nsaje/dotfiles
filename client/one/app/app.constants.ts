@@ -912,11 +912,6 @@ export const APP_CONSTANTS = {
         CONVERSION_GOALS_AVG_COST_PLACEHOLDER:
             'conversion_goals_avg_cost_placeholder',
     },
-    creditLineItemStatus: {
-        SIGNED: 1,
-        PENDING: 2,
-        CANCELED: 3,
-    },
     budgetLineItemStatus: {
         ACTIVE: 1,
         PENDING: 2,

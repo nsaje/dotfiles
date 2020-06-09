@@ -1,4 +1,4 @@
-import {Credit} from '../../../core/entities/types/common/credit';
+import {Credit} from '../../../core/credits/types/credit';
 import {Omit} from '../../../shared/types/omit';
 
 export interface FormattedCredit

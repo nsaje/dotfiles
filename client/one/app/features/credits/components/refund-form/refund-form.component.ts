@@ -39,7 +39,7 @@ export class RefundFormComponent implements OnChanges, OnInit {
     @Input()
     accounts: Account[];
     @Input()
-    isReadOnly: boolean;
+    showLicenseFee: boolean;
     @Input()
     refundErrors: CreditsStoreFieldsErrorsState;
     @Output()

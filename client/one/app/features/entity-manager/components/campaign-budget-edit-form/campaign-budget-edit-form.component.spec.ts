@@ -4,7 +4,7 @@ import {SharedModule} from '../../../../shared/shared.module';
 import {CampaignBudgetEditFormComponent} from './campaign-budget-edit-form.component';
 import {Currency, CreditStatus} from '../../../../app.constants';
 import {SimpleChange} from '@angular/core';
-import {Credit} from '../../../../core/entities/types/common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {APP_CONFIG} from '../../../../app.config';
 

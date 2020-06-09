@@ -18,7 +18,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {FormattedCampaignBudget} from '../../types/formatted-campaign-budget';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
-import {Credit} from '../../../../core/entities/types/common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 
 @Component({
     selector: 'zem-campaign-budgets-list',

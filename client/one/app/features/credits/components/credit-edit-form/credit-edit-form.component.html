@@ -24,6 +24,7 @@
     (valueChange)="onEndDateChange($event)"
 ></zem-date-form-group>
 <zem-select-form-group
+    *ngIf="showLicenseFee"
     class="zem-credit-edit-form__item zem-select-form-group zem-credit-edit-form__select-form-group"
     [isDisabled]="isReadOnly || isSigned"
     [label]="'License Fee (%)'"

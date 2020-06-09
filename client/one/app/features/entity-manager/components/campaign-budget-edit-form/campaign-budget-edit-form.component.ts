@@ -17,7 +17,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import * as moment from 'moment';
-import {Credit} from '../../../../core/entities/types/common/credit';
+import {Credit} from '../../../../core/credits/types/credit';
 import {FormattedCredit} from '../../types/formatted-credit';
 
 @Component({

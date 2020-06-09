@@ -15,6 +15,7 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 import {Currency, CreditStatus} from '../../../../app.constants';
 import {CURRENCIES, APP_CONFIG} from '../../../../app.config';
 import * as moment from '../../../../../../lib/components/moment/moment';
+import * as clone from 'clone';
 
 @Component({
     selector: 'zem-credit-edit-form',
@@ -29,13 +30,15 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
     @Input()
     isSigned: boolean;
     @Input()
+    showLicenseFee: boolean;
+    @Input()
     creditErrors: CreditsStoreFieldsErrorsState;
     @Output()
     creditChange: EventEmitter<ChangeEvent<Credit>> = new EventEmitter<
         ChangeEvent<Credit>
     >();
 
-    licenseFeeItems: {
+    defaultLicenseFeeItems: {
         value: string;
         name: string;
     }[] = [
@@ -43,6 +46,11 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
         {value: '20', name: '20%'},
         {value: '25', name: '25%'},
     ];
+
+    licenseFeeItems: {
+        value: string;
+        name: string;
+    }[];
 
     CURRENCIES = CURRENCIES;
     currencySymbol: string;
@@ -64,6 +72,11 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
                 'MM/DD/YYYY'
             );
         }
+
+        this.licenseFeeItems = this.getLicenseFeeItems(
+            this.credit,
+            clone(this.defaultLicenseFeeItems)
+        );
     }
 
     ngOnChanges(): void {
@@ -160,5 +173,31 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
         name: string;
     } {
         return {value: item, name: `${item}%`};
+    }
+
+    private getLicenseFeeItems(
+        credit: Credit,
+        licenseFeeItems: {
+            value: string;
+            name: string;
+        }[]
+    ): {
+        value: string;
+        name: string;
+    }[] {
+        if (!credit.licenseFee) {
+            return licenseFeeItems;
+        }
+
+        const itemExists = licenseFeeItems.find(licenseFeeItem => {
+            return licenseFeeItem.value === credit.licenseFee;
+        });
+        if (!itemExists) {
+            licenseFeeItems.push({
+                value: credit.licenseFee,
+                name: `${credit.licenseFee}%`,
+            });
+        }
+        return licenseFeeItems;
     }
 }

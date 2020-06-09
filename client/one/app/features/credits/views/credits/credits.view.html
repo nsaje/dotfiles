@@ -9,7 +9,10 @@
             credit items are used by campaign budget items in the order they are
             listed.
         </div>
-        <zem-credits-totals [creditTotals]="state.totals"></zem-credits-totals>
+        <zem-credits-totals
+            [creditTotals]="state.totals"
+            [isLoading]="state.requests.totals.inProgress"
+        ></zem-credits-totals>
     </div>
     <div class="zem-panel zem-panel--with-padding zem-credits-view__panel">
         <div class="zem-credits-view__panel-title">
@@ -27,6 +30,11 @@
             [credits]="state.activeCredits"
             [context]="context"
             [isLoading]="state.requests.listActive.inProgress"
+            [showLicenseFee]="
+                zemPermissions.hasPermission(
+                    'zemauth.can_view_platform_cost_breakdown'
+                )
+            "
             [creditGridType]="creditGridType.ACTIVE"
             [paginationOptions]="activePaginationOptions"
             [paginationCount]="state.requests.listActive.count"
@@ -42,6 +50,11 @@
             [credits]="state.pastCredits"
             [context]="context"
             [isLoading]="state.requests.listPast.inProgress"
+            [showLicenseFee]="
+                zemPermissions.hasPermission(
+                    'zemauth.can_view_platform_cost_breakdown'
+                )
+            "
             [creditGridType]="creditGridType.PAST"
             [paginationOptions]="pastPaginationOptions"
             [paginationCount]="state.requests.listPast.count"
@@ -68,6 +81,11 @@
                     [credit]="state.creditActiveEntity.entity"
                     [isReadOnly]="state.creditActiveEntity.isReadOnly"
                     [isSigned]="state.creditActiveEntity.isSigned"
+                    [showLicenseFee]="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_view_platform_cost_breakdown'
+                        )
+                    "
                     [creditErrors]="state.creditActiveEntity.fieldsErrors"
                     (creditChange)="store.changeCreditActiveEntity($event)"
                 >
@@ -128,6 +146,7 @@
                                     state.creditActiveEntity.isReadOnly ||
                                     state.creditActiveEntity.isSigned
                                 "
+                                [appendTo]="'body'"
                                 (valueChange)="
                                     store.setCreditActiveEntityAccount($event)
                                 "
@@ -207,6 +226,11 @@
                     [credit]="state.creditActiveEntity.entity"
                     [creditScopeState]="state.creditActiveEntity.scopeState"
                     [accounts]="state.accounts"
+                    [showLicenseFee]="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_view_platform_cost_breakdown'
+                        )
+                    "
                     [refundErrors]="state.creditRefundActiveEntity.fieldsErrors"
                     (refundChange)="
                         store.changeCreditRefundActiveEntity($event)

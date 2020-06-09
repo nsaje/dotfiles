@@ -36,6 +36,7 @@
     (valueChange)="onMediaAmountChange($event)"
 ></zem-currency-form-group>
 <zem-content-form-group
+    *ngIf="showLicenseFee"
     class="zem-refund-form__item zem-content-form-group zem-refund-form__text-only-form-group"
     [label]="'Credit license fee'"
 >

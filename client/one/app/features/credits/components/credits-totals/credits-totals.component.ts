@@ -18,6 +18,8 @@ import {getValueInCurrency} from '../../../../shared/helpers/currency.helpers';
 export class CreditsTotalsComponent implements OnChanges {
     @Input()
     creditTotals: CreditTotal[];
+    @Input()
+    isLoading: boolean;
 
     formattedCreditTotals: FormattedCreditTotal[] = [];
 

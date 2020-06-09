@@ -51,6 +51,8 @@ export class CreditsGridComponent implements OnInit, OnChanges {
     context: any;
     @Input()
     isLoading: boolean;
+    @Input()
+    showLicenseFee: boolean;
     @Output()
     paginationChange: EventEmitter<PaginationState> = new EventEmitter<
         PaginationState
@@ -112,6 +114,9 @@ export class CreditsGridComponent implements OnInit, OnChanges {
     private gridApi: GridApi;
 
     ngOnInit() {
+        this.commonColumnDefs[this.creditGridType].find(
+            column => column.field === 'licenseFee'
+        ).hide = !this.showLicenseFee;
         this.columnDefs = this.commonColumnDefs[this.creditGridType];
     }
 

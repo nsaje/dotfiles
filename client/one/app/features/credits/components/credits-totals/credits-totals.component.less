@@ -5,6 +5,7 @@
 }
 
 .zem-credits-totals__overview {
+    position: relative;
     border-top: 1px solid @color--lighter-neutral;
     padding: @spacing--default 0 0 0;
 }
@@ -17,4 +18,16 @@
         font-weight: 500;
         font-size: 18px;
     }
+}
+
+.zem-credits-total__loader {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: auto;
+    background-color: rgba(0, 0, 0, 0.05);
 }
