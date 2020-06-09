@@ -2,12 +2,13 @@ from rest_framework import permissions
 from rest_framework.response import Response
 
 import core.models
-import restapi.access
 import utils.exc
+import zemauth.access
 from core.features.bcm.refund_line_item import exceptions
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.creditrefund.internal import serializers
+from zemauth.features.entity_permission import Permission
 
 
 class CanManageCreditRefundsPermission(permissions.BasePermission):
@@ -19,13 +20,13 @@ class CreditRefundViewSet(RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, CanManageCreditRefundsPermission)
 
     def get(self, request, credit_id, refund_id):
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
-        refund = restapi.access.get_refund_line_item(request.user, refund_id, credit=credit)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.READ, credit_id)
+        refund = zemauth.access.get_refund_line_item(refund_id, credit)
         return self.response_ok(serializers.CreditRefundSerializer(refund, context={"request": request}).data)
 
     def remove(self, request, credit_id, refund_id):
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
-        refund = restapi.access.get_refund_line_item(request.user, refund_id, credit=credit)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.WRITE, credit_id)
+        refund = zemauth.access.get_refund_line_item(refund_id, credit)
         self._update_refund(refund.delete)
         return Response(None, status=204)
 
@@ -37,13 +38,13 @@ class CreditRefundViewSet(RESTAPIBaseViewSet):
         account_id = qpe.validated_data.get("account_id")
 
         if credit_id is not None:
-            credit = restapi.access.get_credit_line_item(request.user, credit_id)
+            credit = zemauth.access.get_credit_line_item(request.user, Permission.READ, credit_id)
             refunds_qs = core.features.bcm.refund_line_item.RefundLineItem.objects.filter_by_credit(credit)
         elif account_id is not None:
-            account = restapi.access.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
             refunds_qs = core.features.bcm.refund_line_item.RefundLineItem.objects.filter_by_account(account)
         elif agency_id is not None:
-            agency = restapi.access.get_agency(request.user, agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             refunds_qs = core.features.bcm.refund_line_item.RefundLineItem.objects.filter_by_agency(agency)
         else:
             raise utils.exc.ValidationError(
@@ -57,7 +58,7 @@ class CreditRefundViewSet(RESTAPIBaseViewSet):
         )
 
     def create(self, request, credit_id):
-        credit = restapi.access.get_credit_line_item(request.user, credit_id)
+        credit = zemauth.access.get_credit_line_item(request.user, Permission.WRITE, credit_id)
         serializer = serializers.CreditRefundSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         new_refund = self._update_refund(

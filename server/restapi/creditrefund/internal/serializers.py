@@ -2,10 +2,11 @@ import decimal
 
 import rest_framework.serializers
 
-import restapi.access
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 
 class CreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -24,7 +25,9 @@ class CreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
-        value["account"] = restapi.access.get_account(self.context["request"].user, value.get("account_id"))
+        value["account"] = zemauth.access.get_account(
+            self.context["request"].user, Permission.WRITE, value.get("account_id")
+        )
         return value
 
 
