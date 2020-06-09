@@ -11,13 +11,16 @@ import restapi.common.views_base_test
 from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyPublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        super(PublisherBlacklistTest, self).setUp()
+        super(LegacyPublisherBlacklistTest, self).setUp()
         self.test_request = get_request_mock(self.user)
-        self.test_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        self.source = magic_mixer.blend(core.models.Source)
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.test_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
 
     def _get_resp_json(self, ad_group_id):
         r = self.client.get(reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": ad_group_id}))
@@ -25,20 +28,19 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         return resp_json
 
     def test_adgroups_publishers_list(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group,
         )
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn2.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn2.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group.campaign,
         )
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn3.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn3.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group.campaign.account,
         )
 
@@ -50,24 +52,35 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             resp_json["data"],
             [
-                {"name": "cnn.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None},
+                {
+                    "name": "cnn.com",
+                    "source": self.source.bidder_slug,
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "modifier": None,
+                },
                 {
                     "name": "cnn2.com",
-                    "source": "gumgum",
+                    "source": self.source.bidder_slug,
                     "status": "BLACKLISTED",
                     "level": "CAMPAIGN",
                     "modifier": None,
                 },
-                {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
+                {
+                    "name": "cnn3.com",
+                    "source": self.source.bidder_slug,
+                    "status": "BLACKLISTED",
+                    "level": "ACCOUNT",
+                    "modifier": None,
+                },
             ],
         )
 
     def test_adgroups_placements_list(self):
         test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn.com", "placement": "plac", "source": self.source, "include_subdomains": True}],
             self.test_ad_group,
         )
 
@@ -82,7 +95,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
                 {
                     "name": "cnn.com",
                     "placement": "plac",
-                    "source": "gumgum",
+                    "source": self.source.bidder_slug,
                     "status": "BLACKLISTED",
                     "level": "ADGROUP",
                     "modifier": None,
@@ -91,10 +104,9 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_adgroups_placements_list_no_permission(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn.com", "placement": "plac", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn.com", "placement": "plac", "source": self.source, "include_subdomains": True}],
             self.test_ad_group,
         )
 
@@ -105,15 +117,41 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         resp_json = json.loads(r.content)
         self.assertEqual(
             resp_json["data"],
-            [{"name": "cnn.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None}],
+            [
+                {
+                    "name": "cnn.com",
+                    "source": self.source.bidder_slug,
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "modifier": None,
+                }
+            ],
         )
 
     @mock.patch("utils.k1_helper.update_ad_group")
     def test_adgroups_publishers_put(self, mock_k1_update):
         test_blacklist = [
-            {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None},
-            {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN", "modifier": None},
-            {"name": "cnn4.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
+            {
+                "name": "cnn2.com",
+                "source": self.source.bidder_slug,
+                "status": "BLACKLISTED",
+                "level": "ADGROUP",
+                "modifier": None,
+            },
+            {
+                "name": "cnn3.com",
+                "source": self.source.bidder_slug,
+                "status": "BLACKLISTED",
+                "level": "CAMPAIGN",
+                "modifier": None,
+            },
+            {
+                "name": "cnn4.com",
+                "source": self.source.bidder_slug,
+                "status": "BLACKLISTED",
+                "level": "ACCOUNT",
+                "modifier": None,
+            },
         ]
         self.test_ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
 
@@ -140,9 +178,9 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
     def test_adgroups_publishers_put_no_modifier(self):
         # The modifier attribute is not required on input.
         test_blacklist = [
-            {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP"},
-            {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN"},
-            {"name": "cnn4.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT"},
+            {"name": "cnn2.com", "source": self.source.bidder_slug, "status": "BLACKLISTED", "level": "ADGROUP"},
+            {"name": "cnn3.com", "source": self.source.bidder_slug, "status": "BLACKLISTED", "level": "CAMPAIGN"},
+            {"name": "cnn4.com", "source": self.source.bidder_slug, "status": "BLACKLISTED", "level": "ACCOUNT"},
         ]
         r = self.client.put(
             reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
@@ -160,27 +198,44 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
 
     def test_adgroups_publishers_put_unlist(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group,
         )
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn2.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn2.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group.campaign,
         )
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "cnn3.com", "source": source, "include_subdomains": True}],
+            [{"publisher": "cnn3.com", "source": self.source, "include_subdomains": True}],
             self.test_ad_group.campaign.account,
         )
 
         put_data = [
-            {"name": "cnn.com", "source": "gumgum", "status": "ENABLED", "level": "ADGROUP", "modifier": None},
-            {"name": "cnn2.com", "source": "gumgum", "status": "ENABLED", "level": "CAMPAIGN", "modifier": None},
-            {"name": "cnn3.com", "source": "gumgum", "status": "ENABLED", "level": "ACCOUNT", "modifier": None},
+            {
+                "name": "cnn.com",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "level": "ADGROUP",
+                "modifier": None,
+            },
+            {
+                "name": "cnn2.com",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "level": "CAMPAIGN",
+                "modifier": None,
+            },
+            {
+                "name": "cnn3.com",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "level": "ACCOUNT",
+                "modifier": None,
+            },
         ]
         r = self.client.put(
             reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
@@ -193,32 +248,54 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], [])
 
     def test_modifiers_get(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.publisher_groups.blacklist_publishers(
             self.test_request,
-            [{"publisher": "testpub1", "source": source, "include_subdomains": True}],
+            [{"publisher": "testpub1", "source": self.source, "include_subdomains": True}],
             self.test_ad_group,
         )
         core.features.bid_modifiers.set(
-            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", source, 0.5
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", self.source, 0.5
         )
         core.features.bid_modifiers.set(
-            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", source, 4.6
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", self.source, 4.6
         )
 
         self.assertEqual(
             self._get_resp_json(self.test_ad_group.id)["data"],
             [
-                {"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "BLACKLISTED", "modifier": 0.5},
-                {"level": "ADGROUP", "name": "testpub2", "source": "gumgum", "status": "ENABLED", "modifier": 4.6},
+                {
+                    "level": "ADGROUP",
+                    "name": "testpub1",
+                    "source": self.source.bidder_slug,
+                    "status": "BLACKLISTED",
+                    "modifier": 0.5,
+                },
+                {
+                    "level": "ADGROUP",
+                    "name": "testpub2",
+                    "source": self.source.bidder_slug,
+                    "status": "ENABLED",
+                    "modifier": 4.6,
+                },
             ],
         )
 
     def test_modifiers_set(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         test_put = [
-            {"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": 0.5},
-            {"level": "ADGROUP", "name": "testpub2", "source": "gumgum", "status": "ENABLED", "modifier": 4.6},
+            {
+                "level": "ADGROUP",
+                "name": "testpub1",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "modifier": 0.5,
+            },
+            {
+                "level": "ADGROUP",
+                "name": "testpub2",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "modifier": 4.6,
+            },
         ]
         r = self.client.put(
             reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
@@ -235,20 +312,27 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
                 )
             ),
             [
-                {"publisher": "testpub1", "source": source, "modifier": 0.5},
-                {"publisher": "testpub2", "source": source, "modifier": 4.6},
+                {"publisher": "testpub1", "source": self.source, "modifier": 0.5},
+                {"publisher": "testpub2", "source": self.source, "modifier": 4.6},
             ],
         )
 
     def test_modifiers_unset(self):
-        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.features.bid_modifiers.set(
-            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", source, 0.5
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub1", self.source, 0.5
         )
         core.features.bid_modifiers.set(
-            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", source, 4.6
+            self.test_ad_group, core.features.bid_modifiers.BidModifierType.PUBLISHER, "testpub2", self.source, 4.6
         )
-        test_put = [{"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": None}]
+        test_put = [
+            {
+                "level": "ADGROUP",
+                "name": "testpub1",
+                "source": self.source.bidder_slug,
+                "status": "ENABLED",
+                "modifier": None,
+            }
+        ]
         r = self.client.put(
             reverse("restapi.publishers.v1:publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
             data=test_put,
@@ -263,7 +347,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
                     self.test_ad_group, include_types=[core.features.bid_modifiers.BidModifierType.PUBLISHER]
                 )
             ),
-            [{"publisher": "testpub2", "source": source, "modifier": 4.6}],
+            [{"publisher": "testpub2", "source": self.source, "modifier": 4.6}],
         )
 
     def test_modifiers_set_no_source(self):
@@ -315,3 +399,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             new_bm_list.append(new_bm)
 
         return new_bm_list
+
+
+class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITestCase, LegacyPublisherBlacklistTest):
+    pass

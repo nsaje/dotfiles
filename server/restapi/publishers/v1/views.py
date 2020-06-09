@@ -5,18 +5,19 @@ import core.features.bid_modifiers
 import core.features.publisher_groups.service
 import dash.constants
 import dash.views.helpers
-import restapi.access
 import restapi.common.views_base
+import zemauth.access
 from restapi.publishers.v1 import serializers
 from utils import exc
 from utils import k1_helper
+from zemauth.features.entity_permission import Permission
 
 
 class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def list(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         items = self._get_publisher_group_items(ad_group, request.user)
         items = self._augment_with_bid_modifiers(items, ad_group)
         serializer = serializers.PublisherSerializer(items, many=True, context={"request": request})
@@ -103,7 +104,9 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return items
 
     def put(self, request, ad_group_id):
-        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)  # validate ad group is allowed
+        ad_group = zemauth.access.get_ad_group(
+            request.user, Permission.WRITE, ad_group_id
+        )  # validate ad group is allowed
         serializer = serializers.PublisherSerializer(data=request.data, many=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         self._put_handle_entries(request, ad_group, serializer.validated_data)
