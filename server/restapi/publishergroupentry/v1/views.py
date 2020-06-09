@@ -2,11 +2,12 @@ import rest_framework.viewsets
 from rest_framework.response import Response
 
 import core.features.publisher_groups
-import restapi.access
+import zemauth.access
 from restapi.common.pagination import StandardPagination
 from restapi.common.permissions import CanEditPublisherGroupsPermission
 from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.publishergroupentry.v1 import serializers
+from zemauth.features.entity_permission import Permission
 
 
 class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelViewSet):
@@ -25,9 +26,9 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
             pk=self.kwargs["publisher_group_id"]
         )
         if publisher_group.account_id is not None:
-            restapi.access.get_account(self.request.user, publisher_group.account_id)
+            zemauth.access.get_account(self.request.user, Permission.READ, publisher_group.account_id)
         else:
-            restapi.access.get_agency(self.request.user, publisher_group.agency_id)
+            zemauth.access.get_agency(self.request.user, Permission.READ, publisher_group.agency_id)
         return publisher_group.entries.all().select_related("source")
 
     def create(self, request, *args, **kwargs):
@@ -43,7 +44,15 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
             pk=self.kwargs["publisher_group_id"]
         )
         if publisher_group.account_id is not None:
-            restapi.access.get_account(self.request.user, publisher_group.account_id)
+            zemauth.access.get_account(self.request.user, Permission.WRITE, publisher_group.account_id)
         else:
-            restapi.access.get_agency(self.request.user, publisher_group.agency_id)
+            zemauth.access.get_agency(self.request.user, Permission.WRITE, publisher_group.agency_id)
         serializer.save(publisher_group_id=self.kwargs["publisher_group_id"])
+
+    def update(self, request, *args, **kwargs):
+        zemauth.access.get_publisher_group(request.user, Permission.WRITE, kwargs["publisher_group_id"])
+        return super().update(request, args, kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        zemauth.access.get_publisher_group(request.user, Permission.WRITE, kwargs["publisher_group_id"])
+        return super().destroy(request, args, kwargs)
