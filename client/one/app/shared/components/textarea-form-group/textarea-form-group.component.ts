@@ -38,6 +38,8 @@ export class TextAreaFormGroupComponent implements OnInit, OnChanges {
     errors: string[];
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    inputFocus = new EventEmitter<null>();
 
     model: string;
 
@@ -53,5 +55,9 @@ export class TextAreaFormGroupComponent implements OnInit, OnChanges {
 
     onBlur($event: string) {
         this.valueChange.emit($event);
+    }
+
+    onFocus() {
+        this.inputFocus.emit();
     }
 }

@@ -175,12 +175,10 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     }
 
     updateSendEmailSubject(sendEmailSubject: string) {
-        this.shouldAppendMacroToSubject = true;
         this.sendEmailSubjectChange.emit(sendEmailSubject);
     }
 
     updateSendEmailBody(sendEmailBody: string) {
-        this.shouldAppendMacroToSubject = false;
         this.sendEmailBodyChange.emit(sendEmailBody);
     }
 
@@ -190,6 +188,10 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
 
     selectMacro(macro: Macro) {
         this.selectedMacro = macro;
+    }
+
+    setShouldAppendMacroToSubject(shouldAppendToSubject: boolean) {
+        this.shouldAppendMacroToSubject = shouldAppendToSubject;
     }
 
     appendSelectedMacro() {

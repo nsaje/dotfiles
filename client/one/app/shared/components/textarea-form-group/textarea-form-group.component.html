@@ -19,6 +19,7 @@
             [isFocused]="isFocused"
             [hasError]="errors && errors.length > 0"
             (inputBlur)="onBlur($event)"
+            (inputFocus)="onFocus()"
         ></zem-textarea>
         <div
             class="zem-form-group__content-item zem-message zem-message--error"

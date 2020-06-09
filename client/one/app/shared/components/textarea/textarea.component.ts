@@ -34,6 +34,8 @@ export class TextAreaComponent implements OnChanges {
     valueChange = new EventEmitter<string>();
     @Output()
     inputBlur = new EventEmitter<string>();
+    @Output()
+    inputFocus = new EventEmitter<null>();
 
     model: string;
 
@@ -51,5 +53,9 @@ export class TextAreaComponent implements OnChanges {
         if (this.model !== this.value) {
             this.inputBlur.emit(this.model);
         }
+    }
+
+    onFocus() {
+        this.inputFocus.emit();
     }
 }
