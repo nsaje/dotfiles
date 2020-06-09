@@ -8,14 +8,16 @@ import core.features.publisher_groups
 import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class PublisherGroupTest(RESTAPITest):
+class LegacyPublisherGroupTest(RESTAPITest):
     def test_list(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
 
         publisher_group_1 = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, agency=agency, default_include_subdomains=True
@@ -67,9 +69,9 @@ class PublisherGroupTest(RESTAPITest):
         )
 
     def test_list_with_agency(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
-        account2 = magic_mixer.blend(core.models.Account, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        account2 = self.mix_account(self.user, permissions=[Permission.READ])
 
         publisher_groups_1 = magic_mixer.cycle(3).blend(core.features.publisher_groups.PublisherGroup, agency=agency)
         publisher_groups_2 = magic_mixer.cycle(4).blend(core.features.publisher_groups.PublisherGroup, account=account)
@@ -85,9 +87,9 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
     def test_list_with_account(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
-        account2 = magic_mixer.blend(core.models.account.Account, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        account2 = self.mix_account(self.user, permissions=[Permission.READ])
 
         publisher_groups_1 = magic_mixer.cycle(3).blend(core.features.publisher_groups.PublisherGroup, agency=agency)
         publisher_groups_2 = magic_mixer.cycle(4).blend(core.features.publisher_groups.PublisherGroup, account=account)
@@ -103,8 +105,8 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
     def test_list_without_agency_and_account(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
 
         magic_mixer.cycle(3).blend(core.features.publisher_groups.PublisherGroup, agency=agency)
         magic_mixer.cycle(4).blend(core.features.publisher_groups.PublisherGroup, account=account)
@@ -115,9 +117,9 @@ class PublisherGroupTest(RESTAPITest):
         self.assertIn(error_message, resp_json["details"])
 
     def test_list_with_keyword(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
-        account2 = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        account2 = magic_mixer.blend(core.models.Account, agency=agency)
 
         publisher_groups_1 = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, agency=agency, name="test keyword 2"
@@ -140,7 +142,7 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
     def test_list_without_implicit_publisher_groups(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, agency=agency, name="implicit publisher group", implicit=True
         )
@@ -153,7 +155,7 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(len(response["data"]), 0)
 
     def test_list_pagination(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         publisher_groups = magic_mixer.cycle(20).blend(core.features.publisher_groups.PublisherGroup, agency=agency)
 
         r = self.client.get(
@@ -191,7 +193,7 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
     def test_remove(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         publisher_group = magic_mixer.blend(
             core.features.publisher_groups.PublisherGroup, agency=agency, account=None, name="Publisher group test"
         )
@@ -217,14 +219,16 @@ class PublisherGroupTest(RESTAPITest):
         self.assertEqual(r.status_code, 404)
 
 
-class AddToPublisherGroupTest(RESTAPITest):
+class PublisherGroupTest(RESTAPITestCase, LegacyPublisherGroupTest):
+    pass
+
+
+class LegacyAddToPublisherGroupTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         self.source = magic_mixer.blend(core.models.Source)
-        self.account = magic_mixer.blend(core.models.Account)
-        self.account.users.add(self.user)
-        self.agency = magic_mixer.blend(core.models.Agency)
-        self.agency.users.add(self.user)
+        self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.other_account = magic_mixer.blend(core.models.Account)
         self.publisher_1 = "example.com"
         self.publisher_2 = "publisher.com"
@@ -386,7 +390,7 @@ class AddToPublisherGroupTest(RESTAPITest):
         )
         self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
         response = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(response["details"], {"accountId": ["Account matching query does not exist."]})
+        self.assertEqual(response["details"], {"accountId": ["Account does not exist"]})
 
     def test_add_to_both_agency_and_account(self):
         request_data = {
@@ -598,11 +602,14 @@ class AddToPublisherGroupTest(RESTAPITest):
         self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
 
 
-class PublisherGroupConnectionsTest(RESTAPITest):
+class AddToPublisherGroupTest(RESTAPITestCase, LegacyAddToPublisherGroupTest):
+    pass
+
+
+class LegacyPublisherGroupConnectionsTest(RESTAPITest):
     def setUp(self):
         super().setUp()
-        self.agency = magic_mixer.blend(core.models.Agency)
-        self.agency.users.add(self.user)
+        self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
@@ -737,3 +744,7 @@ class PublisherGroupConnectionsTest(RESTAPITest):
         self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
         response = self.assertResponseError(r, "ValidationError")
         self.assertEqual(response["details"], {"publisherGroupId": ["Publisher group does not exist"]})
+
+
+class PublisherGroupConnectionsTest(RESTAPITestCase, LegacyPublisherGroupConnectionsTest):
+    pass

@@ -4,6 +4,7 @@ from decimal import Decimal
 from functools import reduce
 from typing import Callable
 from typing import List
+from typing import Type
 from typing import Union
 
 from django.conf import settings
@@ -18,6 +19,9 @@ from django.http import HttpRequest
 from rest_framework.request import Request as DrfRequest
 from typing_extensions import TypedDict
 
+import utils.exc
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import history_helpers
 from dash import models
@@ -25,6 +29,7 @@ from dash.views import helpers
 from utils import email_helper
 from utils import k1_helper
 from utils import zlogging
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 from . import connection_definitions
@@ -501,17 +506,33 @@ def get_or_create_publisher_group(
     implicit=False,
 ):
     if publisher_group_id is not None:
-        return (
+        queryset_user_perm = (
             models.PublisherGroup.objects.filter_by_user(request.user)
             .filter(agency_id=agency_id)
             .filter(account_id=account_id)
             .filter(default_include_subdomains=default_include_subdomains)
-            .get(id=publisher_group_id),
-            False,
         )
+        queryset_entity_perm = (
+            models.PublisherGroup.objects.filter_by_entity_permission(request.user, Permission.WRITE)
+            .filter(agency_id=agency_id)
+            .filter(account_id=account_id)
+            .filter(default_include_subdomains=default_include_subdomains)
+        )
+        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.WRITE, queryset_user_perm, queryset_entity_perm, entity_id=publisher_group_id
+        )
+        return queryset.get(id=publisher_group_id), False
 
-    agency = models.Agency.objects.filter_by_user(request.user).get(id=agency_id) if agency_id is not None else None
-    account = models.Account.objects.filter_by_user(request.user).get(id=account_id) if account_id is not None else None
+    try:
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+    except utils.exc.MissingDataError as e:
+        raise models.Agency.DoesNotExist(str(e))
+    try:
+        account = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
+    except utils.exc.MissingDataError as e:
+        raise models.Account.DoesNotExist(str(e))
 
     return (
         models.PublisherGroup.objects.create(
@@ -548,13 +569,23 @@ def get_publisher_group_connections(
     query_sets: List[QuerySet]
 
     if show_unauthorized:
+
+        def get_model_access_qs(
+            user: User,
+            model: Union[Type[models.Agency], Type[models.Account], Type[models.Campaign], Type[models.AdGroup]],
+        ) -> QuerySet:
+            queryset = model.objects.filter(id=OuterRef("id"))
+            if user.has_perm("zemauth.fea_use_entity_permission"):
+                return queryset.filter_by_entity_permission(user, Permission.READ)
+            return queryset.filter_by_user(user)
+
         query_sets = [
             (
                 models.Agency.objects.all()
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()),
-                    user_access=Exists(models.Agency.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Agency)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -564,7 +595,7 @@ def get_publisher_group_connections(
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()),
-                    user_access=Exists(models.Agency.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Agency)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -574,7 +605,7 @@ def get_publisher_group_connections(
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()),
-                    user_access=Exists(models.Account.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Account)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -584,7 +615,7 @@ def get_publisher_group_connections(
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()),
-                    user_access=Exists(models.Account.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Account)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -594,7 +625,7 @@ def get_publisher_group_connections(
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()),
-                    user_access=Exists(models.Campaign.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Campaign)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -604,7 +635,7 @@ def get_publisher_group_connections(
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()),
-                    user_access=Exists(models.Campaign.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.Campaign)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -614,7 +645,7 @@ def get_publisher_group_connections(
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()),
-                    user_access=Exists(models.AdGroup.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.AdGroup)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
@@ -624,16 +655,25 @@ def get_publisher_group_connections(
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()),
-                    user_access=Exists(models.AdGroup.objects.filter(id=OuterRef("id")).filter_by_user(user)),
+                    user_access=Exists(get_model_access_qs(user, models.AdGroup)),
                 )
                 .order_by("id")
                 .values("id", "name", "location", "user_access")
             ),
         ]
     else:
+
+        def get_model_access_qs(
+            user: User,
+            model: Union[Type[models.Agency], Type[models.Account], Type[models.Campaign], Type[models.AdGroup]],
+        ) -> QuerySet:
+            if user.has_perm("zemauth.fea_use_entity_permission"):
+                return model.objects.filter_by_entity_permission(user, Permission.READ)
+            return model.objects.filter_by_user(user)
+
         query_sets = [
             (
-                models.Agency.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Agency)
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_BLACKLIST, output_field=CharField()),
@@ -643,7 +683,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.Agency.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Agency)
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AGENCY_WHITELIST, output_field=CharField()),
@@ -653,7 +693,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.Account.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Account)
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_BLACKLIST, output_field=CharField()),
@@ -663,7 +703,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.Account.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Account)
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_ACCOUNT_WHITELIST, output_field=CharField()),
@@ -673,7 +713,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.Campaign.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Campaign)
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_BLACKLIST, output_field=CharField()),
@@ -683,7 +723,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.Campaign.objects.filter_by_user(user)
+                get_model_access_qs(user, models.Campaign)
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_CAMPAIGN_WHITELIST, output_field=CharField()),
@@ -693,7 +733,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.AdGroup.objects.filter_by_user(user)
+                get_model_access_qs(user, models.AdGroup)
                 .filter(settings__blacklist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST, output_field=CharField()),
@@ -703,7 +743,7 @@ def get_publisher_group_connections(
                 .values("id", "name", "location", "user_access")
             ),
             (
-                models.AdGroup.objects.filter_by_user(user)
+                get_model_access_qs(user, models.AdGroup)
                 .filter(settings__whitelist_publisher_groups__contains=[publisher_group_id])
                 .annotate(
                     location=Value(connection_definitions.CONNECTION_TYPE_AD_GROUP_WHITELIST, output_field=CharField()),
@@ -722,7 +762,13 @@ def remove_publisher_group_connection(request: Request, publisher_group_id: int,
     if connection_type is None:
         raise connection_definitions.InvalidConnectionType("Invalid location")
 
-    entity = connection_type["model"].objects.filter_by_user(request.user).get(id=entity_id)
+    queryset_user_perm = connection_type["model"].objects.filter_by_user(request.user)
+    queryset_entity_perm = connection_type["model"].objects.filter_by_entity_permission(request.user, Permission.WRITE)
+    queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+        request.user, Permission.WRITE, queryset_user_perm, queryset_entity_perm, entity_id=entity_id
+    )
+
+    entity = queryset.get(id=entity_id)
     publisher_group_ids = getattr(entity.settings, connection_type["attribute"]).copy()
     publisher_group_ids.remove(publisher_group_id)
 

@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Union
 
 from django.db import models
 from rest_framework import pagination
@@ -16,7 +17,7 @@ def log_differences_and_get_queryset(
     permission: str,
     user_permission_queryset: models.QuerySet,
     entity_permission_queryset: models.QuerySet,
-    entity_id: str = None,
+    entity_id: Union[int, str] = None,
 ) -> models.QuerySet:
     if entity_id is not None:
         _log_single(user, permission, user_permission_queryset, entity_permission_queryset, entity_id)
@@ -47,7 +48,7 @@ def _log_single(
     permission: str,
     user_permission_queryset: models.QuerySet,
     entity_permission_queryset: models.QuerySet,
-    entity_id: str,
+    entity_id: Union[int, str],
 ):
     try:
         row_id_by_user_permission = user_permission_queryset.values_list("id", flat=True).get(id=int(entity_id))

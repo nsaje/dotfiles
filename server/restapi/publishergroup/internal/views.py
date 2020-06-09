@@ -7,10 +7,11 @@ from rest_framework import permissions
 
 import core.features.publisher_groups
 import dash.models
-import restapi.access
 import utils.exc
+import zemauth.access
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -31,11 +32,11 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
         ).annotate_entities_count()
 
         if account_id is not None:
-            account = restapi.access.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
             publisher_groups_items = publisher_groups_items.filter_by_account(account)
 
         elif agency_id is not None:
-            agency = restapi.access.get_agency(request.user, agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             publisher_groups_items = publisher_groups_items.filter(Q(agency=agency) | Q(account__agency=agency))
 
         else:
@@ -55,7 +56,7 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet):
         )
 
     def remove(self, request, publisher_group_id):
-        publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+        publisher_group = zemauth.access.get_publisher_group(request.user, Permission.WRITE, publisher_group_id)
         publisher_group.delete(request)
         return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)
 
@@ -94,13 +95,13 @@ class PublisherGroupConnectionsViewSet(RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def list_connections(self, request, publisher_group_id):
-        publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+        publisher_group = zemauth.access.get_publisher_group(request.user, Permission.READ, publisher_group_id)
         connections = core.features.publisher_groups.get_publisher_group_connections(request.user, publisher_group.id)
         return self.response_ok(serializers.PublisherGroupConnectionSerializer(connections, many=True).data)
 
     def remove_connection(self, request, publisher_group_id, location, entity_id):
         try:
-            publisher_group = restapi.access.get_publisher_group(request.user, publisher_group_id)
+            publisher_group = zemauth.access.get_publisher_group(request.user, Permission.WRITE, publisher_group_id)
             core.features.publisher_groups.remove_publisher_group_connection(
                 request, publisher_group.id, location, entity_id
             )

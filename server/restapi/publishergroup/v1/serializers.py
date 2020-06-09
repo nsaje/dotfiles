@@ -1,9 +1,10 @@
 import rest_framework.serializers
 
 import core.features.publisher_groups
-import restapi.access
 import restapi.serializers.fields
+import zemauth.access
 from restapi.serializers import serializers
+from zemauth.features.entity_permission import Permission
 
 
 class PublisherGroupSerializer(serializers.DataNodeSerializerMixin, rest_framework.serializers.ModelSerializer):
@@ -20,7 +21,9 @@ class PublisherGroupSerializer(serializers.DataNodeSerializerMixin, rest_framewo
         return core.features.publisher_groups.PublisherGroup.objects.create(
             validated_data["request"],
             name=validated_data["name"],
-            account=restapi.access.get_account(validated_data["request"].user, validated_data["account_id"]),
+            account=zemauth.access.get_account(
+                validated_data["request"].user, Permission.WRITE, validated_data["account_id"]
+            ),
         )
 
     def update(self, instance, validated_data):
