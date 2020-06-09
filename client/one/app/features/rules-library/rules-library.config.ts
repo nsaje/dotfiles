@@ -91,7 +91,7 @@ export const RULE_TARGET_TYPES = [
         ],
     },
     {
-        label: 'Ad group / sources',
+        label: 'Ad group / media sources',
         value: RuleTargetType.AdGroupSource,
         availableActions: [
             RuleActionType.IncreaseBidModifier,
@@ -103,7 +103,7 @@ export const RULE_TARGET_TYPES = [
 
 export const RULE_ACTIONS_OPTIONS = {
     [RuleActionType.IncreaseBid]: {
-        label: 'Increase bid',
+        label: 'Increase bid by',
         type: RuleActionType.IncreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -117,7 +117,7 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Bid will not increase past this value.',
     },
     [RuleActionType.DecreaseBid]: {
-        label: 'Decrease bid',
+        label: 'Decrease bid by',
         type: RuleActionType.DecreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -131,7 +131,9 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Bid will not decrease past this value.',
     },
     [RuleActionType.IncreaseBidModifier]: {
-        label: 'Increase bid modifier',
+        label: 'Increase bid modifier by',
+        description:
+            'The number of percentage points by which the bid will increase or decrease whenever the rule is applied.',
         type: RuleActionType.IncreaseBidModifier,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -145,7 +147,7 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Bid modifier will not increase past this value.',
     },
     [RuleActionType.DecreaseBidModifier]: {
-        label: 'Decrease bid modifier',
+        label: 'Decrease bid modifier by',
         type: RuleActionType.DecreaseBidModifier,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -159,7 +161,7 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Bid modifier will not decrease past this value.',
     },
     [RuleActionType.IncreaseDailyBudget]: {
-        label: 'Increase daily budget',
+        label: 'Increase daily budget by',
         type: RuleActionType.IncreaseDailyBudget,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -173,7 +175,7 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Daily budget will not increase past this value.',
     },
     [RuleActionType.DecreaseDailyBudget]: {
-        label: 'Decrease daily budget',
+        label: 'Decrease daily budget by',
         type: RuleActionType.DecreaseDailyBudget,
         frequencies: [
             RuleActionFrequency.Day1,

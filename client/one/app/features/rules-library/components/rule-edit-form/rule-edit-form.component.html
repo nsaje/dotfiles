@@ -33,6 +33,9 @@
         >
         </zem-text-form-group>
     </div>
+
+    <hr />
+
     <div class="zem-rule-edit-form__section">
         <div class="zem-rule-edit-form__section-title">
             Set action for your rule:
@@ -71,6 +74,9 @@
             (publisherGroupsOpen)="store.loadAvailablePublisherGroups(null)"
         ></zem-rule-edit-form-action>
     </div>
+
+    <hr />
+
     <div class="zem-rule-edit-form__section">
         <div
             class="zem-rule-edit-form__section-title"
@@ -107,6 +113,9 @@
             [appendTo]="'body'"
         ></zem-select-form-group>
     </div>
+
+    <hr />
+
     <div
         class="zem-rule-edit-form__section"
         *ngIf="state.rule.actionType !== RuleActionType.SendEmail"
