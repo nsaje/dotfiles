@@ -17,15 +17,13 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
     templateUrl: './settings-drawer-footer.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsDrawerFooterComponent implements OnChanges {
+export class SettingsDrawerFooterComponent {
     @Input()
     isNewEntity: boolean;
     @Input()
     entityType: EntityType;
     @Input()
     userHasPermissionToArchive: boolean;
-    @Input()
-    isArchiveActionInternal: boolean;
     @Input()
     isLoading: boolean;
     @Input()
@@ -38,14 +36,4 @@ export class SettingsDrawerFooterComponent implements OnChanges {
     archive = new EventEmitter<void>();
 
     EntityType = EntityType;
-
-    disabledArchiveActionText: string;
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.entityType) {
-            this.disabledArchiveActionText = messagesHelpers.getDisabledArchiveActionText(
-                this.entityType
-            );
-        }
-    }
 }

@@ -22,19 +22,6 @@ export function getManageRtbSourcesAsOneChangeConfirmMessage(
     }
 }
 
-export function getDisabledArchiveActionText(entityType: EntityType) {
-    if (entityType === EntityType.ACCOUNT) {
-        return "All of the account's campaigns have to be paused in order to archive the account.";
-    }
-    if (entityType === EntityType.CAMPAIGN) {
-        return "All of the campaign's ad groups have to be paused in order to archive the campaign.";
-    }
-    if (entityType === EntityType.AD_GROUP) {
-        return 'An ad group has to be paused for 3 days in order to archive it.';
-    }
-    return null;
-}
-
 export function getAutopilotChangeConfirmMessage(
     autopilotState: boolean
 ): string {

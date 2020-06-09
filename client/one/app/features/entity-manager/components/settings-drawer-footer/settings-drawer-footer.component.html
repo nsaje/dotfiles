@@ -16,8 +16,6 @@
             </button>
             <div
                 *ngIf="!isNewEntity && userHasPermissionToArchive"
-                [zemInternalFeature]="isArchiveActionInternal"
-                [zemPopover]="disabledArchiveActionText"
                 placement="top"
                 triggers="mouseenter:mouseleave"
             >

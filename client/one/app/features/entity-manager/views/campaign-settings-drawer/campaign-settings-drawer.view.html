@@ -609,11 +609,6 @@
             [userHasPermissionToArchive]="
                 zemPermissions.hasPermission('zemauth.archive_restore_entity')
             "
-            [isArchiveActionInternal]="
-                zemPermissions.isPermissionInternal(
-                    'zemauth.archive_restore_entity'
-                )
-            "
             [isLoading]="
                 state.requests.create.inProgress ||
                 state.requests.edit.inProgress
