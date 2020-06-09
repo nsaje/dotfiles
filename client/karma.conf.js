@@ -47,6 +47,8 @@ module.exports = function karmaConfig(config) {
 
         singleRun: true,
 
+        concurrency: 1, // How many browsers Karma launches in parallel.
+
         webpack: require('./webpack.config'),
 
         // Hide webpack build information from output
