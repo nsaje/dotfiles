@@ -30,7 +30,7 @@ class RuleInstanceTest(TestCase):
                 {
                     "left_operand_window": constants.MetricWindow.LAST_30_DAYS,
                     "left_operand_type": constants.MetricType.TOTAL_SPEND,
-                    "left_operand_modifier": 1.0,
+                    "left_operand_modifier": None,
                     "operator": constants.Operator.GREATER_THAN,
                     "right_operand_window": None,
                     "right_operand_type": constants.ValueType.ABSOLUTE,
@@ -58,7 +58,7 @@ class RuleInstanceTest(TestCase):
         condition = conditions[0]
         self.assertEqual(constants.MetricWindow.LAST_30_DAYS, condition.left_operand_window)
         self.assertEqual(constants.MetricType.TOTAL_SPEND, condition.left_operand_type)
-        self.assertEqual(1.0, condition.left_operand_modifier)
+        self.assertEqual(None, condition.left_operand_modifier)
         self.assertEqual(constants.Operator.GREATER_THAN, condition.operator)
         self.assertEqual(None, condition.right_operand_window)
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)

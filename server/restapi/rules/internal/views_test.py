@@ -40,7 +40,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 {
                     "left_operand_window": automation.rules.MetricWindow.LAST_30_DAYS,
                     "left_operand_type": automation.rules.MetricType.TOTAL_SPEND,
-                    "left_operand_modifier": 1.0,
+                    "left_operand_modifier": None,
                     "operator": automation.rules.Operator.GREATER_THAN,
                     "right_operand_window": None,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
@@ -194,7 +194,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 {
                     "left_operand_type": automation.rules.MetricType.AVG_CPC,
                     "left_operand_window": automation.rules.MetricWindow.LAST_7_DAYS,
-                    "left_operand_modifier": 1.0,
+                    "left_operand_modifier": None,
                     "operator": automation.rules.Operator.GREATER_THAN,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
                     "right_operand_window": None,
@@ -234,7 +234,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 {
                     "left_operand_type": automation.rules.MetricType.AVG_CPC,
                     "left_operand_window": automation.rules.MetricWindow.LAST_7_DAYS,
-                    "left_operand_modifier": 1.0,
+                    "left_operand_modifier": None,
                     "operator": automation.rules.Operator.GREATER_THAN,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
                     "right_operand_window": None,

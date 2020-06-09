@@ -74,7 +74,14 @@ class RuleConditionValidationTest(TestCase):
             self.rule_condition.clean({"left_operand_window": 999})
 
     def test_validate_left_operand_modifier(self):
-        self.rule_condition.clean({"left_operand_modifier": 0.5})
+        self.rule_condition.clean({"left_operand_modifier": None})
+        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier]):
+            self.rule_condition.clean(
+                {"left_operand_type": constants.MetricType.TOTAL_SPEND, "left_operand_modifier": 0.5}
+            )
+        self.rule_condition.clean(
+            {"left_operand_type": constants.MetricType.CAMPAIGN_PRIMARY_GOAL, "left_operand_modifier": 0.5}
+        )
         with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier]):
             self.rule_condition.clean({"left_operand_modifier": -1})
         with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandModifier]):
