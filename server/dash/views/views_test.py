@@ -1250,21 +1250,27 @@ class PushMetrics(TestCase):
         self.client.get(url)
         ad_group = models.AdGroup.objects.get(pk=1000)
         response = self.client.get(url)
-        return ad_group.custom_flags["b1_push_metrics"], response
+        return {
+            "push_metrics": ad_group.custom_flags["b1_push_metrics"],
+            "response": response,
+            "timestamp": response.url.split("_toggle=")[1],
+        }
 
     def test_toggle_push_metrics(self):
-        self.assertTrue(self._toggle("enable")[0])
-        self.assertFalse(self._toggle("disable")[0])
+        self.assertTrue(self._toggle("enable")["push_metrics"])
+        self.assertFalse(self._toggle("disable")["push_metrics"])
 
     def test_toggle_redirect(self):
+        toggle_enable = self._toggle("enable")
         self.assertRedirects(
-            self._toggle("enable")[1],
-            "https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000",
+            toggle_enable["response"],
+            f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000&p_w643_toggle={toggle_enable['timestamp']}",
             fetch_redirect_response=False,
         )
+        toggle_disable = self._toggle("disable")
         self.assertRedirects(
-            self._toggle("disable")[1],
-            "https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000",
+            toggle_disable["response"],
+            f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id=1000&p_w643_toggle={toggle_disable['timestamp']}",
             fetch_redirect_response=False,
         )
 

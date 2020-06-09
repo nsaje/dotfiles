@@ -1228,5 +1228,6 @@ class PushMetrics(api_common.BaseApiView, SlackLoggerMixin):
         ad_group.custom_flags["b1_push_metrics"] = switch == "enable"
         ad_group.save(None)
         self.log_custom_flags_event_to_slack(old_ad_group, ad_group, user=request.user.email)
-        url = f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id={ad_group_id}"
+        timestamp = datetime.datetime.now().timestamp()
+        url = f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id={ad_group_id}&p_w643_toggle={timestamp}"
         return redirect(url)
