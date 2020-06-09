@@ -8,16 +8,17 @@ import restapi.common.views_base_test
 import utils.test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(self.user, ["fea_can_create_automation_rules"])
 
         self.request = get_request_mock(self.user)
-        self.agency = magic_mixer.blend(core.models.Agency, users=[self.user])
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__agency=self.agency)
+        self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=self.agency)
 
         self.rule = automation.rules.Rule.objects.create(
             self.request,
@@ -272,3 +273,7 @@ class RuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         )
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK)
         self.validate_against_db(result["data"])
+
+
+class RuleViewSetTest(restapi.common.views_base_test.RESTAPITestCase, LegacyRuleViewSetTest):
+    pass

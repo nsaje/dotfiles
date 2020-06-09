@@ -2,9 +2,11 @@ import rest_framework.permissions
 import rest_framework.serializers
 
 import automation.rules
-import restapi.access
+import restapi.campaign.v1.views
 import utils.exc
+import zemauth.access
 from restapi.common.pagination import StandardPagination
+from zemauth.features.entity_permission import Permission
 
 from . import serializers
 
@@ -18,13 +20,13 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseAutomationRulesPermission)
 
     def get(self, request, agency_id, rule_id):
-        agency = restapi.access.get_agency(request.user, agency_id)
+        agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
         rule = agency.rule_set.get(id=rule_id)
         serializer = serializers.RuleSerializer(rule, context={"request": request})
         return self.response_ok(data=serializer.data)
 
     def create(self, request, agency_id):
-        agency = restapi.access.get_agency(request.user, agency_id)
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id)
         serializer = serializers.RuleSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -34,7 +36,7 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return self.response_ok(serializer.data, status=201)
 
     def list(self, request, agency_id, credit_id=None):
-        agency = restapi.access.get_agency(request.user, agency_id)
+        agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
         rules = automation.rules.Rule.objects.filter(agency=agency).exclude_archived().order_by("id")
         paginator = StandardPagination()
         rules_paginated = paginator.paginate_queryset(rules, request)
@@ -43,7 +45,7 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
         )
 
     def put(self, request, agency_id, rule_id):
-        agency = restapi.access.get_agency(request.user, agency_id)
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id)
         serializer = serializers.RuleSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data

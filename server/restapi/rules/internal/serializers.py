@@ -3,9 +3,10 @@ import rest_framework.serializers
 import automation.rules
 import core.features.publisher_groups
 import core.models
-import restapi.access
 import restapi.serializers.base
 import restapi.serializers.fields
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 
 class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -102,5 +103,5 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     def validate_publisher_group_id(self, publisher_group):
         if publisher_group:
             user = self.context["request"].user
-            restapi.access.get_publisher_group(user, publisher_group.id)
+            zemauth.access.get_publisher_group(user, Permission.WRITE, publisher_group.id)
         return publisher_group
