@@ -284,15 +284,36 @@ angular
         }
 
         function reloadOnEntityUpdate(entityUpdate) {
+            var cachedEntity;
+            var reloadAction;
+
             if (entityUpdate.type === constants.entityType.ACCOUNT) {
-                return reloadAccount(entityUpdate.id);
+                cachedEntity = (findAccountInNavTree(entityUpdate.id) || {})
+                    .account;
+                reloadAction = reloadAccount(entityUpdate.id);
             }
             if (entityUpdate.type === constants.entityType.CAMPAIGN) {
-                return reloadCampaign(entityUpdate.id);
+                cachedEntity = (findCampaignInNavTree(entityUpdate.id) || {})
+                    .campaign;
+                reloadAction = reloadCampaign(entityUpdate.id);
             }
             if (entityUpdate.type === constants.entityType.AD_GROUP) {
-                return reloadAdGroup(entityUpdate.id);
+                cachedEntity = (findAdGroupInNavTree(entityUpdate.id) || {})
+                    .adGroup;
+                reloadAction = reloadAdGroup(entityUpdate.id);
             }
+
+            // (jholas) for archive action set archived flag directly and synchronously on
+            // cached entity so archived view route guard can have this updated data before
+            // the reload http request finishes
+            if (
+                entityUpdate.action === constants.entityAction.ARCHIVE &&
+                cachedEntity
+            ) {
+                cachedEntity.archived = true;
+            }
+
+            return reloadAction;
         }
 
         function reloadAccount(id) {
