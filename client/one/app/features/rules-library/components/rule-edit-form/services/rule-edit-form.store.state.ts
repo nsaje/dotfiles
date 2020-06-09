@@ -1,5 +1,4 @@
 import {Rule} from '../../../../../core/rules/types/rule';
-import {RuleActionConfig} from '../../../../../core/rules/types/rule-action-config';
 import {RuleConditionConfig} from '../../../../../core/rules/types/rule-condition-config';
 import {
     TimeRange,

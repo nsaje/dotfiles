@@ -99,16 +99,17 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         targetType: RuleTargetType;
         actionType: RuleActionType;
     }) {
-        // reset fields that depend on action type
+        // reset fields that depend on action / target type
+        const availableConditions = this.getConditionsForTarget(
+            targetActionType.targetType
+        );
         this.setState({
             ...this.state,
-            availableConditions: this.getConditionsForTarget(
-                targetActionType.targetType
-            ),
+            availableConditions: availableConditions,
             rule: {
                 ...this.state.rule,
                 targetType: targetActionType.targetType,
-                actionType: null,
+                actionType: targetActionType.actionType,
                 actionFrequency: null,
                 changeStep: null,
                 changeLimit: null,
@@ -116,21 +117,25 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 sendEmailSubject: null,
                 sendEmailBody: null,
                 publisherGroupId: null,
+                conditions: this.filterConditionsValidForTarget(
+                    availableConditions,
+                    this.state.rule.conditions
+                ),
             },
         });
-        if (!targetActionType.actionType) {
-            this.setState({
-                ...this.state,
-                rule: {
-                    ...this.state.rule,
-                    targetType: targetActionType.targetType,
-                    actionType: targetActionType.actionType,
-                    actionFrequency: null,
-                },
-            });
-        } else {
-            this.patchState(targetActionType.actionType, 'rule', 'actionType');
-        }
+    }
+
+    filterConditionsValidForTarget(
+        availableConditions: RuleConditionConfig[],
+        conditions: RuleCondition[]
+    ): RuleCondition[] {
+        const availableConditionTypes = new Set();
+        availableConditions.forEach(ruleConditionConfig => {
+            availableConditionTypes.add(ruleConditionConfig.metric.type);
+        });
+        return conditions.filter(condition => {
+            return availableConditionTypes.has(condition.metric.type);
+        });
     }
 
     setRuleActionFrequency(actionFrequency: RuleActionFrequency) {
@@ -262,62 +267,10 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         });
     }
 
-    private getActionsForTarget(target: RuleTargetType): RuleActionConfig[] {
-        if (RuleTargetType.Ad === target) {
-            return [
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.TurnOff],
-            ];
-        }
-        if (RuleTargetType.AdGroup === target) {
-            return [
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBid],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBid],
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseDailyBudget],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseDailyBudget],
-                RULE_ACTIONS_OPTIONS[RuleActionType.TurnOff],
-                RULE_ACTIONS_OPTIONS[RuleActionType.SendEmail],
-            ];
-        }
-        if (
-            RuleTargetType.AdGroupPublisher === target ||
-            RuleTargetType.AdGroupEnvironment === target
-        ) {
-            return [
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.Blacklist],
-                RULE_ACTIONS_OPTIONS[RuleActionType.AddToPublisherGroup],
-            ];
-        }
-        if (RuleTargetType.AdGroupSource === target) {
-            return [
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.TurnOff],
-            ];
-        }
-        if (
-            RuleTargetType.AdGroupDevice === target ||
-            RuleTargetType.AdGroupCountry === target ||
-            RuleTargetType.AdGroupRegion === target ||
-            RuleTargetType.AdGroupDma === target ||
-            RuleTargetType.AdGroupOs === target
-        ) {
-            return [
-                RULE_ACTIONS_OPTIONS[RuleActionType.IncreaseBidModifier],
-                RULE_ACTIONS_OPTIONS[RuleActionType.DecreaseBidModifier],
-            ];
-        }
-        return [];
-    }
-
     private getConditionsForTarget(
         target: RuleTargetType
     ): RuleConditionConfig[] {
-        // TODO (automation-rules): Return filtered list of conditions based on target
-        return [
+        const conditions = [
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSpend],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Impressions],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Clicks],
@@ -371,12 +324,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupStartDate],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupEndDate],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupDailyCap],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdTitle],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdLabel],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdCreatedDate],
-            RULE_CONDITIONS_OPTIONS[
-                RuleConditionOperandType.DaysSinceAdCreated
-            ],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.RemainingCampaignBudget
             ],
@@ -396,6 +343,18 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 RuleConditionOperandType.DaysUntilCampaignBudgetEnd
             ],
         ];
+
+        if (target === RuleTargetType.Ad) {
+            conditions.push(
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdTitle],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdLabel],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdCreatedDate],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.DaysSinceAdCreated
+                ]
+            );
+        }
+        return conditions;
     }
 
     ngOnDestroy() {

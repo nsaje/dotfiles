@@ -69,8 +69,6 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 this.availableConditions,
                 this.ruleCondition
             );
-            this.availableOperators = [];
-            this.availableValueTypes = [];
         }
 
         if (changes.ruleCondition) {

@@ -29,7 +29,7 @@ class RuleConditionValidationMixin:
 
     def _validate_left_operand_type(self, changes):
         left_operand_type = changes.get("left_operand_type", self.left_operand_type)
-        if left_operand_type not in constants.MetricType.get_all():
+        if left_operand_type not in config.VALID_LEFT_OPERAND_TYPES_FOR_RULE_TARGET[self.rule.target_type]:
             raise exceptions.InvalidLeftOperandType("Invalid metric type")
 
     def _validate_left_operand_window(self, changes):

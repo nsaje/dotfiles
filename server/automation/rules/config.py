@@ -94,6 +94,20 @@ ADJUSTEMENT_ACTION_TYPES = {
     ),
 }
 
+VALID_LEFT_OPERAND_TYPES = set(constants.MetricType.get_all()) - constants.CONTENT_AD_SETTINGS
+VALID_LEFT_OPERAND_TYPES_FOR_RULE_TARGET = {
+    constants.TargetType.AD_GROUP: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.AD: VALID_LEFT_OPERAND_TYPES | constants.CONTENT_AD_SETTINGS,
+    constants.TargetType.PUBLISHER: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.DEVICE: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.COUNTRY: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.STATE: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.DMA: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.OS: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.ENVIRONMENT: VALID_LEFT_OPERAND_TYPES,
+    constants.TargetType.SOURCE: VALID_LEFT_OPERAND_TYPES,
+}
+
 VALID_RIGTH_OPERAND_TYPES = {constants.ValueType.ABSOLUTE}
 
 PERCENT_MODIFIER_LEFT_OPERAND_TYPES = set(constants.METRIC_STATS_MAPPING.keys()) | {

@@ -3,16 +3,20 @@ from contextlib import contextmanager
 from django.test import TestCase
 
 import utils.exc
+from utils.magic_mixer import magic_mixer
 
 from ... import config
 from ... import constants
 from ... import exceptions
+from .. import Rule
 from . import model
 
 
 class RuleConditionValidationTest(TestCase):
     def setUp(self):
+        self.rule = magic_mixer.blend(Rule)
         self.rule_condition = model.RuleCondition(
+            rule=self.rule,
             operator=constants.Operator.GREATER_THAN,
             left_operand_type=constants.MetricType.TOTAL_SPEND,
             left_operand_window=None,
@@ -38,6 +42,7 @@ class RuleConditionValidationTest(TestCase):
     def test_validate_operator_days_since_type(self):
         # NOTE: this test handles an edge case where "days since" settings use date operators but have number
         # values and makes sure that those settings don't get assigned "number" operators by accident
+        self.rule.target_type = constants.TargetType.AD
         for left_operand_type in [
             constants.MetricType.DAYS_SINCE_ACCOUNT_CREATED,
             constants.MetricType.DAYS_SINCE_CAMPAIGN_CREATED,
@@ -48,6 +53,13 @@ class RuleConditionValidationTest(TestCase):
         with self._assert_multiple_validation_error([exceptions.InvalidOperator]):
             self.rule_condition.clean(
                 {"operator": constants.Operator.EQUALS, "left_operand_type": constants.MetricType.CLICKS}
+            )
+
+    def test_validate_ad_target_metrics(self):
+        self.rule.target_type = constants.TargetType.AD_GROUP
+        with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandType]):
+            self.rule_condition.clean(
+                {"operator": constants.Operator.EQUALS, "left_operand_type": constants.MetricType.DAYS_SINCE_AD_CREATED}
             )
 
     def test_validate_left_operand_type(self):

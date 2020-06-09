@@ -73,7 +73,7 @@ class RuleInstanceMixin:
     def _update_conditions(self, conditions):
         self.conditions.all().delete()
         for condition in conditions:
-            RuleCondition.objects.create(rule_id=self.id, **condition)
+            RuleCondition.objects.create(rule=self, **condition)
 
     def _update_ad_groups_included(self, ad_groups_included):
         for ad_group in ad_groups_included:

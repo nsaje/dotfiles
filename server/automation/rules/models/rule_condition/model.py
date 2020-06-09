@@ -1,10 +1,24 @@
 from django.db import models
 
 from ... import constants
+from . import instance
+from . import manager
 from . import validation
 
 
-class RuleCondition(validation.RuleConditionValidationMixin, models.Model):
+class RuleCondition(instance.RuleConditionInstanceMixin, validation.RuleConditionValidationMixin, models.Model):
+    objects = manager.RuleConditionManager()
+
+    _update_fields = [
+        "left_operand_window",
+        "left_operand_type",
+        "left_operand_modifier",
+        "operator",
+        "right_operand_window",
+        "right_operand_type",
+        "right_operand_value",
+    ]
+
     id = models.AutoField(primary_key=True)
     rule = models.ForeignKey("Rule", related_name="conditions", on_delete=models.CASCADE)
 
