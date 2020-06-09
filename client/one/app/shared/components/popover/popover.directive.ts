@@ -106,6 +106,7 @@ export class PopoverDirective extends NgbPopover
                 this.zemPopover,
                 false
             );
+            this.ngbPopover = changes.zemPopover.currentValue;
         }
         super.ngOnChanges(changes);
     }
