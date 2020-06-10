@@ -124,9 +124,7 @@ class GAAccountsView(K1APIView):
     def _get_service_email_mapping(self, ga_account_ids):
         mapping = {
             m.customer_ga_account_id: m.zem_ga_account_email
-            for m in dash.features.ga.GALinkedAccounts.objects.filter(
-                customer_ga_account_id__in=ga_account_ids, has_read_and_analyze=True
-            )
+            for m in dash.features.ga.GALinkedAccounts.objects.filter(customer_ga_account_id__in=ga_account_ids)
         }
         # TODO: sigi 8.2.2018
         # both zem users have access to the same profile but only one is reciving data
