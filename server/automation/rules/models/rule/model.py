@@ -32,10 +32,13 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
         "notification_type",
         "notification_recipients",
         "archived",
+        "agency",
+        "account",
     ]
 
     id = models.AutoField(primary_key=True)
-    agency = models.ForeignKey(core.models.Agency, on_delete=models.PROTECT)
+    agency = models.ForeignKey(core.models.Agency, null=True, blank=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(core.models.Account, null=True, blank=True, on_delete=models.PROTECT)
 
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     state = models.IntegerField(default=constants.RuleState.ENABLED, choices=constants.RuleState.get_choices())

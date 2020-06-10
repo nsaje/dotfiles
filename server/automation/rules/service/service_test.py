@@ -317,11 +317,15 @@ class ExecuteRulesDailyRunTest(TestCase):
 @mock.patch("utils.email_helper.send_official_email")
 class NotificationEmailTestCase(TestCase):
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.models.AdGroup, archived=False, name="Test ad group")
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.ad_group = magic_mixer.blend(
+            core.models.AdGroup, archived=False, name="Test ad group", campaign__account__agency=self.agency
+        )
         self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         self.rule = magic_mixer.blend(
             Rule,
             name="Test rule",
+            agency=self.agency,
             target_type=constants.TargetType.PUBLISHER,
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
             ad_groups_included=[self.ad_group],

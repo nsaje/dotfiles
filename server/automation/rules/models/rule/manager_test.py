@@ -4,6 +4,7 @@ import core.models
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
+from ... import exceptions
 from . import model
 
 
@@ -15,7 +16,7 @@ class RuleManagerTest(TestCase):
 
         rule = model.Rule.objects.create(
             request,
-            agency,
+            agency=agency,
             name="Test rule",
             target_type=constants.TargetType.PUBLISHER,
             action_type=constants.ActionType.INCREASE_BID_MODIFIER,
@@ -64,3 +65,86 @@ class RuleManagerTest(TestCase):
         self.assertEqual(None, condition.right_operand_window)
         self.assertEqual(constants.ValueType.ABSOLUTE, condition.right_operand_type)
         self.assertEqual("100", condition.right_operand_value)
+
+    def test_create_with_agency(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+
+        rule = model.Rule.objects.create(
+            request,
+            agency=agency,
+            name="Test rule",
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            change_step=0.01,
+            change_limit=2.50,
+            cooldown=24,
+            window=constants.MetricWindow.LAST_30_DAYS,
+            notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+            notification_recipients=["test@test.com"],
+        )
+        rule = model.Rule.objects.get(id=rule.id)
+        self.assertEqual(request.user, rule.created_by)
+        self.assertEqual(rule.agency, agency)
+        self.assertEqual(rule.account, None)
+
+    def test_create_with_account(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account)
+
+        rule = model.Rule.objects.create(
+            request,
+            account=account,
+            name="Test rule",
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            change_step=0.01,
+            change_limit=2.50,
+            cooldown=24,
+            window=constants.MetricWindow.LAST_30_DAYS,
+            notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+            notification_recipients=["test@test.com"],
+        )
+
+        rule = model.Rule.objects.get(id=rule.id)
+        self.assertEqual(request.user, rule.created_by)
+        self.assertEqual(rule.agency, None)
+        self.assertEqual(rule.account, account)
+
+    def test_create_with_agency_and_account(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account)
+
+        with self.assertRaises(exceptions.InvalidParents):
+            model.Rule.objects.create(
+                request,
+                agency=agency,
+                account=account,
+                name="Test rule",
+                target_type=constants.TargetType.PUBLISHER,
+                action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+                change_step=0.01,
+                change_limit=2.50,
+                cooldown=24,
+                window=constants.MetricWindow.LAST_30_DAYS,
+                notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+                notification_recipients=["test@test.com"],
+            )
+
+    def test_create_without_agency_or_account(self):
+        request = magic_mixer.blend_request_user()
+
+        with self.assertRaises(exceptions.InvalidParents):
+            model.Rule.objects.create(
+                request,
+                name="Test rule",
+                target_type=constants.TargetType.PUBLISHER,
+                action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+                change_step=0.01,
+                change_limit=2.50,
+                cooldown=24,
+                window=constants.MetricWindow.LAST_30_DAYS,
+                notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
+                notification_recipients=["test@test.com"],
+            )

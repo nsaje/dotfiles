@@ -4,6 +4,7 @@ from functools import partial
 from django.core.validators import ValidationError
 from django.core.validators import validate_email
 
+import utils.exc
 import utils.validation_helper
 
 from ... import config
@@ -34,8 +35,11 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "conditions"),
             partial(self._validate_if_present, "notification_type"),
             partial(self._validate_if_present, "notification_recipients"),
+            partial(self._validate_if_present, "agency"),
+            partial(self._validate_if_present, "account"),
             changes=changes,
         )
+        self._validate_agency_account(changes)
 
     def _validate_if_present(self, key, changes):
         if key in changes:
@@ -277,3 +281,33 @@ class RuleValidationMixin:
             errors.append(condition_errors)
         if any(errors):
             raise exceptions.InvalidRuleConditions(conditions_errors=errors)
+
+    def _validate_agency_account(self, changes):
+        agency = changes.get("agency", self.agency)
+        account = changes.get("account", self.account)
+
+        if agency and account:
+            raise exceptions.InvalidParents("Only one of either account or agency must be set.")
+
+        if not agency and not account:
+            raise exceptions.InvalidParents("One of either account or agency must be set.")
+
+    def _validate_agency(self, changes, agency):
+        if agency is None:
+            return
+
+        ad_groups_included = changes.get(
+            "ad_groups_included", self.ad_groups_included.all().select_related("campaign__account__agency")
+        )
+        if any(ad_group.campaign.account.agency_id != agency.id for ad_group in ad_groups_included):
+            raise exceptions.InvalidAgency("Rule already runs on ad groups not belonging to the selected agency.")
+
+    def _validate_account(self, changes, account):
+        if account is None:
+            return
+
+        ad_groups_included = changes.get(
+            "ad_groups_included", self.ad_groups_included.all().select_related("campaign__account")
+        )
+        if any(ad_group.campaign.account_id != account.id for ad_group in ad_groups_included):
+            raise exceptions.InvalidAccount("Rule already runs on ad groups not belonging to the selected account.")

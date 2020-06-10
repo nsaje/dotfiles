@@ -16,7 +16,8 @@ from . import model
 
 class RuleValidationTest(test.TestCase):
     def setUp(self):
-        self.rule = magic_mixer.blend(model.Rule)
+        agency = magic_mixer.blend(core.models.Agency)
+        self.rule = magic_mixer.blend(model.Rule, agency=agency)
 
     def test_validate_state(self):
         self.rule.clean({"state": constants.RuleState.ENABLED})

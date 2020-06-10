@@ -53,6 +53,18 @@ class InvalidPublisherGroup(ValidationError):
     pass
 
 
+class InvalidParents(ValidationError):
+    pass
+
+
+class InvalidAgency(ValidationError):
+    pass
+
+
+class InvalidAccount(ValidationError):
+    pass
+
+
 class InvalidRuleConditions(ValidationError):
     def __init__(self, *args, conditions_errors=None, **kwargs):
         if not conditions_errors:
