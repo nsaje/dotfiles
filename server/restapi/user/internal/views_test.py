@@ -24,10 +24,13 @@ class UserViewSetTestBase(RESTAPITestCase):
             account = self.mix_account(user=calling_user, permissions=[Permission.READ, Permission.USER], agency=agency)
         return account, agency
 
-    def _assertError(self, r, status_code, error_code, error_details):
+    def _assert_error(self, r, status_code, error_code, error_details):
         self.assertEqual(r.status_code, status_code)
         resp_json = self.assertResponseError(r, error_code)
         self.assertEqual(resp_json, {"errorCode": error_code, "details": error_details})
+
+    def _assert_validation_error(self, r, error_text):
+        self._assert_error(r, 400, "ValidationError", {"nonFieldErrors": error_text})
 
     def _expected_permission_response(self, permission):
         if permission.agency_id is not None:
@@ -158,6 +161,202 @@ class UserViewSetTestBase(RESTAPITestCase):
         return permissions
 
 
+class UserViewSetCreateTest(UserViewSetTestBase):
+    def test_create_on_agency(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [
+                        {"agencyId": agency.id, "permission": Permission.READ},
+                        {"agencyId": agency.id, "permission": Permission.BUDGET},
+                    ],
+                }
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self.assertEqual(r.status_code, 200)
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
+        self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
+        self.assertEqual(resp_json["data"]["users"][0]["lastName"], "")
+
+        self.assertCountEqual(
+            resp_json["data"]["users"][0]["entityPermissions"],
+            [
+                {"agencyId": str(agency.id), "accountId": "", "permission": Permission.READ},
+                {"agencyId": str(agency.id), "accountId": "", "permission": Permission.BUDGET},
+            ],
+        )
+
+    def test_create_on_account(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [
+                        {"accountId": account.id, "permission": Permission.READ},
+                        {"accountId": account.id, "permission": Permission.USER},
+                    ],
+                }
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self.assertEqual(r.status_code, 200)
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
+        self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
+        self.assertEqual(resp_json["data"]["users"][0]["lastName"], "")
+
+        self.assertCountEqual(
+            resp_json["data"]["users"][0]["entityPermissions"],
+            [
+                {
+                    "agencyId": "",
+                    "accountId": str(account.id),
+                    "accountName": str(account.name),
+                    "permission": Permission.READ,
+                },
+                {
+                    "agencyId": "",
+                    "accountId": str(account.id),
+                    "accountName": str(account.name),
+                    "permission": Permission.USER,
+                },
+            ],
+        )
+
+    def test_create_on_agency_and_account(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [
+                        {"agencyId": agency.id, "permission": Permission.READ},
+                        {"agencyId": agency.id, "permission": Permission.BUDGET},
+                        {"accountId": account.id, "permission": Permission.READ},
+                        {"accountId": account.id, "permission": Permission.USER},
+                    ],
+                }
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "Mixing account and agency permissions is not allowed.")
+
+    def test_create_on_agency_and_account_together(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [
+                        {"agencyId": agency.id, "accountId": account.id, "permission": Permission.READ}
+                    ],
+                }
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "Mixing account and agency permissions is not allowed.")
+
+    def test_create_no_read_privilege(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = self._prepare_request("new.user@outbrain.com", agency.id, None, Permission.USER)
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "User with email new.user@outbrain.com must have READ permission")
+
+    def test_create_existing(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        existing_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
+        test_helper.add_entity_permissions(existing_user, [Permission.READ, Permission.USER], agency)
+
+        post_data = self._prepare_request(existing_user.email, agency.id, None, Permission.READ)
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "User with email address existing.user@outbrain.com already exists.")
+
+    def test_create_no_agency(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = self._prepare_request("new.user@outbrain.com", None, None, Permission.READ)
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "Either agency id or account id must be provided for each entity permission.")
+
+    def test_create_wrong_agency(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+        wrong_agency = self.mix_agency()
+
+        post_data = self._prepare_request("new.user@outbrain.com", wrong_agency.id, None, Permission.READ)
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "Incorrect agency ID")
+
+    def test_create_wrong_account(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+        wrong_account = self.mix_account(user=calling_user, permissions=[Permission.READ, Permission.USER])
+
+        post_data = self._prepare_request("new.user@outbrain.com", None, wrong_account.id, Permission.READ)
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "Account does not belong to the correct agency")
+
+    def _prepare_request(self, email, agency_id, account_id, permission):
+        ep = {"permission": permission}
+        if agency_id is not None:
+            ep["agencyId"] = agency_id
+        if account_id is not None:
+            ep["accountId"] = account_id
+
+        post_data = {"users": [{"email": email, "entityPermissions": [ep]}]}
+        return post_data
+
+    def _call_create(self, post_data, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agency_id"] = agency.id
+        if account is not None:
+            query_params["account_id"] = account.id
+
+        url = u"%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
+
+        r = self.client.post(url, data=post_data, format="json")
+        return r
+
+
 class UserViewSetDeleteTest(UserViewSetTestBase):
     def test_delete_account_manager_by_agency_manager_by_agency_id(self):
         calling_user: zemauth.models.User = self.user
@@ -232,7 +431,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
         r = self._call_delete(requested_user, agency)
 
-        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def _call_delete(self, requested_user, agency, account=None):
         query_params = {}
@@ -241,16 +440,11 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
         if account is not None:
             query_params["account_id"] = account.id
 
-        """r = self.client.delete(
-            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}), query_params
-        )"""
-        r = self.client.delete(
-            u"%s?%s"
-            % (
-                reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
-                urlencode(query_params),
-            )
+        url = u"%s?%s" % (
+            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
+            urlencode(query_params),
         )
+        r = self.client.delete(url)
         return r
 
 
@@ -264,26 +458,24 @@ class UserViewSetListTest(UserViewSetTestBase):
         agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
 
         r = self._call_list(agency)
-        self._assertError(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
+        self._assert_error(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
 
     def test_list_no_params(self):
         r = self._call_list(None)
-        self._assertError(
-            r, 400, "ValidationError", {"nonFieldErrors": "Either agency id or account id must be provided."}
-        )
+        self._assert_validation_error(r, "Either agency id or account id must be provided.")
 
     def test_list_no_agency_access(self):
         agency = self.mix_agency()
 
         r = self._call_list(agency)
-        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def test_list_no_account_access(self):
         agency = self.mix_agency()
         account = self.mix_account(agency=agency)
 
         r = self._call_list(agency, account)
-        self._assertError(r, 404, "MissingDataError", "Account does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Account does not exist")
 
     def test_list_keyword(self):
         # calling_user is agency manager and is searching by agency_id and keyword
@@ -331,7 +523,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
         r = self._call_list(agency)
         # this should fail because an account manager should not be searching by agency_id
-        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def test_list_by_account_manager_with_account_id(self):
         # calling_user is account manager and is searching by account_id
@@ -368,9 +560,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
         r = self._call_list(agency, account, show_internal=True)
         # this should fail because an account manager should not see internal users
-        self._assertError(
-            r, 400, "ValidationError", {"nonFieldErrors": "You are not authorized to view internal users."}
-        )
+        self._assert_validation_error(r, "You are not authorized to view internal users.")
 
     def test_list_by_agency_manager_with_show_internal(self):
         # calling_user is agency manager and is searching for internal users
@@ -380,9 +570,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
         r = self._call_list(agency, show_internal=True)
         # this should fail because an agency manager should not see internal users
-        self._assertError(
-            r, 400, "ValidationError", {"nonFieldErrors": "You are not authorized to view internal users."}
-        )
+        self._assert_validation_error(r, "You are not authorized to view internal users.")
 
     def test_list_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id
@@ -567,15 +755,13 @@ class UserViewSetGetTest(UserViewSetTestBase):
         agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
 
         r = self._call_get(requested_user, agency)
-        self._assertError(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
+        self._assert_error(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
 
     def test_get_no_params(self):
         calling_user, requested_user = self._setup_test()
 
         r = self._call_get(requested_user, None)
-        self._assertError(
-            r, 400, "ValidationError", {"nonFieldErrors": "Either agency id or account id must be provided."}
-        )
+        self._assert_validation_error(r, "Either agency id or account id must be provided.")
 
     def test_get_no_agency_access(self):
         calling_user, requested_user = self._setup_test()
@@ -583,7 +769,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
         agency = self.mix_agency()
 
         r = self._call_get(requested_user, agency)
-        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def test_get_no_account_access(self):
         calling_user, requested_user = self._setup_test()
@@ -592,7 +778,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
         account = self.mix_account(agency=agency)
 
         r = self._call_get(requested_user, agency, account)
-        self._assertError(r, 404, "MissingDataError", "Account does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Account does not exist")
 
     def test_get_agency_manager_by_agency_manager(self):
         # calling_user is agency manager and is searching by agency_id, requested user is agency manager
@@ -642,7 +828,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency)
         # this should fail because an account manager should not be searching by agency_id
-        self._assertError(r, 404, "MissingDataError", "Agency does not exist")
+        self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def test_get_account_manager_by_account_manager_with_account_id(self):
         # calling_user is account manager and is searching by account_id, requested user is account manager

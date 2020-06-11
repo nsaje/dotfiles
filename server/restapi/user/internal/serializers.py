@@ -1,6 +1,7 @@
-import rest_framework
+import rest_framework.serializers
 
 import restapi.serializers.base
+import restapi.serializers.fields
 import restapi.serializers.serializers
 
 
@@ -28,5 +29,5 @@ class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     entity_permissions = EntityPermissionsSerializer(many=True)
 
 
-class CreateUserSerializer(UserSerializer):
-    email = rest_framework.serializers.ListSerializer(child=rest_framework.serializers.CharField(), allow_empty=False)
+class CreateUserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    users = UserSerializer(many=True, allow_empty=False)
