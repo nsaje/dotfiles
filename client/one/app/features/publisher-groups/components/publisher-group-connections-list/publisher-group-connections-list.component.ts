@@ -6,8 +6,10 @@ import {
     Input,
     Output,
     EventEmitter,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
-import {ColDef} from 'ag-grid-community';
+import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {ConnectionActionsCellComponent} from '../../../../shared/components/connection-actions-cell/connection-actions-cell.component';
 import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
@@ -22,9 +24,13 @@ import {PaginationOptions} from '../../../../shared/components/smart-grid/types/
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublisherGroupConnectionsListComponent
-    implements ConnectionRowParentComponent<PublisherGroupConnection> {
+    implements
+        ConnectionRowParentComponent<PublisherGroupConnection>,
+        OnChanges {
     @Input()
     connections: PublisherGroupConnection[];
+    @Input()
+    isLoading: boolean = false;
     @Output()
     removeConnection = new EventEmitter<PublisherGroupConnection>();
 
@@ -51,9 +57,16 @@ export class PublisherGroupConnectionsListComponent
         page: 1,
         pageSize: 10,
     };
+    private gridApi: GridApi;
 
     constructor() {
         this.context = {componentParent: this};
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (isDefined(changes.isLoading)) {
+            this.toggleLoadingOverlay(this.isLoading);
+        }
     }
 
     onRemoveConnection(connection: PublisherGroupConnection) {
@@ -66,6 +79,11 @@ export class PublisherGroupConnectionsListComponent
         }
     }
 
+    onGridReady($event: DetailGridInfo) {
+        this.gridApi = $event.api;
+        this.toggleLoadingOverlay(this.isLoading);
+    }
+
     private connectionLocationFormatter(params: {
         value: PublisherGroupConnectionType;
     }): string {
@@ -73,5 +91,15 @@ export class PublisherGroupConnectionsListComponent
             return CONNECTION_TYPE_NAMES[params.value];
         }
         return 'N/A';
+    }
+
+    private toggleLoadingOverlay(show: boolean) {
+        if (this.gridApi) {
+            if (show) {
+                this.gridApi.showLoadingOverlay();
+            } else {
+                this.gridApi.hideOverlay();
+            }
+        }
     }
 }

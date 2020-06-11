@@ -173,7 +173,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                     );
                 })
                 .catch(reason =>
-                    this.notificationService.error(
+                    this.notificationService.info(
                         reason,
                         'This publisher group can not be deleted'
                     )
@@ -406,12 +406,12 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     private subscribeToStateUpdates() {
         merge(
             this.getGridProgressUpdater(
-                state => state.requests.listExplicit,
-                this.explicitGridApi
+                state => [state.requests.listExplicit, state.requests.remove],
+                () => this.explicitGridApi
             ),
             this.getGridProgressUpdater(
-                state => state.requests.listImplicit,
-                this.implicitGridApi
+                state => [state.requests.listImplicit],
+                () => this.implicitGridApi
             )
         )
             .pipe(takeUntil(this.ngUnsubscribe$))
@@ -419,13 +419,19 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     }
 
     private getGridProgressUpdater(
-        requestStateGetter: (x: PublisherGroupsStoreState) => RequestState,
-        gridApi: GridApi
+        requestStatesGetter: (x: PublisherGroupsStoreState) => RequestState[],
+        gridApiGetter: () => GridApi
     ): Observable<boolean> {
         return this.store.state$.pipe(
-            map(state => requestStateGetter(state).inProgress),
+            map(state =>
+                requestStatesGetter(state).some(
+                    requestState => requestState.inProgress
+                )
+            ),
             distinctUntilChanged(),
-            tap(inProgress => this.toggleLoadingOverlay(inProgress, gridApi))
+            tap(inProgress =>
+                this.toggleLoadingOverlay(inProgress, gridApiGetter())
+            )
         );
     }
 

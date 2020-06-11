@@ -33,6 +33,7 @@
         </zem-smart-grid>
         <zem-expandable-section
             #systemPublisherGroupsSection
+            [expandedByDefault]="true"
             [expandLabel]="
                 showNewLabels
                     ? 'Show system placements file preview data'
@@ -209,10 +210,14 @@
                     {{ state.activeEntity.entity.name }} connections
                 </div>
             </div>
-            <div class="zem-modal__body">
+            <div class="zem-modal__body zem-publisher-groups-view__modal-body">
                 <zem-publisher-group-connections-list
                     class="zem-publisher-group-connections-list"
                     [connections]="state.activeEntity.connections"
+                    [isLoading]="
+                        store.state.requests.listConnections.inProgress ||
+                        store.state.requests.removeConnection.inProgress
+                    "
                     (removeConnection)="removeConnection($event)"
                 ></zem-publisher-group-connections-list>
             </div>
@@ -221,7 +226,7 @@
             >
                 <button
                     class="zem-button zem-button--outlined"
-                    (click)="connectionsModal.close()"
+                    (click)="connectionsModal.close(); store.clearErrors()"
                 >
                     Close
                 </button>

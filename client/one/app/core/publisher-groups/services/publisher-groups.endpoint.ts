@@ -170,6 +170,10 @@ export class PublisherGroupsEndpoint {
             {publisherGroupId: publisherGroupId}
         );
 
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
         return this.http.delete(`${request.url}`).pipe(
             map(() => {
                 requestStateUpdater(request.name, {
@@ -309,13 +313,15 @@ export class PublisherGroupsEndpoint {
                 map(() => {
                     requestStateUpdater(request.name, {
                         inProgress: false,
+                        error: false,
+                        errorMessage: undefined,
                     });
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
-                        errorMessage: error.message,
+                        errorMessage: error?.error?.details || error.message,
                     });
                     return throwError(error);
                 })

@@ -43,7 +43,9 @@ export class PublisherGroupsStoreState {
     requests = {
         listExplicit: {} as RequestState,
         listImplicit: {} as RequestState,
+        remove: {} as RequestState,
         upload: {} as RequestState,
+        addEntries: {} as RequestState,
         listConnections: {} as RequestState,
         removeConnection: {} as RequestState,
     };

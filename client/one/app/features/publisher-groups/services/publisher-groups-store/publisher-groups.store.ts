@@ -16,6 +16,7 @@ import {Account} from '../../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
+import {RequestState} from '../../../../shared/types/request-state';
 
 @Injectable()
 export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
@@ -336,6 +337,19 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                     }
                 );
         });
+    }
+
+    clearErrors() {
+        const patchedRequests: {[key: string]: RequestState} = {};
+        Object.keys(this.state.requests).forEach(requestKey => {
+            patchedRequests[requestKey] = {
+                ...this.state.requests[requestKey],
+                error: false,
+                errorMessage: undefined,
+            };
+        });
+
+        this.patchState(patchedRequests as any, 'requests');
     }
 
     private isPaginationChanged(
