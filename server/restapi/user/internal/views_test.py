@@ -51,6 +51,25 @@ class UserViewSetTestBase(RESTAPITestCase):
     def _sees_whole_agency(self, caller_role):
         return caller_role == "internal_usr" or caller_role == "agency_mgr"
 
+    def _prepare_internal_user_test_case(self, calling_user, requested_user, caller_role):
+        # output permissions:
+        # [0],[1]: internal (global) permissions
+        account, agency = self._prepare_callers_permissions(calling_user, caller_role)
+
+        permissions = [None] * 2
+        permissions[0] = magic_mixer.blend(
+            zemauth.models.EntityPermission, user=requested_user, agency=None, account=None, permission=Permission.READ
+        )
+        permissions[1] = magic_mixer.blend(
+            zemauth.models.EntityPermission,
+            user=requested_user,
+            agency=None,
+            account=None,
+            permission=Permission.BUDGET,
+        )
+
+        return agency, permissions
+
     def _prepare_agency_manager_test_case(self, calling_user, requested_user, caller_role):
         # output permissions:
         # [0],[1]: permissions on the same agency
@@ -780,6 +799,24 @@ class UserViewSetGetTest(UserViewSetTestBase):
         r = self._call_get(requested_user, agency, account)
         self._assert_error(r, 404, "MissingDataError", "Account does not exist")
 
+    def test_get_internal_user_by_agency_manager(self):
+        # calling_user is agency manager and is searching by agency_id, requested user is internal user
+        calling_user, requested_user = self._setup_test()
+
+        agency, permissions = self._prepare_internal_user_test_case(calling_user, requested_user, "agency_mgr")
+
+        r = self._call_get(requested_user, agency)
+        self._assert_error(r, 400, "DoesNotExist", "User matching query does not exist.")
+
+    def test_get_internal_user_by_internal_user(self):
+        # calling_user is internal user and is searching by agency_id, requested user is internal user
+        calling_user, requested_user = self._setup_test()
+
+        agency, permissions = self._prepare_internal_user_test_case(calling_user, requested_user, "internal_usr")
+
+        r = self._call_get(requested_user, agency)
+        self._validate_internal_user_response(requested_user, r, permissions)
+
     def test_get_agency_manager_by_agency_manager(self):
         # calling_user is agency manager and is searching by agency_id, requested user is agency manager
         calling_user, requested_user = self._setup_test()
@@ -889,6 +926,19 @@ class UserViewSetGetTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
         return calling_user, requested_user
+
+    def _validate_internal_user_response(self, requested_user, r, permissions):
+        resp_json = self.assertResponseValid(r)
+
+        resp_user = resp_json["data"]
+        self.assertEqual(resp_user["id"], str(requested_user.id))
+        self.assertEqual(resp_user["email"], requested_user.email)
+        self.assertEqual(resp_user["firstName"], requested_user.first_name)
+        self.assertEqual(resp_user["lastName"], requested_user.last_name)
+        self.assertCountEqual(
+            resp_user["entityPermissions"],
+            [self._expected_permission_response(permissions[0]), self._expected_permission_response(permissions[1])],
+        )
 
     def _validate_agency_manager_response(self, requested_user, r, permissions):
         resp_json = self.assertResponseValid(r)

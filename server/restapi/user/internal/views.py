@@ -106,15 +106,21 @@ class UserViewSet(RESTAPIBaseViewSet):
         agency: Agency = None
         account: Account = None
         requested_user: ZemUser = None
+        requested_user_qs = None
 
         if account_id is not None:
             account = zemauth.access.get_account(calling_user, Permission.USER, account_id)
-            requested_user = ZemUser.objects.filter_by_account(account).get(pk=user_id)
+            requested_user_qs = ZemUser.objects.filter_by_account(account)
         elif agency_id is not None:
             agency = zemauth.access.get_agency(calling_user, Permission.USER, agency_id)
-            requested_user = ZemUser.objects.filter_by_agency_and_related_accounts(agency).get(pk=user_id)
+            requested_user_qs = ZemUser.objects.filter_by_agency_and_related_accounts(agency)
         else:
             raise ValidationError(errors={"non_field_errors": "Either agency id or account id must be provided."})
+
+        if calling_user.has_perm_on_all_entities(Permission.USER):
+            requested_user_qs |= ZemUser.objects.filter_by_internal()
+
+        requested_user = requested_user_qs.get(pk=user_id)
 
         self._augment_user(calling_user, requested_user, agency, account)
         return requested_user
