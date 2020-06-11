@@ -574,10 +574,9 @@ def get_publisher_group_connections(
             user: User,
             model: Union[Type[models.Agency], Type[models.Account], Type[models.Campaign], Type[models.AdGroup]],
         ) -> QuerySet:
-            queryset = model.objects.filter(id=OuterRef("id"))
             if user.has_perm("zemauth.fea_use_entity_permission"):
-                return queryset.filter_by_entity_permission(user, Permission.READ)
-            return queryset.filter_by_user(user)
+                return model.objects.filter_by_entity_permission(user, Permission.READ).filter(id=OuterRef("id"))
+            return model.objects.filter_by_user(user).filter(id=OuterRef("id"))
 
         query_sets = [
             (
