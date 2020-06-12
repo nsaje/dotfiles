@@ -180,11 +180,6 @@ urlpatterns += [
         name="ad_group_settings_state",
     ),
     url(
-        r"^api/ad_groups/(?P<ad_group_id>\d+)/settings/$",
-        login_required(dash.views.agency.AdGroupSettings.as_view()),
-        name="ad_group_settings",
-    ),
-    url(
         r"^api/ad_groups/(?P<ad_group_id>\d+)/sources/$",
         login_required(dash.views.views.AdGroupSources.as_view()),
         name="ad_group_sources",
