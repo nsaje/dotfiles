@@ -42,29 +42,6 @@ CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 SUBAGENCY_MAP = {198: (196, 198)}
 
 
-class AdGroupSettingsState(api_common.BaseApiView):
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        current_settings = ad_group.get_current_settings()
-        return self.create_api_response({"id": str(ad_group.pk), "state": current_settings.state})
-
-    def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        data = json.loads(request.body)
-        new_state = data.get("state")
-
-        campaign_settings = ad_group.campaign.get_current_settings()
-        helpers.validate_ad_groups_state([ad_group], ad_group.campaign, campaign_settings, new_state)
-
-        try:
-            ad_group.settings.update(request, state=new_state)
-
-        except core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
-            raise utils.exc.ValidationError(error={"state": [str(err)]})
-
-        return self.create_api_response({"id": str(ad_group.pk), "state": new_state})
-
-
 class CampaignGoalValidation(api_common.BaseApiView):
     def post(self, request, campaign_id):
         if not request.user.has_perm("zemauth.can_see_campaign_goals"):
