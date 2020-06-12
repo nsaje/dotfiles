@@ -42,35 +42,6 @@ CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 SUBAGENCY_MAP = {198: (196, 198)}
 
 
-class CampaignGoalValidation(api_common.BaseApiView):
-    def post(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.can_see_campaign_goals"):
-            raise exc.MissingDataError()
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        campaign_goal = json.loads(request.body)
-        goal_form = forms.CampaignGoalForm(campaign_goal, campaign_id=campaign.pk)
-
-        errors = {}
-        result = {}
-        if not goal_form.is_valid():
-            errors.update(dict(goal_form.errors))
-
-        if "type" in campaign_goal and campaign_goal["type"] == constants.CampaignGoalKPI.CPA:
-            if not campaign_goal.get("id"):
-                conversion_form = forms.ConversionGoalForm(
-                    campaign_goal.get("conversion_goal", {}), campaign_id=campaign.pk
-                )
-                if conversion_form.is_valid():
-                    result["conversion_goal"] = conversion_form.cleaned_data
-                else:
-                    errors["conversion_goal"] = conversion_form.errors
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
-
-        return self.create_api_response(result)
-
-
 class ConversionPixel(api_common.BaseApiView):
     def get(self, request, account_id):
         account_id = int(account_id)

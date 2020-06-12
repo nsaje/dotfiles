@@ -414,10 +414,6 @@ urlpatterns += [
         name="campaign_ad_groups",
     ),
     url(
-        r"^api/campaigns/(?P<campaign_id>\d+)/goals/validate/$",
-        login_required(dash.views.agency.CampaignGoalValidation.as_view()),
-    ),
-    url(
         r"^api/accounts/(?P<account_id>\d+)/campaigns/$",
         login_required(dash.views.views.AccountCampaigns.as_view()),
         name="account_campaigns",
