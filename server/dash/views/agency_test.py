@@ -2,7 +2,6 @@
 import datetime
 import http.client
 import json
-from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth import models as authmodels
@@ -13,11 +12,9 @@ from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
 from mock import ANY
-from mock import call
 from mock import patch
 from requests import Response
 
-import core.features.multicurrency
 from core.features import history
 from dash import constants
 from dash import forms

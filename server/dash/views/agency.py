@@ -19,7 +19,6 @@ import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
 import utils.exc
-from dash import campaign_goals
 from dash import constants
 from dash import content_insights_helper
 from dash import facebook_helper
