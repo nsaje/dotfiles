@@ -31,7 +31,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
         settings = data["settings"]
@@ -41,13 +41,7 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.ValidationError()
 
         request._body = json.dumps(settings)
-        helpers.validate_ad_groups_state([ad_group], ad_group.campaign, ad_group.campaign.get_current_settings(), state)
-
-        try:
-            ad_group.settings.update(request, state=state)
-
-        except core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
-            raise exc.ValidationError(error={"state": [str(err)]})
+        views.agency.AdGroupSettingsState().post(request, ad_group_id)
 
         response = {"rows": [{"ad_group": ad_group_id, "state": state}]}
         convert_resource_response(constants.Level.CAMPAIGNS, "ad_group_id", response)

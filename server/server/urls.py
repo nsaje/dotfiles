@@ -175,6 +175,11 @@ urlpatterns += [
         name="grid_ad_group_source_settings",
     ),
     url(
+        r"^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/$",
+        login_required(dash.views.agency.AdGroupSettingsState.as_view()),
+        name="ad_group_settings_state",
+    ),
+    url(
         r"^api/ad_groups/(?P<ad_group_id>\d+)/sources/$",
         login_required(dash.views.views.AdGroupSources.as_view()),
         name="ad_group_sources",
