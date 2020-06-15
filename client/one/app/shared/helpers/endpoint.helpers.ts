@@ -23,11 +23,11 @@ export function buildRequestProperties(
 
 export function replaceUrl(
     request: HttpRequestInfo,
-    replacements: {[key: string]: string}
+    replacements: {[key: string]: string | number}
 ): HttpRequestInfo {
     let newUrl: string = request.url;
     Object.keys(replacements).forEach(key => {
-        newUrl = newUrl.replace('{' + key + '}', replacements[key]);
+        newUrl = newUrl.replace('{' + key + '}', replacements[key].toString());
     });
 
     const newRequest: HttpRequestInfo = {

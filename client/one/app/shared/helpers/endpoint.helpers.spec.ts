@@ -31,6 +31,11 @@ describe('endpointHelpers', () => {
             name: 'test',
             url: '/api/42/testRequest',
         });
+
+        expect(endpointHelpers.replaceUrl(request, {accountId: 42})).toEqual({
+            name: 'test',
+            url: '/api/42/testRequest',
+        });
         // The original object should be left unchanged
         expect(request).toEqual({
             name: 'test',
