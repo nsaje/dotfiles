@@ -464,7 +464,6 @@ urlpatterns += [
     ),
     url(r"^api/sources/$", login_required(dash.views.views.AvailableSources.as_view())),
     url(r"^api/agencies/$", login_required(dash.views.agency.Agencies.as_view()), name="agencies"),
-    url(r"^api/accounts/$", login_required(dash.views.views.Account.as_view()), name="accounts_create"),
     url(
         r"^api/accounts/(?P<account_id>\d+)/overview/$",
         login_required(dash.views.views.AccountOverview.as_view()),

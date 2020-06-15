@@ -21,8 +21,6 @@ import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
-from dash.views import views
-from utils import exc
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -129,118 +127,6 @@ class UserTest(TestCase):
                 "success": True,
             },
         )
-
-
-class AccountsTest(TestCase):
-    fixtures = ["test_views.yaml"]
-
-    def test_put(self):
-        johnny = User.objects.get(pk=2)
-
-        rf = RequestFactory().put("accounts")
-        rf.user = johnny
-        with self.assertRaises(exc.MissingDataError):
-            views.Account().put(rf)
-
-        permission = Permission.objects.get(codename="all_accounts_accounts_add_account")
-        johnny.user_permissions.add(permission)
-        johnny.save()
-
-        johnny = User.objects.get(pk=2)
-        rf.user = johnny
-        response = views.Account().put(rf)
-        response_blob = json.loads(response.content)
-        self.assertTrue(response_blob["success"])
-        self.assertDictEqual({"name": "New account", "id": 3}, response_blob["data"])
-
-        account = models.Account.objects.get(pk=3)
-        self.assertIsNone(account.agency)
-
-        settings = account.get_current_settings()
-        self.assertEqual(settings.default_account_manager_id, 2)
-
-    def test_put_as_agency_manager(self):
-        johnny = User.objects.get(pk=2)
-
-        rf = RequestFactory().put("accounts")
-        rf.user = johnny
-
-        ag = models.Agency(name="6Pack")
-        ag.save(rf)
-        ag.users.add(johnny)
-        ag.save(rf)
-
-        with self.assertRaises(exc.MissingDataError):
-            views.Account().put(rf)
-
-        permission1 = Permission.objects.get(codename="all_accounts_accounts_add_account")
-        johnny.user_permissions.add(permission1)
-        johnny.save()
-
-        johnny = User.objects.get(pk=2)
-        rf.user = johnny
-        response = views.Account().put(rf)
-        response_blob = json.loads(response.content)
-
-        acc = models.Account.objects.all().order_by("-created_dt").first()
-
-        self.assertTrue(response_blob["success"])
-        self.assertDictEqual({"name": "New account", "id": acc.id}, response_blob["data"])
-        self.assertIsNotNone(acc.agency)
-
-    def test_put_agency_defaults(self):
-        user = User.objects.get(pk=2)
-        user.user_permissions.add(Permission.objects.get(codename="all_accounts_accounts_add_account"))
-
-        request = RequestFactory().put("accounts")
-        request.user = user
-
-        agency = models.Agency(
-            name="agency-name", sales_representative=user, default_account_type=constants.AccountType.TEST
-        )
-        agency.save(request)
-        agency.users.add(user)
-
-        client = Client()
-        client.login(username=user.email, password="secret")
-
-        response = client.put(reverse("accounts_create"))
-
-        self.assertEqual(200, response.status_code)
-
-        account = models.Account.objects.all().order_by("-created_dt").first()
-        settings = account.get_current_settings()
-
-        self.assertEqual(user, settings.default_sales_representative)
-        self.assertEqual(constants.AccountType.ACTIVATED, settings.account_type)
-
-    def test_put_agency_defaults_internal_user(self):
-        internal_user = User.objects.get(pk=1)
-        agency_user = User.objects.get(pk=2)
-        internal_user.user_permissions.add(Permission.objects.get(codename="all_accounts_accounts_add_account"))
-        agency_user.user_permissions.add(Permission.objects.get(codename="all_accounts_accounts_add_account"))
-
-        request = RequestFactory().put("accounts")
-        request.user = internal_user
-
-        agency = models.Agency(
-            name="agency-name", sales_representative=agency_user, default_account_type=constants.AccountType.UNKNOWN
-        )
-        agency.save(request)
-        agency.users.add(agency_user)
-
-        client = Client()
-        client.login(username=internal_user.email, password="secret")
-
-        response = client.put(reverse("accounts_create"))
-
-        self.assertEqual(200, response.status_code)
-
-        account = models.Account.objects.all().order_by("-created_dt").first()
-        settings = account.get_current_settings()
-
-        self.assertEqual(None, settings.default_sales_representative)
-        self.assertEqual(constants.AccountType.UNKNOWN, settings.account_type)
 
 
 class AccountCampaignsTest(TestCase):

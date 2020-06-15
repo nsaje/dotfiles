@@ -661,26 +661,6 @@ class AdGroupSources(api_common.BaseApiView):
         return self.create_api_response(None)
 
 
-class Account(api_common.BaseApiView):
-    @metrics_compat.timer("dash.api")
-    def put(self, request):
-        if not request.user.has_perm("zemauth.all_accounts_accounts_add_account"):
-            raise exc.MissingDataError()
-
-        agency = models.Agency.objects.all().filter(users=request.user).first()
-
-        account = models.Account.objects.create(
-            request,
-            name=core.models.helpers.create_default_name(models.Account.objects, "New account"),
-            agency=agency,
-            currency=constants.Currency.USD,
-        )
-
-        response = {"name": account.name, "id": account.id}
-
-        return self.create_api_response(response)
-
-
 class AccountCampaigns(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
     def put(self, request, account_id):
