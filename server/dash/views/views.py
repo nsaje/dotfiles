@@ -185,16 +185,6 @@ class User(api_common.BaseApiView):
         }
 
 
-class AccountArchive(api_common.BaseApiView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, account_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-        account = helpers.get_account(request.user, account_id)
-        account.archive(request)
-        return self.create_api_response({})
-
-
 class AccountRestore(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
     def post(self, request, account_id):
