@@ -56,7 +56,7 @@ def _set(key, rows, pickled_args):
     cache.set(key, {"created_dt": dates_helper.utc_now(), "rows": rows, "pickled_args": pickled_args})
 
 
-@celery.app.task(acks_late=True, name="redshift_background_cache", soft_time_limit=5 * 60)
+@celery.app.task(acks_late=True, name="redshift_background_cache", soft_time_limit=5 * 60, ignore_result=True)
 def update(key):
     cached_data, is_latest = _get(key)
     if is_latest:

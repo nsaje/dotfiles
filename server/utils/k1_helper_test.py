@@ -26,6 +26,7 @@ class K1HelperTest(TestCase):
         mock_app.send_task.assert_called_once_with(
             "consistency_ping_account",
             queue="ping_account_queue",
+            ignore_result=True,
             kwargs={"msg": "test", "account_id": 123, "initiated_at": 1513594339.172575, "priority": False},
         )
 
@@ -35,6 +36,7 @@ class K1HelperTest(TestCase):
         mock_app.send_task.assert_called_once_with(
             "consistency_ping_ad_group",
             queue="ping_ad_group_queue",
+            ignore_result=True,
             kwargs={
                 "msg": "test",
                 "account_id": 789,
@@ -50,6 +52,7 @@ class K1HelperTest(TestCase):
         mock_app.send_task.assert_called_once_with(
             "consistency_ping_content_ad",
             queue="ping_content_ad_queue",
+            ignore_result=True,
             kwargs={
                 "msg": "test",
                 "account_id": 789,
@@ -66,5 +69,6 @@ class K1HelperTest(TestCase):
         mock_app.send_task.assert_called_once_with(
             "consistency_ping_blacklist",
             queue="ping_blacklist_queue",
+            ignore_result=True,
             kwargs={"msg": "test", "ad_group_id": 123, "initiated_at": 1513594339.172575, "priority": False},
         )

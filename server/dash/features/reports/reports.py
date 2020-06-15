@@ -54,7 +54,7 @@ def create_job(user, query, scheduled_report=None):
 
 
 # if soft time limit is changed, visibility timeout on the SQS queue should be changed as well!
-@celery.app.task(acks_late=True, name="reports_execute", soft_time_limit=39 * 60)
+@celery.app.task(acks_late=True, name="reports_execute", soft_time_limit=39 * 60, ignore_result=True)
 def execute(job_id, **kwargs):
     logger.info("Start job executor for report", job=job_id)
     job = ReportJob.objects.get(pk=job_id)

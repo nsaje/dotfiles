@@ -167,7 +167,14 @@ def _invoke_lambda_async(data):
     lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, do_async=True)
 
 
-@celery.app.task(acks_late=True, name="upload_lambda_execute", time_limit=300, max_retries=5, default_retry_delay=20)
+@celery.app.task(
+    acks_late=True,
+    name="upload_lambda_execute",
+    time_limit=300,
+    max_retries=5,
+    default_retry_delay=20,
+    ignore_result=True,
+)
 def _invoke_lambda_celery(data):
     data["raiseException"] = True
     lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, do_async=False)

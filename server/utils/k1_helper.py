@@ -80,7 +80,7 @@ def _send_task(queue_name, task_name, **kwargs):
     kwargs["initiated_at"] = time.time()
 
     try:
-        app.send_task(task_name, queue=queue_name, kwargs=kwargs)
+        app.send_task(task_name, queue=queue_name, ignore_result=True, kwargs=kwargs)
     except Exception:
         logger.exception("Error sending ping to k1.", task_name=task_name, data=kwargs)
 
