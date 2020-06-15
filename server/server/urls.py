@@ -458,7 +458,6 @@ urlpatterns += [
         name="account_users",
     ),
     url(r"^api/accounts/(?P<account_id>\d+)/restore/$", login_required(dash.views.views.AccountRestore.as_view())),
-    url(r"^api/campaigns/(?P<campaign_id>\d+)/archive/$", login_required(dash.views.views.CampaignArchive.as_view())),
     url(r"^api/campaigns/(?P<campaign_id>\d+)/restore/$", login_required(dash.views.views.CampaignRestore.as_view())),
     url(
         r"^api/campaigns/(?P<campaign_id>\d+)/overview/$",

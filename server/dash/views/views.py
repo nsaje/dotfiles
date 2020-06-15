@@ -196,17 +196,6 @@ class AccountRestore(api_common.BaseApiView):
         return self.create_api_response({})
 
 
-class CampaignArchive(api_common.BaseApiView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        campaign.archive(request)
-        return self.create_api_response({})
-
-
 class CampaignRestore(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
