@@ -3121,25 +3121,3 @@ class TestHistoryMixin(TestCase):
             mix.construct_changes("Created settings.", "Settings: 5.", {"test_field": "pesa"}),
         )
         self.assertEqual(({}, "Settings: 5."), mix.construct_changes("Created settings.", "Settings: 5.", {}))
-
-
-class AdFacebookAccountStatusTest(TestCase):
-    fixtures = ["test_views.yaml", "test_facebook.yaml"]
-
-    @patch("dash.facebook_helper.get_all_pages")
-    def test_get(self, get_all_pages_mock):
-        get_all_pages_mock.return_value = {"123": "CONFIRMED"}
-        client = self._get_client_with_permissions([])
-        response = client.get(reverse("facebook_account_status", kwargs={"account_id": 100}), follow=True)
-        content = json.loads(response.content)
-        self.assertDictEqual(content["data"], {"status": "Connected"})
-        get_all_pages_mock.assert_called_once_with("fake_business_id", "fake_access_token")
-
-    def _get_client_with_permissions(self, permissions_list):
-        password = "secret"
-        user = User.objects.get(pk=2)
-        add_permissions(user, permissions_list)
-        user.save()
-        client = Client()
-        client.login(username=user.email, password=password)
-        return client
