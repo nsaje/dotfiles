@@ -419,11 +419,6 @@ urlpatterns += [
         name="campaign_ad_groups",
     ),
     url(
-        r"^api/accounts/(?P<account_id>\d+)/campaigns/$",
-        login_required(dash.views.views.AccountCampaigns.as_view()),
-        name="account_campaigns",
-    ),
-    url(
         r"^api/campaigns/(?P<campaign_id>\d+)/content-insights/$",
         login_required(dash.views.agency.CampaignContentInsights.as_view()),
     ),

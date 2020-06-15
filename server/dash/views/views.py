@@ -661,37 +661,6 @@ class AdGroupSources(api_common.BaseApiView):
         return self.create_api_response(None)
 
 
-class AccountCampaigns(api_common.BaseApiView):
-    @metrics_compat.timer("dash.api")
-    def put(self, request, account_id):
-        if not request.user.has_perm("zemauth.account_campaigns_view"):
-            raise exc.MissingDataError()
-
-        account = helpers.get_account(request.user, account_id)
-
-        form = forms.CampaignForm(json.loads(request.body))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        name = core.models.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
-        type = form.cleaned_data.get("campaign_type")
-        language = constants.Language.ENGLISH if self.rest_proxy else None
-
-        try:
-            campaign = models.Campaign.objects.create(
-                request, account, name, language=language, type=type, send_mail=True
-            )
-
-        except core.models.campaign.exceptions.AccountIsArchived as err:
-            raise exc.ValidationError(str(err))
-
-        hacks.apply_campaign_create_hacks(request, campaign)
-
-        response = {"name": campaign.name, "id": campaign.id}
-
-        return self.create_api_response(response)
-
-
 class AdGroupSourceSettings(api_common.BaseApiView):
     @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id, source_id):

@@ -12,7 +12,6 @@ from django.test import RequestFactory
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
-from mock import ANY
 from mock import patch
 
 import core.models.source_type.model
@@ -127,76 +126,6 @@ class UserTest(TestCase):
                 "success": True,
             },
         )
-
-
-class AccountCampaignsTest(TestCase):
-    fixtures = ["test_views.yaml"]
-
-    class MockSettingsWriter(object):
-        def __init__(self, init):
-            pass
-
-        def set(self, resource, request):
-            pass
-
-    def setUp(self):
-        self.client = Client()
-        self.client.login(username=User.objects.get(pk=1).email, password="secret")
-
-    @patch("automation.autopilot.recalculate_budgets_campaign")
-    @patch("utils.email_helper.send_campaign_created_email")
-    def test_put(self, mock_send, mock_autopilot):
-        campaign_name = "New campaign"
-
-        response = self.client.put(
-            reverse("account_campaigns", kwargs={"account_id": "1"}), data=json.dumps({"campaign_type": "1"})
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        data = json.loads(response.content)["data"]
-        self.assertIn("id", data)
-        self.assertIn("name", data)
-        self.assertEqual(data["name"], campaign_name)
-
-        campaign_id = data["id"]
-        campaign = models.Campaign.objects.get(pk=campaign_id)
-
-        self.assertEqual(campaign.name, campaign_name)
-
-        settings = models.CampaignSettings.objects.get(campaign_id=campaign_id)
-
-        self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
-        self.assertEqual(settings.target_regions, [])
-        self.assertEqual(settings.name, campaign_name)
-        self.assertEqual(settings.campaign_manager.id, 1)
-
-        hist = history_helpers.get_campaign_history(campaign).first()
-        self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
-
-        mock_send.assert_called_once_with(ANY, campaign)
-
-    @patch("automation.autopilot.recalculate_budgets_campaign")
-    @patch("utils.email_helper.send_campaign_created_email")
-    def test_put_account_archived(self, mock_send, mock_autopilot):
-        account = magic_mixer.blend(models.Account, archived=True)
-        response = self.client.put(
-            reverse("account_campaigns", kwargs={"account_id": account.id}), data=json.dumps({"campaign_type": "1"})
-        )
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(
-            {
-                "success": False,
-                "data": {
-                    "error_code": "ValidationError",
-                    "message": "Can not create a campaign on an archived account.",
-                    "errors": None,
-                    "data": None,
-                },
-            },
-            json.loads(response.content),
-        )
-        mock_send.assert_not_called()
 
 
 class AdGroupSourceSettingsTest(TestCase):
