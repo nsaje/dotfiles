@@ -10,6 +10,8 @@ import {RuleEntities} from './rule-entities';
 
 export interface Rule {
     id: string;
+    agencyId: string | null;
+    accountId: string | null;
     name: string;
     entities: RuleEntities;
     targetType: RuleTargetType;

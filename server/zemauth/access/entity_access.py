@@ -2,6 +2,7 @@ from typing import Any
 
 from django.db import models
 
+import automation.rules
 import core.features.bcm
 import core.features.deals
 import core.features.publisher_groups
@@ -242,3 +243,23 @@ def _get_model_queryset(user: zemauth.models.User, permission: str, model: model
     return zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
         user, permission, queryset_user_perm, queryset_entity_perm
     )
+
+
+def get_automation_rule(user: zemauth.models.User, permission: str, rule_id: str) -> automation.rules.Rule:
+    try:
+        if not user.has_perm("zemauth.fea_can_create_automation_rules"):
+            raise utils.exc.AuthorizationError()
+
+        queryset_user_perm = automation.rules.Rule.objects.filter_by_user(user).select_related("agency", "account")
+        queryset_entity_perm = automation.rules.Rule.objects.filter_by_entity_permission(
+            user, permission
+        ).select_related("agency", "account")
+
+        queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, permission, queryset_user_perm, queryset_entity_perm, rule_id
+        )
+        rule = queryset.get(id=rule_id)
+
+        return rule
+    except automation.rules.Rule.DoesNotExist:
+        raise utils.exc.MissingDataError("Rule does not exist")

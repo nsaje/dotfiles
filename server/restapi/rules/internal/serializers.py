@@ -54,7 +54,8 @@ class RuleEntitiesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
-    agency_id = restapi.serializers.fields.IdField(read_only=True)
+    agency_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
+    account_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
     name = restapi.serializers.fields.PlainCharField(
         max_length=127,
         error_messages={"required": "Please specify a rule name.", "null": "Please specify a rule name."},
@@ -105,3 +106,11 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             user = self.context["request"].user
             zemauth.access.get_publisher_group(user, Permission.WRITE, publisher_group.id)
         return publisher_group
+
+
+class RuleQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
+    agency_only = restapi.serializers.fields.NullBooleanField(required=False, default=False)

@@ -4,6 +4,7 @@ from .entity_access import get_ad_group
 from .entity_access import get_ad_groups
 from .entity_access import get_agencies
 from .entity_access import get_agency
+from .entity_access import get_automation_rule
 from .entity_access import get_campaign
 from .entity_access import get_campaigns
 from .entity_access import get_content_ad

@@ -37,6 +37,8 @@ describe('RulesLibraryStore', () => {
         mockedAdGroupId = '12345';
         mockedRule = {
             id: null,
+            agencyId: mockedAgencyId,
+            accountId: null,
             name: null,
             entities: {},
             targetType: null,

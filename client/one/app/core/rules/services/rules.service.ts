@@ -9,11 +9,10 @@ export class RulesService {
     constructor(private endpoint: RulesEndpoint) {}
 
     save(
-        agencyId: string,
         rule: Rule,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         // TODO: add support for update based on id
-        return this.endpoint.create(agencyId, rule, requestStateUpdater);
+        return this.endpoint.create(rule, requestStateUpdater);
     }
 }

@@ -21,6 +21,8 @@ export class RuleEditFormStoreState {
     };
     rule: Rule = {
         id: null,
+        agencyId: null,
+        accountId: null,
         name: null,
         entities: {
             adGroup: {

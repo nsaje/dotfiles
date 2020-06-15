@@ -55,6 +55,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         *,
         id=None,
         agency_id=None,
+        account_id=None,
         name,
         ad_groups_included,
         target_type,
@@ -73,6 +74,8 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
     ):
         representation = {
             "name": name,
+            "agencyId": agency_id,
+            "accountId": account_id,
             "entities": {"adGroup": {"included": ad_groups_included}},
             "targetType": automation.rules.TargetType.get_name(target_type),
             "actionType": automation.rules.ActionType.get_name(action_type),
@@ -92,6 +95,8 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             representation["id"] = str(id)
         if agency_id is not None:
             representation["agencyId"] = str(agency_id)
+        if account_id is not None:
+            representation["accountId"] = str(account_id)
         return cls.normalize(representation)
 
     @classmethod
@@ -128,6 +133,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         expected = self.rule_repr(
             id=rule_db.id,
             agency_id=rule_db.agency_id,
+            account_id=rule_db.account_id,
             name=rule_db.name,
             ad_groups_included=[ag.id for ag in rule_db.ad_groups_included.all()],
             target_type=rule_db.target_type,
@@ -158,25 +164,76 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(expected, rule)
 
     def test_get(self):
-        response = self.client.get(
-            reverse(
-                "restapi.rules.internal:rules_details", kwargs={"agency_id": self.agency.id, "rule_id": self.rule.id}
-            )
-        )
+        response = self.client.get(reverse("restapi.rules.internal:rules_details", kwargs={"rule_id": self.rule.id}))
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK)
         self.validate_against_db(result["data"])
 
     def test_list(self):
-        response = self.client.get(reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}))
+        response = self.client.get(reverse("restapi.rules.internal:rules_list"), {"agency_id": self.agency.id})
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
         self.assertEqual(1, result["count"])
         self.assertEqual(None, result["next"])
         for rule in result["data"]:
             self.validate_against_db(rule)
 
+    def test_list_agency_rules(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        another_agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
+        account_on_another_agency = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        rules_with_agency = magic_mixer.cycle(3).blend(automation.rules.Rule, agency=agency)
+        magic_mixer.cycle(3).blend(automation.rules.Rule, agency=another_agency)
+        rules_with_account_on_agency = magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_agency)
+        magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_another_agency)
+
+        response = self.client.get(reverse("restapi.rules.internal:rules_list"), {"agency_id": agency.id})
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rules_with_agency] + [
+            item.id for item in rules_with_account_on_agency
+        ]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_agency_only_rules(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        another_agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
+        account_on_another_agency = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        rules_with_agency = magic_mixer.cycle(3).blend(automation.rules.Rule, agency=agency)
+        magic_mixer.cycle(3).blend(automation.rules.Rule, agency=another_agency)
+        magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_agency)
+        magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_another_agency)
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_list"), {"agency_id": agency.id, "agency_only": True}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rules_with_agency]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_account_rules(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
+
+        magic_mixer.cycle(3).blend(automation.rules.Rule, agency=agency)
+        rules_with_account = magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_agency)
+
+        response = self.client.get(reverse("restapi.rules.internal:rules_list"), {"account_id": account_on_agency.id})
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rules_with_account]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
     def test_create(self):
         rule_data = self.rule_repr(
             name="New test rule",
+            agency_id=self.agency.id,
             ad_groups_included=[self.ad_group.id],
             target_type=automation.rules.TargetType.PUBLISHER,
             action_type=automation.rules.ActionType.DECREASE_BID_MODIFIER,
@@ -202,11 +259,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 }
             ],
         )
-        response = self.client.post(
-            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
-            data=rule_data,
-            format="json",
-        )
+        response = self.client.post(reverse("restapi.rules.internal:rules_list"), data=rule_data, format="json")
         result = self.assertResponseValid(response, status_code=status.HTTP_201_CREATED)
         self.validate_against_db(result["data"])
 
@@ -217,6 +270,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         )
         rule_data = self.rule_repr(
             name="New test rule",
+            agency_id=self.agency.id,
             ad_groups_included=[self.ad_group.id],
             target_type=automation.rules.TargetType.PUBLISHER,
             action_type=automation.rules.ActionType.ADD_TO_PUBLISHER_GROUP,
@@ -243,11 +297,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
             ],
         )
 
-        response = self.client.post(
-            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
-            data=rule_data,
-            format="json",
-        )
+        response = self.client.post(reverse("restapi.rules.internal:rules_list"), data=rule_data, format="json")
         result = self.assertResponseError(response, "MissingDataError")
 
         valid_publisher_group = magic_mixer.blend(
@@ -255,19 +305,13 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
         )
         rule_data["publisher_group_id"] = valid_publisher_group.id
 
-        response = self.client.post(
-            reverse("restapi.rules.internal:rules_list", kwargs={"agency_id": self.agency.id}),
-            data=rule_data,
-            format="json",
-        )
+        response = self.client.post(reverse("restapi.rules.internal:rules_list"), data=rule_data, format="json")
         result = self.assertResponseValid(response, status_code=status.HTTP_201_CREATED)
         self.validate_against_db(result["data"])
 
     def test_put(self):
         response = self.client.put(
-            reverse(
-                "restapi.rules.internal:rules_details", kwargs={"agency_id": self.agency.id, "rule_id": self.rule.id}
-            ),
+            reverse("restapi.rules.internal:rules_details", kwargs={"rule_id": self.rule.id}),
             data={"changeStep": "0.02"},
             format="json",
         )

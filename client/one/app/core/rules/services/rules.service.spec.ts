@@ -34,6 +34,8 @@ describe('RulesService', () => {
         mockedRules = [
             {
                 id: '10000000',
+                agencyId: mockedAgencyId,
+                accountId: null,
                 name: 'Test rule',
                 entities: {},
                 targetType: RuleTargetType.AdGroupPublisher,
@@ -62,13 +64,12 @@ describe('RulesService', () => {
         const mockedNewRule = clone(mockedRule);
         mockedNewRule.id = null;
         service
-            .save(mockedAgencyId, mockedNewRule, requestStateUpdater)
+            .save(mockedNewRule, requestStateUpdater)
             .subscribe(rule => expect(rule).toEqual(mockedRule));
         tick();
 
         expect(rulesEndpointStub.create).toHaveBeenCalledTimes(1);
         expect(rulesEndpointStub.create).toHaveBeenCalledWith(
-            mockedAgencyId,
             mockedNewRule,
             requestStateUpdater
         );

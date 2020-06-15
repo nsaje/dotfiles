@@ -12,12 +12,11 @@ export class RulesEndpoint {
     constructor(private http: HttpClient) {}
 
     create(
-        agencyId: string,
         rule: Rule,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         const request = {
-            url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/rules/`,
+            url: `${APP_CONFIG.apiRestInternalUrl}/rules/`,
             name: 'create',
         };
         requestStateUpdater(request.name, {

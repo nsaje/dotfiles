@@ -4,6 +4,7 @@ import mock
 from django.db import models
 from django.test import TestCase
 
+import automation.rules
 import core.features.bcm
 import core.features.deals
 import core.features.publisher_groups
@@ -348,3 +349,35 @@ class PublisherGroupAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
                 user, permission, entity_access.get_publisher_group, account, publisher_group_with_account_scope, False
             )
             self._for_none(user, permission, entity_access.get_publisher_group, publisher_group_with_account_scope)
+
+
+class AutomationRuleAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
+    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
+    def test_get_automation_rule(self, mock_log_differences_and_get_queryset):
+        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
+
+        agency: core.models.Agency = magic_mixer.blend(core.models.Agency)
+        account: core.models.Account = magic_mixer.blend(core.models.Account, agency=agency)
+        rule_with_agency_scope: core.features.publisher_groups.PublisherGroup = magic_mixer.blend(
+            automation.rules.Rule, agency=agency
+        )
+        rule_with_account_scope: core.features.publisher_groups.PublisherGroup = magic_mixer.blend(
+            automation.rules.Rule, account=account
+        )
+        user: zemauth.models.User = magic_mixer.blend_user()
+        test_helper.add_permissions(user, ["fea_can_create_automation_rules"])
+
+        for permission in zemauth.features.entity_permission.Permission.get_all():
+            self._for_all_entities(user, permission, entity_access.get_automation_rule, rule_with_agency_scope)
+            self._for_agency(user, permission, entity_access.get_automation_rule, agency, rule_with_agency_scope)
+            self._for_account(
+                user, permission, entity_access.get_automation_rule, account, rule_with_agency_scope, True
+            )
+            self._for_none(user, permission, entity_access.get_automation_rule, rule_with_agency_scope)
+
+            self._for_all_entities(user, permission, entity_access.get_automation_rule, rule_with_account_scope)
+            self._for_agency(user, permission, entity_access.get_automation_rule, agency, rule_with_account_scope)
+            self._for_account(
+                user, permission, entity_access.get_automation_rule, account, rule_with_account_scope, False
+            )
+            self._for_none(user, permission, entity_access.get_automation_rule, rule_with_account_scope)

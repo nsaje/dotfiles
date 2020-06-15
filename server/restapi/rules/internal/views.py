@@ -1,11 +1,12 @@
 import rest_framework.permissions
 import rest_framework.serializers
+from django.db.models import Q
 
 import automation.rules
-import restapi.campaign.v1.views
 import utils.exc
 import zemauth.access
 from restapi.common.pagination import StandardPagination
+from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
 
 from . import serializers
@@ -16,40 +17,76 @@ class CanUseAutomationRulesPermission(rest_framework.permissions.BasePermission)
         return bool(request.user and request.user.has_perm("zemauth.fea_can_create_automation_rules"))
 
 
-class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
+class RuleViewSet(RESTAPIBaseViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseAutomationRulesPermission)
 
-    def get(self, request, agency_id, rule_id):
-        agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
-        rule = agency.rule_set.get(id=rule_id)
+    def get(self, request, rule_id):
+        rule = zemauth.access.get_automation_rule(request.user, Permission.READ, rule_id)
         serializer = serializers.RuleSerializer(rule, context={"request": request})
         return self.response_ok(data=serializer.data)
 
-    def create(self, request, agency_id):
-        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id)
+    def create(self, request):
         serializer = serializers.RuleSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        rule = self._wrap_validation_exceptions(automation.rules.Rule.objects.create, request, agency, **data)
+        agency = (
+            zemauth.access.get_agency(request.user, Permission.WRITE, data.get("agency_id"))
+            if data.get("agency_id")
+            else None
+        )
+        account = (
+            zemauth.access.get_account(request.user, Permission.WRITE, data.get("account_id"))
+            if data.get("account_id")
+            else None
+        )
+
+        rule = self._wrap_validation_exceptions(
+            automation.rules.Rule.objects.create, request, agency=agency, account=account, **data
+        )
         serializer = serializers.RuleSerializer(rule)
         return self.response_ok(serializer.data, status=201)
 
-    def list(self, request, agency_id, credit_id=None):
-        agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
-        rules = automation.rules.Rule.objects.filter(agency=agency).exclude_archived().order_by("id")
+    def list(self, request):
+        qpe = serializers.RuleQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        agency_id = qpe.validated_data.get("agency_id")
+        account_id = qpe.validated_data.get("account_id")
+        agency_only = qpe.validated_data.get("agency_only")
+
+        if account_id is not None:
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            rules = automation.rules.Rule.objects.filter(Q(account=account)).exclude_archived().order_by("-created_dt")
+        elif agency_id is not None:
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            if agency_only:
+                rules = (
+                    automation.rules.Rule.objects.filter(Q(agency=agency)).exclude_archived().order_by("-created_dt")
+                )
+            else:
+                rules = (
+                    automation.rules.Rule.objects.filter(Q(agency=agency) | Q(account__agency=agency))
+                    .exclude_archived()
+                    .order_by("-created_dt")
+                )
+
+        else:
+            raise utils.exc.ValidationError(
+                errors={"non_field_errors": "Either agency id or account id must be provided."}
+            )
+
         paginator = StandardPagination()
         rules_paginated = paginator.paginate_queryset(rules, request)
         return paginator.get_paginated_response(
             serializers.RuleSerializer(rules_paginated, many=True, context={"request": request}).data
         )
 
-    def put(self, request, agency_id, rule_id):
-        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id)
+    def put(self, request, rule_id):
         serializer = serializers.RuleSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        rule = agency.rule_set.get(id=rule_id)
+        rule = zemauth.access.get_automation_rule(request.user, Permission.WRITE, rule_id)
         self._wrap_validation_exceptions(rule.update, request, **data)
         return self.response_ok(serializers.RuleSerializer(rule, context={"request": request}).data)
 
@@ -86,4 +123,8 @@ class RuleViewSet(restapi.campaign.v1.views.CampaignViewSet):
                         errors["conditions"] = e.conditions_errors
                     else:
                         errors.setdefault("conditions", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidAgency):
+                    errors.setdefault("agency_id", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidAccount):
+                    errors.setdefault("account_id", []).append(str(e))
             raise utils.exc.ValidationError(errors=errors)

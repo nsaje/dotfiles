@@ -55,6 +55,8 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             agencyId: agencyId,
             rule: {
                 ...this.state.rule,
+                agencyId: agencyId,
+                accountId: null,
                 entities: {
                     ...this.state.rule.entities,
                     adGroup: {
@@ -69,11 +71,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     saveEntity(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.rulesService
-                .save(
-                    this.state.agencyId,
-                    this.state.rule,
-                    this.requestStateUpdater
-                )
+                .save(this.state.rule, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
