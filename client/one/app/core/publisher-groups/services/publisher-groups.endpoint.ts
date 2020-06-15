@@ -282,7 +282,7 @@ export class PublisherGroupsEndpoint {
                     requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
-                        errorMessage: error.message,
+                        errorMessage: error?.error?.details || error.message,
                     });
                     return throwError(error);
                 })

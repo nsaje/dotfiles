@@ -1,4 +1,4 @@
-export type PublisherGroupConnectionType =
+export type PublisherGroupConnectionLocation =
     | 'agencyBlacklist'
     | 'agencyWhitelist'
     | 'accountBlacklist'

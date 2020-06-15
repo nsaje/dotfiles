@@ -1,0 +1,13 @@
+<div class="zem-link-cell">
+    <a
+        *ngIf="link"
+        class="zem-link-cell__link"
+        href="{{ link }}"
+        target="_blank"
+    >
+        {{ text }}
+    </a>
+    <div *ngIf="!link" class="zem-link-cell__text">
+        {{ text }}
+    </div>
+</div>

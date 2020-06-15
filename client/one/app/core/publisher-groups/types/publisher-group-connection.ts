@@ -1,7 +1,7 @@
-import {PublisherGroupConnectionType} from './publisher-group-connection-type';
+import {PublisherGroupConnectionLocation} from './publisher-group-connection-location';
 
 export interface PublisherGroupConnection {
     id: number;
     name: string;
-    location: PublisherGroupConnectionType;
+    location: PublisherGroupConnectionLocation;
 }

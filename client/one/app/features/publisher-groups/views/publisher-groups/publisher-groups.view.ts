@@ -63,6 +63,8 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     editPublisherGroupModal: ModalComponent;
     @ViewChild('connectionsModal', {static: false})
     connectionsModal: ModalComponent;
+    @ViewChild('deleteFailedModal', {static: false})
+    deleteFailedModal: ModalComponent;
 
     columnDefs: ColDef[] = [];
     implicitColumnDefs: ColDef[] = [];
@@ -137,12 +139,21 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
+
     onExplicitGridReady($event: DetailGridInfo) {
         this.explicitGridApi = $event.api;
+        this.toggleLoadingOverlay(
+            this.store.state.requests.listExplicit.inProgress,
+            this.explicitGridApi
+        );
     }
 
     onImplicitGridReady($event: DetailGridInfo) {
         this.implicitGridApi = $event.api;
+        this.toggleLoadingOverlay(
+            this.store.state.requests.listImplicit.inProgress,
+            this.implicitGridApi
+        );
     }
 
     onPaginationChange($event: PaginationState, implicit: boolean) {
@@ -172,12 +183,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                         this.explicitPaginationOptions
                     );
                 })
-                .catch(reason =>
-                    this.notificationService.info(
-                        reason,
-                        'This publisher group can not be deleted'
-                    )
-                );
+                .catch(reason => {
+                    this.store.setActiveEntity(publisherGroup);
+                    this.deleteFailedModal.open();
+                });
         }
     }
 

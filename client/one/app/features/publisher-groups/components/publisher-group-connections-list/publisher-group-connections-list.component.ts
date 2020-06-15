@@ -11,12 +11,15 @@ import {
 } from '@angular/core';
 import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
-import {ConnectionActionsCellComponent} from '../../../../shared/components/connection-actions-cell/connection-actions-cell.component';
 import {ConnectionRowParentComponent} from '../../../../shared/components/connection-actions-cell/types/connection-row-parent-component';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
-import {PublisherGroupConnectionType} from '../../../../core/publisher-groups/types/publisher-group-connection-type';
-import {CONNECTION_TYPE_NAMES} from '../../../../core/publisher-groups/types/publisher-group-connection.config';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
+import {
+    COLUMN_ACTIONS,
+    COLUMN_USED_AS,
+    COLUMN_USED_ON,
+    PAGINATION_OPTIONS,
+} from './publisher-groups-connections-list.component.config';
 
 @Component({
     selector: 'zem-publisher-group-connections-list',
@@ -35,28 +38,9 @@ export class PublisherGroupConnectionsListComponent
     removeConnection = new EventEmitter<PublisherGroupConnection>();
 
     context: any;
-    columnDefs: ColDef[] = [
-        {headerName: 'Connection name', field: 'name'},
-        {
-            headerName: 'Connection type',
-            field: 'location',
-            valueFormatter: this.connectionLocationFormatter,
-        },
-        {
-            headerName: '',
-            width: 40,
-            suppressSizeToFit: true,
-            cellRendererFramework: ConnectionActionsCellComponent,
-            pinned: 'right',
-        },
-    ];
+    columnDefs: ColDef[] = [COLUMN_USED_ON, COLUMN_USED_AS, COLUMN_ACTIONS];
 
-    paginationOptions: PaginationOptions = {
-        type: 'client',
-        pageSizeOptions: [{name: '10', value: 10}],
-        page: 1,
-        pageSize: 10,
-    };
+    paginationOptions: PaginationOptions = PAGINATION_OPTIONS;
     private gridApi: GridApi;
 
     constructor() {
@@ -82,15 +66,6 @@ export class PublisherGroupConnectionsListComponent
     onGridReady($event: DetailGridInfo) {
         this.gridApi = $event.api;
         this.toggleLoadingOverlay(this.isLoading);
-    }
-
-    private connectionLocationFormatter(params: {
-        value: PublisherGroupConnectionType;
-    }): string {
-        if (isDefined(params.value)) {
-            return CONNECTION_TYPE_NAMES[params.value];
-        }
-        return 'N/A';
     }
 
     private toggleLoadingOverlay(show: boolean) {

@@ -71,6 +71,7 @@ import {PublisherGroupEditFormComponent} from './components/publisher-group-edit
 import {ConnectionActionsCellComponent} from './components/connection-actions-cell/connection-actions-cell.component';
 import {IconTooltipCellComponent} from './components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
 import {NoteCellComponent} from './components/smart-grid/components/cell/note-cell/note-cell.component';
+import {LinkCellComponent} from './components/smart-grid/components/cell/link-cell/link-cell.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -133,6 +134,7 @@ const EXPORTED_DECLARATIONS = [
     ItemScopeCellComponent,
     IconTooltipCellComponent,
     NoteCellComponent,
+    LinkCellComponent,
     PublisherGroupEditFormComponent,
     ConnectionActionsCellComponent,
 ];
@@ -156,6 +158,7 @@ const EXPORTED_DECLARATIONS = [
             ItemScopeCellComponent,
             IconTooltipCellComponent,
             NoteCellComponent,
+            LinkCellComponent,
         ]),
         NgbPaginationModule,
     ],
