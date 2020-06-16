@@ -40,6 +40,10 @@ angular
             return empty();
         };
     })
+    .service('zemAlertsStore', function() {
+        this.registerAlert = angular.noop;
+        this.removeAlert = angular.noop;
+    })
     .service('NgZone', function() {
         this.runOutsideAngular = function(fn) {
             fn();

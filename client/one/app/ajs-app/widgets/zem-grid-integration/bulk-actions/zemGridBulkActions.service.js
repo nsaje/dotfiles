@@ -1,4 +1,5 @@
 var commonHelpers = require('../../../../shared/helpers/common.helpers');
+var AlertType = require('../../../../app.constants').AlertType;
 
 angular
     .module('one.widgets')
@@ -8,7 +9,7 @@ angular
         zemEntityService,
         zemGridEndpointColumns,
         zemGridConstants,
-        zemAlertsService,
+        zemAlertsStore,
         zemUploadService,
         zemUploadApiConverter,
         zemCloneContentService,
@@ -414,11 +415,11 @@ angular
                 }
                 msg += ' active at the time.';
 
-                zemAlertsService.notify(
-                    constants.notificationType.warning,
-                    msg,
-                    true
-                );
+                zemAlertsStore.registerAlert({
+                    type: AlertType.WARNING,
+                    message: msg,
+                    isClosable: true,
+                });
             }
 
             function refreshData(data) {
@@ -431,11 +432,11 @@ angular
             }
 
             function handleError(data) {
-                zemAlertsService.notify(
-                    constants.notificationType.danger,
-                    'Error executing action: ' + data.data.message,
-                    true
-                );
+                zemAlertsStore.registerAlert({
+                    type: AlertType.DANGER,
+                    message: 'Error executing action: ' + data.data.message,
+                    isClosable: true,
+                });
             }
         }
 

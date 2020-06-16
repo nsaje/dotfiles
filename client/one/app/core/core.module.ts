@@ -18,6 +18,7 @@ import {PublishersModule} from './publishers/publishers.module';
 import {GeolocationsModule} from './geolocations/geolocations.module';
 import {CreditsModule} from './credits/credits.module';
 import {UsersModule} from './users/users.module';
+import {AlertsModule} from './alerts/alerts.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -45,6 +46,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         GeolocationsModule,
         CreditsModule,
         UsersModule,
+        AlertsModule,
     ],
     providers: [
         GoogleAnalyticsService,

@@ -128,6 +128,11 @@ if (APP_CONFIG.env.prod) {
             deps: ['$injector'],
         },
         {
+            provide: 'zemDataFilterService',
+            useFactory: ajs$zemDataFilterService,
+            deps: ['$injector'],
+        },
+        {
             provide: RouteReuseStrategy,
             useClass: CacheRouteReuseStrategy,
         },
@@ -158,4 +163,8 @@ function ajs$zemDesignHelpersService($injector: any) {
 
 function ajs$zemInitializationService($injector: any) {
     return $injector.get('zemInitializationService');
+}
+
+function ajs$zemDataFilterService($injector: any) {
+    return $injector.get('zemDataFilterService');
 }

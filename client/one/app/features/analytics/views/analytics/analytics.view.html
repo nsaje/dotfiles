@@ -19,4 +19,13 @@
         [breakdown]="breakdown"
         [entity]="entity"
     ></zem-grid-container>
+    <ng-container *ngIf="alertsStore.state$ | async as state">
+        <zem-portal hostElementId="#zem-grid-alerts">
+            <zem-alerts
+                class="zem-alerts"
+                [alerts]="state.alerts"
+                (closeAlert)="alertsStore.removeAlert($event)"
+            ></zem-alerts>
+        </zem-portal>
+    </ng-container>
 </ng-container>

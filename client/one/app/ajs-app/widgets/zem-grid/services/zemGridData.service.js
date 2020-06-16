@@ -6,7 +6,7 @@ angular
         $q,
         $timeout,
         zemGridParser,
-        zemAlertsService
+        zemAlertsStore
     ) {
         // eslint-disable-line max-len
 
@@ -195,15 +195,8 @@ angular
                 var deferred = $q.defer();
                 dataSource.saveData(value, row.data, column.data).then(
                     function(data) {
-                        if (data.notification) {
-                            if (lastNotification) lastNotification.close();
-                            lastNotification = zemAlertsService.notify(
-                                data.notification.type,
-                                data.notification.msg,
-                                true
-                            );
-                        }
-                        deferred.resolve(data);
+                        if (data.notification)
+                            showNotification(data.notification);
                     },
                     function(err) {
                         deferred.reject(err);
@@ -222,14 +215,8 @@ angular
                         );
                     })
                     .then(function(data) {
-                        if (data.notification) {
-                            if (lastNotification) lastNotification.close();
-                            lastNotification = zemAlertsService.notify(
-                                data.notification.type,
-                                data.notification.msg,
-                                true
-                            );
-                        }
+                        if (data.notification)
+                            showNotification(data.notification);
                     })
                     .catch(function(error) {
                         grid.meta.pubsub.notify(
@@ -240,6 +227,18 @@ angular
                             }
                         );
                     });
+            }
+
+            function showNotification(notification) {
+                if (lastNotification) {
+                    zemAlertsStore.removeAlert(lastNotification);
+                }
+                lastNotification = {
+                    type: notification.type,
+                    message: notification.message,
+                    isClosable: true,
+                };
+                zemAlertsStore.registerAlert(lastNotification);
             }
 
             function editRow(row) {

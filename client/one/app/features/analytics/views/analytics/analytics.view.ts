@@ -27,6 +27,7 @@ import {
 import {ActivatedRoute, Params} from '@angular/router';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
+import {AlertsStore} from '../../services/alerts-store/alerts.store';
 
 @Component({
     selector: 'zem-analytics-view',
@@ -44,11 +45,14 @@ export class AnalyticsView implements OnInit, OnDestroy {
     isInitialized: boolean = false;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
+    private dateRangeUpdateHandler: any;
 
     constructor(
+        public alertsStore: AlertsStore,
         private route: ActivatedRoute,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any,
+        @Inject('zemDataFilterService') private zemDataFilterService: any
     ) {}
 
     ngOnInit(): void {
@@ -61,11 +65,21 @@ export class AnalyticsView implements OnInit, OnDestroy {
                     params.breakdown
                 );
             });
+        this.dateRangeUpdateHandler = this.zemDataFilterService.onDateRangeUpdate(
+            () => {
+                if (this.isInitialized) {
+                    this.setAlerts();
+                }
+            }
+        );
     }
 
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+        if (commonHelpers.isDefined(this.dateRangeUpdateHandler)) {
+            this.dateRangeUpdateHandler();
+        }
     }
 
     updateInternalState(
@@ -83,6 +97,7 @@ export class AnalyticsView implements OnInit, OnDestroy {
         if (!commonHelpers.isDefined(entityId)) {
             this.entity = null;
             this.isInitialized = true;
+            this.setAlerts();
             this.changeDetectorRef.markForCheck();
             return;
         }
@@ -98,8 +113,20 @@ export class AnalyticsView implements OnInit, OnDestroy {
                 }
 
                 this.isInitialized = true;
+                this.setAlerts();
                 this.changeDetectorRef.markForCheck();
             });
+    }
+
+    setAlerts() {
+        const dateRange = this.zemDataFilterService.getDateRange();
+        this.alertsStore.setStore(
+            this.level,
+            commonHelpers.safeGet(this.entity, x => x.id),
+            this.breakdown,
+            commonHelpers.safeGet(dateRange, x => x.startDate),
+            commonHelpers.safeGet(dateRange, x => x.endDate)
+        );
     }
 
     private getLevel(levelParam: LevelParam): Level {

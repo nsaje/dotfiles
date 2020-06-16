@@ -1,0 +1,9 @@
+<zem-alert
+    *ngFor="let formattedAlert of formattedAlerts; trackBy: trackByIndex"
+    class="zem-alert zem-alerts__item"
+    [styleClass]="formattedAlert.styleClass"
+    [isClosable]="formattedAlert.alert.isClosable"
+    (close)="closeAlert.emit(formattedAlert.alert)"
+>
+    <div [innerHtml]="formattedAlert.alert.message"></div>
+</zem-alert>

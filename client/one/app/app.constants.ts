@@ -772,6 +772,13 @@ export enum IncludeExcludeType {
     EXCLUDE = 'EXCLUDE',
 }
 
+export enum AlertType {
+    INFO = 'INFO',
+    SUCCESS = 'SUCCESS',
+    WARNING = 'WARNING',
+    DANGER = 'DANGER',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,
@@ -869,6 +876,7 @@ export const APP_CONSTANTS = {
     },
     publisherStatus: PublisherStatus,
     publisherTargetingStatus: PublisherTargetingStatus,
+    // TODO (msuber): remove legacy notificationType
     notificationType: {
         info: 'info',
         success: 'success',

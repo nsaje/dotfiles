@@ -6,6 +6,8 @@
 ></zem-grid-container-tabs>
 
 <div class="custom-panel zem-grid-container__body">
+    <!--DOM Portal Host-->
+    <div id="#zem-grid-alerts"></div>
     <div ng-repeat="tab in $ctrl.tabs">
         <div ng-show="tab.selected">
             <div
@@ -25,7 +27,7 @@
                     <div class="zem-dummy-grid-container__footer"></div>
                 </div>
                 <div ng-if="tab.activated">
-                    <zem-alerts entity="$ctrl.entity"></zem-alerts>
+                    <!-- <zem-alerts entity="$ctrl.entity"></zem-alerts> -->
 
                     <zem-grid-container-actions
                         ng-if="tab.grid.api.getMetaData()"

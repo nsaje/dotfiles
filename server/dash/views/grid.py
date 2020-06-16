@@ -128,7 +128,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     def create_changed_sources_notification(self, sources):
         return {
             "type": constants.AlertType.INFO,
-            "msg": "Following your change to a Media Source's state, Autopilot has "
+            "message": "Following your change to a Media Source's state, Autopilot has "
             + "successfully adjusted daily spend caps of the following Media Sources: {}.".format(sources),
         }
 
