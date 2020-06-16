@@ -23,9 +23,9 @@ from dash import constants
 from dash import content_insights_helper
 from dash import forms
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
 from prodops import hacks
-from utils import api_common
 from utils import dates_helper
 from utils import email_helper
 from utils import exc
@@ -38,7 +38,7 @@ CONVERSION_PIXEL_INACTIVE_DAYS = 7
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
-class AdGroupSettingsState(api_common.BaseApiView):
+class AdGroupSettingsState(DASHAPIBaseView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         current_settings = ad_group.get_current_settings()
@@ -61,7 +61,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         return self.create_api_response({"id": str(ad_group.pk), "state": new_state})
 
 
-class ConversionPixel(api_common.BaseApiView):
+class ConversionPixel(DASHAPIBaseView):
     def get(self, request, account_id):
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
@@ -161,7 +161,7 @@ class ConversionPixel(api_common.BaseApiView):
         return data
 
 
-class AccountUsers(api_common.BaseApiView):
+class AccountUsers(DASHAPIBaseView):
     def get(self, request, account_id):
         if not request.user.has_perm("zemauth.account_agency_access_permissions"):
             raise exc.AuthorizationError()
@@ -303,7 +303,7 @@ class AccountUsers(api_common.BaseApiView):
         }
 
 
-class AccountUserAction(api_common.BaseApiView):
+class AccountUserAction(DASHAPIBaseView):
     ACTIVATE = "activate"
     PROMOTE = "promote"
     DOWNGRADE = "downgrade"
@@ -391,7 +391,7 @@ class AccountUserAction(api_common.BaseApiView):
         return authmodels.Group.objects.get(permissions=perm)
 
 
-class CampaignContentInsights(api_common.BaseApiView):
+class CampaignContentInsights(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def get(self, request, campaign_id):
         if not request.user.has_perm("zemauth.can_view_campaign_content_insights_side_tab"):
@@ -417,7 +417,7 @@ class CampaignContentInsights(api_common.BaseApiView):
         )
 
 
-class History(api_common.BaseApiView):
+class History(DASHAPIBaseView):
     def get(self, request):
         if not request.user.has_perm("zemauth.can_view_new_history_backend"):
             raise exc.AuthorizationError()
@@ -471,7 +471,7 @@ class History(api_common.BaseApiView):
         return history
 
 
-class Agencies(api_common.BaseApiView):
+class Agencies(DASHAPIBaseView):
     def get(self, request):
         if not request.user.has_perm("zemauth.can_filter_by_agency"):
             raise exc.AuthorizationError()

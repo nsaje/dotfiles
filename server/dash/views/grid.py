@@ -19,15 +19,15 @@ from core.models import all_rtb
 from dash import constants
 from dash import legacy
 from dash import views
+from dash.common.views_base import DASHAPIBaseView
 from dash.features import contentupload
 from dash.views import helpers
-from utils import api_common
 from utils import exc
 
 from . import breakdown_helpers
 
 
-class AdGroupSettings(api_common.BaseApiView):
+class AdGroupSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
@@ -48,7 +48,7 @@ class AdGroupSettings(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class ContentAdSettings(api_common.BaseApiView):
+class ContentAdSettings(DASHAPIBaseView):
     def post(self, request, content_ad_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
@@ -71,7 +71,7 @@ class ContentAdSettings(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class ContentAdEdit(api_common.BaseApiView):
+class ContentAdEdit(DASHAPIBaseView):
     def post(self, request, content_ad_id):
         content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
 
@@ -88,7 +88,7 @@ class ContentAdEdit(api_common.BaseApiView):
         )
 
 
-class AdGroupSourceSettings(api_common.BaseApiView):
+class AdGroupSourceSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id, source_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()

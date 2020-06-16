@@ -4,13 +4,13 @@ from rest_framework.test import APIClient
 
 import core.models
 import dash.constants
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 from utils.magic_mixer import magic_mixer
 
 from . import service
 
 
-class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
+class CloneContentViewTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["can_clone_contentads"])
         self.account = magic_mixer.blend(core.models.Account, users=[self.user])

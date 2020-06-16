@@ -1,14 +1,14 @@
 from django.urls import reverse
 
 import core.models
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAgencyViewSetTest(RESTAPITest):
+class LegacyAgencyViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.user.account_set.remove(*self.user.account_set.all())
@@ -49,5 +49,5 @@ class LegacyAgencyViewSetTest(RESTAPITest):
             self.assertTrue(agency.id in resp_json_ids)
 
 
-class AgencyViewSetTest(RESTAPITestCase, LegacyAgencyViewSetTest):
+class AgencyViewSetTest(FutureRESTAPITestCase, LegacyAgencyViewSetTest):
     pass

@@ -7,13 +7,13 @@ from django.urls import reverse
 import core.models.source_type.model
 import dash.models
 from dash import constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupSourcesTest(RESTAPITest):
+class LegacyAdGroupSourcesTest(RESTAPITestCase):
     @classmethod
     def adgroupsource_repr(
         cls,
@@ -477,5 +477,5 @@ class LegacyAdGroupSourcesTest(RESTAPITest):
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
 
 
-class AdGroupSourcesTest(RESTAPITestCase, LegacyAdGroupSourcesTest):
+class AdGroupSourcesTest(FutureRESTAPITestCase, LegacyAdGroupSourcesTest):
     pass

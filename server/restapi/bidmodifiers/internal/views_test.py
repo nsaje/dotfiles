@@ -6,7 +6,7 @@ import mock
 from django.urls import reverse
 
 import core.models
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 from core.features import bid_modifiers
 from dash import constants
 from dash.features import geolocation
@@ -15,7 +15,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyBidModifierCSVTest, self).setUp()
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -1005,11 +1005,11 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         )
 
 
-class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierCSVTest):
+class BidModifierCSVTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierCSVTest):
     pass
 
 
-class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyNoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
@@ -1105,11 +1105,11 @@ class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         )
 
 
-class NoPermissionTest(restapi.common.views_base_test.RESTAPITestCase, LegacyNoPermissionTest):
+class NoPermissionTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyNoPermissionTest):
     pass
 
 
-class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyBidModifierTypeSummariesTest, self).setUp()
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -1148,5 +1148,7 @@ class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPIT
         self.assertEqual(response.json(), {"errorCode": "MissingDataError", "details": "Ad Group does not exist"})
 
 
-class BidModifierTypeSummariesTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierTypeSummariesTest):
+class BidModifierTypeSummariesTest(
+    restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierTypeSummariesTest
+):
     pass

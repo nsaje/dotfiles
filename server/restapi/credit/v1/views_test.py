@@ -7,13 +7,13 @@ import core.models
 import dash.constants
 import dash.models
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCreditViewSetTest(RESTAPITest):
+class LegacyCreditViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown"])
@@ -134,5 +134,5 @@ class LegacyCreditViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"], with_license_fee=True)
 
 
-class CreditViewSetTest(RESTAPITestCase, LegacyCreditViewSetTest):
+class CreditViewSetTest(FutureRESTAPITestCase, LegacyCreditViewSetTest):
     pass

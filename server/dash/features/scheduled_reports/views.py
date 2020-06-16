@@ -1,14 +1,14 @@
 import json
 
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
-from utils import api_common
 from utils import exc
 
 from . import models
 from . import serializers
 
 
-class ScheduledReports(api_common.BaseApiView):
+class ScheduledReports(DASHAPIBaseView):
     def get(self, request):
         account = None
         account_id = request.GET.get("account_id")
@@ -36,7 +36,7 @@ class ScheduledReports(api_common.BaseApiView):
         return self.create_api_response(None)
 
 
-class ScheduledReportsDelete(api_common.BaseApiView):
+class ScheduledReportsDelete(DASHAPIBaseView):
     def delete(self, request, scheduled_report_id):
         scheduled_report = models.ScheduledReport.objects.get(id=scheduled_report_id)
 

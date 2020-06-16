@@ -8,8 +8,8 @@ from django.db.models import Q
 import core.features.publisher_groups
 from dash import forms
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
-from utils import api_common
 from utils import exc
 from utils import s3helpers
 
@@ -36,7 +36,7 @@ def serialize_publisher_group(publisher_group):
     }
 
 
-class PublisherTargeting(api_common.BaseApiView):
+class PublisherTargeting(DASHAPIBaseView):
     def post(self, request):
         if not request.user.has_perm("zemauth.can_modify_publisher_blacklist_status"):
             raise exc.MissingDataError()
@@ -58,7 +58,7 @@ class PublisherTargeting(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class PublisherGroups(api_common.BaseApiView):
+class PublisherGroups(DASHAPIBaseView):
     def get(self, request):
         if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
             raise exc.MissingDataError()
@@ -87,7 +87,7 @@ class PublisherGroups(api_common.BaseApiView):
         return self.create_api_response({"publisher_groups": publisher_groups, "success": True})
 
 
-class PublisherGroupsUpload(api_common.BaseApiView):
+class PublisherGroupsUpload(DASHAPIBaseView):
     def get(self, request, csv_key):
         # download errors csv
         if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
@@ -164,7 +164,7 @@ class PublisherGroupsUpload(api_common.BaseApiView):
         return self.create_api_response(serialize_publisher_group(publisher_group))
 
 
-class PublisherGroupsDownload(api_common.BaseApiView):
+class PublisherGroupsDownload(DASHAPIBaseView):
     def get(self, request, publisher_group_id):
         if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
             raise exc.MissingDataError()
@@ -202,7 +202,7 @@ class PublisherGroupsDownload(api_common.BaseApiView):
         )
 
 
-class PublisherGroupsExampleDownload(api_common.BaseApiView):
+class PublisherGroupsExampleDownload(DASHAPIBaseView):
     def get(self, request):
         if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
             raise exc.MissingDataError()

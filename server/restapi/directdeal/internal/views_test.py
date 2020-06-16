@@ -2,14 +2,14 @@ from django.urls import reverse
 
 import core.features.deals
 import core.models
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyDirectDealViewSetTest(RESTAPITest):
+class LegacyDirectDealViewSetTest(RESTAPITestCase):
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.directdeal.internal:directdeal_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -480,5 +480,5 @@ class LegacyDirectDealViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"], [])
 
 
-class DirectDealViewSetTest(RESTAPITestCase, LegacyDirectDealViewSetTest):
+class DirectDealViewSetTest(FutureRESTAPITestCase, LegacyDirectDealViewSetTest):
     pass

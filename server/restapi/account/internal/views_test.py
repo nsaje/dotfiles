@@ -6,14 +6,14 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 import dash.constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAccountViewSetTest(RESTAPITest):
+class LegacyAccountViewSetTest(RESTAPITestCase):
     @classmethod
     def account_repr(
         cls,
@@ -367,29 +367,36 @@ class LegacyAccountViewSetTest(RESTAPITest):
         )
         self.assertEqual(resp_json["data"]["autoAddNewSources"], account.settings.auto_add_new_sources)
         self.assertEqual(resp_json["data"]["salesforceUrl"], account.settings.salesforce_url)
-        self.assertEqual(
+
+        self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 3)
+        self.assertIn(
+            {
+                "id": str(sources[0].id),
+                "name": sources[0].name,
+                "released": sources[0].released,
+                "deprecated": sources[0].deprecated,
+            },
             resp_json["data"]["allowedMediaSources"],
-            [
-                {
-                    "id": str(sources[0].id),
-                    "name": sources[0].name,
-                    "released": sources[0].released,
-                    "deprecated": sources[0].deprecated,
-                },
-                {
-                    "id": str(sources[1].id),
-                    "name": sources[1].name,
-                    "released": sources[1].released,
-                    "deprecated": sources[1].deprecated,
-                },
-                {
-                    "id": str(sources[2].id),
-                    "name": sources[2].name,
-                    "released": sources[2].released,
-                    "deprecated": sources[2].deprecated,
-                },
-            ],
         )
+        self.assertIn(
+            {
+                "id": str(sources[1].id),
+                "name": sources[1].name,
+                "released": sources[1].released,
+                "deprecated": sources[1].deprecated,
+            },
+            resp_json["data"]["allowedMediaSources"],
+        )
+        self.assertIn(
+            {
+                "id": str(sources[2].id),
+                "name": sources[2].name,
+                "released": sources[2].released,
+                "deprecated": sources[2].deprecated,
+            },
+            resp_json["data"]["allowedMediaSources"],
+        )
+
         self.assertEqual(len(resp_json["data"]["deals"]), 1)
         self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
@@ -1215,5 +1222,5 @@ class LegacyAccountViewSetTest(RESTAPITest):
         self.assertResponseError(r, "MissingDataError")
 
 
-class AccountViewSetTest(RESTAPITestCase, LegacyAccountViewSetTest):
+class AccountViewSetTest(FutureRESTAPITestCase, LegacyAccountViewSetTest):
     pass

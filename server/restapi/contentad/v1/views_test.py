@@ -10,14 +10,14 @@ import dash.models
 import utils.test_helper
 from dash import constants
 from dash.features import contentupload
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from restapi.contentad.v1 import views
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyContentAdsTest(RESTAPITest):
+class LegacyContentAdsTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(
@@ -216,13 +216,11 @@ class LegacyContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["brandName"], old_brand_name)
 
 
-class ContentAdsTest(RESTAPITestCase, LegacyContentAdsTest):
+class ContentAdsTest(FutureRESTAPITestCase, LegacyContentAdsTest):
     pass
 
 
-class LegacyTestBatchUpload(RESTAPITest):
-    fixtures = []
-
+class LegacyTestBatchUpload(RESTAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.client = APIClient()
@@ -616,5 +614,5 @@ class LegacyTestBatchUpload(RESTAPITest):
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
 
-class TestBatchUpload(RESTAPITestCase, LegacyTestBatchUpload):
+class TestBatchUpload(FutureRESTAPITestCase, LegacyTestBatchUpload):
     pass

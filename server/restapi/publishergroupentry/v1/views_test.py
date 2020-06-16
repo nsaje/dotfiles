@@ -3,17 +3,15 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 import core.features.publisher_groups
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from restapi.publishergroupentry.v1 import views
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherGroupEntryTest(RESTAPITest):
-    fixtures = []
-
+class LegacyPublisherGroupEntryTest(RESTAPITestCase):
     def setUp(self):
         permissions = [
             "can_edit_publisher_groups",
@@ -413,5 +411,5 @@ class LegacyPublisherGroupEntryTest(RESTAPITest):
         self.assertEqual(pge.outbrain_publisher_id, "")
 
 
-class PublisherGroupEntryTest(RESTAPITestCase, LegacyPublisherGroupEntryTest):
+class PublisherGroupEntryTest(FutureRESTAPITestCase, LegacyPublisherGroupEntryTest):
     pass

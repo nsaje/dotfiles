@@ -7,14 +7,14 @@ import core.features.history
 import core.features.publisher_groups
 import core.models
 import dash.constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class LegacyPublisherGroupTest(RESTAPITest):
+class LegacyPublisherGroupTest(RESTAPITestCase):
     def test_list(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         account = magic_mixer.blend(core.models.Account, agency=agency)
@@ -219,11 +219,11 @@ class LegacyPublisherGroupTest(RESTAPITest):
         self.assertEqual(r.status_code, 404)
 
 
-class PublisherGroupTest(RESTAPITestCase, LegacyPublisherGroupTest):
+class PublisherGroupTest(FutureRESTAPITestCase, LegacyPublisherGroupTest):
     pass
 
 
-class LegacyAddToPublisherGroupTest(RESTAPITest):
+class LegacyAddToPublisherGroupTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.source = magic_mixer.blend(core.models.Source)
@@ -602,11 +602,11 @@ class LegacyAddToPublisherGroupTest(RESTAPITest):
         self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
 
 
-class AddToPublisherGroupTest(RESTAPITestCase, LegacyAddToPublisherGroupTest):
+class AddToPublisherGroupTest(FutureRESTAPITestCase, LegacyAddToPublisherGroupTest):
     pass
 
 
-class LegacyPublisherGroupConnectionsTest(RESTAPITest):
+class LegacyPublisherGroupConnectionsTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -746,5 +746,5 @@ class LegacyPublisherGroupConnectionsTest(RESTAPITest):
         self.assertEqual(response["details"], {"publisherGroupId": ["Publisher group does not exist"]})
 
 
-class PublisherGroupConnectionsTest(RESTAPITestCase, LegacyPublisherGroupConnectionsTest):
+class PublisherGroupConnectionsTest(FutureRESTAPITestCase, LegacyPublisherGroupConnectionsTest):
     pass

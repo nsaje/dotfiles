@@ -11,14 +11,14 @@ import dash.features.clonecampaign.service
 import dash.models
 import dash.views.helpers
 import restapi.serializers.targeting
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignViewSetTest(RESTAPITest):
+class LegacyCampaignViewSetTest(RESTAPITestCase):
     @classmethod
     def campaign_repr(
         cls,
@@ -1229,5 +1229,5 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         self.assertResponseError(r, "MissingDataError")
 
 
-class CampaignViewSetTest(RESTAPITestCase, LegacyCampaignViewSetTest):
+class CampaignViewSetTest(FutureRESTAPITestCase, LegacyCampaignViewSetTest):
     pass

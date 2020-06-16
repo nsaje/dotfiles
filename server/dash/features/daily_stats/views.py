@@ -12,7 +12,7 @@ from dash import campaign_goals
 from dash import constants
 from dash import forms
 from dash import models
-from utils import api_common
+from dash.common.views_base import DASHAPIBaseView
 from utils import columns
 from utils import exc
 
@@ -21,7 +21,7 @@ from . import helpers
 MAX_DAILY_STATS_BREAKDOWNS = 3
 
 
-class BaseDailyStatsView(api_common.BaseApiView):
+class BaseDailyStatsView(DASHAPIBaseView):
     def extract_params(self, request, selected_only):
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():

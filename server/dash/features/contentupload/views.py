@@ -9,8 +9,8 @@ import utils.exc
 from dash import constants
 from dash import forms
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
-from utils import api_common
 
 from . import exc
 from . import upload
@@ -24,7 +24,7 @@ def _get_account_ad_group(user, form):
     return account, ad_group
 
 
-class UploadBatch(api_common.BaseApiView):
+class UploadBatch(DASHAPIBaseView):
     def post(self, request):
         resource = json.loads(request.body)
         form = forms.AdGroupAdsUploadBaseForm(resource)
@@ -53,7 +53,7 @@ class UploadBatch(api_common.BaseApiView):
         )
 
 
-class UploadCsv(api_common.BaseApiView):
+class UploadCsv(DASHAPIBaseView):
     def post(self, request):
         form = forms.AdGroupAdsUploadForm(request.POST, request.FILES, user=request.user)
         if not form.is_valid():
@@ -79,7 +79,7 @@ class UploadCsv(api_common.BaseApiView):
         )
 
 
-class UploadStatus(api_common.BaseApiView):
+class UploadStatus(DASHAPIBaseView):
     def get(self, request, batch_id):
         batch = helpers.get_upload_batch(request.user, batch_id)
 
@@ -96,7 +96,7 @@ class UploadStatus(api_common.BaseApiView):
         return self.create_api_response({"candidates": candidates_result})
 
 
-class UploadSave(api_common.BaseApiView):
+class UploadSave(DASHAPIBaseView):
     def _execute_save(self, request, batch):
         resource = {"batch_name": batch.name}
         resource.update(json.loads(request.body))
@@ -143,7 +143,7 @@ class UploadSave(api_common.BaseApiView):
         return self.create_api_response({"num_successful": len(content_ads)})
 
 
-class UploadCancel(api_common.BaseApiView):
+class UploadCancel(DASHAPIBaseView):
     def post(self, request, batch_id):
         batch = helpers.get_upload_batch(request.user, batch_id)
 
@@ -155,7 +155,7 @@ class UploadCancel(api_common.BaseApiView):
         return self.create_api_response({})
 
 
-class CandidatesDownload(api_common.BaseApiView):
+class CandidatesDownload(DASHAPIBaseView):
     def get(self, request, batch_id):
         batch = helpers.get_upload_batch(request.user, batch_id)
 
@@ -167,7 +167,7 @@ class CandidatesDownload(api_common.BaseApiView):
         return self.create_csv_response(batch_name, content=content)
 
 
-class CandidateUpdate(api_common.BaseApiView):
+class CandidateUpdate(DASHAPIBaseView):
     def post(self, request, batch_id, candidate_id):
         batch = helpers.get_upload_batch(request.user, batch_id)
         resource = json.loads(request.POST["data"])
@@ -182,7 +182,7 @@ class CandidateUpdate(api_common.BaseApiView):
         return self.create_api_response({"updated_fields": updated_fields, "errors": errors})
 
 
-class Candidate(api_common.BaseApiView):
+class Candidate(DASHAPIBaseView):
     def get(self, request, batch_id, candidate_id=None):
         if candidate_id:
             raise utils.exc.ValidationError("Not supported")

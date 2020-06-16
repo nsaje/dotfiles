@@ -3,12 +3,12 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 
 
-class LegacySourceViewSetTest(RESTAPITest):
+class LegacySourceViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.remove_permissions(self.user, ["can_see_all_available_sources"])
@@ -46,5 +46,5 @@ class LegacySourceViewSetTest(RESTAPITest):
         )
 
 
-class SourceViewSetTest(RESTAPITestCase, LegacySourceViewSetTest):
+class SourceViewSetTest(FutureRESTAPITestCase, LegacySourceViewSetTest):
     pass

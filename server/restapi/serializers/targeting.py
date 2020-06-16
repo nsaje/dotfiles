@@ -4,6 +4,7 @@ import rest_framework.serializers
 from django.utils import six
 
 import dash.constants
+import dash.models
 import dash.regions
 import restapi.serializers.fields
 

@@ -1,10 +1,10 @@
 from dash import constants
-from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test_case import RESTAPITestCase
 
 from . import serializers
 
 
-class CampaignSerializerTest(RESTAPITest):
+class CampaignSerializerTest(RESTAPITestCase):
     def test_ga_tracking_empty_partial_request(self):
         serializer = serializers.GATrackingSerializer(data={}, partial=True)
         serializer.is_valid(raise_exception=True)

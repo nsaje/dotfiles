@@ -5,13 +5,13 @@ import core.models
 import dash.constants
 import utils.dates_helper
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAudiencesTest(RESTAPITest):
+class LegacyAudiencesTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
@@ -519,5 +519,5 @@ class LegacyAudiencesTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
 
-class AudiencesTest(RESTAPITestCase, LegacyAudiencesTest):
+class AudiencesTest(FutureRESTAPITestCase, LegacyAudiencesTest):
     pass

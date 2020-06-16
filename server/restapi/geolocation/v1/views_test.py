@@ -1,9 +1,11 @@
 from django.urls import reverse
 
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 
 
-class GeolocationListViewTest(restapi.common.views_base_test.RESTAPITest):
+class GeolocationListViewTest(restapi.common.views_base_test_case.RESTAPITestCase):
+    fixtures = ["test_geolocations"]
+
     def test_get_with_no_filter(self):
         r = self.client.get(reverse("restapi.geolocation.v1:geolocation_list"))
         r = self.assertResponseValid(r, data_type=list)

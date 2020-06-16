@@ -7,11 +7,10 @@ from django.http import HttpResponse
 from django.views.generic import View
 
 from swinfra import metrics
+from utils import exc
 from utils import influx_helper
 from utils import json_helper
 from utils import zlogging
-
-from . import exc
 
 logger = zlogging.getLogger(__name__)
 
@@ -24,12 +23,12 @@ REQUEST_TIMER = metrics.new_histogram(
 # fmt: on
 
 
-class BaseApiView(View):
+class DASHAPIBaseView(View):
     rest_proxy = False
 
     def __init__(self, rest_proxy=False, *args, **kwargs):
         self.rest_proxy = rest_proxy
-        super(BaseApiView, self).__init__(*args, **kwargs)
+        super(DASHAPIBaseView, self).__init__(*args, **kwargs)
 
     def log_error(self, request):
         logger.exception(
@@ -107,7 +106,7 @@ class BaseApiView(View):
         status = None
         request.is_api_request = False
         try:
-            response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
+            response = super(DASHAPIBaseView, self).dispatch(request, *args, **kwargs)
             status = response.status_code
             return response
         except Http404:

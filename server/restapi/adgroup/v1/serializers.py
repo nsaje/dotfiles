@@ -7,6 +7,7 @@ import core.models.settings
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
+import restapi.serializers.targeting
 from dash import constants
 
 

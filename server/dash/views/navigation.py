@@ -4,9 +4,9 @@ from django.conf import settings
 import automation.campaignstop
 from dash import forms
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import helpers
 from dash.views import navigation_helpers
-from utils import api_common
 from utils import exc
 from utils import metrics_compat
 from utils import zlogging
@@ -17,7 +17,7 @@ logger = zlogging.getLogger(__name__)
 ACCOUNTS_EXCLUDED_FROM_SEARCH = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
-class UsesBCMV2View(api_common.BaseApiView):
+class UsesBCMV2View(DASHAPIBaseView):
     def get(self, request):
         """
         Returns true if user has all accounts to which he has access to migrated to the new
@@ -29,7 +29,7 @@ class UsesBCMV2View(api_common.BaseApiView):
         return self.create_api_response({"usesBCMv2": helpers.all_accounts_uses_bcm_v2(user)})
 
 
-class NavigationDataView(api_common.BaseApiView):
+class NavigationDataView(DASHAPIBaseView):
     def get(self, request, level_, id_):
         filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
 
@@ -72,7 +72,7 @@ class NavigationDataView(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class NavigationAllAccountsDataView(api_common.BaseApiView):
+class NavigationAllAccountsDataView(DASHAPIBaseView):
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
 
@@ -93,7 +93,7 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class NavigationTreeView(api_common.BaseApiView):
+class NavigationTreeView(DASHAPIBaseView):
     def get(self, request):
         with metrics_compat.block_timer(
             "navigation",

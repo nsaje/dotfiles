@@ -5,14 +5,14 @@ from django.urls import reverse
 import dash.constants
 import dash.models
 import dash.views.helpers
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignBudgetViewSetTest(RESTAPITest):
+class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
     def test_get(self):
         agency = self.mix_agency(
             self.user,
@@ -99,5 +99,5 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITest):
         self.assertTrue("licenseFee" not in fields)
 
 
-class CampaignBudgetViewSetTest(RESTAPITestCase, LegacyCampaignBudgetViewSetTest):
+class CampaignBudgetViewSetTest(FutureRESTAPITestCase, LegacyCampaignBudgetViewSetTest):
     pass

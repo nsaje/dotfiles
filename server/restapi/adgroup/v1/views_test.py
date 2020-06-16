@@ -9,18 +9,20 @@ from django.urls import reverse
 import core.features.audiences
 import core.features.publisher_groups
 import core.models
+import dash.features.bluekai
 import dash.models
 import restapi.serializers
+import restapi.serializers.targeting
 import utils.test_helper
 from automation import autopilot
 from dash import constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupViewSetTest(RESTAPITest):
+class LegacyAdGroupViewSetTest(RESTAPITestCase):
 
     expected_none_date_output = None
     expected_none_decimal_output = ""
@@ -42,15 +44,15 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         max_cpm=None,
         daily_budget="15.00",
         tracking_code="a=b",
-        target_regions={"countries": ["US"], "postalCodes": ["CA:12345"]},
+        target_regions={},
         exclusion_target_regions={},
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_environments=[constants.AdTargetEnvironment.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}],
         target_browsers=[{"family": constants.BrowserFamily.CHROME}],
-        interest_targeting=["women", "fashion"],
-        exclusion_interest_targeting=["politics"],
-        demographic_targeting=["and", "bluekai:671901", ["or", "lotame:123", "outbrain:123"]],
+        interest_targeting=[constants.InterestCategory.WOMEN, constants.InterestCategory.FASHION],
+        exclusion_interest_targeting=[constants.InterestCategory.POLITICS],
+        demographic_targeting=[],
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget="50.00",
         max_autopilot_bid=None,
@@ -1067,9 +1069,7 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
 
         demographic_targeting = ["and", "bluekai:12f3", ["or", "lotame:123", "outbrain:123"]]
         put_data = self.adgroup_repr(
-            id=ad_group.id,
-            campaign_id=campaign.id,
-            audience_targeting=restapi.serializers.targeting.AudienceSerializer(demographic_targeting).data,
+            id=ad_group.id, campaign_id=campaign.id, demographic_targeting=demographic_targeting
         )
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
@@ -1077,6 +1077,59 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
+
+    def test_adgroups_valid_bluekai_targeting(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        bluekai = magic_mixer.blend(
+            dash.features.bluekai.BlueKaiCategory, status=dash.features.bluekai.BlueKaiCategoryStatus.ACTIVE
+        )
+
+        demographic_targeting = ["and", "bluekai:{}".format(bluekai.category_id), ["or", "lotame:123", "outbrain:123"]]
+        put_data = self.adgroup_repr(
+            id=ad_group.id, campaign_id=campaign.id, demographic_targeting=demographic_targeting
+        )
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(
+            restapi.serializers.targeting.AudienceSerializer(demographic_targeting).data,
+            resp_json["data"]["targeting"]["audience"],
+        )
+
+    def test_adgroups_invalid_regions_targeting(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        target_regions = {"countries": ["NON-VALID"]}
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, target_regions=target_regions)
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+    def test_adgroups_valid_regions_targeting(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        country = magic_mixer.blend(dash.models.Geolocation, pk="US", type="co", name="United States")
+
+        target_regions = {"countries": [country.pk]}
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, target_regions=target_regions)
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(country.pk, resp_json["data"]["targeting"]["geo"]["included"]["countries"][0])
 
     def test_adgroups_get_permissioned(self):
         account = self.mix_account(self.user, permissions=[Permission.READ])
@@ -1218,7 +1271,6 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
             click_capping_daily_ad_group_max_clicks=None,
             click_capping_daily_click_budget=None,
             dayparting=None,
-            target_regions={},
             frequency_capping=None,
         )
         r = self.client.put(
@@ -1265,7 +1317,7 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, whitelist_publisher_groups=[1])
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, whitelist_publisher_groups=[-1])
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1273,7 +1325,7 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, blacklist_publisher_groups=[2])
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, blacklist_publisher_groups=[-1])
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1312,7 +1364,7 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, audience_targeting=[1])
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, audience_targeting=[-1])
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1320,7 +1372,7 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, exclusion_audience_targeting=[2])
+        put_data = self.adgroup_repr(id=ad_group.id, campaign_id=campaign.id, exclusion_audience_targeting=[-1])
         r = self.client.put(
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data=put_data,
@@ -1349,5 +1401,5 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
 
-class AdGroupViewSetTest(RESTAPITestCase, LegacyAdGroupViewSetTest):
+class AdGroupViewSetTest(FutureRESTAPITestCase, LegacyAdGroupViewSetTest):
     pass

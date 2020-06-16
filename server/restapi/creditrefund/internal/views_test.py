@@ -8,13 +8,13 @@ import core.features.bcm.refund_line_item
 import core.models
 import dash.constants
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCreditRefundViewSetTest(RESTAPITest):
+class LegacyCreditRefundViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -403,5 +403,5 @@ class LegacyCreditRefundViewSetTest(RESTAPITest):
         )
 
 
-class CreditRefundViewSetTest(RESTAPITestCase, LegacyCreditRefundViewSetTest):
+class CreditRefundViewSetTest(FutureRESTAPITestCase, LegacyCreditRefundViewSetTest):
     pass

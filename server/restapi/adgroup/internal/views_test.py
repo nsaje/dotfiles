@@ -7,14 +7,14 @@ import core.features.deals
 import core.models
 import dash.constants
 from core.features import bid_modifiers
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupViewSetTest(RESTAPITest):
+class LegacyAdGroupViewSetTest(RESTAPITestCase):
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -494,5 +494,5 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
         self.assertResponseError(r, "MissingDataError")
 
 
-class AdGroupViewSetTest(RESTAPITestCase, LegacyAdGroupViewSetTest):
+class AdGroupViewSetTest(FutureRESTAPITestCase, LegacyAdGroupViewSetTest):
     pass

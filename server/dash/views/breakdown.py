@@ -13,10 +13,10 @@ from core.features import bid_modifiers
 from dash import campaign_goals
 from dash import constants
 from dash import forms
+from dash.common.views_base import DASHAPIBaseView
 from dash.views import breakdown_helpers
 from dash.views import helpers
 from restapi.serializers.bid_modifiers import BidModifierTypeSummary
-from utils import api_common
 from utils import exc
 from utils import threads
 
@@ -132,7 +132,7 @@ def _get_limit(breakdown, limit):
     return limit
 
 
-class AllAccountsBreakdown(api_common.BaseApiView):
+class AllAccountsBreakdown(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def post(self, request, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -205,7 +205,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         return self.create_api_response(report)
 
 
-class AccountBreakdown(api_common.BaseApiView):
+class AccountBreakdown(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -286,7 +286,7 @@ class AccountBreakdown(api_common.BaseApiView):
         return self.create_api_response(report)
 
 
-class CampaignBreakdown(api_common.BaseApiView):
+class CampaignBreakdown(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -376,7 +376,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         return self.create_api_response(report)
 
 
-class AdGroupBreakdown(api_common.BaseApiView):
+class AdGroupBreakdown(DASHAPIBaseView):
     @newrelic.agent.function_trace()
     def post(self, request, ad_group_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature_on_ad_group_level"):

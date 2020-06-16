@@ -2,10 +2,12 @@ import mock
 from django.urls import reverse
 
 import dash.features.inventory_planning
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 
 
-class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
+class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestCase):
+    fixtures = ["test_geolocations"]
+
     @mock.patch.object(dash.features.inventory_planning, "get_summary", autospec=True)
     def test_summary(self, mock_func):
         mock_func.return_value = {

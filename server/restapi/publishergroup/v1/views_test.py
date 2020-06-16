@@ -3,17 +3,15 @@ from rest_framework.test import APIClient
 
 import core.features.publisher_groups
 import core.models
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from restapi.publishergroup.v1 import views
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherGroupTest(RESTAPITest):
-    fixtures = []
-
+class LegacyPublisherGroupTest(RESTAPITestCase):
     def setUp(self):
         permissions = [
             "can_edit_publisher_groups",
@@ -178,5 +176,5 @@ class LegacyPublisherGroupTest(RESTAPITest):
         self.assertEqual(r.status_code, 403)
 
 
-class PublisherGroupTest(RESTAPITestCase, LegacyPublisherGroupTest):
+class PublisherGroupTest(FutureRESTAPITestCase, LegacyPublisherGroupTest):
     pass

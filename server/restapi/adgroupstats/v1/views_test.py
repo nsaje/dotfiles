@@ -2,13 +2,13 @@ import mock
 from django.urls import reverse
 
 import core.models.ad_group
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyRealtimestatsViewsTest(RESTAPITest):
+class LegacyRealtimestatsViewsTest(RESTAPITestCase):
     @mock.patch("dash.features.realtimestats.get_ad_group_stats")
     def test_adgroups_realtimestats(self, mock_get):
         account = self.mix_account(self.user, permissions=[Permission.READ])
@@ -25,5 +25,5 @@ class LegacyRealtimestatsViewsTest(RESTAPITest):
         mock_get.assert_called_with(ad_group)
 
 
-class RealtimestatsViewsTest(RESTAPITestCase, LegacyRealtimestatsViewsTest):
+class RealtimestatsViewsTest(FutureRESTAPITestCase, LegacyRealtimestatsViewsTest):
     pass

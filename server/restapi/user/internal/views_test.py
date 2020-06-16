@@ -4,13 +4,13 @@ from django.utils.http import urlencode
 
 import core.models
 import zemauth.models
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class UserViewSetTestBase(RESTAPITestCase):
+class UserViewSetTestBase(FutureRESTAPITestCase):
     def _prepare_callers_permissions(self, calling_user, caller_role):
         if caller_role == "internal_usr":
             agency = self.mix_agency()

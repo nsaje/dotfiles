@@ -34,10 +34,10 @@ from dash import constants
 from dash import forms
 from dash import infobox_helpers
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from dash.views import helpers
 from prodops import hacks
-from utils import api_common
 from utils import email_helper
 from utils import exc
 from utils import lc_helper
@@ -141,7 +141,7 @@ def supply_dash_redirect(request):
     return render(request, "redirect.html", {"url": url})
 
 
-class User(api_common.BaseApiView):
+class User(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, user_id):
         response = {}
@@ -185,7 +185,7 @@ class User(api_common.BaseApiView):
         }
 
 
-class AdGroupOverview(api_common.BaseApiView):
+class AdGroupOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -288,7 +288,7 @@ class AdGroupOverview(api_common.BaseApiView):
         return start_date, end_date, no_ad_groups_or_budgets
 
 
-class CampaignAdGroups(api_common.BaseApiView):
+class CampaignAdGroups(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     @newrelic.agent.function_trace()
     def put(self, request, campaign_id):
@@ -330,7 +330,7 @@ class CampaignAdGroups(api_common.BaseApiView):
             )
 
 
-class CampaignOverview(api_common.BaseApiView):
+class CampaignOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -493,7 +493,7 @@ class CampaignOverview(api_common.BaseApiView):
         return start_date, end_date
 
 
-class AccountOverview(api_common.BaseApiView):
+class AccountOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id, select_related_users=True)
@@ -585,7 +585,7 @@ class AccountOverview(api_common.BaseApiView):
         return settings
 
 
-class AvailableSources(api_common.BaseApiView):
+class AvailableSources(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request):
         user_accounts = models.Account.objects.all().filter_by_user(request.user)
@@ -603,7 +603,7 @@ class AvailableSources(api_common.BaseApiView):
         return self.create_api_response({"sources": sources})
 
 
-class AdGroupSources(api_common.BaseApiView):
+class AdGroupSources(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
@@ -661,7 +661,7 @@ class AdGroupSources(api_common.BaseApiView):
         return self.create_api_response(None)
 
 
-class AdGroupSourceSettings(api_common.BaseApiView):
+class AdGroupSourceSettings(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
@@ -849,7 +849,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             raise exc.ValidationError(errors={"state": [str(err)]})
 
 
-class AllAccountsOverview(api_common.BaseApiView):
+class AllAccountsOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request):
         # infobox only filters by agency and account type
@@ -1005,7 +1005,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         return overview_settings
 
 
-class Demo(api_common.BaseApiView):
+class Demo(DASHAPIBaseView):
     def get(self, request):
         if not request.user.has_perm("zemauth.can_request_demo_v3"):
             raise Http404("Forbidden")
@@ -1099,7 +1099,7 @@ def oauth_redirect(request, source_name):
     return redirect(reverse("admin:dash_sourcecredentials_change", args=(credentials.id,)))
 
 
-class PushMetrics(api_common.BaseApiView, SlackLoggerMixin):
+class PushMetrics(DASHAPIBaseView, SlackLoggerMixin):
     def get(self, request, ad_group_id, switch):
         ad_group = models.AdGroup.objects.get(id=ad_group_id)
         old_ad_group = models.AdGroup.objects.get(id=ad_group_id)

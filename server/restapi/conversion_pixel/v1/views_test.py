@@ -2,13 +2,13 @@ from django.urls import reverse
 
 import core.models
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyConversionPixelViewSetTest(RESTAPITest):
+class LegacyConversionPixelViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(
@@ -467,5 +467,5 @@ class LegacyConversionPixelViewSetTest(RESTAPITest):
         )
 
 
-class ConversionPixelViewSetTest(RESTAPITestCase, LegacyConversionPixelViewSetTest):
+class ConversionPixelViewSetTest(FutureRESTAPITestCase, LegacyConversionPixelViewSetTest):
     pass

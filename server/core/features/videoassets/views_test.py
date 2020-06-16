@@ -4,14 +4,14 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 import core.models.account
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 from utils.magic_mixer import magic_mixer
 
 from . import constants
 from . import models
 
 
-class VideoAssetTest(restapi.common.views_base_test.RESTAPITest):
+class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["fea_video_upload"])
         self.account = magic_mixer.blend(core.models.Account, users=[self.user])

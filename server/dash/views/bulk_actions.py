@@ -14,18 +14,18 @@ from dash import constants
 from dash import forms
 from dash import legacy
 from dash import models
+from dash.common.views_base import DASHAPIBaseView
 from dash.dashapi import data_helper
 from dash.features import contentupload
 from dash.views import breakdown_helpers
 from dash.views import helpers
-from utils import api_common
 from utils import csv_utils
 from utils import exc
 from utils import k1_helper
 from utils import metrics_compat
 
 
-class BaseBulkActionView(api_common.BaseApiView):
+class BaseBulkActionView(DASHAPIBaseView):
     def create_rows(self, entities, archived=None, state=None):
         return {"rows": [self.create_row(entity.id, archived, state) for entity in entities]}
 
@@ -354,7 +354,7 @@ class AdGroupContentAdState(BaseBulkActionView):
         return self.create_api_response(self.create_rows(content_ads, state=state))
 
 
-class AdGroupContentAdCSV(api_common.BaseApiView):
+class AdGroupContentAdCSV(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)

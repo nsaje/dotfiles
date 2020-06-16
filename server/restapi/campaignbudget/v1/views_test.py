@@ -7,14 +7,14 @@ from django.urls import reverse
 import core.models
 import dash.models
 from dash import constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignBudgetViewSetTest(RESTAPITest):
+class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
     @classmethod
     def budget_repr(
         cls,
@@ -490,5 +490,5 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
 
-class CampaignBudgetViewSetTest(RESTAPITestCase, LegacyCampaignBudgetViewSetTest):
+class CampaignBudgetViewSetTest(FutureRESTAPITestCase, LegacyCampaignBudgetViewSetTest):
     pass

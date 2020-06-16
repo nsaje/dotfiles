@@ -1,11 +1,11 @@
 from django.urls import reverse
 
 import core
-from restapi.common.views_base_test import RESTAPITest
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 
 
-class SourceViewSetTest(RESTAPITest):
+class SourceViewSetTest(RESTAPITestCase):
     def setUp(self):
         super(SourceViewSetTest, self).setUp()
         self.user.user_permissions.clear()

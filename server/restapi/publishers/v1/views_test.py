@@ -7,14 +7,14 @@ import core.features.bid_modifiers
 import core.features.publisher_groups
 import core.models
 import dash.constants
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyPublisherBlacklistTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyPublisherBlacklistTest, self).setUp()
         self.test_request = get_request_mock(self.user)
@@ -401,5 +401,5 @@ class LegacyPublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         return new_bm_list
 
 
-class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITestCase, LegacyPublisherBlacklistTest):
+class PublisherBlacklistTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyPublisherBlacklistTest):
     pass

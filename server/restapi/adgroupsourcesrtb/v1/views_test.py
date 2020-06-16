@@ -8,13 +8,13 @@ import core.models.ad_group
 from core.models import all_rtb
 from dash import constants
 from dash import models
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupSourcesRTBTest(RESTAPITest):
+class LegacyAdGroupSourcesRTBTest(RESTAPITestCase):
     @classmethod
     def adgroupsourcertb_repr(
         cls,
@@ -274,5 +274,5 @@ class LegacyAdGroupSourcesRTBTest(RESTAPITest):
         self.assertTrue("Maximum CPM on RTB Sources is" in json.loads(r.content)["details"]["cpm"][0])
 
 
-class AdGroupSourcesRTBTest(RESTAPITestCase, LegacyAdGroupSourcesRTBTest):
+class AdGroupSourcesRTBTest(FutureRESTAPITestCase, LegacyAdGroupSourcesRTBTest):
     pass

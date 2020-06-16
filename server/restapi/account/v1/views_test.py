@@ -4,13 +4,13 @@ from django.urls import reverse
 import core.models
 import dash.constants
 import utils.test_helper
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAccountViewSetTest(RESTAPITest):
+class LegacyAccountViewSetTest(RESTAPITestCase):
     @classmethod
     def account_repr(
         cls,
@@ -262,7 +262,7 @@ class LegacyAccountViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
-        test_account = self.account_repr(id=account.id, whitelist_publisher_groups=[1])
+        test_account = self.account_repr(id=account.id, whitelist_publisher_groups=[-1])
         r = self.client.put(
             reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}),
             data=test_account,
@@ -270,7 +270,7 @@ class LegacyAccountViewSetTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-        test_account = self.account_repr(id=account.id, blacklist_publisher_groups=[2])
+        test_account = self.account_repr(id=account.id, blacklist_publisher_groups=[-1])
         r = self.client.put(
             reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}),
             data=test_account,
@@ -561,5 +561,5 @@ class LegacyAccountViewSetTest(RESTAPITest):
         mock_s3_upload.assert_not_called()
 
 
-class AccountViewSetTest(RESTAPITestCase, LegacyAccountViewSetTest):
+class AccountViewSetTest(FutureRESTAPITestCase, LegacyAccountViewSetTest):
     pass

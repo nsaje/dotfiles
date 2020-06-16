@@ -3,29 +3,26 @@ import json
 from django.contrib.auth.models import ContentType
 from django.contrib.auth.models import Permission
 from django.test import TestCase
-from django.test import override_settings
 from rest_framework.test import APIClient
 
 import core.models
 from utils import json_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
-from zemauth.models import User
 
 
-@override_settings(R1_DEMO_MODE=True)
-class RESTAPITest(TestCase):
+class APITestCase(TestCase):
     """
-    RESTAPITest will be replaced with RESTAPITestCase
+    APITestCase will be replaced with FutureAPITestCase
     after User Roles will be released.
     """
 
-    fixtures = ["test_acceptance.yaml", "test_geolocations"]
-    user_id = 1
+    fixtures = []
+    permissions = []
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.get(pk=self.user_id)
+        self.user = magic_mixer.blend_user(permissions=self.permissions)
         self.client.force_authenticate(user=self.user)
         self.maxDiff = None
 
@@ -59,8 +56,7 @@ class RESTAPITest(TestCase):
         return account
 
 
-@override_settings(R1_DEMO_MODE=True)
-class RESTAPITestCase(RESTAPITest):
+class FutureAPITestCase(APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

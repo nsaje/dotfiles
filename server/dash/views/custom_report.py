@@ -4,7 +4,7 @@ import mimetypes
 
 from django.conf import settings
 
-from utils import api_common
+from dash.common.views_base import DASHAPIBaseView
 from utils import exc
 from utils import s3helpers
 from utils import zlogging
@@ -12,10 +12,10 @@ from utils import zlogging
 logger = zlogging.getLogger(__name__)
 
 
-class ExportApiView(api_common.BaseApiView):
+class ExportApiView(DASHAPIBaseView):
     def dispatch(self, request, *args, **kwargs):
         try:
-            return super(api_common.BaseApiView, self).dispatch(request, *args, **kwargs)
+            return super(DASHAPIBaseView, self).dispatch(request, *args, **kwargs)
         except Exception as e:
             return self.get_exception_response(request, e)
 

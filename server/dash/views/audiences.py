@@ -4,13 +4,13 @@ import core.features.audiences.audience.exceptions
 import redshiftapi.api_audiences
 from dash import forms
 from dash import models
-from utils import api_common
+from dash.common.views_base import DASHAPIBaseView
 from utils import exc
 
 from . import helpers
 
 
-class AudiencesView(api_common.BaseApiView):
+class AudiencesView(DASHAPIBaseView):
     def get(self, request, account_id, audience_id=None):
         if not request.user.has_perm("zemauth.account_custom_audiences_view"):
             raise exc.AuthorizationError()
@@ -171,7 +171,7 @@ class AudiencesView(api_common.BaseApiView):
         return response
 
 
-class AudienceArchive(api_common.BaseApiView):
+class AudienceArchive(DASHAPIBaseView):
     def post(self, request, account_id, audience_id):
         if not request.user.has_perm("zemauth.account_custom_audiences_view"):
             raise exc.AuthorizationError()
@@ -196,7 +196,7 @@ class AudienceArchive(api_common.BaseApiView):
         return self.create_api_response()
 
 
-class AudienceRestore(api_common.BaseApiView):
+class AudienceRestore(DASHAPIBaseView):
     def post(self, request, account_id, audience_id):
         if not request.user.has_perm("zemauth.account_custom_audiences_view"):
             raise exc.AuthorizationError()

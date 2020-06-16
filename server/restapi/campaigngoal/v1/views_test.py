@@ -4,13 +4,13 @@ from django.urls import reverse
 
 import dash.models
 from dash import constants
-from restapi.common.views_base_test import RESTAPITest
-from restapi.common.views_base_test import RESTAPITestCase
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignGoalsTest(RESTAPITest):
+class LegacyCampaignGoalsTest(RESTAPITestCase):
     @classmethod
     def campaigngoal_repr(
         cls, id=None, primary=True, type=constants.CampaignGoalKPI.TIME_ON_SITE, conversionGoal=None, value="30.0000"
@@ -331,5 +331,5 @@ class LegacyCampaignGoalsTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
 
-class CampaignGoalsTest(RESTAPITestCase, LegacyCampaignGoalsTest):
+class CampaignGoalsTest(FutureRESTAPITestCase, LegacyCampaignGoalsTest):
     pass

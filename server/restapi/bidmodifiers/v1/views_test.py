@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 
 import core.models
-import restapi.common.views_base_test
+import restapi.common.views_base_test_case
 from core.features import bid_modifiers
 from dash import constants
 from dash.features import geolocation
@@ -12,7 +12,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyBidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyBidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyBidModifierViewSetTest, self).setUp()
         self.request = get_request_mock(self.user)
@@ -947,11 +947,11 @@ class LegacyBidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         return self.client.get(reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": ad_group_id, "pk": pk}))
 
 
-class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITestCase, LegacyBidModifierViewSetTest):
+class BidModifierViewSetTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierViewSetTest):
     pass
 
 
-class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
+class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super(LegacyNoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
@@ -1003,5 +1003,5 @@ class LegacyNoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         )
 
 
-class NoPermissionTest(restapi.common.views_base_test.RESTAPITestCase, LegacyNoPermissionTest):
+class NoPermissionTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyNoPermissionTest):
     pass
