@@ -6,7 +6,7 @@ import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
 import {PublisherGroup} from '../types/publisher-group';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
-import {PUBLISHER_GROUPS_CONFIG} from './publisher-groups.config';
+import {PUBLISHER_GROUPS_CONFIG} from '../publisher-groups.config';
 import {
     convertToFormData,
     replaceUrl,

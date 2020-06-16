@@ -1,5 +1,5 @@
-import {APP_CONFIG} from '../../../app.config';
-import {HttpRequestInfo} from '../../../shared/types/http-request-info';
+import {APP_CONFIG} from '../../app.config';
+import {HttpRequestInfo} from '../../shared/types/http-request-info';
 
 const publisherGroupsInternalApiUrl = `${APP_CONFIG.apiRestInternalUrl}/publishergroups`;
 const publisherGroupsLegacyApiUrl = `${APP_CONFIG.apiLegacyUrl}/publisher_groups`;

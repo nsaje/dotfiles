@@ -2,28 +2,134 @@ import {Injectable} from '@angular/core';
 import {Observable, throwError} from 'rxjs';
 import {Rule} from '../types/rule';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import {APP_CONFIG} from '../../../app.config';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
+import {RULES_CONFIG} from '../rules.config';
+import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
 
 @Injectable()
 export class RulesEndpoint {
     constructor(private http: HttpClient) {}
 
+    get(
+        ruleId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule> {
+        const request = endpointHelpers.replaceUrl(
+            RULES_CONFIG.requests.rules.get,
+            {ruleId: ruleId}
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.get<ApiResponse<Rule>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    list(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number | null,
+        limit: number | null,
+        agencyOnly: boolean | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule[]> {
+        const request = RULES_CONFIG.requests.rules.list;
+        const params = {
+            offset: `${offset}`,
+            limit: `${limit}`,
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(agencyOnly) && {
+                agencyOnly: `${agencyOnly}`,
+            }),
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<Rule[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
     create(
         rule: Rule,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
-        const request = {
-            url: `${APP_CONFIG.apiRestInternalUrl}/rules/`,
-            name: 'create',
-        };
+        const request = RULES_CONFIG.requests.rules.create;
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http.post<ApiResponse<Rule>>(request.url, rule).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    edit(
+        rule: Rule,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule> {
+        const request = endpointHelpers.replaceUrl(
+            RULES_CONFIG.requests.rules.edit,
+            {ruleId: rule.id}
+        );
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.put<ApiResponse<Rule>>(request.url, rule).pipe(
             map(response => {
                 requestStateUpdater(request.name, {
                     inProgress: false,

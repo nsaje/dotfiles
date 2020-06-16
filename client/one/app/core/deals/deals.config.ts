@@ -1,4 +1,4 @@
-import {APP_CONFIG} from '../../../app.config';
+import {APP_CONFIG} from '../../app.config';
 
 const dealsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/deals`;
 

@@ -8,7 +8,7 @@ import {Deal} from '../types/deal';
 import {DealConnection} from '../types/deal-connection';
 import {APP_CONFIG} from '../../../app.config';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
-import {DEALS_CONFIG} from './deals.config';
+import {DEALS_CONFIG} from '../deals.config';
 
 @Injectable()
 export class DealsEndpoint {
