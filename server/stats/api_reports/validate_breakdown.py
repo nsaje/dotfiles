@@ -38,7 +38,7 @@ def validate_breakdown_by_permissions(level, user, breakdown):
         raise exc.MissingDataError()
 
     if constants.is_placement_breakdown(breakdown):
-        if level in (Level.ALL_ACCOUNTS, Level.ACCOUNTS, Level.CONTENT_ADS):
+        if level in (Level.ALL_ACCOUNTS, Level.CONTENT_ADS):
             raise exc.MissingDataError()
 
 
