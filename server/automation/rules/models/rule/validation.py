@@ -235,9 +235,17 @@ class RuleValidationMixin:
             if target_type != constants.TargetType.PUBLISHER:
                 raise exceptions.InvalidPublisherGroup("Invalid target type")
 
-            if publisher_group.agency and publisher_group.agency_id != self.agency_id:
+            agency = changes.get("agency", self.agency)
+            account = changes.get("account", self.account)
+
+            if (publisher_group.agency and agency and publisher_group.agency_id != agency.id) or (
+                publisher_group.agency and account and publisher_group.agency_id != account.agency.id
+            ):
                 raise exceptions.InvalidPublisherGroup("Publisher group has to belong to the rule's agency")
-            if publisher_group.account and publisher_group.account.agency_id != self.agency_id:
+
+            if (publisher_group.account and agency and publisher_group.account.agency_id != agency.id) or (
+                publisher_group.account and account and publisher_group.account_id != account.id
+            ):
                 raise exceptions.InvalidPublisherGroup(
                     "Publisher group has to belong to an account of the rule's agency"
                 )
