@@ -14,3 +14,4 @@ class AlertQueryParams(restapi.serializers.serializers.QueryParamsExpectations):
 class AlertSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     type = restapi.serializers.fields.DashConstantField(dash.constants.AlertType, read_only=True)
     message = rest_framework.serializers.CharField(read_only=True)
+    is_closable = rest_framework.serializers.BooleanField(default=False, read_only=True)

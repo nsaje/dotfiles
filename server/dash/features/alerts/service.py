@@ -49,7 +49,7 @@ def _get_account_default_icon_alert(alerts, request, account):
     if account.settings.default_icon:
         return alerts
 
-    alerts.append({"type": dash.constants.AlertType.DANGER, "message": ACCOUNT_DEFAULT_ICON_ALERT})
+    alerts.append({"type": dash.constants.AlertType.DANGER, "message": ACCOUNT_DEFAULT_ICON_ALERT, "is_closable": True})
     return alerts
 
 
@@ -72,5 +72,7 @@ def _get_placement_conversion_alert(alerts, request, **kwargs):
     if placement_conversions_start_date <= start_date:
         return alerts
 
-    alerts.append({"type": dash.constants.AlertType.WARNING, "message": PLACEMENT_CONVERSIONS_ALERT})
+    alerts.append(
+        {"type": dash.constants.AlertType.WARNING, "message": PLACEMENT_CONVERSIONS_ALERT, "is_closable": True}
+    )
     return alerts

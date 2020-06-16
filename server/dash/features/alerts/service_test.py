@@ -21,7 +21,12 @@ class AlertsServiceTestCase(TestCase):
         account = magic_mixer.blend(core.models.Account)
         account_alerts = service.get_account_alerts(self.request, account)
         self.assertEqual(
-            {"type": dash.constants.AlertType.DANGER, "message": service.ACCOUNT_DEFAULT_ICON_ALERT}, account_alerts[0]
+            {
+                "type": dash.constants.AlertType.DANGER,
+                "message": service.ACCOUNT_DEFAULT_ICON_ALERT,
+                "is_closable": True,
+            },
+            account_alerts[0],
         )
 
     def test_account_level_no_account_default_icon_no_permission(self):
@@ -49,7 +54,11 @@ class AlertsServiceTestCase(TestCase):
             self.request, account, breakdown=stats.constants.DimensionIdentifier.PLACEMENT, start_date=start_date
         )
         self.assertEqual(
-            {"type": dash.constants.AlertType.WARNING, "message": service.PLACEMENT_CONVERSIONS_ALERT},
+            {
+                "type": dash.constants.AlertType.WARNING,
+                "message": service.PLACEMENT_CONVERSIONS_ALERT,
+                "is_closable": True,
+            },
             account_alerts[0],
         )
 
@@ -88,7 +97,12 @@ class AlertsServiceTestCase(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         campaign_alerts = service.get_campaign_alerts(self.request, campaign)
         self.assertEqual(
-            {"type": dash.constants.AlertType.DANGER, "message": service.ACCOUNT_DEFAULT_ICON_ALERT}, campaign_alerts[0]
+            {
+                "type": dash.constants.AlertType.DANGER,
+                "message": service.ACCOUNT_DEFAULT_ICON_ALERT,
+                "is_closable": True,
+            },
+            campaign_alerts[0],
         )
 
     def test_campaign_level_no_account_default_icon_no_permission(self):
@@ -119,7 +133,11 @@ class AlertsServiceTestCase(TestCase):
             self.request, campaign, breakdown=stats.constants.DimensionIdentifier.PLACEMENT, start_date=start_date
         )
         self.assertEqual(
-            {"type": dash.constants.AlertType.WARNING, "message": service.PLACEMENT_CONVERSIONS_ALERT},
+            {
+                "type": dash.constants.AlertType.WARNING,
+                "message": service.PLACEMENT_CONVERSIONS_ALERT,
+                "is_closable": True,
+            },
             campaign_alerts[0],
         )
 
@@ -160,7 +178,12 @@ class AlertsServiceTestCase(TestCase):
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group_alerts = service.get_ad_group_alerts(self.request, ad_group)
         self.assertEqual(
-            {"type": dash.constants.AlertType.DANGER, "message": service.ACCOUNT_DEFAULT_ICON_ALERT}, ad_group_alerts[0]
+            {
+                "type": dash.constants.AlertType.DANGER,
+                "message": service.ACCOUNT_DEFAULT_ICON_ALERT,
+                "is_closable": True,
+            },
+            ad_group_alerts[0],
         )
 
     def test_ad_group_level_no_account_default_icon_no_permission(self):
@@ -194,7 +217,11 @@ class AlertsServiceTestCase(TestCase):
             self.request, ad_group, breakdown=stats.constants.DimensionIdentifier.PLACEMENT, start_date=start_date
         )
         self.assertEqual(
-            {"type": dash.constants.AlertType.WARNING, "message": service.PLACEMENT_CONVERSIONS_ALERT},
+            {
+                "type": dash.constants.AlertType.WARNING,
+                "message": service.PLACEMENT_CONVERSIONS_ALERT,
+                "is_closable": True,
+            },
             ad_group_alerts[0],
         )
 
