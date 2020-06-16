@@ -23,7 +23,7 @@ import {
     EMAIL_MACROS,
     RULE_TARGET_TYPES,
     RULE_ACTIONS_OPTIONS,
-} from '../../rules-library.config';
+} from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 
 @Component({

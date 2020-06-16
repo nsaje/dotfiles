@@ -10,7 +10,7 @@ import {RuleEditFormNotificationComponent} from '../rule-edit-form-notification/
 import {RulesService} from '../../../../core/rules/services/rules.service';
 import {RulesEndpoint} from '../../../../core/rules/services/rules.endpoint';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
-import {PublisherGroupsEndpoint} from '../../../..//core/publisher-groups/services/publisher-groups.endpoint';
+import {PublisherGroupsEndpoint} from '../../../../core/publisher-groups/services/publisher-groups.endpoint';
 
 describe('RuleEditFormComponent', () => {
     let component: RuleEditFormComponent;

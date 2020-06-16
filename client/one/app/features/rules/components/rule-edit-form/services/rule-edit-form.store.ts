@@ -13,7 +13,7 @@ import {RuleActionConfig} from '../../../../../core/rules/types/rule-action-conf
 import {
     RULE_ACTIONS_OPTIONS,
     RULE_CONDITIONS_OPTIONS,
-} from '../../../rules-library.config';
+} from '../../../rules.config';
 import {PublisherGroupsService} from '../../../../../core/publisher-groups/services/publisher-groups.service';
 import {RulesService} from '../../../../../core/rules/services/rules.service';
 import {RuleConditionConfig} from '../../../../../core/rules/types/rule-condition-config';

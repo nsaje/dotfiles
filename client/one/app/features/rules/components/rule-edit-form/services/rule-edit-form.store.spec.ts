@@ -9,7 +9,7 @@ import {
     TimeRange,
     RuleNotificationType,
 } from '../../../../../core/rules/rules.constants';
-import {PublisherGroup} from '../../../../..//core/publisher-groups/types/publisher-group';
+import {PublisherGroup} from '../../../../../core/publisher-groups/types/publisher-group';
 
 describe('RulesLibraryStore', () => {
     let rulesServiceStub: jasmine.SpyObj<RulesService>;

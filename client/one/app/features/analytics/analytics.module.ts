@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {SharedModule} from '../../shared/shared.module';
-import {RulesLibraryModule} from '../rules-library/rules-library.module';
+import {RulesModule} from '../rules/rules.module';
 import {EditableCellComponent} from './components/grid/cells/editable-cell/editable-cell.component';
 import {BidModifierCellComponent} from './components/grid/cells/bid-modifiers/bid-modifier-cell/bid-modifier-cell.component';
 import {BidModifierActionsComponent} from './components/grid/actions/bid-modifiers/bid-modifier-actions/bid-modifier-actions.component';
@@ -46,7 +46,7 @@ import {AlertsStore} from './services/alerts-store/alerts.store';
         AddToPublishersFormComponent,
         AlertsComponent,
     ],
-    imports: [SharedModule, RulesLibraryModule],
+    imports: [SharedModule, RulesModule],
     providers: [CanActivateEntityGuard, CanActivateBreakdownGuard, AlertsStore],
     entryComponents: [
         BidModifierCellComponent,

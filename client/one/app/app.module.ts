@@ -9,7 +9,7 @@ import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
-import {RulesLibraryModule} from './features/rules-library/rules-library.module';
+import {RulesModule} from './features/rules/rules.module';
 import {DealsModule} from './features/deals/deals.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ToastrModule} from 'ngx-toastr';
@@ -80,7 +80,7 @@ if (APP_CONFIG.env.prod) {
         EntityManagerModule,
         AnalyticsModule,
         ArchivedModule,
-        RulesLibraryModule,
+        RulesModule,
         DealsModule,
         CreditsModule,
         PixelsLibraryModule,

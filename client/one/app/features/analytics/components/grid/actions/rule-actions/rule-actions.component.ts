@@ -11,7 +11,7 @@ import {downgradeComponent} from '@angular/upgrade/static';
 import {DropdownDirective} from '../../../../../../shared/components/dropdown/dropdown.directive';
 import {ModalComponent} from '../../../../../../shared/components/modal/modal.component';
 import {EntityType} from '../../../../../../app.constants';
-import {RuleEditFormApi} from '../../../../../rules-library/components/rule-edit-form/types/rule-edit-form-api';
+import {RuleEditFormApi} from '../../../../../rules/components/rule-edit-form/types/rule-edit-form-api';
 
 @Component({
     selector: 'zem-rule-actions',

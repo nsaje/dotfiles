@@ -20,4 +20,4 @@ import {RuleEditFormConditionModifierComponent} from './components/rule-edit-for
     imports: [SharedModule],
     exports: [RuleEditFormComponent],
 })
-export class RulesLibraryModule {}
+export class RulesModule {}

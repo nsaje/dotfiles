@@ -13,7 +13,7 @@ import {
 import {RuleEditFormStore} from './services/rule-edit-form.store';
 import {EntityType} from '../../../../app.constants';
 import {RuleActionType} from '../../../../core/rules/rules.constants';
-import {RULE_TARGET_TYPES, TIME_RANGES} from '../../rules-library.config';
+import {RULE_TARGET_TYPES, TIME_RANGES} from '../../rules.config';
 import {RuleEditFormApi} from './types/rule-edit-form-api';
 
 @Component({

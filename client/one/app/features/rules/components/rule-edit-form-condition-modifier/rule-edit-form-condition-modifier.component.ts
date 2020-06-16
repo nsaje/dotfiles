@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {TimeRange} from '../../../../core/rules/rules.constants';
 import {DataType, Unit} from '../../../../app.constants';
-import {TIME_RANGES} from '../../rules-library.config';
+import {TIME_RANGES} from '../../rules.config';
 import {RuleConditionOperandValueModifier} from '../../../../core/rules/types/rule-condition-operand-value-modifier';
 import {FieldErrors} from 'one/app/shared/types/field-errors';
 
