@@ -72,6 +72,8 @@ import {ConnectionActionsCellComponent} from './components/connection-actions-ce
 import {IconTooltipCellComponent} from './components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
 import {NoteCellComponent} from './components/smart-grid/components/cell/note-cell/note-cell.component';
 import {LinkCellComponent} from './components/smart-grid/components/cell/link-cell/link-cell.component';
+import {PortalComponent} from './components/portal/portal.component';
+import {AlertComponent} from './components/alert/alert.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -137,6 +139,8 @@ const EXPORTED_DECLARATIONS = [
     LinkCellComponent,
     PublisherGroupEditFormComponent,
     ConnectionActionsCellComponent,
+    PortalComponent,
+    AlertComponent,
 ];
 
 @NgModule({

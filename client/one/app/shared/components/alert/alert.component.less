@@ -1,0 +1,51 @@
+@import 'variables';
+
+.zem-alert {
+    display: block;
+}
+
+.zem-alert__close {
+    display: block;
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+    border-bottom-left-radius: @border-radius--default;
+    border-top-right-radius: @border-radius--default;
+    transition: background-color @duration-and-timing-fn--default;
+    outline: none;
+
+    &:hover {
+        background-color: @color--danger !important;
+        cursor: pointer;
+    }
+
+    &::before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        left: 5px;
+        top: 5px;
+        background-image: url('images/remove-white.svg');
+    }
+}
+
+.zem-message--info .zem-alert__close {
+    background-color: tint(@color--info, 85%);
+}
+
+.zem-message--success .zem-alert__close {
+    background-color: tint(@color--success, 85%);
+}
+
+.zem-message--error .zem-alert__close {
+    background-color: tint(@color--danger, 85%);
+}
+
+.zem-message--warning .zem-alert__close {
+    background-color: tint(@color--warning, 85%);
+}
