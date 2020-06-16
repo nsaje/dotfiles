@@ -42,6 +42,11 @@ urlpatterns = [
     url(r"^content_ads/sources$", content_ads.ContentAdSourcesView.as_view(), name="k1api.content_ads.sources"),
     url(r"^accounts$", accounts.AccountsView.as_view(), name="k1api.accounts"),
     url(
+        r"^accounts/(?P<account_id>\d+)/marketer_id$",
+        accounts.AccountMarketerIdView.as_view(),
+        name="k1api.account_marketer_id",
+    ),
+    url(
         r"^accounts/(?P<account_id>\d+)/r1_pixel_mapping$",
         r1_mapping.R1PixelMappingView.as_view(),
         name="k1api.r1_pixel_mapping",

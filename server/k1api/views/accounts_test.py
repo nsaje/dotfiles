@@ -7,6 +7,7 @@ import dash.features.ga
 import dash.features.geolocation
 import dash.models
 from utils import zlogging
+from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
 
@@ -140,4 +141,60 @@ class AccountsTest(K1APIBaseTest):
                     "prefill_days": 180,
                 },
             ],
+        )
+
+
+class AccountMarketerIdViewTest(K1APIBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.current_marketer_id = "0058790e8fa99b8c1509749b97cb2278cd"
+        self.account = magic_mixer.blend(dash.models.Account, outbrain_marketer_id=self.current_marketer_id)
+
+    def test_change_marketer_id(self):
+        self._set_and_assert_marketer_id(self.current_marketer_id, "0a587b0e8fa79b8c1309769b97ab22b8c2")
+
+    def test_set_marketer_id(self):
+        self.current_marketer_id = None
+        self.account.outbrain_marketer_id = None
+        self.account.save(None)
+        self._set_and_assert_marketer_id(self.current_marketer_id, "0a587b0e8fa79b8c1309769b97ab22b8c2")
+
+    def test_reset_marketer_id(self):
+        self._set_and_assert_marketer_id(self.current_marketer_id, None)
+
+    def _set_and_assert_marketer_id(self, current_marketer_id, marketer_id):
+        response = self.client.put(
+            reverse("k1api.account_marketer_id", kwargs={"account_id": self.account.id}),
+            json.dumps({"current_outbrain_marketer_id": current_marketer_id, "outbrain_marketer_id": marketer_id}),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assert_response_ok(response, json_data)
+        self.assertEqual(json_data["response"], {"id": self.account.id, "outbrain_marketer_id": marketer_id})
+        self.assertEqual(dash.models.Account.objects.get(id=self.account.id).outbrain_marketer_id, marketer_id)
+
+    def test_invalid_account_id(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer_id", kwargs={"account_id": 0}),
+            json.dumps({"current_outbrain_marketer_id": self.current_marketer_id, "outbrain_marketer_id": None}),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json_data, {"error": "Account does not exist", "response": None})
+
+    def test_invalid_current_marketer_id(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer_id", kwargs={"account_id": self.account.id}),
+            json.dumps({"current_outbrain_marketer_id": "invalid_marketer_id", "outbrain_marketer_id": None}),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_data, {"error": "Invalid current Outbrain marketer id", "response": None})
+        self.assertEqual(
+            dash.models.Account.objects.get(id=self.account.id).outbrain_marketer_id, self.current_marketer_id
         )

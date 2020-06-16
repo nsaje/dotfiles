@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.db import transaction
 from django.db.models import Prefetch
 from django.db.models import Q
 
@@ -123,3 +124,23 @@ class AccountsView(K1APIView):
             .filter(Q(ad_review_only=False) | Q(ad_review_only=None))
             .exists()
         )
+
+
+class AccountMarketerIdView(K1APIView):
+    def put(self, request, account_id):
+        current_marketer_id = request.data["current_outbrain_marketer_id"]
+        desired_marketer_id = request.data["outbrain_marketer_id"]
+
+        with transaction.atomic():
+            try:
+                account = dash.models.Account.objects.select_for_update().get(id=account_id)
+            except dash.models.Account.DoesNotExist:
+                return self.response_error("Account does not exist", status=404)
+            if account.outbrain_marketer_id == current_marketer_id:
+                account.outbrain_marketer_id = desired_marketer_id
+                account.save(None)
+            else:
+                return self.response_error("Invalid current Outbrain marketer id")
+
+        data = {"id": account.id, "outbrain_marketer_id": account.outbrain_marketer_id}
+        return self.response_ok(data)

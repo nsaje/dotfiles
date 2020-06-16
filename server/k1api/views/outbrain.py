@@ -65,10 +65,42 @@ class OutbrainMarketerIdView(K1APIView):
                 ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
                 ad_group.campaign.account.save(request)
 
+                logger.info(
+                    "Assigned new Outbrain account",
+                    ad_group_id=ad_group.id,
+                    account_id=ad_group.campaign.account.id,
+                    marketer_id=outbrain_account.marketer_id,
+                )
+
+                try:
+                    self.send_new_outbrain_account_used_email(ad_group.campaign.account, outbrain_account)
+                except Exception:
+                    logger.exception(
+                        "Could not send new Outbrain account assigned email",
+                        ad_group_id=ad_group.id,
+                        account_id=ad_group.campaign.account.id,
+                        marketer_id=outbrain_account.marketer_id,
+                    )
+
         except IndexError:
             return self.response_error("No unused Outbrain accounts available.", 404)
 
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
+
+    @staticmethod
+    def send_new_outbrain_account_used_email(account, outbrain_account):
+        ob_info = (
+            f"({outbrain_account.marketer_id})"
+            if outbrain_account.marketer_name is None
+            else f"{outbrain_account.marketer_name} ({outbrain_account.marketer_id})"
+        )
+        agency_info = "" if account.agency is None else f", Agency: {account.agency.name} ({account.agency.id})"
+        body = (
+            f"Assigned new Outbrain marketer {ob_info} for Zemanta Account: {account.name} ({account.id}){agency_info}"
+        )
+        email_helper.send_internal_email(
+            recipient_list=["cs@zemanta.com"], subject="New Outbrain account / marketer assigned", body=body
+        )
 
 
 class OutbrainMarketerSyncView(K1APIView):

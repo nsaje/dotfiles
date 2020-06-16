@@ -67,7 +67,13 @@ class K1APITest(K1APIBaseTest):
         for path in test_paths:
             arg = (
                 1
-                if path in ["k1api.content_ads_details", "k1api.r1_pixel_mapping", "k1api.r1_ad_group_mapping"]
+                if path
+                in [
+                    "k1api.content_ads_details",
+                    "k1api.r1_pixel_mapping",
+                    "k1api.r1_ad_group_mapping",
+                    "k1api.account_marketer_id",
+                ]
                 else None
             )
             self._test_signature(path, arg)

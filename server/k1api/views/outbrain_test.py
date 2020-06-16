@@ -99,8 +99,9 @@ class OutbrainTest(K1APIBaseTest):
             dash.models.OutbrainAccount.objects.filter(marketer_id="abc-123", marketer_name="New 123").exists()
         )
 
+    @patch.object(email_helper, "send_internal_email")
     @patch.object(email_helper, "send_outbrain_accounts_running_out_email")
-    def test_get_outbrain_marketer_id_assign_new(self, mock_sendmail):
+    def test_get_outbrain_marketer_id_assign_new(self, mock_sendmail, mock_sendintentalmail):
         response = self.client.get(reverse("k1api.outbrain_marketer_id"), {"ad_group_id": "3"})
 
         data = json.loads(response.content)
@@ -109,6 +110,14 @@ class OutbrainTest(K1APIBaseTest):
         ag = dash.models.AdGroup.objects.get(pk=3)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data["response"])
         mock_sendmail.assert_called_with(3)
+
+        acc = ag.campaign.account
+        obacc = dash.models.OutbrainAccount.objects.filter(marketer_id=ag.campaign.account.outbrain_marketer_id).last()
+        mock_sendintentalmail.assert_called_with(
+            recipient_list=["cs@zemanta.com"],
+            subject="New Outbrain account / marketer assigned",
+            body=f"Assigned new Outbrain marketer {obacc.marketer_name} ({obacc.marketer_id}) for Zemanta Account: {acc.name} ({acc.id}), Agency: {acc.agency.name} ({acc.agency.id})",
+        )
 
     def test_get_outbrain_marketer_id_none_left(self):
         dash.models.OutbrainAccount.objects.all().delete()
