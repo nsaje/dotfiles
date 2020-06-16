@@ -14,6 +14,8 @@ import {CreditActionsCellComponent} from './components/credit-actions-cell/credi
 import {CreditGridType} from '../../credits.constants';
 import {CreditStatus} from '../../../../app.constants';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {LinkCellComponent} from '../../../../shared/components/smart-grid/components/cell/link-cell/link-cell.component';
+import {LinkRendererParams} from '../../../../shared/components/smart-grid/components/cell/link-cell/types/link.renderer-params';
 
 const statusCellContent = {
     [CreditStatus.PENDING]: {
@@ -36,6 +38,11 @@ export const COLUMN_ID: ColDef = {
     width: 80,
     minWidth: 80,
     resizable: false,
+    cellRendererFramework: LinkCellComponent,
+    cellRendererParams: {
+        getText: item => item.id,
+        getLink: item => item.salesforceUrl,
+    } as LinkRendererParams<Credit>,
 };
 
 export const COLUMN_CREATED_BY: ColDef = {
