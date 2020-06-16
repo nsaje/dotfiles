@@ -1,3 +1,5 @@
+import datetime
+
 import mock
 from django.urls import reverse
 
@@ -446,6 +448,50 @@ class LegacyAdGroupViewSetTest(RESTAPITest):
 
         self.assertTrue("extra" in resp_json)
         self.assertFalse("bidModifierTypeSummaries" in resp_json["extra"])
+
+    @mock.patch("dash.features.alerts.get_ad_group_alerts")
+    def test_get_alerts(self, mock_get_ad_group_alerts):
+        mock_get_ad_group_alerts.return_value = []
+
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+
+        r = self.client.get(
+            reverse("restapi.adgroup.internal:adgroups_alerts", kwargs={"ad_group_id": ad_group.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 0)
+
+        mock_get_ad_group_alerts.assert_called_once_with(
+            mock.ANY,
+            ad_group,
+            breakdown="placement",
+            start_date=datetime.datetime.strptime("2020-04-01", "%Y-%m-%d").date(),
+        )
+
+    def test_get_alerts_invalid_params(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+
+        r = self.client.get(
+            reverse("restapi.adgroup.internal:adgroups_alerts", kwargs={"ad_group_id": ad_group.id}),
+            data={"startDate": "INVALID_VALUE_START_DATE"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            {"startDate": ["Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]."]},
+            resp_json["details"],
+        )
+
+    def test_get_alerts_no_access(self):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+
+        r = self.client.get(
+            reverse("restapi.adgroup.internal:adgroups_alerts", kwargs={"ad_group_id": ad_group.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        self.assertResponseError(r, "MissingDataError")
 
 
 class AdGroupViewSetTest(RESTAPITestCase, LegacyAdGroupViewSetTest):

@@ -1,3 +1,5 @@
+import datetime
+
 import mock
 from django.urls import reverse
 
@@ -1154,6 +1156,63 @@ class LegacyAccountViewSetTest(RESTAPITest):
         r = self.assertResponseError(r, "ValidationError")
 
         self.assertIn("Deal does not exist", r["details"]["deals"][1]["id"])
+
+    @mock.patch("dash.features.alerts.get_accounts_alerts")
+    def test_get_all_alerts(self, mock_get_accounts_alerts):
+        mock_get_accounts_alerts.return_value = []
+
+        r = self.client.get(
+            reverse("restapi.account.internal:accounts_all_alerts"),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 0)
+
+        mock_get_accounts_alerts.assert_called_once_with(
+            mock.ANY, breakdown="placement", start_date=datetime.datetime.strptime("2020-04-01", "%Y-%m-%d").date()
+        )
+
+    @mock.patch("dash.features.alerts.get_account_alerts")
+    def test_get_alerts(self, mock_get_account_alerts):
+        mock_get_account_alerts.return_value = []
+
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+
+        r = self.client.get(
+            reverse("restapi.account.internal:accounts_alerts", kwargs={"account_id": account.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 0)
+
+        mock_get_account_alerts.assert_called_once_with(
+            mock.ANY,
+            account,
+            breakdown="placement",
+            start_date=datetime.datetime.strptime("2020-04-01", "%Y-%m-%d").date(),
+        )
+
+    def test_get_alerts_invalid_params(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+
+        r = self.client.get(
+            reverse("restapi.account.internal:accounts_alerts", kwargs={"account_id": account.id}),
+            data={"startDate": "INVALID_VALUE_START_DATE"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            {"startDate": ["Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]."]},
+            resp_json["details"],
+        )
+
+    def test_get_alerts_no_access(self):
+        account = magic_mixer.blend(core.models.Account)
+
+        r = self.client.get(
+            reverse("restapi.account.internal:accounts_alerts", kwargs={"account_id": account.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        self.assertResponseError(r, "MissingDataError")
 
 
 class AccountViewSetTest(RESTAPITestCase, LegacyAccountViewSetTest):

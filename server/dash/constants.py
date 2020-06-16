@@ -2012,11 +2012,13 @@ class Level(object):
     CONTENT_ADS = "content_ads"
 
 
-class AlertType(object):
+class AlertType(ConstantBase):
     INFO = "info"
     SUCCESS = "success"
     WARNING = "warning"
     DANGER = "danger"
+
+    _VALUES = {INFO: "Info", SUCCESS: "Success", WARNING: "Warning", DANGER: "Danger"}
 
 
 class CpcConstraintType(ConstantBase):

@@ -4,8 +4,10 @@ from django.db import transaction
 import core.features.deals
 import core.models
 import dash.constants
+import dash.features.alerts
 import restapi.account.v1.views
 import restapi.common.helpers
+import restapi.serializers.alert
 import utils.exc
 import zemauth.access
 from zemauth.features.entity_permission.constants import Permission
@@ -40,6 +42,20 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         return self.response_ok(
             data=self.serializer(account, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
+        )
+
+    def alerts(self, request, account_id=None):
+        qpe = restapi.serializers.alert.AlertQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        if account_id is not None:
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            alerts = dash.features.alerts.get_account_alerts(request, account, **qpe.validated_data)
+        else:
+            alerts = dash.features.alerts.get_accounts_alerts(request, **qpe.validated_data)
+
+        return self.response_ok(
+            data=restapi.serializers.alert.AlertSerializer(alerts, many=True, context={"request": request}).data
         )
 
     def put(self, request, account_id):

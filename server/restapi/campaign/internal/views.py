@@ -11,11 +11,13 @@ import core.features.goals
 import core.models
 import dash.campaign_goals
 import dash.constants
+import dash.features.alerts
 import dash.features.clonecampaign.exceptions
 import dash.features.clonecampaign.service
 import dash.views.navigation_helpers
 import prodops.hacks
 import restapi.campaign.v1.views
+import restapi.serializers.alert
 import utils.exc
 import zemauth.access
 from zemauth.features.entity_permission import Permission
@@ -53,6 +55,17 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return self.response_ok(
             data=self.serializer(campaign.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
+        )
+
+    def alerts(self, request, campaign_id):
+        qpe = restapi.serializers.alert.AlertQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
+        alerts = dash.features.alerts.get_campaign_alerts(request, campaign, **qpe.validated_data)
+
+        return self.response_ok(
+            data=restapi.serializers.alert.AlertSerializer(alerts, many=True, context={"request": request}).data
         )
 
     def put(self, request, campaign_id):

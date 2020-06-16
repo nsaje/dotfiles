@@ -3,8 +3,10 @@ import rest_framework.serializers
 from django.db import transaction
 
 import core.models
+import dash.features.alerts
 import prodops.hacks
 import restapi.adgroup.v1.views
+import restapi.serializers.alert
 import utils.exc
 import zemauth.access
 from dash import constants
@@ -43,6 +45,17 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         return self.response_ok(
             data=self.serializer(ad_group.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
+        )
+
+    def alerts(self, request, ad_group_id):
+        qpe = restapi.serializers.alert.AlertQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
+        alerts = dash.features.alerts.get_ad_group_alerts(request, ad_group, **qpe.validated_data)
+
+        return self.response_ok(
+            data=restapi.serializers.alert.AlertSerializer(alerts, many=True, context={"request": request}).data
         )
 
     def put(self, request, ad_group_id):

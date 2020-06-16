@@ -1184,6 +1184,50 @@ class LegacyCampaignViewSetTest(RESTAPITest):
         self.assertEqual(r.status_code, 401)
         self.assertResponseError(r, "AuthorizationError")
 
+    @mock.patch("dash.features.alerts.get_campaign_alerts")
+    def test_get_alerts(self, mock_get_campaign_alerts):
+        mock_get_campaign_alerts.return_value = []
+
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        r = self.client.get(
+            reverse("restapi.campaign.internal:campaigns_alerts", kwargs={"campaign_id": campaign.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(len(resp_json["data"]), 0)
+
+        mock_get_campaign_alerts.assert_called_once_with(
+            mock.ANY,
+            campaign,
+            breakdown="placement",
+            start_date=datetime.datetime.strptime("2020-04-01", "%Y-%m-%d").date(),
+        )
+
+    def test_get_alerts_invalid_params(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        r = self.client.get(
+            reverse("restapi.campaign.internal:campaigns_alerts", kwargs={"campaign_id": campaign.id}),
+            data={"startDate": "INVALID_VALUE_START_DATE"},
+        )
+        resp_json = self.assertResponseError(r, "ValidationError")
+        self.assertEqual(
+            {"startDate": ["Date has wrong format. Use one of these formats instead: YYYY[-MM[-DD]]."]},
+            resp_json["details"],
+        )
+
+    def test_get_alerts_no_access(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+
+        r = self.client.get(
+            reverse("restapi.campaign.internal:campaigns_alerts", kwargs={"campaign_id": campaign.id}),
+            data={"breakdown": "placement", "startDate": "2020-04-01"},
+        )
+        self.assertResponseError(r, "MissingDataError")
+
 
 class CampaignViewSetTest(RESTAPITestCase, LegacyCampaignViewSetTest):
     pass
