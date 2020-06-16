@@ -17,7 +17,6 @@ import dash.features.contentupload.views
 import dash.features.daily_stats.views
 import dash.features.scheduled_reports.views
 import dash.views.agency
-import dash.views.alerts
 import dash.views.audiences
 import dash.views.breakdown
 import dash.views.bulk_actions
@@ -516,26 +515,6 @@ urlpatterns += [
         r"^api/accounts/(?P<account_id>\d+)/audiences/$",
         login_required(dash.views.audiences.AudiencesView.as_view()),
         name="accounts_audiences",
-    ),
-    url(
-        r"^api/ad_groups/(?P<ad_group_id>\d+)/alerts/$",
-        login_required(dash.views.alerts.AdGroupAlerts.as_view()),
-        name="ad_group_alerts",
-    ),
-    url(
-        r"^api/campaigns/(?P<campaign_id>\d+)/alerts/$",
-        login_required(dash.views.alerts.CampaignAlerts.as_view()),
-        name="campaign_alerts",
-    ),
-    url(
-        r"^api/accounts/(?P<account_id>\d+)/alerts/$",
-        login_required(dash.views.alerts.AccountAlerts.as_view()),
-        name="account_alerts",
-    ),
-    url(
-        r"^api/all_accounts/alerts/$",
-        login_required(dash.views.alerts.AllAccountsAlerts.as_view()),
-        name="all_account_alerts",
     ),
     url(
         r"^api/publishers/targeting/$",

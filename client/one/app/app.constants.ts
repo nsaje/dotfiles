@@ -876,13 +876,6 @@ export const APP_CONSTANTS = {
     },
     publisherStatus: PublisherStatus,
     publisherTargetingStatus: PublisherTargetingStatus,
-    // TODO (msuber): remove legacy notificationType
-    notificationType: {
-        info: 'info',
-        success: 'success',
-        warning: 'warning',
-        danger: 'danger',
-    },
     chartMetric: {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
