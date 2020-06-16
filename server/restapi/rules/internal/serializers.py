@@ -114,3 +114,26 @@ class RuleQueryParams(
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
     agency_only = restapi.serializers.fields.NullBooleanField(required=False, default=False)
+
+
+class RuleHistorySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    created_dt = rest_framework.serializers.DateTimeField(read_only=True)
+    status = restapi.serializers.fields.IntegerField(read_only=True)
+    changes = restapi.serializers.fields.PlainCharField(read_only=True, allow_null=True)
+    changes_text = rest_framework.serializers.JSONField(read_only=True, allow_null=True)
+    rule_id = restapi.serializers.fields.IdField(read_only=True)
+    rule_name = restapi.serializers.fields.PlainCharField(source="rule.name", read_only=True)
+    ad_group_id = restapi.serializers.fields.IdField(read_only=True)
+    ad_group_name = restapi.serializers.fields.PlainCharField(source="ad_group.name", read_only=True)
+
+
+class RuleHistoryQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
+    rule_id = restapi.serializers.fields.IdField(required=False)
+    ad_group_id = restapi.serializers.fields.IdField(required=False)
+    start_date = rest_framework.serializers.DateField(required=False)
+    end_date = rest_framework.serializers.DateField(required=False)

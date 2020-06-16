@@ -128,3 +128,49 @@ class RuleViewSet(RESTAPIBaseViewSet):
                 if isinstance(e, automation.rules.InvalidAccount):
                     errors.setdefault("account_id", []).append(str(e))
             raise utils.exc.ValidationError(errors=errors)
+
+
+class RuleHistoryViewSet(RESTAPIBaseViewSet):
+    def list(self, request):
+        qpe = serializers.RuleHistoryQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        agency_id = qpe.validated_data.get("agency_id")
+        account_id = qpe.validated_data.get("account_id")
+
+        if account_id is not None:
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            rules_histories = automation.rules.RuleHistory.objects.filter(Q(rule__account=account)).order_by(
+                "-created_dt"
+            )
+        elif agency_id is not None:
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            rules_histories = automation.rules.RuleHistory.objects.filter(
+                Q(rule__agency=agency) | Q(rule__account__agency=agency)
+            ).order_by("-created_dt")
+        else:
+            raise utils.exc.ValidationError("Either agency id or account id must be provided.")
+
+        rule_id = qpe.validated_data.get("rule_id")
+        if rule_id is not None:
+            rules_histories = rules_histories.filter(Q(rule__id=rule_id))
+
+        ad_group_id = qpe.validated_data.get("ad_group_id")
+        if ad_group_id is not None:
+            rules_histories = rules_histories.filter(Q(ad_group__id=ad_group_id))
+
+        start_date = qpe.validated_data.get("start_date")
+        if start_date is not None:
+            rules_histories = rules_histories.filter(Q(created_dt__date__gte=start_date))
+
+        end_date = qpe.validated_data.get("end_date")
+        if end_date is not None:
+            rules_histories = rules_histories.filter(Q(created_dt__date__lte=end_date))
+
+        rules_histories.select_related("rule", "ad_group")
+
+        paginator = StandardPagination()
+        rules_histories_paginated = paginator.paginate_queryset(rules_histories, request)
+        return paginator.get_paginated_response(
+            serializers.RuleHistorySerializer(rules_histories_paginated, many=True, context={"request": request}).data
+        )

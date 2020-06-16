@@ -1,3 +1,7 @@
+import datetime
+from unittest import mock
+
+import pytz
 from django.urls import reverse
 from rest_framework import status
 
@@ -320,4 +324,139 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
 
 class RuleViewSetTest(restapi.common.views_base_test.RESTAPITestCase, LegacyRuleViewSetTest):
+    pass
+
+
+class LegacyRuleHistoryViewSetTest(restapi.common.views_base_test.RESTAPITest):
+    def test_list_account_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
+
+        rule_with_agency = magic_mixer.blend(automation.rules.Rule, agency=agency)
+        rule_with_account_on_agency = magic_mixer.blend(automation.rules.Rule, account=account_on_agency)
+
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_agency)
+        rule_histories_with_account_on_agency = magic_mixer.cycle(3).blend(
+            automation.rules.RuleHistory, rule=rule_with_account_on_agency
+        )
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"), {"account_id": account_on_agency.id}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories_with_account_on_agency]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_agency_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        another_agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
+        account_on_another_agency = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        rule_with_agency = magic_mixer.blend(automation.rules.Rule, agency=agency)
+        rule_with_anoher_agency = magic_mixer.blend(automation.rules.Rule, agency=another_agency)
+        rule_with_account_on_agency = magic_mixer.blend(automation.rules.Rule, account=account_on_agency)
+        rule_with_account_on_another_agency = magic_mixer.blend(
+            automation.rules.Rule, account=account_on_another_agency
+        )
+
+        rule_histories_with_agency = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_agency)
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_anoher_agency)
+        rule_histories_with_account_on_agency = magic_mixer.cycle(3).blend(
+            automation.rules.RuleHistory, rule=rule_with_account_on_agency
+        )
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_account_on_another_agency)
+
+        response = self.client.get(reverse("restapi.rules.internal:rules_history"), {"agency_id": agency.id})
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories_with_agency] + [
+            item.id for item in rule_histories_with_account_on_agency
+        ]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_rule_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        rule = magic_mixer.blend(automation.rules.Rule, agency=agency)
+
+        rule_histories = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory)
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"), {"agency_id": agency.id, "rule_id": rule.id}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_ad_group_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+
+        rule = magic_mixer.blend(automation.rules.Rule, agency=agency)
+
+        rule_histories = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule, ad_group=ad_group)
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"), {"agency_id": agency.id, "ad_group_id": ad_group.id}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_start_date_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        rule = magic_mixer.blend(automation.rules.Rule, agency=agency)
+
+        mocked = datetime.datetime(2020, 3, 1, 0, 0, 0, tzinfo=pytz.utc)
+        with mock.patch("django.utils.timezone.now", mock.Mock(return_value=mocked)):
+            rule_histories = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+
+        mocked = datetime.datetime(2019, 12, 1, 0, 0, 0, tzinfo=pytz.utc)
+        with mock.patch("django.utils.timezone.now", mock.Mock(return_value=mocked)):
+            magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"), {"agency_id": agency.id, "start_date": "2020-01-01"}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_end_date_rules_histories(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        rule = magic_mixer.blend(automation.rules.Rule, agency=agency)
+
+        mocked = datetime.datetime(2020, 3, 1, 0, 0, 0, tzinfo=pytz.utc)
+        with mock.patch("django.utils.timezone.now", mock.Mock(return_value=mocked)):
+            rule_histories = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+
+        mocked = datetime.datetime(2020, 6, 1, 0, 0, 0, tzinfo=pytz.utc)
+        with mock.patch("django.utils.timezone.now", mock.Mock(return_value=mocked)):
+            magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule)
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"), {"agency_id": agency.id, "end_date": "2020-05-01"}
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+
+class RuleHistoryViewSetTest(restapi.common.views_base_test.RESTAPITestCase, LegacyRuleHistoryViewSetTest):
     pass
