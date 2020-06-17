@@ -185,6 +185,18 @@ class User(DASHAPIBaseView):
         }
 
 
+class CampaignRestore(DASHAPIBaseView):
+    @metrics_compat.timer("dash.api")
+    def post(self, request, campaign_id):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
+            raise exc.AuthorizationError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign.restore(request)
+
+        return self.create_api_response({})
+
+
 class AdGroupOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
