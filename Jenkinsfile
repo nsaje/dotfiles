@@ -2,6 +2,19 @@
 import hudson.model.Run
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 
+def getPreviousBuildResult() {
+    Run previousBuild = currentBuild.rawBuild.getPreviousBuild()
+    while (previousBuild != null) {
+        String result = previousBuild.result.toString()
+        if (result == 'SUCCESS' || result == 'FAILURE') {
+            return result
+            break
+        }
+        previousBuild = previousBuild.getPreviousBuild()
+    }
+    return ""
+}
+
 node {
   try {
     node('master') {
@@ -17,18 +30,6 @@ node {
 
                     previousBuild = previousBuild.getPreviousBuildInProgress()
                 }
-            }
-        }
-
-        stage('Check previous build status') {
-            Run previousBuild = currentBuild.rawBuild.getPreviousBuild()
-            while (previousBuild != null) {
-                String result = previousBuild.result.toString()
-                if (result == 'SUCCESS' || result == 'FAILURE') {
-                    env.PREVIOUS_BUILD_RESULT = result
-                    break
-                }
-                previousBuild = previousBuild.getPreviousBuild()
             }
         }
 
@@ -119,7 +120,8 @@ node {
         }
 
         stage('Notify success') {
-            if (env.PREVIOUS_BUILD_RESULT == 'FAILURE' && env.BRANCH_NAME == 'master') {
+            prevResult = getPreviousBuildResult()
+            if (prevResult == 'FAILURE' && env.BRANCH_NAME == 'master') {
                 slackSend channel: "#rnd-z1", color: "#8CC04F", failOnError: true, message: "Build Fixed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
             }
         }
@@ -131,8 +133,9 @@ node {
         // }
     }
   } catch(e) {
-    if (!(e instanceof FlowInterruptedException) && env.PREVIOUS_BUILD_RESULT == 'SUCCESS' && env.BRANCH_NAME == 'master') {
-      slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+    prevResult = getPreviousBuildResult()
+    if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS' && env.BRANCH_NAME == 'master') {
+        slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
     }
     throw e
   }
