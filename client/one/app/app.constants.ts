@@ -756,6 +756,7 @@ export enum RoutePathName {
     INVENTORY_PLANNING = 'inventory-planning',
     ARCHIVED = 'archived',
     DEALS = 'deals',
+    USERS = 'user-management',
     ERROR_FORBIDDEN = 'error/forbidden',
 }
 

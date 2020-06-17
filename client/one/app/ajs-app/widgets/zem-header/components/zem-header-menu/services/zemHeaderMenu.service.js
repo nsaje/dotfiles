@@ -83,6 +83,14 @@ angular
                 ),
             },
             {
+                text: 'User management',
+                callback: navigateToUsersView,
+                isAvailable: isUsersViewAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_user_management'
+                ),
+            },
+            {
                 text: canUserSeeNewPublisherGroupsView
                     ? 'Publishers & Placements'
                     : 'Publisher Groups',
@@ -288,6 +296,33 @@ angular
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
                     RoutePathName.DEALS,
+                ]);
+            }
+        }
+
+        function isUsersViewAvailable() {
+            return zemPermissions.hasPermission(
+                'zemauth.can_see_user_management'
+            );
+        }
+
+        function navigateToUsersView() {
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+
+            if (commonHelpers.isDefined(activeAccount)) {
+                NgRouter.navigate(
+                    [RoutePathName.APP_BASE, RoutePathName.USERS],
+                    {
+                        queryParams: {
+                            agencyId: activeAccount.data.agencyId,
+                            accountId: activeAccount.id,
+                        },
+                    }
+                );
+            } else {
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.USERS,
                 ]);
             }
         }

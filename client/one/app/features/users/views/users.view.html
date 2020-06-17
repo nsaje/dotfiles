@@ -1,0 +1,22 @@
+<h1 class="zem-main-container__view-title">User management</h1>
+
+<ng-container *ngIf="store.state$ | async as state">
+    <div class="zem-panel zem-panel--with-padding zem-users-view__panel">
+        <zem-users-actions
+            class="zem-users-actions zem-users-view__item"
+            [value]="keyword"
+            [isDisabled]="!state.agencyId"
+            (search)="searchUsers($event)"
+        >
+        </zem-users-actions>
+        <zem-users-grid
+            [users]="state.entities"
+            [context]="context"
+            [isLoading]="state.requests.list.inProgress"
+            [paginationOptions]="paginationOptions"
+            [paginationCount]="state.requests.list.count"
+            (paginationChange)="onPaginationChange($event)"
+        >
+        </zem-users-grid>
+    </div>
+</ng-container>

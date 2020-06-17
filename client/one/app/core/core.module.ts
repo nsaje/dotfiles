@@ -39,6 +39,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         BidModifiersModule,
         ConversionPixelsModule,
         DealsModule,
+        UsersModule,
         RulesModule,
         SourcesModule,
         PublisherGroupsModule,

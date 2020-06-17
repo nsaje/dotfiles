@@ -31,6 +31,7 @@ import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.gua
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
 import {SidebarContentModule} from './features/sidebar-content/sidebar-content.module';
 import {CacheRouteReuseStrategy} from './route-strategy/cache.strategy';
+import {UsersModule} from './features/users/users.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -89,6 +90,7 @@ if (APP_CONFIG.env.prod) {
         PublisherGroupsModule,
         SidebarContentModule,
         NewEntityAnalyticsMockModule,
+        UsersModule,
 
         // App router
         RouterModule.forRoot(APP_ROUTES),

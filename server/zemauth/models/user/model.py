@@ -373,6 +373,7 @@ class User(
             ("settings_defaults_on_campaign_level", "Can view ad group settings defaults on campaign level"),
             ("can_use_creative_icon", "User can use an icon on creatives."),
             ("can_see_deals_library", "User can see deals library."),
+            ("can_see_user_management", "User can see user management."),
             ("can_see_direct_deals_section", "User can see direct deals section."),
             ("can_review_and_set_bid_modifiers_in_settings", "User can review and set bid modifiers in settings."),
             ("can_see_internal_deals", "User can see and edit internal deals in the library."),

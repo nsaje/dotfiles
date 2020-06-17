@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {UsersEndpoint} from './users.endpoint';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import {Observable, pipe} from 'rxjs';
+import {Observable} from 'rxjs';
 import {User} from '../types/user';
 
 @Injectable()
