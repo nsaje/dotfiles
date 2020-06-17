@@ -27,3 +27,7 @@ export function intersect<T>(array1: T[], array2: T[]) {
 export function includesAny<T>(array1: T[], array2: T[]) {
     return intersect(array1, array2).length > 0;
 }
+
+export function distinct<T>(values: T[]): T[] {
+    return Array.from(new Set(values));
+}

@@ -78,4 +78,15 @@ describe('ArrayHelpers', () => {
         expect(arrayHelpers.includesAny([1, 2, 3], null)).toBeFalse();
         expect(arrayHelpers.includesAny([1, 2, 3], undefined)).toBeFalse();
     });
+
+    it('should return distinct values of an array', () => {
+        expect(arrayHelpers.distinct([1, 2, 3])).toEqual([1, 2, 3]);
+        expect(arrayHelpers.distinct([1, 2, 1, 3])).toEqual([1, 2, 3]);
+        expect(arrayHelpers.distinct(['a', 'b', 'c'])).toEqual(['a', 'b', 'c']);
+        expect(arrayHelpers.distinct(['a', 'b', 'a', 'c'])).toEqual([
+            'a',
+            'b',
+            'c',
+        ]);
+    });
 });
