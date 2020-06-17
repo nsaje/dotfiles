@@ -8,6 +8,10 @@ from typing import Union
 import core.models
 import zemauth.features.entity_permission
 from utils import zlogging
+from zemauth.features.entity_permission import EntityPermission
+from zemauth.features.entity_permission import Permission
+from zemauth.models.user.entity_permission_validation import EntityPermissionValidationMixin
+from zemauth.models.user.exceptions import EntityPermissionChangeNotAllowed
 
 if TYPE_CHECKING:
     Entity = Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
@@ -17,7 +21,7 @@ logger = zlogging.getLogger(__name__)
 LOG_MESSAGE = "Detected entity permission access differences"
 
 
-class EntityPermissionMixin(object):
+class EntityPermissionMixin(EntityPermissionValidationMixin):
     email: str
     has_perm: Callable[..., bool]
     entitypermission_set: Any
@@ -70,6 +74,60 @@ class EntityPermissionMixin(object):
 
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
+
+    def get_entity_permissions(self, request, account, agency):
+        calling_user = request.user
+
+        if account is None and agency is None and calling_user.has_perm_on_all_entities(Permission.USER):
+            return self.entitypermission_set
+
+        requested_agency = account.agency if account else agency
+
+        callers_accounts = zemauth.access.get_accounts(calling_user, Permission.USER)
+        callers_accounts_on_agency = callers_accounts.filter(agency=requested_agency)
+
+        return (
+            self.entitypermission_set.filter_by_accounts(callers_accounts_on_agency)
+            | self.entitypermission_set.filter_by_agency(requested_agency)
+            | self.entitypermission_set.filter_by_internal()
+        )
+
+    def set_entity_permissions(self, new_entity_permissions, request, account, agency):
+        calling_user = request.user
+        self.validate_entity_permissions(new_entity_permissions)
+
+        has_internal_permission = any(
+            filter(
+                lambda permission: not permission.get("account") and not permission.get("agency"),
+                new_entity_permissions,
+            )
+        )
+
+        if has_internal_permission and calling_user.has_perm_on_all_entities(Permission.USER):
+            self.delete_entity_permissions(request, None, None)
+        else:
+            self.delete_entity_permissions(request, account, agency)
+
+        if new_entity_permissions is not None:
+            for permission in new_entity_permissions:
+                if permission.get("account"):
+                    if calling_user.has_user_perm_on(permission["account"]):
+                        EntityPermission.objects.create(self, permission["permission"], account=permission["account"])
+                    else:
+                        raise EntityPermissionChangeNotAllowed("No USER permission on account")
+                elif permission.get("agency"):
+                    if calling_user.has_user_perm_on(permission["agency"]):
+                        EntityPermission.objects.create(self, permission["permission"], agency=permission["agency"])
+                    else:
+                        raise EntityPermissionChangeNotAllowed("No USER permission on agency")
+                else:
+                    if calling_user.has_perm_on_all_entities(Permission.USER):
+                        EntityPermission.objects.create(self, permission["permission"])
+                    else:
+                        raise EntityPermissionChangeNotAllowed("No internal USER permission")
+
+    def delete_entity_permissions(self, request, account, agency):
+        self.get_entity_permissions(request, account, agency).all().delete()
 
     def _has_perm_on_and_log_differences(
         self, permission: str, entity: Entity, fallback_permission: str = None, negate_fallback_permission: bool = False

@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.db import models
+from django.db.models import QuerySet
 
 import automation.rules
 import core.features.bcm
@@ -10,6 +11,7 @@ import core.models
 import utils.exc
 import zemauth.features.entity_permission.helpers
 import zemauth.models
+from zemauth.features.entity_permission import Permission
 
 
 def get_agency(user: zemauth.models.User, permission: str, agency_id: str) -> core.models.Agency:
@@ -235,6 +237,33 @@ def get_publisher_group(user: zemauth.models.User, permission: str, publisher_gr
 
 def get_publisher_groups(user: zemauth.models.User, permission: str) -> models.QuerySet:
     return _get_model_queryset(user, permission, core.features.publisher_groups.PublisherGroup)
+
+
+def get_user(
+    calling_user: zemauth.models.User,
+    user_id: int,
+    account: core.models.Account = None,
+    agency: core.models.Agency = None,
+    permission: str = Permission.READ,
+) -> zemauth.models.User:
+    user_qs: QuerySet = zemauth.models.User.objects
+    requested_user_qs: QuerySet = None
+
+    if account is not None:
+        requested_user_qs = user_qs.filter_by_account(account)
+    elif agency is not None:
+        requested_user_qs = user_qs.filter_by_agency_and_related_accounts(agency)
+    elif not calling_user.has_perm_on_all_entities(permission):
+        raise utils.exc.ValidationError("Agency or account must be specified")
+
+    if calling_user.has_perm_on_all_entities(permission):
+        if requested_user_qs:
+            requested_user_qs |= user_qs.filter_by_internal()
+        else:
+            requested_user_qs = user_qs.all()
+
+    requested_user: zemauth.models.User = requested_user_qs.get(pk=user_id)
+    return requested_user
 
 
 def _get_model_queryset(user: zemauth.models.User, permission: str, model: models.Model) -> models.QuerySet:

@@ -14,8 +14,10 @@ import zemauth.features.entity_permission
 import zemauth.models
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import entity_access
+from .entity_access import get_user
 
 
 class ObjectAccessTestCaseMixin(object):
@@ -381,3 +383,103 @@ class AutomationRuleAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
                 user, permission, entity_access.get_automation_rule, account, rule_with_account_scope, False
             )
             self._for_none(user, permission, entity_access.get_automation_rule, rule_with_account_scope)
+
+
+class UserAccessTestCase(TestCase):
+    def test_get_user_by_agency(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], agency)
+
+        user_from_method = get_user(calling_user, requested_user.id, None, agency)
+        self.assertEqual(user_from_method, requested_user)
+
+    def test_get_user_by_account(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        account = magic_mixer.blend(core.models.Account)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], account)
+
+        user_from_method = get_user(calling_user, requested_user.id, account, None)
+        self.assertEqual(user_from_method, requested_user)
+
+    def test_get_user_no_user_permission(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+
+        self.assertRaises(
+            zemauth.models.User.DoesNotExist,
+            get_user,
+            calling_user=calling_user,
+            user_id=requested_user.id,
+            account=None,
+            agency=agency,
+        )
+
+    def test_get_user_internal(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], None)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], None)
+
+        user_from_method = get_user(calling_user, requested_user.id, None, agency)
+        self.assertEqual(user_from_method, requested_user)
+
+    def test_get_user_internal_no_account_or_agency(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], None)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], None)
+
+        user_from_method = get_user(calling_user, requested_user.id, None, None)
+        self.assertEqual(user_from_method, requested_user)
+
+    def test_get_user_internal_no_access(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], None)
+
+        self.assertRaises(
+            zemauth.models.User.DoesNotExist,
+            get_user,
+            calling_user=calling_user,
+            user_id=requested_user.id,
+            account=None,
+            agency=agency,
+        )
+
+    def test_get_user_no_account_or_agency(self):
+        request = magic_mixer.blend_request_user()
+        calling_user: zemauth.models.User = request.user
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], agency)
+
+        self.assertRaises(
+            utils.exc.ValidationError,
+            get_user,
+            calling_user=calling_user,
+            user_id=requested_user.id,
+            account=None,
+            agency=None,
+        )

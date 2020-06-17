@@ -4,6 +4,9 @@ from django.db import IntegrityError
 from django.db import transaction
 from django.test import TestCase
 
+import zemauth
+from utils.magic_mixer import magic_mixer
+
 from .model import User
 
 
@@ -73,3 +76,9 @@ class InstanceTestCase(TestCase):
 
         permissions2 = user.get_all_permissions_with_access_levels()
         self.assertEqual(permissions2, permissions)
+
+    def test_update_name(self):
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user.update(first_name="Test", last_name="User")
+        self.assertEqual(requested_user.first_name, "Test")
+        self.assertEqual(requested_user.last_name, "User")

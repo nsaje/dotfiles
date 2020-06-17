@@ -76,6 +76,8 @@ class User(
 
     objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 
+    _settings_fields = ["first_name", "last_name"]
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

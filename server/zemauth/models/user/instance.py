@@ -1,6 +1,7 @@
 from django.contrib.auth import models as auth_models
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db import transaction
 
 import core.models
 
@@ -86,3 +87,26 @@ class UserMixin(object):
             return {"*": ["*"]}
         else:
             return self.sspd_sources_markets
+
+    @transaction.atomic
+    def update(self, **kwargs):
+        updates = self._clean_updates(kwargs)
+        if not updates:
+            return
+
+        self._apply_updates_and_save(**updates)
+
+    def _clean_updates(self, updates):
+        cleaned_updates = {}
+
+        for field, value in updates.items():
+            if field in set(self._settings_fields) and value != getattr(self, field):
+                cleaned_updates[field] = value
+
+        return cleaned_updates
+
+    def _apply_updates_and_save(self, **updates):
+        for field, value in updates.items():
+            if field in self._settings_fields:
+                setattr(self, field, value)
+        self.save()

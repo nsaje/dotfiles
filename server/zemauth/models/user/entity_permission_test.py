@@ -3,8 +3,11 @@ from django.test import TestCase
 import core.features.deals
 import core.models
 import zemauth.features.entity_permission
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
+from .exceptions import EntityPermissionChangeNotAllowed
 from .model import User
 
 
@@ -24,6 +27,106 @@ class EntityPermissionMixinTestCase(TestCase):
             self._for_agency(user, entity_perm_function, permission)
             self._for_account(user, entity_perm_function, permission)
             self._no_access(user, entity_perm_function)
+
+    def test_set_entity_permissions(self):
+        calling_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        request = type("", (), {})()
+        request.user = calling_user
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+        another_agency = magic_mixer.blend(core.models.Agency)
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        existing_permission = zemauth.features.entity_permission.EntityPermission(
+            user=requested_user, permission=Permission.READ, agency=agency
+        )
+        existing_permission.save()
+
+        existing_permission_on_another_agency = zemauth.features.entity_permission.EntityPermission(
+            user=requested_user, permission=Permission.READ, agency=another_agency
+        )
+        existing_permission_on_another_agency.save()
+
+        # 1 existing permission on another agency + 1 existing permission on this agency
+        eps = requested_user.entitypermission_set.all()
+        self.assertEqual(len(eps.all()), 2)
+        self.assertTrue(any(filter(lambda p: p.agency == agency and p.permission == Permission.READ, eps)))
+        self.assertTrue(any(filter(lambda p: p.agency == another_agency and p.permission == Permission.READ, eps)))
+
+        entity_permissions = [
+            {"agency": agency, "permission": Permission.READ},
+            {"agency": agency, "permission": Permission.BUDGET},
+        ]
+
+        requested_user.set_entity_permissions(entity_permissions, request, None, agency)
+
+        # 1 existing permission on another agency + 2 new permissions from the request on this agency
+        eps = requested_user.entitypermission_set.all()
+        self.assertEqual(len(eps.all()), 3)
+        self.assertTrue(any(filter(lambda p: p.agency == agency and p.permission == Permission.READ, eps)))
+        self.assertTrue(any(filter(lambda p: p.agency == agency and p.permission == Permission.BUDGET, eps)))
+        self.assertTrue(any(filter(lambda p: p.agency == another_agency and p.permission == Permission.READ, eps)))
+
+    def test_set_entity_permissions_not_allowed(self):
+        calling_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        request = type("", (), {})()
+        request.user = calling_user
+        agency = magic_mixer.blend(core.models.Agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+        another_agency = magic_mixer.blend(core.models.Agency)
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        entity_permissions = [
+            {"agency": another_agency, "permission": Permission.READ},
+            {"agency": another_agency, "permission": Permission.BUDGET},
+        ]
+
+        self.assertRaises(
+            EntityPermissionChangeNotAllowed,
+            requested_user.set_entity_permissions,
+            new_entity_permissions=entity_permissions,
+            request=request,
+            account=None,
+            agency=agency,
+        )
+
+    def test_set_entity_permissions_promote_to_internal(self):
+        calling_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        request = type("", (), {})()
+        request.user = calling_user
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], None)
+        agency = magic_mixer.blend(core.models.Agency)
+        another_agency = magic_mixer.blend(core.models.Agency)
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        existing_permission = zemauth.features.entity_permission.EntityPermission(
+            user=requested_user, permission=Permission.READ, agency=agency
+        )
+        existing_permission.save()
+
+        existing_permission_on_another_agency = zemauth.features.entity_permission.EntityPermission(
+            user=requested_user, permission=Permission.READ, agency=another_agency
+        )
+        existing_permission_on_another_agency.save()
+
+        # 1 existing permission on another agency + 1 existing permission on this agency
+        eps = requested_user.entitypermission_set.all()
+        self.assertEqual(len(eps.all()), 2)
+        self.assertTrue(any(filter(lambda p: p.agency == agency and p.permission == Permission.READ, eps)))
+        self.assertTrue(any(filter(lambda p: p.agency == another_agency and p.permission == Permission.READ, eps)))
+
+        entity_permissions = [{"permission": Permission.READ}, {"permission": Permission.BUDGET}]
+
+        requested_user.set_entity_permissions(entity_permissions, request, None, agency)
+
+        # 2 new internal permissions, all other permissions are gone
+        eps = requested_user.entitypermission_set.all()
+        self.assertEqual(len(eps.all()), 2)
+        self.assertTrue(any(filter(lambda p: p.agency is None and p.permission == Permission.READ, eps)))
+        self.assertTrue(any(filter(lambda p: p.agency is None and p.permission == Permission.BUDGET, eps)))
 
     @staticmethod
     def _get_entity_perm_function(user, permission):

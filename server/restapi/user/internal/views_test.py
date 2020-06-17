@@ -11,6 +11,11 @@ from zemauth.features.entity_permission import Permission
 
 
 class UserViewSetTestBase(FutureRESTAPITestCase):
+    def _setup_test_users(self):
+        calling_user: zemauth.models.User = self.user
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        return calling_user, requested_user
+
     def _prepare_callers_permissions(self, calling_user, caller_role):
         if caller_role == "internal_usr":
             agency = self.mix_agency()
@@ -30,7 +35,10 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
         self.assertEqual(resp_json, {"errorCode": error_code, "details": error_details})
 
     def _assert_validation_error(self, r, error_text):
-        self._assert_error(r, 400, "ValidationError", {"nonFieldErrors": error_text})
+        try:
+            self._assert_error(r, 400, "ValidationError", {"nonFieldErrors": error_text})
+        except AssertionError:
+            self._assert_error(r, 400, "ValidationError", error_text)
 
     def _expected_permission_response(self, permission):
         if permission.agency_id is not None:
@@ -179,6 +187,165 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
 
         return permissions
 
+    def _call_get(self, requested_user, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agencyId"] = agency.id
+        if account is not None:
+            query_params["accountId"] = account.id
+
+        r = self.client.get(
+            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}), query_params
+        )
+        return r
+
+    def _call_put(self, requested_user, put_data, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agency_id"] = agency.id
+        if account is not None:
+            query_params["account_id"] = account.id
+
+        url = u"%s?%s" % (
+            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
+            urlencode(query_params),
+        )
+
+        r = self.client.put(url, data=put_data, format="json")
+        return r
+
+    def _call_list(self, agency, account=None, offset=0, limit=10, show_internal=None, keyword=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agencyId"] = agency.id
+        if account is not None:
+            query_params["accountId"] = account.id
+        if offset is not None:
+            query_params["offset"] = offset
+        if limit is not None:
+            query_params["limit"] = limit
+        if show_internal is not None:
+            query_params["show_internal"] = show_internal
+        if keyword is not None:
+            query_params["keyword"] = keyword
+
+        r = self.client.get(reverse("restapi.user.internal:user_list"), query_params)
+        return r
+
+    def _call_create(self, post_data, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agency_id"] = agency.id
+        if account is not None:
+            query_params["account_id"] = account.id
+
+        url = u"%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
+
+        r = self.client.post(url, data=post_data, format="json")
+        return r
+
+    def _call_delete(self, requested_user, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agency_id"] = agency.id
+        if account is not None:
+            query_params["account_id"] = account.id
+
+        url = u"%s?%s" % (
+            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
+            urlencode(query_params),
+        )
+        r = self.client.delete(url)
+        return r
+
+
+class UserViewSetPutTest(UserViewSetTestBase):
+    def test_put_change_name(self):
+        # calling_user is agency manager and is searching by agency_id, requested user is agency manager
+        calling_user, requested_user = self._setup_test_users()
+
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+
+        r = self._call_get(requested_user, agency)
+        user_json = self.assertResponseValid(r)["data"]
+        self._fix_json_ids(user_json)
+
+        user_json["firstName"] = "Test"
+        user_json["lastName"] = "User"
+
+        r = self._call_put(requested_user, user_json, agency)
+        self.assertResponseValid(r)
+
+        r = self._call_get(requested_user, agency)
+        user_json = self.assertResponseValid(r)["data"]
+
+        self.assertEqual(user_json["firstName"], "Test")
+        self.assertEqual(user_json["lastName"], "User")
+
+    def test_put_change_permissions(self):
+        # calling_user is agency manager and is searching by agency_id, requested user is agency manager
+        calling_user, requested_user = self._setup_test_users()
+
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+
+        r = self._call_get(requested_user, agency)
+        user_json = self.assertResponseValid(r)["data"]
+        self._fix_json_ids(user_json)
+
+        user_json["entityPermissions"][0]["permission"] = Permission.READ
+        user_json["entityPermissions"][1]["permission"] = Permission.USER
+        user_json["entityPermissions"].append({"agencyId": agency.id, "permission": Permission.BUDGET_MARGIN})
+
+        r = self._call_put(requested_user, user_json, agency)
+        self.assertResponseValid(r)
+
+        r = self._call_get(requested_user, agency)
+        user_json = self.assertResponseValid(r)["data"]
+        self._fix_json_ids(user_json)
+
+        # After the change we need to see the same 3 permissions that we set
+        self.assertCountEqual(
+            user_json["entityPermissions"],
+            [
+                {"agencyId": agency.id, "accountId": None, "permission": Permission.READ},
+                {"agencyId": agency.id, "accountId": None, "permission": Permission.USER},
+                {"agencyId": agency.id, "accountId": None, "permission": Permission.BUDGET_MARGIN},
+            ],
+        )
+
+        # But in the database, the user still also needs to have all the permissions that we don't see
+        # 3 permissions that we just set + 4 permissions on other agencies = 7 permissions in total
+        self.assertEqual(len(list(requested_user.entitypermission_set.all())), 7)
+
+    def test_put_remove_permissions(self):
+        # calling_user is agency manager and is searching by agency_id, requested user is agency manager
+        calling_user, requested_user = self._setup_test_users()
+
+        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+
+        r = self._call_get(requested_user, agency)
+        user_json = self.assertResponseValid(r)["data"]
+        self._fix_json_ids(user_json)
+
+        user_json["entityPermissions"] = []
+
+        r = self._call_put(requested_user, user_json, agency)
+
+        self._assert_validation_error(r, "All entities must have READ permission")
+
+    def _fix_json_ids(self, user_json):
+        for permission in user_json["entityPermissions"]:
+            if "agencyId" in permission:
+                if permission["agencyId"] == "":
+                    permission["agencyId"] = None
+                elif permission["agencyId"]:
+                    permission["agencyId"] = int(permission["agencyId"])
+            if "accountId" in permission:
+                if permission["accountId"] == "":
+                    permission["accountId"] = None
+                elif permission["accountId"]:
+                    permission["accountId"] = int(permission["accountId"])
+
 
 class UserViewSetCreateTest(UserViewSetTestBase):
     def test_create_on_agency(self):
@@ -277,7 +444,9 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self._assert_validation_error(r, "Mixing account and agency permissions is not allowed.")
+        self._assert_validation_error(
+            r, "Setting both account and agency permissions on entities of the same agency is not allowed."
+        )
 
     def test_create_on_agency_and_account_together(self):
         calling_user: zemauth.models.User = self.user
@@ -296,7 +465,9 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self._assert_validation_error(r, "Mixing account and agency permissions is not allowed.")
+        self._assert_validation_error(
+            r, "Setting both account and agency permissions on entities of the same agency is not allowed."
+        )
 
     def test_create_no_read_privilege(self):
         calling_user: zemauth.models.User = self.user
@@ -306,20 +477,52 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self._assert_validation_error(r, "User with email new.user@outbrain.com must have READ permission")
+        self._assert_validation_error(r, "All entities must have READ permission")
+
+    def test_create_on_account_without_read(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+        another_account = self.mix_account(agency=agency)
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [
+                        {"accountId": account.id, "permission": Permission.READ},
+                        {"accountId": account.id, "permission": Permission.USER},
+                        {"accountId": another_account.id, "permission": Permission.USER},
+                    ],
+                }
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self._assert_validation_error(r, "All entities must have READ permission")
 
     def test_create_existing(self):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
         existing_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
-        test_helper.add_entity_permissions(existing_user, [Permission.READ, Permission.USER], agency)
+        test_helper.add_entity_permissions(existing_user, [Permission.READ], agency)
 
         post_data = self._prepare_request(existing_user.email, agency.id, None, Permission.READ)
 
         r = self._call_create(post_data, agency)
 
-        self._assert_validation_error(r, "User with email address existing.user@outbrain.com already exists.")
+        self.assertEqual(r.status_code, 200)
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["users"][0]["email"], existing_user.email)
+        self.assertEqual(resp_json["data"]["users"][0]["firstName"], existing_user.first_name)
+        self.assertEqual(resp_json["data"]["users"][0]["lastName"], existing_user.last_name)
+
+        self.assertCountEqual(
+            resp_json["data"]["users"][0]["entityPermissions"],
+            [{"agencyId": str(agency.id), "accountId": "", "permission": Permission.READ}],
+        )
 
     def test_create_no_agency(self):
         calling_user: zemauth.models.User = self.user
@@ -330,6 +533,24 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         r = self._call_create(post_data, agency)
 
         self._assert_validation_error(r, "Either agency id or account id must be provided for each entity permission.")
+
+    def test_create_internal(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "internal_usr")
+
+        post_data = self._prepare_request("new.user@outbrain.com", None, None, Permission.READ)
+
+        r = self._call_create(post_data, agency)
+
+        self.assertEqual(r.status_code, 200)
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
+
+        self.assertCountEqual(
+            resp_json["data"]["users"][0]["entityPermissions"],
+            [{"agencyId": "", "accountId": "", "permission": Permission.READ}],
+        )
 
     def test_create_wrong_agency(self):
         calling_user: zemauth.models.User = self.user
@@ -362,18 +583,6 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         post_data = {"users": [{"email": email, "entityPermissions": [ep]}]}
         return post_data
-
-    def _call_create(self, post_data, agency, account=None):
-        query_params = {}
-        if agency is not None:
-            query_params["agency_id"] = agency.id
-        if account is not None:
-            query_params["account_id"] = account.id
-
-        url = u"%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
-
-        r = self.client.post(url, data=post_data, format="json")
-        return r
 
 
 class UserViewSetDeleteTest(UserViewSetTestBase):
@@ -451,20 +660,6 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
         r = self._call_delete(requested_user, agency)
 
         self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
-
-    def _call_delete(self, requested_user, agency, account=None):
-        query_params = {}
-        if agency is not None:
-            query_params["agency_id"] = agency.id
-        if account is not None:
-            query_params["account_id"] = account.id
-
-        url = u"%s?%s" % (
-            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
-            urlencode(query_params),
-        )
-        r = self.client.delete(url)
-        return r
 
 
 class UserViewSetListTest(UserViewSetTestBase):
@@ -627,24 +822,6 @@ class UserViewSetListTest(UserViewSetTestBase):
         r = self._call_list(agency, account, limit=1000, show_internal=True)
         self._validate_response(r, users, permissions, "internal_usr", show_internal=True)
 
-    def _call_list(self, agency, account=None, offset=0, limit=10, show_internal=None, keyword=None):
-        query_params = {}
-        if agency is not None:
-            query_params["agencyId"] = agency.id
-        if account is not None:
-            query_params["accountId"] = account.id
-        if offset is not None:
-            query_params["offset"] = offset
-        if limit is not None:
-            query_params["limit"] = limit
-        if show_internal is not None:
-            query_params["show_internal"] = show_internal
-        if keyword is not None:
-            query_params["keyword"] = keyword
-
-        r = self.client.get(reverse("restapi.user.internal:user_list"), query_params)
-        return r
-
     def _prepare_test_case(self, calling_user, caller_role):
         account, agency = self._prepare_callers_permissions(calling_user, caller_role)
 
@@ -766,7 +943,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
 class UserViewSetGetTest(UserViewSetTestBase):
     def test_get_no_permission(self):
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
         calling_user.user_permissions.remove(
             DjangoPermission.objects.get(user=calling_user, codename="fea_use_entity_permission")
         )
@@ -777,13 +954,13 @@ class UserViewSetGetTest(UserViewSetTestBase):
         self._assert_error(r, 403, "PermissionDenied", "You do not have permission to perform this action.")
 
     def test_get_no_params(self):
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         r = self._call_get(requested_user, None)
         self._assert_validation_error(r, "Either agency id or account id must be provided.")
 
     def test_get_no_agency_access(self):
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency = self.mix_agency()
 
@@ -791,7 +968,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
         self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
 
     def test_get_no_account_access(self):
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency = self.mix_agency()
         account = self.mix_account(agency=agency)
@@ -801,7 +978,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_internal_user_by_agency_manager(self):
         # calling_user is agency manager and is searching by agency_id, requested user is internal user
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_internal_user_test_case(calling_user, requested_user, "agency_mgr")
 
@@ -810,7 +987,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_internal_user_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id, requested user is internal user
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_internal_user_test_case(calling_user, requested_user, "internal_usr")
 
@@ -819,7 +996,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_agency_manager_by_agency_manager(self):
         # calling_user is agency manager and is searching by agency_id, requested user is agency manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
 
@@ -828,7 +1005,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_agency_manager_by_agency_manager_with_account_id(self):
         # calling_user is agency manager and is searching by account_id, requested user is agency manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
         account = self.mix_account(agency=agency)
@@ -838,7 +1015,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_agency_manager_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id, requested user is agency manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
 
@@ -847,7 +1024,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_agency_manager_by_internal_user_with_account_id(self):
         # calling_user is internal user and is searching by account_id, requested user is agency manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "internal_usr")
         account = self.mix_account(agency=agency)
@@ -857,7 +1034,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_account_manager(self):
         # calling_user is account manager and is searching by agency_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "account_mgr"
@@ -869,7 +1046,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_account_manager_with_account_id(self):
         # calling_user is account manager and is searching by account_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "account_mgr"
@@ -880,7 +1057,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_agency_manager(self):
         # calling_user is agency manager and is searching by agency_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -891,7 +1068,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_agency_manager_with_account_id(self):
         # calling_user is agency manager and is searching by account_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -902,7 +1079,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "internal_usr"
@@ -913,7 +1090,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
     def test_get_account_manager_by_internal_user_with_account_id(self):
         # calling_user is internal user and is searching by account_id, requested user is account manager
-        calling_user, requested_user = self._setup_test()
+        calling_user, requested_user = self._setup_test_users()
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "internal_usr"
@@ -921,11 +1098,6 @@ class UserViewSetGetTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency, account)
         self._validate_account_manager_response(r, requested_user, permissions, "internal_usr")
-
-    def _setup_test(self):
-        calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
-        return calling_user, requested_user
 
     def _validate_internal_user_response(self, requested_user, r, permissions):
         resp_json = self.assertResponseValid(r)
@@ -972,15 +1144,3 @@ class UserViewSetGetTest(UserViewSetTestBase):
             )
 
         self.assertCountEqual(resp_user["entityPermissions"], expected_entity_permissions)
-
-    def _call_get(self, requested_user, agency, account=None):
-        query_params = {}
-        if agency is not None:
-            query_params["agencyId"] = agency.id
-        if account is not None:
-            query_params["accountId"] = account.id
-
-        r = self.client.get(
-            reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}), query_params
-        )
-        return r
