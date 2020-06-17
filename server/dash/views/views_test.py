@@ -379,7 +379,7 @@ class CampaignAdGroups(TestCase):
         )
 
 
-class AdGroupArchiveRestoreTest(TestCase):
+class AdGroupRestoreTest(TestCase):
     fixtures = ["test_models.yaml", "test_views.yaml"]
 
     class MockSettingsWriter(object):
@@ -393,15 +393,6 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password="secret")
 
-    def _post_archive_ad_group(self, ad_group_id):
-        return self.client.post(
-            reverse("ad_group_archive", kwargs={"ad_group_id": ad_group_id}),
-            data=json.dumps({}),
-            content_type="application/json",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-            follow=True,
-        )
-
     def _post_restore_ad_group(self, ad_group_id):
         return self.client.post(
             reverse("ad_group_restore", kwargs={"ad_group_id": ad_group_id}),
@@ -411,19 +402,19 @@ class AdGroupArchiveRestoreTest(TestCase):
             follow=True,
         )
 
-    def test_basic_archive_restore(self):
+    def test_basic_restore(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertFalse(ad_group.is_archived())
-
         ad_group_settings = ad_group.get_current_settings()
 
         with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
             new_ad_group_settings = ad_group_settings.copy_settings()
             new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
             new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(days=1)
+            new_ad_group_settings.archived = True
             new_ad_group_settings.save(None)
 
-        self._post_archive_ad_group(1)
+        ad_group.archived = True
+        ad_group.save(None)
 
         ad_group = models.AdGroup.objects.get(pk=1)
         self.assertTrue(ad_group.is_archived())

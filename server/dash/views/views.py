@@ -311,17 +311,6 @@ class AdGroupOverview(DASHAPIBaseView):
         return start_date, end_date, no_ad_groups_or_budgets
 
 
-class AdGroupArchive(DASHAPIBaseView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        ad_group.archive(request)
-        return self.create_api_response({})
-
-
 class AdGroupRestore(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
