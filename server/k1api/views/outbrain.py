@@ -40,16 +40,17 @@ class OutbrainMarketerIdView(K1APIView):
     def get(self, request):
 
         ad_group_id = request.GET.get("ad_group_id")
-        try:
-            ad_group = dash.models.AdGroup.objects.select_related("campaign__account").get(pk=ad_group_id)
-        except dash.models.AdGroup.DoesNotExist:
-            logger.exception("get_outbrain_marketer_id: ad group %s does not exist" % ad_group_id)
-            raise Http404
-        if ad_group.campaign.account.outbrain_marketer_id:
-            return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
-        try:
-            with transaction.atomic():
+        with transaction.atomic():
+            try:
+                account = dash.models.Account.objects.select_for_update().get(campaign__adgroup__id=ad_group_id)
+            except dash.models.Account.DoesNotExist:
+                logger.exception("get_outbrain_marketer_id: ad group %s does not exist" % ad_group_id)
+                raise Http404
+            if account.outbrain_marketer_id:
+                return self.response_ok(account.outbrain_marketer_id)
+
+            try:
                 unused_accounts = list(
                     dash.models.OutbrainAccount.objects.select_for_update().filter(used=False).order_by("created_dt")
                 )
@@ -62,30 +63,30 @@ class OutbrainMarketerIdView(K1APIView):
                 outbrain_account.used = True
                 outbrain_account.save()
 
-                ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
-                ad_group.campaign.account.save(request)
+                account.outbrain_marketer_id = outbrain_account.marketer_id
+                account.save(request)
 
                 logger.info(
                     "Assigned new Outbrain account",
-                    ad_group_id=ad_group.id,
-                    account_id=ad_group.campaign.account.id,
+                    ad_group_id=ad_group_id,
+                    account_id=account.id,
                     marketer_id=outbrain_account.marketer_id,
                 )
 
                 try:
-                    self.send_new_outbrain_account_used_email(ad_group.campaign.account, outbrain_account)
+                    self.send_new_outbrain_account_used_email(account, outbrain_account)
                 except Exception:
                     logger.exception(
                         "Could not send new Outbrain account assigned email",
-                        ad_group_id=ad_group.id,
-                        account_id=ad_group.campaign.account.id,
+                        ad_group_id=ad_group_id,
+                        account_id=account.id,
                         marketer_id=outbrain_account.marketer_id,
                     )
 
-        except IndexError:
-            return self.response_error("No unused Outbrain accounts available.", 404)
+            except IndexError:
+                return self.response_error("No unused Outbrain accounts available.", 404)
 
-        return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
+        return self.response_ok(account.outbrain_marketer_id)
 
     @staticmethod
     def send_new_outbrain_account_used_email(account, outbrain_account):
