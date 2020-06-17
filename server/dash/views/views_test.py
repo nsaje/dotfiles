@@ -20,6 +20,7 @@ import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -376,6 +377,61 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(
             all([adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings])
         )
+
+
+class AdGroupArchiveRestoreTest(TestCase):
+    fixtures = ["test_models.yaml", "test_views.yaml"]
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password="secret")
+
+    def _post_archive_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse("ad_group_archive", kwargs={"ad_group_id": ad_group_id}),
+            data=json.dumps({}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            follow=True,
+        )
+
+    def _post_restore_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse("ad_group_restore", kwargs={"ad_group_id": ad_group_id}),
+            data=json.dumps({}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            follow=True,
+        )
+
+    def test_basic_archive_restore(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        ad_group_settings = ad_group.get_current_settings()
+
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
+            new_ad_group_settings = ad_group_settings.copy_settings()
+            new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+            new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(days=1)
+            new_ad_group_settings.save(None)
+
+        self._post_archive_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertTrue(ad_group.is_archived())
+
+        self._post_restore_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
 
 
 class AdGroupSourcesTest(TestCase):

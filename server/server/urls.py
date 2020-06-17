@@ -451,8 +451,18 @@ urlpatterns += [
         login_required(dash.views.views.CampaignOverview.as_view()),
         name="campaign_overview",
     ),
+    url(
+        r"^api/ad_groups/(?P<ad_group_id>\d+)/archive/$",
+        login_required(dash.views.views.AdGroupArchive.as_view()),
+        name="ad_group_archive",
+    ),
     url(r"^api/sources/$", login_required(dash.views.views.AvailableSources.as_view())),
     url(r"^api/agencies/$", login_required(dash.views.agency.Agencies.as_view()), name="agencies"),
+    url(
+        r"^api/ad_groups/(?P<ad_group_id>\d+)/restore/$",
+        login_required(dash.views.views.AdGroupRestore.as_view()),
+        name="ad_group_restore",
+    ),
     url(
         r"^api/accounts/(?P<account_id>\d+)/overview/$",
         login_required(dash.views.views.AccountOverview.as_view()),
