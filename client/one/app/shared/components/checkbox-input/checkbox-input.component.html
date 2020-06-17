@@ -1,7 +1,8 @@
 <label
-    class="zem-checkbox-input__wrapper-label"
+    class="zem-checkbox-input__wrapper-label zem-checkbox-input__wrapper-label--{{
+        displayState
+    }}"
     [ngClass]="{
-        'zem-checkbox-input__wrapper-label--checked': isChecked,
         'zem-checkbox-input__wrapper-label--disabled': isDisabled
     }"
 >
@@ -9,7 +10,8 @@
         class="zem-checkbox-input__input"
         type="checkbox"
         [disabled]="isDisabled"
-        [checked]="isChecked"
+        [checked]="displayState === 'checked'"
+        [indeterminate]="displayState === 'indeterminate'"
         (change)="onChange()"
     />
     <span class="zem-checkbox-input__checkmark"></span>
