@@ -8,7 +8,6 @@ def getPreviousBuildResult() {
         String result = previousBuild.result.toString()
         if (result == 'SUCCESS' || result == 'FAILURE') {
             return result
-            break
         }
         previousBuild = previousBuild.getPreviousBuild()
     }
