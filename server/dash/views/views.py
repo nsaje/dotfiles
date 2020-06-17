@@ -11,7 +11,6 @@ import urllib.parse
 import urllib.request
 from functools import partial
 
-import newrelic.agent
 import pytz
 from django.conf import settings
 from django.db.models import Q
@@ -29,7 +28,6 @@ import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
 import demo
 import stats.helpers
-from dash import campaign_goals
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
@@ -321,48 +319,6 @@ class AdGroupRestore(DASHAPIBaseView):
         ad_group.restore(request)
 
         return self.create_api_response({})
-
-
-class CampaignAdGroups(DASHAPIBaseView):
-    @metrics_compat.timer("dash.api")
-    @newrelic.agent.function_trace()
-    def put(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-        self._validate_campaign_ready(request, campaign)
-
-        try:
-            ad_group = core.models.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
-
-        except core.models.ad_group.exceptions.CampaignIsArchived as err:
-            raise exc.ValidationError(str(err))
-
-        return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
-
-    @staticmethod
-    def _validate_campaign_ready(request, campaign):
-        primary_goal = campaign_goals.get_primary_campaign_goal(campaign)
-        scenario = None
-
-        if not primary_goal and not campaign.settings.language and not campaign.type:
-            scenario = "multiple_missing"
-        elif not primary_goal:
-            scenario = "goal_missing"
-        elif not campaign.settings.language:
-            scenario = "language_missing"
-        elif not campaign.type:
-            scenario = "type_missing"
-
-        if scenario:
-            url = (
-                request.build_absolute_uri("/v2/analytics/campaign/{}?settings".format(campaign.id))
-                + CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["url_postfix"]
-            )
-            raise exc.ValidationError(
-                data={
-                    "message": CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["message"],
-                    "action": {"text": CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["action_text"], "url": url},
-                }
-            )
 
 
 class CampaignOverview(DASHAPIBaseView):
