@@ -1961,7 +1961,7 @@ class CampaignContentInsightsTestCase(FutureDASHAPITestCase, LegacyCampaignConte
     pass
 
 
-class HistoryTest(TestCase):
+class LegacyHistoryTest(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -2080,6 +2080,10 @@ class HistoryTest(TestCase):
         history = response["data"]["history"][0]
         self.assertEqual(self.user.email, history["changed_by"])
         self.assertEqual("Account manager changed to 'Janez Novak'", history["changes_text"])
+
+
+class HistoryTest(FutureDASHAPITestCase, LegacyHistoryTest):
+    pass
 
 
 class AgenciesTest(TestCase):

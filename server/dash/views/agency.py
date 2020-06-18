@@ -436,16 +436,16 @@ class History(DASHAPIBaseView):
         entity_filter = {}
         ad_group_raw = request.GET.get("ad_group")
         if ad_group_raw:
-            entity_filter["ad_group"] = helpers.get_ad_group(request.user, int(ad_group_raw))
+            entity_filter["ad_group"] = zemauth.access.get_ad_group(request.user, Permission.READ, int(ad_group_raw))
         campaign_raw = request.GET.get("campaign")
         if campaign_raw:
-            entity_filter["campaign"] = helpers.get_campaign(request.user, int(campaign_raw))
+            entity_filter["campaign"] = zemauth.access.get_campaign(request.user, Permission.READ, int(campaign_raw))
         account_raw = request.GET.get("account")
         if account_raw:
-            entity_filter["account"] = helpers.get_account(request.user, int(account_raw))
+            entity_filter["account"] = zemauth.access.get_account(request.user, Permission.READ, int(account_raw))
         agency_raw = request.GET.get("agency")
         if agency_raw:
-            entity_filter["agency"] = helpers.get_agency(request.user, int(agency_raw))
+            entity_filter["agency"] = zemauth.access.get_agency(request.user, Permission.READ, int(agency_raw))
         level_raw = request.GET.get("level")
         if level_raw and int(level_raw) in constants.HistoryLevel.get_all():
             entity_filter["level"] = int(level_raw)
