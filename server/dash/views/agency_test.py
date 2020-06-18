@@ -18,6 +18,8 @@ from core.features import history
 from dash import constants
 from dash import history_helpers
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.views import agency
 from utils import exc
 from utils.magic_mixer import magic_mixer
@@ -152,7 +154,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class ConversionPixelTestCase(TestCase):
+class LegacyConversionPixelTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml", "test_views.yaml", "test_non_superuser.yaml", "test_conversion_pixel.yaml"]
 
     def setUp(self):
@@ -164,7 +166,6 @@ class ConversionPixelTestCase(TestCase):
 
     def test_get(self):
         account = models.Account.objects.get(pk=1)
-        account.users.add(self.user)
 
         response = self.client.get(reverse("account_conversion_pixels", kwargs={"account_id": account.id}), follow=True)
 
@@ -195,7 +196,6 @@ class ConversionPixelTestCase(TestCase):
 
     def test_get_additional(self):
         account = models.Account.objects.get(pk=1)
-        account.users.add(self.user)
 
         p = models.ConversionPixel.objects.get(pk=2)
         p.additional_pixel = True
@@ -235,7 +235,6 @@ class ConversionPixelTestCase(TestCase):
 
     def test_get_redirect_url(self):
         account = models.Account.objects.get(pk=1)
-        account.users.add(self.user)
 
         permission = authmodels.Permission.objects.get(codename="can_redirect_pixels")
         self.user.user_permissions.add(permission)
@@ -271,7 +270,6 @@ class ConversionPixelTestCase(TestCase):
 
     def test_get_notes(self):
         account = models.Account.objects.get(pk=1)
-        account.users.add(self.user)
 
         pixel = models.ConversionPixel.objects.get(pk=1)
         pixel.notes = "test note"
@@ -1144,6 +1142,10 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(hist)
 
         self.assertFalse(ping_mock.called)
+
+
+class ConversionPixelTestCase(FutureDASHAPITestCase, LegacyConversionPixelTestCase):
+    pass
 
 
 class UserActivationTest(TestCase):

@@ -19,6 +19,7 @@ import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
 import utils.exc
+import zemauth.access
 from dash import constants
 from dash import content_insights_helper
 from dash import forms
@@ -30,6 +31,7 @@ from utils import dates_helper
 from utils import email_helper
 from utils import exc
 from utils import zlogging
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User as ZemUser
 
 logger = zlogging.getLogger(__name__)
@@ -64,7 +66,7 @@ class AdGroupSettingsState(DASHAPIBaseView):
 class ConversionPixel(DASHAPIBaseView):
     def get(self, request, account_id):
         account_id = int(account_id)
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         audience_enabled_only = request.GET.get("audience_enabled_only", "") == "1"
 
@@ -82,7 +84,7 @@ class ConversionPixel(DASHAPIBaseView):
     def post(self, request, account_id):
         account_id = int(account_id)
 
-        account = helpers.get_account(request.user, account_id)  # check access to account
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         try:
             data = json.loads(request.body)
@@ -105,7 +107,7 @@ class ConversionPixel(DASHAPIBaseView):
             raise exc.MissingDataError("Conversion pixel does not exist")
 
         try:
-            helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+            zemauth.access.get_account(request.user, Permission.WRITE, conversion_pixel.account_id)
         except exc.MissingDataError:
             raise exc.MissingDataError("Conversion pixel does not exist")
 
