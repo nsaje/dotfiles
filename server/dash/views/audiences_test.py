@@ -4,25 +4,28 @@ import json
 import mock
 from django.conf import settings
 from django.contrib.auth import models as authmodels
-from django.test import TestCase
 from django.urls import reverse
 
 from dash import constants
 from dash import history_helpers
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth import models as zmodels
 
 
-class AudiencesTest(TestCase):
+class LegacyAudiencesTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
         self.original_k1_demo_mode = settings.K1_DEMO_MODE
         settings.K1_DEMO_MODE = True
 
-        self.user = zmodels.User.objects.get(pk=1)
-        self.assertTrue(self.user.is_superuser)
+        self.user = zmodels.User.objects.get(pk=3)
+        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
+        self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 
     def tearDown(self):
@@ -264,7 +267,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(audiences[0].archived, False)
         self.assertEqual(audiences[0].ttl, 90)
         self.assertEqual(audiences[0].prefill_days, 90)
-        self.assertEqual(audiences[0].created_by_id, 1)
+        self.assertEqual(audiences[0].created_by_id, 3)
 
         rules = models.AudienceRule.objects.filter(pk=6)
         self.assertEqual(len(rules), 1)
@@ -282,7 +285,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_CREATE)
         self.assertEqual(history[0].changes_text, 'Created audience "Test Audience".')
         self.assertEqual(history[0].changes, None)
-        self.assertEqual(history[0].created_by_id, 1)
+        self.assertEqual(history[0].created_by_id, 3)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.create")
@@ -333,7 +336,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_UPDATE)
         self.assertEqual(history[0].changes_text, "Changed name of audience with ID 1 to 'New name'.")
         self.assertEqual(history[0].changes, None)
-        self.assertEqual(history[0].created_by_id, 1)
+        self.assertEqual(history[0].created_by_id, 3)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.update")
@@ -377,12 +380,17 @@ class AudiencesTest(TestCase):
         k1_update_account_mock.assert_called_with(audience.pixel.account, msg="audience.create")
 
 
-class AudienceArchiveTest(TestCase):
+class AudiencesTestCase(FutureDASHAPITestCase, LegacyAudiencesTestCase):
+    pass
+
+
+class LegacyAudienceArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
-        self.user = zmodels.User.objects.get(pk=1)
-        self.assertTrue(self.user.is_superuser)
+        self.user = zmodels.User.objects.get(pk=3)
+        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
+        self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
         magic_mixer.blend(models.Campaign, account_id=1, id=124, name="Campaign 0").save(None)
         magic_mixer.blend(models.AdGroup, campaign_id=124, id=125, name="Adgroup 0 ").save(None)
@@ -437,7 +445,7 @@ class AudienceArchiveTest(TestCase):
         self.assertEqual(history.action_type, constants.HistoryActionType.AUDIENCE_ARCHIVE)
         self.assertEqual(history.changes_text, "Archived audience 'test audience 1'.")
         self.assertEqual(history.changes, None)
-        self.assertEqual(history.created_by_id, 1)
+        self.assertEqual(history.created_by_id, 3)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
 
@@ -477,12 +485,17 @@ class AudienceArchiveTest(TestCase):
         redirector_upsert_audience_mock.assert_not_called()
 
 
-class AudienceRestoreTest(TestCase):
+class AudienceArchiveTestCase(FutureDASHAPITestCase, LegacyAudienceArchiveTestCase):
+    pass
+
+
+class LegacyAudienceRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_audiences.yaml"]
 
     def setUp(self):
-        self.user = zmodels.User.objects.get(pk=1)
-        self.assertTrue(self.user.is_superuser)
+        self.user = zmodels.User.objects.get(pk=3)
+        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
+        self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 
     def test_permissions(self):
@@ -534,6 +547,10 @@ class AudienceRestoreTest(TestCase):
         self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_RESTORE)
         self.assertEqual(history[0].changes_text, "Restored audience 'test audience 3'.")
         self.assertEqual(history[0].changes, None)
-        self.assertEqual(history[0].created_by_id, 1)
+        self.assertEqual(history[0].created_by_id, 3)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
+
+
+class AudienceRestoreTestCase(FutureDASHAPITestCase, LegacyAudienceRestoreTestCase):
+    pass

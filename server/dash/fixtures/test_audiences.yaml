@@ -32,6 +32,22 @@
     model: zemauth.user
     pk: 2
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: mad.max@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+        user_permissions: []
+        username: 'beta'
+    model: zemauth.user
+    pk: 3
+
 # test yahoo account
 
 -   fields:
@@ -62,7 +78,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
-        users: [1, 2]
+        users: [1, 2, 3]
         settings: 1
         yahoo_account: 1
     model: dash.account
@@ -73,7 +89,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
-        users: [1]
+        users: [1, 3]
         settings: 2
         yahoo_account: 1
     model: dash.account

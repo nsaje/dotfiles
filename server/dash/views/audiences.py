@@ -2,12 +2,12 @@ import json
 
 import core.features.audiences.audience.exceptions
 import redshiftapi.api_audiences
+import zemauth.access
 from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
 from utils import exc
-
-from . import helpers
+from zemauth.features.entity_permission import Permission
 
 
 class AudiencesView(DASHAPIBaseView):
@@ -19,7 +19,7 @@ class AudiencesView(DASHAPIBaseView):
         if audience_id:
             audience_id = int(audience_id)
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         if audience_id:
             return self._get_audience(request, account, audience_id)
@@ -31,7 +31,7 @@ class AudiencesView(DASHAPIBaseView):
             raise exc.AuthorizationError()
 
         account_id = int(account_id)
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         resource = json.loads(request.body)
         audience_form = forms.AudienceForm(account, request.user, resource)
@@ -77,7 +77,7 @@ class AudiencesView(DASHAPIBaseView):
         account_id = int(account_id)
         audience_id = int(audience_id)
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         audiences = models.Audience.objects.filter(pk=audience_id).filter(pixel__account=account)
         if not audiences:
@@ -180,9 +180,8 @@ class AudienceArchive(DASHAPIBaseView):
         audience_id = int(audience_id)
 
         # This is here to see if user has permissions for this account
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
-        audience = None
         try:
             audience = models.Audience.objects.get(pk=audience_id, pixel__account=account)
         except models.Audience.DoesNotExist:
@@ -205,9 +204,8 @@ class AudienceRestore(DASHAPIBaseView):
         audience_id = int(audience_id)
 
         # This is here to see if user has permissions for this account
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
-        audience = None
         try:
             audience = models.Audience.objects.get(pk=audience_id, pixel__account=account)
         except models.Audience.DoesNotExist:
