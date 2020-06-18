@@ -264,3 +264,8 @@ export enum TimeRange {
     Lifetime = 'LIFETIME',
     NotApplicable = 'NOT_APPLICABLE',
 }
+
+export enum RuleHistoryStatus {
+    SUCCESS = 1,
+    FAILURE = 2,
+}

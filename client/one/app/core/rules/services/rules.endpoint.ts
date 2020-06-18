@@ -8,6 +8,8 @@ import {map, catchError} from 'rxjs/operators';
 import {RULES_CONFIG} from '../rules.config';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
 import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
+import {RuleHistory} from '../types/rule-history';
+import {convertDateToString} from '../../../shared/helpers/date.helpers';
 
 @Injectable()
 export class RulesEndpoint {
@@ -145,5 +147,59 @@ export class RulesEndpoint {
                 return throwError(error);
             })
         );
+    }
+
+    listHistories(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number | null,
+        limit: number | null,
+        ruleId: string | null,
+        adGroupId: string | null,
+        startDate: Date | null,
+        endDate: Date | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<RuleHistory[]> {
+        const request = RULES_CONFIG.requests.rules.listHistories;
+        const params = {
+            offset: `${offset}`,
+            limit: `${limit}`,
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(ruleId) && {ruleId}),
+            ...(commonHelpers.isDefined(adGroupId) && {adGroupId}),
+            ...(commonHelpers.isDefined(startDate) && {
+                startDate: convertDateToString(startDate),
+            }),
+            ...(commonHelpers.isDefined(endDate) && {
+                endDate: convertDateToString(endDate),
+            }),
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<RuleHistory[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 }

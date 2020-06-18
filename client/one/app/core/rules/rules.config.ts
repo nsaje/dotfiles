@@ -21,6 +21,10 @@ export const RULES_CONFIG = {
                 name: 'edit',
                 url: `${rulesApiUrl}/{ruleId}/`,
             },
+            listHistories: {
+                name: 'listHistories',
+                url: `${rulesApiUrl}/history/`,
+            },
         },
     },
 };

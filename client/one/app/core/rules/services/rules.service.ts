@@ -4,6 +4,7 @@ import {Rule} from '../types/rule';
 import {Observable} from 'rxjs/internal/Observable';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import {RuleHistory} from '../types/rule-history';
 
 @Injectable()
 export class RulesService {
@@ -42,6 +43,30 @@ export class RulesService {
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         return this.endpoint.get(ruleId, requestStateUpdater);
+    }
+
+    listHistories(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number | null,
+        limit: number | null,
+        ruleId: string | null,
+        adGroupId: string | null,
+        startDate: Date | null,
+        endDate: Date | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<RuleHistory[]> {
+        return this.endpoint.listHistories(
+            agencyId,
+            accountId,
+            offset,
+            limit,
+            ruleId,
+            adGroupId,
+            startDate,
+            endDate,
+            requestStateUpdater
+        );
     }
 
     private create(

@@ -9,9 +9,11 @@ import {
     TimeRange,
     RuleActionFrequency,
     RuleNotificationType,
+    RuleHistoryStatus,
 } from '../rules.constants';
 import {fakeAsync, tick} from '@angular/core/testing';
 import * as clone from 'clone';
+import {RuleHistory} from '../types/rule-history';
 
 describe('RulesService', () => {
     let service: RulesService;
@@ -22,6 +24,7 @@ describe('RulesService', () => {
     let mockedRules: Rule[];
     let mockedAgencyId: string;
     let mockedAccountId: string;
+    let mockedRulesHistories: RuleHistory[];
 
     beforeEach(() => {
         rulesEndpointStub = jasmine.createSpyObj(RulesEndpoint.name, [
@@ -29,6 +32,7 @@ describe('RulesService', () => {
             'create',
             'get',
             'edit',
+            'listHistories',
         ]);
         service = new RulesService(rulesEndpointStub);
 
@@ -60,6 +64,20 @@ describe('RulesService', () => {
             },
         ];
         mockedRule = clone(mockedRules[0]);
+
+        mockedRulesHistories = [
+            {
+                id: '10000000',
+                createdDt: new Date(),
+                status: RuleHistoryStatus.SUCCESS,
+                changes: '',
+                changesText: '',
+                ruleId: '10000000',
+                ruleName: 'Test rule',
+                adGroupId: '1234',
+                adGroupName: 'Test Ad Group',
+            },
+        ];
     });
 
     it('should list rules via endpoint', () => {
@@ -142,6 +160,42 @@ describe('RulesService', () => {
         expect(rulesEndpointStub.edit).toHaveBeenCalledTimes(1);
         expect(rulesEndpointStub.edit).toHaveBeenCalledWith(
             mockedNewRule,
+            requestStateUpdater
+        );
+    });
+
+    it('should list rules histories via endpoint', () => {
+        const limit = 10;
+        const offset = 0;
+        rulesEndpointStub.listHistories.and
+            .returnValue(of(mockedRulesHistories, asapScheduler))
+            .calls.reset();
+
+        service
+            .listHistories(
+                mockedAgencyId,
+                mockedAccountId,
+                offset,
+                limit,
+                null,
+                null,
+                null,
+                null,
+                requestStateUpdater
+            )
+            .subscribe(rulesHistories => {
+                expect(rulesHistories).toEqual(mockedRulesHistories);
+            });
+        expect(rulesEndpointStub.listHistories).toHaveBeenCalledTimes(1);
+        expect(rulesEndpointStub.listHistories).toHaveBeenCalledWith(
+            mockedAgencyId,
+            mockedAccountId,
+            offset,
+            limit,
+            null,
+            null,
+            null,
+            null,
             requestStateUpdater
         );
     });
