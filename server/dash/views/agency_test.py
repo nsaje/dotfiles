@@ -14,6 +14,7 @@ from django.urls import reverse
 from mock import ANY
 from mock import patch
 
+import zemauth.features.entity_permission
 from core.features import history
 from dash import constants
 from dash import history_helpers
@@ -2086,7 +2087,7 @@ class HistoryTest(FutureDASHAPITestCase, LegacyHistoryTest):
     pass
 
 
-class AgenciesTest(TestCase):
+class LegacyAgenciesTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
@@ -2108,22 +2109,25 @@ class AgenciesTest(TestCase):
         self.assertTrue(response["success"])
 
     def test_get(self):
-        agency = models.Agency(name="test")
-        agency.save(fake_request(self.user))
-
+        magic_mixer.blend(models.Agency)
         add_permissions(self.user, ["can_filter_by_agency"])
+
         response = self.get_agencies()
         self.assertTrue(response["success"])
         self.assertEqual({"agencies": []}, response["data"])
 
-        agency.users.add(self.user)
-        agency.save(fake_request(self.user))
-
+        agency = self.mix_agency(self.user, permissions=[zemauth.features.entity_permission.Permission.READ])
         response = self.get_agencies()
+
         self.assertTrue(response["success"])
         self.assertEqual(
-            {"agencies": [{"id": str(agency.id), "name": "test", "is_externally_managed": False}]}, response["data"]
+            {"agencies": [{"id": str(agency.id), "name": agency.name, "is_externally_managed": False}]},
+            response["data"],
         )
+
+
+class AgenciesTestCase(FutureDASHAPITestCase, LegacyAgenciesTestCase):
+    pass
 
 
 class TestHistoryMixin(TestCase):
