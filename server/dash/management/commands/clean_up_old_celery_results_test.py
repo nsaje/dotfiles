@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 
 import django_celery_results.models
-from core.management.commands import clean_up_old_celery_results
+from dash.management.commands import clean_up_old_celery_results
 from utils.magic_mixer import magic_mixer
 
 

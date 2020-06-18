@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 
 import core.features.history.models
-from core.management.commands import clean_up_old_history_stacktraces
+from dash.management.commands import clean_up_old_history_stacktraces
 from utils.magic_mixer import magic_mixer
 
 
