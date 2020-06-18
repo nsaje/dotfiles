@@ -34,7 +34,7 @@ node {
 
         stage('Setup') {
             sh 'export' // for debug purposes
-            env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
+            env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
             sh 'mkdir -p ${CACHE_DIR}'
             env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
             env.AWS_DEFAULT_REGION="us-east-1"
