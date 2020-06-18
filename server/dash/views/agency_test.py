@@ -25,6 +25,7 @@ from utils import exc
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
+from utils.test_helper import remove_permissions
 from zemauth.models import User
 
 
@@ -1805,35 +1806,23 @@ Zemanta""",
         mocking_email.assert_called_once_with(**args)
 
 
-class CampaignContentInsightsTest(TestCase):
+class LegacyCampaignContentInsightsTestCase(DASHAPITestCase):
     fixtures = ["test_views.yaml"]
 
-    def user(self):
-        return User.objects.get(pk=2)
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        add_permissions(self.user, ["can_view_campaign_content_insights_side_tab"])
 
     @patch("redshiftapi.api_breakdowns.query")
-    def test_permission(self, mock_query):
+    def test_get_no_permission(self, mock_query):
         cis = agency.CampaignContentInsights()
+        remove_permissions(self.user, ["can_view_campaign_content_insights_side_tab"])
         with self.assertRaises(exc.AuthorizationError):
-            cis.get(fake_request(self.user()), 1)
-
-        add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
-        request = fake_request(self.user())
-        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
-        response = cis.get(request, 1)
-        self.assertEqual(http.client.OK, response.status_code)
-        self.assertDictEqual(
-            {
-                "data": {"metric": "CTR", "summary": "Title", "best_performer_rows": [], "worst_performer_rows": []},
-                "success": True,
-            },
-            json.loads(response.content),
-        )
+            cis.get(fake_request(self.user), 1)
 
     @patch("redshiftapi.api_breakdowns.query")
     def test_basic_archived(self, mock_query):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad = models.ContentAd(
@@ -1846,7 +1835,7 @@ class CampaignContentInsightsTest(TestCase):
         cad.save()
 
         mock_query.return_value = [{"content_ad_id": cad.id, "clicks": 1000, "impressions": 10000}]
-        request = fake_request(self.user())
+        request = fake_request(self.user)
         request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
         response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
@@ -1861,7 +1850,6 @@ class CampaignContentInsightsTest(TestCase):
     @patch("redshiftapi.api_breakdowns.query")
     def test_basic_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad = models.ContentAd(
@@ -1871,7 +1859,7 @@ class CampaignContentInsightsTest(TestCase):
 
         mock_query.return_value = [{"content_ad_id": cad.id, "clicks": 1000, "impressions": 10000}]
 
-        request = fake_request(self.user())
+        request = fake_request(self.user)
         request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
         response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
@@ -1891,7 +1879,6 @@ class CampaignContentInsightsTest(TestCase):
     @patch("redshiftapi.api_breakdowns.query")
     def test_duplicate_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd(
@@ -1909,7 +1896,7 @@ class CampaignContentInsightsTest(TestCase):
             {"content_ad_id": cad2.id, "clicks": 9000, "impressions": 10000},
         ]
 
-        request = fake_request(self.user())
+        request = fake_request(self.user)
         request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
         response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
@@ -1929,7 +1916,6 @@ class CampaignContentInsightsTest(TestCase):
     @patch("redshiftapi.api_breakdowns.query")
     def test_order_title_ctr(self, mock_query):
         cis = agency.CampaignContentInsights()
-        add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
 
         campaign = models.Campaign.objects.get(pk=1)
         cad1 = models.ContentAd(
@@ -1947,7 +1933,7 @@ class CampaignContentInsightsTest(TestCase):
             {"content_ad_id": cad2.id, "clicks": 1000, "impressions": 100000},
         ]
 
-        request = fake_request(self.user())
+        request = fake_request(self.user)
         request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
         response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
@@ -1969,6 +1955,10 @@ class CampaignContentInsightsTest(TestCase):
             },
             json.loads(response.content),
         )
+
+
+class CampaignContentInsightsTestCase(FutureDASHAPITestCase, LegacyCampaignContentInsightsTestCase):
+    pass
 
 
 class HistoryTest(TestCase):

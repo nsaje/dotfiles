@@ -399,7 +399,7 @@ class CampaignContentInsights(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.can_view_campaign_content_insights_side_tab"):
             raise exc.AuthorizationError()
 
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():
             raise exc.ValidationError(errors=dict(view_filter.errors))
