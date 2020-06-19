@@ -207,6 +207,16 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: canUserSeeNewPublisherGroupsView ? 'Publishers & Placements' : 'Publisher Groups',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.RULES)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.RULES
+                ];
+                return {
+                    typeName: 'Management Console',
+                    name: 'Automation Rules',
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
+                };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {
                 urlTree = [
                     RoutePathName.APP_BASE,

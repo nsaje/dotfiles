@@ -5,4 +5,5 @@ export const SIDEBAR_ROUTER_PATH_NAMES: RoutePathName[] = [
     RoutePathName.DEALS,
     RoutePathName.USERS,
     RoutePathName.PUBLISHER_GROUPS,
+    RoutePathName.RULES,
 ];

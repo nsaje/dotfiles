@@ -101,6 +101,14 @@ angular
                 ),
                 isNewFeature: canUserSeeNewPublisherGroupsView,
             },
+            {
+                text: 'Automation Rules',
+                callback: navigateToRulesView,
+                isAvailable: isRulesViewAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.fea_can_create_automation_rules'
+                ),
+            },
         ];
 
         var UTILITY_ACTIONS = [
@@ -323,6 +331,33 @@ angular
                 NgRouter.navigate([
                     RoutePathName.APP_BASE,
                     RoutePathName.USERS,
+                ]);
+            }
+        }
+
+        function isRulesViewAvailable() {
+            return zemPermissions.hasPermission(
+                'zemauth.fea_can_create_automation_rules'
+            );
+        }
+
+        function navigateToRulesView() {
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+
+            if (commonHelpers.isDefined(activeAccount)) {
+                NgRouter.navigate(
+                    [RoutePathName.APP_BASE, RoutePathName.RULES],
+                    {
+                        queryParams: {
+                            agencyId: activeAccount.data.agencyId,
+                            accountId: activeAccount.id,
+                        },
+                    }
+                );
+            } else {
+                NgRouter.navigate([
+                    RoutePathName.APP_BASE,
+                    RoutePathName.RULES,
                 ]);
             }
         }

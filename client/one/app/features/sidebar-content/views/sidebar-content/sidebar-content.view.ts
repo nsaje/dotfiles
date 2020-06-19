@@ -82,6 +82,16 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                 );
             },
         },
+        {
+            value: RoutePathName.RULES,
+            displayValue: 'Automation Rules',
+            icon: ListGroupIcon.AutomationRules,
+            isVisible: () => {
+                return this.zemPermissions.hasPermission(
+                    'zemauth.fea_can_create_automation_rules'
+                );
+            },
+        },
     ];
 
     hasAgencyScope: boolean;

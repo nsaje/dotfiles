@@ -15,6 +15,7 @@ import {NEW_ENTITY_ANALYTICS_MOCK_ROUTES} from './features/new-entity-analytics-
 import {CanActivateDashboardGuard} from './route-guards/canActivateDashboard.guard';
 import {CanActivateRedirectGuard} from './route-guards/canActivateRedirect.guard';
 import {USERS_ROUTES} from './features/users/users.routes';
+import {RULES_ROUTES} from './features/rules/rules.routes';
 
 export const APP_ROUTES: Routes = [
     {path: '', redirectTo: RoutePathName.APP_BASE, pathMatch: 'full'},
@@ -62,6 +63,10 @@ export const APP_ROUTES: Routes = [
             {
                 path: RoutePathName.USERS,
                 children: USERS_ROUTES,
+            },
+            {
+                path: RoutePathName.RULES,
+                children: RULES_ROUTES,
             },
             {
                 path: RoutePathName.INVENTORY_PLANNING,
