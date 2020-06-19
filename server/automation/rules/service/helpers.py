@@ -5,6 +5,8 @@ from typing import Dict
 from typing import List
 from typing import Sequence
 
+from django.db.models import Q
+
 import core.models
 import dash.constants
 import redshiftapi.api_breakdowns
@@ -18,7 +20,12 @@ def get_rules_by_ad_group_map(
 ) -> Dict[core.models.AdGroup, List[models.Rule]]:
     rules_map: Dict[core.models.AdGroup, List[models.Rule]] = defaultdict(list)
     for rule in rules:
-        ad_groups = rule.ad_groups_included.exclude_archived()
+        ad_groups = core.models.AdGroup.objects.filter(
+            Q(campaign__account__in=rule.accounts_included.all())
+            | Q(campaign__in=rule.campaigns_included.all())
+            | Q(id__in=rule.ad_groups_included.all())
+        ).exclude_archived()
+
         if filter_active:
             ad_groups = ad_groups.filter_active()
 

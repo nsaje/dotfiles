@@ -67,14 +67,14 @@ class RuleInstanceMixin:
     def _apply_related_updates(self, updates):
         if "conditions" in updates:
             self._update_conditions(updates["conditions"])
+        if "accounts_included" in updates:
+            self.accounts_included.set(updates["accounts_included"])
+        if "campaigns_included" in updates:
+            self.campaigns_included.set(updates["campaigns_included"])
         if "ad_groups_included" in updates:
-            self._update_ad_groups_included(updates["ad_groups_included"])
+            self.ad_groups_included.set(updates["ad_groups_included"])
 
     def _update_conditions(self, conditions):
         self.conditions.all().delete()
         for condition in conditions:
             RuleCondition.objects.create(rule=self, **condition)
-
-    def _update_ad_groups_included(self, ad_groups_included):
-        for ad_group in ad_groups_included:
-            self.ad_groups_included.add(ad_group)

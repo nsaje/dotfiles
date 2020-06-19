@@ -65,6 +65,18 @@ class InvalidAccount(ValidationError):
     pass
 
 
+class InvalidIncludedAccounts(ValidationError):
+    pass
+
+
+class InvalidIncludedCampaigns(ValidationError):
+    pass
+
+
+class InvalidIncludedAdGroups(ValidationError):
+    pass
+
+
 class InvalidRuleConditions(ValidationError):
     def __init__(self, *args, conditions_errors=None, **kwargs):
         if not conditions_errors:

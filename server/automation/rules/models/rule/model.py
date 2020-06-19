@@ -44,7 +44,9 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
     state = models.IntegerField(default=constants.RuleState.ENABLED, choices=constants.RuleState.get_choices())
     archived = models.BooleanField(default=False)
 
-    ad_groups_included = models.ManyToManyField(core.models.AdGroup)
+    accounts_included = models.ManyToManyField(core.models.Account, related_name="accounts_included")
+    campaigns_included = models.ManyToManyField(core.models.Campaign, related_name="campaigns_included")
+    ad_groups_included = models.ManyToManyField(core.models.AdGroup, related_name="ad_groups_included")
 
     target_type = models.IntegerField(choices=constants.TargetType.get_choices())
 

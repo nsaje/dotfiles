@@ -37,6 +37,9 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "notification_recipients"),
             partial(self._validate_if_present, "agency"),
             partial(self._validate_if_present, "account"),
+            partial(self._validate_if_present, "accounts_included"),
+            partial(self._validate_if_present, "campaigns_included"),
+            partial(self._validate_if_present, "ad_groups_included"),
             changes=changes,
         )
         self._validate_agency_account(changes)
@@ -304,8 +307,16 @@ class RuleValidationMixin:
         if agency is None:
             return
 
+        accounts_included = changes.get("accounts_included", self.accounts_included.all().only("agency_id"))
+        if any(account.agency_id != agency.id for account in accounts_included):
+            raise exceptions.InvalidAgency("Rule already runs on accounts not belonging to the selected agency.")
+
+        campaigns_included = changes.get("campaigns_included", self.campaigns_included.all().only("account__agency_id"))
+        if any(campaign.account.agency_id != agency.id for campaign in campaigns_included):
+            raise exceptions.InvalidAgency("Rule already runs on campaigns not belonging to the selected agency.")
+
         ad_groups_included = changes.get(
-            "ad_groups_included", self.ad_groups_included.all().select_related("campaign__account__agency")
+            "ad_groups_included", self.ad_groups_included.all().only("campaign__account__agency_id")
         )
         if any(ad_group.campaign.account.agency_id != agency.id for ad_group in ad_groups_included):
             raise exceptions.InvalidAgency("Rule already runs on ad groups not belonging to the selected agency.")
@@ -314,8 +325,67 @@ class RuleValidationMixin:
         if account is None:
             return
 
+        accounts_included = changes.get("accounts_included", self.accounts_included.all().only("id"))
+        if any(account_id != account.id for account_id in accounts_included):
+            raise exceptions.InvalidAccount("Rule already runs on accounts not belonging to the selected account.")
+
+        campaigns_included = changes.get("campaigns_included", self.campaigns_included.all().only("account_id"))
+        if any(campaign.account_id != account.id for campaign in campaigns_included):
+            raise exceptions.InvalidAccount("Rule already runs on campaigns not belonging to the selected account.")
+
         ad_groups_included = changes.get(
-            "ad_groups_included", self.ad_groups_included.all().select_related("campaign__account")
+            "ad_groups_included", self.ad_groups_included.all().only("campaign__account_id")
         )
         if any(ad_group.campaign.account_id != account.id for ad_group in ad_groups_included):
             raise exceptions.InvalidAccount("Rule already runs on ad groups not belonging to the selected account.")
+
+    def _validate_accounts_included(self, changes, accounts_included):
+        if not accounts_included:
+            return
+
+        agency = changes.get("agency", self.agency)
+        account = changes.get("account", self.account)
+
+        if agency:
+            if any(account.agency_id != agency.id for account in accounts_included):
+                raise exceptions.InvalidIncludedAccounts("Included accounts have to belong of the rule's agency")
+
+        if account:
+            if any(account_id != account.id for account_id in accounts_included):
+                raise exceptions.InvalidIncludedAccounts(
+                    "Included accounts have to belong to an account of the rule's agency"
+                )
+
+    def _validate_campaigns_included(self, changes, campaigns_included):
+        if not campaigns_included:
+            return
+
+        agency = changes.get("agency", self.agency)
+        account = changes.get("account", self.account)
+
+        if agency:
+            if any(campaign.account.agency_id != agency.id for campaign in campaigns_included):
+                raise exceptions.InvalidIncludedCampaigns("Included campaigns have to belong of the rule's agency")
+
+        if account:
+            if any(campaign.account.id != account.id for campaign in campaigns_included):
+                raise exceptions.InvalidIncludedCampaigns(
+                    "Included campaigns have to belong to an account of the rule's agency"
+                )
+
+    def _validate_ad_groups_included(self, changes, ad_groups_included):
+        if not ad_groups_included:
+            return
+
+        agency = changes.get("agency", self.agency)
+        account = changes.get("account", self.account)
+
+        if agency:
+            if any(ad_group.campaign.account.agency_id != agency.id for ad_group in ad_groups_included):
+                raise exceptions.InvalidIncludedAdGroups("Included ad groups have to belong of the rule's agency")
+
+        if account:
+            if any(ad_group.campaign.account.id != account.id for ad_group in ad_groups_included):
+                raise exceptions.InvalidIncludedAdGroups(
+                    "Included ad groups have to belong to an account of the rule's agency"
+                )

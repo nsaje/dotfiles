@@ -111,12 +111,36 @@ class RuleInstanceTest(TestCase):
         self.assertEqual(rule.account, None)
         self.assertEqual([ad_group for ad_group in rule.ad_groups_included.all()], [ad_group])
 
-    def test_update_invalid_agency(self):
+    def test_update_invalid_agency_with_included_accounts(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+        included_account = magic_mixer.blend(core.models.Account, agency=agency)
 
-        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[ad_group])
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[included_account])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, agency=another_agency, account=None)
+
+    def test_update_invalid_agency_with_included_campaigns(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, campaigns_included=[included_campaign])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, agency=another_agency, account=None)
+
+    def test_update_invalid_agency_with_included_ag_groups(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[included_ad_group])
 
         another_agency = magic_mixer.blend(core.models.Agency)
 
@@ -162,12 +186,38 @@ class RuleInstanceTest(TestCase):
         self.assertEqual(rule.account, account)
         self.assertEqual([ad_group for ad_group in rule.ad_groups_included.all()], [ad_group])
 
-    def test_update_invalid_account(self):
+    def test_update_invalid_account_with_included_accounts(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+        included_account = magic_mixer.blend(core.models.Account, agency=agency)
 
-        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[ad_group])
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[included_account])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, agency=None, account=account)
+
+    def test_update_invalid_account_with_included_campaigns(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, campaigns_included=[included_campaign])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, agency=None, account=account)
+
+    def test_update_invalid_account_with_with_included_adgroups(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[included_ad_group])
 
         another_agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account, agency=another_agency)
@@ -205,3 +255,107 @@ class RuleInstanceTest(TestCase):
 
         with self.assertRaises(exceptions.InvalidParents):
             rule.update(request, agency=agency, account=account)
+
+    def test_update_valid_accounts_included(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_account = magic_mixer.blend(core.models.Account, agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[included_account])
+        self.assertEqual([account for account in rule.accounts_included.all()], [included_account])
+
+        new_included_account = magic_mixer.blend(core.models.Account, agency=agency)
+        rule.update(request, accounts_included=[new_included_account])
+
+        self.assertEqual(rule.accounts_included.get(), new_included_account)
+
+    def test_update_invalid_accounts_included(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_account = magic_mixer.blend(core.models.Account, agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[included_account])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+        new_included_account = magic_mixer.blend(core.models.Account, agency=another_agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, accounts_included=[new_included_account])
+
+    def test_update_valid_campaigns_included(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, campaigns_included=[included_campaign])
+        self.assertEqual([campaign for campaign in rule.campaigns_included.all()], [included_campaign])
+
+        new_included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=agency)
+        rule.update(request, campaigns_included=[new_included_campaign])
+
+        self.assertEqual([campaign for campaign in rule.campaigns_included.all()], [new_included_campaign])
+
+    def test_update_invalid_campaigns_included_on_agency(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, campaigns_included=[included_campaign])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+        new_included_campaign = magic_mixer.blend(core.models.Campaign, account__agency=another_agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, campaigns_included=[new_included_campaign])
+
+    def test_update_invalid_campaigns_included_on_account(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account)
+        included_campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        rule = magic_mixer.blend(model.Rule, account=account, campaigns_included=[included_campaign])
+
+        another_account = magic_mixer.blend(core.models.Account)
+        new_included_campaign = magic_mixer.blend(core.models.Campaign, account=another_account)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, campaigns_included=[new_included_campaign])
+
+    def test_update_valid_ad_groups_included(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_ad_groups = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[included_ad_groups])
+        self.assertEqual([ad_group for ad_group in rule.ad_groups_included.all()], [included_ad_groups])
+
+        new_included_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+        rule.update(request, ad_groups_included=[new_included_ad_group])
+
+        self.assertEqual([ad_group for ad_group in rule.ad_groups_included.all()], [new_included_ad_group])
+
+    def test_update_invalid_ad_groups_included_on_agency(self):
+        request = magic_mixer.blend_request_user()
+        agency = magic_mixer.blend(core.models.Agency)
+        included_ad_groups = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
+
+        rule = magic_mixer.blend(model.Rule, agency=agency, ad_groups_included=[included_ad_groups])
+
+        another_agency = magic_mixer.blend(core.models.Agency)
+        new_included_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=another_agency)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, ad_groups_included=[new_included_ad_group])
+
+    def test_update_invalid_ad_groups_included_on_account(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account)
+        included_ad_groups = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+
+        rule = magic_mixer.blend(model.Rule, account=account, ad_groups_included=[included_ad_groups])
+
+        another_account = magic_mixer.blend(core.models.Account)
+        new_included_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=another_account)
+
+        with self.assertRaises(ValidationError):
+            rule.update(request, ad_groups_included=[new_included_ad_group])

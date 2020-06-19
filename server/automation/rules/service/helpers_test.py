@@ -69,6 +69,47 @@ class RulesMapTest(TestCase):
             rules_map,
         )
 
+    def test_filter_campaigns_included(self):
+        campaign_1 = magic_mixer.blend(core.models.Campaign)
+        ad_groups_1 = magic_mixer.cycle(2).blend(core.models.AdGroup, campaign=campaign_1)
+
+        campaign_2 = magic_mixer.blend(core.models.Campaign)
+        ad_groups_2 = magic_mixer.cycle(3).blend(core.models.AdGroup, campaign=campaign_2)
+
+        ad_groups = magic_mixer.cycle(3).blend(core.models.AdGroup)
+
+        rule_with_included_campaigns = magic_mixer.blend(models.Rule, campaigns_included=[campaign_1, campaign_2])
+        rule_with_included_ad_groups = magic_mixer.blend(models.Rule, ad_groups_included=ad_groups[:2])
+
+        rules_map = helpers.get_rules_by_ad_group_map(
+            [rule_with_included_campaigns, rule_with_included_ad_groups], filter_active=False
+        )
+        self.assertEqual(
+            {
+                ad_groups_1[0]: [rule_with_included_campaigns],
+                ad_groups_1[1]: [rule_with_included_campaigns],
+                ad_groups_2[0]: [rule_with_included_campaigns],
+                ad_groups_2[1]: [rule_with_included_campaigns],
+                ad_groups_2[2]: [rule_with_included_campaigns],
+                ad_groups[0]: [rule_with_included_ad_groups],
+                ad_groups[1]: [rule_with_included_ad_groups],
+            },
+            rules_map,
+        )
+
+    def test_filter_accounts_included(self):
+        account_1 = magic_mixer.blend(core.models.Account)
+        ad_groups_1 = magic_mixer.cycle(2).blend(core.models.AdGroup, campaign__account=account_1)
+
+        account_2 = magic_mixer.blend(core.models.Account)
+        magic_mixer.cycle(3).blend(core.models.AdGroup, campaign_account=account_2)
+
+        rule_with_included_accounts = magic_mixer.blend(models.Rule, accounts_included=[account_1])
+        rules_map = helpers.get_rules_by_ad_group_map([rule_with_included_accounts], filter_active=False)
+        self.assertEqual(
+            {ad_groups_1[0]: [rule_with_included_accounts], ad_groups_1[1]: [rule_with_included_accounts]}, rules_map
+        )
+
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_exclude_inactive_yesterday_spend(self, mock_breakdowns_query):
         mock_breakdowns_query.return_value = [

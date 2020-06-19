@@ -48,8 +48,12 @@ class RuleEntitiesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     ad_group = RuleEntitySerializer(
         level="ad_groups", queryset=core.models.AdGroup.objects.all(), source="*", required=False
     )
-    # campaign = RuleEntitySerializer(level="campaigns", source="*", required=False)
-    # account = RuleEntitySerializer(level="accounts", source="*", required=False)
+    campaign = RuleEntitySerializer(
+        level="campaigns", queryset=core.models.Campaign.objects.all(), source="*", required=False
+    )
+    account = RuleEntitySerializer(
+        level="accounts", queryset=core.models.Account.objects.all(), source="*", required=False
+    )
 
 
 class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
