@@ -1,6 +1,7 @@
+import re
 import time
+from collections import OrderedDict
 
-import djangorestframework_camel_case.util
 import ipware.ip
 import rest_framework.renderers
 from django.utils.decorators import classonlymethod
@@ -27,13 +28,29 @@ REQUEST_TIMER = metrics.new_histogram(
 # fmt: on
 
 
+def camelize(data):
+    if isinstance(data, dict):
+        new_dict = OrderedDict()
+        for key, value in data.items():
+            new_key = (
+                re.sub(r"[a-z]_[a-z]", lambda match: match.group()[0] + match.group()[2].upper(), key)
+                if isinstance(key, str)
+                else key
+            )
+            new_dict[new_key] = camelize(value)
+        return new_dict
+    if isinstance(data, (list, tuple)):
+        for i in range(len(data)):
+            data[i] = camelize(data[i])
+        return data
+    return data
+
+
 class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):
     encoder_class = json_helper.JSONEncoder
 
     def render(self, data, *args, **kwargs):
-        return super(RESTAPIJSONRenderer, self).render(
-            djangorestframework_camel_case.util.camelize(data), *args, **kwargs
-        )
+        return super(RESTAPIJSONRenderer, self).render(camelize(data), *args, **kwargs)
 
 
 class CanUseRESTAPIPermission(permissions.BasePermission):
