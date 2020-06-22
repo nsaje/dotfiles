@@ -35,11 +35,15 @@ class BudgetDailyStatementManager(core.common.BaseManager):
 class BudgetDailyStatement(models.Model):
     budget = models.ForeignKey("BudgetLineItem", related_name="statements", on_delete=models.CASCADE)
     date = models.DateField()
+    base_media_spend_nano = models.BigIntegerField(null=True)
+    base_data_spend_nano = models.BigIntegerField(null=True)
     media_spend_nano = models.BigIntegerField()
     data_spend_nano = models.BigIntegerField()
     license_fee_nano = models.BigIntegerField()
     margin_nano = models.BigIntegerField()
 
+    local_base_media_spend_nano = models.BigIntegerField(null=True)
+    local_base_data_spend_nano = models.BigIntegerField(null=True)
     local_media_spend_nano = models.BigIntegerField()
     local_data_spend_nano = models.BigIntegerField()
     local_license_fee_nano = models.BigIntegerField()
