@@ -40,8 +40,8 @@ def get_account(user: zemauth.models.User, permission: str, account_id: str, **k
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_source(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_source(sources)
+            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
+            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
 
         select_related_users = kwargs.get("select_related_users", False)
         if select_related_users is True:
@@ -78,8 +78,8 @@ def get_campaign(user: zemauth.models.User, permission: str, campaign_id: str, *
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_source(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_source(sources)
+            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
+            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
 
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, campaign_id
@@ -104,8 +104,8 @@ def get_ad_group(user: zemauth.models.User, permission: str, ad_group_id: str, *
 
         sources = kwargs.get("sources", None)
         if sources:
-            queryset_user_perm = queryset_user_perm.filter_by_source(sources)
-            queryset_entity_perm = queryset_entity_perm.filter_by_source(sources)
+            queryset_user_perm = queryset_user_perm.filter_by_sources(sources)
+            queryset_entity_perm = queryset_entity_perm.filter_by_sources(sources)
 
         queryset = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             user, permission, queryset_user_perm, queryset_entity_perm, ad_group_id

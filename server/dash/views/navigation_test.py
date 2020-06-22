@@ -2,12 +2,13 @@
 import datetime
 import json
 
-from django.test import TestCase
 from django.urls import reverse
 from mock import patch
 
 from dash import constants
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
 from zemauth.models import User
 
@@ -18,7 +19,7 @@ class MockDatetime(datetime.datetime):
         return datetime.datetime(2016, 1, 2)
 
 
-class NavigationAllAccountsDataViewTest(TestCase):
+class LegacyNavigationAllAccountsDataViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def _get(self, user_id, filtered_sources=None):
@@ -50,7 +51,11 @@ class NavigationAllAccountsDataViewTest(TestCase):
         self.assertDictEqual(response, {"accounts_count": 0})
 
 
-class NavigationDataViewTest(TestCase):
+class NavigationAllAccountsDataViewTestCase(FutureDASHAPITestCase, LegacyNavigationAllAccountsDataViewTestCase):
+    pass
+
+
+class LegacyNavigationDataViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def _get(self, user_id, level, obj_id, filtered_sources=None, filtered_agencies=None, filtered_account_types=None):
@@ -280,10 +285,15 @@ class NavigationDataViewTest(TestCase):
         )
 
 
-class NavigationTreeViewTest(TestCase):
+class NavigationDataViewTestCase(FutureDASHAPITestCase, LegacyNavigationDataViewTestCase):
+    pass
+
+
+class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
     def setUp(self):
+        super().setUp()
         self.expected_response = [
             {
                 "archived": False,
@@ -524,3 +534,7 @@ class NavigationTreeViewTest(TestCase):
 
         response = self._get(1, filtered_account_types=[constants.AccountType.UNKNOWN])
         self.assertCountEqual(self.expected_response, response["data"])
+
+
+class NavigationTreeViewTestCase(FutureDASHAPITestCase, LegacyNavigationTreeViewTestCase):
+    pass
