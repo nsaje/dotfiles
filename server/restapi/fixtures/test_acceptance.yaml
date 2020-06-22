@@ -140,7 +140,7 @@
         campaign: 608 # test campaign 1
         start_date: '2015-10-01'
         end_date: '2116-11-30'
-        margin: 0.15
+        margin: 0.1
         amount: 100000
         comment: 'Test case'
     model: dash.budgetlineitem
@@ -242,16 +242,34 @@
 
 -   fields:
         type: 'b1'
+        min_daily_budget: 0
+        max_daily_budget: 1000
+        min_cpc: 0
+        max_cpc: 20
+        min_cpm: 0
+        max_cpm: 50
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'outbrain'
+        min_daily_budget: 0
+        max_daily_budget: 1000
+        min_cpc: 0
+        max_cpc: 20
+        min_cpm: 0
+        max_cpm: 50
     model: dash.sourcetype
     pk: 2
 
 -   fields:
         type: 'yahoo'
+        min_daily_budget: 0
+        max_daily_budget: 1000
+        min_cpc: 0
+        max_cpc: 20
+        min_cpm: 0
+        max_cpm: 50
     model: dash.sourcetype
     pk: 3
 

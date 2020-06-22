@@ -7,62 +7,7 @@ from stats import fields
 from stats.constants import StructureDimension
 from stats.constants import is_extended_delivery_dimension
 from stats.constants import is_top_level_delivery_dimension
-from stats.constraints_helper import get_uses_bcm_v2
 from utils import exc
-
-NOT_PUBLIC_ANYMORE = [
-    "zemauth.can_view_platform_cost_breakdown_derived",
-    "zemauth.can_view_platform_cost_breakdown",
-    "zemauth.can_view_agency_margin",
-    "zemauth.can_view_flat_fees",
-]
-
-
-def has_perm_bcm_v2(user, permission, uses_bcm_v2=False):
-    return has_perms_bcm_v2(user, [permission], uses_bcm_v2)
-
-
-def has_perms_bcm_v2(user, permissions, uses_bcm_v2=False):
-    if not uses_bcm_v2 and any(x in NOT_PUBLIC_ANYMORE for x in permissions):
-        permissions = [x for x in permissions if x not in NOT_PUBLIC_ANYMORE]
-
-        if not permissions:
-            # if after that no permissions are left it is allowed
-            return True
-
-    return user.has_perms(permissions)
-
-
-BCM2_DEPRECATED_FIELDS = {
-    "agency_cost",
-    "local_agency_cost",
-    "billing_cost",
-    "local_billing_cost",
-    "total_cost",
-    "local_total_cost",
-    "cpc",
-    "local_cpc",
-    "cpm",
-    "local_cpm",
-    "video_cpv",
-    "local_video_cpv",
-    "video_cpcv",
-    "local_video_cpcv",
-    "avg_cost_per_minute",
-    "local_avg_cost_per_minute",
-    "avg_cost_per_non_bounced_visit",
-    "local_avg_cost_per_non_bounced_visit",
-    "avg_cost_per_pageview",
-    "local_avg_cost_per_pageview",
-    "avg_cost_for_new_visitor",
-    "local_avg_cost_for_new_visitor",
-    "avg_cost_per_visit",
-    "local_avg_cost_per_visit",
-    "yesterday_cost",
-    "local_yesterday_cost",
-    "e_yesterday_cost",
-    "local_e_yesterday_cost",
-}
 
 FIELD_PERMISSION_MAPPING = {
     "media_cost": ("zemauth.can_view_actual_costs",),
@@ -79,8 +24,6 @@ FIELD_PERMISSION_MAPPING = {
     "local_et_cost": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "etf_cost": ("zemauth.can_view_agency_cost_breakdown",),
     "local_etf_cost": ("zemauth.can_view_agency_cost_breakdown",),
-    "etfm_cost": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_etfm_cost": ("zemauth.can_view_end_user_cost_breakdown",),
     "license_fee": ("zemauth.can_view_platform_cost_breakdown",),
     "local_license_fee": ("zemauth.can_view_platform_cost_breakdown",),
     "margin": ("zemauth.can_view_agency_margin",),
@@ -89,8 +32,6 @@ FIELD_PERMISSION_MAPPING = {
     "local_yesterday_at_cost": ("zemauth.can_view_actual_costs",),
     "yesterday_et_cost": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "local_yesterday_et_cost": ("zemauth.can_view_platform_cost_breakdown_derived",),
-    "yesterday_etfm_cost": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_yesterday_etfm_cost": ("zemauth.can_view_end_user_cost_breakdown",),
     "et_cpc": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "local_et_cpc": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "et_cpm": ("zemauth.can_view_platform_cost_breakdown_derived",),
@@ -99,21 +40,7 @@ FIELD_PERMISSION_MAPPING = {
     "local_video_et_cpv": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "video_et_cpcv": ("zemauth.can_view_platform_cost_breakdown_derived",),
     "local_video_et_cpcv": ("zemauth.can_view_platform_cost_breakdown_derived",),
-    "etfm_cpc": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_etfm_cpc": ("zemauth.can_view_end_user_cost_breakdown",),
-    "etfm_cpm": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_etfm_cpm": ("zemauth.can_view_end_user_cost_breakdown",),
-    "video_etfm_cpv": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_video_etfm_cpv": ("zemauth.can_view_end_user_cost_breakdown",),
-    "video_etfm_cpcv": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_video_etfm_cpcv": ("zemauth.can_view_end_user_cost_breakdown",),
     # legacy
-    "agency_cost": ("zemauth.can_view_agency_margin",),
-    "local_agency_cost": ("zemauth.can_view_agency_margin",),
-    "yesterday_cost": ("zemauth.can_view_actual_costs",),
-    "local_yesterday_cost": ("zemauth.can_view_actual_costs",),
-    "e_yesterday_cost": ("zemauth.can_view_platform_cost_breakdown",),
-    "local_e_yesterday_cost": ("zemauth.can_view_platform_cost_breakdown",),
     "avg_et_cost_per_minute": ("zemauth.can_view_platform_cost_breakdown",),
     "local_avg_et_cost_per_minute": ("zemauth.can_view_platform_cost_breakdown",),
     "avg_et_cost_per_non_bounced_visit": ("zemauth.can_view_platform_cost_breakdown",),
@@ -124,16 +51,6 @@ FIELD_PERMISSION_MAPPING = {
     "local_avg_et_cost_for_new_visitor": ("zemauth.can_view_platform_cost_breakdown",),
     "avg_et_cost_per_visit": ("zemauth.can_view_platform_cost_breakdown",),
     "local_avg_et_cost_per_visit": ("zemauth.can_view_platform_cost_breakdown",),
-    "avg_etfm_cost_per_minute": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_avg_etfm_cost_per_minute": ("zemauth.can_view_end_user_cost_breakdown",),
-    "avg_etfm_cost_per_non_bounced_visit": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_avg_etfm_cost_per_non_bounced_visit": ("zemauth.can_view_end_user_cost_breakdown",),
-    "avg_etfm_cost_per_pageview": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_avg_etfm_cost_per_pageview": ("zemauth.can_view_end_user_cost_breakdown",),
-    "avg_etfm_cost_for_new_visitor": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_avg_etfm_cost_for_new_visitor": ("zemauth.can_view_end_user_cost_breakdown",),
-    "avg_etfm_cost_per_visit": ("zemauth.can_view_end_user_cost_breakdown",),
-    "local_avg_etfm_cost_per_visit": ("zemauth.can_view_end_user_cost_breakdown",),
     # projections
     "pacing": ("zemauth.can_view_platform_cost_breakdown",),
     "allocated_budgets": ("zemauth.can_see_projections",),
@@ -153,7 +70,7 @@ FIELD_PERMISSION_MAPPING = {
     "agency": ("zemauth.can_view_account_agency_information",),
     "agency_id": ("zemauth.can_view_account_agency_information",),
     "performance": ("zemauth.campaign_goal_performance",),
-    "etfm_performance": ("zemauth.campaign_goal_performance", "zemauth.can_view_end_user_cost_breakdown"),
+    "etfm_performance": ("zemauth.campaign_goal_performance"),
     "styles": ("zemauth.campaign_goal_performance",),
     "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
     "sspd_url": ("zemauth.can_see_sspd_url",),
@@ -211,13 +128,13 @@ FIELD_PERMISSION_MAPPING = {
 }
 
 
-def filter_columns_by_permission(user, rows, goals, constraints, level):
-    fields_to_keep = _get_fields_to_keep(user, goals, get_uses_bcm_v2(user, constraints, level))
+def filter_columns_by_permission(user, rows, goals):
+    fields_to_keep = _get_fields_to_keep(user, goals)
     _remove_fields(rows, fields_to_keep)
     _custom_cleanup(user, rows)
 
 
-def _get_fields_to_keep(user, goals, uses_bcm_v2):
+def _get_fields_to_keep(user, goals):
     fields_to_keep = set(fields.DIMENSION_FIELDS)
     fields_to_keep |= fields.SOURCE_FIELDS
     fields_to_keep |= fields.HELPER_FIELDS
@@ -236,20 +153,17 @@ def _get_fields_to_keep(user, goals, uses_bcm_v2):
         fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
 
     for field, permissions in FIELD_PERMISSION_MAPPING.items():
-        if not permissions or has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2):
+        if not permissions or user.has_perms(permissions):
             fields_to_keep.add(field)
-        if permissions and not has_perms_bcm_v2(user, permissions, uses_bcm_v2=uses_bcm_v2) and field in fields_to_keep:
+        if permissions and not user.has_perms(permissions) and field in fields_to_keep:
             fields_to_keep.remove(field)
 
     # add allowed dynamically generated goals fields
     fields_to_keep |= _get_allowed_campaign_goals_fields(
-        user, goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, uses_bcm_v2
+        user, goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals
     )
     fields_to_keep |= _get_allowed_conversion_goals_fields(user, goals.conversion_goals)
-    fields_to_keep |= _get_allowed_pixels_fields(user, goals.pixels, uses_bcm_v2)
-
-    if uses_bcm_v2:
-        fields_to_keep -= BCM2_DEPRECATED_FIELDS
+    fields_to_keep |= _get_allowed_pixels_fields(user, goals.pixels)
 
     return fields_to_keep
 
@@ -275,7 +189,7 @@ def _custom_cleanup(user, rows):
                     source_status.pop("source_status", None)
 
 
-def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_values, conversion_goals, uses_bcm_v2):
+def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_values, conversion_goals):
     """
     Returns campaign goal field names that should be kept if user has
     proper permissions.
@@ -284,26 +198,16 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
     allowed_fields = set()
     included_campaign_goals = []
 
-    can_add_et_fields = has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", uses_bcm_v2)
-    can_add_etfm_fields = has_perm_bcm_v2(user, "zemauth.can_view_end_user_cost_breakdown", uses_bcm_v2)
+    can_add_et_fields = user.has_perm("zemauth.can_view_platform_cost_breakdown")
 
     if user.has_perm("zemauth.campaign_goal_optimization"):
         included_campaign_goals = [x.campaign_goal.type for x in campaign_goal_values]
 
     for goal in included_campaign_goals:
-        relevant_fields = dash.campaign_goals.get_relevant_goal_fields_map(uses_bcm_v2).get(goal, [])
+        relevant_fields = dash.campaign_goals.RELEVANT_GOAL_ETFM_FIELDS_MAP.get(goal, [])
         allowed_fields |= set(relevant_fields)
 
     if CampaignGoalKPI.CPA in included_campaign_goals:
-
-        if not uses_bcm_v2:
-            allowed_fields |= set(
-                "avg_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-            )
-            allowed_fields |= set(
-                "local_avg_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-            )
-
         if can_add_et_fields:
             allowed_fields |= set(
                 "avg_et_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
@@ -312,19 +216,16 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
                 "local_avg_et_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
             )
 
-        if can_add_etfm_fields:
-            allowed_fields |= set(
-                "avg_etfm_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-            )
-            allowed_fields |= set(
-                "local_avg_etfm_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-            )
+        allowed_fields |= set(
+            "avg_etfm_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
+        )
+        allowed_fields |= set(
+            "local_avg_etfm_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
+        )
 
     if user.has_perm("zemauth.campaign_goal_performance"):
         allowed_fields |= set("performance_" + x.get_view_key() for x in campaign_goals)
-
-        if can_add_etfm_fields:
-            allowed_fields |= set("etfm_performance_" + x.get_view_key() for x in campaign_goals)
+        allowed_fields |= set("etfm_performance_" + x.get_view_key() for x in campaign_goals)
 
     return allowed_fields
 
@@ -345,7 +246,7 @@ def _get_allowed_conversion_goals_fields(user, conversion_goals):
     return set()
 
 
-def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
+def _get_allowed_pixels_fields(user, pixels):
     """
     Returns pixel column names and average costs column names that should be kept for all users.
     """
@@ -353,18 +254,17 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
     click_conversion_windows = dash.constants.ConversionWindowsLegacy.get_all()
     view_conversion_windows = dash.constants.ConversionWindowsViewthrough.get_all()
 
-    allowed_pixel_fields = _generate_allowed_pixel_fields(user, pixels, click_conversion_windows, uses_bcm_v2)
+    allowed_pixel_fields = _generate_allowed_pixel_fields(user, pixels, click_conversion_windows)
     if user.has_perm("zemauth.can_see_viewthrough_conversions"):
         allowed_pixel_fields = allowed_pixel_fields.union(
-            _generate_allowed_pixel_fields(user, pixels, view_conversion_windows, uses_bcm_v2, suffix="_view")
+            _generate_allowed_pixel_fields(user, pixels, view_conversion_windows, suffix="_view")
         )
 
     return allowed_pixel_fields
 
 
-def _generate_allowed_pixel_fields(user, pixels, conversion_windows, uses_bcm_v2, suffix=None):
-    can_add_et_fields = has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", uses_bcm_v2)
-    can_add_etfm_fields = has_perm_bcm_v2(user, "zemauth.can_view_end_user_cost_breakdown", uses_bcm_v2)
+def _generate_allowed_pixel_fields(user, pixels, conversion_windows, suffix=None):
+    can_add_et_fields = user.has_perm("zemauth.can_view_platform_cost_breakdown")
 
     allowed = set()
 
@@ -374,20 +274,14 @@ def _generate_allowed_pixel_fields(user, pixels, conversion_windows, uses_bcm_v2
             allowed.add(view_key)
             allowed.add("conversion_rate_per_{}".format(view_key))
 
-            if not uses_bcm_v2:
-                allowed.add("avg_cost_per_" + view_key)
-                allowed.add("local_avg_cost_per_" + view_key)
-                allowed.add("roas_" + view_key)
-
             if can_add_et_fields:
                 allowed.add("avg_et_cost_per_" + view_key)
                 allowed.add("local_avg_et_cost_per_" + view_key)
                 allowed.add("et_roas_" + view_key)
 
-            if can_add_etfm_fields:
-                allowed.add("avg_etfm_cost_per_" + view_key)
-                allowed.add("local_avg_etfm_cost_per_" + view_key)
-                allowed.add("etfm_roas_" + view_key)
+            allowed.add("avg_etfm_cost_per_" + view_key)
+            allowed.add("local_avg_etfm_cost_per_" + view_key)
+            allowed.add("etfm_roas_" + view_key)
 
     return allowed
 

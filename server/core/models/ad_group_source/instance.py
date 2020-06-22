@@ -6,11 +6,6 @@ import core.features.bcm
 import core.features.history
 import core.models
 import dash.constants
-import utils.dates_helper
-import utils.email_helper
-import utils.exc
-import utils.k1_helper
-import utils.numbers
 
 
 class AdGroupSourceInstanceMixin:
@@ -114,34 +109,6 @@ class AdGroupSourceInstanceMixin:
 
     def get_current_settings(self):
         return self.settings
-
-    def migrate_to_bcm_v2(self, request, fee, margin):
-        current_settings = self.get_current_settings()
-        changes = {
-            "daily_budget_cc": self._transform_daily_budget_cc(current_settings.daily_budget_cc, fee, margin),
-            "cpc_cc": self._transform_cpc_cc(current_settings.cpc_cc, fee, margin),
-        }
-
-        self.settings.update(
-            request=request,
-            k1_sync=False,
-            skip_automation=True,
-            skip_validation=True,
-            skip_notification=True,
-            **changes
-        )
-
-    def _transform_daily_budget_cc(self, daily_budget_cc, fee, margin):
-        if not daily_budget_cc:
-            return daily_budget_cc
-        new_daily_budget_cc = core.features.bcm.calculations.apply_fee_and_margin(daily_budget_cc, fee, margin)
-        return utils.numbers.round_decimal_ceiling(new_daily_budget_cc, places=0)
-
-    def _transform_cpc_cc(self, cpc_cc, fee, margin):
-        if not cpc_cc:
-            return cpc_cc
-        new_cpc_cc = core.features.bcm.calculations.apply_fee_and_margin(cpc_cc, fee, margin)
-        return utils.numbers.round_decimal_half_down(new_cpc_cc, places=3)
 
     def save(self, request=None, *args, **kwargs):
         super().save(*args, **kwargs)

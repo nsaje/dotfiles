@@ -16,7 +16,9 @@ class AdGroupSourceUpdate(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
-        self.source_type = magic_mixer.blend(core.models.SourceType)
+        self.source_type = magic_mixer.blend(
+            core.models.SourceType, min_daily_budget=decimal.Decimal("0.0"), max_daily_budget=decimal.Decimal("100.0")
+        )
         self.source = magic_mixer.blend(core.models.Source, source_type=self.source_type)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, source=self.source, ad_group=self.ad_group)
         self.source_bid_modifier = magic_mixer.blend(
@@ -289,25 +291,25 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("2.4"))
 
     def test_update_validate_cpc_source_max_cpc(self):
-        self.source_type.max_cpc = 1.1
+        self.source_type.max_cpc = decimal.Decimal("1.1")
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))
 
     def test_update_validate_cpm_source_max_cpm(self):
-        self.source_type.max_cpm = 2.3
+        self.source_type.max_cpm = decimal.Decimal("2.3")
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("2.4"))
 
     def test_update_validate_cpc_source_min_cpc(self):
-        self.source_type.min_cpc = 1.1
+        self.source_type.min_cpc = decimal.Decimal("1.1")
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.0"))
 
     def test_update_validate_cpm_source_min_cpm(self):
-        self.source_type.min_cpm = 2.3
+        self.source_type.min_cpm = decimal.Decimal("2.3")
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("2.2"))

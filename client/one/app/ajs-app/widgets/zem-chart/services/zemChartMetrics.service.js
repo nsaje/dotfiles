@@ -67,7 +67,6 @@ angular
                 value: 'etfm_cpc',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'cpc',
             },
@@ -94,7 +93,6 @@ angular
                 value: 'etfm_cpm',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'cpm',
             },
@@ -142,7 +140,6 @@ angular
                 value: 'etfm_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 costMode: constants.costMode.ANY,
             },
             ETF_COST: {
@@ -310,7 +307,6 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 fieldGroup: 'avg_cost_per_minute',
             },
             ET_COST_PER_PAGEVIEW: {
@@ -328,7 +324,6 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 fieldGroup: 'avg_cost_per_pageview',
             },
             ET_COST_PER_VISIT: {
@@ -346,7 +341,6 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 fieldGroup: 'avg_cost_per_visit',
             },
             ET_COST_PER_NON_BOUNCED_VISIT: {
@@ -364,7 +358,6 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 fieldGroup: 'avg_cost_per_non_bounced_visit',
             },
             ET_COST_PER_NEW_VISITOR: {
@@ -382,7 +375,6 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
-                shown: 'zemauth.can_view_end_user_cost_breakdown',
                 fieldGroup: 'avg_cost_for_new_visitor',
             },
 
@@ -390,59 +382,40 @@ angular
                 name: 'Video Start',
                 value: 'video_start',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_PROGRESS_3S: {
                 name: 'Video Progress 3s',
                 value: 'video_progress_3s',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_FIRST_QUARTILE: {
                 name: 'Video First Quartile',
                 value: 'video_first_quartile',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_MIDPOINT: {
                 name: 'Video Midpoint',
                 value: 'video_midpoint',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_THIRD_QUARTILE: {
                 name: 'Video Third Quartile',
                 value: 'video_third_quartile',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_COMPLETE: {
                 name: 'Video Complete',
                 value: 'video_complete',
                 type: TYPE_NUMBER,
-                shown: 'zemauth.fea_can_see_video_metrics',
             },
 
-            VIDEO_CPV: {
-                name: 'Avg. CPV',
-                value: 'video_cpv',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.fea_can_see_video_metrics',
-                costMode: constants.costMode.LEGACY,
-                internal: 'zemauth.fea_can_see_video_metrics',
-            },
             VIDEO_ET_CPV: {
                 name: 'Avg. Platform CPV',
                 value: 'video_et_cpv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: [
-                    'zemauth.fea_can_see_video_metrics',
-                    'zemauth.can_view_platform_cost_breakdown_derived',
-                ],
+                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
                 costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpv',
             },
             VIDEO_ETFM_CPV: {
@@ -450,34 +423,16 @@ angular
                 value: 'video_etfm_cpv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: [
-                    'zemauth.fea_can_see_video_metrics',
-                    'zemauth.can_view_end_user_cost_breakdown',
-                ],
                 costMode: constants.costMode.PUBLIC,
-                internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpv',
-            },
-            VIDEO_CPCV: {
-                name: 'Avg. CPCV',
-                value: 'video_cpcv',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.fea_can_see_video_metrics',
-                costMode: constants.costMode.LEGACY,
-                internal: 'zemauth.fea_can_see_video_metrics',
             },
             VIDEO_ET_CPCV: {
                 name: 'Avg. Platform CPCV',
                 value: 'video_et_cpcv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: [
-                    'zemauth.fea_can_see_video_metrics',
-                    'zemauth.can_view_platform_cost_breakdown_derived',
-                ],
+                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
                 costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpcv',
             },
             VIDEO_ETFM_CPCV: {
@@ -485,12 +440,7 @@ angular
                 value: 'video_etfm_cpcv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: [
-                    'zemauth.fea_can_see_video_metrics',
-                    'zemauth.can_view_end_user_cost_breakdown',
-                ],
                 costMode: constants.costMode.PUBLIC,
-                internal: 'zemauth.fea_can_see_video_metrics',
                 fieldGroup: 'video_cpcv',
             },
             MRC50_MEASURABLE: {
@@ -889,10 +839,8 @@ angular
             METRICS.VIDEO_MIDPOINT,
             METRICS.VIDEO_THIRD_QUARTILE,
             METRICS.VIDEO_COMPLETE,
-            METRICS.VIDEO_CPV,
             METRICS.VIDEO_ET_CPV,
             METRICS.VIDEO_ETFM_CPV,
-            METRICS.VIDEO_CPCV,
             METRICS.VIDEO_ET_CPCV,
             METRICS.VIDEO_ETFM_CPCV,
         ];
@@ -1130,7 +1078,6 @@ angular
                         ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
-                    shown: 'zemauth.can_view_end_user_cost_breakdown',
                     costMode: constants.costMode.PUBLIC,
                     fieldGroup: 'avg_cost_per_' + metricValue,
                 });
@@ -1191,7 +1138,6 @@ angular
                     name: 'CPA (' + goal.name + ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
-                    shown: 'zemauth.can_view_end_user_cost_breakdown',
                     costMode: constants.costMode.PUBLIC,
                     fieldGroup: 'avg_cost_per_' + goal.id,
                 });

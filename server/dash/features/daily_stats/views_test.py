@@ -33,9 +33,15 @@ class BaseDailyStatsTest(TestCase):
         self.patcher.stop()
 
     def _prepare_mock(self, group_key, group_id):
-        mock_stats1 = [{"day": self.date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000}]
+        mock_stats1 = [{"day": self.date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000}]
         mock_stats2 = [
-            {"day": self.date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500, group_key: group_id}
+            {
+                "day": self.date.isoformat(),
+                "etfm_cpc": "0.0200",
+                "local_etfm_cpc": "0.0400",
+                "clicks": 1500,
+                group_key: group_id,
+            }
         ]
         self.mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -49,7 +55,7 @@ class BaseDailyStatsTest(TestCase):
         account_types=None,
     ):
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "totals": True,
             "start_date": self.date.isoformat(),
             "end_date": self.date.isoformat(),
@@ -90,7 +96,7 @@ class BaseDailyStatsTest(TestCase):
                         "name": "Totals",
                         "series_data": {
                             "clicks": [[self.date.isoformat(), 1000]],
-                            "cpc": [
+                            "etfm_cpc": [
                                 [self.date.isoformat(), "0.0100" if currency == constants.Currency.USD else "0.0200"]
                             ],
                         },
@@ -100,7 +106,7 @@ class BaseDailyStatsTest(TestCase):
                         "name": selected_name,
                         "series_data": {
                             "clicks": [[self.date.isoformat(), 1500]],
-                            "cpc": [
+                            "etfm_cpc": [
                                 [self.date.isoformat(), "0.0200" if currency == constants.Currency.USD else "0.0400"]
                             ],
                         },
@@ -748,14 +754,14 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "clicks": 1000, "conversion_goal_5": 5},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "clicks": 1500, "conversion_goal_5": 6},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "clicks": 1000, "conversion_goal_5": 5},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "clicks": 1500, "conversion_goal_5": 6},
         ]
         self.mock_query.return_value = mock_stats
 
         params = {
             "totals": True,
-            "metrics": ["cpc", "clicks", "conversion_goal_5"],
+            "metrics": ["etfm_cpc", "clicks", "conversion_goal_5"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
         }
@@ -772,38 +778,41 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "avg_cost_per_pixel_1_168": {
-                            "id": "avg_cost_per_pixel_1_168",
+                        "avg_etfm_cost_per_pixel_1_168": {
+                            "id": "avg_etfm_cost_per_pixel_1_168",
                             "name": "$CPA - test conversion goal",
                         },
-                        "avg_cost_per_conversion_goal_2": {
-                            "id": "avg_cost_per_conversion_goal_2",
+                        "avg_etfm_cost_per_conversion_goal_2": {
+                            "id": "avg_etfm_cost_per_conversion_goal_2",
                             "name": "$CPA - test conversion goal 2",
                         },
-                        "avg_cost_per_conversion_goal_3": {
-                            "id": "avg_cost_per_conversion_goal_3",
+                        "avg_etfm_cost_per_conversion_goal_3": {
+                            "id": "avg_etfm_cost_per_conversion_goal_3",
                             "name": "$CPA - test conversion goal 3",
                         },
-                        "avg_cost_per_conversion_goal_4": {
-                            "id": "avg_cost_per_conversion_goal_4",
+                        "avg_etfm_cost_per_conversion_goal_4": {
+                            "id": "avg_etfm_cost_per_conversion_goal_4",
                             "name": "$CPA - test conversion goal 4",
                         },
-                        "avg_cost_per_conversion_goal_5": {
-                            "id": "avg_cost_per_conversion_goal_5",
+                        "avg_etfm_cost_per_conversion_goal_5": {
+                            "id": "avg_etfm_cost_per_conversion_goal_5",
                             "name": "$CPA - Test Cg",
                         },
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -811,7 +820,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                                 "conversion_goal_5": [[start_date.isoformat(), 5], [end_date.isoformat(), 6]],
                             },
                         }
@@ -883,14 +892,14 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -906,38 +915,41 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "avg_cost_per_pixel_1_168": {
-                            "id": "avg_cost_per_pixel_1_168",
+                        "avg_etfm_cost_per_pixel_1_168": {
+                            "id": "avg_etfm_cost_per_pixel_1_168",
                             "name": "$CPA - test conversion goal",
                         },
-                        "avg_cost_per_conversion_goal_2": {
-                            "id": "avg_cost_per_conversion_goal_2",
+                        "avg_etfm_cost_per_conversion_goal_2": {
+                            "id": "avg_etfm_cost_per_conversion_goal_2",
                             "name": "$CPA - test conversion goal 2",
                         },
-                        "avg_cost_per_conversion_goal_3": {
-                            "id": "avg_cost_per_conversion_goal_3",
+                        "avg_etfm_cost_per_conversion_goal_3": {
+                            "id": "avg_etfm_cost_per_conversion_goal_3",
                             "name": "$CPA - test conversion goal 3",
                         },
-                        "avg_cost_per_conversion_goal_4": {
-                            "id": "avg_cost_per_conversion_goal_4",
+                        "avg_etfm_cost_per_conversion_goal_4": {
+                            "id": "avg_etfm_cost_per_conversion_goal_4",
                             "name": "$CPA - test conversion goal 4",
                         },
-                        "avg_cost_per_conversion_goal_5": {
-                            "id": "avg_cost_per_conversion_goal_5",
+                        "avg_etfm_cost_per_conversion_goal_5": {
+                            "id": "avg_etfm_cost_per_conversion_goal_5",
                             "name": "$CPA - test conversion goal 5",
                         },
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -945,7 +957,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -975,18 +987,21 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -994,7 +1009,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1022,14 +1037,14 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1045,38 +1060,41 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "avg_cost_per_pixel_1_168": {
-                            "id": "avg_cost_per_pixel_1_168",
+                        "avg_etfm_cost_per_pixel_1_168": {
+                            "id": "avg_etfm_cost_per_pixel_1_168",
                             "name": "$CPA - test conversion goal",
                         },
-                        "avg_cost_per_conversion_goal_2": {
-                            "id": "avg_cost_per_conversion_goal_2",
+                        "avg_etfm_cost_per_conversion_goal_2": {
+                            "id": "avg_etfm_cost_per_conversion_goal_2",
                             "name": "$CPA - test conversion goal 2",
                         },
-                        "avg_cost_per_conversion_goal_3": {
-                            "id": "avg_cost_per_conversion_goal_3",
+                        "avg_etfm_cost_per_conversion_goal_3": {
+                            "id": "avg_etfm_cost_per_conversion_goal_3",
                             "name": "$CPA - test conversion goal 3",
                         },
-                        "avg_cost_per_conversion_goal_4": {
-                            "id": "avg_cost_per_conversion_goal_4",
+                        "avg_etfm_cost_per_conversion_goal_4": {
+                            "id": "avg_etfm_cost_per_conversion_goal_4",
                             "name": "$CPA - test conversion goal 4",
                         },
-                        "avg_cost_per_conversion_goal_5": {
-                            "id": "avg_cost_per_conversion_goal_5",
+                        "avg_etfm_cost_per_conversion_goal_5": {
+                            "id": "avg_etfm_cost_per_conversion_goal_5",
                             "name": "$CPA - test conversion goal 5",
                         },
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1084,7 +1102,7 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1114,18 +1132,21 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1133,7 +1154,7 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1161,14 +1182,14 @@ class CampaignPublishersDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1184,38 +1205,41 @@ class CampaignPublishersDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "avg_cost_per_pixel_1_168": {
-                            "id": "avg_cost_per_pixel_1_168",
+                        "avg_etfm_cost_per_pixel_1_168": {
+                            "id": "avg_etfm_cost_per_pixel_1_168",
                             "name": "$CPA - test conversion goal",
                         },
-                        "avg_cost_per_conversion_goal_2": {
-                            "id": "avg_cost_per_conversion_goal_2",
+                        "avg_etfm_cost_per_conversion_goal_2": {
+                            "id": "avg_etfm_cost_per_conversion_goal_2",
                             "name": "$CPA - test conversion goal 2",
                         },
-                        "avg_cost_per_conversion_goal_3": {
-                            "id": "avg_cost_per_conversion_goal_3",
+                        "avg_etfm_cost_per_conversion_goal_3": {
+                            "id": "avg_etfm_cost_per_conversion_goal_3",
                             "name": "$CPA - test conversion goal 3",
                         },
-                        "avg_cost_per_conversion_goal_4": {
-                            "id": "avg_cost_per_conversion_goal_4",
+                        "avg_etfm_cost_per_conversion_goal_4": {
+                            "id": "avg_etfm_cost_per_conversion_goal_4",
                             "name": "$CPA - test conversion goal 4",
                         },
-                        "avg_cost_per_conversion_goal_5": {
-                            "id": "avg_cost_per_conversion_goal_5",
+                        "avg_etfm_cost_per_conversion_goal_5": {
+                            "id": "avg_etfm_cost_per_conversion_goal_5",
                             "name": "$CPA - test conversion goal 5",
                         },
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1223,7 +1247,7 @@ class CampaignPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1253,18 +1277,21 @@ class CampaignPublishersDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1272,7 +1299,7 @@ class CampaignPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1300,14 +1327,14 @@ class CampaignPlacementDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = copy.deepcopy(mock_stats)
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1323,38 +1350,41 @@ class CampaignPlacementDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "avg_cost_per_pixel_1_168": {
-                            "id": "avg_cost_per_pixel_1_168",
+                        "avg_etfm_cost_per_pixel_1_168": {
+                            "id": "avg_etfm_cost_per_pixel_1_168",
                             "name": "$CPA - test conversion goal",
                         },
-                        "avg_cost_per_conversion_goal_2": {
-                            "id": "avg_cost_per_conversion_goal_2",
+                        "avg_etfm_cost_per_conversion_goal_2": {
+                            "id": "avg_etfm_cost_per_conversion_goal_2",
                             "name": "$CPA - test conversion goal 2",
                         },
-                        "avg_cost_per_conversion_goal_3": {
-                            "id": "avg_cost_per_conversion_goal_3",
+                        "avg_etfm_cost_per_conversion_goal_3": {
+                            "id": "avg_etfm_cost_per_conversion_goal_3",
                             "name": "$CPA - test conversion goal 3",
                         },
-                        "avg_cost_per_conversion_goal_4": {
-                            "id": "avg_cost_per_conversion_goal_4",
+                        "avg_etfm_cost_per_conversion_goal_4": {
+                            "id": "avg_etfm_cost_per_conversion_goal_4",
                             "name": "$CPA - test conversion goal 4",
                         },
-                        "avg_cost_per_conversion_goal_5": {
-                            "id": "avg_cost_per_conversion_goal_5",
+                        "avg_etfm_cost_per_conversion_goal_5": {
+                            "id": "avg_etfm_cost_per_conversion_goal_5",
                             "name": "$CPA - test conversion goal 5",
                         },
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1362,7 +1392,7 @@ class CampaignPlacementDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1392,18 +1422,21 @@ class CampaignPlacementDailyStatsTest(TestCase):
                 "data": {
                     "goal_fields": {
                         "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
-                        "cpc": {"id": "CPC", "name": "CPC"},
+                        "etfm_cpc": {"id": "CPC", "name": "CPC"},
                         "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
                         "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
                         "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
-                        "avg_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
-                        "avg_cost_per_non_bounced_visit": {
+                        "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                        "avg_etfm_cost_per_non_bounced_visit": {
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
-                        "avg_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
-                        "video_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                        "video_etfm_cpcv": {
+                            "id": "Cost per Completed Video View",
+                            "name": "Cost per Completed Video View",
+                        },
                     },
                     "chart_data": [
                         {
@@ -1411,7 +1444,7 @@ class CampaignPlacementDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1439,12 +1472,12 @@ class AccountPublishersDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1465,7 +1498,7 @@ class AccountPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1491,7 +1524,7 @@ class AccountPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1517,12 +1550,12 @@ class AccountPlacementsDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1543,7 +1576,7 @@ class AccountPlacementsDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1569,7 +1602,7 @@ class AccountPlacementsDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0200"], [end_date.isoformat(), "0.0400"]],
                             },
                         }
                     ],
@@ -1595,14 +1628,14 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = mock_stats
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1620,7 +1653,7 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],
@@ -1646,14 +1679,14 @@ class AllAccountsPlacementsDailyStatsTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [
-            {"day": start_date.isoformat(), "cpc": "0.0100", "local_cpc": "0.0200", "clicks": 1000},
-            {"day": end_date.isoformat(), "cpc": "0.0200", "local_cpc": "0.0400", "clicks": 1500},
+            {"day": start_date.isoformat(), "etfm_cpc": "0.0100", "local_etfm_cpc": "0.0200", "clicks": 1000},
+            {"day": end_date.isoformat(), "etfm_cpc": "0.0200", "local_etfm_cpc": "0.0400", "clicks": 1500},
         ]
 
         mock_query.return_value = mock_stats
 
         params = {
-            "metrics": ["cpc", "clicks"],
+            "metrics": ["etfm_cpc", "clicks"],
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "totals": "true",
@@ -1671,7 +1704,7 @@ class AllAccountsPlacementsDailyStatsTest(TestCase):
                             "name": "Totals",
                             "series_data": {
                                 "clicks": [[start_date.isoformat(), 1000], [end_date.isoformat(), 1500]],
-                                "cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
+                                "etfm_cpc": [[start_date.isoformat(), "0.0100"], [end_date.isoformat(), "0.0200"]],
                             },
                         }
                     ],

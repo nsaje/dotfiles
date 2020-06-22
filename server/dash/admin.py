@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
@@ -391,7 +390,6 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         "default_account_type",
         "created_dt",
         "modified_dt",
-        "new_accounts_use_bcm_v2",
     )
     exclude = ("users",)
     raw_id_fields = ("default_whitelist", "default_blacklist")
@@ -532,7 +530,7 @@ class CampaignInline(admin.TabularInline):
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ("name", "id")
-    list_display = ("id", "name", "amplify_account_name", "created_dt", "modified_dt", "salesforce_url", "uses_bcm_v2")
+    list_display = ("id", "name", "amplify_account_name", "created_dt", "modified_dt", "salesforce_url")
     readonly_fields = (
         "name",
         "amplify_account_name",
@@ -542,7 +540,6 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         "created_dt",
         "modified_dt",
         "modified_by",
-        "uses_bcm_v2",
         "id",
         "outbrain_marketer_id",
         "default_whitelist",
@@ -562,15 +559,6 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         form = super(AccountAdmin, self).get_form(request, obj=obj, **kwargs)
         form.request = request
         return form
-
-    @transaction.atomic
-    def migrate_to_bcm_v2(self, request, queryset):
-        for account in queryset:
-            account.migrate_to_bcm_v2(request)
-
-    migrate_to_bcm_v2.short_description = "Migrate selected accounts to use new margins and fees"
-
-    actions = [migrate_to_bcm_v2]
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.yahoo_account:

@@ -86,6 +86,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             None,
             state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
             cpc_cc="0.12",
+            cpm="0.12",
             daily_budget_cc="50.00",
             ad_group_source=ad_group_source,
         )
@@ -112,10 +113,10 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, data[0]["state"])
 
     @mock.patch.object(AdGroupSourceSettingsValidatorMixin, "clean")
-    def test_get_ad_groups_source_bcm_v2(self, mock_validator):
+    def test_get_ad_groups_source(self, mock_validator):
         today = dates_helper.local_today()
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)
+        account = magic_mixer.blend(dash.models.Account)
         credit_line_item = dash.models.CreditLineItem.objects.create(
             request,
             today,
@@ -163,7 +164,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
     def test_get_ad_groups_source_adlookup(self, mock_validator):
         today = dates_helper.local_today()
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)
+        account = magic_mixer.blend(dash.models.Account)
         credit_line_item = dash.models.CreditLineItem.objects.create(
             request,
             today,

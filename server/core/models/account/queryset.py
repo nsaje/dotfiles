@@ -72,8 +72,5 @@ class AccountQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
             )
         )
 
-    def all_use_bcm_v2(self):
-        return all(self.values_list("uses_bcm_v2", flat=True))
-
     def _get_query_path_to_account(self) -> str:
         return ""

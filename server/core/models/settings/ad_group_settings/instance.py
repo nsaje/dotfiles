@@ -354,13 +354,10 @@ class AdGroupSettingsMixin(object):
             system_user=self.system_user,
         )
 
-    def get_external_b1_sources_group_daily_budget(self, account, license_fee, margin):
-        b1_sources_group_daily_budget = self.b1_sources_group_daily_budget
-        if account.uses_bcm_v2:
-            b1_sources_group_daily_budget = core.features.bcm.calculations.subtract_fee_and_margin(
-                b1_sources_group_daily_budget, license_fee, margin
-            )
-        return b1_sources_group_daily_budget
+    def get_external_b1_sources_group_daily_budget(self, license_fee, margin):
+        return core.features.bcm.calculations.subtract_fee_and_margin(
+            self.b1_sources_group_daily_budget, license_fee, margin
+        )
 
     def get_currency(self):
         return self.ad_group.campaign.account.currency

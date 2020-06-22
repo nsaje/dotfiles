@@ -677,24 +677,14 @@ def _get_remaining_budget_data_map(campaign_ids, date=None):
 
     remaining_budget_map = {}
     for campaign_id, record_list in budget_map.items():
-        uses_bcm_v2 = record_list[0]["uses_bcm_v2"]
-
         budget = 0
         for record in record_list:
-
-            if uses_bcm_v2:
-                spend_attribute = "spend_data_local_etfm_total"
-                multiplication_factor = 1
-            else:
-                spend_attribute = "spend_data_local_etf_total"
-                multiplication_factor = 1 - record["license_fee"]
-
-            total_spend = converters.nano_to_decimal(record[spend_attribute] or 0)
+            total_spend = converters.nano_to_decimal(record["spend_data_local_etfm_total"] or 0)
             allocated_amount = (
                 Decimal(record["amount"] * converters.CURRENCY_TO_CC - record["freed_cc"])
                 * converters.CC_TO_DECIMAL_CURRENCY
             )
-            budget += (allocated_amount - total_spend) * multiplication_factor
+            budget += allocated_amount - total_spend
 
         remaining_budget_map[campaign_id] = {"remaining_budget": budget}
 
@@ -710,16 +700,7 @@ def _get_remaining_budget_data(campaign_ids, date=None):
         .filter_active(date)
         .annotate_spend_data()
         .annotate(license_fee=F("credit__license_fee"))
-        .annotate(uses_bcm_v2=F("campaign__account__uses_bcm_v2"))
-        .values(
-            "amount",
-            "freed_cc",
-            "campaign_id",
-            "spend_data_local_etfm_total",
-            "spend_data_local_etf_total",
-            "license_fee",
-            "uses_bcm_v2",
-        )
+        .values("amount", "freed_cc", "campaign_id", "spend_data_local_etfm_total", "license_fee")
     )
 
 

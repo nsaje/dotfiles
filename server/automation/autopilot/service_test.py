@@ -24,7 +24,7 @@ class AutopilotPlusTestCase(test.TestCase):
     fixtures = ["test_automation.yaml"]
 
     def mock_budget_recommender(
-        self, ad_group, daily_budget, data, bcm, campaign_goal, rtb_as_one, ignore_daily_budget_too_small=False
+        self, ad_group, daily_budget, data, bcm, campaign_goal, ignore_daily_budget_too_small=False
     ):
         result = {}
         for ags in data:
@@ -721,7 +721,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertTrue(paused_ad_group_source not in new_budgets)
         self.assertTrue(active_ad_group_source not in new_budgets)
         self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["old_budget"], Decimal("30."))
-        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["new_budget"], Decimal("10.0"))
+        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["new_budget"], Decimal("17.0"))
         self.assertEqual(
             new_budgets.get(all_rtb_ad_group_source)["budget_comments"],
             [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE],
@@ -730,7 +730,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(
             active_ad_group_source.get_current_settings().daily_budget_cc, active_ad_group_source_old_budget
         )
-        self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal("10.0"))
+        self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal("17.0"))
 
     @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
     @patch("automation.autopilot.service.run_autopilot")

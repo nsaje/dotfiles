@@ -157,38 +157,21 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.TIME_ON_SITE: {"col": "avg_tos", "importance": 0.7, "spend_perc": Decimal(0.3)},
     CampaignGoalKPI.PAGES_PER_SESSION: {"col": "pv_per_visit", "importance": 0.7, "spend_perc": Decimal(0.3)},
     CampaignGoalKPI.CPA: {"col": "conversions", "importance": 0.8, "spend_perc": Decimal(0.2)},  # actions per cost
-    CampaignGoalKPI.CPC: {"col": "cpc", "col_bcm_v2": "etfm_cpc", "importance": 0.7, "spend_perc": Decimal(0.3)},
+    CampaignGoalKPI.CPC: {"col": "etfm_cpc", "importance": 0.7, "spend_perc": Decimal(0.3)},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {"col": "percent_new_users", "importance": 0.7, "spend_perc": Decimal(0.3)},
-    CampaignGoalKPI.CPV: {
-        "col": "avg_cost_per_visit",
-        "col_bcm_v2": "avg_etfm_cost_per_visit",
-        "importance": 0.7,
-        "spend_perc": Decimal(0.3),
-    },
+    CampaignGoalKPI.CPV: {"col": "avg_etfm_cost_per_visit", "importance": 0.7, "spend_perc": Decimal(0.3)},
     CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {
-        "col": "avg_cost_per_non_bounced_visit",
-        "col_bcm_v2": "avg_etfm_cost_per_non_bounced_visit",
+        "col": "avg_etfm_cost_per_non_bounced_visit",
         "importance": 0.7,
         "spend_perc": Decimal(0.3),
     },
     CampaignGoalKPI.CP_NEW_VISITOR: {
-        "col": "avg_cost_for_new_visitor",
-        "col_bcm_v2": "avg_etfm_cost_for_new_visitor",
+        "col": "avg_etfm_cost_for_new_visitor",
         "importance": 0.7,
         "spend_perc": Decimal(0.3),
     },
-    CampaignGoalKPI.CP_PAGE_VIEW: {
-        "col": "avg_cost_per_pageview",
-        "col_bcm_v2": "avg_etfm_cost_per_pageview",
-        "importance": 0.7,
-        "spend_perc": Decimal(0.3),
-    },
-    CampaignGoalKPI.CPCV: {
-        "col": "video_cpcv",
-        "col_bcm_v2": "video_etfm_cpcv",
-        "importance": 0.7,
-        "spend_perc": Decimal(0.3),
-    },
+    CampaignGoalKPI.CP_PAGE_VIEW: {"col": "avg_etfm_cost_per_pageview", "importance": 0.7, "spend_perc": Decimal(0.3)},
+    CampaignGoalKPI.CPCV: {"col": "video_etfm_cpcv", "importance": 0.7, "spend_perc": Decimal(0.3)},
 }
 GOALS_WORST_VALUE = {
     "bounce_rate": 100.00,
@@ -205,56 +188,24 @@ GOALS_WORST_VALUE = {
     "avg_etfm_cost_for_new_visitor": None,
     "avg_cost_per_pageview": None,
     "avg_etfm_cost_per_pageview": None,
-    "video_cpcv": None,
     "video_etfm_cpcv": None,
 }
 GOALS_CALC_COLS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {"dividend": "bounced_visits", "divisor": "visits", "high_is_good": False},
     CampaignGoalKPI.TIME_ON_SITE: {"dividend": "total_seconds", "divisor": "visits", "high_is_good": True},
     CampaignGoalKPI.PAGES_PER_SESSION: {"dividend": "pageviews", "divisor": "visits", "high_is_good": True},
-    CampaignGoalKPI.CPA: {
-        "dividend": "conversions",
-        "divisor": "media_cost",
-        "divisor_bcm_v2": "etfm_cost",
-        "high_is_good": True,
-    },
-    CampaignGoalKPI.CPC: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
-        "divisor": "clicks",
-        "high_is_good": False,
-    },
+    CampaignGoalKPI.CPA: {"dividend": "conversions", "divisor": "etfm_cost", "high_is_good": True},
+    CampaignGoalKPI.CPC: {"dividend": "etfm_cost", "divisor": "clicks", "high_is_good": False},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {"dividend": "new_users", "divisor": "visits", "high_is_good": True},
-    CampaignGoalKPI.CPV: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
-        "divisor": "visits",
-        "high_is_good": False,
-    },
+    CampaignGoalKPI.CPV: {"dividend": "etfm_cost", "divisor": "visits", "high_is_good": False},
     CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
+        "dividend": "etfm_cost",
         "divisor": "non_bounced_visits",
         "high_is_good": False,
     },
-    CampaignGoalKPI.CP_NEW_VISITOR: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
-        "divisor": "new_users",
-        "high_is_good": False,
-    },
-    CampaignGoalKPI.CP_PAGE_VIEW: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
-        "divisor": "pageviews",
-        "high_is_good": False,
-    },
-    CampaignGoalKPI.CPCV: {
-        "dividend": "media_cost",
-        "dividend_bcm_v2": "etfm_cost",
-        "divisor": "video_complete",
-        "high_is_good": False,
-    },
+    CampaignGoalKPI.CP_NEW_VISITOR: {"dividend": "etfm_cost", "divisor": "new_users", "high_is_good": False},
+    CampaignGoalKPI.CP_PAGE_VIEW: {"dividend": "etfm_cost", "divisor": "pageviews", "high_is_good": False},
+    CampaignGoalKPI.CPCV: {"dividend": "etfm_cost", "divisor": "video_complete", "high_is_good": False},
 }
 SPEND_PERC_LOWERING_THRESHOLD = 1.0
 LOW_SPEND_PROB_LOWERING_FACTOR = 0.25

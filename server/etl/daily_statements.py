@@ -1,4 +1,3 @@
-import datetime
 from collections import defaultdict
 from decimal import Decimal
 
@@ -19,8 +18,6 @@ from utils import dates_helper
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
-
-FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -63,17 +60,15 @@ def _generate_statements(date, campaign, campaign_spend):
             local_per_budget_spend_nano[budget.id]["media"]
             + local_per_budget_spend_nano[budget.id]["data"]
             + local_per_budget_spend_nano[budget.id]["license_fee"]
+            + local_per_budget_spend_nano[budget.id]["margin"]
         )
-        if budget.start_date >= FIXED_MARGIN_START_DATE:
-            local_budget_spend_total_nano += local_per_budget_spend_nano[budget.id]["margin"]
 
         if total_spend_nano > 0 and local_budget_spend_total_nano < local_budget_amount_nano:
             local_available_budget_nano = local_budget_amount_nano - local_budget_spend_total_nano
             usd_available_budget_nano = local_available_budget_nano / core.features.multicurrency.get_exchange_rate(
                 date, budget.credit.currency
             )
-            if budget.start_date >= FIXED_MARGIN_START_DATE:
-                usd_available_budget_nano = usd_available_budget_nano * (1 - budget.margin)
+            usd_available_budget_nano = usd_available_budget_nano * (1 - budget.margin)
             usd_available_budget_nano = usd_available_budget_nano * (1 - budget.credit.license_fee)
 
             if total_media_nano + total_data_nano > usd_available_budget_nano:
@@ -90,10 +85,9 @@ def _generate_statements(date, campaign, campaign_spend):
             license_fee_nano = core.features.bcm.calculations.calculate_fee(
                 attributed_media_nano + attributed_data_nano, budget.credit.license_fee
             )
-            if budget.start_date >= FIXED_MARGIN_START_DATE:
-                margin_nano = core.features.bcm.calculations.calculate_margin(
-                    attributed_media_nano + attributed_data_nano + license_fee_nano, budget.margin
-                )
+            margin_nano = core.features.bcm.calculations.calculate_margin(
+                attributed_media_nano + attributed_data_nano + license_fee_nano, budget.margin
+            )
 
         local_per_budget_spend_nano[budget.id]["media"] += attributed_media_nano
         local_per_budget_spend_nano[budget.id]["data"] += attributed_data_nano
@@ -102,9 +96,6 @@ def _generate_statements(date, campaign, campaign_spend):
 
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
-
-        if budget.start_date < FIXED_MARGIN_START_DATE:
-            margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
@@ -152,12 +143,9 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
         )
 
     license_fee_nano = core.features.bcm.calculations.calculate_fee(media_nano + data_nano, budget.credit.license_fee)
-    if budget.start_date >= FIXED_MARGIN_START_DATE:
-        margin_nano = core.features.bcm.calculations.calculate_margin(
-            media_nano + data_nano + license_fee_nano, budget.margin
-        )
-    else:
-        margin_nano = (media_nano + data_nano + license_fee_nano) * budget.margin
+    margin_nano = core.features.bcm.calculations.calculate_margin(
+        media_nano + data_nano + license_fee_nano, budget.margin
+    )
 
     daily_statement.update_amounts(
         media_spend_nano=daily_statement.media_spend_nano + media_nano,

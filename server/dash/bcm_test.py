@@ -980,6 +980,9 @@ class BudgetsTestCase(TestCase):
                 "comment": "Test case",
             }
         )
+
+        # Special case where form returns invalid date as None, so when full clean is called on budget_line_item
+        # the query for license fee and margin overlapping budgets fails. Validation is skipped in case of None dates.
         self.assertFalse(budget_form.is_valid())
         self.assertTrue(budget_form.errors)
 
@@ -1482,6 +1485,7 @@ class BudgetReserveTestCase(TestCase):
         budget = create_budget(
             credit=credit,
             amount=1000,
+            margin=Decimal("0.15"),
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 10),
             campaign_id=1,
@@ -1545,6 +1549,7 @@ class BudgetReserveTestCase(TestCase):
         budget1 = create_budget(
             credit=credit,
             amount=500,
+            margin=Decimal("0.15"),
             freed_cc=1000000,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 10),
@@ -1553,6 +1558,7 @@ class BudgetReserveTestCase(TestCase):
         create_budget(
             credit=credit,
             amount=600,
+            margin=Decimal("0.15"),
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 10),
             campaign_id=1,
@@ -1577,6 +1583,7 @@ class BudgetReserveTestCase(TestCase):
             create_budget(
                 credit=credit,
                 amount=200,
+                margin=Decimal("0.15"),
                 start_date=datetime.date(2015, 11, 1),
                 end_date=datetime.date(2015, 11, 10),
                 campaign_id=1,
@@ -1759,10 +1766,27 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.b1.freed_cc, 1234)
 
     def test_update_budget_margin(self):
-        self.assertEqual(self.b1.margin, Decimal("0"))
-        self._call_command("bcm", "update", "budgets", str(self.b1.pk), "--margin", "0.15", "--no-confirm")
-        self.b1.refresh_from_db()
-        self.assertEqual(self.b1.margin, Decimal("0.15"))
+        credit = create_credit(
+            account_id=2,
+            start_date=TODAY + datetime.timedelta(10),
+            end_date=TODAY + datetime.timedelta(20),
+            amount=1000,
+            status=constants.CreditLineItemStatus.SIGNED,
+        )
+        non_overlapping_budget = create_budget(
+            credit=credit,
+            amount=200,
+            margin=Decimal("0.0"),
+            start_date=TODAY + datetime.timedelta(10),
+            end_date=TODAY + datetime.timedelta(20),
+            campaign_id=2,
+        )
+        self.assertEqual(non_overlapping_budget.margin, Decimal("0.0"))
+        self._call_command(
+            "bcm", "update", "budgets", str(non_overlapping_budget.pk), "--margin", "0.15", "--no-confirm"
+        )
+        non_overlapping_budget.refresh_from_db()
+        self.assertEqual(Decimal("0.15"), non_overlapping_budget.margin)
 
     def test_update_budget_multiple_fields(self):
         self._call_command(

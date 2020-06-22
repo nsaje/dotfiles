@@ -480,9 +480,6 @@ class MVMaster(BreakdownsBase):
     local_video_etfm_cpv = backtosql.TemplateColumn(
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    video_cpv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_video_cpv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
     _context = {"divisor": "video_complete", "divisor_modifier": converters.CURRENCY_TO_NANO}
     video_et_cpcv = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
@@ -493,9 +490,6 @@ class MVMaster(BreakdownsBase):
     local_video_etfm_cpcv = backtosql.TemplateColumn(
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    video_cpcv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_video_cpcv = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
     # MRC50 viewability
     mrc50_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_measurable"}, AGGREGATE)
@@ -959,9 +953,7 @@ class MVJointMaster(MVMaster):
                 column_group = AFTER_JOIN_AGGREGATES
             else:
                 # with_local_prefix=False because USD metric values should be used to calculate performance
-                primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(
-                    campaign_goal.campaign.account.uses_bcm_v2, with_local_prefix=False
-                )
+                primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(with_local_prefix=False)
                 metric_column = primary_metric_map[campaign_goal.type]
                 column_group = AFTER_JOIN_AGGREGATES
 

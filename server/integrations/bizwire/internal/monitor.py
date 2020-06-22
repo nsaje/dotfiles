@@ -77,7 +77,9 @@ def monitor_remaining_budget():
         .select_related("credit")
         .filter_active(tomorrow)
     ):
-        remaining_budget += bli.get_available_amount(tomorrow) * (1 - bli.credit.license_fee)
+        remaining_budget += (
+            bli.get_available_etfm_amount(tomorrow) * (1 - bli.credit.license_fee) * (1 - bli.credit.margin)
+        )  # TODO: BCM2: incorrect but not in use
 
     if remaining_budget > 4000:
         return

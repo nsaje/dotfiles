@@ -239,43 +239,21 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_create_yesterday_spend_setting(self):
         setting = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 50}, 100, dash.constants.Currency.USD
+            {"yesterday_etfm_cost": 50}, 100, dash.constants.Currency.USD
         )
 
         self.assertEqual("$50.00", setting.value)
         self.assertEqual("50.00% of $100.00 Daily Spend Cap", setting.description)
 
         setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 110}, 100, dash.constants.Currency.USD
+            {"yesterday_etfm_cost": 110}, 100, dash.constants.Currency.USD
         )
 
         self.assertEqual("$110.00", setting_1.value)
         self.assertEqual("110.00% of $100.00 Daily Spend Cap", setting_1.description)
 
         setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 50}, 0, dash.constants.Currency.USD
-        )
-
-        self.assertEqual("$50.00", setting_0.value)
-        self.assertEqual("N/A", setting_0.description)
-
-    def test_create_yesterday_spend_setting_bcm_v2(self):
-        setting = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 10, "yesterday_etfm_cost": 50}, 100, dash.constants.Currency.USD, uses_bcm_v2=True
-        )
-
-        self.assertEqual("$50.00", setting.value)
-        self.assertEqual("50.00% of $100.00 Daily Spend Cap", setting.description)
-
-        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 10, "yesterday_etfm_cost": 110}, 100, dash.constants.Currency.USD, uses_bcm_v2=True
-        )
-
-        self.assertEqual("$110.00", setting_1.value)
-        self.assertEqual("110.00% of $100.00 Daily Spend Cap", setting_1.description)
-
-        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 10, "yesterday_etfm_cost": 50}, 0, dash.constants.Currency.USD, uses_bcm_v2=True
+            {"yesterday_etfm_cost": 50}, 0, dash.constants.Currency.USD
         )
 
         self.assertEqual("$50.00", setting_0.value)
@@ -283,7 +261,7 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_create_yesterday_spend_setting_local_currency(self):
         setting = dash.infobox_helpers.create_yesterday_spend_setting(
-            {"e_yesterday_cost": 50}, 100, dash.constants.Currency.EUR
+            {"yesterday_etfm_cost": 50}, 100, dash.constants.Currency.EUR
         )
 
         self.assertEqual("€50.00", setting.value)
@@ -996,7 +974,12 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),
         )
-        self.ad_group_source_local = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group_local)
+        self.ad_group_source_local = magic_mixer.blend(
+            dash.models.AdGroupSource,
+            ad_group=self.ad_group_local,
+            source__source_type__min_daily_budget=Decimal("0.0"),
+            source__source_type__max_daily_budget=Decimal("1000.0"),
+        )
         self.ad_group_source_local.settings.update(
             None, daily_budget_cc=Decimal("25"), state=dash.constants.AdGroupSourceSettingsState.ACTIVE
         )

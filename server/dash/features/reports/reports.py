@@ -232,10 +232,7 @@ class ReportJobExecutor(JobExecutor):
         goals = stats.api_reports.get_goals(constraints, breakdown)
 
         column_to_field_name_map = utils.columns.custom_column_to_field_name_mapping(
-            goals.pixels,
-            goals.conversion_goals,
-            show_publishers_fields=stats.constants.PUBLISHER in breakdown,
-            uses_bcm_v2=stats.api_reports.get_uses_bcm_v2(user, constraints, level),
+            goals.pixels, goals.conversion_goals, show_publishers_fields=stats.constants.PUBLISHER in breakdown
         )
         # TODO: PLAC: remove after legacy grace period
         cls._handle_legacy_columns_mapping(column_to_field_name_map, user)

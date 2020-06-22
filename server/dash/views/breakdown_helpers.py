@@ -1,6 +1,5 @@
 import collections
 
-import core.models
 import dash.campaign_goals
 from core.models import all_rtb
 from dash import constants
@@ -46,23 +45,12 @@ def format_report_rows_performance_fields(rows, goals, currency):
         # then don't add performance info
         return
 
-    uses_bcm_v2_map = dict(
-        core.models.Campaign.objects.filter(pk__in=list(campaign_goals_by_campaign_id.keys())).values_list(
-            "id", "account__uses_bcm_v2"
-        )
-    )
-
     for campaign_id, campaign_goals in list(campaign_goals_by_campaign_id.items()):
-        uses_bcm_v2 = uses_bcm_v2_map[campaign_id]
-
         primary_goal = next((x for x in goals.primary_goals if x.campaign_id == campaign_id), None)
         primary_goal_key = None
         performance_prefix = None
         if primary_goal:
-            if uses_bcm_v2:
-                performance_prefix = "etfm_performance_"
-            else:
-                performance_prefix = "performance_"
+            performance_prefix = "etfm_performance_"
             primary_goal_key = performance_prefix + primary_goal.get_view_key()
 
         for row in rows_by_campaign_id[campaign_id] if rows_by_campaign_id else rows:
@@ -78,7 +66,7 @@ def format_report_rows_performance_fields(rows, goals, currency):
                 goals_performances = []
                 for goal in campaign_goals:
                     metric = dash.campaign_goals.get_goal_performance_metric(
-                        goal, conversion_goals_by_campaign_id[campaign_id], uses_bcm_v2=uses_bcm_v2
+                        goal, conversion_goals_by_campaign_id[campaign_id]
                     )
 
                     metric_value = row.get(metric)
@@ -89,7 +77,6 @@ def format_report_rows_performance_fields(rows, goals, currency):
                             metric_value,
                             map_values.get(goal.id) and map_values[goal.id].local_value,
                             goal,
-                            uses_bcm_v2,
                         )
                     )
 
@@ -145,7 +132,7 @@ def format_report_rows_content_ad_editable_fields(rows):
 
 
 def set_row_goal_performance_meta(row, goals_performances, conversion_goals, currency):
-    for goal_status, goal_metric, goal_value, goal, uses_bcm_v2 in goals_performances:
+    for goal_status, goal_metric, goal_value, goal in goals_performances:
         performance_item = {
             "emoticon": dash.campaign_goals.STATUS_TO_EMOTICON_MAP.get(goal_status, constants.Emoticon.NEUTRAL),
             "text": dash.campaign_goals.format_campaign_goal(goal.type, goal_metric, goal.conversion_goal, currency),
@@ -159,13 +146,10 @@ def set_row_goal_performance_meta(row, goals_performances, conversion_goals, cur
         row["performance"]["list"].append(performance_item)
 
         # with_local_prefix=False because client expects colored_column to not have local_ prefix
-        primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(uses_bcm_v2, with_local_prefix=False)
+        primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(with_local_prefix=False)
         colored_column = primary_metric_map.get(goal.type)
         if goal.type == constants.CampaignGoalKPI.CPA:
-            if uses_bcm_v2:
-                colored_column = "avg_etfm_cost_per_" + goal.conversion_goal.get_view_key(conversion_goals)
-            else:
-                colored_column = "avg_cost_per_" + goal.conversion_goal.get_view_key(conversion_goals)
+            colored_column = "avg_etfm_cost_per_" + goal.conversion_goal.get_view_key(conversion_goals)
 
         if not colored_column:
             continue

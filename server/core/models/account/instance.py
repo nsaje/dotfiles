@@ -93,25 +93,6 @@ class AccountInstanceMixin:
             action_type=action_type,
         )
 
-    def set_uses_bcm_v2(self, request, enabled):
-        self.uses_bcm_v2 = bool(enabled)
-        self.save(request)
-
-    @transaction.atomic
-    def migrate_to_bcm_v2(self, request):
-        if self.uses_bcm_v2:
-            return
-
-        for campaign in self.campaign_set.all():
-            campaign.migrate_to_bcm_v2(request)
-
-        self.set_uses_bcm_v2(request, True)
-        self._migrate_agency(request)
-
-    def _migrate_agency(self, request):
-        if self.agency and self.agency.account_set.all_use_bcm_v2():
-            self.agency.set_new_accounts_use_bcm_v2(request, True)
-
     def get_all_custom_flags(self):
         custom_flags = self.agency and self.agency.custom_flags or {}
         if self.custom_flags:

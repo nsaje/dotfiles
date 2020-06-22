@@ -12,7 +12,6 @@ import utils.lc_helper
 from dash import constants
 
 from ..campaign_goal_value import CampaignGoalValue
-from . import bcm_mixin
 from . import manager
 
 # FIXME: the same dict is in dash/campaign_goals
@@ -31,7 +30,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
 }
 
 
-class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
+class CampaignGoal(models.Model):
     class Meta:
         app_label = "dash"
         unique_together = ("campaign", "type", "conversion_goal")

@@ -19,7 +19,6 @@ class AdGroupSourceSettingsMixin(object):
         write_history=True,
         **updates,
     ):
-
         if not updates:
             return None
 
@@ -133,25 +132,14 @@ class AdGroupSourceSettingsMixin(object):
             changes_text, changes=changes, user=user, action_type=action_type, system_user=self.system_user
         )
 
-    def get_external_daily_budget_cc(self, account, license_fee, margin):
-        daily_budget_cc = self.daily_budget_cc
-        if account.uses_bcm_v2:
-            daily_budget_cc = core.features.bcm.calculations.subtract_fee_and_margin(
-                daily_budget_cc, license_fee, margin
-            )
-        return daily_budget_cc
+    def get_external_daily_budget_cc(self, license_fee, margin):
+        return core.features.bcm.calculations.subtract_fee_and_margin(self.daily_budget_cc, license_fee, margin)
 
-    def get_external_cpc_cc(self, account, license_fee, margin):
-        cpc_cc = self.cpc_cc
-        if account.uses_bcm_v2:
-            cpc_cc = core.features.bcm.calculations.subtract_fee_and_margin(cpc_cc, license_fee, margin)
-        return cpc_cc
+    def get_external_cpc_cc(self, license_fee, margin):
+        return core.features.bcm.calculations.subtract_fee_and_margin(self.cpc_cc, license_fee, margin)
 
-    def get_external_cpm(self, account, license_fee, margin):
-        cpm = self.cpm
-        if cpm and account.uses_bcm_v2:
-            cpm = core.features.bcm.calculations.subtract_fee_and_margin(cpm, license_fee, margin)
-        return cpm
+    def get_external_cpm(self, license_fee, margin):
+        return core.features.bcm.calculations.subtract_fee_and_margin(self.cpm, license_fee, margin)
 
     def get_currency(self):
         return self.ad_group_source.ad_group.campaign.account.currency

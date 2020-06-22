@@ -56,7 +56,7 @@ def get_credit_items(campaign):
 
 
 def get_budgets_overview(user, campaign, budget_items, credit_items):
-    can_add_platform_costs = not campaign.account.uses_bcm_v2 or user.has_media_cost_data_cost_and_licence_fee_perm_on(
+    can_add_platform_costs = user.has_media_cost_data_cost_and_licence_fee_perm_on(
         campaign, fallback_permission="zemauth.can_view_platform_cost_breakdown"
     )
     can_add_agency_margin = user.has_agency_spend_and_margin_perm_on(
@@ -79,12 +79,8 @@ def get_budgets_overview(user, campaign, budget_items, credit_items):
 
     for item in campaign.settings.budgets:
         spend_data = item.get_local_spend_data()
-        if campaign.account.uses_bcm_v2:
-            spend = spend_data["etfm_total"]
-        else:
-            spend = spend_data["etf_total"]
         allocated = item.allocated_amount()
-        data["available_budgets_sum"] += allocated - spend
+        data["available_budgets_sum"] += allocated - spend_data["etfm_total"]
 
     for item in credit_items:
         if item.status != dash.constants.CreditLineItemStatus.SIGNED or item.is_past():
@@ -96,11 +92,7 @@ def get_budgets_overview(user, campaign, budget_items, credit_items):
             continue
 
         spend_data = item.get_local_spend_data()
-
-        if campaign.account.uses_bcm_v2:
-            data["campaign_spend"] += spend_data["etfm_total"]
-        else:
-            data["campaign_spend"] += spend_data["etf_total"]
+        data["campaign_spend"] += spend_data["etfm_total"]
 
         if can_add_platform_costs:
             data["media_spend"] += spend_data["media"]

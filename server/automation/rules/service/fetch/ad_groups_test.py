@@ -35,7 +35,12 @@ class PrepareAdGroupSettingsTestCase(TestCase):
             self.ad_group = magic_mixer.blend(
                 core.models.AdGroup, campaign=self.campaign, created_dt=now - datetime.timedelta(days=1)
             )
-        b1_source_type = magic_mixer.blend(core.models.SourceType, type="b1")
+        b1_source_type = magic_mixer.blend(
+            core.models.SourceType,
+            type="b1",
+            min_daily_budget=decimal.Decimal("0.0"),
+            max_daily_budget=decimal.Decimal("100.0"),
+        )
         self.ad_group_sources = magic_mixer.cycle(3).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source__source_type=b1_source_type
         )
@@ -135,7 +140,12 @@ class PrepareAdGroupSettingsTestCase(TestCase):
         self.assertEqual(decimal.Decimal("50"), ad_group_settings["ad_group_daily_cap"])
 
     def test_ad_group_daily_caps_all_rtb_api_soures(self):
-        non_b1_source_type = magic_mixer.blend(core.models.SourceType, type="notb1")
+        non_b1_source_type = magic_mixer.blend(
+            core.models.SourceType,
+            type="notb1",
+            min_daily_budget=decimal.Decimal("0.0"),
+            max_daily_budget=decimal.Decimal("100.0"),
+        )
         non_b1_ad_group_sources = magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source__source_type=non_b1_source_type
         )

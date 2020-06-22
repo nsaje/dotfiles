@@ -332,9 +332,7 @@ class ReportsGetReportCSVTest(TestCase):
 
     @mock.patch("stats.api_reports.query")
     def test_currency(self, mock_query):
-        ad_group = magic_mixer.blend(
-            core.models.AdGroup, campaign__account__currency="EUR", campaign__account__uses_bcm_v2=True
-        )
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__currency="EUR")
         self.reportJob.query = self.build_query(
             ["Ad Group Id", "Total Spend", "Clicks"],
             filters=[{"field": "Ad Group Id", "operator": "=", "value": ad_group.id}],
@@ -352,8 +350,8 @@ class ReportsGetReportCSVTest(TestCase):
             filters=[{"field": "Account Id", "operator": "IN", "values": ["1", "2"]}],
             all_accounts_in_local_currency=True,
         )
-        magic_mixer.blend(core.models.Account, currency="EUR", id=1, users=self.reportJob.user, uses_bcm_v2=True)
-        magic_mixer.blend(core.models.Account, currency="USD", id=2, users=self.reportJob.user, uses_bcm_v2=True)
+        magic_mixer.blend(core.models.Account, currency="EUR", id=1, users=self.reportJob.user)
+        magic_mixer.blend(core.models.Account, currency="USD", id=2, users=self.reportJob.user)
         mock_query.return_value = [
             {"account_id": 1, "etfm_cost": Decimal("12.3"), "local_etfm_cost": Decimal("15.4"), "clicks": 5},
             {"account_id": 2, "etfm_cost": Decimal("13.4"), "local_etfm_cost": Decimal("16.4"), "clicks": 8},

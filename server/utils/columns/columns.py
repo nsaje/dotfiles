@@ -81,26 +81,41 @@ _FIELD_MAPPING = {
     "video_playback_method": ("Video Playback Method",),
     "agency_cost": ("Total Spend + Margin",),
     "agency_cost_refund": ("Total Spend + Margin Refund",),
-    "avg_cost_for_new_visitor": ("Avg. Cost for New Visitor",),
-    "avg_cost_per_minute": ("Avg. Cost per Minute",),
-    "avg_cost_per_non_bounced_visit": ("Avg. Cost per Non-Bounced Visit",),
-    "avg_cost_per_pageview": ("Avg. Cost per Pageview",),
-    "avg_cost_per_visit": ("Avg. Cost per Visit",),
+    "avg_et_cost_for_new_visitor": ("Avg. Platform Cost for New Visitor",),
+    "avg_et_cost_per_minute": ("Avg. Platform Cost per Minute",),
+    "avg_et_cost_per_non_bounced_visit": ("Avg. Platform Cost per Non-Bounced Visit",),
+    "avg_et_cost_per_pageview": ("Avg. Platform Cost per Pageview",),
+    "avg_et_cost_per_visit": ("Avg. Platform Cost per Visit",),
+    "avg_etfm_cost_for_new_visitor": ("Avg. Cost for New Visitor",),
+    "avg_etfm_cost_per_minute": ("Avg. Cost per Minute",),
+    "avg_etfm_cost_per_non_bounced_visit": ("Avg. Cost per Non-Bounced Visit",),
+    "avg_etfm_cost_per_pageview": ("Avg. Cost per Pageview",),
+    "avg_etfm_cost_per_visit": ("Avg. Cost per Visit",),
     "avg_tos": ("Time on Site",),
-    "billing_cost": ("Total Spend",),
-    "billing_cost_refund": ("Total Spend Refund",),
+    "at_cost": ("Actual Platform Spend",),
+    "at_cost_refund": ("Actual Platform Spend Refund",),
+    "et_cost": ("Platform Spend",),
+    "et_cost_refund": ("Platform Spend Refund",),
+    "etf_cost": ("Agency Spend",),
+    "etf_cost_refund": ("Agency Spend Refund",),
+    "etfm_cost": ("Total Spend",),
+    "etfm_cost_refund": ("Total Spend Refund",),
     "bounce_rate": ("Bounce Rate",),
     "bounced_visits": ("Bounced Visits",),
     "click_discrepancy": ("Click Discrepancy",),
     "clicks": ("Clicks",),
-    "cpc": ("Avg. CPC",),
-    "cpm": ("Avg. CPM",),
+    "et_cpc": ("Avg. Platform CPC",),
+    "etfm_cpc": ("Avg. CPC",),
+    "et_cpm": ("Avg. Platform CPM",),
+    "etfm_cpm": ("Avg. CPM",),
     "ctr": ("CTR",),
     "data_cost": ("Actual Data Cost",),
     "e_data_cost": ("Data Cost",),
     "e_media_cost": ("Media Spend",),
     "e_media_cost_refund": ("Media Spend Refund",),
-    "e_yesterday_cost": ("Yesterday Spend",),
+    "yesterday_at_cost": ("Actual Yesterday Spend",),
+    "yesterday_et_cost": ("Yesterday Platform Spend",),
+    "yesterday_etfm_cost": ("Yesterday Spend",),
     "impressions": ("Impressions",),
     "license_fee": ("License Fee",),
     "license_fee_refund": ("License Fee Refund",),
@@ -117,7 +132,6 @@ _FIELD_MAPPING = {
     "total_seconds": ("Total Seconds",),
     "unique_users": ("Unique Users",),
     "visits": ("Visits",),
-    "yesterday_cost": ("Actual Yesterday Spend",),
     "pacing": ("Pacing",),
     "allocated_budgets": ("Media budgets",),
     "spend_projection": ("Spend Projection",),
@@ -131,8 +145,10 @@ _FIELD_MAPPING = {
     "video_third_quartile": ("Video Third Quartile",),
     "video_complete": ("Video Complete",),
     "video_progress_3s": ("Video Progress 3s",),
-    "video_cpv": ("Avg. CPV",),
-    "video_cpcv": ("Avg. CPCV",),
+    "video_et_cpv": ("Avg. Platform CPV",),
+    "video_etfm_cpv": ("Avg. CPV",),
+    "video_et_cpcv": ("Avg. Platform CPCV",),
+    "video_etfm_cpcv": ("Avg. CPCV",),
     "bid_modifier": ("Bid Modifier",),
     "sspd_url": ("SSPD Link",),
     "campaign_type": ("Campaign Type",),
@@ -150,6 +166,8 @@ _FIELD_MAPPING = {
     "mrc50_viewable_distribution": ("Impression Distribution (Viewable)",),
     "mrc50_non_measurable_distribution": ("Impression Distribution (Not-Measurable)",),
     "mrc50_non_viewable_distribution": ("Impression Distribution (Not-Viewable)",),
+    "et_mrc50_vcpm": ("Avg. Platform VCPM",),
+    "etfm_mrc50_vcpm": ("Avg. VCPM",),
     "mrc100_measurable": ("MRC100 Measurable Impressions",),
     "mrc100_viewable": ("MRC100 Viewable Impressions",),
     "mrc100_non_measurable": ("MRC100 Not-Measurable Impressions",),
@@ -159,6 +177,8 @@ _FIELD_MAPPING = {
     "mrc100_viewable_distribution": ("MRC100 Impression Distribution (Viewable)",),
     "mrc100_non_measurable_distribution": ("MRC100 Impression Distribution (Not-Measurable)",),
     "mrc100_non_viewable_distribution": ("MRC100 Impression Distribution (Not-Viewable)",),
+    "et_mrc100_vcpm": ("Avg. MRC100 Platform VCPM",),
+    "etfm_mrc100_vcpm": ("Avg. MRC100 VCPM",),
     "vast4_measurable": ("VAST4 Measurable Impressions",),
     "vast4_viewable": ("VAST4 Viewable Impressions",),
     "vast4_non_measurable": ("VAST4 Non-Measurable",),
@@ -168,42 +188,6 @@ _FIELD_MAPPING = {
     "vast4_viewable_distribution": ("VAST4 Impression Distribution (Viewable)",),
     "vast4_non_measurable_distribution": ("VAST4 Impression Distribution (Not-Measurable)",),
     "vast4_non_viewable_distribution": ("VAST4 Impression Distribution (Not-Viewable)",),
-}
-
-_FIELD_MAPPING_BCMV2_OVERRIDES = {
-    "avg_etfm_cost_for_new_visitor": ("Avg. Cost for New Visitor",),
-    "avg_etfm_cost_per_minute": ("Avg. Cost per Minute",),
-    "avg_etfm_cost_per_non_bounced_visit": ("Avg. Cost per Non-Bounced Visit",),
-    "avg_etfm_cost_per_pageview": ("Avg. Cost per Pageview",),
-    "avg_etfm_cost_per_visit": ("Avg. Cost per Visit",),
-    "avg_et_cost_for_new_visitor": ("Avg. Platform Cost for New Visitor",),
-    "avg_et_cost_per_minute": ("Avg. Platform Cost per Minute",),
-    "avg_et_cost_per_non_bounced_visit": ("Avg. Platform Cost per Non-Bounced Visit",),
-    "avg_et_cost_per_pageview": ("Avg. Platform Cost per Pageview",),
-    "avg_et_cost_per_visit": ("Avg. Platform Cost per Visit",),
-    "etfm_cost": ("Total Spend",),
-    "etfm_cost_refund": ("Total Spend Refund",),
-    "etf_cost": ("Agency Spend",),
-    "etf_cost_refund": ("Agency Spend Refund",),
-    "et_cost": ("Platform Spend",),
-    "et_cost_refund": ("Platform Spend Refund",),
-    "at_cost": ("Actual Platform Spend",),
-    "at_cost_refund": ("Actual Platform Spend Refund",),
-    "yesterday_etfm_cost": ("Yesterday Spend",),
-    "yesterday_et_cost": ("Yesterday Platform Spend",),
-    "yesterday_at_cost": ("Actual Yesterday Spend",),
-    "etfm_cpc": ("Avg. CPC",),
-    "et_cpc": ("Avg. Platform CPC",),
-    "etfm_cpm": ("Avg. CPM",),
-    "et_cpm": ("Avg. Platform CPM",),
-    "video_etfm_cpv": ("Avg. CPV",),
-    "video_et_cpv": ("Avg. Platform CPV",),
-    "video_etfm_cpcv": ("Avg. CPCV",),
-    "video_et_cpcv": ("Avg. Platform CPCV",),
-    "et_mrc50_vcpm": ("Avg. Platform VCPM",),
-    "etfm_mrc50_vcpm": ("Avg. VCPM",),
-    "et_mrc100_vcpm": ("Avg. MRC100 Platform VCPM",),
-    "etfm_mrc100_vcpm": ("Avg. MRC100 VCPM",),
     "et_vast4_vcpm": ("Avg. VAST4 Platform VCPM",),
     "etfm_vast4_vcpm": ("Avg. VAST4 VCPM",),
 }
@@ -217,35 +201,22 @@ _COST_FIELDS = (
     "daily_budget",
     "agency_cost",
     "agency_cost_refund",
-    "avg_cost_for_new_visitor",
-    "avg_cost_per_minute",
-    "avg_cost_per_non_bounced_visit",
-    "avg_cost_per_pageview",
-    "avg_cost_per_visit",
-    "billing_cost",
-    "billing_cost_refund",
-    "cpc",
-    "cpm",
     "data_cost",
     "e_data_cost",
     "e_media_cost",
     "e_media_cost_refund",
-    "e_yesterday_cost",
     "license_fee",
     "license_fee_refund",
     "margin",
     "margin_refund",
     "media_cost",
     "media_cost_refund",
-    "yesterday_cost",
     "allocated_budgets",
     "spend_projection",
     "license_fee_projection",
     "flat_fee",
     "total_fee",
     "total_fee_projection",
-    "video_cpv",
-    "video_cpcv",
     "avg_etfm_cost_for_new_visitor",
     "avg_etfm_cost_per_minute",
     "avg_etfm_cost_per_non_bounced_visit",
@@ -283,14 +254,7 @@ _COST_FIELDS = (
     "etfm_vast4_vcpm",
 )
 
-_DYNAMIC_COST_FIELDS_PREFIXES = (
-    "avg_etfm_cost_per_",
-    "avg_et_cost_per_",
-    "avg_cost_per_",
-    "etfm_roas",
-    "et_roas",
-    "roas_",
-)
+_DYNAMIC_COST_FIELDS_PREFIXES = ("avg_etfm_cost_per_", "avg_et_cost_per_", "etfm_roas", "et_roas")
 
 
 class FieldsMeta(type):
@@ -309,18 +273,12 @@ class FieldNames(metaclass=FieldsMeta):
     def __init_class__(cls):
         for k, v in _FIELD_MAPPING.items():
             setattr(cls, k, k)
-        for k, v in _FIELD_MAPPING_BCMV2_OVERRIDES.items():
-            setattr(cls, k, k)
         for k, v in _FIELD_MAPPING_PUBLISHERS_OVERRIDES.items():
             setattr(cls, k, k)
 
 
-def custom_column_to_field_name_mapping(
-    pixels=[], conversion_goals=[], show_publishers_fields=False, uses_bcm_v2=False
-):
+def custom_column_to_field_name_mapping(pixels=[], conversion_goals=[], show_publishers_fields=False):
     mappings = [_FIELD_MAPPING]
-    if uses_bcm_v2:
-        mappings.append(_FIELD_MAPPING_BCMV2_OVERRIDES)
     if show_publishers_fields:
         mappings.append(_FIELD_MAPPING_PUBLISHERS_OVERRIDES)
 
@@ -330,8 +288,8 @@ def custom_column_to_field_name_mapping(
             for column_name in column_names:
                 mapping[column_name] = field_name
 
-    mapping.update(_get_pixel_field_names_mapping(pixels, uses_bcm_v2))
-    mapping.update(_get_conversion_goals_field_names_mapping(conversion_goals, uses_bcm_v2))
+    mapping.update(_get_pixel_field_names_mapping(pixels))
+    mapping.update(_get_conversion_goals_field_names_mapping(conversion_goals))
 
     return mapping
 
@@ -345,10 +303,8 @@ def get_field_name(column_name, mapping=None, raise_exception=True):
     return mapping.get(column_name, None)
 
 
-def custom_field_to_column_name_mapping(
-    pixels=[], conversion_goals=[], show_publishers_fields=False, uses_bcm_v2=False
-):
-    mapping = custom_column_to_field_name_mapping(pixels, conversion_goals, show_publishers_fields, uses_bcm_v2)
+def custom_field_to_column_name_mapping(pixels=[], conversion_goals=[], show_publishers_fields=False):
+    mapping = custom_column_to_field_name_mapping(pixels, conversion_goals, show_publishers_fields)
     return {v: k for k, v in list(mapping.items())}
 
 
@@ -361,20 +317,18 @@ def get_column_name(field_name, mapping=None, raise_exception=True):
     return mapping.get(field_name, None)
 
 
-def _get_pixel_field_names_mapping(pixels, uses_bcm_v2):
+def _get_pixel_field_names_mapping(pixels):
     click_conversion_windows = list(dash.constants.ConversionWindowsLegacy.get_choices())
     view_conversion_windows = list(dash.constants.ConversionWindows.get_choices())
 
     mapping = collections.OrderedDict()
-    mapping.update(_generate_pixel_fields(pixels, click_conversion_windows, uses_bcm_v2, ["", " - Click attr."]))
-    mapping.update(
-        _generate_pixel_fields(pixels, view_conversion_windows, uses_bcm_v2, [" - View attr."], field_suffix="_view")
-    )
+    mapping.update(_generate_pixel_fields(pixels, click_conversion_windows, ["", " - Click attr."]))
+    mapping.update(_generate_pixel_fields(pixels, view_conversion_windows, [" - View attr."], field_suffix="_view"))
 
     return mapping
 
 
-def _generate_pixel_fields(pixels, conversion_windows, uses_bcm_v2, column_suffixes, field_suffix=None):
+def _generate_pixel_fields(pixels, conversion_windows, column_suffixes, field_suffix=None):
     mapping = collections.OrderedDict()
     for pixel in sorted(pixels, key=lambda x: x.name.lower()):
         prefix = pixel.get_prefix()
@@ -385,20 +339,20 @@ def _generate_pixel_fields(pixels, conversion_windows, uses_bcm_v2, column_suffi
                 column_name = "{} {}".format(pixel.name, window_title) + column_suffix
                 mapping[column_name] = field_name
                 mapping.update(_get_conversion_rate_field_names_mapping(field_name, column_name))
-                mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
-                mapping.update(_get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2))
+                mapping.update(_get_cpa_field_names_mapping(field_name, column_name))
+                mapping.update(_get_roas_field_names_mapping(field_name, column_name))
 
     return mapping
 
 
-def _get_conversion_goals_field_names_mapping(conversion_goals, uses_bcm_v2):
+def _get_conversion_goals_field_names_mapping(conversion_goals):
     mapping = collections.OrderedDict()
     for goal in (x for x in conversion_goals if x.type != dash.constants.ConversionGoalType.PIXEL):
         field_name = goal.get_view_key(conversion_goals)
         column_name = goal.name
         mapping[column_name] = field_name
         mapping.update(_get_conversion_rate_field_names_mapping(field_name, column_name))
-        mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
+        mapping.update(_get_cpa_field_names_mapping(field_name, column_name))
 
     return mapping
 
@@ -407,23 +361,18 @@ def _get_conversion_rate_field_names_mapping(field_name, column_name):
     return {"Conversion rate ({})".format(column_name): "conversion_rate_per_{}".format(field_name)}
 
 
-def _get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2):
-    if uses_bcm_v2:
-        return {
-            "CPA ({})".format(column_name): "avg_etfm_cost_per_{}".format(field_name),
-            "Platform CPA ({})".format(column_name): "avg_et_cost_per_{}".format(field_name),
-        }
-
-    return {"CPA ({})".format(column_name): "avg_cost_per_{}".format(field_name)}
+def _get_cpa_field_names_mapping(field_name, column_name):
+    return {
+        "CPA ({})".format(column_name): "avg_etfm_cost_per_{}".format(field_name),
+        "Platform CPA ({})".format(column_name): "avg_et_cost_per_{}".format(field_name),
+    }
 
 
-def _get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2):
-    if uses_bcm_v2:
-        return {
-            "ROAS ({})".format(column_name): "etfm_roas_{}".format(field_name),
-            "Platform ROAS ({})".format(column_name): "et_roas_{}".format(field_name),
-        }
-    return {"ROAS ({})".format(column_name): "roas_{}".format(field_name)}
+def _get_roas_field_names_mapping(field_name, column_name):
+    return {
+        "ROAS ({})".format(column_name): "etfm_roas_{}".format(field_name),
+        "Platform ROAS ({})".format(column_name): "et_roas_{}".format(field_name),
+    }
 
 
 def get_conversion_goals_column_names_mapping(conversion_goals):

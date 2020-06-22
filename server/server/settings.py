@@ -205,7 +205,6 @@ REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
 
-ALL_ACCOUNTS_USE_BCM_V2 = False
 DISABLE_FACEBOOK = True
 SLACK_LOG_ENABLE = True
 DISABLE_CAMPAIGNSTOP_SIGNALS = False

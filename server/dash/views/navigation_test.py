@@ -78,7 +78,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 }
             },
         )
@@ -96,7 +96,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 }
             },
         )
@@ -123,7 +123,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -147,7 +147,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": True,
@@ -181,7 +181,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -214,7 +214,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -256,7 +256,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 }
             },
         )
@@ -274,7 +274,7 @@ class NavigationDataViewTest(TestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 }
             },
         )
@@ -332,7 +332,7 @@ class NavigationTreeViewTest(TestCase):
                 "agency": "Test Agency",
                 "currency": constants.Currency.USD,
                 "name": "test account 1",
-                "usesBCMv2": False,
+                "usesBCMv2": True,
             }
         ]
 
@@ -373,7 +373,7 @@ class NavigationTreeViewTest(TestCase):
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
                     "name": "test account 1",
-                    "usesBCMv2": False,
+                    "usesBCMv2": True,
                 }
             ],
             response["data"],
@@ -430,7 +430,7 @@ class NavigationTreeViewTest(TestCase):
                 "agency": "Test Agency",
                 "currency": constants.Currency.USD,
                 "name": "test account 1",
-                "usesBCMv2": False,
+                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)
@@ -456,7 +456,7 @@ class NavigationTreeViewTest(TestCase):
                 "agencyId": None,
                 "agency": None,
                 "currency": constants.Currency.USD,
-                "usesBCMv2": False,
+                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)
@@ -474,7 +474,7 @@ class NavigationTreeViewTest(TestCase):
                 "agencyId": None,
                 "agency": None,
                 "currency": constants.Currency.USD,
-                "usesBCMv2": False,
+                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)

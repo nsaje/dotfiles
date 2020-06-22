@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
-import core.features.deals
 import core.features.yahoo_accounts
 import core.models
 from core.models import tags
@@ -34,7 +33,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
         "ob_sales_representative",
         "ob_account_manager",
         "white_label",
-        "new_accounts_use_bcm_v2",
         "custom_flags",
         "default_whitelist",
         "default_blacklist",
@@ -80,13 +78,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
     )
     default_account_type = models.IntegerField(
         default=constants.AccountType.UNKNOWN, choices=constants.AccountType.get_choices()
-    )
-    new_accounts_use_bcm_v2 = models.BooleanField(
-        default=True,
-        verbose_name="Margins v2",
-        help_text=(
-            "New accounts created by this agency's users will have " "license fee and margin included into all costs."
-        ),
     )
     allowed_sources = models.ManyToManyField("Source", blank=True)
     available_sources = models.ManyToManyField("Source", blank=True, related_name="available_agencies")

@@ -138,28 +138,28 @@ class CampaignGoalsTestCase(TestCase):
                 "name": "Time on Site - Seconds",
                 "conversion": None,
                 "value": 60,
-                "fields": {"total_seconds": True, "avg_cost_per_minute": True},
+                "fields": {"total_seconds": True, "avg_etfm_cost_per_minute": True},
                 "primary": True,
             },
             {
                 "name": "Pageviews per Visit",
                 "conversion": None,
                 "value": 5,
-                "fields": {"total_pageviews": True, "avg_cost_per_pageview": True},
+                "fields": {"total_pageviews": True, "avg_etfm_cost_per_pageview": True},
                 "primary": False,
             },
             {
                 "name": "Max Bounce Rate",
                 "conversion": None,
                 "value": 75,
-                "fields": {"non_bounced_visits": True, "avg_cost_per_non_bounced_visit": True},
+                "fields": {"non_bounced_visits": True, "avg_etfm_cost_per_non_bounced_visit": True},
                 "primary": False,
             },
             {
                 "name": "Cost per Visit",
                 "conversion": None,
                 "value": 0.5,
-                "fields": {"avg_cost_per_visit": True},
+                "fields": {"avg_etfm_cost_per_visit": True},
                 "primary": False,
             },
             {"name": "Avg. CPA", "conversion": "test conversion goal", "value": 10, "fields": {}, "primary": False},
@@ -167,7 +167,7 @@ class CampaignGoalsTestCase(TestCase):
                 "name": "Cost per Non-Bounced Visit",
                 "conversion": None,
                 "value": 2.25,
-                "fields": {"non_bounced_visits": True, "avg_cost_per_non_bounced_visit": True},
+                "fields": {"non_bounced_visits": True, "avg_etfm_cost_per_non_bounced_visit": True},
                 "primary": False,
             },
         ]
@@ -191,18 +191,18 @@ class CampaignGoalsTestCase(TestCase):
         goal_11 = self._add_value(constants.CampaignGoalKPI.CPCV, 0.01)
 
         mock_totals.return_value = {
-            "cpc": 0.01,
+            "etfm_cpc": 0.01,
             "conversion_goal_1": 10,
-            "e_media_cost": 5,
+            "etfm_cost": 5,
             "bounce_rate": 10,
             "pv_per_visit": 10,
             "avg_tos": 10,
             "percent_new_users": 1.2,
-            "avg_cost_per_visit": 35,
-            "avg_cost_per_non_bounced_visit": 8,
-            "avg_cost_for_new_visitor": 9,
-            "avg_cost_per_pageview": 7,
-            "video_cpcv": 6,
+            "avg_etfm_cost_per_visit": 35,
+            "avg_etfm_cost_per_non_bounced_visit": 8,
+            "avg_etfm_cost_for_new_visitor": 9,
+            "avg_etfm_cost_per_pageview": 7,
+            "video_etfm_cpcv": 6,
         }
         performance = campaign_goals.get_goals_performance_campaign(self.user, self.campaign, start_date, end_date)
         self.assertCountEqual(
@@ -223,7 +223,7 @@ class CampaignGoalsTestCase(TestCase):
         )
 
         mock_totals.return_value["conversion_goal_1"] = None
-        mock_totals.return_value["cpc"] = Decimal("0.0001")  # check low numbers
+        mock_totals.return_value["etfm_cpc"] = Decimal("0.0001")  # check low numbers
         performance = campaign_goals.get_goals_performance_campaign(self.user, self.campaign, start_date, end_date)
 
         self.assertCountEqual(
@@ -626,4 +626,6 @@ class CampaignGoalsTestCase(TestCase):
             type=constants.CampaignGoalKPI.CPA, primary=False, campaign_id=1, conversion_goal=conv_goal
         )
 
-        self.assertEqual("avg_cost_per_conversion_goal_1", campaign_goals.goal_name(goal, conversion_goals=[conv_goal]))
+        self.assertEqual(
+            "avg_etfm_cost_per_conversion_goal_1", campaign_goals.goal_name(goal, conversion_goals=[conv_goal])
+        )

@@ -79,12 +79,9 @@ def _clean_sources(ad_group, stats):
 
 
 def _add_fee_and_margin(ad_group, k1_stats):
-    if ad_group.campaign.account.uses_bcm_v2:
-        fee, margin = ad_group.campaign.get_todays_fee_and_margin()
-        for stat in k1_stats:
-            stat["spend"] = core.features.bcm.calculations.apply_fee_and_margin(
-                decimal.Decimal(stat["spend"]), fee, margin
-            )
+    fee, margin = ad_group.campaign.get_todays_fee_and_margin()
+    for stat in k1_stats:
+        stat["spend"] = core.features.bcm.calculations.apply_fee_and_margin(decimal.Decimal(stat["spend"]), fee, margin)
 
 
 def _to_local_currency(ad_group, stats):

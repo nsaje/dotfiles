@@ -264,7 +264,7 @@ class LegacyAdGroupSourcesRTBTest(RESTAPITestCase):
         self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
 
         # max cpm - over RTB sources CPM maximum
-        test_agsr = self.adgroupsourcertb_repr(cpm="26.0")
+        test_agsr = self.adgroupsourcertb_repr(cpm="31.2501")
         r = self.client.put(
             reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
             test_agsr,

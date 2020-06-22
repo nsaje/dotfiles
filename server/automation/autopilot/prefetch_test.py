@@ -18,11 +18,7 @@ class AutopilotPrefetchTestCase(TestCase):
     def setUpTestData(cls):
         cls.today = dates_helper.local_today()
 
-        cls.ad_group_source = magic_mixer.blend(
-            models.AdGroupSource,
-            source__source_type__type=constants.SourceType.B1,
-            ad_group__campaign__account__uses_bcm_v2=True,
-        )
+        cls.ad_group_source = magic_mixer.blend(models.AdGroupSource, source__source_type__type=constants.SourceType.B1)
         cls.ad_group_source.settings.update_unsafe(None, daily_budget_cc=1000)
         cls.entities = {cls.ad_group_source.ad_group.campaign: {cls.ad_group_source.ad_group: [cls.ad_group_source]}}
         cls.all_rtb_ad_group_source = all_rtb.AllRTBAdGroupSource(cls.ad_group_source.ad_group)
@@ -248,9 +244,7 @@ class AutopilotPrefetchTestCase(TestCase):
         self.assertIn(self.all_rtb_ad_group_source, data[self.ad_group_source.ad_group])
 
     def test_multiple_allrtb(self):
-        ad_group_source2 = magic_mixer.blend(
-            models.AdGroupSource, source=self.ad_group_source.source, ad_group__campaign__account__uses_bcm_v2=True
-        )
+        ad_group_source2 = magic_mixer.blend(models.AdGroupSource, source=self.ad_group_source.source)
         ad_group_source2.settings.update_unsafe(None, daily_budget_cc=1000)
         entities = {
             self.ad_group_source.ad_group.campaign: {self.ad_group_source.ad_group: [self.ad_group_source]},

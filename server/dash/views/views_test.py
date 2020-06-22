@@ -769,8 +769,8 @@ class CampaignOverviewTest(TestCase):
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 
         budget_setting = self._get_setting(settings, "campaign budget")
-        self.assertEqual("$80.00", budget_setting["value"])
-        self.assertEqual("$80.00 remaining", budget_setting["description"])
+        self.assertEqual("$100.00", budget_setting["value"])
+        self.assertEqual("$100.00 remaining", budget_setting["description"])
 
         pacing_setting = self._get_setting(settings, "pacing")
         self.assertEqual("$0.00", pacing_setting["value"])

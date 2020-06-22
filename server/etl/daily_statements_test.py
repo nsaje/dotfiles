@@ -215,25 +215,6 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[0].data_spend_nano)
         self.assertEqual(500000000000, statements[0].license_fee_nano)
 
-    def test_budget_margin(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
-        return_values = {
-            datetime.date(2016, 7, 15): {self.campaign3.id: {"media_nano": 1500000000000, "data_nano": 500000000000}}
-        }
-        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 7, 15, 12))
-
-        update_from = datetime.date(2016, 7, 15)
-        daily_statements.reprocess_daily_statements(update_from)
-
-        statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign=self.campaign3).all()
-        self.assertEqual(1, len(statements))
-        self.assertEqual(6, statements[0].budget_id)
-        self.assertEqual(datetime.date(2016, 7, 15), statements[0].date)
-        self.assertEqual(1500000000000, statements[0].media_spend_nano)
-        self.assertEqual(500000000000, statements[0].data_spend_nano)
-        self.assertEqual(500000000000, statements[0].license_fee_nano)
-        self.assertEqual(250000000000, statements[0].margin_nano)
-
     def test_budget_with_fixed_margin(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2017, 6, 21): {self.campaign3.id: {"media_nano": 1000000000000, "data_nano": 360000000000}}
@@ -245,6 +226,7 @@ class DailyStatementsK1TestCase(TestCase):
         daily_statements.reprocess_daily_statements(update_from)
 
         statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign=self.campaign3).order_by("-date")
+        self.assertEqual(1, len(statements))
         self.assertEqual(7, statements[0].budget_id)
         self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
 

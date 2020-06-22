@@ -17,6 +17,7 @@ logger = zlogging.getLogger(__name__)
 ACCOUNTS_EXCLUDED_FROM_SEARCH = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
+# TODO: SERVICE FEE: remove when cleaning front end bcmv2
 class UsesBCMV2View(DASHAPIBaseView):
     def get(self, request):
         """
@@ -24,9 +25,7 @@ class UsesBCMV2View(DASHAPIBaseView):
         margins system.
         """
 
-        user = request.user
-
-        return self.create_api_response({"usesBCMv2": helpers.all_accounts_uses_bcm_v2(user)})
+        return self.create_api_response({"usesBCMv2": True})
 
 
 class NavigationDataView(DASHAPIBaseView):
@@ -213,7 +212,7 @@ class NavigationTreeView(DASHAPIBaseView):
             map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []
-        for account in accounts.values("id", "name", "uses_bcm_v2", "agency__id", "agency__name", "currency"):
+        for account in accounts.values("id", "name", "agency__id", "agency__name", "currency"):
             account_dict = navigation_helpers.get_account_dict(
                 account, map_accounts_settings.get(account["id"]), with_settings=load_settings
             )

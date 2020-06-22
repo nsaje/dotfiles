@@ -93,7 +93,7 @@ class AdGroupsView(K1APIView):
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
             b1_sources_group_daily_budget = ad_group.settings.get_external_b1_sources_group_daily_budget(
-                ad_group.campaign.account, license_fee, margin
+                license_fee, margin
             )
 
             # FIXME: k1 doesn't update missing keys, find a better solution

@@ -14,8 +14,7 @@ from . import budgets
 
 
 class PrepareBudgetsTestCase(TestCase):
-    @mock.patch.object(core.features.bcm.BudgetLineItem, "get_available_etfm_amount")
-    def test_prepare_budgets(self, mock_get_available_amount):
+    def test_prepare_budgets(self):
         def _mocked_get_available_amount(budget):
             if budget == current_budget:
                 return decimal.Decimal(0)
@@ -44,6 +43,7 @@ class PrepareBudgetsTestCase(TestCase):
             campaign=campaign,
             credit=credit,
             amount=500,
+            margin=decimal.Decimal("0.0"),
             start_date=local_today - datetime.timedelta(days=30),
             end_date=local_today - datetime.timedelta(days=20),
         )
@@ -51,6 +51,7 @@ class PrepareBudgetsTestCase(TestCase):
             campaign=campaign,
             credit=credit,
             amount=500,
+            margin=decimal.Decimal("0.05"),
             start_date=local_today - datetime.timedelta(days=10),
             end_date=local_today - datetime.timedelta(days=1),
         )
@@ -74,6 +75,7 @@ class PrepareBudgetsTestCase(TestCase):
             campaign=campaign,
             credit=credit,
             amount=500,
+            margin=decimal.Decimal("0.05"),
             start_date=local_today + datetime.timedelta(days=8),
             end_date=local_today + datetime.timedelta(days=15),
         )
@@ -81,6 +83,7 @@ class PrepareBudgetsTestCase(TestCase):
             campaign=campaign,
             credit=credit,
             amount=500,
+            margin=decimal.Decimal("0.0"),
             start_date=local_today + datetime.timedelta(days=20),
             end_date=local_today + datetime.timedelta(days=30),
         )

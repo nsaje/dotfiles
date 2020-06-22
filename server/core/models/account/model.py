@@ -34,7 +34,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
         "outbrain_marketer_id",
         "outbrain_internal_marketer_id",
         "salesforce_url",
-        "uses_bcm_v2",
         "custom_flags",
         "real_time_campaign_stop",
         "entity_tags",
@@ -90,12 +89,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
     salesforce_id = models.IntegerField(null=True, blank=True, help_text="Outbrain custom Salesforce ID.")
 
-    # migration to the new system introduced by margins and fees project
-    uses_bcm_v2 = models.BooleanField(
-        default=False,
-        verbose_name="Margins v2",
-        help_text="This account will have license fee and margin included into all costs.",
-    )
     custom_flags = JSONField(null=True, blank=True)
     real_time_campaign_stop = models.BooleanField(
         default=False,

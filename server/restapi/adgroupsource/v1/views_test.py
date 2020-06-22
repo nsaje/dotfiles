@@ -107,7 +107,11 @@ class LegacyAdGroupSourcesTest(RESTAPITestCase):
             dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPC
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
-            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+            dash.models.AdGroupSource,
+            ad_group=ad_group,
+            source__bidder_slug=(slug for slug in ["a", "b", "c"]),
+            source__source_type__min_daily_budget=Decimal("0.0"),
+            source__source_type__max_daily_budget=Decimal("1000.0"),
         )
         test_ags = [
             self.adgroupsource_repr(
@@ -144,7 +148,11 @@ class LegacyAdGroupSourcesTest(RESTAPITestCase):
             dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
-            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+            dash.models.AdGroupSource,
+            ad_group=ad_group,
+            source__bidder_slug=(slug for slug in ["a", "b", "c"]),
+            source__source_type__min_daily_budget=Decimal("0.0"),
+            source__source_type__max_daily_budget=Decimal("1000.0"),
         )
         test_ags = [
             self.adgroupsource_repr(
@@ -178,7 +186,11 @@ class LegacyAdGroupSourcesTest(RESTAPITestCase):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         ad_group_sources = magic_mixer.cycle(3).blend(
-            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+            dash.models.AdGroupSource,
+            ad_group=ad_group,
+            source__bidder_slug=(slug for slug in ["a", "b", "c"]),
+            source__source_type__min_daily_budget=Decimal("0.0"),
+            source__source_type__max_daily_budget=Decimal("1000.0"),
         )
         ad_group_source_not_present = magic_mixer.blend(dash.models.AdGroupSource, source__bidder_slug="d")
         test_ags = [
@@ -208,7 +220,11 @@ class LegacyAdGroupSourcesTest(RESTAPITestCase):
             dash.models.AdGroup, campaign__account=account, bidding_type=constants.BiddingType.CPM
         )
         ad_group_sources = magic_mixer.cycle(3).blend(
-            dash.models.AdGroupSource, ad_group=ad_group, source__bidder_slug=(slug for slug in ["a", "b", "c"])
+            dash.models.AdGroupSource,
+            ad_group=ad_group,
+            source__bidder_slug=(slug for slug in ["a", "b", "c"]),
+            source__source_type__min_daily_budget=Decimal("0.0"),
+            source__source_type__max_daily_budget=Decimal("1000.0"),
         )
         ad_group_source_not_present = magic_mixer.blend(dash.models.AdGroupSource, source__bidder_slug="d")
         test_ags = [

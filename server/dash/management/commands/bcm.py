@@ -208,7 +208,7 @@ class Command(BaseCommand):
 
     def _validate_budget_amounts(self, budget_list):
         for budget in budget_list:
-            if budget.get_available_amount() < 0:
+            if budget.get_available_etfm_amount() < 0:
                 raise ValidationError("Budget amount is lower than spend")
 
     def handle(self, **options):

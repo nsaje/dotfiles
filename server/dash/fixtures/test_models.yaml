@@ -152,12 +152,16 @@
 -   fields:
         type: 'adblade'
         available_actions: [20]
+        min_daily_budget: 0
+        max_daily_budget: 100
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'b1'
         available_actions: [19, 20]
+        min_daily_budget: 0
+        max_daily_budget: 1000      
     model: dash.sourcetype
     pk: 2
 

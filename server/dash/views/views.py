@@ -282,11 +282,7 @@ class AdGroupOverview(DASHAPIBaseView):
         yesterday_costs = async_query.join_and_get_result() or 0
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
 
-        settings.append(
-            infobox_helpers.create_yesterday_spend_setting(
-                yesterday_costs, daily_cap, currency, uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2
-            ).as_dict()
-        )
+        settings.append(infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_cap, currency).as_dict())
 
         if user.has_perm("zemauth.campaign_goal_performance"):
             settings.extend(
@@ -414,11 +410,7 @@ class CampaignOverview(DASHAPIBaseView):
 
         daily_cap = infobox_helpers.calculate_daily_campaign_cap(campaign)
         yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(campaign) or 0
-        settings.append(
-            infobox_helpers.create_yesterday_spend_setting(
-                yesterday_costs, daily_cap, currency, uses_bcm_v2=campaign.account.uses_bcm_v2
-            ).as_dict()
-        )
+        settings.append(infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_cap, currency).as_dict())
 
         attributed_media_spend = monthly_proj.total("attributed_media_spend")
         if attributed_media_spend is not None:
@@ -568,9 +560,7 @@ class AccountOverview(DASHAPIBaseView):
         daily_budget = infobox_helpers.calculate_daily_account_cap(account)
         yesterday_costs = infobox_helpers.get_yesterday_account_spend(account)
         settings.append(
-            infobox_helpers.create_yesterday_spend_setting(
-                yesterday_costs, daily_budget, currency, uses_bcm_v2=account.uses_bcm_v2
-            ).as_dict()
+            infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_budget, currency).as_dict()
         )
 
         return settings
@@ -940,11 +930,9 @@ class AllAccountsOverview(DASHAPIBaseView):
         )
         currency = stats.helpers.get_report_currency(user, accounts)
 
-        uses_bcm_v2 = accounts.all_use_bcm_v2()
-
         use_local_currency = currency != constants.Currency.USD
         yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
-        yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
+        yesterday_cost = yesterday_costs["yesterday_etfm_cost"]
 
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
@@ -954,7 +942,7 @@ class AllAccountsOverview(DASHAPIBaseView):
         )
 
         mtd_costs = infobox_helpers.get_mtd_accounts_spend(accounts, use_local_currency)
-        mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
+        mtd_cost = mtd_costs["etfm_cost"]
         overview_settings.append(
             infobox_helpers.OverviewSetting(
                 "Month-to-date spend:", lc_helper.format_currency(mtd_cost, curr=currency_symbol)
@@ -974,9 +962,7 @@ class AllAccountsOverview(DASHAPIBaseView):
 
         use_local_currency = currency != constants.Currency.USD
         yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
-
-        uses_bcm_v2 = settings.ALL_ACCOUNTS_USE_BCM_V2
-        yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
+        yesterday_cost = yesterday_costs["yesterday_etfm_cost"]
 
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
@@ -986,7 +972,7 @@ class AllAccountsOverview(DASHAPIBaseView):
         )
 
         mtd_costs = infobox_helpers.get_mtd_accounts_spend(accounts, use_local_currency)
-        mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
+        mtd_cost = mtd_costs["etfm_cost"]
         overview_settings.append(
             infobox_helpers.OverviewSetting(
                 "Month-to-date spend:", lc_helper.format_currency(mtd_cost, curr=currency_symbol)

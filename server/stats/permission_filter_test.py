@@ -19,32 +19,6 @@ def generate_rows(fields):
     return rows
 
 
-class HasPermBCMTest(TestCase):
-    def test_has_perm_bcm_v2(self):
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
-        self.assertTrue(permission_filter.has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", True))
-        self.assertTrue(permission_filter.has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", False))
-
-        user = magic_mixer.blend_user(["can_view_actual_costs"])
-        self.assertFalse(permission_filter.has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", True))
-        # this permission doesnot acutally exist for non-bcm-v2
-        self.assertTrue(permission_filter.has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", False))
-
-    def test_has_perms_bcm_v2(self):
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
-        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ["zemauth.can_view_platform_cost_breakdown"], True))
-        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ["zemauth.can_view_platform_cost_breakdown"], False))
-
-        user = magic_mixer.blend_user(["can_view_actual_costs"])
-        self.assertFalse(permission_filter.has_perms_bcm_v2(user, ["zemauth.can_view_platform_cost_breakdown"], True))
-        self.assertTrue(permission_filter.has_perms_bcm_v2(user, ["zemauth.can_view_platform_cost_breakdown"], False))
-        self.assertFalse(
-            permission_filter.has_perms_bcm_v2(
-                user, ["zemauth.can_view_platform_cost_breakdown", "zemauth.can_view_end_user_cost_breakdown"], False
-            )
-        )
-
-
 class FilterTestCase(TestCase):
 
     fixtures = ["test_augmenter"]
@@ -64,7 +38,9 @@ class FilterTestCase(TestCase):
             self.campaign_goal_values[0].campaign_goal,
         )
 
-        self.public_fields = {
+        self.public_fields_legacy = {"total_fee_projection", "total_fee", "flat_fee", "margin", "local_margin"}
+
+        self.public_fields_no_extra_costs = self.public_fields_legacy | {
             "id",
             "breakdown_id",
             "breakdown_name",
@@ -158,49 +134,47 @@ class FilterTestCase(TestCase):
             "min_bid_cpc",
             "max_bid_cpm",
             "min_bid_cpm",
-            "billing_cost",
-            "local_billing_cost",
             "clicks",
             "impressions",
-            "cpc",
-            "local_cpc",
-            "cpm",
-            "local_cpm",
             "ctr",
-            "avg_cost_per_minute",
-            "local_avg_cost_per_minute",
-            "avg_cost_per_non_bounced_visit",
-            "local_avg_cost_per_non_bounced_visit",
-            "avg_cost_per_pageview",
-            "local_avg_cost_per_pageview",
-            "avg_cost_for_new_visitor",
-            "local_avg_cost_for_new_visitor",
-            "avg_cost_per_visit",
-            "local_avg_cost_per_visit",
-            "avg_cost_per_pixel_1_168",
-            "local_avg_cost_per_pixel_1_168",
-            "avg_cost_per_pixel_1_2160",
-            "local_avg_cost_per_pixel_1_2160",
-            "avg_cost_per_pixel_1_24",
-            "local_avg_cost_per_pixel_1_24",
-            "avg_cost_per_pixel_1_720",
-            "local_avg_cost_per_pixel_1_720",
+            "etfm_cpc",
+            "local_etfm_cpc",
+            "etfm_cpm",
+            "local_etfm_cpm",
+            "etfm_cost",
+            "local_etfm_cost",
+            "yesterday_etfm_cost",
+            "local_yesterday_etfm_cost",
+            "avg_etfm_cost_per_visit",
+            "local_avg_etfm_cost_per_visit",
+            "avg_etfm_cost_for_new_visitor",
+            "local_avg_etfm_cost_for_new_visitor",
+            "avg_etfm_cost_per_minute",
+            "local_avg_etfm_cost_per_minute",
+            "avg_etfm_cost_per_non_bounced_visit",
+            "local_avg_etfm_cost_per_non_bounced_visit",
+            "avg_etfm_cost_per_pageview",
+            "local_avg_etfm_cost_per_pageview",
             "pixel_1_168",
             "pixel_1_2160",
             "pixel_1_24",
             "pixel_1_720",
-            "roas_pixel_1_168",
-            "roas_pixel_1_2160",
-            "roas_pixel_1_24",
-            "roas_pixel_1_720",
+            "avg_etfm_cost_per_pixel_1_168",
+            "local_avg_etfm_cost_per_pixel_1_168",
+            "avg_etfm_cost_per_pixel_1_2160",
+            "local_avg_etfm_cost_per_pixel_1_2160",
+            "avg_etfm_cost_per_pixel_1_24",
+            "local_avg_etfm_cost_per_pixel_1_24",
+            "avg_etfm_cost_per_pixel_1_720",
+            "local_avg_etfm_cost_per_pixel_1_720",
+            "etfm_roas_pixel_1_168",
+            "etfm_roas_pixel_1_2160",
+            "etfm_roas_pixel_1_24",
+            "etfm_roas_pixel_1_720",
             "conversion_rate_per_pixel_1_24",
             "conversion_rate_per_pixel_1_168",
             "conversion_rate_per_pixel_1_720",
             "conversion_rate_per_pixel_1_2160",
-            "video_cpcv",
-            "local_video_cpcv",
-            "video_cpv",
-            "local_video_cpv",
             "video_complete",
             "video_first_quartile",
             "video_midpoint",
@@ -208,49 +182,17 @@ class FilterTestCase(TestCase):
             "video_progress_3s",
             "video_start",
             "video_third_quartile",
-            "agency_cost",
-            "local_agency_cost",
-            "total_fee_projection",
-            "total_fee",
-            "flat_fee",
-            "margin",
-            "local_margin",
+            "video_etfm_cpcv",
+            "local_video_etfm_cpcv",
+            "video_etfm_cpv",
+            "local_video_etfm_cpv",
         }
 
-        self.public_fields_uses_bcm_v2 = (
-            self.public_fields
-            - permission_filter.BCM2_DEPRECATED_FIELDS
-            - {
-                "roas_pixel_1_168",
-                "roas_pixel_1_2160",
-                "roas_pixel_1_24",
-                "roas_pixel_1_720",
-                "avg_cost_per_pixel_1_168",
-                "local_avg_cost_per_pixel_1_168",
-                "avg_cost_per_pixel_1_2160",
-                "local_avg_cost_per_pixel_1_2160",
-                "avg_cost_per_pixel_1_24",
-                "local_avg_cost_per_pixel_1_24",
-                "avg_cost_per_pixel_1_720",
-                "local_avg_cost_per_pixel_1_720",
-                "agency_cost",
-                "local_agency_cost",
-                "total_fee_projection",
-                "total_fee",
-                "flat_fee",
-                "margin",
-                "local_margin",
-            }
-        )
-
-        # add public fields in non-bcm-v2 mode
-        self.public_fields |= {
+        self.public_fields = self.public_fields_no_extra_costs | {
             "e_data_cost",
             "local_e_data_cost",
             "e_media_cost",
             "local_e_media_cost",
-            "e_yesterday_cost",
-            "local_e_yesterday_cost",
             "et_cost",
             "local_et_cost",
             "avg_et_cost_per_visit",
@@ -292,66 +234,25 @@ class FilterTestCase(TestCase):
             "local_yesterday_et_cost",
         }
 
-    def _mock_constraints(self, uses_bcm_v2):
-        return {"account": magic_mixer.blend(models.Account, uses_bcm_v2=uses_bcm_v2)}
+    def _mock_constraints(self):
+        return {"account": magic_mixer.blend(models.Account)}
 
     def test_filter_columns_by_permission_no_perm(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user()
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-        self.assertCountEqual(list(rows[0].keys()), self.public_fields)
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
-    def test_filter_columns_by_permission_no_perm_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user()
-
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-
-        self.assertCountEqual(list(rows[0].keys()), self.public_fields_uses_bcm_v2)
+        self.assertCountEqual(list(rows[0].keys()), self.public_fields_no_extra_costs - self.public_fields_legacy)
 
     def test_filter_columns_by_permission_actual_cost(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_view_actual_costs"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields,
-            [
-                "data_cost",
-                "local_data_cost",
-                "yesterday_cost",
-                "local_yesterday_cost",
-                "at_cost",
-                "local_at_cost",
-                "media_cost",
-                "local_media_cost",
-                "yesterday_at_cost",
-                "local_yesterday_at_cost",
-            ],
-        )
-
-    def test_filter_columns_by_permission_actual_cost_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["can_view_actual_costs"])
-
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-
-        self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
             [
                 "data_cost",
                 "local_data_cost",
@@ -365,28 +266,23 @@ class FilterTestCase(TestCase):
         )
 
     def test_filter_columns_by_permission_platform_cost(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
-
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-
-        self.assertCountEqual(set(rows[0].keys()), self.public_fields)
-
-    def test_filter_columns_by_permission_platform_cost_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_view_platform_cost_breakdown", "can_see_viewthrough_conversions"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
             [
+                "license_fee",
+                "local_license_fee",
+                "license_fee_projection",
+                "pacing",
+                "spend_projection",
+                "e_data_cost",
+                "local_e_data_cost",
+                "e_media_cost",
+                "local_e_media_cost",
                 "avg_et_cost_for_new_visitor",
                 "local_avg_et_cost_for_new_visitor",
                 "avg_et_cost_per_minute",
@@ -395,49 +291,40 @@ class FilterTestCase(TestCase):
                 "local_avg_et_cost_per_non_bounced_visit",
                 "avg_et_cost_per_pageview",
                 "local_avg_et_cost_per_pageview",
-                "avg_et_cost_per_pixel_1_168",
-                "local_avg_et_cost_per_pixel_1_168",
-                "avg_et_cost_per_pixel_1_2160",
-                "local_avg_et_cost_per_pixel_1_2160",
-                "avg_et_cost_per_pixel_1_24",
-                "local_avg_et_cost_per_pixel_1_24",
-                "avg_et_cost_per_pixel_1_720",
-                "local_avg_et_cost_per_pixel_1_720",
                 "avg_et_cost_per_visit",
                 "local_avg_et_cost_per_visit",
-                "e_data_cost",
-                "local_e_data_cost",
-                "e_media_cost",
-                "local_e_media_cost",
-                "et_roas_pixel_1_168",
-                "et_roas_pixel_1_2160",
+                "avg_et_cost_per_pixel_1_24",
+                "local_avg_et_cost_per_pixel_1_24",
+                "avg_et_cost_per_pixel_1_168",
+                "local_avg_et_cost_per_pixel_1_168",
+                "avg_et_cost_per_pixel_1_720",
+                "local_avg_et_cost_per_pixel_1_720",
+                "avg_et_cost_per_pixel_1_2160",
+                "local_avg_et_cost_per_pixel_1_2160",
                 "et_roas_pixel_1_24",
+                "et_roas_pixel_1_168",
                 "et_roas_pixel_1_720",
-                "license_fee",
-                "local_license_fee",
-                "license_fee_projection",
-                "pacing",
-                "spend_projection",
+                "et_roas_pixel_1_2160",
                 "pixel_1_24_view",
-                "conversion_rate_per_pixel_1_24_view",
                 "avg_et_cost_per_pixel_1_24_view",
+                "avg_etfm_cost_per_pixel_1_24_view",
                 "local_avg_et_cost_per_pixel_1_24_view",
+                "local_avg_etfm_cost_per_pixel_1_24_view",
+                "conversion_rate_per_pixel_1_24_view",
                 "et_roas_pixel_1_24_view",
+                "etfm_roas_pixel_1_24_view",
             ],
         )
 
-    def test_filter_columns_by_permission_platform_cost_derived_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+    def test_filter_columns_by_permission_platform_cost_derived(self):
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_view_platform_cost_breakdown_derived"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.maxDiff = None
         self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
             [
                 "et_cost",
                 "local_et_cost",
@@ -455,83 +342,67 @@ class FilterTestCase(TestCase):
         )
 
     def test_filter_columns_by_permission_agency_cost(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_view_agency_cost_breakdown", "can_view_agency_margin"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-
-        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["etf_cost", "local_etf_cost"])
-
-    def test_filter_columns_by_permission_agency_cost_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["can_view_agency_cost_breakdown", "can_view_agency_margin"])
-
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            set(rows[0].keys()) - self.public_fields_no_extra_costs | {"margin", "local_margin"},
             ["etf_cost", "local_etf_cost", "margin", "local_margin"],
         )
 
     def test_filter_columns_by_permission_campaign_goal_optimization(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["campaign_goal_optimization"])
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
+        user = magic_mixer.blend_user(["campaign_goal_optimization", "can_view_platform_cost_breakdown"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
             [
-                "avg_cost_per_conversion_goal_2",
-                "local_avg_cost_per_conversion_goal_2",
-                "avg_cost_per_conversion_goal_3",
-                "local_avg_cost_per_conversion_goal_3",
-                "avg_cost_per_conversion_goal_4",
-                "local_avg_cost_per_conversion_goal_4",
-                "avg_cost_per_conversion_goal_5",
-                "local_avg_cost_per_conversion_goal_5",
                 "avg_et_cost_per_conversion_goal_2",
                 "local_avg_et_cost_per_conversion_goal_2",
+                "avg_etfm_cost_per_conversion_goal_2",
+                "local_avg_etfm_cost_per_conversion_goal_2",
                 "avg_et_cost_per_conversion_goal_3",
                 "local_avg_et_cost_per_conversion_goal_3",
+                "avg_etfm_cost_per_conversion_goal_3",
+                "local_avg_etfm_cost_per_conversion_goal_3",
                 "avg_et_cost_per_conversion_goal_4",
                 "local_avg_et_cost_per_conversion_goal_4",
+                "avg_etfm_cost_per_conversion_goal_4",
+                "local_avg_etfm_cost_per_conversion_goal_4",
                 "avg_et_cost_per_conversion_goal_5",
                 "local_avg_et_cost_per_conversion_goal_5",
+                "avg_etfm_cost_per_conversion_goal_5",
+                "local_avg_etfm_cost_per_conversion_goal_5",
             ],
         )
 
     def test_filter_columns_by_permission_performance(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["campaign_goal_performance"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
-            ["performance_campaign_goal_1", "performance_campaign_goal_2", "performance", "styles"],
+            [
+                "performance_campaign_goal_1",
+                "etfm_performance_campaign_goal_1",
+                "performance_campaign_goal_2",
+                "etfm_performance_campaign_goal_2",
+                "performance",
+                "styles",
+            ],
         )
 
     def test_filter_columns_by_permission_conversion_goals(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_see_redshift_postclick_statistics"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -548,35 +419,26 @@ class FilterTestCase(TestCase):
         )
 
     def test_filter_columns_by_permission_projections(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_see_projections", "can_view_flat_fees"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["allocated_budgets"])
 
     def test_filter_columns_by_permission_agency(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_view_account_agency_information"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["agency", "agency_id"])
 
     def test_filter_columns_by_permission_managers(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_see_managers_in_accounts_table", "can_see_managers_in_campaigns_table"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -591,71 +453,44 @@ class FilterTestCase(TestCase):
         )
 
     def test_filter_columns_by_permission_content_ad_source_status(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_see_media_source_status_on_submission_popover"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertEqual(rows[0]["status_per_source"], {1: {"source_id": 1, "source_status": 1}})
 
     def test_filter_columns_by_permission_viewthrough(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
         user = magic_mixer.blend_user(["can_see_viewthrough_conversions"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
+
         self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields,
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
             [
                 "pixel_1_24_view",
-                "avg_cost_per_pixel_1_24_view",
-                "local_avg_cost_per_pixel_1_24_view",
-                "roas_pixel_1_24_view",
-                "avg_et_cost_per_pixel_1_24_view",
-                "local_avg_et_cost_per_pixel_1_24_view",
-                "et_roas_pixel_1_24_view",
+                "avg_etfm_cost_per_pixel_1_24_view",
+                "local_avg_etfm_cost_per_pixel_1_24_view",
+                "etfm_roas_pixel_1_24_view",
                 "conversion_rate_per_pixel_1_24_view",
             ],
         )
 
-    def test_filter_columns_by_permission_viewthrough_bcm_v2(self):
-        uses_bcm_v2 = True
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["can_see_viewthrough_conversions"])
-
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
-        self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
-            ["pixel_1_24_view", "conversion_rate_per_pixel_1_24_view"],
-        )
-
     def test_filter_columns_by_permission_placement(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
 
         user = magic_mixer.blend_user(["can_use_placement_targeting"])
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["placement_id", "placement", "placement_type"])
 
     def test_filter_columns_by_permission_placement_no_permission(self):
-        uses_bcm_v2 = False
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
 
         user = magic_mixer.blend_user()
 
-        permission_filter.filter_columns_by_permission(
-            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
-        )
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [])
 
 

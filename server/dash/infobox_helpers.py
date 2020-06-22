@@ -179,14 +179,7 @@ def get_total_campaign_budgets_amount(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or utils.dates_helper.local_today()
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
-
-    if campaign.account.uses_bcm_v2:
-        return sum(x.amount for x in budgets)
-
-    ret = Decimal(0)
-    for bli in budgets:
-        ret += bli.amount * (1 - bli.credit.license_fee)
-    return ret
+    return sum(x.amount for x in budgets)
 
 
 def get_yesterday_adgroup_spend(ad_group):
@@ -286,33 +279,11 @@ def calculate_daily_account_cap(account):
     return _compute_daily_cap(campaign__account_id=account.id)
 
 
-def calculate_available_media_account_budget(account):
-    # campaign budget based on non-depleted budget line items
-    today = datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
-
-    ret = 0
-    for bli in budgets:
-        available_total_amount = bli.get_available_amount(today)
-        available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
-        ret += available_media_amount
-    return ret
-
-
 def calculate_available_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems([campaign], today)
-
-    if campaign.account.uses_bcm_v2:
-        return sum(x.get_local_available_etfm_amount(today) for x in budgets)
-
-    ret = 0
-    for bli in budgets:
-        available_total_amount = bli.get_local_available_amount(today)
-        available_amount = available_total_amount * (1 - bli.credit.license_fee)
-        ret += available_amount
-    return ret
+    return sum(x.get_local_available_etfm_amount(today) for x in budgets)
 
 
 def calculate_allocated_and_available_credit(account):
@@ -335,8 +306,8 @@ def calculate_credit_refund(account):
     ).aggregate(Sum("amount"))["amount__sum"]
 
 
-def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency, uses_bcm_v2=False):
-    yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
+def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency):
+    yesterday_cost = yesterday_costs["yesterday_etfm_cost"]
     currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
     filled_daily_ratio = None

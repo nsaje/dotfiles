@@ -307,19 +307,3 @@ def reduce_to_parent(breakdown, constraints, parent=None):
         narrow_allowed_target_field(constraints, breakdown)
 
     return constraints
-
-
-def get_uses_bcm_v2(user, constraints, level):
-    if constraints.get("account"):
-        return constraints["account"].uses_bcm_v2
-    if level == dash.constants.Level.ALL_ACCOUNTS:
-        # all accounts - in case user is querying all accounts but she can also view other accounts then
-        # behave as non-bcmv2
-        accessible_non_bcm_accounts = (
-            models.Account.objects.filter_by_user(user).exclude_archived().filter(uses_bcm_v2=False).exists()
-        )
-        if accessible_non_bcm_accounts:
-            return False
-    if "allowed_accounts" in constraints:
-        return all(constraints["allowed_accounts"].values_list("uses_bcm_v2", flat=True))
-    return False

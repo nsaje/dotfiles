@@ -19,19 +19,11 @@ logger = zlogging.getLogger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(
-    entity,
-    daily_budget,
-    data,
-    bcm_modifiers,
-    campaign_goal=None,
-    uses_bcm_v2=False,
-    ignore_daily_budget_too_small=False,
+    entity, daily_budget, data, bcm_modifiers, campaign_goal=None, ignore_daily_budget_too_small=False
 ):
     daily_budget = daily_budget.quantize(Decimal("1."), rounding=ROUND_DOWN)
     active_sources = list(data.keys())
-    max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(
-        data, daily_budget, uses_bcm_v2, bcm_modifiers
-    )
+    max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers)
     comments = []
     min_budgets_sum = sum(new_budgets.values())
     budget_left = daily_budget - min_budgets_sum
@@ -45,7 +37,7 @@ def get_autopilot_daily_budget_recommendations(
         comments.append(constants.DailyBudgetChangeComment.NO_ACTIVE_SOURCES_WITH_SPEND)
 
         # recalculate min budgets without MIN_BUDGET_LOSS when no sources with spend
-        max_budgets, new_budgets = _get_minimum_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifiers)
+        max_budgets, new_budgets = _get_minimum_autopilot_budget_constraints(data, bcm_modifiers)
         min_budgets_sum = sum(new_budgets.values())
         budget_left = daily_budget - min_budgets_sum
 
@@ -53,7 +45,7 @@ def get_autopilot_daily_budget_recommendations(
     else:
         bandit = BetaBandit(active_sources_with_spend, backup_sources=active_sources)
         min_value_of_optimization_goal, max_value_of_optimization_goal = _get_min_max_values_of_optimization_goal(
-            list(data.values()), campaign_goal, uses_bcm_v2
+            list(data.values()), campaign_goal
         )
         # Train bandit
         for s in active_sources_with_spend:
@@ -67,7 +59,6 @@ def get_autopilot_daily_budget_recommendations(
                         min_value_of_optimization_goal,
                         max_value_of_optimization_goal,
                         bcm_modifiers,
-                        uses_bcm_v2=uses_bcm_v2,
                     ),
                 )
 
@@ -100,7 +91,6 @@ def get_autopilot_daily_budget_recommendations(
                     max_value_of_optimization_goal,
                     bcm_modifiers,
                     new_budget=new_budgets[s],
-                    uses_bcm_v2=uses_bcm_v2,
                 ),
             )
             max_budget = s.source.source_type.get_etfm_max_daily_budget(bcm_modifiers)
@@ -133,11 +123,11 @@ def get_autopilot_daily_budget_recommendations(
     }
 
 
-def _get_min_max_values_of_optimization_goal(data, campaign_goal, uses_bcm_v2):
+def _get_min_max_values_of_optimization_goal(data, campaign_goal):
     max_value = 0.0
     min_value = float("inf")
     if campaign_goal:
-        col = helpers.get_campaign_goal_column(campaign_goal, uses_bcm_v2=uses_bcm_v2)
+        col = helpers.get_campaign_goal_column(campaign_goal)
         for row in data:
             current = row[col]
             if current:
@@ -170,16 +160,14 @@ def _get_active_sources_with_spend(active_sources, data, current_budgets):
     return active_sources_with_spend
 
 
-def _get_autopilot_budget_constraints(data, daily_budget, uses_bcm_v2, bcm_modifiers):
-    max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(
-        data, uses_bcm_v2, bcm_modifiers
-    )
+def _get_autopilot_budget_constraints(data, daily_budget, bcm_modifiers):
+    max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(data, bcm_modifiers)
     if sum(min_budgets.values()) > daily_budget:
-        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifiers)
+        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(data, bcm_modifiers)
     return max_budgets, min_budgets, old_budgets
 
 
-def _get_optimistic_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifiers):
+def _get_optimistic_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
     old_budgets = {}
@@ -192,7 +180,6 @@ def _get_optimistic_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifier
             old_budgets,
             ad_group_source,
             ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers),
-            uses_bcm_v2,
             bcm_modifiers,
         )
 
@@ -200,13 +187,11 @@ def _get_optimistic_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifier
 
 
 def _populate_optimistic_budget_constraints_row(
-    current_budget, max_budgets, min_budgets, old_budgets, ags, source_type_min_budget, uses_bcm_v2, bcm_modifiers
+    current_budget, max_budgets, min_budgets, old_budgets, ags, source_type_min_budget, bcm_modifiers
 ):
-    ap_settings_min_budget = settings.BUDGET_AP_MIN_SOURCE_BUDGET
-    if uses_bcm_v2:
-        ap_settings_min_budget = core.features.bcm.calculations.calculate_min_daily_budget(
-            ap_settings_min_budget, bcm_modifiers
-        )
+    ap_settings_min_budget = core.features.bcm.calculations.calculate_min_daily_budget(
+        settings.BUDGET_AP_MIN_SOURCE_BUDGET, bcm_modifiers
+    )
     if not current_budget:
         current_budget = ap_settings_min_budget
     max_budgets[ags] = Decimal((current_budget * settings.MAX_BUDGET_GAIN).to_integral_exact(rounding=ROUND_CEILING))
@@ -219,25 +204,18 @@ def _populate_optimistic_budget_constraints_row(
     return max_budgets, min_budgets, old_budgets
 
 
-def _get_minimum_autopilot_budget_constraints(data, uses_bcm_v2, bcm_modifiers):
+def _get_minimum_autopilot_budget_constraints(data, bcm_modifiers):
     max_budgets = {}
     min_budgets = {}
     active_sources = list(data.keys())
     for source in active_sources:
-        min_budgets[source] = helpers.get_ad_group_sources_minimum_daily_budget(source, uses_bcm_v2, bcm_modifiers)
+        min_budgets[source] = helpers.get_ad_group_sources_minimum_daily_budget(source, bcm_modifiers)
         max_budgets[source] = (min_budgets[source] * settings.MAX_BUDGET_GAIN).to_integral_exact(rounding=ROUND_CEILING)
     return max_budgets, min_budgets
 
 
 def predict_outcome_success(
-    source,
-    data,
-    campaign_goal,
-    min_value_of_campaign_goal,
-    max_value_of_campaign_goal,
-    bcm_modifiers,
-    new_budget=None,
-    uses_bcm_v2=False,
+    source, data, campaign_goal, min_value_of_campaign_goal, max_value_of_campaign_goal, bcm_modifiers, new_budget=None
 ):
     ap_settings_min_budget = core.features.bcm.calculations.calculate_min_daily_budget(
         settings.BUDGET_AP_MIN_SOURCE_BUDGET, bcm_modifiers
@@ -251,7 +229,7 @@ def predict_outcome_success(
     if not campaign_goal:
         return spend_perc > random()
 
-    data_value = data.get(helpers.get_campaign_goal_column(campaign_goal, uses_bcm_v2))
+    data_value = data.get(helpers.get_campaign_goal_column(campaign_goal))
     goal_value = 0.0
     if data_value:
         goal_value = _get_campaign_goal_value(

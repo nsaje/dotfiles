@@ -26,7 +26,7 @@ class RealtimestatsServiceTest(TestCase):
         self.yahoo_account = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount, budgets_tz="America/Los_Angeles", advertiser_id="test"
         )
-        self.account = magic_mixer.blend(core.models.Account, uses_bcm_v2=True, yahoo_account=self.yahoo_account)
+        self.account = magic_mixer.blend(core.models.Account, yahoo_account=self.yahoo_account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group_sources = magic_mixer.cycle(len(ad_group_sources)).blend(
@@ -156,9 +156,37 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
+        mock_k1_get.return_value = {
+            "stats": [
+                {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
+                {"source_slug": sources[1].bidder_slug, "spend": decimal.Decimal("3.0")},
+            ],
+            "errors": {},
+        }
+        self.ad_group.campaign.account.currency = dash.constants.Currency.EUR
         magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
         )
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            date=dates_helper.local_today(), currency=dash.constants.Currency.EUR, exchange_rate=decimal.Decimal("1.2")
+        )
+        result = service.get_ad_group_sources_stats(self.ad_group)
+        self.assertEqual(
+            result,
+            [
+                {
+                    "source_slug": sources[1].bidder_slug,
+                    "source": sources[1],
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                },
+                {
+                    "source_slug": sources[0].bidder_slug,
+                    "source": sources[0],
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                },
+            ],
+        )
+        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
         mock_k1_get.return_value = {
             "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
@@ -167,44 +195,19 @@ class RealtimestatsServiceTest(TestCase):
             "errors": {},
         }
 
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__currency=dash.constants.Currency.EUR)
-        magic_mixer.cycle(2).blend(
-            core.models.AdGroupSource, ad_group=ad_group, source=(s for s in sources), ad_review_only=False
-        )
-        core.features.multicurrency.CurrencyExchangeRate.objects.create(
-            date=dates_helper.local_today(), currency=dash.constants.Currency.EUR, exchange_rate=decimal.Decimal("1.2")
-        )
-        result = service.get_ad_group_sources_stats(ad_group)
-        self.assertEqual(
-            result,
-            [
-                {
-                    "source_slug": sources[1].bidder_slug,
-                    "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("3.0")),
-                },
-                {
-                    "source_slug": sources[0].bidder_slug,
-                    "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("1.1")),
-                },
-            ],
-        )
-        mock_k1_get.assert_called_once_with(ad_group.id, {})
-
-        result_local = service.get_ad_group_sources_stats(ad_group, use_local_currency=True)
+        result_local = service.get_ad_group_sources_stats(self.ad_group, use_local_currency=True)
         self.assertEqual(
             result_local,
             [
                 {
                     "source_slug": sources[1].bidder_slug,
                     "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("3.6")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.9227")),
                 },
                 {
                     "source_slug": sources[0].bidder_slug,
                     "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("1.32")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.5383")),
                 },
             ],
         )

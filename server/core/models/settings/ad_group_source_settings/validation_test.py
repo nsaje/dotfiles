@@ -13,7 +13,7 @@ from utils.magic_mixer import magic_mixer
 class ValidateAdGroupSourceUpdatesTestCase(TestCase):
     def setUp(self):
         today = dates_helper.local_today()
-        self.account = magic_mixer.blend(core.models.Account, uses_bcm_v2=True)
+        self.account = magic_mixer.blend(core.models.Account)
         self.credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             account=self.account,

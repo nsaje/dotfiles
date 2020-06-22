@@ -80,7 +80,6 @@ def run_autopilot(
                     data,
                     bcm_modifiers_map.get(campaign),
                     campaign_goals.get(campaign, {}),
-                    campaign.account.uses_bcm_v2,
                     adjust_budgets,
                 )
                 bid_changes_map = {}
@@ -119,7 +118,6 @@ def run_autopilot(
                             data[ad_group],
                             bcm_modifiers_map.get(campaign),
                             campaign_goals.get(campaign, {}),
-                            campaign.account.uses_bcm_v2,
                             adjust_budgets,
                             daily_run,
                         )
@@ -227,9 +225,7 @@ def _filter_adgroups_with_data(ad_groups, data):
     return result
 
 
-def _get_budget_predictions_for_adgroup(
-    ad_group, data, bcm_modifiers, campaign_goal, uses_bcm_v2, adjust_budgets, daily_run
-):
+def _get_budget_predictions_for_adgroup(ad_group, data, bcm_modifiers, campaign_goal, adjust_budgets, daily_run):
     if ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return {}
     if not adjust_budgets:
@@ -241,12 +237,11 @@ def _get_budget_predictions_for_adgroup(
         _filter_data_budget_ap_allrtb(data, ad_group),
         bcm_modifiers,
         campaign_goal.get("goal"),
-        uses_bcm_v2,
     )
 
 
 def _get_budget_predictions_for_campaign(
-    campaign, ad_groups, daily_budget, data, bcm_modifiers, campaign_goal, uses_bcm_v2, adjust_budgets
+    campaign, ad_groups, daily_budget, data, bcm_modifiers, campaign_goal, adjust_budgets
 ):
     if not campaign.settings.autopilot:
         return {}
@@ -263,7 +258,6 @@ def _get_budget_predictions_for_campaign(
         campaign_data,
         bcm_modifiers,
         campaign_goal.get("goal"),
-        uses_bcm_v2,
         ignore_daily_budget_too_small=True,
     )
 
@@ -386,9 +380,7 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
             )
         new_budgets[ag_source] = {
             "old_budget": old_budget,
-            "new_budget": helpers.get_ad_group_sources_minimum_daily_budget(
-                ag_source, ad_group.campaign.account.uses_bcm_v2, bcm_modifiers
-            ),
+            "new_budget": helpers.get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers),
             "budget_comments": [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE],
         }
     try:
@@ -432,8 +424,7 @@ def persist_autopilot_changes_to_log(
         old_budget = data[ag_source]["old_budget"]
         goal_c = None
         if campaign_goal_data:
-            uses_bcm_v2 = ad_group.campaign.account.uses_bcm_v2
-            goal_c = helpers.get_campaign_goal_column(campaign_goal_data["goal"], uses_bcm_v2)
+            goal_c = helpers.get_campaign_goal_column(campaign_goal_data["goal"])
         goal_value = data[ag_source][goal_c] if goal_c and goal_c in data[ag_source] else 0.0
         new_bid = data[ag_source].get("old_bid", None)
         if bid_changes:
@@ -540,7 +531,7 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
     )
     grouped_yesterday_data = {item["ad_group_id"]: item for item in yesterday_data}
     for campaign, ad_groups in entities.items():
-        cost_key = "etfm_cost" if campaign.account.uses_bcm_v2 else "et_cost"
+        cost_key = "etfm_cost"
         if campaign.settings.autopilot:
             num_campaigns_on_campaign_ap += 1
             num_ad_groups_on_campaign_ap += len(ad_groups)

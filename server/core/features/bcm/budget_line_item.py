@@ -207,19 +207,6 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def get_overlap(self, start_date, end_date):
         return utils.dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
 
-    def get_available_amount(self, date=None):
-        if date is None:
-            date = utils.dates_helper.local_today()
-        local_available = self.get_local_available_amount(date)
-        exchange_rate = core.features.multicurrency.get_exchange_rate(date, self.credit.currency)
-        return local_available / exchange_rate
-
-    def get_local_available_amount(self, date=None):
-        if date is None:
-            date = utils.dates_helper.local_today()
-        total_spend = self.get_local_spend_data(to_date=date)["etf_total"]
-        return self.allocated_amount() - total_spend
-
     def get_available_etfm_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
@@ -234,21 +221,15 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         return self.allocated_amount() - total_spend
 
     def get_local_spend_data_bcm(self):
-        if self.campaign.account.uses_bcm_v2:
-            return self.get_local_spend_data()["etfm_total"]
-        else:
-            return self.get_local_spend_data()["etf_total"]
+        return self.get_local_spend_data()["etfm_total"]
 
     def get_local_available_data_bcm(self):
-        if self.campaign.account.uses_bcm_v2:
-            return self.get_local_available_etfm_amount()
-        else:
-            return self.get_local_available_amount()
+        return self.get_local_available_etfm_amount()
 
     def state(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        if self.get_available_amount(date) <= 0:
+        if self.get_available_etfm_amount(date) <= 0:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
@@ -305,11 +286,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             raise AssertionError("Budget has to be inactive to be freed.")
         amount_cc = self.amount * converters.CURRENCY_TO_CC
         spend_data = self.get_local_spend_data()
-        if self.campaign.account.uses_bcm_v2:
-            total_spend = spend_data["etfm_total"]
-        else:
-            total_spend = spend_data["etf_total"]
-        total_spend = int(total_spend * converters.CURRENCY_TO_CC)
+        total_spend = int(spend_data["etfm_total"] * converters.CURRENCY_TO_CC)
 
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
@@ -374,8 +351,6 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 "data": utils.converters.nano_to_decimal(self.spend_data_local_data or 0),
                 "license_fee": utils.converters.nano_to_decimal(self.spend_data_local_license_fee or 0),
                 "margin": utils.converters.nano_to_decimal(self.spend_data_local_margin or 0),
-                "et_total": utils.converters.nano_to_decimal(self.spend_data_local_et_total or 0),
-                "etf_total": utils.converters.nano_to_decimal(self.spend_data_local_etf_total or 0),
                 "etfm_total": utils.converters.nano_to_decimal(self.spend_data_local_etfm_total or 0),
             }
         statements = self.statements
@@ -490,26 +465,29 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def validate_margin(self):
         if not (0 <= self.margin < 1):
             raise exceptions.MarginRangeInvalid("Margin must be between 0 and 100%.")
-        if self.campaign.account.uses_bcm_v2:
-            overlapping_budget_line_items = (
-                BudgetLineItem.objects.filter(campaign=self.campaign)
-                .exclude(margin=self.margin)
-                .filter_overlapping(self.start_date, self.end_date)
-            )
-            if overlapping_budget_line_items.exists():
-                raise exceptions.OverlappingBudgetMarginInvalid(
-                    "Margin must be the same on overlapping budget line items."
-                )
+
+        if self.start_date is None or self.end_date is None:
+            return
+
+        overlapping_budget_line_items = (
+            BudgetLineItem.objects.filter(campaign=self.campaign)
+            .exclude(margin=self.margin)
+            .filter_overlapping(self.start_date, self.end_date)
+        )
+        if overlapping_budget_line_items.exists():
+            raise exceptions.OverlappingBudgetMarginInvalid("Margin must be the same on overlapping budget line items.")
 
     def validate_license_fee(self):
-        if self.campaign.account.uses_bcm_v2:
-            overlapping_budget_line_items = (
-                BudgetLineItem.objects.filter(campaign=self.campaign)
-                .exclude(credit__license_fee=self.credit.license_fee)
-                .filter_overlapping(self.start_date, self.end_date)
-            )
-            if overlapping_budget_line_items.exists():
-                raise exceptions.OverlappingBudgets("Unable to add budget with chosen credit. Choose another credit.")
+        if self.start_date is None or self.end_date is None:
+            return
+
+        overlapping_budget_line_items = (
+            BudgetLineItem.objects.filter(campaign=self.campaign)
+            .exclude(credit__license_fee=self.credit.license_fee)
+            .filter_overlapping(self.start_date, self.end_date)
+        )
+        if overlapping_budget_line_items.exists():
+            raise exceptions.OverlappingBudgets("Unable to add budget with chosen credit. Choose another credit.")
 
     def validate_amount(self):
         if self.has_changed("amount") and self.credit.status == constants.CreditLineItemStatus.CANCELED:

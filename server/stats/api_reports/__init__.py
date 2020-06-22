@@ -1,5 +1,3 @@
-from stats.constraints_helper import get_uses_bcm_v2
-
 from .api import extract_order
 from .api import get_filename
 from .api import query

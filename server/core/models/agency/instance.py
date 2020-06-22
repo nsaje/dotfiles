@@ -55,10 +55,6 @@ class AgencyInstanceMixin:
             action_type=action_type,
         )
 
-    def set_new_accounts_use_bcm_v2(self, request, enabled):
-        self.new_accounts_use_bcm_v2 = bool(enabled)
-        self.save(request)
-
     def save(self, request, *args, **kwargs):
         if request and not request.user.is_anonymous:
             self.modified_by = request.user

@@ -22,34 +22,22 @@ class ValidationTestCase(TestCase):
         self.request = magic_mixer.blend_request_user()
 
     def test_update_account_without_agency(self):
-        self.account.update(
-            self.request,
-            name="New Name",
-            auto_archiving_enabled=True,
-            salesforce_url="http://url.com",
-            uses_bcm_v2=True,
-        )
+        self.account.update(self.request, name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com")
 
         self.assertIsNotNone(
             core.models.Account.objects.filter(
-                name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com", uses_bcm_v2=True
+                name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com"
             )
         )
 
     def test_udpate_account_with_agency(self):
         self.account.agency = self.agency
         self.account.save(None)
-        self.account.update(
-            self.request,
-            name="New Name",
-            auto_archiving_enabled=True,
-            salesforce_url="http://url.com",
-            uses_bcm_v2=True,
-        )
+        self.account.update(self.request, name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com")
 
         self.assertIsNotNone(
             core.models.Account.objects.filter(
-                name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com", uses_bcm_v2=True
+                name="New Name", auto_archiving_enabled=True, salesforce_url="http://url.com"
             )
         )
 

@@ -262,7 +262,6 @@ class InstanceTest(TestCase):
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
-        account = magic_mixer.blend(core.models.Account, uses_bcm_v2=False)
         request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
 
         self.ad_group.settings.update(
@@ -272,14 +271,8 @@ class InstanceTest(TestCase):
         )
 
         self.assertEqual(
-            Decimal("500"),
-            self.ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal("0.2"), Decimal("0.1")),
-        )
-
-        account.uses_bcm_v2 = True
-        self.assertEqual(
             Decimal("360"),
-            self.ad_group.settings.get_external_b1_sources_group_daily_budget(account, Decimal("0.2"), Decimal("0.1")),
+            self.ad_group.settings.get_external_b1_sources_group_daily_budget(Decimal("0.2"), Decimal("0.1")),
         )
 
     @patch("utils.redirector_helper.insert_adgroup")

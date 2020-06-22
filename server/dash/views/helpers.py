@@ -653,11 +653,6 @@ def get_upload_batches_for_ad_group(ad_group):
     return models.UploadBatch.objects.filter(pk__in=batch_ids)
 
 
-def all_accounts_uses_bcm_v2(user):
-    accounts = models.Account.objects.all().filter_by_user(user).exclude_archived().filter(uses_bcm_v2=False)
-    return not accounts.exists()
-
-
 def get_applied_deals_dict(configured_deals):
     all_deals = []
     for direct_deal in configured_deals:

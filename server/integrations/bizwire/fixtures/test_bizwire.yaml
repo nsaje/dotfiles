@@ -155,12 +155,19 @@
         type: 'b1'
         available_actions: []
         min_daily_budget: 5.00
+        max_daily_budget: 100000.00
+        min_cpc: 0.00
+        max_cpc: 20.00      
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'adblade3'
         available_actions: []
+        min_daily_budget: 5.00
+        max_daily_budget: 100000.00
+        min_cpc: 0.00
+        max_cpc: 20.00
     model: dash.sourcetype
     pk: 2
 

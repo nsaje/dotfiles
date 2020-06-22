@@ -54,9 +54,7 @@ class TestBudgetLineItemManager(TestCase):
         self.assertEqual(item.margin, Decimal("0.15"))
         self.assertEqual(item.comment, "test")
 
-    def test_create_overlapping_margin_bcm_v2(self):
-        self.account.set_uses_bcm_v2(None, True)
-
+    def test_create_overlapping_margin(self):
         start_date = datetime.date(2017, 1, 1)
         end_date = datetime.date(2017, 1, 5)
         request = magic_mixer.blend_request_user()
@@ -128,8 +126,7 @@ class TestBudgetLineItemManager(TestCase):
             "test",
         )
 
-    def test_create_overlapping_license_fee_bcm_v2(self):
-        self.account.set_uses_bcm_v2(None, True)
+    def test_create_overlapping_license_fee(self):
         new_credit = magic_mixer.blend(
             CreditLineItem,
             account=self.account,
@@ -150,7 +147,6 @@ class TestBudgetLineItemManager(TestCase):
             )
 
     def test_date_in_the_past(self):
-        self.account.set_uses_bcm_v2(None, True)
         request = magic_mixer.blend_request_user()
 
         past_date = TODAY - datetime.timedelta(days=1)

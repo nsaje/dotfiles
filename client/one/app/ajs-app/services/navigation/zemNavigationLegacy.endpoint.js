@@ -57,6 +57,7 @@ angular
         }
 
         function getUsesBCMv2() {
+            // TODO: BCM2: clean up front end
             var deferred = $q.defer();
             var url = '/api/usesbcmv2/';
             var config = {

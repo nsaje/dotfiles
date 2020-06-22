@@ -10,7 +10,6 @@ from core.models import tags
 from dash import constants
 from utils.settings_fields import CachedOneToOneField
 
-from . import bcm_mixin
 from . import entity_permission
 from . import instance
 from . import manager
@@ -22,7 +21,6 @@ class AdGroup(
     entity_permission.EntityPermissionMixin,
     validation.AdGroupValidatorMixin,
     instance.AdGroupInstanceMixin,
-    bcm_mixin.AdGroupBCMMixin,
     models.Model,
 ):
     _current_settings = None
