@@ -477,62 +477,6 @@ class ConversionPixelCreateForm(ConversionPixelForm):
         super(ConversionPixelCreateForm, self).__init__(*args, **kwargs)
 
 
-class ConversionGoalForm(forms.Form):
-    type = forms.TypedChoiceField(required=True, choices=constants.ConversionGoalType.get_choices(), coerce=int)
-    conversion_window = forms.TypedChoiceField(
-        required=False, choices=constants.ConversionWindows.get_choices(), coerce=int, empty_value=None
-    )
-    goal_id = PlainCharField(
-        required=True,
-        max_length=100,
-        error_messages={"max_length": "Conversion goal id is too long (%(show_value)d/%(limit_value)d)."},
-    )
-
-    def __init__(self, *args, **kwargs):
-        self.campaign_id = kwargs.pop("campaign_id")
-        super(ConversionGoalForm, self).__init__(*args, **kwargs)
-
-    def clean(self):
-        cleaned_data = super(ConversionGoalForm, self).clean()
-
-        if not cleaned_data.get("goal_id"):
-            return
-
-        if cleaned_data.get("type") == constants.ConversionGoalType.PIXEL:
-            self._clean_pixel_goal(cleaned_data)
-            return
-
-        self._clean_non_pixel_goal(cleaned_data)
-
-    def _clean_pixel_goal(self, cleaned_data):
-        conversion_window = cleaned_data.get("conversion_window")
-        if not conversion_window and not self.errors.get("conversion_window"):
-            self.add_error("conversion_window", "This field is required.")
-
-        pixel = None
-        if cleaned_data["goal_id"] == "__new__":
-            self.add_error("goal_id", "The new pixel not successfuly created yet, please try again in a little while.")
-        else:
-            try:
-                pixel = models.ConversionPixel.objects.get(pk=cleaned_data["goal_id"])
-            except models.ConversionPixel.DoesNotExist:
-                self.add_error("goal_id", "Pixel does not exist.")
-
-        if conversion_window and pixel:
-            cleaned_data["name"] = "{} - {}".format(
-                pixel.name, constants.ConversionWindows.get_text(cleaned_data["conversion_window"])
-            )
-
-    def _clean_non_pixel_goal(self, cleaned_data):
-        try:
-            models.ConversionGoal.objects.get(
-                campaign_id=self.campaign_id, type=cleaned_data.get("type"), goal_id=cleaned_data.get("goal_id")
-            )
-            self.add_error("goal_id", "This field has to be unique.")
-        except models.ConversionGoal.DoesNotExist:
-            cleaned_data["name"] = cleaned_data["goal_id"]
-
-
 class CampaignGoalForm(forms.Form):
     type = forms.TypedChoiceField(required=True, choices=constants.CampaignGoalKPI.get_choices(), coerce=int)
     primary = forms.BooleanField(required=False)
