@@ -51,19 +51,7 @@ INSERT INTO mv_master (
             (d.data_spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
         ) as effective_data_cost_nano,
         round(
-        (
-                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                (
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                ) * cf.pct_service_fee::decimal(10, 8)
-            ) * cf.pct_license_fee::decimal(10, 8) * 1000
-        ) as license_fee_nano,
-        round(
-            (
-                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+            round(
                 (
                     (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                     (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
@@ -71,8 +59,24 @@ INSERT INTO mv_master (
                         (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                         (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                     ) * cf.pct_service_fee::decimal(10, 8)
-                ) * cf.pct_license_fee::decimal(10, 8)
-            ) * cf.pct_margin::decimal(10, 8) * 1000
+                ) * 1000
+            )::bigint * cf.pct_license_fee::decimal(10, 8)
+        ) as license_fee_nano,
+        round(
+            round(
+                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
+                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
+                round(
+                    (
+                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (
+                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                        ) * cf.pct_service_fee::decimal(10, 8)
+                    ) * 1000
+                )::bigint * cf.pct_license_fee::decimal(10, 8)
+            )::bigint * cf.pct_margin::decimal(10, 8)
         ) as margin_nano,
 
         null as users,
@@ -100,21 +104,7 @@ INSERT INTO mv_master (
         ) as local_effective_data_cost_nano,
         round(
             round(
-                (
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                    ) * cf.pct_service_fee::decimal(10, 8)
-                ) * cf.pct_license_fee::decimal(10, 8) * 1000
-            )::bigint * cer.exchange_rate::decimal(10, 4)
-        ) as local_license_fee_nano,
-        round(
-            round(
-                (
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                round(
                     (
                         (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                         (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
@@ -122,8 +112,26 @@ INSERT INTO mv_master (
                             (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                             (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                         ) * cf.pct_service_fee::decimal(10, 8)
-                    ) * cf.pct_license_fee::decimal(10, 8)
-                ) * cf.pct_margin::decimal(10, 8) * 1000
+                    ) * 1000
+                )::bigint * cf.pct_license_fee::decimal(10, 8)
+            )::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_license_fee_nano,
+        round(
+            round(
+                round(
+                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
+                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
+                    round(
+                        (
+                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (
+                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                            ) * cf.pct_service_fee::decimal(10, 8)
+                        ) * 1000
+                    )::bigint * cf.pct_license_fee::decimal(10, 8)
+                )::bigint * cf.pct_margin::decimal(10, 8)
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_margin_nano,
 
