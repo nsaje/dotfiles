@@ -248,7 +248,7 @@ def _query_all(
     )
     t_base.start()
 
-    if not metrics or set(metrics).intersection(set(["yesterday_at_cost"])):
+    if not metrics or set(metrics).intersection(set(["yesterday_at_cost", "yesterday_etfm_cost"])):
         sql, params, temp_tables = queries.prepare_query_all_yesterday(
             breakdown, constraints, parents, use_publishers_view
         )
