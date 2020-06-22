@@ -3,7 +3,6 @@ import json
 from django.http.request import HttpRequest
 from django.test import Client
 from django.test import RequestFactory
-from django.test import TestCase
 from django.urls import reverse
 from mock import ANY
 from mock import patch
@@ -14,17 +13,19 @@ from dash import api
 from dash import constants
 from dash import history_helpers
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.views import bulk_actions
 from zemauth.models import User
 
 
-class AdGroupSourceStateTest(TestCase):
+class LegacyAdGroupSourceStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
         self.client = Client()
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
 
     def _post_source_state(self, ad_group_id, data):
         return self.client.post(
@@ -174,7 +175,11 @@ class AdGroupSourceStateTest(TestCase):
         self.assertTrue("0.13" in json_data["message"])
 
 
-class AdGroupContentAdArchiveTest(TestCase):
+class AdGroupSourceStateTestCase(FutureDASHAPITestCase, LegacyAdGroupSourceStateTestCase):
+    pass
+
+
+class LegacyAdGroupContentAdArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_archive(self, ad_group_id, data):
@@ -187,8 +192,9 @@ class AdGroupContentAdArchiveTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     @patch("utils.email_helper.send_ad_group_notification_email")
     @patch("utils.k1_helper.update_content_ads")
@@ -355,7 +361,11 @@ class AdGroupContentAdArchiveTest(TestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Archived.")
 
 
-class AdGroupContentAdRestore(TestCase):
+class AdGroupContentAdArchiveTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdArchiveTestCase):
+    pass
+
+
+class LegacyAdGroupContentAdRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_restore(self, ad_group_id, data):
@@ -368,8 +378,9 @@ class AdGroupContentAdRestore(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     @patch("utils.email_helper.send_ad_group_notification_email")
     @patch("utils.k1_helper.update_content_ads")
@@ -538,7 +549,11 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.")
 
 
-class AdGroupContentAdStateTest(TestCase):
+class AdGroupContentAdRestoreTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdRestoreTestCase):
+    pass
+
+
+class LegacyAdGroupContentAdStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_content_ad_state(self, ad_group_id, data):
@@ -550,11 +565,13 @@ class AdGroupContentAdStateTest(TestCase):
             follow=True,
         )
 
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
+
     @patch("utils.k1_helper.update_content_ads")
     def test_post(self, mock_k1_ping):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
-
         ad_group_id = 1
         content_ad_id = 1
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
@@ -596,9 +613,6 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
 
     def test_state_set_all(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
-
         content_ads = models.ContentAd.objects.filter(ad_group__id=1)
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
@@ -611,9 +625,6 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
     def test_state_set_batch(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
-
         content_ads = models.ContentAd.objects.filter(batch__id=1)
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
@@ -626,9 +637,6 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
     def test_dont_set_state_on_archived_ads(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
-
         archived_ad = models.ContentAd.objects.get(pk=3)
         archived_ad.archived = True
         archived_ad.save()
@@ -663,8 +671,6 @@ class AdGroupContentAdStateTest(TestCase):
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
 
     def test_get_content_ad_ids_validation_error(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
         response = self._post_content_ad_state(1, {"selected_ids": ["1", "a"]})
         self.assertEqual(json.loads(response.content)["data"]["error_code"], "ValidationError")
 
@@ -710,7 +716,11 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(hist.changes_text, "Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.")
 
 
-class AdGroupContentAdCSVTest(TestCase):
+class AdGroupContentAdStateTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdStateTestCase):
+    pass
+
+
+class LegacyAdGroupContentAdCSVTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
@@ -875,7 +885,11 @@ class AdGroupContentAdCSVTest(TestCase):
         self.assertEqual(json.loads(response.content)["data"]["error_code"], "ValidationError")
 
 
-class CampaignAdGroupStateTest(TestCase):
+class AdGroupContentAdCSVTestCase(FutureDASHAPITestCase, LegacyAdGroupContentAdCSVTestCase):
+    pass
+
+
+class LegacyCampaignAdGroupStateTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_state(self, campaign_id, data):
@@ -888,8 +902,8 @@ class CampaignAdGroupStateTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
 
     @patch("automation.autopilot.recalculate_budgets_campaign")
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")
@@ -958,7 +972,11 @@ class CampaignAdGroupStateTest(TestCase):
         )
 
 
-class CampaignAdGroupArchiveTest(TestCase):
+class CampaignAdGroupStateTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupStateTestCase):
+    pass
+
+
+class LegacyCampaignAdGroupArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_archive(self, campaign_id, data):
@@ -971,8 +989,9 @@ class CampaignAdGroupArchiveTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -990,7 +1009,11 @@ class CampaignAdGroupArchiveTest(TestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(ad_group_id), "archived": True}])
 
 
-class CampaignAdGroupRestoreTest(TestCase):
+class CampaignAdGroupArchiveTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupArchiveTestCase):
+    pass
+
+
+class LegacyCampaignAdGroupRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_ad_group_restore(self, campaign_id, data):
@@ -1003,8 +1026,9 @@ class CampaignAdGroupRestoreTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -1025,7 +1049,11 @@ class CampaignAdGroupRestoreTest(TestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(ad_group_id), "archived": False}])
 
 
-class AccountCampaignArchiveTest(TestCase):
+class CampaignAdGroupRestoreTestCase(FutureDASHAPITestCase, LegacyCampaignAdGroupRestoreTestCase):
+    pass
+
+
+class LegacyAccountCampaignArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_campaign_archive(self, account_id, data):
@@ -1038,8 +1066,9 @@ class AccountCampaignArchiveTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account = models.Account.objects.get(pk=1)
@@ -1057,7 +1086,11 @@ class AccountCampaignArchiveTest(TestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(campaign_id), "archived": True}])
 
 
-class AccountCampaignRestoreTest(TestCase):
+class AccountCampaignArchiveTestCase(FutureDASHAPITestCase, LegacyAccountCampaignArchiveTestCase):
+    pass
+
+
+class LegacyAccountCampaignRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_campaign_restore(self, account_id, data):
@@ -1070,8 +1103,9 @@ class AccountCampaignRestoreTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account = models.Account.objects.get(pk=1)
@@ -1092,7 +1126,11 @@ class AccountCampaignRestoreTest(TestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(campaign_id), "archived": False}])
 
 
-class AllAccountsAccountArchiveTest(TestCase):
+class AccountCampaignRestoreTestCase(FutureDASHAPITestCase, LegacyAccountCampaignRestoreTestCase):
+    pass
+
+
+class LegacyAllAccountsAccountArchiveTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_account_archive(self, data):
@@ -1105,8 +1143,9 @@ class AllAccountsAccountArchiveTest(TestCase):
         )
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account_id = 1
@@ -1123,7 +1162,11 @@ class AllAccountsAccountArchiveTest(TestCase):
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(account_id), "archived": True}])
 
 
-class AllAccountsAccountRestoreTest(TestCase):
+class AllAccountsAccountArchiveTestCase(FutureDASHAPITestCase, LegacyAllAccountsAccountArchiveTestCase):
+    pass
+
+
+class LegacyAllAccountsAccountRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def _post_account_restore(self, data):
@@ -1136,8 +1179,9 @@ class AllAccountsAccountRestoreTest(TestCase):
         )
 
     def setUp(self):
-        self.user = User.objects.get(pk=1)
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
         self.factory = RequestFactory()
 
     def test_post(self):
@@ -1159,3 +1203,7 @@ class AllAccountsAccountRestoreTest(TestCase):
 
         self.assertTrue(response_dict["success"])
         self.assertEqual(response_dict["data"]["rows"], [{"breakdownId": str(account_id), "archived": False}])
+
+
+class AllAccountsAccountRestoreTestCase(FutureDASHAPITestCase, LegacyAllAccountsAccountRestoreTestCase):
+    pass

@@ -8,6 +8,8 @@ from django.db import transaction
 import core.features.multicurrency
 import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from automation import autopilot
 from dash import api
 from dash import constants
@@ -23,6 +25,7 @@ from utils import csv_utils
 from utils import exc
 from utils import k1_helper
 from utils import metrics_compat
+from zemauth.features.entity_permission import Permission
 
 
 class BaseBulkActionView(DASHAPIBaseView):
@@ -45,7 +48,7 @@ class AdGroupSourceState(BaseBulkActionView):
     def post(self, request, ad_group_id):
         last_change_dt = datetime.datetime.now()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         data = json.loads(request.body)
 
@@ -259,7 +262,7 @@ class AdGroupContentAdEdit(BaseBulkActionView):
         if not request.user.has_perm("zemauth.can_edit_content_ads"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         content_ads = helpers.get_selected_entities_post_request(
             models.ContentAd.objects, json.loads(request.body), ad_group_id=ad_group.id
         )
@@ -281,7 +284,7 @@ class AdGroupContentAdArchive(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         content_ads = helpers.get_selected_entities_post_request(
             models.ContentAd.objects, json.loads(request.body), ad_group_id=ad_group.id
@@ -311,7 +314,7 @@ class AdGroupContentAdRestore(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         content_ads = helpers.get_selected_entities_post_request(
             models.ContentAd.objects, json.loads(request.body), include_archived=True, ad_group_id=ad_group.id
@@ -328,7 +331,7 @@ class AdGroupContentAdRestore(BaseBulkActionView):
 class AdGroupContentAdState(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         data = json.loads(request.body)
 
@@ -357,7 +360,7 @@ class AdGroupContentAdState(BaseBulkActionView):
 class AdGroupContentAdCSV(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         select_all = request.GET.get("select_all", False)
         select_batch_id = request.GET.get("select_batch")
@@ -467,7 +470,7 @@ class CampaignAdGroupArchive(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
 
         ad_groups = helpers.get_selected_entities_post_request(
             models.AdGroup.objects, json.loads(request.body), campaign_id=campaign.id
@@ -490,7 +493,7 @@ class CampaignAdGroupRestore(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
 
         ad_groups = helpers.get_selected_entities_post_request(
             models.AdGroup.objects, json.loads(request.body), include_archived=True, campaign_id=campaign.id
@@ -506,7 +509,7 @@ class CampaignAdGroupRestore(BaseBulkActionView):
 class CampaignAdGroupState(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         data = json.loads(request.body)
 
         state = data.get("state")
@@ -577,7 +580,7 @@ class AccountCampaignArchive(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         campaigns = helpers.get_selected_entities_post_request(
             models.Campaign.objects, json.loads(request.body), account_id=account.id
@@ -603,7 +606,7 @@ class AccountCampaignRestore(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        account = helpers.get_campaign(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         campaigns = helpers.get_selected_entities_post_request(
             models.Campaign.objects, json.loads(request.body), include_archived=True, account_id=account.id
@@ -622,8 +625,17 @@ class AllAccountsAccountArchive(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        accounts = helpers.get_selected_entities_post_request(
+        accounts_user_perm = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_user(request.user), json.loads(request.body)
+        )
+
+        accounts_entity_perm = helpers.get_selected_entities_post_request(
+            models.Account.objects.all().filter_by_entity_permission(request.user, Permission.WRITE),
+            json.loads(request.body),
+        )
+
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.WRITE, accounts_user_perm, accounts_entity_perm
         )
 
         active_ad_groups = models.AdGroup.objects.filter(campaign__account__in=accounts).filter_active()
@@ -643,8 +655,17 @@ class AllAccountsAccountRestore(BaseBulkActionView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.ForbiddenError(message="Not allowed")
 
-        accounts = helpers.get_selected_entities_post_request(
+        accounts_user_perm = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_user(request.user), json.loads(request.body), include_archived=True
+        )
+
+        accounts_entity_perm = helpers.get_selected_entities_post_request(
+            models.Account.objects.all().filter_by_entity_permission(request.user, Permission.WRITE),
+            json.loads(request.body),
+            include_archived=True,
+        )
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.WRITE, accounts_user_perm, accounts_entity_perm
         )
 
         with transaction.atomic():
