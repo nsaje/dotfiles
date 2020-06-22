@@ -53,6 +53,9 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField(allow_null=True)
 
+    service_fee = restapi.serializers.fields.PercentToDecimalField(
+        max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
+    )
     license_fee = restapi.serializers.fields.PercentToDecimalField(
         max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
     )

@@ -34,6 +34,7 @@ class GetPredictionTest(TestCase):
             end_date=today,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=10000,
+            service_fee=decimal.Decimal("0.2"),
             license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
@@ -80,12 +81,14 @@ class GetPredictionTest(TestCase):
             core.features.bcm.BudgetDailyStatement,
             budget=overspent_budget,
             date=dates_helper.local_yesterday(),
-            media_spend_nano=500 * (10 ** 9),
-            data_spend_nano=0,
+            base_media_spend_nano=500 * (10 ** 9),
+            base_data_spend_nano=0,
+            service_fee_nano=100 * (10 ** 9),
             license_fee_nano=50 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=500 * (10 ** 9),
-            local_data_spend_nano=0,
+            local_base_media_spend_nano=500 * (10 ** 9),
+            local_base_data_spend_nano=0,
+            local_service_fee_nano=100 * (10 ** 9),
             local_license_fee_nano=50 * (10 ** 9),
             local_margin_nano=0,
         )
@@ -160,12 +163,14 @@ class GetPredictionTest(TestCase):
             core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
-            media_spend_nano=250 * (10 ** 9),
-            data_spend_nano=0,
+            base_media_spend_nano=250 * (10 ** 9),
+            base_data_spend_nano=0,
+            service_fee_nano=100 * (10 ** 9),
             license_fee_nano=50 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=250 * (10 ** 9),
-            local_data_spend_nano=0,
+            local_base_media_spend_nano=250 * (10 ** 9),
+            local_base_data_spend_nano=0,
+            local_service_fee_nano=100 * (10 ** 9),
             local_license_fee_nano=50 * (10 ** 9),
             local_margin_nano=0,
         )
@@ -191,7 +196,7 @@ class GetPredictionTest(TestCase):
                 )
 
             prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
-            self.assertEqual(150, prediction)
+            self.assertEqual(50, prediction)
 
     def test_get_prediction_with_yesterday_realtime_data_and_spend_rate(self):
         today = dates_helper.local_today()
@@ -302,6 +307,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             end_date=today,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=10000,
+            service_fee=decimal.Decimal("0.2"),
             license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
@@ -324,12 +330,14 @@ class GetBudgetSpendEstimateTest(TestCase):
             core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
-            media_spend_nano=150 * (10 ** 9),
-            data_spend_nano=0,
+            base_media_spend_nano=150 * (10 ** 9),
+            base_data_spend_nano=0,
+            service_fee_nano=100 * (10 ** 9),
             license_fee_nano=50 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=150 * (10 ** 9),
-            local_data_spend_nano=0,
+            local_base_media_spend_nano=150 * (10 ** 9),
+            local_base_data_spend_nano=0,
+            local_service_fee_nano=100 * (10 ** 9),
             local_license_fee_nano=50 * (10 ** 9),
             local_margin_nano=0,
         )
@@ -342,7 +350,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             estimate = spends_helper.get_budget_spend_estimates(
                 LogMock(), self.campaign, spends_helper._get_budgets_active_today(self.campaign)
             )
-            self.assertEqual({self.budget: 200}, estimate)
+            self.assertEqual({self.budget: 300}, estimate)
 
     def test_real_time_data_spend(self):
         today = dates_helper.local_today()
@@ -396,13 +404,15 @@ class GetBudgetSpendEstimateTest(TestCase):
             core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
-            media_spend_nano=150 * (10 ** 9),
-            data_spend_nano=0,
-            license_fee_nano=50 * (10 ** 9),
+            base_media_spend_nano=150 * (10 ** 9),
+            base_data_spend_nano=0,
+            service_fee_nano=25 * (10 ** 9),
+            license_fee_nano=25 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=150 * (10 ** 9),
-            local_data_spend_nano=0,
-            local_license_fee_nano=50 * (10 ** 9),
+            local_base_media_spend_nano=150 * (10 ** 9),
+            local_base_data_spend_nano=0,
+            local_service_fee_nano=25 * (10 ** 9),
+            local_license_fee_nano=25 * (10 ** 9),
             local_margin_nano=0,
         )
 
@@ -436,13 +446,15 @@ class GetBudgetSpendEstimateTest(TestCase):
             core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
-            media_spend_nano=300 * (10 ** 9),
-            data_spend_nano=0,
-            license_fee_nano=100 * (10 ** 9),
+            base_media_spend_nano=300 * (10 ** 9),
+            base_data_spend_nano=0,
+            service_fee_nano=50 * (10 ** 9),
+            license_fee_nano=50 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=150 * (10 ** 9),
-            local_data_spend_nano=0,
-            local_license_fee_nano=50 * (10 ** 9),
+            local_base_media_spend_nano=150 * (10 ** 9),
+            local_base_data_spend_nano=0,
+            local_service_fee_nano=25 * (10 ** 9),
+            local_license_fee_nano=25 * (10 ** 9),
             local_margin_nano=0,
         )
 

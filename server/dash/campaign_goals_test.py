@@ -259,12 +259,12 @@ class CampaignGoalsTestCase(TestCase):
             "total_pageviews": 10,
             "pv_per_visit": 10,
             "avg_tos": 10,
-            "cpc": 0.1,
+            "etfm_cpc": 0.1,
             "e_media_cost": 5,
             "percent_new_users": 1.2,
             "conversions": {"ga__123": 20.00},
-            "avg_cost_per_visit": 35,
-            "avg_cost_per_non_bounced_visit": 8,
+            "avg_etfm_cost_per_visit": 35,
+            "avg_etfm_cost_per_non_bounced_visit": 8,
         }
 
         goals_infobox = infobox_helpers.get_primary_campaign_goal(self.user, self.campaign, start_date, end_date)
@@ -301,13 +301,13 @@ class CampaignGoalsTestCase(TestCase):
             "bounce_rate": 10,
             "total_pageviews": 10,
             "avg_tos": 10,
-            "cpc": 0.1,
+            "etfm_cpc": 0.1,
             "e_media_cost": 5,
             "pv_per_visit": 10,
             "percent_new_users": 1.2,
             "conversions": {"ga__123": 20.00},
-            "avg_cost_per_visit": 10,
-            "avg_cost_per_non_bounced_visit": 8,
+            "avg_etfm_cost_per_visit": 10,
+            "avg_etfm_cost_per_non_bounced_visit": 8,
         }
 
         goals_infobox = infobox_helpers.get_primary_campaign_goal(self.user, ad_group.campaign, start_date, end_date)

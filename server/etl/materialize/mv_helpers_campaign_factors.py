@@ -41,7 +41,7 @@ class MVHelpersCampaignFactors(Materialize):
     def generate_rows(self, campaign_factors):
         for date, campaign_dict in campaign_factors.items():
             for campaign, factors in campaign_dict.items():
-                yield (date, campaign.id, factors[0], factors[1], factors[2])
+                yield (date, campaign.id, factors[0], factors[1], factors[2], factors[3])
 
     def check_date_range_continuation(self, campaign_factors):
         # checks that all the dates withing the reprocessed date range have campaign factors set

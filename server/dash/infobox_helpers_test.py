@@ -183,18 +183,8 @@ class InfoBoxHelpersTest(TestCase):
     def test_get_yesterday_campaign_spend(self, mock_query):
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        mock_query.return_value = [
-            {
-                "campaign_id": "1",
-                "local_e_yesterday_cost": 100,
-                "local_yesterday_et_cost": 120,
-                "local_yesterday_etfm_cost": 140,
-            }
-        ]
-        self.assertEqual(
-            {"e_yesterday_cost": 100, "yesterday_et_cost": 120, "yesterday_etfm_cost": 140},
-            dash.infobox_helpers.get_yesterday_campaign_spend(campaign),
-        )
+        mock_query.return_value = [{"campaign_id": "1", "local_yesterday_etfm_cost": 140}]
+        self.assertEqual({"yesterday_etfm_cost": 140}, dash.infobox_helpers.get_yesterday_campaign_spend(campaign))
 
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.datetime(year=2014, month=6, day=4))
     def test_calculate_daily_campaign_cap(self, mock_local_today):
@@ -223,19 +213,9 @@ class InfoBoxHelpersTest(TestCase):
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_get_yesterday_adgroup_spend(self, mock_query):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        mock_query.return_value = [
-            {
-                "ad_group_id": "1",
-                "local_e_yesterday_cost": 100,
-                "local_yesterday_et_cost": 120,
-                "local_yesterday_etfm_cost": 140,
-            }
-        ]
+        mock_query.return_value = [{"ad_group_id": "1", "local_yesterday_etfm_cost": 140}]
 
-        self.assertEqual(
-            {"e_yesterday_cost": 100, "yesterday_et_cost": 120, "yesterday_etfm_cost": 140},
-            dash.infobox_helpers.get_yesterday_adgroup_spend(ad_group),
-        )
+        self.assertEqual({"yesterday_etfm_cost": 140}, dash.infobox_helpers.get_yesterday_adgroup_spend(ad_group))
 
     def test_create_yesterday_spend_setting(self):
         setting = dash.infobox_helpers.create_yesterday_spend_setting(
@@ -386,24 +366,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         super().setUpClass()
         cls.accounts = magic_mixer.cycle(2).blend(dash.models.Account, currency=dash.constants.Currency.EUR)
         cls.mock_stats_yesterday = [
-            {
-                "account_id": cls.accounts[0].id,
-                "e_yesterday_cost": 50,
-                "yesterday_et_cost": 60,
-                "yesterday_etfm_cost": 70,
-                "local_e_yesterday_cost": 10,
-                "local_yesterday_et_cost": 20,
-                "local_yesterday_etfm_cost": 30,
-            },
-            {
-                "account_id": cls.accounts[1].id,
-                "e_yesterday_cost": 50,
-                "yesterday_et_cost": 60,
-                "yesterday_etfm_cost": 70,
-                "local_e_yesterday_cost": 10,
-                "local_yesterday_et_cost": 20,
-                "local_yesterday_etfm_cost": 30,
-            },
+            {"account_id": cls.accounts[0].id, "yesterday_etfm_cost": 70, "local_yesterday_etfm_cost": 30},
+            {"account_id": cls.accounts[1].id, "yesterday_etfm_cost": 70, "local_yesterday_etfm_cost": 30},
         ]
         cls.mock_stats_mtd = [
             {
@@ -430,14 +394,12 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_get_yesterday_accounts_spend(self, mock_query):
         mock_query.return_value = self.mock_stats_yesterday
         self.assertEqual(
-            {"e_yesterday_cost": 100, "yesterday_et_cost": 120, "yesterday_etfm_cost": 140},
-            dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, False),
+            {"yesterday_etfm_cost": 140}, dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, False)
         )
 
         # local
         self.assertEqual(
-            {"e_yesterday_cost": 20, "yesterday_et_cost": 40, "yesterday_etfm_cost": 60},
-            dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True),
+            {"yesterday_etfm_cost": 60}, dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True)
         )
 
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
@@ -471,10 +433,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         mock_query.return_value = [self.mock_stats_yesterday[0]]
         account = self.accounts[0]
 
-        self.assertEqual(
-            {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30},
-            dash.infobox_helpers.get_yesterday_account_spend(account),
-        )
+        self.assertEqual({"yesterday_etfm_cost": 30}, dash.infobox_helpers.get_yesterday_account_spend(account))
 
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         constraints = {"account_id": [account.id], "date__gte": yesterday, "date__lte": yesterday}

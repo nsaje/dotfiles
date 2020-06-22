@@ -170,12 +170,17 @@ export const APP_OPTIONS = {
             value: APP_CONSTANTS.chartMetric.EFFECTIVE_DATA_COST,
         },
         {
+            name: 'Base Data Cost',
+            value: APP_CONSTANTS.chartMetric.BASE_EFFECTIVE_DATA_COST,
+        },
+        {
             name: 'Media Spend',
             value: APP_CONSTANTS.chartMetric.EFFECTIVE_MEDIA_COST,
         },
-    ],
-    billingCostChartMetrics: [
-        {name: 'Total Spend', value: APP_CONSTANTS.chartMetric.BILLING_COST},
+        {
+            name: 'Base Media Spend',
+            value: APP_CONSTANTS.chartMetric.BASE_EFFECTIVE_MEDIA_COST,
+        },
     ],
     actualCostChartMetrics: [
         {

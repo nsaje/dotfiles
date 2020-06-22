@@ -578,7 +578,13 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_post(self, mock_log_to_slack):
         agency = self.mix_agency(
-            self.user, permissions=[Permission.READ, Permission.WRITE, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE]
+            self.user,
+            permissions=[
+                Permission.READ,
+                Permission.WRITE,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
+            ],
         )
 
         post_data = {
@@ -587,6 +593,7 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
             "startDate": self.normalize(datetime.date.today()),
             "endDate": self.normalize(datetime.date.today() + datetime.timedelta(30)),
             "amount": "100",
+            "serviceFee": "10",
             "licenseFee": "30",
             "currency": dash.constants.Currency.get_name(dash.constants.Currency.EUR),
             "comment": "Extra credit",
@@ -607,6 +614,7 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         self.assertIsNotNone(resp_json["data"]["endDate"])
         self.assertIsNotNone(resp_json["data"]["createdBy"])
         self.assertEqual(resp_json["data"]["currency"], dash.constants.Currency.get_name(dash.constants.Currency.EUR))
+        self.assertEqual(resp_json["data"]["serviceFee"], "10")
         self.assertEqual(resp_json["data"]["licenseFee"], "30")
         self.assertIsNotNone(resp_json["data"]["flatFee"])
         self.assertEqual(resp_json["data"]["comment"], "Extra credit")
@@ -653,7 +661,7 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
 
 class CreditViewSetTest(FutureRESTAPITestCase, LegacyCreditViewSetTest):
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
-    def test_post_no_license_fee_permission(self, mock_log_to_slack):
+    def test_post_no_fee_permissions(self, mock_log_to_slack):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
 
         post_data = {
@@ -662,6 +670,7 @@ class CreditViewSetTest(FutureRESTAPITestCase, LegacyCreditViewSetTest):
             "startDate": self.normalize(datetime.date.today()),
             "endDate": self.normalize(datetime.date.today() + datetime.timedelta(30)),
             "amount": "100",
+            "serviceFee": "10",
             "licenseFee": "30",
             "currency": dash.constants.Currency.get_name(dash.constants.Currency.EUR),
             "comment": "Extra credit",
@@ -671,9 +680,12 @@ class CreditViewSetTest(FutureRESTAPITestCase, LegacyCreditViewSetTest):
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
 
         self.assertIsNotNone(resp_json["data"]["id"])
+        self.assertNotIn("serviceFee", resp_json["data"])
         self.assertNotIn("licenseFee", resp_json["data"])
 
         credit = core.features.bcm.CreditLineItem.objects.get(pk=resp_json["data"]["id"])
+        service_fee_field = core.features.bcm.CreditLineItem._meta.get_field("service_fee")
         license_fee_field = core.features.bcm.CreditLineItem._meta.get_field("license_fee")
 
+        self.assertEqual(credit.service_fee, service_fee_field.default)
         self.assertEqual(credit.license_fee, license_fee_field.default)

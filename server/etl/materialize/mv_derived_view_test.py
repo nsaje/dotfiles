@@ -75,7 +75,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable,
                     vast4_viewable,
                     ssp_cost_nano,
-                    local_ssp_cost_nano
+                    local_ssp_cost_nano,
+                    base_effective_cost_nano,
+                    base_effective_data_cost_nano,
+                    service_fee_nano,
+                    local_base_effective_cost_nano,
+                    local_base_effective_data_cost_nano,
+                    local_service_fee_nano
                 )
                 (SELECT
                     date AS date,
@@ -116,7 +122,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(vast4_measurable) vast4_measurable,
                     SUM(vast4_viewable) vast4_viewable,
                     SUM(ssp_cost_nano) ssp_cost_nano,
-                    SUM(local_ssp_cost_nano) local_ssp_cost_nano
+                    SUM(local_ssp_cost_nano) local_ssp_cost_nano,
+                    SUM(base_effective_cost_nano) base_effective_cost_nano,
+                    SUM(base_effective_data_cost_nano) base_effective_data_cost_nano,
+                    SUM(service_fee_nano) service_fee_nano,
+                    SUM(local_base_effective_cost_nano) local_base_effective_cost_nano,
+                    SUM(local_base_effective_data_cost_nano) local_base_effective_data_cost_nano,
+                    SUM(local_service_fee_nano) local_service_fee_nano
                 FROM mv_master
                 WHERE (date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id
@@ -194,7 +206,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable,
                     vast4_viewable,
                     ssp_cost_nano,
-                    local_ssp_cost_nano
+                    local_ssp_cost_nano,
+                    base_effective_cost_nano,
+                    base_effective_data_cost_nano,
+                    service_fee_nano,
+                    local_base_effective_cost_nano,
+                    local_base_effective_data_cost_nano,
+                    local_service_fee_nano
                 )
                 (SELECT
                     date AS date,
@@ -235,7 +253,13 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(vast4_measurable) vast4_measurable,
                     SUM(vast4_viewable) vast4_viewable,
                     SUM(ssp_cost_nano) ssp_cost_nano,
-                    SUM(local_ssp_cost_nano) local_ssp_cost_nano
+                    SUM(local_ssp_cost_nano) local_ssp_cost_nano,
+                    SUM(base_effective_cost_nano) base_effective_cost_nano,
+                    SUM(base_effective_data_cost_nano) base_effective_data_cost_nano,
+                    SUM(service_fee_nano) service_fee_nano,
+                    SUM(local_base_effective_cost_nano) local_base_effective_cost_nano,
+                    SUM(local_base_effective_data_cost_nano) local_base_effective_data_cost_nano,
+                    SUM(local_service_fee_nano) local_service_fee_nano
                 FROM mv_master
                 WHERE (account_id=%s AND date>=%s AND date<=%s)
                 GROUP BY date, source_id, account_id

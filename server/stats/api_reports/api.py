@@ -157,8 +157,8 @@ UNABLE_TO_SORT = (
     "campaign_status",
     "e_media_cost_refund",
     "license_fee_refund",
+    "service_fee_refund",
     "etfm_cost_refund",
-    "billing_cost_refund",
 )
 
 

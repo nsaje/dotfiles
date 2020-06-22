@@ -28,10 +28,19 @@ class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSer
     campaign_spend = rest_framework.serializers.DecimalField(
         max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
+    base_media_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    base_data_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
     media_spend = rest_framework.serializers.DecimalField(
         max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     data_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    service_fee = rest_framework.serializers.DecimalField(
         max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     license_fee = rest_framework.serializers.DecimalField(

@@ -24,12 +24,12 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
         mv.generate(
             campaign_factors={
                 datetime.date(2016, 7, 1): {
-                    models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25),
-                    models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.25),
+                    models.Campaign.objects.get(pk=1): (1.0, 0.1, 0.2, 0.25),
+                    models.Campaign.objects.get(pk=2): (0.2, 0.1, 0.2, 0.25),
                 },
                 datetime.date(2016, 7, 2): {
-                    models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25),
-                    models.Campaign.objects.get(pk=2): (0.2, 0.3, 0.25),
+                    models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.3, 0.25),
+                    models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.3, 0.25),
                 },
             }
         )
@@ -39,10 +39,10 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             "materialized_views/mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv",
             textwrap.dedent(
                 """\
-            2016-07-01\t1\t1.0\t0.2\t0.25\r
-            2016-07-01\t2\t0.2\t0.2\t0.25\r
-            2016-07-02\t1\t1.0\t0.3\t0.25\r
-            2016-07-02\t2\t0.2\t0.3\t0.25\r
+            2016-07-01\t1\t1.0\t0.1\t0.2\t0.25\r
+            2016-07-01\t2\t0.2\t0.1\t0.2\t0.25\r
+            2016-07-02\t1\t1.0\t0.2\t0.3\t0.25\r
+            2016-07-02\t2\t0.2\t0.2\t0.3\t0.25\r
             """
             ),
         )
@@ -53,12 +53,13 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_campaign_factors (
-                date date not null encode delta,
-                campaign_id integer not null encode lzo,
+                date date not null encode AZ64,
+                campaign_id integer not null encode AZ64,
 
-                pct_actual_spend decimal(22, 18) encode lzo,
-                pct_license_fee decimal(22, 18) encode lzo,
-                pct_margin decimal(22, 18) encode lzo
+                pct_actual_spend decimal(22, 18) encode AZ64,
+                pct_service_fee decimal(22, 18) encode AZ64,
+                pct_license_fee decimal(22, 18) encode AZ64,
+                pct_margin decimal(22, 18) encode AZ64
             ) sortkey(date, campaign_id)"""
                     )
                 ),
@@ -93,13 +94,13 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             mv.generate(
                 campaign_factors={
                     datetime.date(2016, 7, 1): {
-                        models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25),
-                        models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.25),
+                        models.Campaign.objects.get(pk=1): (1.0, 0.1, 0.2, 0.25),
+                        models.Campaign.objects.get(pk=2): (0.2, 0.1, 0.2, 0.25),
                     },
                     # missing for 2016-07-02
                     datetime.date(2016, 7, 3): {
-                        models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25),
-                        models.Campaign.objects.get(pk=2): (0.2, 0.3, 0.25),
+                        models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.3, 0.25),
+                        models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.3, 0.25),
                     },
                 }
             )
@@ -110,8 +111,8 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
         mv.generate(
             campaign_factors={
-                datetime.date(2016, 7, 1): {models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25)},
-                datetime.date(2016, 7, 2): {models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25)},
+                datetime.date(2016, 7, 1): {models.Campaign.objects.get(pk=1): (1.0, 0.1, 0.2, 0.25)},
+                datetime.date(2016, 7, 2): {models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.3, 0.25)},
             }
         )
 
@@ -120,8 +121,8 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             "materialized_views/mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv",
             textwrap.dedent(
                 """\
-            2016-07-01\t1\t1.0\t0.2\t0.25\r
-            2016-07-02\t1\t1.0\t0.3\t0.25\r
+            2016-07-01\t1\t1.0\t0.1\t0.2\t0.25\r
+            2016-07-02\t1\t1.0\t0.2\t0.3\t0.25\r
             """
             ),
         )
@@ -132,12 +133,13 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_campaign_factors (
-                date date not null encode delta,
-                campaign_id integer not null encode lzo,
+                date date not null encode AZ64,
+                campaign_id integer not null encode AZ64,
 
-                pct_actual_spend decimal(22, 18) encode lzo,
-                pct_license_fee decimal(22, 18) encode lzo,
-                pct_margin decimal(22, 18) encode lzo
+                pct_actual_spend decimal(22, 18) encode AZ64,
+                pct_service_fee decimal(22, 18) encode AZ64,
+                pct_license_fee decimal(22, 18) encode AZ64,
+                pct_margin decimal(22, 18) encode AZ64
             ) sortkey(date, campaign_id)"""
                     )
                 ),

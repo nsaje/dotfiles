@@ -6,6 +6,8 @@ from django.test import TestCase
 
 import core.models
 import dash.constants
+import utils.exc
+import utils.test_helper
 import zemauth
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -24,35 +26,90 @@ class TestCreditLineItemManager(TestCase):
         start_date = datetime.date(2017, 1, 1)
         end_date = datetime.date(2017, 1, 2)
         item = CreditLineItem.objects.create(
-            request, start_date, end_date, 100, account=self.account, license_fee=Decimal("0.15")
+            request,
+            start_date,
+            end_date,
+            100,
+            account=self.account,
+            license_fee=Decimal("0.15"),
+            service_fee=Decimal("0.11"),
         )
         self.assertEqual(item.account, self.account)
         self.assertEqual(item.start_date, start_date)
         self.assertEqual(item.end_date, end_date)
         self.assertEqual(item.amount, 100)
         self.assertEqual(item.license_fee, Decimal("0.15"))
+        self.assertEqual(item.service_fee, Decimal("0.11"))
 
 
-class TestCreditLineItemValidateLicenseFee(TestCase):
+class TestCreditLineItemValidateLicenseServiceFee(TestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
+        self.request = magic_mixer.blend_request_user(permissions=["can_see_service_fee"])
         self.account = magic_mixer.blend(core.models.Account, users=[self.request.user])
-        self.item = self._create_credit(Decimal("0.1"), datetime.date(2017, 1, 1), datetime.date(2017, 1, 31))
-
-    def _create_credit(self, license_fee, start_date, end_date):
-        return CreditLineItem.objects.create(
-            self.request, start_date, end_date, 100, account=self.account, license_fee=license_fee
+        self.item = self._create_credit(
+            Decimal("0.7"), Decimal("0.9"), datetime.date(2017, 1, 1), datetime.date(2017, 1, 31)
         )
 
-    def test_valid_same_license_fee(self):
-        self._create_credit(Decimal("0.1"), self.item.start_date, self.item.end_date)
+    def _create_credit(self, service_fee, license_fee, start_date, end_date):
+        return CreditLineItem.objects.create(
+            self.request,
+            start_date,
+            end_date,
+            100,
+            account=self.account,
+            service_fee=service_fee,
+            license_fee=license_fee,
+        )
+
+    def test_valid_same_license_service_fee(self):
+        self._create_credit(Decimal("0.1"), Decimal("0.2"), self.item.start_date, self.item.end_date)
 
     def test_valid_non_overlapping(self):
-        self._create_credit(Decimal("0.2"), datetime.date(2017, 2, 1), datetime.date(2017, 2, 28))
+        self._create_credit(Decimal("0.2"), Decimal("0.3"), datetime.date(2017, 2, 1), datetime.date(2017, 2, 28))
 
     def test_valid_change_single_item(self):
-        self.item.license_fee = Decimal("0.2")
+        self.item.service_fee = Decimal("0.2")
+        self.item.license_fee = Decimal("0.3")
         self.item.save()
+        self.assertEqual(Decimal("0.2"), self.item.service_fee)
+        self.assertEqual(Decimal("0.3"), self.item.license_fee)
+
+    def test_update_license_fee(self):
+        with self.assertRaises(ValidationError):
+            self.item.update(None, license_fee=Decimal("1.01"))
+
+        with self.assertRaises(ValidationError):
+            self.item.update(None, license_fee=Decimal("-0.01"))
+
+        with self.assertRaises(ValidationError):
+            self.item.license_fee = Decimal("1.01")
+            self.item.save()
+
+        with self.assertRaises(ValidationError):
+            self.item.license_fee = Decimal("-0.01")
+            self.item.save()
+
+    def test_update_service_fee(self):
+        with self.assertRaises(ValidationError):
+            self.item.update(None, service_fee=Decimal("1.01"))
+
+        with self.assertRaises(ValidationError):
+            self.item.update(None, service_fee=Decimal("-0.01"))
+
+        with self.assertRaises(ValidationError):
+            self.item.service_fee = Decimal("1.01")
+            self.item.save()
+
+        with self.assertRaises(ValidationError):
+            self.item.service_fee = Decimal("-0.01")
+            self.item.save()
+
+    def test_update_service_fee_no_permission(self):
+        utils.test_helper.remove_permissions(self.request.user, permissions=["can_see_service_fee"])
+        self.item.update(self.request, service_fee=Decimal("0.3"))
+        self.assertEqual(Decimal("0.7"), self.item.service_fee)
+        self.item.service_fee = Decimal("0.1")
+        self.assertEqual(Decimal("0.1"), self.item.service_fee)
 
 
 class TestCreditLineItemQuerySetFilterOverlapping(TestCase):

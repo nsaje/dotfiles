@@ -5,19 +5,19 @@ import core.features.bcm
 
 class CampaignBCMMixin(object):
     def get_bcm_modifiers(self):
-        fee, margin = self.get_todays_fee_and_margin()
-        modifiers = {"fee": fee, "margin": margin}
+        service_fee, license_fee, margin = self.get_todays_fees_and_margin()
+        modifiers = {"service_fee": service_fee, "fee": license_fee, "margin": margin}
         return modifiers
 
-    def get_todays_fee_and_margin(self):
+    def get_todays_fees_and_margin(self):
         budget = self._get_todays_budget()
         if budget:
-            return budget.credit.license_fee, budget.margin
+            return budget.credit.service_fee, budget.credit.license_fee, budget.margin
         else:
             credit = self._get_todays_credit()
             if credit:
-                return credit.license_fee, None
-        return None, None
+                return credit.service_fee, credit.license_fee, None
+        return None, None, None
 
     def _get_todays_budget(self):
         return self.budgets.select_related("credit").filter_today().first()

@@ -1190,6 +1190,8 @@ class HistoryTest(TestCase):
             amount=100,
             status=constants.CreditLineItemStatus.SIGNED,
             created_by=self.u,
+            service_fee=Decimal("0.10"),
+            license_fee=Decimal("0.20"),
         )
 
         history = models.History.objects.all().first()
@@ -1202,6 +1204,7 @@ class HistoryTest(TestCase):
             , End Date set to "{ed}"
             , Amount set to "$100.00"
             , License Fee set to "20.00%"
+            , Service Fee set to "10.00%"
             , Flat Fee (cc) set to "$0.00"
             , Flat Fee Start Date set to ""
             , Flat Fee End Date set to ""

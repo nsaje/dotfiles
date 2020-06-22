@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 from django.urls import reverse
 
@@ -16,7 +17,12 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
     def test_get(self):
         agency = self.mix_agency(
             self.user,
-            permissions=[Permission.READ, Permission.BUDGET_MARGIN, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE],
+            permissions=[
+                Permission.READ,
+                Permission.BUDGET_MARGIN,
+                Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
+            ],
         )
         account = magic_mixer.blend(dash.models.Account, agency=agency)
         campaign = magic_mixer.blend(
@@ -30,6 +36,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
             amount=200000,
             currency=dash.constants.Currency.USD,
             status=dash.constants.CreditLineItemStatus.SIGNED,
+            service_fee=decimal.Decimal("0.1"),
         )
         budget = magic_mixer.blend(
             dash.models.BudgetLineItem,
@@ -59,9 +66,14 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertEqual(
             resp_json["data"]["licenseFee"], dash.views.helpers.format_decimal_to_percent(budget.credit.license_fee)
         )
+        self.assertEqual(
+            resp_json["data"]["serviceFee"], dash.views.helpers.format_decimal_to_percent(budget.credit.service_fee)
+        )
 
     def test_get_limited(self):
-        test_helper.remove_permissions(self.user, ["can_manage_agency_margin", "can_view_platform_cost_breakdown"])
+        test_helper.remove_permissions(
+            self.user, ["can_manage_agency_margin", "can_view_platform_cost_breakdown", "can_see_service_fee"]
+        )
         account = self.mix_account(self.user, permissions=[Permission.READ])
         campaign = magic_mixer.blend(
             dash.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
@@ -74,6 +86,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
             amount=200000,
             currency=dash.constants.Currency.USD,
             status=dash.constants.CreditLineItemStatus.SIGNED,
+            service_fee=decimal.Decimal("0.1"),
         )
         budget = magic_mixer.blend(
             dash.models.BudgetLineItem,
@@ -97,6 +110,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["id"], str(budget.id))
         self.assertTrue("margin" not in fields)
         self.assertTrue("licenseFee" not in fields)
+        self.assertTrue("serviceFee" not in fields)
 
 
 class CampaignBudgetViewSetTest(FutureRESTAPITestCase, LegacyCampaignBudgetViewSetTest):

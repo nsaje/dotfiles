@@ -46,6 +46,7 @@ class MultiCurrencyTestCase(TestCase):
             end_date=self.mock_today,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=500,
+            service_fee=Decimal("0.100"),
             license_fee=Decimal("0.135"),
             currency=dash.constants.Currency.EUR,
         )
@@ -68,7 +69,9 @@ class MultiCurrencyTestCase(TestCase):
     @patch("etl.daily_statements._get_campaign_spend")
     @patch("etl.daily_statements.get_campaigns_with_spend", return_value=dash.models.Campaign.objects.none())
     def test_non_usd_currency(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
-        return_values = {self.mock_today: {self.campaign.id: {"media_nano": 350 * 10 ** 9, "data_nano": 150 * 10 ** 9}}}
+        return_values = {
+            self.mock_today: {self.campaign.id: {"base_media_nano": 350 * 10 ** 9, "base_data_nano": 150 * 10 ** 9}}
+        }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(
             mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day, 12)
@@ -77,10 +80,25 @@ class MultiCurrencyTestCase(TestCase):
         daily_statements.reprocess_daily_statements(self.mock_today)
         statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
 
-        self.assertEqual(Decimal("350.0") * 10 ** 9, statement.media_spend_nano)
-        self.assertEqual(Decimal("62.055698057") * 10 ** 9, statement.data_spend_nano)
+        self.assertEqual(Decimal("350.0") * 10 ** 9, statement.base_media_spend_nano)
+        self.assertEqual(Decimal("20.850128252") * 10 ** 9, statement.base_data_spend_nano)
+        self.assertEqual(Decimal("388.888888888") * 10 ** 9, statement.media_spend_nano)
+        self.assertEqual(Decimal("23.166809169") * 10 ** 9, statement.data_spend_nano)
+        self.assertEqual(Decimal("41.205569805") * 10 ** 9, statement.service_fee_nano)
         self.assertEqual(Decimal("64.309270795") * 10 ** 9, statement.license_fee_nano)
         self.assertEqual(Decimal("134.359350189") * 10 ** 9, statement.margin_nano)
+        self.assertAlmostEqual(
+            self.budget.amount / self.exchange_rate,
+            (
+                statement.base_media_spend_nano
+                + statement.base_data_spend_nano
+                + statement.service_fee_nano
+                + statement.license_fee_nano
+                + statement.margin_nano
+            )
+            / Decimal(10 ** 9),
+            delta=Decimal("0.0001"),
+        )
         self.assertAlmostEqual(
             self.budget.amount / self.exchange_rate,
             (
@@ -93,16 +111,33 @@ class MultiCurrencyTestCase(TestCase):
             delta=Decimal("0.0001"),
         )
 
-        self.assertEqual(Decimal("286.545") * 10 ** 9, statement.local_media_spend_nano)
-        self.assertEqual(Decimal("50.805") * 10 ** 9, statement.local_data_spend_nano)
+        self.assertEqual(Decimal("286.545") * 10 ** 9, statement.local_base_media_spend_nano)
+        self.assertEqual(Decimal("17.069999999") * 10 ** 9, statement.local_base_data_spend_nano)
+        self.assertEqual(Decimal("318.383333333") * 10 ** 9, statement.local_media_spend_nano)
+        self.assertEqual(Decimal("18.966666666") * 10 ** 9, statement.local_data_spend_nano)
+        self.assertEqual(Decimal("33.735") * 10 ** 9, statement.local_service_fee_nano)
         self.assertEqual(Decimal("52.65") * 10 ** 9, statement.local_license_fee_nano)
         self.assertEqual(Decimal("110.0") * 10 ** 9, statement.local_margin_nano)
-        self.assertEqual(
-            self.budget.amount * 10 ** 9,
-            statement.local_media_spend_nano
-            + statement.local_data_spend_nano
-            + statement.local_license_fee_nano
-            + statement.local_margin_nano,
+        self.assertAlmostEqual(
+            self.budget.amount,
+            (
+                statement.local_base_media_spend_nano
+                + statement.local_base_data_spend_nano
+                + statement.local_service_fee_nano
+                + statement.local_license_fee_nano
+                + statement.local_margin_nano
+            )
+            / 10 ** 9,
+        )
+        self.assertAlmostEqual(
+            self.budget.amount,
+            (
+                statement.local_media_spend_nano
+                + statement.local_data_spend_nano
+                + statement.local_license_fee_nano
+                + statement.local_margin_nano
+            )
+            / 10 ** 9,
         )
 
     # FIXME (multicurrency): Fix the following test so that error "Cannot allocate budget from a credit in currency
@@ -111,13 +146,13 @@ class MultiCurrencyTestCase(TestCase):
     # @patch('etl.daily_statements._get_campaign_spend')
     # @patch('etl.daily_statements.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
     # def test_mixed_currencies(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
-    #     media_nano = 350
-    #     data_nano = 150
+    #     base_media_nano = 350
+    #     base_data_nano = 150
     #     return_values = {
     #         self.mock_today: {
     #             self.campaign.id: {
-    #                 'media_nano': media_nano * 10**9,
-    #                 'data_nano': data_nano * 10**9,
+    #                 'base_media_nano': base_media_nano * 10**9,
+    #                 'base_data_nano': base_data_nano * 10**9,
     #             },
     #         },
     #     }
@@ -147,36 +182,39 @@ class MultiCurrencyTestCase(TestCase):
     #     daily_statements.reprocess_daily_statements(self.mock_today)
     #     eur_statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
 
-    #     self.assertEqual(Decimal('350.0') * 10**9, eur_statement.media_spend_nano)
-    #     self.assertEqual(Decimal('62.055698057') * 10**9, eur_statement.data_spend_nano)
+    #     self.assertEqual(Decimal('350.0') * 10**9, eur_statement.base_media_spend_nano)
+    #     self.assertEqual(Decimal('62.055698057') * 10**9, eur_statement.base_data_spend_nano)
+    #     self.assertEqual(Decimal('41.205569806') * 10 ** 9, statement.service_fee_nano)
     #     self.assertEqual(Decimal('64.309270795') * 10**9, eur_statement.license_fee_nano)
     #     self.assertEqual(Decimal('134.359350189') * 10**9, eur_statement.margin_nano)
     #     self.assertAlmostEqual(
     #         self.budget.amount / self.exchange_rate,
-    #         (eur_statement.media_spend_nano + eur_statement.data_spend_nano +
-    #          eur_statement.license_fee_nano + eur_statement.margin_nano) / Decimal(10**9),
+    #         (eur_statement.base_media_spend_nano + eur_statement.base_data_spend_nano +
+    #          eur_statement.service_fee_nano + eur_statement.license_fee_nano + eur_statement.margin_nano) / Decimal(10**9),
     #         delta=Decimal('0.0001')
     #     )
 
-    #     self.assertEqual(Decimal('286.545') * 10**9, eur_statement.local_media_spend_nano)
-    #     self.assertEqual(Decimal('50.805') * 10**9, eur_statement.local_data_spend_nano)
+    #     self.assertEqual(Decimal('286.545') * 10**9, eur_statement.local_base_media_spend_nano)
+    #     self.assertEqual(Decimal('50.805') * 10**9, eur_statement.local_base_data_spend_nano)
+    #     self.assertEqual(Decimal('33.735') * 10 ** 9, statement.local_service_fee_nano)
     #     self.assertEqual(Decimal('52.65') * 10**9, eur_statement.local_license_fee_nano)
     #     self.assertEqual(Decimal('110.0') * 10**9, eur_statement.local_margin_nano)
     #     self.assertEqual(
     #         self.budget.amount * 10**9,
-    #         eur_statement.local_media_spend_nano + eur_statement.local_data_spend_nano +
-    #         eur_statement.local_license_fee_nano + eur_statement.local_margin_nano
+    #         eur_statement.local_base_media_spend_nano + eur_statement.local_base_data_spend_nano +
+    #         eur_statement.local_service_fee_nano + eur_statement.local_license_fee_nano + eur_statement.local_margin_nano
     #     )
 
     #     usd_statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=budget2)
     #     self.assertAlmostEqual(
-    #         media_nano + data_nano,
-    #         Decimal(eur_statement.media_spend_nano + eur_statement.data_spend_nano +
-    #                 usd_statement.media_spend_nano + usd_statement.data_spend_nano) / 10**9,
+    #         base_media_nano + base_data_nano,
+    #         Decimal(eur_statement.base_media_spend_nano + eur_statement.base_data_spend_nano +
+    #                 usd_statement.base_media_spend_nano + usd_statement.base_data_spend_nano) / 10**9,
     #         delta=Decimal('0.0001'),
     #     )
-    #     self.assertEqual(0, usd_statement.media_spend_nano)
-    #     self.assertEqual(Decimal('87.944301942'), usd_statement.data_spend_nano / Decimal(10**9))
+    #     self.assertEqual(0, usd_statement.base_media_spend_nano)
+    #     self.assertEqual(Decimal('87.944301942'), usd_statement.base_data_spend_nano / Decimal(10**9))
+    #     self.assertEqual(Decimal('...'), usd_statement.service_fee_nano / Decimal(10**9))
     #     self.assertEqual(Decimal('9.771589104'), usd_statement.license_fee_nano / Decimal(10**9))
     #     self.assertEqual(Decimal('24.428972761'), usd_statement.margin_nano / Decimal(10**9))
 
@@ -197,9 +235,11 @@ class DailyStatementsK1TestCase(TestCase):
             date="1970-01-01", currency=dash.constants.Currency.USD, exchange_rate=1
         )
 
-    def test_first_day_single_daily_statemnt(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+    def test_first_day_single_daily_statement(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 1): {self.campaign1.id: {"media_nano": 1500000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 11, 1): {
+                self.campaign1.id: {"base_media_nano": 1500000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
@@ -211,13 +251,19 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(1500000000000, statements[0].media_spend_nano)
-        self.assertEqual(500000000000, statements[0].data_spend_nano)
-        self.assertEqual(500000000000, statements[0].license_fee_nano)
+        self.assertEqual(1500000000000, statements[0].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[0].base_data_spend_nano)
+        self.assertEqual(1666666666666, statements[0].media_spend_nano)
+        self.assertEqual(555555555555, statements[0].data_spend_nano)
+        self.assertEqual(222222222222, statements[0].service_fee_nano)
+        self.assertEqual(555555555555, statements[0].license_fee_nano)
+        self.assertEqual(0, statements[0].margin_nano)
 
     def test_budget_with_fixed_margin(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2017, 6, 21): {self.campaign3.id: {"media_nano": 1000000000000, "data_nano": 360000000000}}
+            datetime.date(2017, 6, 21): {
+                self.campaign3.id: {"base_media_nano": 1000000000000, "base_data_nano": 360000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 21, 12))
@@ -231,16 +277,23 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(datetime.date(2017, 6, 21), statements[0].date)
 
         statement = statements[0]
-        # $1000 media + $360 data + $340 fee = $1700; $1700 == $2000 * 85% (margin pct)
-        self.assertEqual(1000, statement.media_spend_nano / 10 ** 9)
-        self.assertEqual(360, statement.data_spend_nano / 10 ** 9)
-        self.assertEqual(340, statement.license_fee_nano / 10 ** 9)
-        self.assertEqual(300, statement.margin_nano / 10 ** 9)
+        # $1000 media + $360 data + $240 service fee + $400 license fee = $2000; $2000 == $2352.94 * 85% (margin pct)
+        self.assertEqual(1000, statement.base_media_spend_nano / 10 ** 9)
+        self.assertEqual(360, statement.base_data_spend_nano / 10 ** 9)
+        self.assertEqual(1176.470588235, statement.media_spend_nano / 10 ** 9)
+        self.assertEqual(423.529411764, statement.data_spend_nano / 10 ** 9)
+        self.assertEqual(240, statement.service_fee_nano / 10 ** 9)
+        self.assertEqual(400, statement.license_fee_nano / 10 ** 9)
+        self.assertEqual(352.94117647, statement.margin_nano / 10 ** 9)
 
     def test_budget_with_fixed_margin_overspend(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2017, 6, 21): {self.campaign3.id: {"media_nano": 480 * 10 ** 9, "data_nano": 200 * 10 ** 9}},
-            datetime.date(2017, 6, 22): {self.campaign3.id: {"media_nano": 1000 * 10 ** 9, "data_nano": 400 * 10 ** 9}},
+            datetime.date(2017, 6, 21): {
+                self.campaign3.id: {"base_media_nano": 480 * 10 ** 9, "base_data_nano": 200 * 10 ** 9}
+            },
+            datetime.date(2017, 6, 22): {
+                self.campaign3.id: {"base_media_nano": 1000 * 10 ** 9, "base_data_nano": 400 * 10 ** 9}
+            },
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2017, 6, 22, 12))
@@ -254,25 +307,47 @@ class DailyStatementsK1TestCase(TestCase):
         statement1 = statements[0]
         self.assertEqual(datetime.date(2017, 6, 21), statement1.date)
 
-        # $480 media + $200 data + $170 fee = $850; $850 == $1000 * 85% (margin pct)
-        # budget spent: $1000/$3000
-        self.assertEqual(480, statement1.media_spend_nano / 10 ** 9)
-        self.assertEqual(200, statement1.data_spend_nano / 10 ** 9)
-        self.assertEqual(170, statement1.license_fee_nano / 10 ** 9)
-        self.assertEqual(150, statement1.margin_nano / 10 ** 9)
+        # $480 media + $200 data + $120 service fee + $200 license fee = $200; $1000 == $1176.471 * 85% (margin pct)
+        # budget spent: $1176.471/$3000
+        self.assertEqual(480, statement1.base_media_spend_nano / 10 ** 9)
+        self.assertEqual(200, statement1.base_data_spend_nano / 10 ** 9)
+        self.assertEqual(564.705882352, statement1.media_spend_nano / 10 ** 9)
+        self.assertEqual(235.294117647, statement1.data_spend_nano / 10 ** 9)
+        self.assertEqual(120, statement1.service_fee_nano / 10 ** 9)
+        self.assertEqual(200, statement1.license_fee_nano / 10 ** 9)
+        self.assertEqual(176.470588235, statement1.margin_nano / 10 ** 9)
 
         statement2 = statements[1]
         self.assertEqual(datetime.date(2017, 6, 22), statement2.date)
 
-        # $1000 media + $360 data + $340 fee = $1700; $1700 == $2000 * 85% (margin pct)
+        # $1000 media + $54 data + $186 service fee + $310 license fee = $1550; $1550 == $1823.529 * 85% (margin pct)
         # budget spent: $3000 / $3000
-        # overspend: $120
-        self.assertEqual(1000, statement2.media_spend_nano / 10 ** 9)
-        self.assertEqual(360, statement2.data_spend_nano / 10 ** 9)
-        self.assertEqual(340, statement2.license_fee_nano / 10 ** 9)
-        self.assertEqual(300, statement2.margin_nano / 10 ** 9)
+        # overspend: $346
+        self.assertEqual(1000, statement2.base_media_spend_nano / 10 ** 9)
+        self.assertEqual(54, statement2.base_data_spend_nano / 10 ** 9)
+        self.assertEqual(1176.470588235, statement2.media_spend_nano / 10 ** 9)
+        self.assertEqual(63.529411764, statement2.data_spend_nano / 10 ** 9)
+        self.assertEqual(186, statement2.service_fee_nano / 10 ** 9)
+        self.assertEqual(310, statement2.license_fee_nano / 10 ** 9)
+        self.assertEqual(273.529411764, statement2.margin_nano / 10 ** 9)
 
-        self.assertEqual(
+        self.assertAlmostEqual(
+            statement2.budget.amount,
+            (
+                statement1.base_media_spend_nano
+                + statement1.base_data_spend_nano
+                + statement1.service_fee_nano
+                + statement1.license_fee_nano
+                + statement1.margin_nano
+                + statement2.base_media_spend_nano
+                + statement2.base_data_spend_nano
+                + statement2.service_fee_nano
+                + statement2.license_fee_nano
+                + statement2.margin_nano
+            )
+            / 10 ** 9,
+        )
+        self.assertAlmostEqual(
             statement2.budget.amount,
             (
                 statement1.media_spend_nano
@@ -299,13 +374,18 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
+        self.assertEqual(Decimal("0"), statements[0].base_media_spend_nano)
+        self.assertEqual(Decimal("0"), statements[0].base_data_spend_nano)
         self.assertEqual(Decimal("0"), statements[0].media_spend_nano)
         self.assertEqual(Decimal("0"), statements[0].data_spend_nano)
+        self.assertEqual(Decimal("0"), statements[0].service_fee_nano)
         self.assertEqual(Decimal("0"), statements[0].license_fee_nano)
 
     def test_multiple_budgets_attribution_order(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 20): {self.campaign1.id: {"media_nano": 3500000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 11, 20): {
+                self.campaign1.id: {"base_media_nano": 3500000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 20, 12))
@@ -320,29 +400,43 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(32, len(statements))
         for statement in statements[:29]:
             self.assertGreater(datetime.date(2015, 11, 20), statement.date)
+            self.assertEqual(0, statement.base_media_spend_nano)
+            self.assertEqual(0, statement.base_data_spend_nano)
             self.assertEqual(0, statement.media_spend_nano)
             self.assertEqual(0, statement.data_spend_nano)
+            self.assertEqual(0, statement.service_fee_nano)
             self.assertEqual(0, statement.license_fee_nano)
 
         self.assertEqual(1, statements[29].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[29].date)
+        self.assertEqual(2160000000000, statements[29].base_media_spend_nano)
+        self.assertEqual(0, statements[29].base_data_spend_nano)
         self.assertEqual(2400000000000, statements[29].media_spend_nano)
         self.assertEqual(0, statements[29].data_spend_nano)
+        self.assertEqual(240000000000, statements[29].service_fee_nano)
         self.assertEqual(600000000000, statements[29].license_fee_nano)
         self.assertEqual(2, statements[30].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[30].date)
-        self.assertEqual(1100000000000, statements[30].media_spend_nano)
-        self.assertEqual(500000000000, statements[30].data_spend_nano)
-        self.assertEqual(400000000000, statements[30].license_fee_nano)
+        self.assertEqual(1340000000000, statements[30].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[30].base_data_spend_nano)
+        self.assertEqual(1488888888888, statements[30].media_spend_nano)
+        self.assertEqual(555555555555, statements[30].data_spend_nano)
+        self.assertEqual(204444444444, statements[30].service_fee_nano)
+        self.assertEqual(511111111111, statements[30].license_fee_nano)
         self.assertEqual(3, statements[31].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[31].date)
+        self.assertEqual(0, statements[31].base_media_spend_nano)
+        self.assertEqual(0, statements[31].base_data_spend_nano)
         self.assertEqual(0, statements[31].media_spend_nano)
         self.assertEqual(0, statements[31].data_spend_nano)
+        self.assertEqual(0, statements[31].service_fee_nano)
         self.assertEqual(0, statements[31].license_fee_nano)
 
     def test_overspend_with_campaign_stop(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 1): {self.campaign1.id: {"media_nano": 3000000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 11, 1): {
+                self.campaign1.id: {"base_media_nano": 3000000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
@@ -357,13 +451,18 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
+        self.assertEqual(2160000000000, statements[0].base_media_spend_nano)
+        self.assertEqual(0, statements[0].base_data_spend_nano)
         self.assertEqual(2400000000000, statements[0].media_spend_nano)
         self.assertEqual(0, statements[0].data_spend_nano)
+        self.assertEqual(240000000000, statements[0].service_fee_nano)
         self.assertEqual(600000000000, statements[0].license_fee_nano)
 
     def test_overspend_manual(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 1): {self.campaign1.id: {"media_nano": 3000000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 11, 1): {
+                self.campaign1.id: {"base_media_nano": 3000000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
@@ -381,13 +480,18 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(3000000000000, statements[0].media_spend_nano)
-        self.assertEqual(500000000000, statements[0].data_spend_nano)
-        self.assertEqual(875000000000, statements[0].license_fee_nano)
+        self.assertEqual(3000000000000, statements[0].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[0].base_data_spend_nano)
+        self.assertEqual(3333333333333, statements[0].media_spend_nano)
+        self.assertEqual(555555555555, statements[0].data_spend_nano)
+        self.assertEqual(388888888888, statements[0].service_fee_nano)
+        self.assertEqual(972222222222, statements[0].license_fee_nano)
 
     def test_overspend_manual_no_budget(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 10, 1): {self.campaign1.id: {"media_nano": 3000000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 10, 1): {
+                self.campaign1.id: {"base_media_nano": 3000000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 1, 12))
@@ -397,6 +501,7 @@ class DailyStatementsK1TestCase(TestCase):
             start_date=datetime.date(2015, 10, 1),
             end_date=datetime.date(2015, 10, 1),
             amount=0,
+            service_fee=Decimal("0.1"),
             license_fee=Decimal("0.2"),
             status=dash.constants.CreditLineItemStatus.SIGNED,
         )
@@ -416,13 +521,18 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(datetime.date(2015, 10, 1), statements[0].budget.start_date)
         self.assertEqual(datetime.date(2015, 10, 1), statements[0].budget.end_date)
         self.assertEqual(datetime.date(2015, 10, 1), statements[0].date)
-        self.assertEqual(3000000000000, statements[0].media_spend_nano)
-        self.assertEqual(500000000000, statements[0].data_spend_nano)
-        self.assertEqual(875000000000, statements[0].license_fee_nano)
+        self.assertEqual(3000000000000, statements[0].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[0].base_data_spend_nano)
+        self.assertEqual(3333333333333, statements[0].media_spend_nano)
+        self.assertEqual(555555555555, statements[0].data_spend_nano)
+        self.assertEqual(388888888888, statements[0].service_fee_nano)
+        self.assertEqual(972222222222, statements[0].license_fee_nano)
 
     def test_different_fees(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 1): {self.campaign2.id: {"media_nano": 4000000000000, "data_nano": 500000000000}}
+            datetime.date(2015, 11, 1): {
+                self.campaign2.id: {"base_media_nano": 4000000000000, "base_data_nano": 500000000000}
+            }
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
@@ -437,19 +547,27 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(2, len(statements))
         self.assertEqual(4, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
+        self.assertEqual(3600000000000, statements[0].base_media_spend_nano)
+        self.assertEqual(0, statements[0].base_data_spend_nano)
         self.assertEqual(4000000000000, statements[0].media_spend_nano)
         self.assertEqual(0, statements[0].data_spend_nano)
+        self.assertEqual(400000000000, statements[0].service_fee_nano)
         self.assertEqual(1000000000000, statements[0].license_fee_nano)
         self.assertEqual(5, statements[1].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[1].date)
-        self.assertEqual(0, statements[1].media_spend_nano)
+        self.assertEqual(400000000000, statements[1].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[1].base_data_spend_nano)
+        self.assertEqual(400000000000, statements[1].media_spend_nano)
         self.assertEqual(500000000000, statements[1].data_spend_nano)
-        self.assertEqual(500000000000, statements[1].license_fee_nano)
+        self.assertEqual(0, statements[1].service_fee_nano)
+        self.assertEqual(900000000000, statements[1].license_fee_nano)
 
     def test_different_days(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
-            datetime.date(2015, 11, 10): {self.campaign1.id: {"media_nano": 2500000000000, "data_nano": 500000000000}},
-            datetime.date(2015, 11, 11): {self.campaign1.id: {"media_nano": 1000000000000, "data_nano": 0}},
+            datetime.date(2015, 11, 10): {
+                self.campaign1.id: {"base_media_nano": 2500000000000, "base_data_nano": 500000000000}
+            },
+            datetime.date(2015, 11, 11): {self.campaign1.id: {"base_media_nano": 1000000000000, "base_data_nano": 0}},
         }
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
@@ -463,30 +581,46 @@ class DailyStatementsK1TestCase(TestCase):
         )
         self.assertEqual(13, len(statements))
         for statement in statements[:9]:
+            self.assertEqual(0, statement.base_media_spend_nano)
+            self.assertEqual(0, statement.base_data_spend_nano)
             self.assertEqual(0, statement.media_spend_nano)
             self.assertEqual(0, statement.data_spend_nano)
+            self.assertEqual(0, statement.service_fee_nano)
             self.assertEqual(0, statement.license_fee_nano)
             self.assertGreater(datetime.date(2015, 11, 11), statement.date)
+
         self.assertEqual(1, statements[9].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[9].date)
+        self.assertEqual(2160000000000, statements[9].base_media_spend_nano)
+        self.assertEqual(0, statements[9].base_data_spend_nano)
         self.assertEqual(2400000000000, statements[9].media_spend_nano)
         self.assertEqual(0, statements[9].data_spend_nano)
+        self.assertEqual(240000000000, statements[9].service_fee_nano)
         self.assertEqual(600000000000, statements[9].license_fee_nano)
         self.assertEqual(2, statements[10].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[10].date)
-        self.assertEqual(100000000000, statements[10].media_spend_nano)
-        self.assertEqual(500000000000, statements[10].data_spend_nano)
-        self.assertEqual(150000000000, statements[10].license_fee_nano)
+        self.assertEqual(340000000000, statements[10].base_media_spend_nano)
+        self.assertEqual(500000000000, statements[10].base_data_spend_nano)
+        self.assertEqual(377777777777, statements[10].media_spend_nano)
+        self.assertEqual(555555555555, statements[10].data_spend_nano)
+        self.assertEqual(93333333333, statements[10].service_fee_nano)
+        self.assertEqual(233333333333, statements[10].license_fee_nano)
         self.assertEqual(1, statements[11].budget_id)
         self.assertEqual(datetime.date(2015, 11, 11), statements[11].date)
+        self.assertEqual(0, statements[11].base_media_spend_nano)
+        self.assertEqual(0, statements[11].base_data_spend_nano)
         self.assertEqual(0, statements[11].media_spend_nano)
         self.assertEqual(0, statements[11].data_spend_nano)
+        self.assertEqual(0, statements[11].service_fee_nano)
         self.assertEqual(0, statements[11].license_fee_nano)
         self.assertEqual(2, statements[12].budget_id)
         self.assertEqual(datetime.date(2015, 11, 11), statements[12].date)
-        self.assertEqual(1000000000000, statements[12].media_spend_nano)
+        self.assertEqual(1000000000000, statements[12].base_media_spend_nano)
+        self.assertEqual(0, statements[12].base_data_spend_nano)
+        self.assertEqual(1111111111111, statements[12].media_spend_nano)
         self.assertEqual(0, statements[12].data_spend_nano)
-        self.assertEqual(250000000000, statements[12].license_fee_nano)
+        self.assertEqual(111111111111, statements[12].service_fee_nano)
+        self.assertEqual(277777777777, statements[12].license_fee_nano)
 
     @patch("etl.daily_statements._generate_statements")
     def test_daily_statements_already_exist(
@@ -504,8 +638,11 @@ class DailyStatementsK1TestCase(TestCase):
                     dash.models.BudgetDailyStatement.objects.create(
                         budget=budget,
                         date=date,
+                        base_media_spend_nano=0,
+                        base_data_spend_nano=0,
                         media_spend_nano=0,
                         data_spend_nano=0,
+                        service_fee_nano=0,
                         license_fee_nano=0,
                         margin_nano=0,
                     )
@@ -532,23 +669,36 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
+        campaign_spend = {
+            "base_media_nano": 40 * converters.CURRENCY_TO_NANO,
+            "base_data_nano": 40 * converters.CURRENCY_TO_NANO,
+        }
         total_spend = {date: {campaign.id: campaign_spend}}
+
+        spend = campaign_spend["base_media_nano"] + campaign_spend["base_data_nano"]
+        service_fee_nano = spend * Decimal("0.10")
+        license_fee_nano = (spend + service_fee_nano) * Decimal("0.20")
+        margin_nano = (spend + service_fee_nano + license_fee_nano) * Decimal("0.15")
+
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=campaign_spend["media_nano"],
-            data_spend_nano=campaign_spend["media_nano"],
-            license_fee_nano=(campaign_spend["media_nano"] + campaign_spend["data_nano"]) * budget.credit.license_fee,
-            margin_nano=24 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=campaign_spend["base_media_nano"],
+            base_data_spend_nano=campaign_spend["base_media_nano"],
+            media_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano / 2,
+            data_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano / 2,
+            service_fee_nano=service_fee_nano,
+            license_fee_nano=license_fee_nano,
+            margin_nano=margin_nano,
         )
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("1"), pct_actual_spend)
+        self.assertEqual(Decimal("0.1"), pct_service_fee)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
-        self.assertEqual(Decimal("0.25"), pct_margin)
+        self.assertEqual(Decimal("0.15"), pct_margin)
 
     @patch("utils.dates_helper.local_today")
     def test_campaign_spend_none(self, mock_today):
@@ -560,7 +710,7 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         total_spend = {date: {campaign.id: campaign_spend}}
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
 
-        self.assertEqual(effective_spend[date][campaign], (0, 0, 0))
+        self.assertEqual(effective_spend[date][campaign], (0, 0, 0, 0))
 
     @patch("utils.dates_helper.local_today")
     def test_overspend_pcts(self, mock_today):
@@ -569,26 +719,35 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
+        campaign_spend = {
+            "base_media_nano": 40 * converters.CURRENCY_TO_NANO,
+            "base_data_nano": 40 * converters.CURRENCY_TO_NANO,
+        }
         total_spend = {date: {campaign.id: campaign_spend}}
 
-        attributed_media_spend_nano = (campaign_spend["media_nano"]) * Decimal("0.8")
-        attributed_data_spend_nano = (campaign_spend["data_nano"]) * Decimal("0.8")
-        license_fee_nano = (attributed_media_spend_nano + attributed_data_spend_nano) * budget.credit.license_fee
+        base_attributed_media_spend_nano = (campaign_spend["base_media_nano"]) * Decimal("0.8")
+        base_attributed_data_spend_nano = (campaign_spend["base_data_nano"]) * Decimal("0.8")
+        spend = base_attributed_media_spend_nano + base_attributed_data_spend_nano
+        service_fee_nano = spend * Decimal("0.10")
+        license_fee_nano = (spend + service_fee_nano) * Decimal("0.20")
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=attributed_media_spend_nano,
-            data_spend_nano=attributed_data_spend_nano,
+            base_media_spend_nano=base_attributed_media_spend_nano,
+            base_data_spend_nano=base_attributed_data_spend_nano,
+            media_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano / 2,
+            data_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano / 2,
+            service_fee_nano=service_fee_nano,
             license_fee_nano=license_fee_nano,
             margin_nano=0,
         )
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0.8"), pct_actual_spend)
+        self.assertEqual(Decimal("0.1"), pct_service_fee)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
 
     @patch("utils.dates_helper.local_today")
@@ -599,35 +758,53 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
+        campaign_spend = {
+            "base_media_nano": 40 * converters.CURRENCY_TO_NANO,
+            "base_data_nano": 40 * converters.CURRENCY_TO_NANO,
+        }
         total_spend = {date: {campaign.id: campaign_spend}}
 
-        attributed_media_spend_nano = (campaign_spend["media_nano"]) * Decimal("0.5")
-        attributed_data_spend_nano = (campaign_spend["data_nano"]) * Decimal("0.5")
+        base_attributed_media_spend_nano = (campaign_spend["base_media_nano"]) * Decimal("0.5")
+        base_attributed_data_spend_nano = (campaign_spend["base_data_nano"]) * Decimal("0.5")
+
+        spend = base_attributed_media_spend_nano + base_attributed_data_spend_nano
+
+        service_fee_nano1 = spend * Decimal("0.10")
+        license_fee_nano1 = (spend + service_fee_nano1) * Decimal("0.20")
+
+        service_fee_nano2 = spend * Decimal("0.00")
+        license_fee_nano2 = (spend + service_fee_nano2) * Decimal("1.00")
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget1,
             date=date,
-            media_spend_nano=attributed_media_spend_nano,
-            data_spend_nano=attributed_data_spend_nano,
-            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget1.credit.license_fee,
+            base_media_spend_nano=base_attributed_media_spend_nano,
+            base_data_spend_nano=base_attributed_data_spend_nano,
+            media_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano1 / 2,
+            data_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano1 / 2,
+            service_fee_nano=service_fee_nano1,
+            license_fee_nano=license_fee_nano1,
             margin_nano=0,
         )
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget2,
             date=date,
-            media_spend_nano=attributed_media_spend_nano,
-            data_spend_nano=attributed_data_spend_nano,
-            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget2.credit.license_fee,
+            base_media_spend_nano=base_attributed_media_spend_nano,
+            base_data_spend_nano=base_attributed_data_spend_nano,
+            media_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano2 / 2,
+            data_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano2 / 2,
+            service_fee_nano=service_fee_nano2,
+            license_fee_nano=license_fee_nano2,
             margin_nano=0,
         )
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("1"), pct_actual_spend)
-        self.assertEqual(Decimal("0.6"), pct_license_fee)
+        self.assertEqual(Decimal("0.05"), pct_service_fee)
+        self.assertAlmostEqual(Decimal("0.581"), pct_license_fee, delta=Decimal("0.0001"))
 
     @patch("utils.dates_helper.local_today")
     def test_margin_over_50_pct(self, mock_today):
@@ -636,33 +813,36 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
+        campaign_spend = {
+            "base_media_nano": 40 * converters.CURRENCY_TO_NANO,
+            "base_data_nano": 40 * converters.CURRENCY_TO_NANO,
+        }
         total_spend = {date: {campaign.id: campaign_spend}}
 
-        license_fee_nano = (campaign_spend["media_nano"] + campaign_spend["data_nano"]) * budget.credit.license_fee
-        desired_margin_pct = Decimal("0.6")
-        margin_nano = (
-            (campaign_spend["media_nano"] + campaign_spend["data_nano"] + license_fee_nano)
-            * desired_margin_pct
-            / (1 - desired_margin_pct)
-        )
-        expected_margin_as_pct_of_spend = margin_nano / (
-            campaign_spend["media_nano"] + campaign_spend["data_nano"] + license_fee_nano
-        )
+        spend = campaign_spend["base_media_nano"] + campaign_spend["base_data_nano"]
+        service_fee_nano = spend * Decimal("0.10")
+        license_fee_nano = (spend + service_fee_nano) * Decimal("0.20")
+        margin_nano = (spend + service_fee_nano + license_fee_nano) * Decimal("0.6")
+
+        expected_margin_as_pct_of_spend = margin_nano / (spend + service_fee_nano + license_fee_nano)
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=campaign_spend["media_nano"],
-            data_spend_nano=campaign_spend["data_nano"],
+            base_media_spend_nano=campaign_spend["base_media_nano"],
+            base_data_spend_nano=campaign_spend["base_data_nano"],
+            media_spend_nano=campaign_spend["base_media_nano"] + service_fee_nano / 2,
+            data_spend_nano=campaign_spend["base_data_nano"] + service_fee_nano / 2,
+            service_fee_nano=service_fee_nano,
             license_fee_nano=license_fee_nano,
             margin_nano=margin_nano,
         )
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("1"), pct_actual_spend)
+        self.assertEqual(Decimal("0.1"), pct_service_fee)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
         self.assertEqual(expected_margin_as_pct_of_spend, pct_margin)
 
@@ -673,22 +853,26 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 0, "data_nano": 0}
+        campaign_spend = {"base_media_nano": 0, "base_data_nano": 0}
         total_spend = {date: {campaign.id: campaign_spend}}
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=40000000000,
-            data_spend_nano=40000000000,
-            license_fee_nano=16000000000,
+            base_media_spend_nano=40000000000,
+            base_data_spend_nano=40000000000,
+            media_spend_nano=20000000000,
+            data_spend_nano=20000000000,
+            service_fee_nano=16000000000,
+            license_fee_nano=19200000000,
             margin_nano=0,
         )
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0"), pct_actual_spend)
+        self.assertEqual(Decimal("0.2"), pct_service_fee)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
 
     @patch("utils.dates_helper.local_today")
@@ -697,13 +881,14 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         date = datetime.date(2015, 2, 1)
         mock_today.return_value = date
 
-        campaign_spend = {"media_nano": 0, "data_nano": 0}
+        campaign_spend = {"base_media_nano": 0, "base_data_nano": 0}
         total_spend = {date: {campaign.id: campaign_spend}}
 
         effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
-        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+        pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0"), pct_actual_spend)
+        self.assertEqual(Decimal("0"), pct_service_fee)
         self.assertEqual(Decimal("0"), pct_license_fee)
 
     @patch("etl.daily_statements._get_campaign_spend")

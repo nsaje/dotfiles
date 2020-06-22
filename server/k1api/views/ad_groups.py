@@ -86,14 +86,16 @@ class AdGroupsView(K1APIView):
                 include_global=False,  # global blacklist is handled separately by the bidder, no need to duplicate work
             )
 
+            service_fee = None
             license_fee = None
             margin = None
             if ad_group.campaign_id in campaigns_budgets_map:
+                service_fee = campaigns_budgets_map[ad_group.campaign_id].credit.service_fee
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
             b1_sources_group_daily_budget = ad_group.settings.get_external_b1_sources_group_daily_budget(
-                license_fee, margin
+                service_fee, license_fee, margin
             )
 
             # FIXME: k1 doesn't update missing keys, find a better solution

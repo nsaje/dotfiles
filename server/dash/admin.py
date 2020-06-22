@@ -1342,7 +1342,16 @@ class RefundLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
 # Budgets
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
-    list_display = ("__str__", "campaign", "start_date", "end_date", "amount", "license_fee", "created_dt")
+    list_display = (
+        "__str__",
+        "campaign",
+        "start_date",
+        "end_date",
+        "amount",
+        "service_fee",
+        "license_fee",
+        "created_dt",
+    )
     date_hierarchy = "start_date"
     list_filter = ["created_by"]
     readonly_fields = ("created_dt", "created_by", "freed_cc")

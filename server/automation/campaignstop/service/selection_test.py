@@ -345,7 +345,6 @@ class UpdateAlmostDepletedTestCase(TestCase):
             end_date=dates_helper.days_after(self.today, 30),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=1000,
-            license_fee="0.1",
         )
         self.budget_line_item = magic_mixer.blend(
             core.features.bcm.BudgetLineItem,

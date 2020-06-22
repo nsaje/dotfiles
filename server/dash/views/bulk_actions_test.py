@@ -57,7 +57,7 @@ class LegacyAdGroupSourceStateTestCase(DASHAPITestCase):
             "selected_ids": [source_id, maintenance_source_id],
         }
 
-        mock_table_update.return_value = {"rows": {"1": {"cpc": 3}, "2": {"cpc": 4}}}
+        mock_table_update.return_value = {"rows": {"1": {"bid_cpc": 3}, "2": {"bid_cpc": 4}}}
 
         response = self._post_source_state(ad_group_id, data)
 
@@ -78,10 +78,10 @@ class LegacyAdGroupSourceStateTestCase(DASHAPITestCase):
                                     "value": 1,
                                 },
                                 "status": {"value": 1},
-                                "cpc": {"value": 3},
+                                "bid_cpc": {"value": 3},
                             },
                         },
-                        {"breakdownId": "2", "stats": {"cpc": {"value": 4}}},
+                        {"breakdownId": "2", "stats": {"bid_cpc": {"value": 4}}},
                     ]
                 },
             },

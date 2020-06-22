@@ -175,10 +175,6 @@ def clean_non_relevant_fields(rows):
         row.pop("status_per_source", None)
         row.pop("notifications", None)
 
-        for key in list(row.keys()):
-            if key.startswith("performance_"):
-                row.pop(key, None)
-
 
 def get_upload_batches_response_list(upload_batches):
     upload_batches = upload_batches.order_by("-created_dt")

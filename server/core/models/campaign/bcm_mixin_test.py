@@ -16,7 +16,7 @@ class CampaignBcmMixin(TestCase):
         self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
 
-    def test_get_todays_fee_and_margin(self):
+    def test_get_todays_fees_and_margin(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         today = datetime.date.today()
 
@@ -28,6 +28,7 @@ class CampaignBcmMixin(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.2121"),
         )
 
@@ -39,6 +40,7 @@ class CampaignBcmMixin(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.2222"),
             license_fee=decimal.Decimal("0.3333"),
         )
 
@@ -52,12 +54,13 @@ class CampaignBcmMixin(TestCase):
             margin=decimal.Decimal("0.2200"),
         )
 
-        fee, margin = self.campaign.get_todays_fee_and_margin()
+        service_fee, license_fee, margin = self.campaign.get_todays_fees_and_margin()
 
-        self.assertEqual(fee, decimal.Decimal("0.3333"))
+        self.assertEqual(service_fee, decimal.Decimal("0.2222"))
+        self.assertEqual(license_fee, decimal.Decimal("0.3333"))
         self.assertEqual(margin, decimal.Decimal("0.2200"))
 
-    def test_get_todays_fee_and_margin_no_budget(self):
+    def test_get_todays_fees_and_margin_no_budget(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         today = datetime.date.today()
 
@@ -69,15 +72,17 @@ class CampaignBcmMixin(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.2121"),
         )
 
-        fee, margin = self.campaign.get_todays_fee_and_margin()
+        service_fee, license_fee, margin = self.campaign.get_todays_fees_and_margin()
 
-        self.assertEqual(fee, decimal.Decimal("0.2121"))
+        self.assertEqual(service_fee, decimal.Decimal("0.1111"))
+        self.assertEqual(license_fee, decimal.Decimal("0.2121"))
         self.assertEqual(margin, None)
 
-    def test_get_todays_fee_and_margin_agency_credit(self):
+    def test_get_todays_fees_and_margin_agency_credit(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         today = datetime.date.today()
 
@@ -89,6 +94,7 @@ class CampaignBcmMixin(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.2121"),
         )
 
@@ -102,12 +108,13 @@ class CampaignBcmMixin(TestCase):
             margin=decimal.Decimal("0.2200"),
         )
 
-        fee, margin = self.campaign.get_todays_fee_and_margin()
+        service_fee, license_fee, margin = self.campaign.get_todays_fees_and_margin()
 
-        self.assertEqual(fee, decimal.Decimal("0.2121"))
+        self.assertEqual(service_fee, decimal.Decimal("0.1111"))
+        self.assertEqual(license_fee, decimal.Decimal("0.2121"))
         self.assertEqual(margin, decimal.Decimal("0.2200"))
 
-    def test_get_todays_fee_and_margin_nothing(self):
+    def test_get_todays_fees_and_margin_nothing(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
         credit = magic_mixer.blend(
@@ -118,6 +125,7 @@ class CampaignBcmMixin(TestCase):
             status=constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.2121"),
         )
 
@@ -131,7 +139,8 @@ class CampaignBcmMixin(TestCase):
             margin=decimal.Decimal("0.2200"),
         )
 
-        fee, margin = self.campaign.get_todays_fee_and_margin()
+        service_fee, license_fee, margin = self.campaign.get_todays_fees_and_margin()
 
-        self.assertEqual(fee, None)
+        self.assertEqual(service_fee, None)
+        self.assertEqual(license_fee, None)
         self.assertEqual(margin, None)

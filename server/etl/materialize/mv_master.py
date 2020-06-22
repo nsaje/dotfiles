@@ -185,6 +185,12 @@ class MasterView(Materialize):
                         None,  # vast4_viewable
                         0,  # ssp_cost_nano
                         0,  # local_ssp_cost_nano
+                        0,  # base_effective_cost_nano
+                        0,  # base_effective_data_cost_nano
+                        0,  # service_fee_nano
+                        0,  # local_base_effective_cost_nano
+                        0,  # local_base_effective_data_cost_nano
+                        0,  # local_service_fee_nano
                     ),
                     (row.conversions, row.postclick_source),
                 )

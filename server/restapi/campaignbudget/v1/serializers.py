@@ -42,14 +42,14 @@ class CampaignBudgetSerializer(
     comment = restapi.serializers.fields.PlainCharField(required=False, max_length=256)
     state = restapi.serializers.fields.DashConstantField(constants.BudgetLineItemState, read_only=True)
     spend = rest_framework.serializers.DecimalField(
-        source="get_local_spend_data_bcm",
+        source="get_local_etfm_spend_data",
         max_digits=20,
         decimal_places=4,
         read_only=True,
         rounding=decimal.ROUND_HALF_DOWN,
     )
     available = rest_framework.serializers.DecimalField(
-        source="get_local_available_data_bcm",
+        source="get_local_etfm_available_data",
         max_digits=20,
         decimal_places=4,
         read_only=True,

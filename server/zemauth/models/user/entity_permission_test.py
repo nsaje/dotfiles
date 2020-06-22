@@ -144,6 +144,8 @@ class EntityPermissionMixinTestCase(TestCase):
             return user.has_agency_spend_and_margin_perm_on
         elif permission == zemauth.features.entity_permission.Permission.MEDIA_COST_DATA_COST_LICENCE_FEE:
             return user.has_media_cost_data_cost_and_licence_fee_perm_on
+        elif permission == zemauth.features.entity_permission.Permission.BASE_COSTS_SERVICE_FEE:
+            return user.has_base_costs_and_service_fee_perm_on
         elif permission == zemauth.features.entity_permission.Permission.RESTAPI:
             return user.has_rest_api_perm_on
         else:

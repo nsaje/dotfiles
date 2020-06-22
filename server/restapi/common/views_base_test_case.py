@@ -53,6 +53,7 @@ class RESTAPITestCase(APITestCase):
         "account_credit_view",
         "can_clone_campaigns",
         "can_see_backend_hacks",
+        "can_see_service_fee",
     ]
 
 

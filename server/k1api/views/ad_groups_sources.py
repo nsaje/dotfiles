@@ -79,15 +79,17 @@ class AdGroupSourcesView(K1APIView):
 
             tracking_code = url_helper.combine_tracking_codes(ad_group.settings.get_tracking_codes(), "")
 
+            service_fee = None
             license_fee = None
             margin = None
             if ad_group.campaign_id in campaigns_budgets_map:
+                service_fee = campaigns_budgets_map[ad_group.campaign_id].credit.service_fee
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
-            cpc_cc = ad_group_source.settings.get_external_cpc_cc(license_fee, margin)
-            cpm = ad_group_source.settings.get_external_cpm(license_fee, margin)
-            daily_budget_cc = ad_group_source.settings.get_external_daily_budget_cc(license_fee, margin)
+            cpc_cc = ad_group_source.settings.get_external_cpc_cc(service_fee, license_fee, margin)
+            cpm = ad_group_source.settings.get_external_cpm(service_fee, license_fee, margin)
+            daily_budget_cc = ad_group_source.settings.get_external_daily_budget_cc(service_fee, license_fee, margin)
 
             if ad_group.is_blocked_by_custom_flag() or ad_group.is_disabled:
                 source_state = constants.AdGroupSettingsState.INACTIVE

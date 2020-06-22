@@ -155,16 +155,19 @@ DEFAULT_STATS = set(
 
 PLATFORM_SPEND_REFUND_FIELDS = ["e_media_cost_refund", "media_cost_refund", "et_cost_refund", "at_cost_refund"]
 
+SERVICE_FEE_REFUND_FIELDS = ["service_fee_refund"]
+
 LICENSE_FEE_REFUND_FIELDS = ["license_fee_refund"]
 
 MARGIN_REFUND_FIELDS = ["margin_refund"]
 
-AGENCY_SPEND_REFUND_FIELDS = ["etf_cost_refund", "billing_cost_refund"]
+AGENCY_SPEND_REFUND_FIELDS = ["etf_cost_refund"]
 
-TOTAL_SPEND_REFUND_FIELDS = ["etfm_cost_refund", "agency_cost_refund"]
+TOTAL_SPEND_REFUND_FIELDS = ["etfm_cost_refund"]
 
 REFUND_FIELDS = set(
     PLATFORM_SPEND_REFUND_FIELDS
+    + SERVICE_FEE_REFUND_FIELDS
     + LICENSE_FEE_REFUND_FIELDS
     + MARGIN_REFUND_FIELDS
     + AGENCY_SPEND_REFUND_FIELDS
@@ -177,8 +180,6 @@ HELPER_FIELDS = set(["campaign_has_available_budget", "status_per_source"])
 TRAFFIC_FIELDS = [
     "clicks",
     "impressions",
-    "data_cost",
-    "local_data_cost",
     "etfm_cpc",
     "local_etfm_cpc",
     "etfm_cpm",
@@ -188,12 +189,19 @@ TRAFFIC_FIELDS = [
     "url",
     "media_cost",
     "local_media_cost",
+    "data_cost",
+    "local_data_cost",
+    "b_media_cost",
+    "local_b_media_cost" "b_data_cost",
+    "local_b_data_cost",
     "e_media_cost",
     "local_e_media_cost",
     "e_data_cost",
     "local_e_data_cost",
     "etfm_cost",
     "local_etfm_cost",
+    "service_fee",
+    "local_service_fee",
     "license_fee",
     "local_license_fee",
     "margin",

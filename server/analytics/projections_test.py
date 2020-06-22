@@ -21,13 +21,17 @@ class ProjectionsTestCase(test.TestCase):
     def setUp(self):
         self.today = datetime.date(2015, 11, 15)
         self.maxDiff = None
+        dash.models.CreditLineItem.objects.filter(id=1).update(service_fee=0)
 
-    def _create_statement(self, budget, date, media=500, data=500, fee=100, margin=0):
+    def _create_statement(self, budget, date, media=500, data=500, service_fee=0, fee=100, margin=0):
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
-            media_spend_nano=media * converters.CURRENCY_TO_NANO,
-            data_spend_nano=data * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=media * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=data * converters.CURRENCY_TO_NANO,
+            media_spend_nano=Decimal(media + service_fee / 2) * converters.CURRENCY_TO_NANO,
+            data_spend_nano=Decimal(data + service_fee / 2) * converters.CURRENCY_TO_NANO,
+            service_fee_nano=service_fee * converters.CURRENCY_TO_NANO,
             license_fee_nano=fee * converters.CURRENCY_TO_NANO,
             margin_nano=margin * converters.CURRENCY_TO_NANO,
         )
@@ -165,8 +169,11 @@ class ProjectionsTestCase(test.TestCase):
         dash.models.BudgetDailyStatement.objects.create(
             budget=bud,
             date=start_date + datetime.timedelta(days=2),
-            media_spend_nano=100,
-            data_spend_nano=100,
+            base_media_spend_nano=100,
+            base_data_spend_nano=100,
+            media_spend_nano=1000,
+            data_spend_nano=1000,
+            service_fee_nano=0,
             license_fee_nano=100,
             margin_nano=0,
         )
@@ -264,8 +271,11 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetDailyStatement.objects.create(
                 budget=bud,
                 date=start_date + datetime.timedelta(days=2),
-                media_spend_nano=100,
-                data_spend_nano=100,
+                base_media_spend_nano=100,
+                base_data_spend_nano=100,
+                media_spend_nano=1000,
+                data_spend_nano=1000,
+                service_fee_nano=0,
                 license_fee_nano=100,
                 margin_nano=0,
             )

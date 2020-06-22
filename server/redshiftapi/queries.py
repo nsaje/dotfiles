@@ -34,7 +34,7 @@ def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_
     model = models.MVMaster()
 
     context = model.get_query_all_yesterday_context(
-        breakdown, constraints, parents, ["-yesterday_cost"] + breakdown, view
+        breakdown, constraints, parents, ["-yesterday_at_cost"] + breakdown, view
     )
 
     return _prepare_query_all_for_model(model, context)

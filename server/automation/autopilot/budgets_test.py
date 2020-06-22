@@ -28,12 +28,12 @@ class AutopilotBudgetsTestCase(test.TestCase):
             (
                 {sources[0]: "0.0", sources[1]: "0.0", sources[2]: "0.0", sources[3]: "17.0"},
                 6,
-                {sources[0]: "2.0", sources[1]: "2.0", sources[2]: "2.0", sources[3]: "17.0"},
+                {sources[0]: "2.0", sources[1]: "2.0", sources[2]: "1.0", sources[3]: "18.0"},
             ),
             (
                 {sources[0]: "5.0", sources[1]: "3.0", sources[2]: "0.0", sources[3]: "17.0"},
                 6,
-                {sources[0]: "7.0", sources[1]: "5.0", sources[2]: "2.0", sources[3]: "17.0"},
+                {sources[0]: "7.0", sources[1]: "5.0", sources[2]: "1.0", sources[3]: "18.0"},
             ),
             (
                 {sources[0]: "2.0", sources[1]: "2.0", sources[2]: "2.0", sources[3]: "17.0"},
@@ -53,7 +53,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
                     sources,
                     Decimal(test_case[1]),
                     {k: Decimal(v) for k, v in list(test_case[0].items())},
-                    {"fee": Decimal("0.15"), "margin": Decimal("0.3")},
+                    {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")},
                 ),
                 {k: Decimal(v) for k, v in list(test_case[2].items())},
             )
@@ -81,28 +81,34 @@ class AutopilotBudgetsTestCase(test.TestCase):
         daily_budget = Decimal(100)
         mock_opt_constr.return_value = (None, {0: Decimal(20), 1: Decimal(20)}, None)
         budgets._get_autopilot_budget_constraints(
-            sources, daily_budget, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            sources, daily_budget, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
-        mock_opt_constr.assert_called_with(sources, {"fee": Decimal("0.15"), "margin": Decimal("0.3")})
+        mock_opt_constr.assert_called_with(
+            sources, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        )
         self.assertEqual(mock_min_constr.called, False)
 
         mock_min_constr.return_value = (None, None)
         mock_opt_constr.return_value = (None, {0: Decimal(200), 1: Decimal(200)}, None)
         budgets._get_autopilot_budget_constraints(
-            sources, daily_budget, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            sources, daily_budget, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
-        mock_opt_constr.assert_called_with(sources, {"fee": Decimal("0.15"), "margin": Decimal("0.3")})
-        mock_min_constr.assert_called_with(sources, {"fee": Decimal("0.15"), "margin": Decimal("0.3")})
+        mock_opt_constr.assert_called_with(
+            sources, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        )
+        mock_min_constr.assert_called_with(
+            sources, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        )
 
     @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
     @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("3"))
     def test_get_minimum_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
         max_budgets, min_budgets = budgets._get_minimum_autopilot_budget_constraints(
-            {s: {} for s in sources}, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            {s: {} for s in sources}, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
-        self.assertEqual(max_budgets, {sources.get(id=1): Decimal("60"), sources.get(id=5): Decimal("90")})
-        self.assertEqual(min_budgets, {sources.get(id=1): Decimal("6"), sources.get(id=5): Decimal("9")})
+        self.assertEqual(max_budgets, {sources.get(id=1): Decimal("60"), sources.get(id=5): Decimal("100")})
+        self.assertEqual(min_budgets, {sources.get(id=1): Decimal("6"), sources.get(id=5): Decimal("10")})
 
     @patch("core.models.all_rtb.AllRTBSourceType.min_daily_budget", Decimal("6"))
     @patch("automation.autopilot.settings.MAX_BUDGET_GAIN", Decimal("10"))
@@ -113,18 +119,18 @@ class AutopilotBudgetsTestCase(test.TestCase):
         data = {s: {} for s in sources}
         data[all_rtb_ad_group_source] = {"old_budget": Decimal(40.0)}
         max_budgets, min_budgets = budgets._get_minimum_autopilot_budget_constraints(
-            data, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            data, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
         self.assertEqual(
             min_budgets,
-            {sources.get(id=1): Decimal("6"), sources.get(id=5): Decimal("9"), all_rtb_ad_group_source: Decimal("11")},
+            {sources.get(id=1): Decimal("6"), sources.get(id=5): Decimal("10"), all_rtb_ad_group_source: Decimal("12")},
         )
         self.assertEqual(
             max_budgets,
             {
                 sources.get(id=1): Decimal("60"),
-                sources.get(id=5): Decimal("90"),
-                all_rtb_ad_group_source: Decimal("110"),
+                sources.get(id=5): Decimal("100"),
+                all_rtb_ad_group_source: Decimal("120"),
             },
         )
 
@@ -135,7 +141,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
         data = {s: {"old_budget": s.settings.daily_budget_cc} for s in sources}
         max_budgets, min_budgets, old_budgets = budgets._get_optimistic_autopilot_budget_constraints(
-            data, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            data, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
         self.assertEqual(max_budgets, {sources.get(id=1): Decimal("600"), sources.get(id=5): Decimal("500")})
         self.assertEqual(min_budgets, {sources.get(id=1): Decimal("30"), sources.get(id=5): Decimal("25")})
@@ -152,7 +158,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
         data = {s: {"old_budget": s.settings.daily_budget_cc} for s in sources}
         data[all_rtb_ad_group_source] = {"old_budget": Decimal(40.0)}
         max_budgets, min_budgets, old_budgets = budgets._get_optimistic_autopilot_budget_constraints(
-            data, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            data, {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
         self.assertEqual(
             max_budgets,

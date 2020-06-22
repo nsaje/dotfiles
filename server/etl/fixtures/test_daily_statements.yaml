@@ -108,6 +108,7 @@
         start_date: '2015-11-01'
         end_date: '2015-11-30'
         amount: 15100
+        service_fee: '0.10'
         license_fee: '0.20'
         status: 1
         created_dt: '2015-11-01 00:00:01'
@@ -121,6 +122,7 @@
         start_date: '2015-11-01'
         end_date: '2015-11-30'
         amount: 3000
+        service_fee: '0.0'
         license_fee: '0.5'
         status: 1
         created_dt: '2015-11-01 00:00:01'
@@ -147,7 +149,8 @@
         start_date: '2017-06-01'
         end_date: '2017-12-31'
         amount: 3000
-        license_fee: '0.2'
+        service_fee: '0.15'
+        license_fee: '0.20'
         status: 1
         created_dt: '2015-11-01 00:00:01'
         modified_dt: '2015-11-01 00:00:01'

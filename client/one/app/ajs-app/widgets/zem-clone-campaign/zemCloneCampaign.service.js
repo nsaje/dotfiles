@@ -5,7 +5,6 @@ angular
         this.openResultsModal = openResultsModal;
 
         function openCloneModal(campaignId, campaignName) {
-            console.log(campaignName);
             var modal = $uibModal.open({
                 component: 'zemCloneCampaignModal',
                 backdrop: 'static',

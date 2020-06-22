@@ -220,10 +220,10 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         total_spend = self.get_local_spend_data(to_date=date)["etfm_total"]
         return self.allocated_amount() - total_spend
 
-    def get_local_spend_data_bcm(self):
+    def get_local_etfm_spend_data(self):
         return self.get_local_spend_data()["etfm_total"]
 
-    def get_local_available_data_bcm(self):
+    def get_local_etfm_available_data(self):
         return self.get_local_available_etfm_amount()
 
     def state(self, date=None):
@@ -308,8 +308,9 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         except IndexError:
             return None
         total_cc = converters.nano_to_cc(
-            statement.local_media_spend_nano
-            + statement.local_data_spend_nano
+            statement.local_base_media_spend_nano
+            + statement.local_base_data_spend_nano
+            + statement.local_service_fee_nano
             + statement.local_license_fee_nano
             + statement.local_margin_nano
         )
@@ -325,10 +326,13 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None):
-        if (date is None or date == utils.dates_helper.local_today()) and hasattr(self, "spend_data_media"):
+        if (date is None or date == utils.dates_helper.local_today()) and hasattr(self, "spend_data_b_media"):
             return {
-                "media": utils.converters.nano_to_decimal(self.spend_data_media or 0),
-                "data": utils.converters.nano_to_decimal(self.spend_data_data or 0),
+                "base_media": utils.converters.nano_to_decimal(self.spend_data_b_media or 0),
+                "base_data": utils.converters.nano_to_decimal(self.spend_data_b_data or 0),
+                "media": utils.converters.nano_to_decimal(self.spend_data_e_media or 0),
+                "data": utils.converters.nano_to_decimal(self.spend_data_e_data or 0),
+                "service_fee": utils.converters.nano_to_decimal(self.spend_data_service_fee or 0),
                 "license_fee": utils.converters.nano_to_decimal(self.spend_data_license_fee or 0),
                 "margin": utils.converters.nano_to_decimal(self.spend_data_margin or 0),
                 "et_total": utils.converters.nano_to_decimal(self.spend_data_et_total or 0),
@@ -344,11 +348,14 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if (
             from_date is None
             and (to_date is None or to_date == utils.dates_helper.local_today())
-            and hasattr(self, "spend_data_media")
+            and hasattr(self, "spend_data_b_media")
         ):
             return {
-                "media": utils.converters.nano_to_decimal(self.spend_data_local_media or 0),
-                "data": utils.converters.nano_to_decimal(self.spend_data_local_data or 0),
+                "base_media": utils.converters.nano_to_decimal(self.spend_data_local_b_media or 0),
+                "base_data": utils.converters.nano_to_decimal(self.spend_data_local_b_data or 0),
+                "media": utils.converters.nano_to_decimal(self.spend_data_local_e_media or 0),
+                "data": utils.converters.nano_to_decimal(self.spend_data_local_e_data or 0),
+                "service_fee": utils.converters.nano_to_decimal(self.spend_data_local_service_fee or 0),
                 "license_fee": utils.converters.nano_to_decimal(self.spend_data_local_license_fee or 0),
                 "margin": utils.converters.nano_to_decimal(self.spend_data_local_margin or 0),
                 "etfm_total": utils.converters.nano_to_decimal(self.spend_data_local_etfm_total or 0),
@@ -412,6 +419,9 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             self.validate_margin,
         )
 
+    def service_fee(self):
+        return self.credit.service_fee
+
     def license_fee(self):
         return self.credit.license_fee
 
@@ -431,7 +441,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 "Cannot allocate budget from a credit in currency different from account's currency."
             )
 
-        self.validate_license_fee()
+        self.validate_fees()
 
     def clean_start_date(self):
         """
@@ -477,13 +487,13 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if overlapping_budget_line_items.exists():
             raise exceptions.OverlappingBudgetMarginInvalid("Margin must be the same on overlapping budget line items.")
 
-    def validate_license_fee(self):
+    def validate_fees(self):
         if self.start_date is None or self.end_date is None:
             return
 
         overlapping_budget_line_items = (
             BudgetLineItem.objects.filter(campaign=self.campaign)
-            .exclude(credit__license_fee=self.credit.license_fee)
+            .exclude(credit__service_fee=self.credit.service_fee, credit__license_fee=self.credit.license_fee)
             .filter_overlapping(self.start_date, self.end_date)
         )
         if overlapping_budget_line_items.exists():
@@ -551,15 +561,13 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 self.exclude(end_date__lt=date)
                 .filter(start_date__lte=date)
                 .annotate(
-                    local_media_spend_sum=Sum("statements__local_media_spend_nano"),
-                    local_license_fee_spend_sum=Sum("statements__local_license_fee_nano"),
-                    local_data_spend_sum=Sum("statements__local_data_spend_nano"),
+                    local_base_media_spend_sum=Sum("statements__local_base_media_spend_nano"),
+                    local_base_data_spend_sum=Sum("statements__local_base_data_spend_nano"),
                 )
                 .exclude(
                     amount__lte=core.features.bcm.helpers.Round(
-                        core.features.bcm.helpers.Coalesce("local_media_spend_sum") * 1e-9
-                        + core.features.bcm.helpers.Coalesce("local_license_fee_spend_sum") * 1e-9
-                        + core.features.bcm.helpers.Coalesce("local_data_spend_sum") * 1e-9
+                        core.features.bcm.helpers.Coalesce("local_base_media_spend_sum") * 1e-9
+                        + core.features.bcm.helpers.Coalesce("local_base_data_spend_sum") * 1e-9
                     )
                 )
             )
@@ -582,8 +590,11 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
         def annotate_spend_data(self):
             return self.annotate(
-                spend_data_media=Sum("statements__media_spend_nano"),
-                spend_data_data=Sum("statements__data_spend_nano"),
+                spend_data_b_media=Sum("statements__" + dailystatement.B_MEDIA_FIELD),
+                spend_data_b_data=Sum("statements__" + dailystatement.B_DATA_FIELD),
+                spend_data_e_media=Sum("statements__" + dailystatement.E_MEDIA_FIELD),
+                spend_data_e_data=Sum("statements__" + dailystatement.E_DATA_FIELD),
+                spend_data_service_fee=Sum("statements__service_fee_nano"),
                 spend_data_license_fee=Sum("statements__license_fee_nano"),
                 spend_data_margin=Sum("statements__margin_nano"),
                 spend_data_et_total=Sum(sum(F("statements__" + field) for field in dailystatement.ET_TOTALS_FIELDS)),
@@ -591,8 +602,11 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 spend_data_etfm_total=Sum(
                     sum(F("statements__" + field) for field in dailystatement.ETFM_TOTALS_FIELDS)
                 ),
-                spend_data_local_media=Sum("statements__local_media_spend_nano"),
-                spend_data_local_data=Sum("statements__local_data_spend_nano"),
+                spend_data_local_b_media=Sum("statements__" + dailystatement.LOCAL_B_MEDIA_FIELD),
+                spend_data_local_b_data=Sum("statements__" + dailystatement.LOCAL_B_DATA_FIELD),
+                spend_data_local_e_media=Sum("statements__" + dailystatement.LOCAL_E_MEDIA_FIELD),
+                spend_data_local_e_data=Sum("statements__" + dailystatement.LOCAL_E_DATA_FIELD),
+                spend_data_local_service_fee=Sum("statements__local_service_fee_nano"),
                 spend_data_local_license_fee=Sum("statements__local_license_fee_nano"),
                 spend_data_local_margin=Sum("statements__local_margin_nano"),
                 spend_data_local_et_total=Sum(

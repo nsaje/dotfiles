@@ -70,7 +70,15 @@ CREATE TABLE IF NOT EXISTS mv_master_pubs (
         vast4_viewable integer,
 
         ssp_cost_nano bigint,
-        local_ssp_cost_nano bigint
+        local_ssp_cost_nano bigint,
+
+        base_effective_cost_nano bigint,
+        base_effective_data_cost_nano bigint,
+        service_fee_nano bigint,
+
+        local_base_effective_cost_nano bigint,
+        local_base_effective_data_cost_nano bigint,
+        local_service_fee_nano bigint
         -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_pubs_main_idx ON mv_master_pubs (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, date);

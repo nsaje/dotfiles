@@ -61,6 +61,7 @@
       - ['account_credit_view', 'zemauth', 'user']
       - ['can_clone_campaigns', 'zemauth', 'user']
       - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_service_fee", "zemauth", "user"]
 
 - model: oauth2_provider.application
   pk: 1
@@ -124,6 +125,7 @@
         start_date: '2015-10-01'
         end_date: '2116-11-30'
         amount: 200000
+        service_fee: 0.1
         license_fee: 0.2
         status: 1
         comment: 'Test case'

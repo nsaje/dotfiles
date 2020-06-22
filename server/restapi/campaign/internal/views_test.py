@@ -113,6 +113,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         canEditAmount=None,
         createdBy=None,
         createdDt=None,
+        serviceFee=None,
         licenseFee=None,
     ):
         representation = {
@@ -131,6 +132,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             "canEditAmount": canEditAmount,
             "createdBy": str(createdBy),
             "createdDt": createdDt,
+            "serviceFee": serviceFee,
             "licenseFee": licenseFee,
         }
 
@@ -149,6 +151,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         accountName=None,
         startDate=None,
         endDate=None,
+        serviceFee=None,
         licenseFee=None,
         amount=None,
         total=None,
@@ -172,6 +175,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             "accountName": accountName,
             "startDate": startDate,
             "endDate": endDate,
+            "serviceFee": str(serviceFee),
             "licenseFee": str(licenseFee),
             "amount": amount,
             "total": str(total),
@@ -213,6 +217,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.BUDGET_MARGIN,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
             ],
             agency=agency,
         )
@@ -237,8 +242,11 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 "available_budgets_sum": decimal.Decimal("0.0000"),
                 "unallocated_credit": decimal.Decimal("0.0000"),
                 "campaign_spend": decimal.Decimal("0.0000"),
+                "base_media_spend": decimal.Decimal("0.0000"),
+                "base_data_spend": decimal.Decimal("0.0000"),
                 "media_spend": decimal.Decimal("0.0000"),
                 "data_spend": decimal.Decimal("0.0000"),
+                "service_fee": decimal.Decimal("0.0000"),
                 "license_fee": decimal.Decimal("0.0000"),
                 "margin": decimal.Decimal("0.0000"),
             },
@@ -289,8 +297,11 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                     "availableBudgetsSum": "0.0000",
                     "unallocatedCredit": "0.0000",
                     "campaignSpend": "0.0000",
+                    "baseMediaSpend": "0.0000",
+                    "baseDataSpend": "0.0000",
                     "mediaSpend": "0.0000",
                     "dataSpend": "0.0000",
+                    "serviceFee": "0.0000",
                     "licenseFee": "0.0000",
                     "margin": "0.0000",
                 },
@@ -328,6 +339,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.BUDGET_MARGIN,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
             ],
             agency=agency,
         )
@@ -370,6 +382,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             amount=200000,
             currency=dash.constants.Currency.USD,
             status=dash.constants.CreditLineItemStatus.SIGNED,
+            service_fee=decimal.Decimal("0.1000"),
         )
         inactive_budget = magic_mixer.blend(
             dash.models.BudgetLineItem,
@@ -416,8 +429,11 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 "available_budgets_sum": decimal.Decimal("10.0000"),
                 "unallocated_credit": decimal.Decimal("10.0000"),
                 "campaign_spend": decimal.Decimal("10.0000"),
+                "base_media_spend": decimal.Decimal("220.0000"),
+                "base_data_spend": decimal.Decimal("100.0000"),
                 "media_spend": decimal.Decimal("220.0000"),
                 "data_spend": decimal.Decimal("100.0000"),
+                "service_fee": decimal.Decimal("5.0000"),
                 "license_fee": decimal.Decimal("5.0000"),
                 "margin": decimal.Decimal("2.0000"),
             },
@@ -473,13 +489,14 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                     startDate=active_budget.start_date,
                     endDate=active_budget.end_date,
                     state=active_budget.state(),
-                    spend=active_budget.get_local_spend_data_bcm(),
-                    available=active_budget.get_local_available_data_bcm(),
+                    spend=active_budget.get_local_etfm_spend_data(),
+                    available=active_budget.get_local_etfm_available_data(),
                     canEditStartDate=active_budget.can_edit_start_date(),
                     canEditEndDate=active_budget.can_edit_end_date(),
                     canEditAmount=active_budget.can_edit_amount(),
                     createdBy=active_budget.created_by,
                     createdDt=active_budget.created_dt,
+                    serviceFee=dash.views.helpers.format_decimal_to_percent(active_budget.credit.service_fee),
                     licenseFee=dash.views.helpers.format_decimal_to_percent(active_budget.credit.license_fee),
                 )
             ],
@@ -512,8 +529,11 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                     "availableBudgetsSum": "10.0000",
                     "unallocatedCredit": "10.0000",
                     "campaignSpend": "10.0000",
+                    "baseMediaSpend": "220.0000",
+                    "baseDataSpend": "100.0000",
                     "mediaSpend": "220.0000",
                     "dataSpend": "100.0000",
+                    "serviceFee": "5.0000",
                     "licenseFee": "5.0000",
                     "margin": "2.0000",
                 },
@@ -527,13 +547,14 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                         startDate=inactive_budget.start_date,
                         endDate=inactive_budget.end_date,
                         state=inactive_budget.state(),
-                        spend=inactive_budget.get_local_spend_data_bcm(),
-                        available=inactive_budget.get_local_available_data_bcm(),
+                        spend=inactive_budget.get_local_etfm_spend_data(),
+                        available=inactive_budget.get_local_etfm_available_data(),
                         canEditStartDate=inactive_budget.can_edit_start_date(),
                         canEditEndDate=inactive_budget.can_edit_end_date(),
                         canEditAmount=inactive_budget.can_edit_amount(),
                         createdBy=inactive_budget.created_by,
                         createdDt=inactive_budget.created_dt,
+                        serviceFee=dash.views.helpers.format_decimal_to_percent(inactive_budget.credit.service_fee),
                         licenseFee=dash.views.helpers.format_decimal_to_percent(inactive_budget.credit.license_fee),
                     )
                 ],
@@ -549,6 +570,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                         accountName=credit.account.settings.name if credit.account is not None else None,
                         startDate=credit.start_date,
                         endDate=credit.end_date,
+                        serviceFee=dash.views.helpers.format_decimal_to_percent(credit.service_fee),
                         licenseFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
                         amount=credit.amount,
                         total=credit.effective_amount(),
@@ -568,7 +590,8 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get_limited(self, mock_get_extra_data):
         test_helper.remove_permissions(
-            self.user, permissions=["can_manage_agency_margin", "can_view_platform_cost_breakdown"]
+            self.user,
+            permissions=["can_manage_agency_margin", "can_view_platform_cost_breakdown", "can_see_service_fee"],
         )
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
@@ -651,8 +674,8 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             startDate=active_budget.start_date,
             endDate=active_budget.end_date,
             state=active_budget.state(),
-            spend=active_budget.get_local_spend_data_bcm(),
-            available=active_budget.get_local_available_data_bcm(),
+            spend=active_budget.get_local_etfm_spend_data(),
+            available=active_budget.get_local_etfm_available_data(),
             canEditStartDate=active_budget.can_edit_start_date(),
             canEditEndDate=active_budget.can_edit_end_date(),
             canEditAmount=active_budget.can_edit_amount(),
@@ -661,6 +684,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         )
         del campaign_budget_repr["margin"]
         del campaign_budget_repr["licenseFee"]
+        del campaign_budget_repr["serviceFee"]
 
         depleted_campaign_budget_repr = self.campaign_budget_repr(
             id=inactive_budget.id,
@@ -670,8 +694,8 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             startDate=inactive_budget.start_date,
             endDate=inactive_budget.end_date,
             state=inactive_budget.state(),
-            spend=inactive_budget.get_local_spend_data_bcm(),
-            available=inactive_budget.get_local_available_data_bcm(),
+            spend=inactive_budget.get_local_etfm_spend_data(),
+            available=inactive_budget.get_local_etfm_available_data(),
             canEditStartDate=inactive_budget.can_edit_start_date(),
             canEditEndDate=inactive_budget.can_edit_end_date(),
             canEditAmount=inactive_budget.can_edit_amount(),
@@ -680,6 +704,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         )
         del depleted_campaign_budget_repr["margin"]
         del depleted_campaign_budget_repr["licenseFee"]
+        del depleted_campaign_budget_repr["serviceFee"]
 
         credit_item_repr = self.credit_item_repr(
             id=credit.pk,
@@ -692,7 +717,8 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             accountName=credit.account.settings.name if credit.account is not None else None,
             startDate=credit.start_date,
             endDate=credit.end_date,
-            licenseFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
+            licenseFee=dash.views.helpers.format_decimal_to_percent(credit.service_fee),
+            serviceFee=dash.views.helpers.format_decimal_to_percent(credit.license_fee),
             amount=credit.amount,
             total=credit.effective_amount(),
             allocated=credit.get_allocated_amount(),
@@ -705,6 +731,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             isAvailable=credit.is_available(),
         )
         del credit_item_repr["licenseFee"]
+        del credit_item_repr["serviceFee"]
 
         self.assertEqual(resp_json["data"]["budgets"], [campaign_budget_repr])
         self.assertEqual(
@@ -769,6 +796,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.BUDGET,
                 Permission.BUDGET_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
             ],
         )
         account = magic_mixer.blend(core.models.Account, agency=agency)
@@ -901,6 +929,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.BUDGET,
                 Permission.BUDGET_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                Permission.BASE_COSTS_SERVICE_FEE,
             ],
         )
         account = magic_mixer.blend(core.models.Account, agency=agency)

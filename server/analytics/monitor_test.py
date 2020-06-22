@@ -12,13 +12,16 @@ from dash.models import BudgetLineItem
 from utils import converters
 
 
-def _create_daily_statement(date, budget, media_nano, data_nano=0, margin_nano=0):
+def _create_daily_statement(date, budget, base_media_nano, base_data_nano=0, margin_nano=0):
     BudgetDailyStatement.objects.create(
         date=date,
         budget=budget,
-        media_spend_nano=media_nano,
-        data_spend_nano=data_nano,
-        license_fee_nano=int(media_nano / (1 - budget.credit.license_fee)),
+        base_media_spend_nano=base_media_nano,
+        base_data_spend_nano=base_data_nano,
+        media_spend_nano=base_media_nano + budget.credit.service_fee / 2,
+        data_spend_nano=base_data_nano + budget.credit.service_fee / 2,
+        service_fee_nano=int(base_media_nano / (1 - budget.credit.service_fee)),
+        license_fee_nano=int(base_media_nano / (1 - budget.credit.license_fee)),
         margin_nano=margin_nano,
     )
 
@@ -66,21 +69,21 @@ class TestAuditSpendPatterns(TestCase):
     def setUp(self):
         self.today = datetime.date(2015, 11, 15)
 
-    def _create_statement(self, budget, date, media=500, data=0, margin=0):
+    def _create_statement(self, budget, date, base_media=500, base_data=0, margin=0):
         _create_daily_statement(
             date,
             budget,
-            media * converters.CURRENCY_TO_NANO,
-            data_nano=data * converters.CURRENCY_TO_NANO,
+            base_media * converters.CURRENCY_TO_NANO,
+            base_data_nano=base_data * converters.CURRENCY_TO_NANO,
             margin_nano=margin * converters.CURRENCY_TO_NANO,
         )
 
-    def _create_batch_statements(self, budgets, start_date, end_date=None, media=500):
+    def _create_batch_statements(self, budgets, start_date, end_date=None, base_media=500):
         for date in utils.dates_helper.date_range(start_date, end_date or self.today):
             for budget in budgets:
                 if budget.state(date) != dash.constants.BudgetLineItemState.ACTIVE:
                     continue
-                self._create_statement(budget, date, media=media)
+                self._create_statement(budget, date, base_media=base_media)
 
     def test_normal_pacing(self):
         start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
@@ -92,22 +95,22 @@ class TestAuditSpendPatterns(TestCase):
     def test_high_pacing(self):
         start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
 
-        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, media=10000)
+        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, base_media=10000)
         alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
 
         self.assertTrue(alarms)
         self.assertEqual(
-            [row[:3] for row in alarms], [(1, Decimal("470.2869"), "high"), (2, Decimal("807.6923"), "high")]
+            [row[:3] for row in alarms], [(1, Decimal("780.5859"), "high"), (2, Decimal("1206.7395"), "high")]
         )
 
     def test_low_pacing(self):
         start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
 
-        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, media=10)
+        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, base_media=10)
         alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
 
         self.assertTrue(alarms)
-        self.assertEqual([row[:3] for row in alarms], [(1, Decimal("5.1732"), "low"), (2, Decimal("8.8846"), "low")])
+        self.assertEqual([row[:3] for row in alarms], [(1, Decimal("8.5864"), "low"), (2, Decimal("13.2741"), "low")])
 
 
 class AuditSpendIntegrity(TestCase):
@@ -119,42 +122,80 @@ class AuditSpendIntegrity(TestCase):
 
     @mock.patch("analytics.monitor._get_rs_spend")
     def test_audit_success(self, mock_rs_spend):
-        mock_rs_spend.return_value = {"media": 900000000000, "data": 0, "fee": 1125000000000, "margin": 0}
+        mock_rs_spend.return_value = {
+            "base_media": 900000000000,
+            "base_data": 0,
+            "service_fee": 1000000000000,
+            "license_fee": 1125000000000,
+            "margin": 0,
+        }
         alarms = monitor.audit_spend_integrity(self.date)
         self.assertFalse(alarms)
 
     @mock.patch("analytics.monitor._get_rs_spend")
     def test_audit_success_with_err(self, mock_rs_spend):
-        mock_rs_spend.return_value = {"media": 900000070000, "data": 0, "fee": 1125000000300, "margin": 0}
+        mock_rs_spend.return_value = {
+            "base_media": 900000070000,
+            "base_data": 0,
+            "service_fee": 1000000000100,
+            "license_fee": 1125000000300,
+            "margin": 0,
+        }
         alarms = monitor.audit_spend_integrity(self.date)
         self.assertFalse(alarms)
 
     @mock.patch("analytics.monitor._get_rs_spend")
     def test_audit_fail(self, mock_rs_spend):
-        mock_rs_spend.return_value = {"media": 900000000000, "data": 0, "fee": 1145000000000, "margin": 0}
+        mock_rs_spend.return_value = {
+            "base_media": 900000000000,
+            "base_data": 0,
+            "service_fee": 1001100000000,
+            "license_fee": 1145000000000,
+            "margin": 0,
+        }
         alarms = monitor.audit_spend_integrity(self.date)
         self.assertEqual(
             alarms,
             [
-                (datetime.date(2015, 10, 29), "mv_adgroup_placement", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_campaign_placement", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_account_placement", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_master", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_contentad", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_contentad_device", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_contentad_environment", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_contentad_geo", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_adgroup", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_adgroup_device", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_adgroup_environment", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_adgroup_geo", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_campaign", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_campaign_device", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_campaign_environment", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_campaign_geo", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_account", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_account_device", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_account_environment", "fee", -20000000000),
-                (datetime.date(2015, 10, 29), "mv_account_geo", "fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_placement", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_placement", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_placement", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_placement", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account_placement", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_account_placement", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_master", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_master", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_contentad", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_contentad", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_device", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_device", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_environment", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_environment", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_geo", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_contentad_geo", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_device", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_device", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_environment", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_environment", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_geo", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_adgroup_geo", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_campaign", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_device", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_device", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_environment", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_environment", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_geo", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_campaign_geo", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_account", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account_device", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_account_device", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account_environment", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_account_environment", "license_fee", -20000000000),
+                (datetime.date(2015, 10, 29), "mv_account_geo", "service_fee", -1100000000),
+                (datetime.date(2015, 10, 29), "mv_account_geo", "license_fee", -20000000000),
             ],
         )

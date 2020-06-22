@@ -67,9 +67,9 @@ class MVHCurrencyExchangeRatesTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher(
                         """
             CREATE TEMP TABLE mvh_currency_exchange_rates (
-                date date not null encode delta,
-                account_id integer not null encode lzo,
-                exchange_rate decimal(10, 4) encode lzo
+                date date not null encode AZ64,
+                account_id integer not null encode AZ64,
+                exchange_rate decimal(10, 4) encode AZ64
             ) sortkey(date, account_id);"""
                     )
                 ),

@@ -37,11 +37,11 @@ class AdGroupStatsView(K1APIView):
         stats = redshiftapi.api_quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
         return self.response_ok(
             {
-                "total_cost": stats["total_cost"],
+                "total_cost": stats["etfm_cost"],
                 "impressions": stats["impressions"],
                 "clicks": stats["clicks"],
-                "cpc": stats["cpc"],
-                "cpm": stats["cpm"],
+                "cpc": stats["etfm_cpc"],
+                "cpm": stats["etfm_cpm"],
             }
         )
 

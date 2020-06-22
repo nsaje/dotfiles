@@ -16,7 +16,7 @@ from zemauth.features.entity_permission import Permission
 class LegacyCreditViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown"])
+        utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown", "can_see_service_fee"])
 
     @classmethod
     def credit_repr(
@@ -28,6 +28,7 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         total=None,
         allocated=None,
         available=None,
+        service_fee=None,
         license_fee=None,
         status=dash.constants.CreditLineItemStatus.SIGNED,
         currency=dash.constants.Currency.USD,
@@ -49,12 +50,15 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
             "status": dash.constants.CreditLineItemStatus.get_name(status),
             "currency": currency,
         }
+        if service_fee is not None:
+            resp["serviceFee"] = service_fee
         if license_fee is not None:
             resp["licenseFee"] = license_fee
         return cls.normalize(resp)
 
-    def validate_against_db(self, credit, with_license_fee=False):
+    def validate_against_db(self, credit, with_service_fee=False, with_license_fee=False):
         credit_db = dash.models.CreditLineItem.objects.get(pk=credit["id"])
+        service_fee = credit_db.service_fee if with_service_fee else None
         license_fee = credit_db.license_fee if with_license_fee else None
         expected = self.credit_repr(
             id=str(credit_db.id),
@@ -64,6 +68,7 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
             total=credit_db.effective_amount(),
             allocated=credit_db.get_allocated_amount(),
             available=credit_db.effective_amount() - credit_db.get_allocated_amount(),
+            service_fee=service_fee,
             license_fee=license_fee,
             status=credit_db.status,
             currency=credit_db.currency,
@@ -119,6 +124,17 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+
+    def test_service_fee_permissioned(self):
+        utils.test_helper.add_permissions(self.user, ["can_see_service_fee"])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.BASE_COSTS_SERVICE_FEE])
+        credit = magic_mixer.blend(core.features.bcm.CreditLineItem, account=account, end_date=datetime.date.today())
+
+        r = self.client.get(
+            reverse("restapi.credit.v1:credits_details", kwargs={"account_id": account.id, "credit_id": credit.id})
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"], with_service_fee=True)
 
     def test_license_fee_permissioned(self):
         utils.test_helper.add_permissions(self.user, ["can_view_platform_cost_breakdown"])

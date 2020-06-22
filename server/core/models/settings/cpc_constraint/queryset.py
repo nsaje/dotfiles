@@ -49,7 +49,9 @@ class CpcConstraintQuerySet(models.QuerySet):
 
     @staticmethod
     def _apply_bcm_modifiers(field, bcm_modifiers):
-        return core.features.bcm.calculations.apply_fee_and_margin(field, bcm_modifiers["fee"], bcm_modifiers["margin"])
+        return core.features.bcm.calculations.apply_fees_and_margin(
+            field, bcm_modifiers["service_fee"], bcm_modifiers["fee"], bcm_modifiers["margin"]
+        )
 
     @staticmethod
     def _round_ceil(field):

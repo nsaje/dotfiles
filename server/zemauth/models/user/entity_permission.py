@@ -64,6 +64,13 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
             fallback_permission=fallback_permission,
         )
 
+    def has_base_costs_and_service_fee_perm_on(self, entity: Entity, fallback_permission: str = None) -> bool:
+        return self._has_perm_on_and_log_differences(
+            zemauth.features.entity_permission.Permission.BASE_COSTS_SERVICE_FEE,
+            entity,
+            fallback_permission=fallback_permission,
+        )
+
     def has_rest_api_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.RESTAPI, entity)
 

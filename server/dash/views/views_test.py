@@ -530,8 +530,7 @@ class AdGroupOverviewTest(TestCase):
             {
                 "adgroup_id": 1,
                 "source_id": 9,
-                "local_e_yesterday_cost": decimal.Decimal("0.0"),
-                "local_yesterday_et_cost": decimal.Decimal("0.0"),
+                "local_yesterday_at_cost": decimal.Decimal("0.0"),
                 "local_yesterday_etfm_cost": decimal.Decimal("0.0"),
             }
         ]
@@ -638,18 +637,17 @@ class AdGroupOverviewTest(TestCase):
         models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=datetime.datetime.today() - datetime.timedelta(days=1),
-            media_spend_nano=60 * 10 ** 9,
-            data_spend_nano=0,
+            base_media_spend_nano=60 * 10 ** 9,
+            base_data_spend_nano=0,
+            media_spend_nano=100 * 10 ** 9,
+            data_spend_nano=100 * 10 ** 9,
+            service_fee_nano=0,
             license_fee_nano=0,
             margin_nano=0,
         )
 
         mock_query.return_value = [
-            {
-                "local_e_yesterday_cost": decimal.Decimal("60.0"),
-                "local_yesterday_et_cost": decimal.Decimal("60.0"),
-                "local_yesterday_etfm_cost": decimal.Decimal("60.0"),
-            }
+            {"local_yesterday_at_cost": decimal.Decimal("60.0"), "local_yesterday_etfm_cost": decimal.Decimal("60.0")}
         ]
 
         response = self._get_ad_group_overview(1)
@@ -709,8 +707,7 @@ class CampaignOverviewTest(TestCase):
             {
                 "campaign_id": 1,
                 "source_id": 9,
-                "local_e_yesterday_cost": decimal.Decimal("0.0"),
-                "local_yesterday_et_cost": decimal.Decimal("0.0"),
+                "local_yesterday_at_cost": decimal.Decimal("0.0"),
                 "local_yesterday_etfm_cost": decimal.Decimal("0.0"),
             }
         ]
@@ -801,7 +798,7 @@ class AccountOverviewTest(TestCase):
         req = RequestFactory().get("/")
         req.user = self.user
 
-        mock_query.return_value = {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30}
+        mock_query.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
@@ -835,7 +832,7 @@ class AccountOverviewTest(TestCase):
         req = RequestFactory().get("/")
         req.user = self.user
 
-        mock_query.return_value = {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30}
+        mock_query.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
 
         # make all adgroups active
         for adgs in models.AdGroupSettings.objects.all():
@@ -888,7 +885,7 @@ class AllAccountsOverviewTest(TestCase):
     @patch("dash.infobox_helpers.get_mtd_accounts_spend")
     @patch("dash.infobox_helpers.get_yesterday_accounts_spend")
     def test_run_empty(self, mock_query_yd, mock_query_mtd):
-        mock_query_yd.return_value = {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30}
+        mock_query_yd.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
         mock_query_mtd.return_value = {"e_media_cost": 10, "et_cost": 20, "etfm_cost": 30}
         permission_2 = Permission.objects.get(codename="can_access_all_accounts_infobox")
         user = zemauth.models.User.objects.get(pk=2)
@@ -901,7 +898,7 @@ class AllAccountsOverviewTest(TestCase):
     @patch("dash.infobox_helpers.get_mtd_accounts_spend")
     @patch("dash.infobox_helpers.get_yesterday_accounts_spend")
     def test_agency_permission(self, mock_query_yd, mock_query_mtd):
-        mock_query_yd.return_value = {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30}
+        mock_query_yd.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
         mock_query_mtd.return_value = {"e_media_cost": 10, "et_cost": 20, "etfm_cost": 30}
         response = self._get_all_accounts_overview(1)
         self.assertFalse(response["success"])

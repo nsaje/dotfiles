@@ -517,12 +517,16 @@
 - fields:
     date: '2014-06-04'
     budget: 3
-    media_spend_nano: 50000000000
-    data_spend_nano: 0
+    base_media_spend_nano: 50000000000
+    base_data_spend_nano: 0
+    media_spend_nano: 1234567890
+    data_spend_nano: 1234567890
     license_fee_nano: 5000000000
     margin_nano: 0
-    local_media_spend_nano: 50000000000
-    local_data_spend_nano: 0
+    local_base_media_spend_nano: 50000000000
+    local_base_data_spend_nano: 0
+    local_media_spend_nano: 1234567890
+    local_data_spend_nano: 1234567890
     local_license_fee_nano: 5000000000
     local_margin_nano: 0
   model: dash.budgetdailystatement
@@ -531,12 +535,16 @@
 - fields:
     date: '2014-06-03'
     budget: 3
-    media_spend_nano: 60000000000
-    data_spend_nano: 0
+    base_media_spend_nano: 60000000000
+    base_data_spend_nano: 0
+    media_spend_nano: 1234567890
+    data_spend_nano: 1234567890
     license_fee_nano: 6000000000
     margin_nano: 0
-    local_media_spend_nano: 60000000000
-    local_data_spend_nano: 0
+    local_base_media_spend_nano: 60000000000
+    local_base_data_spend_nano: 0
+    local_media_spend_nano: 1234567890
+    local_data_spend_nano: 1234567890
     local_license_fee_nano: 6000000000
     local_margin_nano: 0
   model: dash.budgetdailystatement
@@ -545,12 +553,16 @@
 - fields:
     date: '2014-06-04'
     budget: 4
-    media_spend_nano: 70000000000
-    data_spend_nano: 0
+    base_media_spend_nano: 70000000000
+    base_data_spend_nano: 0
+    media_spend_nano: 1234567890
+    data_spend_nano: 1234567890
     license_fee_nano: 7000000000
     margin_nano: 0
-    local_media_spend_nano: 70000000000
-    local_data_spend_nano: 0
+    local_base_media_spend_nano: 70000000000
+    local_base_data_spend_nano: 0
+    local_media_spend_nano: 1234567890
+    local_data_spend_nano: 1234567890
     local_license_fee_nano: 7000000000
     local_margin_nano: 0
   model: dash.budgetdailystatement
@@ -559,12 +571,16 @@
 - fields:
     date: '2014-06-04'
     budget: 1
-    media_spend_nano: 900000000000
-    data_spend_nano: 0
+    base_media_spend_nano: 900000000000
+    base_data_spend_nano: 0
+    media_spend_nano: 1234567890
+    data_spend_nano: 1234567890
     license_fee_nano: 10000000000
     margin_nano: 0
-    local_media_spend_nano: 900000000000
-    local_data_spend_nano: 0
+    local_base_media_spend_nano: 900000000000
+    local_base_data_spend_nano: 0
+    local_media_spend_nano: 1234567890
+    local_data_spend_nano: 1234567890
     local_license_fee_nano: 10000000000
     local_margin_nano: 0
   model: dash.budgetdailystatement

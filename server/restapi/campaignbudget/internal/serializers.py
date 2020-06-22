@@ -25,6 +25,10 @@ class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBud
                     "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
                 },
+                "service_fee": {
+                    "permission": Permission.BASE_COSTS_SERVICE_FEE,
+                    "fallback_permission": "zemauth.can_see_service_fee",
+                },
             },
         }
 
@@ -42,6 +46,14 @@ class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBud
     )
     license_fee = restapi.serializers.fields.PercentToDecimalField(
         source="credit.license_fee",
+        decimal_places=4,
+        max_digits=5,
+        required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
+        read_only=True,
+    )
+    service_fee = restapi.serializers.fields.PercentToDecimalField(
+        source="credit.service_fee",
         decimal_places=4,
         max_digits=5,
         required=False,

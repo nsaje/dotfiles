@@ -354,9 +354,9 @@ class AdGroupSettingsMixin(object):
             system_user=self.system_user,
         )
 
-    def get_external_b1_sources_group_daily_budget(self, license_fee, margin):
-        return core.features.bcm.calculations.subtract_fee_and_margin(
-            self.b1_sources_group_daily_budget, license_fee, margin
+    def get_external_b1_sources_group_daily_budget(self, service_fee, license_fee, margin):
+        return core.features.bcm.calculations.subtract_fees_and_margin(
+            self.b1_sources_group_daily_budget, service_fee, license_fee, margin
         )
 
     def get_currency(self):

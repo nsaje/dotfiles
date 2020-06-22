@@ -144,19 +144,13 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.dma AS dma,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.service_fee_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_service_fee_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost
         FROM mv_account_geo base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY yesterday_cost DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
+        ORDER BY yesterday_at_cost DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
         """,
         )
 
@@ -180,20 +174,14 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.date AS day,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + coalesce(sum(base_table.service_fee_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + coalesce(sum(base_table.local_service_fee_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
             MAX(base_table.publisher_source_id) publisher_id
         FROM mv_account_pubs base_table
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
+        ORDER BY yesterday_at_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """,
         )
 
@@ -218,14 +206,8 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.date AS day,
             (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
             (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-            (COALESCE(SUM(base_table.cost_nano), 0) + COALESCE(SUM(base_table.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-            (COALESCE(SUM(base_table.local_cost_nano), 0) + COALESCE(SUM(base_table.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+            (COALESCE(SUM(base_table.effective_cost_nano), 0) + COALESCE(SUM(base_table.effective_data_cost_nano), 0) + coalesce(sum(base_table.service_fee_nano), 0) + COALESCE(SUM(base_table.license_fee_nano), 0) + COALESCE(SUM(base_table.margin_nano), 0))::float/1000000000 yesterday_etfm_cost,
+            (COALESCE(SUM(base_table.local_effective_cost_nano), 0) + COALESCE(SUM(base_table.local_effective_data_cost_nano), 0) + coalesce(sum(base_table.local_service_fee_nano), 0) + COALESCE(SUM(base_table.local_license_fee_nano), 0) + COALESCE(SUM(base_table.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
             MAX(base_table.publisher_source_id) publisher_id,
             MAX(CONCAT(base_table.publisher_source_id, CONCAT('__', COALESCE(base_table.placement, '')))) placement_id,
             MAX(base_table.placement_type) placement_type
@@ -233,7 +215,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
-        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, placement_id ASC NULLS LAST, day ASC NULLS LAST
+        ORDER BY yesterday_at_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, placement_id ASC NULLS LAST, day ASC NULLS LAST
         """,
         )
 
@@ -464,15 +446,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         SELECT temp_base.account_id,
                temp_base.clicks,
                temp_base.total_seconds,
-               temp_yesterday.e_yesterday_cost,
-               temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
-               temp_yesterday.local_yesterday_cost,
-               temp_yesterday.local_yesterday_et_cost,
                temp_yesterday.local_yesterday_etfm_cost,
                temp_yesterday.yesterday_at_cost,
-               temp_yesterday.yesterday_cost,
-               temp_yesterday.yesterday_et_cost,
                temp_yesterday.yesterday_etfm_cost
         FROM
           (SELECT a.account_id AS account_id,
@@ -484,16 +460,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
            GROUP BY 1) temp_base
         LEFT OUTER JOIN
           (SELECT a.account_id AS account_id,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                   (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                   (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account a
            WHERE (a.date=%s)
            GROUP BY 1) temp_yesterday ON temp_base.account_id = temp_yesterday.account_id
@@ -531,15 +501,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                temp_base.clicks,
                temp_base.total_seconds,
                temp_base.publisher_id,
-               temp_yesterday.e_yesterday_cost,
-               temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
-               temp_yesterday.local_yesterday_cost,
-               temp_yesterday.local_yesterday_et_cost,
                temp_yesterday.local_yesterday_etfm_cost,
                temp_yesterday.yesterday_at_cost,
-               temp_yesterday.yesterday_cost,
-               temp_yesterday.yesterday_et_cost,
                temp_yesterday.yesterday_etfm_cost
         FROM
           (SELECT a.publisher AS publisher,
@@ -555,16 +519,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         LEFT OUTER JOIN
           (SELECT a.publisher AS publisher,
                   a.source_id AS source_id,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                   (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                   (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account_pubs a
            WHERE (a.date=%s)
            GROUP BY 1,
@@ -607,15 +565,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                temp_base.total_seconds,
                temp_base.placement_id,
                temp_base.placement_type,
-               temp_yesterday.e_yesterday_cost,
-               temp_yesterday.local_e_yesterday_cost,
                temp_yesterday.local_yesterday_at_cost,
-               temp_yesterday.local_yesterday_cost,
-               temp_yesterday.local_yesterday_et_cost,
                temp_yesterday.local_yesterday_etfm_cost,
                temp_yesterday.yesterday_at_cost,
-               temp_yesterday.yesterday_cost,
-               temp_yesterday.yesterday_et_cost,
                temp_yesterday.yesterday_etfm_cost
         FROM
           (SELECT a.publisher AS publisher,
@@ -633,16 +585,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
           (SELECT a.publisher AS publisher,
                   a.placement AS placement,
                   a.source_id AS source_id,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                   (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                   (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account_placement a
            WHERE (a.date=%s)
            GROUP BY 1, 2, 3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
@@ -684,30 +630,18 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.campaign_id,
                b.clicks,
                b.total_seconds,
-               b.e_yesterday_cost,
-               b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
-               b.local_yesterday_cost,
-               b.local_yesterday_et_cost,
                b.local_yesterday_etfm_cost,
                b.yesterday_at_cost,
-               b.yesterday_cost,
-               b.yesterday_et_cost,
                b.yesterday_etfm_cost
         FROM
           (SELECT a.account_id,
                   a.campaign_id,
                   a.clicks,
                   a.total_seconds,
-                  a.e_yesterday_cost,
-                  a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
-                  a.local_yesterday_cost,
-                  a.local_yesterday_et_cost,
                   a.local_yesterday_etfm_cost,
                   a.yesterday_at_cost,
-                  a.yesterday_cost,
-                  a.yesterday_et_cost,
                   a.yesterday_etfm_cost,
                   row_number() over (partition BY a.account_id
                                      ORDER BY a.total_seconds ASC nulls LAST, a.account_id ASC nulls LAST, a.campaign_id ASC nulls LAST) AS r
@@ -716,15 +650,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.campaign_id,
                      temp_base.clicks,
                      temp_base.total_seconds,
-                     temp_yesterday.e_yesterday_cost,
-                     temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
-                     temp_yesterday.local_yesterday_cost,
-                     temp_yesterday.local_yesterday_et_cost,
                      temp_yesterday.local_yesterday_etfm_cost,
                      temp_yesterday.yesterday_at_cost,
-                     temp_yesterday.yesterday_cost,
-                     temp_yesterday.yesterday_et_cost,
                      temp_yesterday.yesterday_etfm_cost
               FROM
                 (SELECT a.account_id AS account_id,
@@ -739,16 +667,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
               LEFT OUTER JOIN
                 (SELECT a.account_id AS account_id,
                         a.campaign_id AS campaign_id,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                         (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                  FROM mv_campaign a
                  WHERE (a.date=%s)
                  GROUP BY 1,
@@ -790,15 +712,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.clicks,
                b.total_seconds,
                b.publisher_id,
-               b.e_yesterday_cost,
-               b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
-               b.local_yesterday_cost,
-               b.local_yesterday_et_cost,
                b.local_yesterday_etfm_cost,
                b.yesterday_at_cost,
-               b.yesterday_cost,
-               b.yesterday_et_cost,
                b.yesterday_etfm_cost
         FROM
           (SELECT a.publisher,
@@ -807,15 +723,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.clicks,
                   a.total_seconds,
                   a.publisher_id,
-                  a.e_yesterday_cost,
-                  a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
-                  a.local_yesterday_cost,
-                  a.local_yesterday_et_cost,
                   a.local_yesterday_etfm_cost,
                   a.yesterday_at_cost,
-                  a.yesterday_cost,
-                  a.yesterday_et_cost,
                   a.yesterday_etfm_cost,
                   row_number() over (partition BY a.publisher, a.source_id
                                      ORDER BY a.total_seconds ASC nulls LAST) AS r
@@ -826,15 +736,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.clicks,
                      temp_base.total_seconds,
                      temp_base.publisher_id,
-                     temp_yesterday.e_yesterday_cost,
-                     temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
-                     temp_yesterday.local_yesterday_cost,
-                     temp_yesterday.local_yesterday_et_cost,
                      temp_yesterday.local_yesterday_etfm_cost,
                      temp_yesterday.yesterday_at_cost,
-                     temp_yesterday.yesterday_cost,
-                     temp_yesterday.yesterday_et_cost,
                      temp_yesterday.yesterday_etfm_cost
               FROM
                 (SELECT a.publisher AS publisher,
@@ -853,16 +757,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
                         a.dma AS dma,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                         (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                  FROM mv_master_pubs a
                  WHERE (a.date=%s)
                  GROUP BY 1,
@@ -909,15 +807,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                b.total_seconds,
                b.placement_id,
                b.placement_type,
-               b.e_yesterday_cost,
-               b.local_e_yesterday_cost,
                b.local_yesterday_at_cost,
-               b.local_yesterday_cost,
-               b.local_yesterday_et_cost,
                b.local_yesterday_etfm_cost,
                b.yesterday_at_cost,
-               b.yesterday_cost,
-               b.yesterday_et_cost,
                b.yesterday_etfm_cost
         FROM
           (SELECT a.publisher,
@@ -927,15 +819,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   a.total_seconds,
                   a.placement_id,
                   a.placement_type,
-                  a.e_yesterday_cost,
-                  a.local_e_yesterday_cost,
                   a.local_yesterday_at_cost,
-                  a.local_yesterday_cost,
-                  a.local_yesterday_et_cost,
                   a.local_yesterday_etfm_cost,
                   a.yesterday_at_cost,
-                  a.yesterday_cost,
-                  a.yesterday_et_cost,
                   a.yesterday_etfm_cost,
                   row_number() over (partition BY a.publisher, a.source_id
                                      ORDER BY a.total_seconds ASC nulls LAST) AS r
@@ -947,15 +833,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                      temp_base.total_seconds,
                      temp_base.placement_id,
                      temp_base.placement_type,
-                     temp_yesterday.e_yesterday_cost,
-                     temp_yesterday.local_e_yesterday_cost,
                      temp_yesterday.local_yesterday_at_cost,
-                     temp_yesterday.local_yesterday_cost,
-                     temp_yesterday.local_yesterday_et_cost,
                      temp_yesterday.local_yesterday_etfm_cost,
                      temp_yesterday.yesterday_at_cost,
-                     temp_yesterday.yesterday_cost,
-                     temp_yesterday.yesterday_et_cost,
                      temp_yesterday.yesterday_etfm_cost
               FROM
                 (SELECT a.publisher AS publisher,
@@ -975,16 +855,10 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
                         a.placement AS placement,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
                         (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_service_fee_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.service_fee_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
                  FROM mv_account_placement a
                  WHERE (a.date=%s)
                  GROUP BY 1,

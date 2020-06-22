@@ -699,8 +699,7 @@ def _get_remaining_budget_data(campaign_ids, date=None):
         bcm.BudgetLineItem.objects.filter(campaign__id__in=campaign_ids)
         .filter_active(date)
         .annotate_spend_data()
-        .annotate(license_fee=F("credit__license_fee"))
-        .values("amount", "freed_cc", "campaign_id", "spend_data_local_etfm_total", "license_fee")
+        .values("amount", "freed_cc", "campaign_id", "spend_data_local_etfm_total")
     )
 
 
@@ -797,7 +796,12 @@ SELECT
     ad_group_id,
     SUM(impressions) AS impressions,
     SUM(clicks) AS clicks,
-    SUM(COALESCE(effective_cost_nano, 0) + COALESCE(effective_data_cost_nano, 0) + COALESCE(license_fee_nano, 0) + COALESCE(margin_nano, 0)) AS spend_nano
+    SUM(COALESCE(effective_cost_nano, 0)
+      + COALESCE(effective_data_cost_nano, 0)
+      + COALESCE(service_fee_nano, 0)
+      + COALESCE(license_fee_nano, 0)
+      + COALESCE(margin_nano, 0)
+    ) AS spend_nano
 FROM mv_adgroup
 WHERE
     date = DATE(CURRENT_DATE - interval '1 day')

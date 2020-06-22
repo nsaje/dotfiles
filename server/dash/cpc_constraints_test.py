@@ -173,14 +173,14 @@ class AdjustCpcTestCase(test.TestCase):
 
     def test_adjust_cpc_min_and_max_with_bcm_modifiers(self):
         cpc_constraints.create(min_cpc=Decimal("0.05"), max_cpc=Decimal("0.15"), source_id=1, ad_group_id=1)
-        bcm_modifiers = {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        bcm_modifiers = {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         cpc = cpc_constraints.adjust_cpc(
             Decimal("0.01"),
             bcm_modifiers,
             source=models.Source.objects.get(pk=1),
             ad_group=models.AdGroup.objects.get(pk=1),
         )
-        self.assertEqual(cpc, Decimal("0.09"))
+        self.assertEqual(cpc, Decimal("0.10"))
         cpc = cpc_constraints.adjust_cpc(
             Decimal("0.10"),
             bcm_modifiers,
@@ -194,7 +194,7 @@ class AdjustCpcTestCase(test.TestCase):
             source=models.Source.objects.get(pk=1),
             ad_group=models.AdGroup.objects.get(pk=1),
         )
-        self.assertEqual(cpc, Decimal("0.25"))
+        self.assertEqual(cpc, Decimal("0.28"))
 
     def test_adjust_cpc_min_and_max_rules(self):
         cpc_constraints.create(min_cpc=Decimal("0.05"), max_cpc=Decimal("0.15"), source_id=1, ad_group_id=1)
@@ -238,7 +238,7 @@ class ValidateCpcTestCase(test.TestCase):
 
     def test_validate_min_max_cpc_with_bcm_modifiers(self):
         cpc_constraints.create(min_cpc=Decimal("0.05"), max_cpc=Decimal("0.15"), source_id=1, ad_group_id=1)
-        bcm_modifiers = {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        bcm_modifiers = {"service_fee": Decimal("0.10"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         with self.assertRaises(forms.ValidationError) as err1:
             cpc_constraints.validate_cpc(
                 Decimal("0.01"),
@@ -250,7 +250,7 @@ class ValidateCpcTestCase(test.TestCase):
             err1.exception.messages[0],
             "Bid CPC is violating some constraints: "
             "CPC constraint on source AdBlade with "
-            "min. CPC $0.09 and max. CPC $0.25",
+            "min. CPC $0.10 and max. CPC $0.28",
         )
 
         with self.assertRaises(forms.ValidationError) as err2:
@@ -264,16 +264,16 @@ class ValidateCpcTestCase(test.TestCase):
             err2.exception.messages[0],
             "Bid CPC is violating some constraints: "
             "CPC constraint on source AdBlade with "
-            "min. CPC $0.09 and max. CPC $0.25",
+            "min. CPC $0.10 and max. CPC $0.28",
         )
         cpc_constraints.validate_cpc(
-            Decimal("0.09"),
+            Decimal("0.10"),
             bcm_modifiers,
             source=models.Source.objects.get(pk=1),
             ad_group=models.AdGroup.objects.get(pk=1),
         )
         cpc_constraints.validate_cpc(
-            Decimal("0.25"),
+            Decimal("0.28"),
             bcm_modifiers,
             source=models.Source.objects.get(pk=1),
             ad_group=models.AdGroup.objects.get(pk=1),

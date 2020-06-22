@@ -184,11 +184,11 @@ class HelpersTest(TestCase):
 
         self.assertEqual(
             helpers.extract_order_field("-performance", "ad_group_id", [primary_goal]),
-            "-performance_campaign_goal_" + str(primary_goal.id),
+            "-etfm_performance_campaign_goal_" + str(primary_goal.id),
         )
         self.assertEqual(
             helpers.extract_order_field("performance", "ad_group_id", [primary_goal]),
-            "performance_campaign_goal_" + str(primary_goal.id),
+            "etfm_performance_campaign_goal_" + str(primary_goal.id),
         )
 
     def test_remap_delivery_stats_keys(self):

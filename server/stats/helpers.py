@@ -277,7 +277,7 @@ def extract_order_field(order, target_dimension, primary_goals=None):
 
     if order_field == "performance":
         if primary_goals:
-            order_field = "performance_" + primary_goals[0].get_view_key()
+            order_field = "etfm_performance_" + primary_goals[0].get_view_key()
         else:
             order_field = "clicks"
 
@@ -287,10 +287,6 @@ def extract_order_field(order, target_dimension, primary_goals=None):
 
         if order_field == "exchange":
             order_field = "source_id"
-
-    # field was renamed
-    if order_field == "agency_total":
-        order_field = "agency_cost"
 
     return prefix + order_field
 
@@ -357,17 +353,19 @@ def _strip_local_values_from_rows(rows):
 
 
 def update_with_refunds(row, refunds):
-    media_amount, license_fee_amount, margin_amount = refunds
+    media_amount, service_fee_amount, license_fee_amount, margin_amount = refunds
     for field in fields.PLATFORM_SPEND_REFUND_FIELDS:
-        row[field] += media_amount
+        row[field] += media_amount + service_fee_amount
+    for field in fields.SERVICE_FEE_REFUND_FIELDS:
+        row[field] += service_fee_amount
     for field in fields.LICENSE_FEE_REFUND_FIELDS:
         row[field] += license_fee_amount
     for field in fields.MARGIN_REFUND_FIELDS:
         row[field] += margin_amount
     for field in fields.AGENCY_SPEND_REFUND_FIELDS:
-        row[field] += media_amount + license_fee_amount
+        row[field] += media_amount + service_fee_amount + license_fee_amount
     for field in fields.TOTAL_SPEND_REFUND_FIELDS:
-        row[field] += media_amount + license_fee_amount + margin_amount
+        row[field] += media_amount + service_fee_amount + license_fee_amount + margin_amount
 
 
 def should_query_dashapi_first(order, target_dimension):

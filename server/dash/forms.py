@@ -962,6 +962,7 @@ class CreditLineItemForm(forms.ModelForm):
             "start_date",
             "end_date",
             "amount",
+            "service_fee",
             "license_fee",
             "status",
             "comment",

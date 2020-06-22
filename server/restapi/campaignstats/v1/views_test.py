@@ -15,8 +15,8 @@ class LegacyCampaignStatsTest(RESTAPITestCase):
     @mock.patch.object(redshiftapi.api_quickstats, "query_campaign", autospec=True)
     def test_get(self, mock_query_campaign):
         mock_query_campaign.return_value = {
-            "local_total_cost": 123.456,
-            "local_cpc": 0.123,
+            "local_etfm_cost": 123.456,
+            "local_etfm_cpc": 0.123,
             "impressions": 1234567,
             "clicks": 1234,
             "unneeded": 1,

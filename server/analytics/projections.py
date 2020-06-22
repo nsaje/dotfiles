@@ -154,7 +154,7 @@ class BudgetProjections(object):
         agency_ids = dash.models.Account.objects.filter(pk__in=self.accounts).values_list("agency_id", flat=True)
         res = (
             dash.models.BudgetDailyStatement.objects.filter(budget__campaign__account__agency_id__in=agency_ids)
-            .filter(local_media_spend_nano__gt=0)
+            .filter(local_base_media_spend_nano__gt=0)
             .values_list("budget__campaign__account_id", "budget__campaign__account__agency_id")
         )
 
@@ -188,7 +188,7 @@ class BudgetProjections(object):
                 [
                     x
                     for x in [
-                        s.local_media_spend_nano + s.local_data_spend_nano
+                        s.local_base_media_spend_nano + s.local_base_data_spend_nano
                         for slist in list(statements_on_date.values())
                         for s in slist
                     ]
@@ -238,7 +238,9 @@ class BudgetProjections(object):
             overlap_days = (overlap_end_date - overlap_start_date).days + 1
             daily_amount = budget.allocated_amount() / Decimal(budget_days) * overlap_days
             row["allocated_total_budget"] += daily_amount
-            row["allocated_media_budget"] += daily_amount * (1 - budget.credit.license_fee)
+            row["allocated_media_budget"] += (
+                daily_amount * (1 - budget.credit.service_fee) * (1 - budget.credit.license_fee)
+            )  # TODO: SERVICE FEE: margin missing; sync with product
 
     def _calculate_pacing(self, row, budgets):
         assert "allocated_media_budget" in row
@@ -248,8 +250,9 @@ class BudgetProjections(object):
 
         row["attributed_media_spend"] = converters.nano_to_decimal(
             sum(
-                statement.local_media_spend_nano
-                + statement.local_data_spend_nano
+                statement.local_base_media_spend_nano
+                + statement.local_base_data_spend_nano
+                + statement.local_service_fee_nano
                 + statement.local_license_fee_nano
                 + statement.local_margin_nano
                 for budget in budgets
@@ -278,14 +281,16 @@ class BudgetProjections(object):
             row["media_spend_projection"] = row["allocated_media_budget"]
             return
 
-        media_nano = 0
+        base_media_nano = 0
         for date in utils.dates_helper.date_range(self.start_date, self.projection_date + datetime.timedelta(1)):
-            media_nano += sum(s.media_spend_nano + s.data_spend_nano for s in statements_on_date.get(date, []))
+            base_media_nano += sum(
+                s.base_media_spend_nano + s.base_data_spend_nano for s in statements_on_date.get(date, [])
+            )
 
         row["media_spend_projection"] = max(
             row["attributed_media_spend"],
             min(
-                converters.nano_to_decimal(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
+                converters.nano_to_decimal(float(base_media_nano) / self.past_days) * Decimal(self.forecast_days),
                 row["allocated_media_budget"],
             ),
         )

@@ -141,8 +141,6 @@ STATUS_TO_EMOTICON_MAP = {
     constants.CampaignGoalPerformance.AVERAGE: constants.Emoticon.NEUTRAL,
 }
 
-EXISTING_COLUMNS_FOR_GOALS = ("cpc",)
-
 COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,

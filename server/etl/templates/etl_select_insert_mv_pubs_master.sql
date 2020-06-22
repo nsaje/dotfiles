@@ -68,7 +68,15 @@ INSERT INTO mv_master_pubs(
         SUM(vast4_viewable) as vast4_viewable,
 
         SUM(ssp_cost_nano) as ssp_cost_nano,
-        SUM(local_ssp_cost_nano) as local_ssp_cost_nano        
+        SUM(local_ssp_cost_nano) as local_ssp_cost_nano,
+
+        SUM(base_effective_cost_nano) as base_effective_cost_nano,
+        SUM(base_effective_data_cost_nano) as base_effective_data_cost_nano,
+        SUM(service_fee_nano) as service_fee_nano,
+
+        SUM(local_base_effective_cost_nano) as local_base_effective_cost_nano,
+        SUM(local_base_effective_data_cost_nano) as local_base_effective_data_cost_nano,
+        SUM(local_service_fee_nano) as local_service_fee_nano
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND source_id <> 3
           {% if account_id %}

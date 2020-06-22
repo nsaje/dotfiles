@@ -126,21 +126,41 @@ class TestBudgetLineItemManager(TestCase):
             "test",
         )
 
-    def test_create_overlapping_license_fee(self):
-        new_credit = magic_mixer.blend(
-            CreditLineItem,
+    def test_create_overlapping_fees(self):
+        data = dict(
             account=self.account,
             start_date=datetime.date(2016, 12, 1),
             end_date=datetime.date(2017, 3, 3),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=500,
-            license_fee=Decimal("0.25"),
+            service_fee=Decimal("0.20"),
+            license_fee=Decimal("0.10"),
         )
+        new_credit = magic_mixer.blend(CreditLineItem, **data)
 
         start_date = datetime.date(2017, 1, 1)
         end_date = datetime.date(2017, 1, 5)
         request = magic_mixer.blend_request_user()
-        BudgetLineItem.objects.create(request, self.campaign, self.credit, start_date, end_date, 100, 0, "test")
+        BudgetLineItem.objects.create(request, self.campaign, new_credit, start_date, end_date, 100, 0, "test")
+
+        data["service_fee"] = Decimal("0.30")
+        new_credit = magic_mixer.blend(CreditLineItem, **data)
+        with self.assertRaises(ValidationError):
+            BudgetLineItem.objects.create(
+                request, self.campaign, new_credit, start_date - datetime.timedelta(days=1), start_date, 100, 0, "test"
+            )
+
+        data["service_fee"] = Decimal("0.20")
+        data["license_fee"] = Decimal("0.25")
+        new_credit = magic_mixer.blend(CreditLineItem, **data)
+        with self.assertRaises(ValidationError):
+            BudgetLineItem.objects.create(
+                request, self.campaign, new_credit, start_date - datetime.timedelta(days=1), start_date, 100, 0, "test"
+            )
+
+        data["service_fee"] = Decimal("0.50")
+        data["license_fee"] = Decimal("0.50")
+        new_credit = magic_mixer.blend(CreditLineItem, **data)
         with self.assertRaises(ValidationError):
             BudgetLineItem.objects.create(
                 request, self.campaign, new_credit, start_date - datetime.timedelta(days=1), start_date, 100, 0, "test"

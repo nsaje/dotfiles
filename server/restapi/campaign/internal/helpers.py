@@ -56,6 +56,9 @@ def get_credit_items(campaign):
 
 
 def get_budgets_overview(user, campaign, budget_items, credit_items):
+    can_add_base_costs = user.has_base_costs_and_service_fee_perm_on(
+        campaign, fallback_permission="zemauth.can_see_service_fee"
+    )
     can_add_platform_costs = user.has_media_cost_data_cost_and_licence_fee_perm_on(
         campaign, fallback_permission="zemauth.can_view_platform_cost_breakdown"
     )
@@ -68,6 +71,11 @@ def get_budgets_overview(user, campaign, budget_items, credit_items):
         "unallocated_credit": Decimal("0.0000"),
         "campaign_spend": Decimal("0.0000"),
     }
+
+    if can_add_base_costs:
+        data["base_media_spend"] = Decimal("0.0000")
+        data["base_data_spend"] = Decimal("0.0000")
+        data["service_fee"] = Decimal("0.0000")
 
     if can_add_platform_costs:
         data["media_spend"] = Decimal("0.0000")
@@ -93,6 +101,11 @@ def get_budgets_overview(user, campaign, budget_items, credit_items):
 
         spend_data = item.get_local_spend_data()
         data["campaign_spend"] += spend_data["etfm_total"]
+
+        if can_add_base_costs:
+            data["base_media_spend"] += spend_data["base_media"]
+            data["base_data_spend"] += spend_data["base_data"]
+            data["service_fee"] += spend_data["service_fee"]
 
         if can_add_platform_costs:
             data["media_spend"] += spend_data["media"]

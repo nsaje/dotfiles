@@ -18,46 +18,49 @@ AFTER_JOIN_AGGREGATES = 6
 
 MAX_IDENTIFIER_LENGTH = 63
 
-A_COST_COLUMNS = {"column_name": "cost_nano"}
 AT_COST_COLUMNS = {"column_name1": "cost_nano", "column_name2": "data_cost_nano"}
-ATFM_COST_COLUMNS = {
-    "column_name1": "cost_nano",
-    "column_name2": "data_cost_nano",
-    "column_name3": "license_fee_nano",
-    "column_name4": "margin_nano",
+BT_COST_COLUMNS = {"column_name1": "base_effective_cost_nano", "column_name2": "base_effective_data_cost_nano"}
+ET_COST_COLUMNS = {
+    "column_name1": "effective_cost_nano",
+    "column_name2": "effective_data_cost_nano",
+    "column_name3": "service_fee_nano",
 }
-ET_COST_COLUMNS = {"column_name1": "effective_cost_nano", "column_name2": "effective_data_cost_nano"}
 ETF_COST_COLUMNS = {
     "column_name1": "effective_cost_nano",
     "column_name2": "effective_data_cost_nano",
-    "column_name3": "license_fee_nano",
+    "column_name3": "service_fee_nano",
+    "column_name4": "license_fee_nano",
 }
 ETFM_COST_COLUMNS = {
     "column_name1": "effective_cost_nano",
     "column_name2": "effective_data_cost_nano",
-    "column_name3": "license_fee_nano",
-    "column_name4": "margin_nano",
+    "column_name3": "service_fee_nano",
+    "column_name4": "license_fee_nano",
+    "column_name5": "margin_nano",
 }
 
-LOCAL_A_COST_COLUMNS = {"column_name": "local_cost_nano"}
 LOCAL_AT_COST_COLUMNS = {"column_name1": "local_cost_nano", "column_name2": "local_data_cost_nano"}
-LOCAL_ATFM_COST_COLUMNS = {
-    "column_name1": "local_cost_nano",
-    "column_name2": "local_data_cost_nano",
-    "column_name3": "local_license_fee_nano",
-    "column_name4": "local_margin_nano",
+LOCAL_BT_COST_COLUMNS = {
+    "column_name1": "local_base_effective_cost_nano",
+    "column_name2": "local_base_effective_data_cost_nano",
 }
-LOCAL_ET_COST_COLUMNS = {"column_name1": "local_effective_cost_nano", "column_name2": "local_effective_data_cost_nano"}
+LOCAL_ET_COST_COLUMNS = {
+    "column_name1": "local_effective_cost_nano",
+    "column_name2": "local_effective_data_cost_nano",
+    "column_name3": "local_service_fee_nano",
+}
 LOCAL_ETF_COST_COLUMNS = {
     "column_name1": "local_effective_cost_nano",
     "column_name2": "local_effective_data_cost_nano",
-    "column_name3": "local_license_fee_nano",
+    "column_name3": "local_service_fee_nano",
+    "column_name4": "local_license_fee_nano",
 }
 LOCAL_ETFM_COST_COLUMNS = {
     "column_name1": "local_effective_cost_nano",
     "column_name2": "local_effective_data_cost_nano",
-    "column_name3": "local_license_fee_nano",
-    "column_name4": "local_margin_nano",
+    "column_name3": "local_service_fee_nano",
+    "column_name4": "local_license_fee_nano",
+    "column_name5": "local_margin_nano",
 }
 
 
@@ -197,36 +200,16 @@ class BreakdownsBase(backtosql.Model):
         aggregates = [
             "yesterday_at_cost",
             "local_yesterday_at_cost",
-            "yesterday_et_cost",
-            "local_yesterday_et_cost",
             "yesterday_etfm_cost",
             "local_yesterday_etfm_cost",
-            "yesterday_cost",
-            "local_yesterday_cost",
-            "e_yesterday_cost",
-            "local_e_yesterday_cost",
         ]
         self.add_column(backtosql.TemplateColumn("part_2sum_nano.sql", AT_COST_COLUMNS, alias="yesterday_at_cost"))
         self.add_column(
             backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, alias="local_yesterday_at_cost")
         )
-        self.add_column(backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, alias="yesterday_et_cost"))
+        self.add_column(backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, alias="yesterday_etfm_cost"))
         self.add_column(
-            backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, alias="local_yesterday_et_cost")
-        )
-        self.add_column(backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, alias="yesterday_etfm_cost"))
-        self.add_column(
-            backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, alias="local_yesterday_etfm_cost")
-        )
-
-        # FIXME: Remove the following 4 columns after new margins are completely migrated to
-        self.add_column(backtosql.TemplateColumn("part_2sum_nano.sql", AT_COST_COLUMNS, alias="yesterday_cost"))
-        self.add_column(
-            backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, alias="local_yesterday_cost")
-        )
-        self.add_column(backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, alias="e_yesterday_cost"))
-        self.add_column(
-            backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, alias="local_e_yesterday_cost")
+            backtosql.TemplateColumn("part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, alias="local_yesterday_etfm_cost")
         )
 
         if "publisher_id" in breakdown:
@@ -267,30 +250,49 @@ class MVMaster(BreakdownsBase):
     clicks = backtosql.TemplateColumn("part_sum.sql", {"column_name": "clicks"}, AGGREGATE)
     impressions = backtosql.TemplateColumn("part_sum.sql", {"column_name": "impressions"}, AGGREGATE)
 
-    # Costs
+    # Actual costs
     media_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "cost_nano"}, AGGREGATE)
     local_media_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "local_cost_nano"}, AGGREGATE)
+    data_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "data_cost_nano"}, AGGREGATE)
+    local_data_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "local_data_cost_nano"}, AGGREGATE)
+    at_cost = backtosql.TemplateColumn("part_2sum_nano.sql", AT_COST_COLUMNS, group=AGGREGATE)
+    local_at_cost = backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, group=AGGREGATE)
+
+    # Base effective costs
+    b_media_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "base_effective_cost_nano"}, AGGREGATE)
+    local_b_media_cost = backtosql.TemplateColumn(
+        "part_sum_nano.sql", {"column_name": "local_base_effective_cost_nano"}, AGGREGATE
+    )
+    b_data_cost = backtosql.TemplateColumn(
+        "part_sum_nano.sql", {"column_name": "base_effective_data_cost_nano"}, AGGREGATE
+    )
+    local_b_data_cost = backtosql.TemplateColumn(
+        "part_sum_nano.sql", {"column_name": "local_base_effective_data_cost_nano"}, AGGREGATE
+    )
+    bt_cost = backtosql.TemplateColumn("part_2sum_nano.sql", BT_COST_COLUMNS, group=AGGREGATE)
+    local_bt_cost = backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_BT_COST_COLUMNS, group=AGGREGATE)
+
+    # Effective costs
     e_media_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "effective_cost_nano"}, AGGREGATE)
     local_e_media_cost = backtosql.TemplateColumn(
         "part_sum_nano.sql", {"column_name": "local_effective_cost_nano"}, AGGREGATE
     )
-
-    data_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "data_cost_nano"}, AGGREGATE)
-    local_data_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "local_data_cost_nano"}, AGGREGATE)
     e_data_cost = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "effective_data_cost_nano"}, AGGREGATE)
     local_e_data_cost = backtosql.TemplateColumn(
         "part_sum_nano.sql", {"column_name": "local_effective_data_cost_nano"}, AGGREGATE
     )
+    et_cost = backtosql.TemplateColumn("part_3sum_nano.sql", ET_COST_COLUMNS, group=AGGREGATE)
+    local_et_cost = backtosql.TemplateColumn("part_3sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=AGGREGATE)
+    etf_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETF_COST_COLUMNS, group=AGGREGATE)
+    local_etf_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETF_COST_COLUMNS, group=AGGREGATE)
+    etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
+    local_etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
 
-    at_cost = backtosql.TemplateColumn("part_2sum_nano.sql", AT_COST_COLUMNS, group=AGGREGATE)
-    local_at_cost = backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, group=AGGREGATE)
-    et_cost = backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, group=AGGREGATE)
-    local_et_cost = backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=AGGREGATE)
-    etf_cost = backtosql.TemplateColumn("part_3sum_nano.sql", ETF_COST_COLUMNS, group=AGGREGATE)
-    local_etf_cost = backtosql.TemplateColumn("part_3sum_nano.sql", LOCAL_ETF_COST_COLUMNS, group=AGGREGATE)
-    etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
-    local_etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
-
+    # Fees
+    service_fee = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "service_fee_nano"}, AGGREGATE)
+    local_service_fee = backtosql.TemplateColumn(
+        "part_sum_nano.sql", {"column_name": "local_service_fee_nano"}, AGGREGATE
+    )
     license_fee = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "license_fee_nano"}, AGGREGATE)
     local_license_fee = backtosql.TemplateColumn(
         "part_sum_nano.sql", {"column_name": "local_license_fee_nano"}, AGGREGATE
@@ -298,41 +300,22 @@ class MVMaster(BreakdownsBase):
     margin = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "margin_nano"}, AGGREGATE)
     local_margin = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "local_margin_nano"}, AGGREGATE)
 
-    # Legacy costs
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    total_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ATFM_COST_COLUMNS, group=AGGREGATE)
-    local_total_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ATFM_COST_COLUMNS, group=AGGREGATE)
-    billing_cost = backtosql.TemplateColumn("part_3sum_nano.sql", ETF_COST_COLUMNS, group=AGGREGATE)
-    local_billing_cost = backtosql.TemplateColumn("part_3sum_nano.sql", LOCAL_ETF_COST_COLUMNS, group=AGGREGATE)
-    agency_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
-    local_agency_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
-
     # Derivatives
     ctr = backtosql.TemplateColumn(
         "part_sumdiv.sql", {"column_name": "clicks", "divisor": "impressions", "divisor_modifier": "0.01"}, AGGREGATE
     )
 
     _context = {"divisor": "clicks", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    et_cpc = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_et_cpc = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)
-    etfm_cpc = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_cpc = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_cpc = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    cpc = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_cpc = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
     _context = {"divisor": "impressions", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    et_cpm = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_et_cpm = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE)
-    etfm_cpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_cpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_cpm = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    cpm = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_cpm = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE)
 
     # Postclick acquisition fields
     visits = backtosql.TemplateColumn("part_sum.sql", {"column_name": "visits"}, AGGREGATE)
@@ -365,101 +348,42 @@ class MVMaster(BreakdownsBase):
 
     # Average costs per metrics
     _context = {"divisor": "total_time_on_site", "divisor_modifier": converters.CURRENCY_TO_NANO / 60.0}
-    avg_et_cost_per_minute = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE
-    )
-    local_avg_et_cost_per_minute = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
     avg_etfm_cost_per_minute = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_minute = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
-    )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    avg_cost_per_minute = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_avg_cost_per_minute = backtosql.TemplateColumn(
-        "part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
-    avg_et_cost_per_non_bounced_visit = backtosql.TemplateColumn(
-        "part_avg_et_cost_per_non_bounced_visit.sql", group=AGGREGATE
-    )
-    local_avg_et_cost_per_non_bounced_visit = backtosql.TemplateColumn(
-        "part_local_avg_et_cost_per_non_bounced_visit.sql", group=AGGREGATE
-    )
     avg_etfm_cost_per_non_bounced_visit = backtosql.TemplateColumn(
         "part_avg_etfm_cost_per_non_bounced_visit.sql", group=AGGREGATE
     )
     local_avg_etfm_cost_per_non_bounced_visit = backtosql.TemplateColumn(
         "part_local_avg_etfm_cost_per_non_bounced_visit.sql", group=AGGREGATE
     )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    avg_cost_per_non_bounced_visit = backtosql.TemplateColumn(
-        "part_avg_a_cost_per_non_bounced_visit.sql", group=AGGREGATE
-    )
-    local_avg_cost_per_non_bounced_visit = backtosql.TemplateColumn(
-        "part_local_avg_a_cost_per_non_bounced_visit.sql", group=AGGREGATE
-    )
 
     _context = {"divisor": "pageviews", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    avg_et_cost_per_pageview = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE
-    )
-    local_avg_et_cost_per_pageview = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
     avg_etfm_cost_per_pageview = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_pageview = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
-    )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    avg_cost_per_pageview = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_avg_cost_per_pageview = backtosql.TemplateColumn(
-        "part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "new_visits", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    avg_et_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE
-    )
-    local_avg_et_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
     avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
-    )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    avg_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE
-    )
-    local_avg_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "visits", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    avg_et_cost_per_visit = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE
-    )
-    local_avg_et_cost_per_visit = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
     avg_etfm_cost_per_visit = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_visit = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
-    )
-    # FIXME: Remove the following columns after new margins are completely migrated to
-    avg_cost_per_visit = backtosql.TemplateColumn("part_sumdiv.sql", dict_join(_context, A_COST_COLUMNS), AGGREGATE)
-    local_avg_cost_per_visit = backtosql.TemplateColumn(
-        "part_sumdiv.sql", dict_join(_context, LOCAL_A_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # Video
@@ -472,23 +396,15 @@ class MVMaster(BreakdownsBase):
 
     # Video derivatives
     _context = {"divisor": "video_first_quartile", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    video_et_cpv = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_video_et_cpv = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
-    video_etfm_cpv = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    video_etfm_cpv = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_video_etfm_cpv = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "video_complete", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    video_et_cpcv = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_video_et_cpcv = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
-    video_etfm_cpcv = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    video_etfm_cpcv = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_video_etfm_cpcv = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # MRC50 viewability
@@ -527,13 +443,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "mrc50_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    et_mrc50_vcpm = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_et_mrc50_vcpm = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
-    etfm_mrc50_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_mrc50_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_mrc50_vcpm = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # MRC100 viewability
@@ -572,13 +484,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "mrc100_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    et_mrc100_vcpm = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_et_mrc100_vcpm = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
-    etfm_mrc100_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_mrc100_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_mrc100_vcpm = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # VAST4 viewability
@@ -617,13 +525,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "vast4_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    et_vast4_vcpm = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
-    local_et_vast4_vcpm = backtosql.TemplateColumn(
-        "part_2sumdiv.sql", dict_join(_context, LOCAL_ET_COST_COLUMNS), AGGREGATE
-    )
-    etfm_vast4_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_vast4_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_vast4_vcpm = backtosql.TemplateColumn(
-        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
 
@@ -672,23 +576,9 @@ class MVJointMaster(MVMaster):
     local_yesterday_at_cost = backtosql.TemplateColumn(
         "part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, group=YESTERDAY_AGGREGATES
     )
-    yesterday_et_cost = backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
-    local_yesterday_et_cost = backtosql.TemplateColumn(
-        "part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=YESTERDAY_AGGREGATES
-    )
-    yesterday_etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
+    yesterday_etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
     local_yesterday_etfm_cost = backtosql.TemplateColumn(
-        "part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES
-    )
-
-    # FIXME: Remove the following 4 columns after new margins are completely migrated to
-    yesterday_cost = backtosql.TemplateColumn("part_2sum_nano.sql", AT_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
-    local_yesterday_cost = backtosql.TemplateColumn(
-        "part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, group=YESTERDAY_AGGREGATES
-    )
-    e_yesterday_cost = backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
-    local_e_yesterday_cost = backtosql.TemplateColumn(
-        "part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=YESTERDAY_AGGREGATES
+        "part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES
     )
 
     def init_conversion_columns(self, conversion_goals):
@@ -719,40 +609,6 @@ class MVJointMaster(MVMaster):
                 )
             )
 
-            # FIXME: Remove the following columns after new margins are completely migrated to
-            self.add_column(
-                backtosql.TemplateColumn(
-                    "part_avg_cost_per_conversion_goal.sql",
-                    {"cost_column": "e_media_cost", "conversion_key": conversion_key},
-                    alias="avg_cost_per_" + conversion_key,
-                    group=AFTER_JOIN_AGGREGATES,
-                )
-            )
-            self.add_column(
-                backtosql.TemplateColumn(
-                    "part_avg_cost_per_conversion_goal.sql",
-                    {"cost_column": "local_e_media_cost", "conversion_key": conversion_key},
-                    alias="local_avg_cost_per_" + conversion_key,
-                    group=AFTER_JOIN_AGGREGATES,
-                )
-            )
-
-            self.add_column(
-                backtosql.TemplateColumn(
-                    "part_avg_cost_per_conversion_goal.sql",
-                    {"cost_column": "et_cost", "conversion_key": conversion_key},
-                    alias="avg_et_cost_per_" + conversion_key,
-                    group=AFTER_JOIN_AGGREGATES,
-                )
-            )
-            self.add_column(
-                backtosql.TemplateColumn(
-                    "part_avg_cost_per_conversion_goal.sql",
-                    {"cost_column": "local_et_cost", "conversion_key": conversion_key},
-                    alias="local_avg_et_cost_per_" + conversion_key,
-                    group=AFTER_JOIN_AGGREGATES,
-                )
-            )
             self.add_column(
                 backtosql.TemplateColumn(
                     "part_avg_cost_per_conversion_goal.sql",
@@ -834,40 +690,6 @@ class MVJointMaster(MVMaster):
                         )
                     )
 
-                # FIXME: Remove the following columns after new margins are completely migrated to
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_avg_cost_per_conversion_goal.sql",
-                        {"cost_column": "e_media_cost", "conversion_key": pixel_key},
-                        alias="avg_cost_per_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_avg_cost_per_conversion_goal.sql",
-                        {"cost_column": "local_e_media_cost", "conversion_key": pixel_key},
-                        alias="local_avg_cost_per_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
-
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_avg_cost_per_conversion_goal.sql",
-                        {"cost_column": "et_cost", "conversion_key": pixel_key},
-                        alias="avg_et_cost_per_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_avg_cost_per_conversion_goal.sql",
-                        {"cost_column": "local_et_cost", "conversion_key": pixel_key},
-                        alias="local_avg_et_cost_per_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
                 self.add_column(
                     backtosql.TemplateColumn(
                         "part_avg_cost_per_conversion_goal.sql",
@@ -885,24 +707,6 @@ class MVJointMaster(MVMaster):
                     )
                 )
 
-                # FIXME: Remove the following column after new margins are completely migrated to
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_roas.sql",
-                        {"cost_column": "local_e_media_cost", "conversion_key": pixel_key},
-                        alias="roas_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
-
-                self.add_column(
-                    backtosql.TemplateColumn(
-                        "part_roas.sql",
-                        {"cost_column": "local_et_cost", "conversion_key": pixel_key},
-                        alias="et_roas_" + pixel_key,
-                        group=AFTER_JOIN_AGGREGATES,
-                    )
-                )
                 self.add_column(
                     backtosql.TemplateColumn(
                         "part_roas.sql",
@@ -965,25 +769,6 @@ class MVJointMaster(MVMaster):
                 planned_value = campaign_goal_value.value
             else:
                 planned_value = "NULL"
-
-            # FIXME: Remove the following column after new margins are completely migrated to
-            self.add_column(
-                backtosql.TemplateColumn(
-                    "part_performance.sql",
-                    {
-                        "is_cost_dependent": is_cost_dependent,
-                        "is_inverse_performance": is_inverse_performance,
-                        "has_conversion_key": conversion_key is not None,
-                        "conversion_key": conversion_key or "0",
-                        "planned_value": planned_value,
-                        "metric_column": metric_column or "-1",
-                        "cost_column": "e_media_cost",
-                        "metric_val_decimal_places": dash.campaign_goals.NR_DECIMALS[campaign_goal.type],
-                    },
-                    alias="performance_" + campaign_goal.get_view_key(),
-                    group=column_group,
-                )
-            )
 
             self.add_column(
                 backtosql.TemplateColumn(

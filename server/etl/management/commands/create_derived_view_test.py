@@ -112,7 +112,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable integer encode AZ64,
                     vast4_viewable integer encode AZ64,
                     ssp_cost_nano bigint encode AZ64,
-                    local_ssp_cost_nano bigint encode AZ64
+                    local_ssp_cost_nano bigint encode AZ64,
+                    base_effective_cost_nano bigint encode AZ64,
+                    base_effective_data_cost_nano bigint encode AZ64,
+                    service_fee_nano bigint encode AZ64,
+                    local_base_effective_cost_nano bigint encode AZ64,
+                    local_base_effective_data_cost_nano bigint encode AZ64,
+                    local_service_fee_nano bigint encode AZ64
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """
@@ -179,7 +185,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable integer encode AZ64,
                     vast4_viewable integer encode AZ64,
                     ssp_cost_nano bigint encode AZ64,
-                    local_ssp_cost_nano bigint encode AZ64
+                    local_ssp_cost_nano bigint encode AZ64,
+                    base_effective_cost_nano bigint encode AZ64,
+                    base_effective_data_cost_nano bigint encode AZ64,
+                    service_fee_nano bigint encode AZ64,
+                    local_base_effective_cost_nano bigint encode AZ64,
+                    local_base_effective_data_cost_nano bigint encode AZ64,
+                    local_service_fee_nano bigint encode AZ64
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """
@@ -247,7 +259,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable integer encode AZ64,
                     vast4_viewable integer encode AZ64,
                     ssp_cost_nano bigint encode AZ64,
-                    local_ssp_cost_nano bigint encode AZ64
+                    local_ssp_cost_nano bigint encode AZ64,
+                    base_effective_cost_nano bigint encode AZ64,
+                    base_effective_data_cost_nano bigint encode AZ64,
+                    service_fee_nano bigint encode AZ64,
+                    local_base_effective_cost_nano bigint encode AZ64,
+                    local_base_effective_data_cost_nano bigint encode AZ64,
+                    local_service_fee_nano bigint encode AZ64
                 )
                 diststyle key distkey(source_id) sortkey(date, source_id, account_id)
                 """
@@ -297,7 +315,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable,
                     vast4_viewable,
                     ssp_cost_nano,
-                    local_ssp_cost_nano
+                    local_ssp_cost_nano,
+                    base_effective_cost_nano,
+                    base_effective_data_cost_nano,
+                    service_fee_nano,
+                    local_base_effective_cost_nano,
+                    local_base_effective_data_cost_nano,
+                    local_service_fee_nano
                 )
                 (SELECT
                     date AS date,
@@ -338,7 +362,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(vast4_measurable) vast4_measurable,
                     SUM(vast4_viewable) vast4_viewable,
                     SUM(ssp_cost_nano) ssp_cost_nano,
-                    SUM(local_ssp_cost_nano) local_ssp_cost_nano
+                    SUM(local_ssp_cost_nano) local_ssp_cost_nano,
+                    SUM(base_effective_cost_nano) base_effective_cost_nano,
+                    SUM(base_effective_data_cost_nano) base_effective_data_cost_nano,
+                    SUM(service_fee_nano) service_fee_nano,
+                    SUM(local_base_effective_cost_nano) local_base_effective_cost_nano,
+                    SUM(local_base_effective_data_cost_nano) local_base_effective_data_cost_nano,
+                    SUM(local_service_fee_nano) local_service_fee_nano
                 FROM mv_master
                 WHERE 1=1
                 GROUP BY date, source_id, account_id
@@ -409,7 +439,13 @@ class CreateDerivedViewTest(TestCase, backtosql.TestSQLMixin):
                     vast4_measurable integer,
                     vast4_viewable integer,
                     ssp_cost_nano bigint,
-                    local_ssp_cost_nano bigint
+                    local_ssp_cost_nano bigint,
+                    base_effective_cost_nano bigint,
+                    base_effective_data_cost_nano bigint,
+                    service_fee_nano bigint,
+                    local_base_effective_cost_nano bigint,
+                    local_base_effective_data_cost_nano bigint,
+                    local_service_fee_nano bigint
                 );
                 CREATE INDEX IF NOT EXISTS new_table_main_idx ON new_table (source_id, account_id, date);
                 """

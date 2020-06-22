@@ -203,7 +203,7 @@ class CreateCreditTestCase(TestCase):
                 "data": {
                     "z1_cliId": cli.pk,
                     "z1_data": {
-                        "amount": 500.0,
+                        "amount": 500,
                         "comment": "Some description",
                         "startDate": "2017-05-10",
                         "flatFeeCc": 0,
@@ -248,7 +248,7 @@ class CreateCreditTestCase(TestCase):
                 "data": {
                     "z1_cliId": cli.pk,
                     "z1_data": {
-                        "amount": 500.0,
+                        "amount": 500,
                         "comment": "Some description",
                         "startDate": "2017-05-10",
                         "flatFeeCc": 0,
@@ -295,7 +295,7 @@ class CreateCreditTestCase(TestCase):
                 "data": {
                     "z1_cliId": cli.pk,
                     "z1_data": {
-                        "amount": 500.0,
+                        "amount": 500,
                         "comment": "Some description",
                         "endDate": "2017-06-20",
                         "flatFeeCc": 1000000,
@@ -342,7 +342,7 @@ class CreateCreditTestCase(TestCase):
                 "data": {
                     "z1_cliId": cli.pk,
                     "z1_data": {
-                        "amount": 500.0,
+                        "amount": 500,
                         "comment": "Some description",
                         "startDate": "2017-05-10",
                         "flatFeeCc": 1000000,

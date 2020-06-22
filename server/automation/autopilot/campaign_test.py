@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from django.test import TestCase
 from mock import patch
@@ -23,6 +24,8 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
             end_date=dates_helper.days_after(self.today, 10),
             status=constants.CreditLineItemStatus.SIGNED,
             amount=1000,
+            service_fee=Decimal("0.1"),
+            license_fee=Decimal("0.1"),
         )
 
         utc_now_patcher = patch("utils.dates_helper.utc_now")
@@ -42,13 +45,15 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
         magic_mixer.blend(
             models.BudgetDailyStatement,
             budget=budget,
-            media_spend_nano=1.1 * 1e9,
-            data_spend_nano=2.2 * 1e9,
-            license_fee_nano=3.3 * 1e9,
+            base_media_spend_nano=1.1 * 1e9,
+            base_data_spend_nano=2.2 * 1e9,
+            service_fee_nano=1.65 * 1e9,
+            license_fee_nano=1.65 * 1e9,
             margin_nano=4.4 * 1e9,
-            local_media_spend_nano=1.1 * 1e9,
-            local_data_spend_nano=2.2 * 1e9,
-            local_license_fee_nano=3.3 * 1e9,
+            local_base_media_spend_nano=1.1 * 1e9,
+            local_base_data_spend_nano=2.2 * 1e9,
+            local_service_fee_nano=1.65 * 1e9,
+            local_license_fee_nano=1.65 * 1e9,
             local_margin_nano=4.4 * 1e9,
         )
 

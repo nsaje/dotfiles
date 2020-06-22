@@ -163,7 +163,11 @@ def _get_bcm_modifiers(campaigns):
     for campaign in campaigns:
         if campaign.id in campaign_budgets:
             budget = campaign_budgets[campaign.id]
-            bcm_modifiers[campaign] = {"fee": budget.credit.license_fee, "margin": budget.margin}
+            bcm_modifiers[campaign] = {
+                "service_fee": budget.credit.service_fee,
+                "fee": budget.credit.license_fee,
+                "margin": budget.margin,
+            }
     return bcm_modifiers
 
 

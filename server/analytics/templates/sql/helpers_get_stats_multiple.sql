@@ -5,6 +5,7 @@ SELECT
       breakdown.visits,
       breakdown.media,
       breakdown.data,
+      breakdown.service_fee,
       breakdown.fee,
       breakdown.margin,
       nvl(mv_touchpointconversions.conversions,0) + nvl(mv_conversions.conversions, 0) AS conversions
@@ -15,6 +16,7 @@ FROM
     nvl(sum(visits), 0) AS visits,
     nvl(sum(effective_cost_nano::decimal), 0)/1000000000.0 AS media,
     nvl(sum(effective_data_cost_nano::decimal), 0)/1000000000.0 AS DATA,
+    nvl(sum(service_fee_nano::decimal), 0)/1000000000.0 AS service_fee,
     nvl(sum(license_fee_nano::decimal), 0)/1000000000.0 AS fee,
     nvl(sum(margin_nano::decimal), 0)/1000000000.0 AS margin
     FROM mv_adgroup

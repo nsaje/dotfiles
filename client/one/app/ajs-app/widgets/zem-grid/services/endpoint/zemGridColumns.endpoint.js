@@ -8,11 +8,7 @@ angular
     ) {
         // eslint-disable-line max-len
         var CONVERSION_RATE_PREFIX = 'conversion_rate_per_';
-        var AVG_COST_PREFIX = 'avg_cost_per_';
-        var AVG_ET_COST_PREFIX = 'avg_et_cost_per_';
         var AVG_ETFM_COST_PREFIX = 'avg_etfm_cost_per_';
-        var ROAS_PREFIX = 'roas';
-        var ET_ROAS_PREFIX = 'et_roas_';
         var ETFM_ROAS_PREFIX = 'etfm_roas_';
 
         var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
@@ -618,6 +614,16 @@ angular
                 shown: 'zemauth.can_view_actual_costs',
                 supportsRefunds: true,
             },
+            bMediaCost: {
+                name: 'Base Media Spend',
+                field: 'b_media_cost',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                totalRow: true,
+                help: 'Bare media spend without any margins.',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                shown: 'zemauth.can_see_service_fee',
+            },
             eMediaCost: {
                 name: 'Media Spend',
                 field: 'e_media_cost',
@@ -642,6 +648,16 @@ angular
                 internal: 'zemauth.can_view_actual_costs',
                 shown: 'zemauth.can_view_actual_costs',
             },
+            bDataCost: {
+                name: 'Base Data Cost',
+                field: 'b_data_cost',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                totalRow: true,
+                help: 'Bare data spend without any margins.',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                shown: 'zemauth.can_see_service_fee',
+            },
             eDataCost: {
                 name: 'Data Cost',
                 field: 'e_data_cost',
@@ -653,6 +669,16 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+            },
+            serviceFee: {
+                name: 'Service Fee',
+                field: 'service_fee',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                totalRow: true,
+                help: 'Service fee realized by OMG on the bought traffic.',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                shown: 'zemauth.can_see_service_fee',
             },
             licenseFee: {
                 name: 'License Fee',
@@ -746,6 +772,17 @@ angular
                 costMode: constants.costMode.ANY,
                 supportsRefunds: true,
             },
+            btCost: {
+                name: 'Base Platform Spend',
+                field: 'bt_cost',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                totalRow: true,
+                help: 'Bare platform spend without any margins.',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                shown: 'zemauth.can_see_service_fee',
+                costMode: constants.costMode.ANY,
+            },
             atCost: {
                 name: 'Actual Platform Spend',
                 field: 'at_cost',
@@ -762,63 +799,6 @@ angular
                 costMode: constants.costMode.ANY,
                 supportsRefunds: true,
             },
-            billingCost: {
-                name: 'Total Spend',
-                field: 'billing_cost',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Sum of media spend, data cost and license fee.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: false,
-                shown: true,
-                costMode: constants.costMode.LEGACY,
-                supportsRefunds: true,
-            },
-            agencyCost: {
-                name: 'Total Spend + Margin',
-                field: 'agency_cost',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help:
-                    'Total billing cost including Media Spend, License Fee and Agency Margin',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_agency_margin',
-                shown: 'zemauth.can_view_agency_margin',
-                costMode: constants.costMode.LEGACY,
-                supportsRefunds: true,
-            },
-            cpc: {
-                name: 'Avg. CPC',
-                field: 'cpc',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                fractionSize: 3,
-                help:
-                    '<p>The average cost per click on an ad.</p>' +
-                    '<p>The metric is calculated as the media cost divided by total amount of clicks.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                costMode: constants.costMode.LEGACY,
-            },
-            etCpc: {
-                name: 'Avg. Platform CPC',
-                field: 'et_cpc',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                help:
-                    '<p>The average platform cost per click on an ad.</p>' +
-                    '<p>The metric is calculated as platform cost divided by total amount of clicks.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'cpc',
-            },
             etfmCpc: {
                 name: 'Avg. CPC',
                 field: 'etfm_cpc',
@@ -832,41 +812,6 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'cpc',
-            },
-            cpm: {
-                name: 'Avg. CPM',
-                field: 'cpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                help:
-                    '<p>The average cost per thousand ad impressions. ' +
-                    'Impression is counted whenever an ad is served to the user.</p>' +
-                    '<p>The metric is calculated as the media cost divided by total amount ' +
-                    'of impressions, multiplied by thousand.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            etCpm: {
-                name: 'Avg. Platform CPM',
-                field: 'et_cpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                help:
-                    '<p>The average platform cost per thousand ad impressions. ' +
-                    'Impression is counted whenever an ad is served to the user.</p>' +
-                    '<p>The metric is calculated as the platform cost divided by total amount ' +
-                    'of impressions, multiplied by thousand.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'cpm',
             },
             etfmCpm: {
                 name: 'Avg. CPM',
@@ -883,24 +828,9 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'cpm',
             },
 
             // Yesterday cost metrics
-            yesterdayCost: {
-                name: 'Actual Yesterday Spend',
-                field: 'yesterday_cost',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    'Amount that you have spent yesterday for promotion on specific ad group ' +
-                    'including data cost and overspend.',
-                totalRow: true,
-                order: true,
-                internal: 'zemauth.can_view_actual_costs',
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_view_actual_costs',
-                costMode: constants.costMode.LEGACY,
-            },
             yesterdayAtCost: {
                 name: 'Actual Yesterday Spend',
                 field: 'yesterday_at_cost',
@@ -915,34 +845,6 @@ angular
                 shown: 'zemauth.can_view_actual_costs',
                 costMode: constants.costMode.ANY,
             },
-
-            eYesterdayCost: {
-                name: 'Yesterday Spend',
-                field: 'e_yesterday_cost',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    'Amount that you have spent yesterday for promotion on specific ad group including data cost.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.LEGACY,
-            },
-            yesterdayEtCost: {
-                name: 'Yesterday Platform Spend',
-                field: 'yesterday_et_cost',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    'Amount that you have spent yesterday for promotion on specific ad group including data cost.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'yesterday_cost',
-            },
             yesterdayEtfmCost: {
                 name: 'Yesterday Spend',
                 field: 'yesterday_etfm_cost',
@@ -954,7 +856,6 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'yesterday_cost',
             },
 
             // Traffic metrics
@@ -1103,39 +1004,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            avgCostPerMinute: {
-                name: 'Avg. Cost per Minute',
-                field: 'avg_cost_per_minute',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help:
-                    '<p>The average cost per minute that visitors spent on your site. ' +
-                    'Only visitors responding to an ad are included.</p>' +
-                    '<p>Average cost per minute spent on site.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            avgEtCostPerMinute: {
-                name: 'Avg. Platform Cost per Minute',
-                field: 'avg_et_cost_per_minute',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    '<p>The average platform cost per minute that visitors spent on your site. ' +
-                    'Only visitors responding to an ad are included.</p>' +
-                    '<p>Average platform cost per minute spent on site.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'avg_cost_per_minute',
-            },
             avgEtfmCostPerMinute: {
                 name: 'Avg. Cost per Minute',
                 field: 'avg_etfm_cost_per_minute',
@@ -1150,40 +1018,6 @@ angular
                 goal: true,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'avg_cost_per_minute',
-            },
-            avgCostPerPageview: {
-                name: 'Avg. Cost per Pageview',
-                field: 'avg_cost_per_pageview',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help:
-                    '<p>The average cost per pageview on your site. ' +
-                    'Only pageviews generated by visitors responding to an ad are included.</p>' +
-                    '<p>The metric is calculated as media cost divided by the total amount of pageviews.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            avgEtCostPerPageview: {
-                name: 'Avg. Platform Cost per Pageview',
-                field: 'avg_et_cost_per_pageview',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    '<p>The average platform cost per pageview on your site. ' +
-                    'Only pageviews generated by visitors responding to an ad are included.</p>' +
-                    '<p>The metric is calculated as platform cost divided by the total amount of pageviews.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'avg_cost_per_pageview',
             },
             avgEtfmCostPerPageview: {
                 name: 'Avg. Cost per Pageview',
@@ -1199,46 +1033,6 @@ angular
                 goal: true,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'avg_cost_per_pageview',
-            },
-            avgCostPerVisit: {
-                name: 'Avg. Cost per Visit',
-                field: 'avg_cost_per_visit',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help:
-                    '<p>The average cost per visit to your site. Only visits generated by ' +
-                    'visitors responding to an ad are included.</p>' +
-                    '<p>Visits are detected by your analytics software (Google Analytics or Adobe Analytics) as ' +
-                    'opposed to clicks, which are detected by Zemanta. ' +
-                    'They provide a better insight into the value of traffic sent by Zemanta.</p>' +
-                    '<p>The metric is calculated as media cost divided by the total amount of visits.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            avgEtCostPerVisit: {
-                name: 'Avg. Platform Cost per Visit',
-                field: 'avg_et_cost_per_visit',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    '<p>The average platform cost per visit to your site. Only visits generated by ' +
-                    'visitors responding to an ad are included.</p>' +
-                    '<p>Visits are detected by your analytics software (Google Analytics or Adobe Analytics) as ' +
-                    'opposed to clicks, which are detected by Zemanta. ' +
-                    'They provide a better insight into the value of traffic sent by Zemanta.</p>' +
-                    '<p>The metric is calculated as platform cost divided by the total amount of visits.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'avg_cost_per_visit',
             },
             avgEtfmCostPerVisit: {
                 name: 'Avg. Cost per Visit',
@@ -1257,40 +1051,6 @@ angular
                 goal: true,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'avg_cost_per_visit',
-            },
-            avgCostPerNonBouncedVisit: {
-                name: 'Avg. Cost per Non-Bounced Visit',
-                field: 'avg_cost_per_non_bounced_visit',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help:
-                    '<p>The average cost per visitor that viewed more than one page in a session.</p>' +
-                    '<p>A non bounced visit is more valuable because it indicates an interested visitor.</p>' +
-                    '<p>The metric is calculated as the media cost divided by total amount of non-bounced visits.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            avgEtCostPerNonBouncedVisit: {
-                name: 'Avg. Platform Cost per Non-Bounced Visit',
-                field: 'avg_et_cost_per_non_bounced_visit',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    '<p>The average cost per visitor that viewed more than one page in a session.</p>' +
-                    '<p>A non bounced visit is more valuable because it indicates an interested visitor.</p>' +
-                    '<p>The metric is calculated as the platform cost divided by total amount of non-bounced visits.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'avg_cost_per_non_bounced_visit',
             },
             avgEtfmCostPerNonBouncedVisit: {
                 name: 'Avg. Cost per Non-Bounced Visit',
@@ -1306,40 +1066,6 @@ angular
                 goal: true,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'avg_cost_per_non_bounced_visit',
-            },
-            avgCostForNewVisitor: {
-                name: 'Avg. Cost for New Visitor',
-                field: 'avg_cost_for_new_visitor',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help:
-                    '<p>The average cost per new visitor. New visitor is a user that ' +
-                    'visited your site for the first time.</p>' +
-                    '<p>The metrics is calculated as media cost divided by total amount of new visitors.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                costMode: constants.costMode.LEGACY,
-            },
-            avgEtCostForNewVisitor: {
-                name: 'Avg. Platform Cost for New Visitor',
-                field: 'avg_et_cost_for_new_visitor',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help:
-                    '<p>The average platform cost per new visitor. New visitor is a user that ' +
-                    'visited your site for the first time.</p>' +
-                    '<p>The metrics is calculated as platform cost divided by total amount of new visitors.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                goal: true,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                internal: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'avg_cost_for_new_visitor',
             },
             avgEtfmCostForNewVisitor: {
                 name: 'Avg. Cost for New Visitor',
@@ -1355,7 +1081,6 @@ angular
                 goal: true,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'avg_cost_for_new_visitor',
             },
 
             // Postclick Engagement Metrics
@@ -1594,21 +1319,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            videoEtCpv: {
-                name: 'Avg. Platform CPV',
-                field: 'video_et_cpv',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                help:
-                    '<p>The average platform cost per 3 seconds video watch.</p>' +
-                    '<p>The metric is calculated as the platform cost divided by total amount of views.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'video_cpv',
-            },
             videoEtfmCpv: {
                 name: 'Avg. CPV',
                 field: 'video_etfm_cpv',
@@ -1622,22 +1332,6 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'video_cpv',
-            },
-            videoEtCpcv: {
-                name: 'Avg. Platform CPCV',
-                field: 'video_et_cpcv',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                help:
-                    '<p>The average cost per completed video watch.</p>' +
-                    '<p>The metric is calculated as the platform cost divided by total amount of completed views.</p>',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'video_cpcv',
             },
             videoEtfmCpcv: {
                 name: 'Avg. CPCV',
@@ -1652,7 +1346,6 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'video_cpcv',
             },
             placementType: {
                 name: 'Placement Type',
@@ -1773,20 +1466,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            etMrc50Vcpm: {
-                name: 'Avg. Platform VCPM',
-                field: 'et_mrc50_vcpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_mrc50_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'mrc50_vcpm',
-                help:
-                    'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
             etfmMrc50Vcpm: {
                 name: 'Avg. VCPM',
                 field: 'etfm_mrc50_vcpm',
@@ -1794,7 +1473,6 @@ angular
                 fractionSize: 3,
                 shown: ['zemauth.can_see_mrc50_metrics'],
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'mrc50_vcpm',
                 help:
                     'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
                 totalRow: true,
@@ -1913,21 +1591,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            etMrc100Vcpm: {
-                name: 'Avg. MRC100 Platform VCPM',
-                field: 'et_mrc100_vcpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.can_see_mrc100_metrics',
-                help:
-                    'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                fieldGroup: 'mrc100_vcpm',
-            },
             etfmMrc100Vcpm: {
                 name: 'Avg. MRC100 VCPM',
                 field: 'etfm_mrc100_vcpm',
@@ -1941,7 +1604,6 @@ angular
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                fieldGroup: 'mrc100_vcpm',
             },
             vast4Measurable: {
                 name: 'VAST4 Measurable Impressions',
@@ -2054,21 +1716,6 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
-            etVast4Vcpm: {
-                name: 'Avg. VAST4 Platform VCPM',
-                field: 'et_vast4_vcpm',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_vast4_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.can_see_vast4_metrics',
-                help:
-                    'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                fieldGroup: 'vast4_vcpm',
-            },
             etfmVast4Vcpm: {
                 name: 'Avg. VAST4 VCPM',
                 field: 'etfm_vast4_vcpm',
@@ -2082,7 +1729,6 @@ angular
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                fieldGroup: 'vast4_vcpm',
             },
         };
 
@@ -2218,16 +1864,11 @@ angular
         // Default columns - columns present by default (non permanent can be hidden)
         var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
             COLUMNS.imageUrls,
-            COLUMNS.eYesterdayCost,
-            COLUMNS.yesterdayEtCost,
             COLUMNS.yesterdayEtfmCost,
-            COLUMNS.billingCost,
             COLUMNS.allocatedBudgets,
             COLUMNS.pacing,
             COLUMNS.spendProjection,
             COLUMNS.clicks,
-            COLUMNS.cpc,
-            COLUMNS.etCpc,
             COLUMNS.etfmCpc,
         ]);
 
@@ -2282,22 +1923,21 @@ angular
         ];
 
         var COSTS_GROUP = [
-            COLUMNS.yesterdayCost,
             COLUMNS.yesterdayAtCost,
-            COLUMNS.eYesterdayCost,
-            COLUMNS.yesterdayEtCost,
             COLUMNS.yesterdayEtfmCost,
             COLUMNS.mediaCost,
+            COLUMNS.bMediaCost,
             COLUMNS.eMediaCost,
             COLUMNS.dataCost,
+            COLUMNS.bDataCost,
             COLUMNS.eDataCost,
+            COLUMNS.serviceFee,
             COLUMNS.licenseFee,
             COLUMNS.flatFee,
             COLUMNS.totalFee,
-            COLUMNS.billingCost,
             COLUMNS.margin,
-            COLUMNS.agencyCost,
             COLUMNS.atCost,
+            COLUMNS.btCost,
             COLUMNS.etCost,
             COLUMNS.etfCost,
             COLUMNS.etfmCost,
@@ -2315,11 +1955,7 @@ angular
             COLUMNS.impressions,
             COLUMNS.clicks,
             COLUMNS.ctr,
-            COLUMNS.cpc,
-            COLUMNS.etCpc,
             COLUMNS.etfmCpc,
-            COLUMNS.cpm,
-            COLUMNS.etCpm,
             COLUMNS.etfmCpm,
         ];
 
@@ -2333,7 +1969,6 @@ angular
             COLUMNS.mrc50ViewableDistribution,
             COLUMNS.mrc50NonMeasurableDistribution,
             COLUMNS.mrc50NonViewableDistribution,
-            COLUMNS.etMrc50Vcpm,
             COLUMNS.etfmMrc50Vcpm,
         ];
 
@@ -2347,7 +1982,6 @@ angular
             COLUMNS.mrc100ViewableDistribution,
             COLUMNS.mrc100NonMeasurableDistribution,
             COLUMNS.mrc100NonViewableDistribution,
-            COLUMNS.etMrc100Vcpm,
             COLUMNS.etfmMrc100Vcpm,
         ];
 
@@ -2361,7 +1995,6 @@ angular
             COLUMNS.vast4ViewableDistribution,
             COLUMNS.vast4NonMeasurableDistribution,
             COLUMNS.vast4NonViewableDistribution,
-            COLUMNS.etVast4Vcpm,
             COLUMNS.etfmVast4Vcpm,
         ];
 
@@ -2379,20 +2012,10 @@ angular
             COLUMNS.bounceRate,
             COLUMNS.totalSeconds,
             COLUMNS.avgTos,
-            COLUMNS.avgCostPerVisit,
-            COLUMNS.avgEtCostPerVisit,
             COLUMNS.avgEtfmCostPerVisit,
-            COLUMNS.avgCostForNewVisitor,
-            COLUMNS.avgEtCostForNewVisitor,
             COLUMNS.avgEtfmCostForNewVisitor,
-            COLUMNS.avgCostPerPageview,
-            COLUMNS.avgEtCostPerPageview,
             COLUMNS.avgEtfmCostPerPageview,
-            COLUMNS.avgCostPerNonBouncedVisit,
-            COLUMNS.avgEtCostPerNonBouncedVisit,
             COLUMNS.avgEtfmCostPerNonBouncedVisit,
-            COLUMNS.avgCostPerMinute,
-            COLUMNS.avgEtCostPerMinute,
             COLUMNS.avgEtfmCostPerMinute,
         ];
 
@@ -2407,9 +2030,7 @@ angular
             COLUMNS.videoMidpoint,
             COLUMNS.videoThirdQuartile,
             COLUMNS.videoComplete,
-            COLUMNS.videoEtCpv,
             COLUMNS.videoEtfmCpv,
-            COLUMNS.videoEtCpcv,
             COLUMNS.videoEtfmCpcv,
         ];
 
@@ -2828,7 +2449,7 @@ angular
         function checkPermissions(columns, breakdown) {
             // Go trough all columns and convert permissions to boolean, when needed
 
-            var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
+            var usesBCMv2 = true;
             var newCostModes = [
                 constants.costMode.PLATFORM,
                 constants.costMode.PUBLIC,
@@ -3020,6 +2641,7 @@ angular
             var allowedColumns = newColumns.filter(function(column) {
                 return column.shown;
             });
+
             Array.prototype.splice.apply(
                 columns,
                 [columnPosition, 0].concat(allowedColumns)
@@ -3133,21 +2755,13 @@ angular
 
                 var conversionsField = pixelSuffix;
                 var conversionRateField = CONVERSION_RATE_PREFIX + pixelSuffix;
-                var cpaField = AVG_COST_PREFIX + pixelSuffix;
-                var etCpaField = AVG_ET_COST_PREFIX + pixelSuffix;
                 var etfmCpaField = AVG_ETFM_COST_PREFIX + pixelSuffix;
-                var roasField = ROAS_PREFIX + pixelSuffix;
-                var etRoasField = ET_ROAS_PREFIX + pixelSuffix;
                 var etfmRoasField = ETFM_ROAS_PREFIX + pixelSuffix;
 
                 pixel.fields.push(
                     conversionsField,
                     conversionRateField,
-                    cpaField,
-                    etCpaField,
                     etfmCpaField,
-                    roasField,
-                    etRoasField,
                     etfmRoasField
                 );
 
@@ -3197,43 +2811,6 @@ angular
                         goal: false,
                     }
                 );
-                var cpaNewColumn = Object.assign(
-                    {},
-                    COLUMNS.conversionCpa,
-                    newColumn,
-                    {
-                        restApiName: 'CPA (' + name + ')',
-                        name: 'CPA / ' + attribution + ' (' + pixel.name + ')',
-                        performance: 'CPA',
-                        field: cpaField,
-                        shown: true,
-                        goal: true,
-                        costMode: constants.costMode.LEGACY,
-                    }
-                );
-                var etCpaNewColumn = Object.assign(
-                    {},
-                    COLUMNS.conversionCpa,
-                    newColumn,
-                    {
-                        restApiName: 'Platform CPA (' + name + ')',
-                        name:
-                            'Platform CPA /' +
-                            attribution +
-                            ' (' +
-                            pixel.name +
-                            ')',
-                        performance: 'Platform CPA',
-                        field: etCpaField,
-                        shown:
-                            'zemauth.can_view_platform_cost_breakdown_derived',
-                        goal: true,
-                        costMode: constants.costMode.PLATFORM,
-                        internal:
-                            'zemauth.can_view_platform_cost_breakdown_derived',
-                        fieldGroup: cpaField,
-                    }
-                );
                 var etfmCpaNewColumn = Object.assign(
                     {},
                     COLUMNS.conversionCpa,
@@ -3247,44 +2824,6 @@ angular
                         shown: true,
                         goal: true,
                         costMode: constants.costMode.PUBLIC,
-                        fieldGroup: cpaField,
-                    }
-                );
-
-                var roasNewColumn = Object.assign(
-                    {},
-                    COLUMNS.conversionRoas,
-                    newColumn,
-                    {
-                        restApiName: 'ROAS (' + name + ')',
-                        name: 'ROAS / ' + attribution + ' (' + pixel.name + ')',
-                        performance: 'ROAS',
-                        field: roasField,
-                        costMode: constants.costMode.LEGACY,
-                        help: roasHelp,
-                    }
-                );
-                var etRoasNewColumn = Object.assign(
-                    {},
-                    COLUMNS.conversionRoas,
-                    newColumn,
-                    {
-                        restApiName: 'Platform ROAS (' + name + ')',
-                        name:
-                            'Platform ROAS / ' +
-                            attribution +
-                            ' (' +
-                            pixel.name +
-                            ')',
-                        performance: 'Platform ROAS',
-                        field: etRoasField,
-                        shown: [
-                            'zemauth.fea_can_see_roas',
-                            'zemauth.can_view_platform_cost_breakdown_derived',
-                        ],
-                        costMode: constants.costMode.PLATFORM,
-                        fieldGroup: roasField,
-                        help: roasHelp,
                     }
                 );
                 var etfmRoasNewColumn = Object.assign(
@@ -3298,7 +2837,6 @@ angular
                         field: etfmRoasField,
                         shown: ['zemauth.fea_can_see_roas'],
                         costMode: constants.costMode.PUBLIC,
-                        fieldGroup: roasField,
                         help: roasHelp,
                     }
                 );
@@ -3306,11 +2844,7 @@ angular
                 newColumns.push(
                     conversionsNewColumn,
                     conversionRateNewColumn,
-                    cpaNewColumn,
-                    etCpaNewColumn,
                     etfmCpaNewColumn,
-                    roasNewColumn,
-                    etRoasNewColumn,
                     etfmRoasNewColumn
                 );
             });
@@ -3331,39 +2865,18 @@ angular
                 conversionsCol.field = goal.id;
                 conversionsCol.shown = true;
 
-                var cpaCol = angular.copy(COLUMNS.conversionCpa);
-                cpaCol.name = 'CPA (' + goal.name + ')';
-                cpaCol.field = AVG_COST_PREFIX + goal.id;
-                cpaCol.shown = true;
-                cpaCol.goal = true;
-                cpaCol.costMode = constants.costMode.LEGACY;
-
-                var etCpaCol = angular.copy(COLUMNS.conversionCpa);
-                var cpaFieldGroup = AVG_COST_PREFIX + goal.id;
-                etCpaCol.name = 'Platform CPA (' + goal.name + ')';
-                etCpaCol.field = AVG_ET_COST_PREFIX + goal.id;
-                etCpaCol.shown =
-                    'zemauth.can_view_platform_cost_breakdown_derived';
-                etCpaCol.goal = true;
-                etCpaCol.costMode = constants.costMode.PLATFORM;
-                etCpaCol.fieldGroup = cpaFieldGroup;
-
                 var etfmCpaCol = angular.copy(COLUMNS.conversionCpa);
                 etfmCpaCol.name = 'CPA (' + goal.name + ')';
                 etfmCpaCol.field = AVG_ETFM_COST_PREFIX + goal.id;
                 etfmCpaCol.shown = true;
                 etfmCpaCol.goal = true;
                 etfmCpaCol.costMode = constants.costMode.PUBLIC;
-                etfmCpaCol.fieldGroup = cpaFieldGroup;
+                etfmCpaCol.shown = true;
 
                 newFields.push(conversionsCol.field);
-                newFields.push(cpaCol.field);
-                newFields.push(etCpaCol.field);
                 newFields.push(etfmCpaCol.field);
 
                 orderedColumns.push(conversionsCol);
-                orderedColumns.push(cpaCol);
-                orderedColumns.push(etCpaCol);
                 orderedColumns.push(etfmCpaCol);
             });
 

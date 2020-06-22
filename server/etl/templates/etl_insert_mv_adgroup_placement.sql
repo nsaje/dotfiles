@@ -20,12 +20,20 @@ INSERT INTO mv_adgroup_placement (
         d.spend::bigint * 1000 as cost_nano,
         d.data_spend::bigint * 1000 as data_cost_nano,
 
-        round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
-        round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
+        round(
+            (d.spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
+        ) as effective_cost_nano,
+        round(
+            (d.data_spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
+        ) as effective_data_cost_nano,
         round(
             (
                 (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                (
+                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                ) * cf.pct_service_fee::decimal(10, 8)
             ) * cf.pct_license_fee::decimal(10, 8) * 1000
         ) as license_fee_nano,
         round(
@@ -34,7 +42,11 @@ INSERT INTO mv_adgroup_placement (
                 (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                 (
                     (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                    (
+                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                    ) * cf.pct_service_fee::decimal(10, 8)
                 ) * cf.pct_license_fee::decimal(10, 8)
             ) * cf.pct_margin::decimal(10, 8) * 1000
         ) as margin_nano,
@@ -49,13 +61,25 @@ INSERT INTO mv_adgroup_placement (
         round(d.spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_cost_nano,
         round(d.data_spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_data_cost_nano,
         -- casting intermediate values to bigint (decimal(19, 0)) because of max precision of 38 in DB
-        round(round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000)::bigint * cer.exchange_rate::decimal(10, 4)) as local_effective_cost_nano,
-        round(round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000)::bigint * cer.exchange_rate::decimal(10, 4)) as local_effective_data_cost_nano,
+        round(
+            round(
+                (d.spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
+            )::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_effective_cost_nano,
+        round(
+            round(
+                (d.data_spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
+            )::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_effective_data_cost_nano,
         round(
             round(
                 (
                     (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                    (
+                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                    ) * cf.pct_service_fee::decimal(10, 8)
                 ) * cf.pct_license_fee::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_license_fee_nano,
@@ -66,7 +90,11 @@ INSERT INTO mv_adgroup_placement (
                     (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                     (
                         (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (
+                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                        ) * cf.pct_service_fee::decimal(10, 8)
                     ) * cf.pct_license_fee::decimal(10, 8)
                 ) * cf.pct_margin::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
@@ -88,7 +116,31 @@ INSERT INTO mv_adgroup_placement (
         d.vast4_viewable as vast4_viewable,
 
         d.ssp_spend::bigint * 1000 as ssp_cost_nano,
-        round(d.ssp_spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_ssp_cost_nano
+        round(d.ssp_spend::bigint * 1000 * cer.exchange_rate::decimal(10, 4)) as local_ssp_cost_nano,
+
+        round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as base_effective_cost_nano,
+        round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as base_effective_data_cost_nano,
+        round(
+            (
+                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+            ) * cf.pct_service_fee::decimal(10, 8) * 1000
+        ) as service_fee_nano,
+
+        round(
+            round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000)::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_base_effective_cost_nano,
+        round(
+            round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000)::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_base_effective_data_cost_nano,
+        round(
+            round(
+                (
+                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                ) * cf.pct_service_fee::decimal(10, 8) * 1000
+            )::bigint * cer.exchange_rate::decimal(10, 4)
+        ) as local_service_fee_nano
     FROM
         (
             (

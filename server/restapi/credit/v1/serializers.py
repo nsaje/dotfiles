@@ -19,10 +19,14 @@ class CreditSerializer(
                 "entity_access_fn": zemauth.access.get_credit_line_item,
             },
             "fields": {
+                "service_fee": {
+                    "permission": Permission.BASE_COSTS_SERVICE_FEE,
+                    "fallback_permission": "zemauth.can_see_service_fee",
+                },
                 "license_fee": {
                     "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     "fallback_permission": "zemauth.can_view_platform_cost_breakdown",
-                }
+                },
             },
         }
 
@@ -38,6 +42,9 @@ class CreditSerializer(
     )
     available = rest_framework.serializers.DecimalField(
         source="get_available_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    service_fee = rest_framework.serializers.DecimalField(
+        max_digits=5, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     license_fee = rest_framework.serializers.DecimalField(
         max_digits=5, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN

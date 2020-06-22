@@ -38,10 +38,12 @@ class CreditsTestCase(TestCase):
                 start_date=YESTERDAY,
                 end_date=YESTERDAY,
                 amount=1000,
+                service_fee=Decimal("1.2"),
                 license_fee=Decimal("1.2"),
                 status=constants.CreditLineItemStatus.SIGNED,
                 created_by_id=1,
             )
+        self.assertTrue("service_fee" in err.exception.error_dict)
         self.assertTrue("license_fee" in err.exception.error_dict)
         self.assertFalse("start_date" in err.exception.error_dict)  # we check this in form
         self.assertFalse("end_date" in err.exception.error_dict)  # we check this in form
@@ -53,10 +55,12 @@ class CreditsTestCase(TestCase):
                 start_date=YESTERDAY,
                 end_date=YESTERDAY,
                 amount=1000,
+                service_fee=Decimal("1.2"),
                 license_fee=Decimal("1.2"),
                 status=constants.CreditLineItemStatus.SIGNED,
                 created_by_id=1,
             )
+        self.assertTrue("service_fee" in err.exception.error_dict)
         self.assertTrue("license_fee" in err.exception.error_dict)
         self.assertFalse("start_date" in err.exception.error_dict)
         self.assertFalse("end_date" in err.exception.error_dict)
@@ -67,6 +71,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -81,6 +86,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.PENDING,
             created_by_id=1,
@@ -94,6 +100,7 @@ class CreditsTestCase(TestCase):
             start_date=d(2016, 3, 1),
             end_date=d(2016, 3, 31),
             amount=2000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -107,7 +114,14 @@ class CreditsTestCase(TestCase):
         self.assertEqual(c.get_overlap(d(2016, 1, 10), d(2016, 4, 20)), (d(2016, 3, 1), d(2016, 3, 31)))
 
     def test_monthly_flat_fee(self):
-        def create_simple_credit(start_date, end_date, amount=2000, flat_fee_cc=900000, license_fee=Decimal("0.456")):
+        def create_simple_credit(
+            start_date,
+            end_date,
+            amount=2000,
+            flat_fee_cc=900000,
+            service_fee=Decimal("0.123"),
+            license_fee=Decimal("0.456"),
+        ):
             return create_credit(
                 account_id=2,
                 start_date=start_date,
@@ -116,6 +130,7 @@ class CreditsTestCase(TestCase):
                 flat_fee_end_date=end_date,
                 amount=amount,
                 flat_fee_cc=flat_fee_cc,
+                service_fee=service_fee,
                 license_fee=license_fee,
                 status=constants.CreditLineItemStatus.SIGNED,
                 created_by_id=1,
@@ -160,6 +175,7 @@ class CreditsTestCase(TestCase):
                 flat_fee_end_date=datetime.date(2016, 5, 1),
                 amount=2000,
                 flat_fee_cc=900000,
+                service_fee=Decimal("0.123"),
                 license_fee=Decimal("0.456"),
                 status=constants.CreditLineItemStatus.SIGNED,
                 created_by_id=1,
@@ -177,6 +193,7 @@ class CreditsTestCase(TestCase):
             flat_fee_end_date=d(2016, 2, 29),
             amount=2000,
             flat_fee_cc=900000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -208,6 +225,7 @@ class CreditsTestCase(TestCase):
             flat_fee_end_date=d(2016, 2, 25),
             amount=2000,
             flat_fee_cc=900000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -228,6 +246,7 @@ class CreditsTestCase(TestCase):
             flat_fee_end_date=d(2016, 2, 1),
             amount=2000,
             flat_fee_cc=1200000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -253,6 +272,7 @@ class CreditsTestCase(TestCase):
             flat_fee_end_date=d(2016, 5, 31),
             amount=2000,
             flat_fee_cc=900000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -305,6 +325,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=2000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -314,6 +335,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -323,7 +345,30 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        # Service fee doesn't match with other budgets/credits
+        c4 = create_credit(
+            account_id=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            amount=1000,
+            service_fee=Decimal("0.1"),
+            license_fee=Decimal("0.456"),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        # License fee doesn't match with other budgets/credits
+        c5 = create_credit(
+            account_id=10,
+            start_date=TODAY + datetime.timedelta(1),
+            end_date=TODAY + datetime.timedelta(2),
+            amount=1000,
+            service_fee=Decimal("0.123"),
+            license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
@@ -378,12 +423,38 @@ class CreditsTestCase(TestCase):
             campaign_id=10,
         )
 
+        # Service fee doesn't match with other budgets/credits
+        with self.assertRaises(utils.exc.ValidationError) as err:
+            create_budget(
+                credit=c4,
+                amount=10,
+                start_date=TODAY + datetime.timedelta(1),
+                end_date=TODAY + datetime.timedelta(2),
+                campaign_id=10,
+            )
+        self.assertTrue(
+            "Unable to add budget with chosen credit. Choose another credit." in str(err.exception.errors[0])
+        )
+        # License fee doesn't match with other budgets/credits
+        with self.assertRaises(utils.exc.ValidationError) as err:
+            create_budget(
+                credit=c5,
+                amount=10,
+                start_date=TODAY + datetime.timedelta(1),
+                end_date=TODAY + datetime.timedelta(2),
+                campaign_id=10,
+            )
+        self.assertTrue(
+            "Unable to add budget with chosen credit. Choose another credit" in str(err.exception.errors[0])
+        )
+
     def test_statuses(self):
         c1 = create_credit(
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=2000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -393,6 +464,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -402,6 +474,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -448,6 +521,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.PENDING,
             created_by_id=1,
@@ -457,6 +531,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -466,6 +541,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.CANCELED,
             created_by_id=1,
@@ -522,6 +598,12 @@ class CreditsTestCase(TestCase):
 
         c = models.CreditLineItem.objects.get(pk=1)
         with self.assertRaises(ValidationError) as err:
+            c.service_fee = Decimal("1.2")
+            c.save()
+        self.assertTrue("__all__" in err.exception.error_dict)
+
+        c = models.CreditLineItem.objects.get(pk=1)
+        with self.assertRaises(ValidationError) as err:
             c.license_fee = Decimal("1.2")
             c.save()
         self.assertTrue("__all__" in err.exception.error_dict)
@@ -534,6 +616,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             created_by_id=1,
         )
@@ -572,6 +655,7 @@ class CreditsTestCase(TestCase):
                 "start_date": str(TODAY - datetime.timedelta(10)),
                 "end_date": str(TODAY + datetime.timedelta(10)),
                 "amount": 100000,
+                "service_fee": 0.1,
                 "license_fee": 0.2,
                 "status": 1,
                 "currency": constants.Currency.USD,
@@ -587,6 +671,7 @@ class CreditsTestCase(TestCase):
                 "start_date": str(TODAY + datetime.timedelta(1)),
                 "end_date": str(TODAY + datetime.timedelta(10)),
                 "amount": 100000,
+                "service_fee": 0.1,
                 "license_fee": 0.2,
                 "status": 1,
                 "currency": constants.Currency.USD,
@@ -602,6 +687,7 @@ class CreditsTestCase(TestCase):
                 "start_date": str(TODAY + datetime.timedelta(1)),
                 "end_date": str(TODAY + datetime.timedelta(10)),
                 "amount": -1000,
+                "service_fee": 0.1,
                 "license_fee": 0.2,
                 "status": 1,
                 "currency": constants.Currency.USD,
@@ -618,7 +704,24 @@ class CreditsTestCase(TestCase):
                 "start_date": str(TODAY + datetime.timedelta(1)),
                 "end_date": str(TODAY + datetime.timedelta(10)),
                 "amount": 1000,
+                "service_fee": 0.1,
                 "license_fee": 1.2,
+                "status": 1,
+                "currency": constants.Currency.USD,
+                "comment": "Test case",
+            }
+        )
+        self.assertFalse(credit_form.is_valid())
+        self.assertTrue(credit_form.errors)
+
+        credit_form = forms.CreditLineItemForm(
+            {
+                "account": 2,
+                "start_date": str(TODAY + datetime.timedelta(1)),
+                "end_date": str(TODAY + datetime.timedelta(10)),
+                "amount": 1000,
+                "service_fee": 1.1,
+                "license_fee": 0.2,
                 "status": 1,
                 "currency": constants.Currency.USD,
                 "comment": "Test case",
@@ -635,6 +738,7 @@ class CreditsTestCase(TestCase):
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(2),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.PENDING,
             created_by_id=1,
@@ -643,20 +747,27 @@ class CreditsTestCase(TestCase):
         history = models.CreditHistory.objects.filter(credit=c).order_by("created_dt")
         self.assertEqual(history.count(), 1)
 
+        c.service_fee = Decimal("0.3")
         c.license_fee = Decimal("0.5")
         c.save(request=request)
         history = models.CreditHistory.objects.filter(credit=c).order_by("created_dt")
         self.assertEqual(history.count(), 2)
         self.assertEqual(history[0].created_by, request.user)
 
+        self.assertEqual(history[0].snapshot["service_fee"], "0.123")
         self.assertEqual(history[0].snapshot["license_fee"], "0.456")
+        self.assertEqual(history[1].snapshot["service_fee"], "0.3")
         self.assertEqual(history[1].snapshot["license_fee"], "0.5")
 
+        c.service_fee = Decimal("0.2")
         c.license_fee = Decimal("0.1")
         c.save(request=request)
 
+        self.assertEqual(history[0].snapshot["service_fee"], "0.123")
         self.assertEqual(history[0].snapshot["license_fee"], "0.456")
+        self.assertEqual(history[1].snapshot["service_fee"], "0.3")
         self.assertEqual(history[1].snapshot["license_fee"], "0.5")
+        self.assertEqual(history[2].snapshot["service_fee"], "0.2")
         self.assertEqual(history[2].snapshot["license_fee"], "0.1")
 
 
@@ -834,7 +945,7 @@ class BudgetsTestCase(TestCase):
 
         c.flat_fee_cc = 3000000
         with self.assertRaises(ValidationError) as err:
-            # Cannot add flat fee if tehre is no room
+            # Cannot add flat fee if there is no room
             c.save()
 
     def test_editing_inactive(self):
@@ -1131,6 +1242,7 @@ class BudgetSpendTestCase(TestCase):
             start_date=self.start_date,
             end_date=self.end_date,
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1148,15 +1260,29 @@ class BudgetSpendTestCase(TestCase):
     def test_missing_daily_statements(self):
         self.assertEqual(
             self.b.get_spend_data(),
-            {"media": 0, "data": 0, "license_fee": 0, "margin": 0, "et_total": 0, "etf_total": 0, "etfm_total": 0},
+            {
+                "base_media": 0,
+                "base_data": 0,
+                "media": 0,
+                "data": 0,
+                "service_fee": 0,
+                "license_fee": 0,
+                "margin": 0,
+                "et_total": 0,
+                "etf_total": 0,
+                "etfm_total": 0,
+            },
         )
 
     def test_get_spend_margin(self):
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=105 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=105 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=33 * converters.CURRENCY_TO_NANO,
         )
@@ -1164,13 +1290,16 @@ class BudgetSpendTestCase(TestCase):
         self.assertEqual(
             self.b.get_spend_data(date=self.end_date),
             {
-                "media": Decimal("100.0000"),
-                "data": Decimal("100.0000"),
+                "base_media": Decimal("100.0000"),
+                "base_data": Decimal("100.0000"),
+                "media": Decimal("105.0000"),
+                "data": Decimal("105.0000"),
+                "service_fee": Decimal("10.0000"),
                 "license_fee": Decimal("20.0000"),
                 "margin": Decimal("33.0000"),
-                "et_total": Decimal("200.0000"),
-                "etf_total": Decimal("220.0000"),
-                "etfm_total": Decimal("253.0000"),
+                "et_total": Decimal("210.0000"),
+                "etf_total": Decimal("230.0000"),
+                "etfm_total": Decimal("263.0000"),
             },
         )
 
@@ -1179,9 +1308,12 @@ class BudgetSpendTestCase(TestCase):
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=10000 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=10000 * converters.CURRENCY_TO_NANO,
-            license_fee_nano=1000 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=400 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=400 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=1000 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=1000 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=100 * converters.CURRENCY_TO_NANO,
+            license_fee_nano=100 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
         with patch("utils.dates_helper.local_today") as mock_now:
@@ -1197,27 +1329,47 @@ class BudgetSpendTestCase(TestCase):
     def test_fixed_date(self):
         self.assertEqual(
             self.b.get_spend_data(date=self.end_date),
-            {key: 0 for key in ("media", "data", "license_fee", "margin", "et_total", "etf_total", "etfm_total")},
+            {
+                key: 0
+                for key in (
+                    "base_media",
+                    "base_data",
+                    "media",
+                    "data",
+                    "service_fee",
+                    "license_fee",
+                    "margin",
+                    "et_total",
+                    "etf_total",
+                    "etfm_total",
+                )
+            },
         )
 
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=120 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=121 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10100000000,
             license_fee_nano=20100000000,
             margin_nano=0,
         )
         self.assertEqual(
             self.b.get_spend_data(date=self.end_date),
             {
-                "media": Decimal("100.0000"),
-                "data": Decimal("101.0000"),
+                "base_media": Decimal("100.0000"),
+                "base_data": Decimal("101.0000"),
+                "media": Decimal("120.0000"),
+                "data": Decimal("121.0000"),
+                "service_fee": Decimal("10.1000"),
                 "license_fee": Decimal("20.1000"),
                 "margin": Decimal("0"),
-                "et_total": Decimal("201.0000"),
-                "etf_total": Decimal("221.1000"),
-                "etfm_total": Decimal("221.1000"),
+                "et_total": Decimal("211.1000"),
+                "etf_total": Decimal("231.2000"),
+                "etfm_total": Decimal("231.2000"),
             },
         )
 
@@ -1225,29 +1377,38 @@ class BudgetSpendTestCase(TestCase):
         create_statement(
             budget=self.b,
             date=self.end_date - datetime.timedelta(1),
-            media_spend_nano=90 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=5 * converters.CURRENCY_TO_NANO,
             license_fee_nano=9 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=102 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10100000000,
             license_fee_nano=20100000000,
             margin_nano=0,
         )
         self.assertEqual(
             self.b.get_spend_data(),
             {
-                "media": Decimal("190.0000"),
-                "data": Decimal("191.0000"),
+                "base_media": Decimal("190.0000"),
+                "base_data": Decimal("191.0000"),
+                "media": Decimal("201.0000"),
+                "data": Decimal("202.0000"),
+                "service_fee": Decimal("15.1000"),
                 "license_fee": Decimal("29.1000"),
                 "margin": Decimal("0"),
-                "et_total": Decimal("381.0000"),
-                "etf_total": Decimal("410.1000"),
-                "etfm_total": Decimal("410.1000"),
+                "et_total": Decimal("396.1000"),
+                "etf_total": Decimal("425.2000"),
+                "etfm_total": Decimal("425.2000"),
             },
         )
 
@@ -1255,45 +1416,68 @@ class BudgetSpendTestCase(TestCase):
         create_statement(
             budget=self.b,
             date=self.end_date - datetime.timedelta(1),
-            media_spend_nano=90 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=5 * converters.CURRENCY_TO_NANO,
             license_fee_nano=9 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=102 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10100000000,
             license_fee_nano=20100000000,
             margin_nano=0,
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(2)),
-            {"media": 0, "data": 0, "license_fee": 0, "margin": 0, "et_total": 0, "etf_total": 0, "etfm_total": 0},
+            {
+                "base_media": 0,
+                "base_data": 0,
+                "media": 0,
+                "data": 0,
+                "service_fee": 0,
+                "license_fee": 0,
+                "margin": 0,
+                "et_total": 0,
+                "etf_total": 0,
+                "etfm_total": 0,
+            },
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(1)),
             {
-                "media": 90,
-                "data": 90,
+                "base_media": 90,
+                "base_data": 90,
+                "media": 100,
+                "data": 100,
+                "service_fee": 5,
                 "license_fee": 9,
                 "margin": 0,
-                "et_total": 180,
-                "etf_total": 189,
-                "etfm_total": 189,
+                "et_total": 185,
+                "etf_total": 194,
+                "etfm_total": 194,
             },
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date),
             {
-                "media": 100,
-                "data": 101,
+                "base_media": 100,
+                "base_data": 101,
+                "media": 101,
+                "data": 102,
+                "service_fee": Decimal("10.1"),
                 "license_fee": Decimal("20.1"),
                 "margin": 0,
-                "et_total": Decimal("201.0"),
-                "etf_total": Decimal("221.1"),
-                "etfm_total": Decimal("221.1"),
+                "et_total": Decimal("211.1"),
+                "etf_total": Decimal("231.2"),
+                "etfm_total": Decimal("231.2"),
             },
         )
 
@@ -1301,45 +1485,68 @@ class BudgetSpendTestCase(TestCase):
         create_statement(
             budget=self.b,
             date=self.end_date - datetime.timedelta(1),
-            media_spend_nano=90 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=90 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=5 * converters.CURRENCY_TO_NANO,
             license_fee_nano=9 * converters.CURRENCY_TO_NANO,
             margin_nano=Decimal("28.35") * converters.CURRENCY_TO_NANO,
         )
         create_statement(
             budget=self.b,
             date=self.end_date,
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=101 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=102 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10100000000,
             license_fee_nano=20100000000,
             margin_nano=Decimal("33.165") * converters.CURRENCY_TO_NANO,
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(2)),
-            {"media": 0, "data": 0, "license_fee": 0, "margin": 0, "et_total": 0, "etf_total": 0, "etfm_total": 0},
+            {
+                "base_media": 0,
+                "base_data": 0,
+                "media": 0,
+                "data": 0,
+                "service_fee": 0,
+                "license_fee": 0,
+                "margin": 0,
+                "et_total": 0,
+                "etf_total": 0,
+                "etfm_total": 0,
+            },
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date - datetime.timedelta(1)),
             {
-                "media": 90,
-                "data": 90,
+                "base_media": 90,
+                "base_data": 90,
+                "media": 100,
+                "data": 100,
+                "service_fee": 5,
                 "license_fee": 9,
                 "margin": Decimal("28.35"),
-                "et_total": Decimal("180.0000"),
-                "etf_total": Decimal("189.0000"),
-                "etfm_total": Decimal("217.35"),
+                "et_total": Decimal("185.0000"),
+                "etf_total": Decimal("194.0000"),
+                "etfm_total": Decimal("222.35"),
             },
         )
         self.assertEqual(
             self.b.get_daily_spend(self.end_date),
             {
-                "media": 100,
-                "data": 101,
+                "base_media": 100,
+                "base_data": 101,
+                "media": 101,
+                "data": 102,
+                "service_fee": Decimal("10.1"),
                 "license_fee": Decimal("20.1"),
                 "margin": Decimal("33.165"),
-                "et_total": Decimal("201.0000"),
-                "etf_total": Decimal("221.1000"),
-                "etfm_total": Decimal("254.2650"),
+                "et_total": Decimal("211.1000"),
+                "etf_total": Decimal("231.2000"),
+                "etfm_total": Decimal("264.3650"),
             },
         )
 
@@ -1356,6 +1563,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=self.start_date,
             end_date=self.end_date,
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1371,16 +1579,22 @@ class BudgetReserveTestCase(TestCase):
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date - datetime.timedelta(1),
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date,
-            media_spend_nano=120 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=120 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1398,8 +1612,11 @@ class BudgetReserveTestCase(TestCase):
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(0),
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1409,22 +1626,28 @@ class BudgetReserveTestCase(TestCase):
             self.assertEqual(
                 self.b.get_spend_data(),
                 {
+                    "service_fee": 10,
                     "license_fee": 20,
-                    "media": 100,
-                    "data": 0,
-                    "et_total": 100,
-                    "etf_total": 120,
-                    "etfm_total": 120,
+                    "base_media": 100,
+                    "base_data": 0,
+                    "media": 200,
+                    "data": 100,
+                    "et_total": 110,
+                    "etf_total": 130,
+                    "etfm_total": 130,
                     "margin": 0,
                 },
             )
-            self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.CURRENCY_TO_CC)
+            self.assertEqual(self.b.get_reserve_amount_cc(), 6.5 * converters.CURRENCY_TO_CC)
 
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(1),
-            media_spend_nano=80 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=10 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=80 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=10 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1434,23 +1657,29 @@ class BudgetReserveTestCase(TestCase):
             self.assertEqual(
                 self.b.get_spend_data(),
                 {
+                    "service_fee": 20,
                     "license_fee": 40,
-                    "media": 180,
-                    "data": 10,
+                    "base_media": 180,
+                    "base_data": 10,
+                    "media": 400,
+                    "data": 200,
                     "margin": 0,
-                    "et_total": 190,
-                    "etf_total": 230,
-                    "etfm_total": 230,
+                    "et_total": 210,
+                    "etf_total": 250,
+                    "etfm_total": 250,
                 },
             )
             # Same reserve because we didn't have yesterday's values for the previous statement
-            self.assertEqual(self.b.get_reserve_amount_cc(), 6 * converters.CURRENCY_TO_CC)
+            self.assertEqual(self.b.get_reserve_amount_cc(), 6.5 * converters.CURRENCY_TO_CC)
 
         models.BudgetDailyStatement.objects.create(
             budget=self.b,
             date=self.start_date + datetime.timedelta(2),
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1460,16 +1689,19 @@ class BudgetReserveTestCase(TestCase):
             self.assertEqual(
                 self.b.get_spend_data(),
                 {
+                    "service_fee": 30,
                     "license_fee": 60,
-                    "media": 280,
-                    "data": 10,
+                    "base_media": 280,
+                    "base_data": 10,
+                    "media": 600,
+                    "data": 300,
                     "margin": 0,
-                    "et_total": 290,
-                    "etf_total": 350,
-                    "etfm_total": 350,
+                    "et_total": 320,
+                    "etf_total": 380,
+                    "etfm_total": 380,
                 },
             )
-            self.assertEqual(self.b.get_reserve_amount_cc(), 55000)
+            self.assertEqual(self.b.get_reserve_amount_cc(), 6.0 * converters.CURRENCY_TO_CC)
 
     def test_asset_return(self, mock_local_today):
         today = datetime.date(2015, 11, 11)
@@ -1478,6 +1710,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
             amount=1000,
+            service_fee=Decimal("0.1"),
             license_fee=Decimal("0.2"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1494,8 +1727,11 @@ class BudgetReserveTestCase(TestCase):
         create_statement(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=10 * converters.CURRENCY_TO_NANO,
             license_fee_nano=20 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1503,8 +1739,11 @@ class BudgetReserveTestCase(TestCase):
             models.BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=100 * converters.CURRENCY_TO_NANO,
-                data_spend_nano=0,
+                base_media_spend_nano=100 * converters.CURRENCY_TO_NANO,
+                base_data_spend_nano=0,
+                media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+                data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+                service_fee_nano=10 * converters.CURRENCY_TO_NANO,
                 license_fee_nano=20 * converters.CURRENCY_TO_NANO,
                 margin_nano=0,
             )
@@ -1515,25 +1754,25 @@ class BudgetReserveTestCase(TestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 274 * converters.CURRENCY_TO_CC)
+        self.assertEqual(budget.freed_cc, 213.5 * converters.CURRENCY_TO_CC)
 
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 12)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 274 * converters.CURRENCY_TO_CC)
+        self.assertEqual(budget.freed_cc, 213.5 * converters.CURRENCY_TO_CC)
 
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 13)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 274 * converters.CURRENCY_TO_CC)
+        self.assertEqual(budget.freed_cc, 213.5 * converters.CURRENCY_TO_CC)
 
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 14)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 280 * converters.CURRENCY_TO_CC)
+        self.assertEqual(budget.freed_cc, 220 * converters.CURRENCY_TO_CC)
 
     def test_asset_return_overlaping_budgets(self, mock_local_today):
         today = datetime.date(2015, 11, 11)
@@ -1542,6 +1781,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
             amount=1000,
+            service_fee=Decimal("0.1"),
             license_fee=Decimal("0.2"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1567,8 +1807,11 @@ class BudgetReserveTestCase(TestCase):
         create_statement(
             budget=budget1,
             date=today - datetime.timedelta(1),
-            media_spend_nano=300 * converters.CURRENCY_TO_NANO,
-            data_spend_nano=0,
+            base_media_spend_nano=300 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=0,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
+            data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=0 * converters.CURRENCY_TO_NANO,
             license_fee_nano=0 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
         )
@@ -1602,6 +1845,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1616,19 +1860,22 @@ class BudgetReserveTestCase(TestCase):
         create_statement(
             budget=b,
             date=TODAY - datetime.timedelta(1),
-            media_spend_nano=700 * converters.CURRENCY_TO_NANO,
+            base_media_spend_nano=700 * converters.CURRENCY_TO_NANO,
+            base_data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            media_spend_nano=200 * converters.CURRENCY_TO_NANO,
             data_spend_nano=100 * converters.CURRENCY_TO_NANO,
+            service_fee_nano=40 * converters.CURRENCY_TO_NANO,
             license_fee_nano=80 * converters.CURRENCY_TO_NANO,
             margin_nano=0,
-        )  # Spend = 880, unused = 120, reserve = 44, free = 10
+        )  # Spend = 920, unused = 80, reserve = 46
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = TODAY
             b.free_inactive_allocated_assets()
-        self.assertEqual(b.freed_cc, 76 * converters.CURRENCY_TO_CC)
+        self.assertEqual(b.freed_cc, 34 * converters.CURRENCY_TO_CC)
         with patch("utils.dates_helper.local_today") as mock_now:
             mock_now.return_value = TODAY + datetime.timedelta(5)
             b.free_inactive_allocated_assets()
-        self.assertEqual(b.freed_cc, 120 * converters.CURRENCY_TO_CC)
+        self.assertEqual(b.freed_cc, 80 * converters.CURRENCY_TO_CC)
 
     def test_freed_budget_validation(self, mock_local_today):
         c = create_credit(
@@ -1636,6 +1883,7 @@ class BudgetReserveTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.123"),
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1699,6 +1947,7 @@ class BCMCommandTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.2"),
             license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -1737,7 +1986,7 @@ class BCMCommandTestCase(TestCase):
     def test_list_credit(self):
         self.assertEqual(
             self._call_command("bcm", "list", "credits", str(self.c.pk)),
-            """ - #{} test account 2, 2015-11-30 - 2015-12-02 ($1000, fee 0.1000%, flat $0.0000)
+            """ - #{} test account 2, 2015-11-30 - 2015-12-02 ($1000, service fee 0.2000%, license fee 0.1000%, flat $0.0000)
 """.format(
                 self.c.pk
             ),
@@ -1986,6 +2235,7 @@ class BCMCommandTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY + datetime.timedelta(10),
             amount=1000,
+            service_fee=Decimal("0.2"),
             license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -2011,6 +2261,7 @@ class BCMCommandTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.2"),
             license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -2045,6 +2296,7 @@ class BCMCommandTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.2"),
             license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -2085,6 +2337,7 @@ class BCMCommandTestCase(TestCase):
             start_date=TODAY - datetime.timedelta(10),
             end_date=TODAY - datetime.timedelta(1),
             amount=1000,
+            service_fee=Decimal("0.2"),
             license_fee=Decimal("0.1"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,

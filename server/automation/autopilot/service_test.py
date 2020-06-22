@@ -419,7 +419,10 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_prefetch.return_value = (
             {ad_group: {} for ad_group in ad_groups},
             {},
-            {ad_group.campaign: {"fee": Decimal("0.15"), "margin": Decimal("0.30")} for ad_group in ad_groups},
+            {
+                ad_group.campaign: {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.30")}
+                for ad_group in ad_groups
+            },
         )
         mock_entities.return_value = {ad_group.campaign: {ad_group: []} for ad_group in ad_groups}
         mock_active.return_value = (ad_groups, [a.get_current_settings() for a in ad_groups])
@@ -675,15 +678,15 @@ class AutopilotPlusTestCase(test.TestCase):
         active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
         new_budgets = service._set_paused_ad_group_sources_to_minimum_values(
-            adg, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            adg, {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
         self.assertEqual(new_budgets.get(paused_ad_group_source)["old_budget"], Decimal("100."))
-        self.assertEqual(new_budgets.get(paused_ad_group_source)["new_budget"], Decimal("9"))
+        self.assertEqual(new_budgets.get(paused_ad_group_source)["new_budget"], Decimal("10"))
         self.assertEqual(
             new_budgets.get(paused_ad_group_source)["budget_comments"],
             [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE],
         )
-        self.assertEqual(paused_ad_group_source.get_current_settings().daily_budget_cc, Decimal("9"))
+        self.assertEqual(paused_ad_group_source.get_current_settings().daily_budget_cc, Decimal("10"))
         self.assertEqual(
             active_ad_group_source.get_current_settings().daily_budget_cc, active_ad_group_source_old_budget
         )
@@ -714,14 +717,14 @@ class AutopilotPlusTestCase(test.TestCase):
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
         all_rtb_ad_group_source = dash.models.AllRTBAdGroupSource(adg)
         new_budgets = service._set_paused_ad_group_sources_to_minimum_values(
-            adg, {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+            adg, {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         )
 
         adg.settings.refresh_from_db()
         self.assertTrue(paused_ad_group_source not in new_budgets)
         self.assertTrue(active_ad_group_source not in new_budgets)
         self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["old_budget"], Decimal("30."))
-        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["new_budget"], Decimal("17.0"))
+        self.assertEqual(new_budgets.get(all_rtb_ad_group_source)["new_budget"], Decimal("19.0"))
         self.assertEqual(
             new_budgets.get(all_rtb_ad_group_source)["budget_comments"],
             [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE],
@@ -730,7 +733,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(
             active_ad_group_source.get_current_settings().daily_budget_cc, active_ad_group_source_old_budget
         )
-        self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal("17.0"))
+        self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal("19.0"))
 
     @patch("automation.autopilot.service._set_paused_ad_group_sources_to_minimum_values")
     @patch("automation.autopilot.service.run_autopilot")
@@ -838,9 +841,9 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("utils.metrics_compat.gauge")
     def test_report_new_budgets_on_ap_to_influx(self, mock_metrics_compat, mock_query):
         mock_query.return_value = [
-            {"ad_group_id": 1, "billing_cost": Decimal("15")},
-            {"ad_group_id": 3, "billing_cost": Decimal("10")},
-            {"ad_group_id": 4, "billing_cost": Decimal("20")},
+            {"ad_group_id": 1, "etf_cost": Decimal("15")},
+            {"ad_group_id": 3, "etf_cost": Decimal("10")},
+            {"ad_group_id": 4, "etf_cost": Decimal("20")},
         ]
 
         entities = {

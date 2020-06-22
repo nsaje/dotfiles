@@ -189,49 +189,25 @@ class FilterTestCase(TestCase):
         }
 
         self.public_fields = self.public_fields_no_extra_costs | {
+            "b_data_cost",
+            "local_b_data_cost",
             "e_data_cost",
             "local_e_data_cost",
+            "b_media_cost",
+            "local_b_media_cost",
             "e_media_cost",
             "local_e_media_cost",
+            "bt_cost",
+            "local_bt_cost",
             "et_cost",
             "local_et_cost",
-            "avg_et_cost_per_visit",
-            "local_avg_et_cost_per_visit",
-            "avg_et_cost_for_new_visitor",
-            "local_avg_et_cost_for_new_visitor",
-            "avg_et_cost_per_minute",
-            "local_avg_et_cost_per_minute",
-            "avg_et_cost_per_non_bounced_visit",
-            "local_avg_et_cost_per_non_bounced_visit",
-            "avg_et_cost_per_pageview",
-            "local_avg_et_cost_per_pageview",
-            "avg_et_cost_per_pixel_1_168",
-            "local_avg_et_cost_per_pixel_1_168",
-            "avg_et_cost_per_pixel_1_2160",
-            "local_avg_et_cost_per_pixel_1_2160",
-            "avg_et_cost_per_pixel_1_24",
-            "local_avg_et_cost_per_pixel_1_24",
-            "avg_et_cost_per_pixel_1_720",
-            "local_avg_et_cost_per_pixel_1_720",
-            "et_cpc",
-            "local_et_cpc",
-            "et_cpm",
-            "local_et_cpm",
-            "et_roas_pixel_1_168",
-            "et_roas_pixel_1_2160",
-            "et_roas_pixel_1_24",
-            "et_roas_pixel_1_720",
+            "service_fee",
+            "local_service_fee",
             "license_fee",
             "local_license_fee",
             "license_fee_projection",
             "pacing",
             "spend_projection",
-            "video_et_cpcv",
-            "local_video_et_cpcv",
-            "video_et_cpv",
-            "local_video_et_cpv",
-            "yesterday_et_cost",
-            "local_yesterday_et_cost",
         }
 
     def _mock_constraints(self):
@@ -267,51 +243,36 @@ class FilterTestCase(TestCase):
 
     def test_filter_columns_by_permission_platform_cost(self):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown", "can_see_viewthrough_conversions"])
+        user = magic_mixer.blend_user(
+            ["can_view_platform_cost_breakdown", "can_see_viewthrough_conversions", "can_see_service_fee"]
+        )
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields_no_extra_costs,
             [
+                "service_fee",
+                "local_service_fee",
                 "license_fee",
                 "local_license_fee",
                 "license_fee_projection",
                 "pacing",
                 "spend_projection",
+                "b_data_cost",
+                "local_b_data_cost",
+                "b_media_cost",
+                "local_b_media_cost",
                 "e_data_cost",
                 "local_e_data_cost",
                 "e_media_cost",
                 "local_e_media_cost",
-                "avg_et_cost_for_new_visitor",
-                "local_avg_et_cost_for_new_visitor",
-                "avg_et_cost_per_minute",
-                "local_avg_et_cost_per_minute",
-                "avg_et_cost_per_non_bounced_visit",
-                "local_avg_et_cost_per_non_bounced_visit",
-                "avg_et_cost_per_pageview",
-                "local_avg_et_cost_per_pageview",
-                "avg_et_cost_per_visit",
-                "local_avg_et_cost_per_visit",
-                "avg_et_cost_per_pixel_1_24",
-                "local_avg_et_cost_per_pixel_1_24",
-                "avg_et_cost_per_pixel_1_168",
-                "local_avg_et_cost_per_pixel_1_168",
-                "avg_et_cost_per_pixel_1_720",
-                "local_avg_et_cost_per_pixel_1_720",
-                "avg_et_cost_per_pixel_1_2160",
-                "local_avg_et_cost_per_pixel_1_2160",
-                "et_roas_pixel_1_24",
-                "et_roas_pixel_1_168",
-                "et_roas_pixel_1_720",
-                "et_roas_pixel_1_2160",
+                "bt_cost",
+                "local_bt_cost",
                 "pixel_1_24_view",
-                "avg_et_cost_per_pixel_1_24_view",
                 "avg_etfm_cost_per_pixel_1_24_view",
-                "local_avg_et_cost_per_pixel_1_24_view",
                 "local_avg_etfm_cost_per_pixel_1_24_view",
                 "conversion_rate_per_pixel_1_24_view",
-                "et_roas_pixel_1_24_view",
                 "etfm_roas_pixel_1_24_view",
             ],
         )
@@ -323,23 +284,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(user, rows, self.goals)
 
         self.maxDiff = None
-        self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_no_extra_costs,
-            [
-                "et_cost",
-                "local_et_cost",
-                "et_cpc",
-                "local_et_cpc",
-                "et_cpm",
-                "local_et_cpm",
-                "video_et_cpcv",
-                "local_video_et_cpcv",
-                "video_et_cpv",
-                "local_video_et_cpv",
-                "yesterday_et_cost",
-                "local_yesterday_et_cost",
-            ],
-        )
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_no_extra_costs, ["et_cost", "local_et_cost"])
 
     def test_filter_columns_by_permission_agency_cost(self):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
@@ -361,20 +306,12 @@ class FilterTestCase(TestCase):
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
             [
-                "avg_et_cost_per_conversion_goal_2",
-                "local_avg_et_cost_per_conversion_goal_2",
                 "avg_etfm_cost_per_conversion_goal_2",
                 "local_avg_etfm_cost_per_conversion_goal_2",
-                "avg_et_cost_per_conversion_goal_3",
-                "local_avg_et_cost_per_conversion_goal_3",
                 "avg_etfm_cost_per_conversion_goal_3",
                 "local_avg_etfm_cost_per_conversion_goal_3",
-                "avg_et_cost_per_conversion_goal_4",
-                "local_avg_et_cost_per_conversion_goal_4",
                 "avg_etfm_cost_per_conversion_goal_4",
                 "local_avg_etfm_cost_per_conversion_goal_4",
-                "avg_et_cost_per_conversion_goal_5",
-                "local_avg_et_cost_per_conversion_goal_5",
                 "avg_etfm_cost_per_conversion_goal_5",
                 "local_avg_etfm_cost_per_conversion_goal_5",
             ],
@@ -388,14 +325,7 @@ class FilterTestCase(TestCase):
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
-            [
-                "performance_campaign_goal_1",
-                "etfm_performance_campaign_goal_1",
-                "performance_campaign_goal_2",
-                "etfm_performance_campaign_goal_2",
-                "performance",
-                "styles",
-            ],
+            ["etfm_performance_campaign_goal_1", "etfm_performance_campaign_goal_2", "styles"],
         )
 
     def test_filter_columns_by_permission_conversion_goals(self):
@@ -492,6 +422,55 @@ class FilterTestCase(TestCase):
 
         permission_filter.filter_columns_by_permission(user, rows, self.goals)
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, [])
+
+    def test_filter_columns_by_permission_refund(self):
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
+        user = magic_mixer.blend_user(["can_see_credit_refunds"])
+
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
+
+        self.assertCountEqual(
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
+            [
+                "media_cost_refund",
+                "e_media_cost_refund",
+                "at_cost_refund",
+                "et_cost_refund",
+                "etf_cost_refund",
+                "etfm_cost_refund",
+                "license_fee_refund",
+                "margin_refund",
+            ],
+        )
+
+    def test_filter_columns_by_permission_service_fee_refund(self):
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
+        user = magic_mixer.blend_user(["can_see_credit_refunds", "can_see_service_fee"])
+
+        permission_filter.filter_columns_by_permission(user, rows, self.goals)
+
+        self.assertCountEqual(
+            set(rows[0].keys()) - self.public_fields_no_extra_costs,
+            [
+                "b_media_cost",
+                "b_data_cost",
+                "local_b_media_cost",
+                "local_b_data_cost",
+                "bt_cost",
+                "local_bt_cost",
+                "service_fee",
+                "local_service_fee",
+                "media_cost_refund",
+                "e_media_cost_refund",
+                "at_cost_refund",
+                "et_cost_refund",
+                "etf_cost_refund",
+                "etfm_cost_refund",
+                "service_fee_refund",
+                "license_fee_refund",
+                "margin_refund",
+            ],
+        )
 
 
 class BreakdownAllowedTest(TestCase):

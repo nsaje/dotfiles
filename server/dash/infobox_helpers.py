@@ -211,25 +211,14 @@ def _get_yesterday_spend(breakdown, constraints, use_local_currency=True):
         parents=None,
         goals=None,
         use_publishers_view=False,
-        metrics=[
-            "e_yesterday_cost",
-            "yesterday_et_cost",
-            "yesterday_etfm_cost",
-            "local_e_yesterday_cost",
-            "local_yesterday_et_cost",
-            "local_yesterday_etfm_cost",
-        ],
+        metrics=["yesterday_etfm_cost", "local_yesterday_etfm_cost"],
     )
 
-    ret = {"e_yesterday_cost": 0, "yesterday_et_cost": 0, "yesterday_etfm_cost": 0}
+    ret = {"yesterday_etfm_cost": 0}
     for row in query_results:
         if use_local_currency:
-            ret["e_yesterday_cost"] += row["local_e_yesterday_cost"] or 0
-            ret["yesterday_et_cost"] += row["local_yesterday_et_cost"] or 0
             ret["yesterday_etfm_cost"] += row["local_yesterday_etfm_cost"] or 0
         else:
-            ret["e_yesterday_cost"] += row["e_yesterday_cost"] or 0
-            ret["yesterday_et_cost"] += row["yesterday_et_cost"] or 0
             ret["yesterday_etfm_cost"] += row["yesterday_etfm_cost"] or 0
     return ret
 

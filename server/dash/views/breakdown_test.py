@@ -1275,14 +1275,8 @@ class BreakdownHelperTest(TestCase):
     def test_clean_non_relevant_fields(self):
 
         rows = [
-            {
-                "ad_group_id": 1,
-                "campaign_has_available_budget": 1,
-                "performance": {},
-                "performance_campaign_goal_1": 1,
-                "status_per_source": 1,
-            },
-            {"ad_group_id": 2, "campaign_has_available_budget": 1, "performance": {}, "performance_campaign_goal_1": 1},
+            {"ad_group_id": 1, "campaign_has_available_budget": 1, "performance": {}, "status_per_source": 1},
+            {"ad_group_id": 2, "campaign_has_available_budget": 1, "performance": {}},
         ]
 
         breakdown_helpers.clean_non_relevant_fields(rows)

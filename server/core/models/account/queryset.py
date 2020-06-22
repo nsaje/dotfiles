@@ -67,7 +67,7 @@ class AccountQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
         return self.filter(
             pk__in=set(
                 core.features.bcm.BudgetDailyStatement.objects.filter(budget__campaign__account_id__in=self)
-                .filter(media_spend_nano__gt=0)
+                .filter(base_media_spend_nano__gt=0)
                 .values_list("budget__campaign__account_id", flat=True)
             )
         )

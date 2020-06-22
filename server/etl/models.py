@@ -90,8 +90,49 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
 
     impressions = backtosql.TemplateColumn("part_sum.sql", {"column_name": "impressions"}, AGGREGATES)
     clicks = backtosql.TemplateColumn("part_sum.sql", {"column_name": "clicks"}, AGGREGATES)
+
     cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "cost_nano"}, AGGREGATES)
     data_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "data_cost_nano"}, AGGREGATES)
+    base_effective_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "base_effective_cost_nano"}, AGGREGATES
+    )
+    base_effective_data_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "base_effective_data_cost_nano"}, AGGREGATES
+    )
+    effective_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "effective_cost_nano"}, AGGREGATES)
+    effective_data_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "effective_data_cost_nano"}, AGGREGATES
+    )
+    service_fee_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "service_fee_nano"}, AGGREGATES)
+    license_fee_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "license_fee_nano"}, AGGREGATES)
+    margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "margin_nano"}, AGGREGATES)
+    ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "ssp_cost_nano"}, AGGREGATES)
+
+    local_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_cost_nano"}, AGGREGATES)
+    local_data_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_data_cost_nano"}, AGGREGATES)
+    local_base_effective_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_base_effective_cost_nano"}, AGGREGATES
+    )
+    local_base_effective_data_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_base_effective_data_cost_nano"}, AGGREGATES
+    )
+    local_effective_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_effective_cost_nano"}, AGGREGATES
+    )
+    local_effective_data_cost_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_effective_data_cost_nano"}, AGGREGATES
+    )
+    local_service_fee_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_service_fee_nano"}, AGGREGATES
+    )
+    local_license_fee_nano = backtosql.TemplateColumn(
+        "part_sum.sql", {"column_name": "local_license_fee_nano"}, AGGREGATES
+    )
+    local_margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_margin_nano"}, AGGREGATES)
+    local_ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_ssp_cost_nano"}, AGGREGATES)
+
+    users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "users"}, AGGREGATES)
+    returning_users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "returning_users"}, AGGREGATES)
 
     visits = backtosql.TemplateColumn("part_sum.sql", {"column_name": "visits"}, AGGREGATES)
     new_visits = backtosql.TemplateColumn("part_sum.sql", {"column_name": "new_visits"}, AGGREGATES)
@@ -99,37 +140,12 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     pageviews = backtosql.TemplateColumn("part_sum.sql", {"column_name": "pageviews"}, AGGREGATES)
     total_time_on_site = backtosql.TemplateColumn("part_sum.sql", {"column_name": "total_time_on_site"}, AGGREGATES)
 
-    effective_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "effective_cost_nano"}, AGGREGATES)
-    effective_data_cost_nano = backtosql.TemplateColumn(
-        "part_sum.sql", {"column_name": "effective_data_cost_nano"}, AGGREGATES
-    )
-    license_fee_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "license_fee_nano"}, AGGREGATES)
-    margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "margin_nano"}, AGGREGATES)
-    ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "ssp_cost_nano"}, AGGREGATES)
-
-    users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "users"}, AGGREGATES)
-    returning_users = backtosql.TemplateColumn("part_sum.sql", {"column_name": "returning_users"}, AGGREGATES)
-
     video_start = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_start"}, AGGREGATES)
     video_first_quartile = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_first_quartile"}, AGGREGATES)
     video_midpoint = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_midpoint"}, AGGREGATES)
     video_third_quartile = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_third_quartile"}, AGGREGATES)
     video_complete = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_complete"}, AGGREGATES)
     video_progress_3s = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_progress_3s"}, AGGREGATES)
-
-    local_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_cost_nano"}, AGGREGATES)
-    local_data_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_data_cost_nano"}, AGGREGATES)
-    local_effective_cost_nano = backtosql.TemplateColumn(
-        "part_sum.sql", {"column_name": "local_effective_cost_nano"}, AGGREGATES
-    )
-    local_effective_data_cost_nano = backtosql.TemplateColumn(
-        "part_sum.sql", {"column_name": "local_effective_data_cost_nano"}, AGGREGATES
-    )
-    local_license_fee_nano = backtosql.TemplateColumn(
-        "part_sum.sql", {"column_name": "local_license_fee_nano"}, AGGREGATES
-    )
-    local_margin_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_margin_nano"}, AGGREGATES)
-    local_ssp_cost_nano = backtosql.TemplateColumn("part_sum.sql", {"column_name": "local_ssp_cost_nano"}, AGGREGATES)
 
     mrc50_measurable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_measurable"}, AGGREGATES)
     mrc50_viewable = backtosql.TemplateColumn("part_sum.sql", {"column_name": "mrc50_viewable"}, AGGREGATES)
@@ -180,6 +196,12 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                 "vast4_viewable",
                 "ssp_cost_nano",
                 "local_ssp_cost_nano",
+                "base_effective_cost_nano",
+                "base_effective_data_cost_nano",
+                "service_fee_nano",
+                "local_base_effective_cost_nano",
+                "local_base_effective_data_cost_nano",
+                "local_service_fee_nano",
             ]
         )
 

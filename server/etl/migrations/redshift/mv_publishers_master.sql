@@ -70,6 +70,14 @@ CREATE TABLE mv_master_pubs (
         vast4_viewable integer encode AZ64,
 
         ssp_cost_nano bigint encode AZ64,
-        local_ssp_cost_nano bigint encode AZ64
+        local_ssp_cost_nano bigint encode AZ64,
+
+        base_effective_cost_nano bigint encode AZ64,
+        base_effective_data_cost_nano bigint encode AZ64,
+        service_fee_nano bigint encode AZ64,
+
+        local_base_effective_cost_nano bigint encode AZ64,
+        local_base_effective_data_cost_nano bigint encode AZ64,
+        local_service_fee_nano bigint encode AZ64
         -- kw::end
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, publisher_source_id);

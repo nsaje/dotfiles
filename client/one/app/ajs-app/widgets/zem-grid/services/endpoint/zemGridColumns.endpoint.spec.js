@@ -38,14 +38,17 @@ describe('zemGridEndpointColumnsSpec', function() {
         expect(nameColumn.exceptions.breakdowns).toBeFalsy();
         expect(nameColumn.goal).toBeFalsy();
 
-        var cpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.cpc, columns);
+        var cpcColumn = findColumn(
+            zemGridEndpointColumns.COLUMNS.etfmCpc,
+            columns
+        );
         expect(cpcColumn.permanent).toBeFalsy();
         expect(cpcColumn.default).toBe(true);
         expect(cpcColumn.exceptions.breakdowns).toBeFalsy();
         expect(cpcColumn.goal).toBeFalsy();
 
         var avgCostPerMinuteColumn = findColumn(
-            zemGridEndpointColumns.COLUMNS.avgCostPerMinute,
+            zemGridEndpointColumns.COLUMNS.avgEtfmCostPerMinute,
             columns
         );
         expect(avgCostPerMinuteColumn.permanent).toBeFalsy();
@@ -124,14 +127,14 @@ describe('zemGridEndpointColumnsSpec', function() {
         ];
         var campaignGoals = [
             {
-                fields: {avg_cost_per_pixel_1_24: true},
+                fields: {avg_etfm_cost_per_pixel_1_24: true},
                 name: 'Avg. CPA',
                 conversion: 'Pixel goal - 1 day',
                 value: 20,
                 primary: true,
             }, // eslint-disable-line max-len
             {
-                fields: {avg_cost_per_conversion_goal_1: true},
+                fields: {avg_etfm_cost_per_conversion_goal_1: true},
                 name: 'Avg. CPA',
                 conversion: 'Conversion goal',
                 value: 50,
@@ -153,7 +156,7 @@ describe('zemGridEndpointColumnsSpec', function() {
         expect(pixelConversionsColumn.goal).toBeFalsy();
 
         var pixelCpaColumn = findColumnByField(
-            'avg_cost_per_pixel_1_24',
+            'avg_etfm_cost_per_pixel_1_24',
             columns
         );
         expect(pixelCpaColumn.permanent).toBeFalsy();
@@ -169,7 +172,7 @@ describe('zemGridEndpointColumnsSpec', function() {
         expect(goalConversionsColumn.goal).toBeFalsy();
 
         var goalCpaColumn = findColumnByField(
-            'avg_cost_per_conversion_goal_1',
+            'avg_etfm_cost_per_conversion_goal_1',
             columns
         );
         expect(goalCpaColumn.permanent).toBeFalsy();

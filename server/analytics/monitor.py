@@ -46,10 +46,11 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     daily_spend = (
         spend_queryset.values("date")
         .annotate(
-            media=Sum(F("media_spend_nano")),
-            data=Sum(F("data_spend_nano")),
+            base_media=Sum(F("base_media_spend_nano")),
+            base_data=Sum(F("base_data_spend_nano")),
+            service_fee=Sum(F("service_fee_nano")),
+            license_fee=Sum(F("license_fee_nano")),
             margin=Sum(F("margin_nano")),
-            fee=Sum(F("license_fee_nano")),
         )
         .first()
     )
@@ -73,7 +74,9 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
 def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6, day_range=3):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
-    total_spend = Sum(F("media_spend_nano") + F("data_spend_nano") + F("license_fee_nano"))
+    total_spend = Sum(
+        F("base_media_spend_nano") + F("base_data_spend_nano") + F("service_fee_nano") + F("license_fee_nano")
+    )  # TODO: SERVICE FEE: just media + data? sync with prodops
     result = (
         dash.models.BudgetDailyStatement.objects.filter(date__lte=date, date__gte=date - datetime.timedelta(day_range))
         .values("date")

@@ -55,6 +55,7 @@ class RealtimestatsServiceTest(TestCase):
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
             flat_fee_cc=0,
+            service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.3333"),
         )
 
@@ -81,7 +82,7 @@ class RealtimestatsServiceTest(TestCase):
         mock_redirector_get.return_value = {"clicks": 13}
 
         result = service.get_ad_group_stats(self.ad_group)
-        self.assertEqual(result, {"clicks": 13, "spend": test_helper.AlmostMatcher(decimal.Decimal("7.8842"))})
+        self.assertEqual(result, {"clicks": 13, "spend": test_helper.AlmostMatcher(decimal.Decimal("8.8696"))})
 
         mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
         mock_redirector_get.assert_called_once_with(self.ad_group.id)
@@ -107,12 +108,12 @@ class RealtimestatsServiceTest(TestCase):
                 {
                     "source_slug": sources[1].bidder_slug,
                     "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
                 },
                 {
                     "source_slug": sources[0].bidder_slug,
                     "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
                 },
             ],
         )
@@ -141,12 +142,12 @@ class RealtimestatsServiceTest(TestCase):
                 {
                     "source_slug": sources[1].bidder_slug,
                     "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
                 },
                 {
                     "source_slug": sources[0].bidder_slug,
                     "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
                 },
             ],
         )
@@ -177,12 +178,12 @@ class RealtimestatsServiceTest(TestCase):
                 {
                     "source_slug": sources[1].bidder_slug,
                     "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
                 },
                 {
                     "source_slug": sources[0].bidder_slug,
                     "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
                 },
             ],
         )
@@ -202,12 +203,12 @@ class RealtimestatsServiceTest(TestCase):
                 {
                     "source_slug": sources[1].bidder_slug,
                     "source": sources[1],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("6.9227")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("7.7880")),
                 },
                 {
                     "source_slug": sources[0].bidder_slug,
                     "source": sources[0],
-                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.5383")),
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.8556")),
                 },
             ],
         )
@@ -265,12 +266,12 @@ class RealtimestatsServiceTest(TestCase):
                     {
                         "source_slug": sources[1].bidder_slug,
                         "source": sources[1],
-                        "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("6.4900")),
                     },
                     {
                         "source_slug": sources[0].bidder_slug,
                         "source": sources[0],
-                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                        "spend": test_helper.AlmostMatcher(decimal.Decimal("2.3797")),
                     },
                 ],
                 "errors": {},

@@ -65,10 +65,10 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                # {'campaign_id': 2, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {"campaign_id": 2, "clicks": 3, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                # {'campaign_id': 1, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                # {'campaign_id': 1, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
+                # {'campaign_id': 2, 'clicks': 4},
+                {"campaign_id": 2, "clicks": 3},
+                # {'campaign_id': 1, 'clicks': 2},
+                # {'campaign_id': 1, 'clicks': 1},
             ],
         )
 
@@ -103,10 +103,10 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                # {'campaign_id': 2, 'ad_group_id': 4, 'clicks': 4, 'yesterday_cost': 0, 'e_yesterday_cost': 0},  # offset
-                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                # {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 2, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
+                # {'campaign_id': 2, 'ad_group_id': 4, 'clicks': 4},  # offset
+                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3},
+                # {'campaign_id': 1, 'ad_group_id': 2, 'clicks': 2},
+                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1},
             ],
         )
 
@@ -150,42 +150,14 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                # {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 1,
-                    "dma": 502,
-                    "clicks": 2,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                # {'campaign_id': 1, 'ad_group_id': 2, 'dma': 501, 'clicks': 3, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 2,
-                    "dma": 502,
-                    "clicks": 4,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                # {'campaign_id': 2, 'ad_group_id': 3, 'dma': 501, 'clicks': 5, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 3,
-                    "dma": 502,
-                    "clicks": 6,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                # {'campaign_id': 2, 'ad_group_id': 4, 'dma': 501, 'clicks': 7, 'yesterday_cost': 0, 'e_yesterday_cost': 0},
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 4,
-                    "dma": 502,
-                    "clicks": 8,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
+                # {'campaign_id': 1, 'ad_group_id': 1, 'dma': 501, 'clicks': 1},
+                {"campaign_id": 1, "ad_group_id": 1, "dma": 502, "clicks": 2},
+                # {'campaign_id': 1, 'ad_group_id': 2, 'dma': 501, 'clicks': 3,},
+                {"campaign_id": 1, "ad_group_id": 2, "dma": 502, "clicks": 4},
+                # {'campaign_id': 2, 'ad_group_id': 3, 'dma': 501, 'clicks': 5},
+                {"campaign_id": 2, "ad_group_id": 3, "dma": 502, "clicks": 6},
+                # {'campaign_id': 2, 'ad_group_id': 4, 'dma': 501, 'clicks': 7},
+                {"campaign_id": 2, "ad_group_id": 4, "dma": 502, "clicks": 8},
             ],
         )
 
@@ -221,10 +193,10 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                {"campaign_id": 2, "clicks": 4, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "clicks": 3, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 1, "clicks": 2, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
+                {"campaign_id": 2, "clicks": 4},
+                {"campaign_id": 2, "clicks": 3},
+                {"campaign_id": 1, "clicks": 2},
+                {"campaign_id": 1, "clicks": 1},
             ],
         )
 
@@ -269,70 +241,14 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 1,
-                    "dma": 501,
-                    "clicks": 1,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 1,
-                    "dma": 502,
-                    "clicks": 2,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 2,
-                    "dma": 501,
-                    "clicks": 3,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 2,
-                    "dma": 502,
-                    "clicks": 4,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 3,
-                    "dma": 501,
-                    "clicks": 5,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 3,
-                    "dma": 502,
-                    "clicks": 6,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 4,
-                    "dma": 501,
-                    "clicks": 7,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 4,
-                    "dma": 502,
-                    "clicks": 8,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },
+                {"campaign_id": 1, "ad_group_id": 1, "dma": 501, "clicks": 1},
+                {"campaign_id": 1, "ad_group_id": 1, "dma": 502, "clicks": 2},
+                {"campaign_id": 1, "ad_group_id": 2, "dma": 501, "clicks": 3},
+                {"campaign_id": 1, "ad_group_id": 2, "dma": 502, "clicks": 4},
+                {"campaign_id": 2, "ad_group_id": 3, "dma": 501, "clicks": 5},
+                {"campaign_id": 2, "ad_group_id": 3, "dma": 502, "clicks": 6},
+                {"campaign_id": 2, "ad_group_id": 4, "dma": 501, "clicks": 7},
+                {"campaign_id": 2, "ad_group_id": 4, "dma": 502, "clicks": 8},
             ],
         )
 
@@ -375,78 +291,14 @@ class QueryTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 1,
-                    "dma": 501,
-                    "clicks": 1,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 1,
-                    "dma": 502,
-                    "clicks": 2,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 2,
-                    "dma": 501,
-                    "clicks": 3,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 1,
-                    "ad_group_id": 2,
-                    "dma": 502,
-                    "clicks": 4,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 3,
-                    "dma": 501,
-                    "clicks": 5,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 3,
-                    "dma": 502,
-                    "clicks": 6,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 4,
-                    "dma": 501,
-                    "clicks": 7,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
-                {
-                    "campaign_id": 2,
-                    "ad_group_id": 4,
-                    "dma": 502,
-                    "clicks": 8,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                    "new_users": None,
-                },  # noqa
+                {"campaign_id": 1, "ad_group_id": 1, "dma": 501, "clicks": 1, "new_users": None},  # noqa
+                {"campaign_id": 1, "ad_group_id": 1, "dma": 502, "clicks": 2, "new_users": None},  # noqa
+                {"campaign_id": 1, "ad_group_id": 2, "dma": 501, "clicks": 3, "new_users": None},  # noqa
+                {"campaign_id": 1, "ad_group_id": 2, "dma": 502, "clicks": 4, "new_users": None},  # noqa
+                {"campaign_id": 2, "ad_group_id": 3, "dma": 501, "clicks": 5, "new_users": None},  # noqa
+                {"campaign_id": 2, "ad_group_id": 3, "dma": 502, "clicks": 6, "new_users": None},  # noqa
+                {"campaign_id": 2, "ad_group_id": 4, "dma": 501, "clicks": 7, "new_users": None},  # noqa
+                {"campaign_id": 2, "ad_group_id": 4, "dma": 502, "clicks": 8, "new_users": None},  # noqa
             ],
         )
 
@@ -478,23 +330,11 @@ class QueryTest(TestCase):
         self.assertEqual(
             rows,
             [
-                {
-                    "campaign_id": 1,
-                    "day": datetime.date(2016, 10, 3),
-                    "clicks": 3,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },  # noqa
-                {
-                    "campaign_id": 1,
-                    "day": datetime.date(2016, 10, 1),
-                    "clicks": 1,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },  # noqa
-                {"campaign_id": 1, "day": datetime.date(2016, 9, 30), "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 1, "day": datetime.date(2016, 10, 2), "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 1, "day": datetime.date(2016, 10, 4), "yesterday_cost": 0, "e_yesterday_cost": 0},
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 3), "clicks": 3},  # noqa
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 1), "clicks": 1},  # noqa
+                {"campaign_id": 1, "day": datetime.date(2016, 9, 30)},
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 2)},
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 4)},
             ],
         )
 
@@ -526,21 +366,9 @@ class QueryTest(TestCase):
         self.assertEqual(
             rows,
             [
-                {
-                    "campaign_id": 1,
-                    "day": datetime.date(2016, 10, 3),
-                    "clicks": 3,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },  # noqa
-                {
-                    "campaign_id": 1,
-                    "day": datetime.date(2016, 10, 1),
-                    "clicks": 1,
-                    "yesterday_cost": 0,
-                    "e_yesterday_cost": 0,
-                },  # noqa
-                {"campaign_id": 1, "day": datetime.date(2016, 10, 2), "yesterday_cost": 0, "e_yesterday_cost": 0},
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 3), "clicks": 3},  # noqa
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 1), "clicks": 1},  # noqa
+                {"campaign_id": 1, "day": datetime.date(2016, 10, 2)},
             ],
         )
 
@@ -569,13 +397,7 @@ class QueryStatsForRowsTest(TestCase):
             False,
         )
 
-        self.assertCountEqual(
-            rows,
-            [
-                {"campaign_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "clicks": 2, "yesterday_cost": 0, "e_yesterday_cost": 0},
-            ],
-        )
+        self.assertCountEqual(rows, [{"campaign_id": 1, "clicks": 1}, {"campaign_id": 2, "clicks": 2}])
 
     @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
@@ -610,9 +432,9 @@ class QueryStatsForRowsTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "ad_group_id": 4, "clicks": 4, "yesterday_cost": 0, "e_yesterday_cost": 0},
+                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1},
+                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3},
+                {"campaign_id": 2, "ad_group_id": 4, "clicks": 4},
             ],
         )
 
@@ -635,13 +457,7 @@ class QueryStatsForRowsTest(TestCase):
             False,
         )
 
-        self.assertCountEqual(
-            rows,
-            [
-                {"campaign_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "clicks": 2, "yesterday_cost": 0, "e_yesterday_cost": 0},
-            ],
-        )
+        self.assertCountEqual(rows, [{"campaign_id": 1, "clicks": 1}, {"campaign_id": 2, "clicks": 2}])
 
     @patch("redshiftapi.api_breakdowns.should_query_all", return_value=True)
     @patch("redshiftapi.api_breakdowns._query_all")
@@ -674,9 +490,9 @@ class QueryStatsForRowsTest(TestCase):
         self.assertCountEqual(
             rows,
             [
-                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3, "yesterday_cost": 0, "e_yesterday_cost": 0},
-                {"campaign_id": 2, "ad_group_id": 4, "clicks": 4, "yesterday_cost": 0, "e_yesterday_cost": 0},
+                {"campaign_id": 1, "ad_group_id": 1, "clicks": 1},
+                {"campaign_id": 2, "ad_group_id": 3, "clicks": 3},
+                {"campaign_id": 2, "ad_group_id": 4, "clicks": 4},
             ],
         )
 
@@ -699,4 +515,4 @@ class QueryTotalsTest(TestCase):
             False,
         )
 
-        self.assertCountEqual(rows, [{"clicks": 4, "yesterday_cost": 0, "e_yesterday_cost": 0}])
+        self.assertCountEqual(rows, [{"clicks": 4}])

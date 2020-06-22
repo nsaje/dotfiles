@@ -45,6 +45,7 @@ UPDATABLE_FIELDS = {
     "start_date": str,
     "end_date": str,
     # CREDIT ONLY
+    "service_fee": str,
     "license_fee": str,
     "flat_fee_cc": int,
     # BUDGET ONLY
@@ -53,7 +54,7 @@ UPDATABLE_FIELDS = {
     "freed_cc": int,
 }
 
-INVALIDATE_DAILY_STATEMENTS_FIELDS = ("license_fee", "margin")
+INVALIDATE_DAILY_STATEMENTS_FIELDS = ("service_fee", "license_fee", "margin")
 
 
 class CommandError(Exception):
@@ -319,8 +320,13 @@ class Command(BaseCommand):
         expired_credit = object_list[0]
         transfer_date = datetime.datetime.strptime(options["transfer_date"], "%Y-%m-%d").date()
         transfer_credit = dash.models.CreditLineItem.objects.get(pk=int(options["transfer_credit"]))
+
+        if expired_credit.service_fee < transfer_credit.service_fee:
+            raise CommandError("Expired credit has a lower service fee than transfer credit.")
+
         if expired_credit.license_fee < transfer_credit.license_fee:
-            raise CommandError("Expired credit has a lower license fee then transfer credit.")
+            raise CommandError("Expired credit has a lower license fee than transfer credit.")
+
         new_budgets = []
         for budget in expired_credit.budgets.filter(end_date__gte=transfer_date):
             if budget.start_date >= transfer_date:
@@ -461,13 +467,14 @@ class Command(BaseCommand):
 
     def _print_credit(self, credit):
         self._print(
-            " - #{} {}{}, {} - {} (${}, fee {}%, flat ${})".format(
+            " - #{} {}{}, {} - {} (${}, service fee {}%, license fee {}%, flat ${})".format(
                 credit.pk,
                 credit.agency or credit.account,
                 " (agency)" if credit.agency else "",
                 credit.start_date,
                 credit.end_date,
                 credit.amount,
+                credit.service_fee,
                 credit.license_fee,
                 utils.converters.CC_TO_DECIMAL_CURRENCY * credit.flat_fee_cc,
             )

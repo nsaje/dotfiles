@@ -385,7 +385,7 @@ class AutopilotBidTestCase(test.TestCase):
                     ags_type,
                     ag_settings,
                     comments,
-                    {"fee": Decimal("0.15"), "margin": Decimal("0.3")},
+                    {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.3")},
                 ),
                 Decimal(test_case[1]),
             )
@@ -397,9 +397,9 @@ class AutopilotBidTestCase(test.TestCase):
         ags_type.min_cpc = Decimal("0.123")
         ags_type.save()
         ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
-        test_cases = ((ags_type, "0.207", "8.610"), (dash.models.AllRTBSourceType, "0.009", "33.613"))
+        test_cases = ((ags_type, "0.230", "9.566"), (dash.models.AllRTBSourceType, "0.010", "37.348"))
 
-        bcm_modifiers = {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        bcm_modifiers = {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         for test_case in test_cases:
             self.assertEqual(
                 bid._get_source_type_min_max_bid(test_case[0], ag_settings, bcm_modifiers),
@@ -412,9 +412,9 @@ class AutopilotBidTestCase(test.TestCase):
         ag_settings.ad_group.bidding_type = dash.constants.BiddingType.CPM
         ag_settings.ad_group.save(None)
 
-        test_cases = ((ags_type, "0.207", "8.610"), (dash.models.AllRTBSourceType, "0.017", "42.016"))
+        test_cases = ((ags_type, "0.230", "9.566"), (dash.models.AllRTBSourceType, "0.019", "46.685"))
 
-        bcm_modifiers = {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
+        bcm_modifiers = {"service_fee": Decimal("0.1"), "fee": Decimal("0.15"), "margin": Decimal("0.3")}
         for test_case in test_cases:
             self.assertEqual(
                 bid._get_source_type_min_max_bid(test_case[0], ag_settings, bcm_modifiers),

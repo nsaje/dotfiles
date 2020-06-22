@@ -11,43 +11,37 @@ from stats.helpers import Goals
 ALL_AGGREGATES = [
     "clicks",
     "impressions",
+    "service_fee",
+    "local_service_fee",
     "license_fee",
     "local_license_fee",
     "margin",
     "local_margin",
     "media_cost",
     "local_media_cost",
+    "b_media_cost",
+    "local_b_media_cost",
     "e_media_cost",
     "local_e_media_cost",
     "data_cost",
     "local_data_cost",
+    "b_data_cost",
+    "local_b_data_cost",
     "e_data_cost",
     "local_e_data_cost",
     "at_cost",
     "local_at_cost",
+    "bt_cost",
+    "local_bt_cost",
     "et_cost",
     "local_et_cost",
     "etf_cost",
     "local_etf_cost",
     "etfm_cost",
     "local_etfm_cost",
-    "total_cost",
-    "local_total_cost",
-    "billing_cost",
-    "local_billing_cost",
-    "agency_cost",
-    "local_agency_cost",  # legacy
     "ctr",
-    "cpc",
-    "local_cpc",
-    "et_cpc",
-    "local_et_cpc",
     "etfm_cpc",
     "local_etfm_cpc",
-    "cpm",
-    "local_cpm",
-    "et_cpm",
-    "local_et_cpm",
     "etfm_cpm",
     "local_etfm_cpm",
     "visits",
@@ -65,34 +59,14 @@ ALL_AGGREGATES = [
     "total_seconds",
     "non_bounced_visits",
     "total_pageviews",
-    "avg_cost_per_minute",
-    "local_avg_cost_per_minute",
-    "avg_et_cost_per_minute",
-    "local_avg_et_cost_per_minute",
     "avg_etfm_cost_per_minute",
     "local_avg_etfm_cost_per_minute",
-    "avg_cost_per_non_bounced_visit",
-    "local_avg_cost_per_non_bounced_visit",
-    "avg_et_cost_per_non_bounced_visit",
-    "local_avg_et_cost_per_non_bounced_visit",
     "avg_etfm_cost_per_non_bounced_visit",
     "local_avg_etfm_cost_per_non_bounced_visit",
-    "avg_cost_per_pageview",
-    "local_avg_cost_per_pageview",
-    "avg_et_cost_per_pageview",
-    "local_avg_et_cost_per_pageview",
     "avg_etfm_cost_per_pageview",
     "local_avg_etfm_cost_per_pageview",
-    "avg_cost_for_new_visitor",
-    "local_avg_cost_for_new_visitor",
-    "avg_et_cost_for_new_visitor",
-    "local_avg_et_cost_for_new_visitor",
     "avg_etfm_cost_for_new_visitor",
     "local_avg_etfm_cost_for_new_visitor",
-    "avg_cost_per_visit",
-    "local_avg_cost_per_visit",
-    "avg_et_cost_per_visit",
-    "local_avg_et_cost_per_visit",
     "avg_etfm_cost_per_visit",
     "local_avg_etfm_cost_per_visit",
     "video_start",
@@ -101,12 +75,8 @@ ALL_AGGREGATES = [
     "video_third_quartile",
     "video_complete",
     "video_progress_3s",
-    "video_et_cpv",
-    "local_video_et_cpv",
     "video_etfm_cpv",
     "local_video_etfm_cpv",
-    "video_et_cpcv",
-    "local_video_et_cpcv",
     "video_etfm_cpcv",
     "local_video_etfm_cpcv",
     "mrc50_measurable",
@@ -118,8 +88,6 @@ ALL_AGGREGATES = [
     "mrc50_viewable_distribution",
     "mrc50_non_measurable_distribution",
     "mrc50_non_viewable_distribution",
-    "et_mrc50_vcpm",
-    "local_et_mrc50_vcpm",
     "etfm_mrc50_vcpm",
     "local_etfm_mrc50_vcpm",
     "mrc100_measurable",
@@ -131,8 +99,6 @@ ALL_AGGREGATES = [
     "mrc100_viewable_distribution",
     "mrc100_non_measurable_distribution",
     "mrc100_non_viewable_distribution",
-    "et_mrc100_vcpm",
-    "local_et_mrc100_vcpm",
     "etfm_mrc100_vcpm",
     "local_etfm_mrc100_vcpm",
     "vast4_measurable",
@@ -144,8 +110,6 @@ ALL_AGGREGATES = [
     "vast4_viewable_distribution",
     "vast4_non_measurable_distribution",
     "vast4_non_viewable_distribution",
-    "et_vast4_vcpm",
-    "local_et_vast4_vcpm",
     "etfm_vast4_vcpm",
     "local_etfm_vast4_vcpm",
 ]
@@ -239,7 +203,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             ["account_id"],
             {"account_id": [1, 2, 3], "date__lte": datetime.date(2016, 10, 1), "date__gte": datetime.date(2016, 9, 1)},
             None,
-            ["-yesterday_cost"],
+            ["-yesterday_at_cost"],
             "mv_account",
         )
 
@@ -257,22 +221,11 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertCountEqual(
             context["aggregates"],
             self.model.select_columns(
-                [
-                    "yesterday_cost",
-                    "local_yesterday_cost",
-                    "e_yesterday_cost",
-                    "local_e_yesterday_cost",
-                    "yesterday_et_cost",
-                    "local_yesterday_et_cost",
-                    "yesterday_at_cost",
-                    "local_yesterday_at_cost",
-                    "yesterday_etfm_cost",
-                    "local_yesterday_etfm_cost",
-                ]
+                ["yesterday_at_cost", "local_yesterday_at_cost", "yesterday_etfm_cost", "local_yesterday_etfm_cost"]
             ),
         )
         self.assertEqual(context["view"], "mv_account")
-        self.assertSQLEquals(context["orders"][0].only_alias(), "yesterday_cost DESC NULLS LAST")
+        self.assertSQLEquals(context["orders"][0].only_alias(), "yesterday_at_cost DESC NULLS LAST")
 
         self.assertEqual(len(context["temp_tables"]), 1)
         temp_table = list(context["temp_tables"])[0]
@@ -490,28 +443,12 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher(
                     "(COALESCE(a.conversion_goal_2, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_conversion_goal_2"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(conversion_goal_2, 0) local_avg_cost_per_conversion_goal_2"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_2, 0) avg_et_cost_per_conversion_goal_2"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(conversion_goal_2, 0) local_avg_et_cost_per_conversion_goal_2"
-                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_2, 0) avg_etfm_cost_per_conversion_goal_2"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_2, 0) local_avg_etfm_cost_per_conversion_goal_2"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.conversion_goal_3, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_conversion_goal_3"
-                ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(conversion_goal_3, 0) local_avg_cost_per_conversion_goal_3"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_3, 0) avg_et_cost_per_conversion_goal_3"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(conversion_goal_3, 0) local_avg_et_cost_per_conversion_goal_3"
                 ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_3, 0) avg_etfm_cost_per_conversion_goal_3"),
                 backtosql.SQLMatcher(
@@ -520,28 +457,12 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher(
                     "(COALESCE(a.conversion_goal_4, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_conversion_goal_4"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(conversion_goal_4, 0) local_avg_cost_per_conversion_goal_4"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_4, 0) avg_et_cost_per_conversion_goal_4"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(conversion_goal_4, 0) local_avg_et_cost_per_conversion_goal_4"
-                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_4, 0) avg_etfm_cost_per_conversion_goal_4"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(conversion_goal_4, 0) local_avg_etfm_cost_per_conversion_goal_4"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.conversion_goal_5, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_conversion_goal_5"
-                ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(conversion_goal_5, 0) local_avg_cost_per_conversion_goal_5"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(conversion_goal_5, 0) avg_et_cost_per_conversion_goal_5"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(conversion_goal_5, 0) local_avg_et_cost_per_conversion_goal_5"
                 ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(conversion_goal_5, 0) avg_etfm_cost_per_conversion_goal_5"),
                 backtosql.SQLMatcher(
@@ -550,95 +471,41 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher(
                     "(COALESCE(a.pixel_1_24, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_pixel_1_24"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24"),
-                backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_24, 0) local_avg_cost_per_pixel_1_24"),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_24, 0) avg_et_cost_per_pixel_1_24"),
-                backtosql.SQLMatcher("local_et_cost / NULLIF(pixel_1_24, 0) local_avg_et_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_24, 0) avg_etfm_cost_per_pixel_1_24"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_24, 0) local_avg_etfm_cost_per_pixel_1_24"),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24"
-                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.pixel_1_168, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_pixel_1_168"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168"),
-                backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_168, 0) local_avg_cost_per_pixel_1_168"),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_168, 0) avg_et_cost_per_pixel_1_168"),
-                backtosql.SQLMatcher("local_et_cost / NULLIF(pixel_1_168, 0) local_avg_et_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_168, 0) avg_etfm_cost_per_pixel_1_168"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_168, 0) local_avg_etfm_cost_per_pixel_1_168"),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_168"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_168"
-                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_168, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_168"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.pixel_1_720, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_pixel_1_720"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720"),
-                backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_720, 0) local_avg_cost_per_pixel_1_720"),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_720, 0) avg_et_cost_per_pixel_1_720"),
-                backtosql.SQLMatcher("local_et_cost / NULLIF(pixel_1_720, 0) local_avg_et_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_720, 0) avg_etfm_cost_per_pixel_1_720"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_720, 0) local_avg_etfm_cost_per_pixel_1_720"),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_720"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_720"
-                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_720, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_720"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.pixel_1_2160, 0))::FLOAT /\n(NULLIF(a.clicks, 0) * 0.01)\nconversion_rate_per_pixel_1_2160"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160"),
-                backtosql.SQLMatcher("local_e_media_cost / NULLIF(pixel_1_2160, 0) local_avg_cost_per_pixel_1_2160"),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_2160, 0) avg_et_cost_per_pixel_1_2160"),
-                backtosql.SQLMatcher("local_et_cost / NULLIF(pixel_1_2160, 0) local_avg_et_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_2160, 0) avg_etfm_cost_per_pixel_1_2160"),
                 backtosql.SQLMatcher("local_etfm_cost / NULLIF(pixel_1_2160, 0) local_avg_etfm_cost_per_pixel_1_2160"),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_2160"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_2160"
-                ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_2160, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_2160"
                 ),
                 backtosql.SQLMatcher(
                     "(COALESCE(a.pixel_1_24_view, 0))::FLOAT /\n(NULLIF(a.impressions, 0) * 0.01)\nconversion_rate_per_pixel_1_24_view"
                 ),
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24_view, 0) avg_cost_per_pixel_1_24_view"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(pixel_1_24_view, 0) local_avg_cost_per_pixel_1_24_view"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_24_view, 0) avg_et_cost_per_pixel_1_24_view"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(pixel_1_24_view, 0) local_avg_et_cost_per_pixel_1_24_view"
-                ),
                 backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_24_view, 0) avg_etfm_cost_per_pixel_1_24_view"),
                 backtosql.SQLMatcher(
                     "local_etfm_cost / NULLIF(pixel_1_24_view, 0) local_avg_etfm_cost_per_pixel_1_24_view"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_e_media_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_e_media_cost, 1) END) roas_pixel_1_24_view"
-                ),
-                backtosql.SQLMatcher(
-                    "(CASE WHEN COALESCE(local_et_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_et_cost, 1) END) et_roas_pixel_1_24_view"
                 ),
                 backtosql.SQLMatcher(
                     "(CASE WHEN COALESCE(local_etfm_cost, 0) = 0 THEN NULL ELSE COALESCE(total_conversion_value_pixel_1_24_view, 0) / COALESCE(local_etfm_cost, 1) END) etfm_roas_pixel_1_24_view"
@@ -714,82 +581,36 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             m.select_columns(
                 [
                     "conversion_rate_per_conversion_goal_2",
-                    "avg_cost_per_conversion_goal_2",
-                    "local_avg_cost_per_conversion_goal_2",
-                    "avg_et_cost_per_conversion_goal_2",
-                    "local_avg_et_cost_per_conversion_goal_2",
                     "avg_etfm_cost_per_conversion_goal_2",
                     "local_avg_etfm_cost_per_conversion_goal_2",
                     "conversion_rate_per_conversion_goal_3",
-                    "avg_cost_per_conversion_goal_3",
-                    "local_avg_cost_per_conversion_goal_3",
-                    "avg_et_cost_per_conversion_goal_3",
-                    "local_avg_et_cost_per_conversion_goal_3",
                     "avg_etfm_cost_per_conversion_goal_3",
                     "local_avg_etfm_cost_per_conversion_goal_3",
                     "conversion_rate_per_conversion_goal_4",
-                    "avg_cost_per_conversion_goal_4",
-                    "local_avg_cost_per_conversion_goal_4",
-                    "avg_et_cost_per_conversion_goal_4",
-                    "local_avg_et_cost_per_conversion_goal_4",
                     "avg_etfm_cost_per_conversion_goal_4",
                     "local_avg_etfm_cost_per_conversion_goal_4",
                     "conversion_rate_per_conversion_goal_5",
-                    "avg_cost_per_conversion_goal_5",
-                    "local_avg_cost_per_conversion_goal_5",
-                    "avg_et_cost_per_conversion_goal_5",
-                    "local_avg_et_cost_per_conversion_goal_5",
                     "avg_etfm_cost_per_conversion_goal_5",
                     "local_avg_etfm_cost_per_conversion_goal_5",
                     "conversion_rate_per_pixel_1_24",
-                    "avg_cost_per_pixel_1_24",
-                    "local_avg_cost_per_pixel_1_24",
-                    "avg_et_cost_per_pixel_1_24",
-                    "local_avg_et_cost_per_pixel_1_24",
                     "avg_etfm_cost_per_pixel_1_24",
                     "local_avg_etfm_cost_per_pixel_1_24",
-                    "roas_pixel_1_24",
-                    "et_roas_pixel_1_24",
                     "etfm_roas_pixel_1_24",
                     "conversion_rate_per_pixel_1_168",
-                    "avg_cost_per_pixel_1_168",
-                    "local_avg_cost_per_pixel_1_168",
-                    "avg_et_cost_per_pixel_1_168",
-                    "local_avg_et_cost_per_pixel_1_168",
                     "avg_etfm_cost_per_pixel_1_168",
                     "local_avg_etfm_cost_per_pixel_1_168",
-                    "roas_pixel_1_168",
-                    "et_roas_pixel_1_168",
                     "etfm_roas_pixel_1_168",
                     "conversion_rate_per_pixel_1_720",
-                    "avg_cost_per_pixel_1_720",
-                    "local_avg_cost_per_pixel_1_720",
-                    "avg_et_cost_per_pixel_1_720",
-                    "local_avg_et_cost_per_pixel_1_720",
                     "avg_etfm_cost_per_pixel_1_720",
                     "local_avg_etfm_cost_per_pixel_1_720",
-                    "roas_pixel_1_720",
-                    "et_roas_pixel_1_720",
                     "etfm_roas_pixel_1_720",
                     "conversion_rate_per_pixel_1_2160",
-                    "avg_cost_per_pixel_1_2160",
-                    "local_avg_cost_per_pixel_1_2160",
-                    "avg_et_cost_per_pixel_1_2160",
-                    "local_avg_et_cost_per_pixel_1_2160",
                     "avg_etfm_cost_per_pixel_1_2160",
                     "local_avg_etfm_cost_per_pixel_1_2160",
-                    "roas_pixel_1_2160",
-                    "et_roas_pixel_1_2160",
                     "etfm_roas_pixel_1_2160",
                     "conversion_rate_per_pixel_1_24_view",
-                    "avg_cost_per_pixel_1_24_view",
-                    "local_avg_cost_per_pixel_1_24_view",
-                    "avg_et_cost_per_pixel_1_24_view",
-                    "local_avg_et_cost_per_pixel_1_24_view",
                     "avg_etfm_cost_per_pixel_1_24_view",
                     "local_avg_etfm_cost_per_pixel_1_24_view",
-                    "roas_pixel_1_24_view",
-                    "et_roas_pixel_1_24_view",
                     "etfm_roas_pixel_1_24_view",
                 ]
             ),
@@ -826,7 +647,7 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
             {"content_ad_id": 35, "source_id": [2, 4, 22]},
         ]
 
-        order_field = "performance_" + campaign_goals.get(pk=1).get_view_key()
+        order_field = "etfm_performance_" + campaign_goals.get(pk=1).get_view_key()
 
         context = m.get_query_joint_context(
             ["account_id", "source_id", "dma"],
@@ -842,9 +663,7 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
             supports_touchpoints=False,
         )
 
-        self.assertListEqual(
-            context["after_join_aggregates"], [m.get_column(order_field), m.get_column("etfm_" + order_field)]
-        )
+        self.assertListEqual(context["after_join_aggregates"], [m.get_column(order_field)])
 
         self.assertEqual(context["orders"][0].alias, order_field)
 

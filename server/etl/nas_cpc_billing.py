@@ -49,8 +49,8 @@ def check_discrepancy(from_date, to_date):
         return redshiftapi.db.dictfetchall(c)
 
 
-def _calculate_cpc_micro(cpc_value, fee, margin=0):
-    cpc_media = core.features.bcm.calculations.subtract_fee_and_margin(cpc_value, fee, margin)
+def _calculate_cpc_micro(cpc_value, fee, service_fee=0, margin=0):
+    cpc_media = core.features.bcm.calculations.subtract_fees_and_margin(cpc_value, service_fee, fee, margin)
     return int(cpc_media * utils.converters.CURRENCY_TO_MICRO)
 
 

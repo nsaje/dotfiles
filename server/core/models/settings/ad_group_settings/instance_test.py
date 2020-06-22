@@ -271,8 +271,10 @@ class InstanceTest(TestCase):
         )
 
         self.assertEqual(
-            Decimal("360"),
-            self.ad_group.settings.get_external_b1_sources_group_daily_budget(Decimal("0.2"), Decimal("0.1")),
+            Decimal("324"),
+            self.ad_group.settings.get_external_b1_sources_group_daily_budget(
+                Decimal("0.1"), Decimal("0.2"), Decimal("0.1")
+            ),
         )
 
     @patch("utils.redirector_helper.insert_adgroup")

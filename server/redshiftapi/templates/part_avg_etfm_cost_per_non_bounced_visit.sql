@@ -1,5 +1,6 @@
 ( COALESCE( SUM({{ p }}effective_cost_nano), 0 ) +
   COALESCE( SUM({{ p }}effective_data_cost_nano), 0 ) +
+  COALESCE( SUM({{ p }}service_fee_nano), 0 ) +
   COALESCE( SUM({{ p }}license_fee_nano), 0 ) +
   COALESCE( SUM({{ p }}margin_nano), 0 )
 )::float

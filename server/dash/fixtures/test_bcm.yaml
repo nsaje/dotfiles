@@ -151,7 +151,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        account: 1 # test account 1
+        account: 1
         settings: 1
         name: 'test campaign 1'
         real_time_campaign_stop: True
@@ -162,7 +162,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        account: 2 # test account 1
+        account: 2
         settings: 2
         name: 'test campaign 2'
     model: dash.campaign
@@ -172,7 +172,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 10
-        account: 10 # test account 1
+        account: 10
         settings: 10
         name: 'test campaign non-connected'
     model: dash.campaign
@@ -185,10 +185,11 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         created_by: 1
-        account: 1 # test account 1
+        account: 1
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         amount: 100000
+        service_fee: 0.1
         license_fee: 0.2
         status: 2
         comment: 'Test case'
@@ -199,7 +200,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         created_by: 1
-        account: 3 # test account 3
+        account: 3
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         amount: 100000
@@ -213,7 +214,7 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         created_by: 10
-        account: 10 # test account 1
+        account: 10
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         amount: 100000
@@ -229,8 +230,8 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         created_by: 1
-        credit: 1 # test credit 1
-        campaign_id: 1 # test campaign 1
+        credit: 1
+        campaign_id: 1
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         margin: 0.15
@@ -243,8 +244,8 @@
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         created_by: 10
-        credit: 10 # test credit 1
-        campaign_id: 10 # test campaign 1
+        credit: 10
+        campaign_id: 10
         start_date: '2015-10-01'
         end_date: '2015-11-30'
         margin: 0.15

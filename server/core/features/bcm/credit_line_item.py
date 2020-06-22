@@ -55,12 +55,15 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         "end_date",
         "amount",
         "license_fee",
+        "service_fee",
         "status",
         "comment",
         "currency",
         "contract_id",
         "contract_number",
     ]
+
+    _permissioned_fields = {"service_fee": "zemauth.can_see_service_fee"}
 
     _demo_fields = {"comment": utils.demo_anonymizer.fake_io}
     account = models.ForeignKey("Account", related_name="credits", on_delete=models.PROTECT, blank=True, null=True)
@@ -70,6 +73,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
     amount = models.IntegerField()
     license_fee = models.DecimalField(decimal_places=4, max_digits=5, default=Decimal("0.2000"))
+    service_fee = models.DecimalField(decimal_places=4, max_digits=5, default=Decimal("0.0000"))
 
     flat_fee_cc = models.IntegerField(default=0, verbose_name="Flat fee (cc)")
     flat_fee_start_date = models.DateField(blank=True, null=True)
@@ -151,9 +155,13 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
     @transaction.atomic
     def update(self, request, **updates) -> bool:
+        user = request.user if request else None
         has_changes = False
         for field, new_value in updates.items():
             if field not in self._settings_fields:
+                continue
+            required_permission = self._permissioned_fields.get(field)
+            if required_permission and not (user is None or user.has_perm(required_permission)):
                 continue
             if new_value != getattr(self, field):
                 has_changes = True
@@ -174,6 +182,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             "end_date": "End Date",
             "amount": "Amount",
             "license_fee": "License Fee",
+            "service_fee": "Service Fee",
             "flat_fee_cc": "Flat Fee (cc)",
             "flat_fee_start_date": "Flat Fee Start Date",
             "flat_fee_end_date": "Flat Fee End Date",
@@ -186,7 +195,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         currency_symbol = core.features.multicurrency.get_currency_symbol(self.currency)
         if prop_name == "amount" and value is not None:
             value = lc_helper.format_currency(value, places=2, curr=currency_symbol)
-        elif prop_name == "license_fee" and value is not None:
+        elif prop_name in ["license_fee", "service_fee"] and value is not None:
             value = "{}%".format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
         elif prop_name == "flat_fee_cc":
             value = lc_helper.format_currency(
@@ -285,7 +294,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
                 }
             )
 
-        has_changed = any((self.has_changed("start_date"), self.has_changed("license_fee")))
+        has_changed = any(
+            (self.has_changed("start_date"), self.has_changed("license_fee"), self.has_changed("service_fee"))
+        )
 
         if has_changed and not self.is_editable():
             raise ValidationError({"__all__": ["Nonpending credit line item cannot change."]})
@@ -293,6 +304,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         core.features.bcm.helpers.validate(
             self.validate_end_date,
             self.validate_license_fee,
+            self.validate_service_fee,
             self.validate_status,
             self.validate_amount,
             self.validate_flat_fee_cc,
@@ -358,8 +370,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if self.license_fee and not (0 <= self.license_fee < 1):
             raise ValidationError("License fee must be between 0 and 100%.")
 
-        if not self.start_date or not self.end_date:
-            return
+    def validate_service_fee(self):
+        if self.service_fee and not (0 <= self.service_fee < 1):
+            raise ValidationError("Service fee must be between 0 and 100%.")
 
     def validate_account_id(self):
         if not self.has_changed("account") or self.id is None:

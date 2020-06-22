@@ -34,86 +34,113 @@ def _generate_statements(date, campaign, campaign_spend):
 
     local_per_budget_spend_nano = defaultdict(lambda: defaultdict(int))
     for existing_statement in existing_statements:
-        local_per_budget_spend_nano[existing_statement.budget_id]["media"] += existing_statement.local_media_spend_nano
-        local_per_budget_spend_nano[existing_statement.budget_id]["data"] += existing_statement.local_data_spend_nano
+        local_per_budget_spend_nano[existing_statement.budget_id][
+            "media"
+        ] += existing_statement.local_base_media_spend_nano
+        local_per_budget_spend_nano[existing_statement.budget_id][
+            "data"
+        ] += existing_statement.local_base_data_spend_nano
+        local_per_budget_spend_nano[existing_statement.budget_id][
+            "service_fee"
+        ] += existing_statement.local_service_fee_nano
         local_per_budget_spend_nano[existing_statement.budget_id][
             "license_fee"
         ] += existing_statement.local_license_fee_nano
         local_per_budget_spend_nano[existing_statement.budget_id]["margin"] += existing_statement.local_margin_nano
 
     if campaign_spend is not None:
-        total_media_nano = campaign_spend["media_nano"]
-        total_data_nano = campaign_spend["data_nano"]
+        total_base_media_nano = campaign_spend["base_media_nano"]
+        total_base_data_nano = campaign_spend["base_data_nano"]
     else:
-        total_media_nano = 0
-        total_data_nano = 0
+        total_base_media_nano = 0
+        total_base_data_nano = 0
 
     for budget in budgets.order_by("created_dt"):
         local_budget_amount_nano = budget.allocated_amount() * converters.CURRENCY_TO_NANO
+        base_attributed_media_nano = 0
+        base_attributed_data_nano = 0
         attributed_media_nano = 0
         attributed_data_nano = 0
+        service_fee_nano = 0
         license_fee_nano = 0
         margin_nano = 0
 
-        total_spend_nano = total_media_nano + total_data_nano
+        total_base_spend_nano = total_base_media_nano + total_base_data_nano
         local_budget_spend_total_nano = (
             local_per_budget_spend_nano[budget.id]["media"]
             + local_per_budget_spend_nano[budget.id]["data"]
+            + local_per_budget_spend_nano[budget.id]["service_fee"]
             + local_per_budget_spend_nano[budget.id]["license_fee"]
             + local_per_budget_spend_nano[budget.id]["margin"]
         )
 
-        if total_spend_nano > 0 and local_budget_spend_total_nano < local_budget_amount_nano:
+        if total_base_spend_nano > 0 and local_budget_spend_total_nano < local_budget_amount_nano:
             local_available_budget_nano = local_budget_amount_nano - local_budget_spend_total_nano
             usd_available_budget_nano = local_available_budget_nano / core.features.multicurrency.get_exchange_rate(
                 date, budget.credit.currency
             )
             usd_available_budget_nano = usd_available_budget_nano * (1 - budget.margin)
             usd_available_budget_nano = usd_available_budget_nano * (1 - budget.credit.license_fee)
+            usd_available_budget_nano = usd_available_budget_nano * (1 - budget.credit.service_fee)
 
-            if total_media_nano + total_data_nano > usd_available_budget_nano:
-                if total_media_nano >= usd_available_budget_nano:
-                    attributed_media_nano = usd_available_budget_nano
-                    attributed_data_nano = 0
+            if total_base_spend_nano > usd_available_budget_nano:
+                if total_base_media_nano >= usd_available_budget_nano:
+                    base_attributed_media_nano = usd_available_budget_nano
+                    base_attributed_data_nano = 0
                 else:
-                    attributed_media_nano = total_media_nano
-                    attributed_data_nano = usd_available_budget_nano - total_media_nano
+                    base_attributed_media_nano = total_base_media_nano
+                    base_attributed_data_nano = usd_available_budget_nano - total_base_media_nano
             else:
-                attributed_media_nano = total_media_nano
-                attributed_data_nano = total_data_nano
+                base_attributed_media_nano = total_base_media_nano
+                base_attributed_data_nano = total_base_data_nano
 
+            attributed_media_nano = core.features.bcm.calculations.apply_fee(
+                base_attributed_media_nano, budget.credit.service_fee
+            )
+            attributed_data_nano = core.features.bcm.calculations.apply_fee(
+                base_attributed_data_nano, budget.credit.service_fee
+            )
+
+            service_fee_nano = core.features.bcm.calculations.calculate_fee(
+                base_attributed_media_nano + base_attributed_data_nano, budget.credit.service_fee
+            )
             license_fee_nano = core.features.bcm.calculations.calculate_fee(
-                attributed_media_nano + attributed_data_nano, budget.credit.license_fee
+                base_attributed_media_nano + base_attributed_data_nano + service_fee_nano, budget.credit.license_fee
             )
-            margin_nano = core.features.bcm.calculations.calculate_margin(
-                attributed_media_nano + attributed_data_nano + license_fee_nano, budget.margin
+            margin_nano = core.features.bcm.calculations.calculate_fee(
+                base_attributed_media_nano + base_attributed_data_nano + service_fee_nano + license_fee_nano,
+                budget.margin,
             )
 
-        local_per_budget_spend_nano[budget.id]["media"] += attributed_media_nano
-        local_per_budget_spend_nano[budget.id]["data"] += attributed_data_nano
+        local_per_budget_spend_nano[budget.id]["media"] += base_attributed_media_nano
+        local_per_budget_spend_nano[budget.id]["data"] += base_attributed_data_nano
+        local_per_budget_spend_nano[budget.id]["service_fee"] += service_fee_nano
         local_per_budget_spend_nano[budget.id]["license_fee"] += license_fee_nano
         local_per_budget_spend_nano[budget.id]["margin"] += margin_nano
 
-        total_media_nano -= attributed_media_nano
-        total_data_nano -= attributed_data_nano
+        total_base_media_nano -= base_attributed_media_nano
+        total_base_data_nano -= base_attributed_data_nano
 
         dash.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
+            base_media_spend_nano=base_attributed_media_nano,
+            base_data_spend_nano=base_attributed_data_nano,
             media_spend_nano=attributed_media_nano,
             data_spend_nano=attributed_data_nano,
+            service_fee_nano=service_fee_nano,
             license_fee_nano=license_fee_nano,
             margin_nano=margin_nano,
         )
 
-    if total_media_nano > 0 or total_data_nano > 0:
+    if total_base_media_nano > 0 or total_base_data_nano > 0:
         try:
-            _handle_overspend(date, campaign, total_media_nano, total_data_nano)
+            _handle_overspend(date, campaign, total_base_media_nano, total_base_data_nano)
         except Exception:
             logger.exception("Failed to handle overspend", campaign_id=campaign.id, date=date)
 
 
-def _handle_overspend(date, campaign, media_nano, data_nano):
+def _handle_overspend(date, campaign, base_media_nano, base_data_nano):
     if campaign.real_time_campaign_stop:
         return
 
@@ -139,17 +166,36 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
         daily_statement = budget.statements.get(date=date)
     except dash.models.BudgetDailyStatement.DoesNotExist:
         daily_statement = dash.models.BudgetDailyStatement.objects.create(
-            budget=budget, date=date, media_spend_nano=0, data_spend_nano=0, license_fee_nano=0, margin_nano=0
+            budget=budget,
+            date=date,
+            base_media_spend_nano=0,
+            base_data_spend_nano=0,
+            media_spend_nano=0,
+            data_spend_nano=0,
+            service_fee_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
-    license_fee_nano = core.features.bcm.calculations.calculate_fee(media_nano + data_nano, budget.credit.license_fee)
-    margin_nano = core.features.bcm.calculations.calculate_margin(
-        media_nano + data_nano + license_fee_nano, budget.margin
+    media_nano = core.features.bcm.calculations.apply_fee(base_media_nano, budget.credit.service_fee)
+    data_nano = core.features.bcm.calculations.apply_fee(base_data_nano, budget.credit.service_fee)
+
+    service_fee_nano = core.features.bcm.calculations.calculate_fee(
+        base_media_nano + base_data_nano, budget.credit.service_fee
+    )
+    license_fee_nano = core.features.bcm.calculations.calculate_fee(
+        base_media_nano + base_data_nano + service_fee_nano, budget.credit.license_fee
+    )
+    margin_nano = core.features.bcm.calculations.calculate_fee(
+        base_media_nano + base_data_nano + service_fee_nano + license_fee_nano, budget.margin
     )
 
     daily_statement.update_amounts(
+        base_media_spend_nano=daily_statement.base_media_spend_nano + base_media_nano,
+        base_data_spend_nano=daily_statement.base_data_spend_nano + base_data_nano,
         media_spend_nano=daily_statement.media_spend_nano + media_nano,
         data_spend_nano=daily_statement.data_spend_nano + data_nano,
+        service_fee_nano=daily_statement.service_fee_nano + service_fee_nano,
         license_fee_nano=daily_statement.license_fee_nano + license_fee_nano,
         margin_nano=daily_statement.margin_nano + margin_nano,
     )
@@ -178,8 +224,9 @@ def get_effective_spend(total_spend, date_since, account_id=None):
         dash.models.BudgetDailyStatement.objects.filter(budget__campaign__in=campaigns, date__in=all_dates)
         .values("budget__campaign__id", "date")
         .annotate(
-            media_nano=Sum("media_spend_nano"),
-            data_nano=Sum("data_spend_nano"),
+            base_media_nano=Sum("base_media_spend_nano"),
+            base_data_nano=Sum("base_data_spend_nano"),
+            service_fee_nano=Sum("service_fee_nano"),
             license_fee_nano=Sum("license_fee_nano"),
             margin_nano=Sum("margin_nano"),
         )
@@ -202,13 +249,16 @@ def get_effective_spend(total_spend, date_since, account_id=None):
 
 def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends):
     if campaign_spend is None:
-        return 0, 0, 0
+        return 0, 0, 0, 0
 
     if campaign.account_id == settings.HARDCODED_ACCOUNT_ID_OEN:
-        return 1, 0, 0
+        return 1, 0, 0, 0
 
-    actual_spend_nano = campaign_spend["media_nano"] + campaign_spend["data_nano"]
-    attributed_spend_nano = (attributed_spends.get("media_nano") or 0) + (attributed_spends.get("data_nano") or 0)
+    actual_spend_nano = campaign_spend["base_media_nano"] + campaign_spend["base_data_nano"]
+    attributed_spend_nano = (attributed_spends.get("base_media_nano") or 0) + (
+        attributed_spends.get("base_data_nano") or 0
+    )
+    service_fee_nano = attributed_spends.get("service_fee_nano") or 0
     license_fee_nano = attributed_spends.get("license_fee_nano") or 0
     margin_nano = attributed_spends.get("margin_nano") or 0
 
@@ -216,15 +266,19 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends)
     if actual_spend_nano > 0:
         pct_actual_spend = min(1, attributed_spend_nano / Decimal(actual_spend_nano))
 
-    pct_license_fee = 0
+    pct_service_fee = 0
     if attributed_spend_nano > 0:
-        pct_license_fee = min(1, license_fee_nano / Decimal(attributed_spend_nano))
+        pct_service_fee = min(1, service_fee_nano / Decimal(attributed_spend_nano))
+
+    pct_license_fee = 0
+    if attributed_spend_nano + service_fee_nano > 0:
+        pct_license_fee = min(1, license_fee_nano / Decimal(attributed_spend_nano + service_fee_nano))
 
     pct_margin = 0
-    if attributed_spend_nano + license_fee_nano > 0:
-        pct_margin = margin_nano / Decimal(attributed_spend_nano + license_fee_nano)
+    if attributed_spend_nano + service_fee_nano + license_fee_nano > 0:
+        pct_margin = margin_nano / Decimal(attributed_spend_nano + service_fee_nano + license_fee_nano)
 
-    return pct_actual_spend, pct_license_fee, pct_margin
+    return pct_actual_spend, pct_service_fee, pct_license_fee, pct_margin
 
 
 def _get_campaign_spend(date, all_campaigns, account_id):
@@ -233,7 +287,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
     campaign_spend = {}
     ad_group_campaign = {}
     for campaign in all_campaigns:
-        campaign_spend[campaign.id] = {"media_nano": 0, "data_nano": 0}
+        campaign_spend[campaign.id] = {"base_media_nano": 0, "base_data_nano": 0}
         for ad_group in campaign.adgroup_set.all():
             ad_group_campaign[ad_group.id] = campaign.id
 
@@ -262,24 +316,24 @@ def _get_campaign_spend(date, all_campaigns, account_id):
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
 
-        for ad_group_id, media_spend, data_spend in c:
-            if media_spend is None:
-                media_spend = 0
-            if data_spend is None:
-                data_spend = 0
+        for ad_group_id, base_media_spend, base_data_spend in c:
+            if base_media_spend is None:
+                base_media_spend = 0
+            if base_data_spend is None:
+                base_data_spend = 0
 
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
-                if media_spend > 0 or data_spend > 0:
+                if base_media_spend > 0 or base_data_spend > 0:
                     logger.info(
                         "Got spend for adgroup in campaign that is not being reprocessed", ad_group_id=ad_group_id
                     )
                     campaign_id = dash.models.AdGroup.objects.get(pk=ad_group_id).campaign_id
-                    campaign_spend[campaign_id] = {"media_nano": 0, "data_nano": 0}
+                    campaign_spend[campaign_id] = {"base_media_nano": 0, "base_data_nano": 0}
                 continue
 
-            campaign_spend[campaign_id]["media_nano"] += media_spend * converters.MICRO_TO_NANO
-            campaign_spend[campaign_id]["data_nano"] += data_spend * converters.MICRO_TO_NANO
+            campaign_spend[campaign_id]["base_media_nano"] += base_media_spend * converters.MICRO_TO_NANO
+            campaign_spend[campaign_id]["base_data_nano"] += base_data_spend * converters.MICRO_TO_NANO
 
     return campaign_spend
 
@@ -329,7 +383,7 @@ def _reprocess_campaign_statements(campaign, dates, total_spend):
 
 
 def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
-    logger.info("Reprocessing dailiy statements", date_since=date_since, account_id=account_id)
+    logger.info("Reprocessing daily statements", date_since=date_since, account_id=account_id)
 
     total_spend = {}
     all_dates = set()

@@ -45,23 +45,6 @@ angular
                 shown: true,
             },
 
-            CPC: {
-                name: 'Avg. CPC',
-                value: 'cpc',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            ET_CPC: {
-                name: 'Avg. Platform CPC',
-                value: 'et_cpc',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'cpc',
-            },
             ETFM_CPC: {
                 name: 'Avg. CPC',
                 value: 'etfm_cpc',
@@ -69,25 +52,6 @@ angular
                 fractionSize: 3,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'cpc',
-            },
-
-            CPM: {
-                name: 'Avg. CPM',
-                value: 'cpm',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            ET_CPM: {
-                name: 'Avg. Platform CPM',
-                value: 'et_cpm',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'cpm',
             },
             ETFM_CPM: {
                 name: 'Avg. CPM',
@@ -96,7 +60,6 @@ angular
                 fractionSize: 3,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'cpm',
             },
 
             DATA_COST: {
@@ -127,16 +90,20 @@ angular
                 fractionSize: 2,
                 shown: 'zemauth.can_view_platform_cost_breakdown',
             },
-
-            BILLING_COST: {
-                name: 'Total Spend',
-                value: 'billing_cost',
+            B_DATA_COST: {
+                name: 'Base Data Cost',
+                value: 'b_data_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
+                shown: 'zemauth.can_see_service_fee',
             },
-
+            B_MEDIA_COST: {
+                name: 'Base Media Spend',
+                value: 'b_media_cost',
+                type: TYPE_CURRENCY,
+                fractionSize: 2,
+                shown: 'zemauth.can_see_service_fee',
+            },
             ETFM_COST: {
                 name: 'Total Spend',
                 value: 'etfm_cost',
@@ -161,7 +128,22 @@ angular
                 shown: 'zemauth.can_view_platform_cost_breakdown_derived',
                 costMode: constants.costMode.ANY,
             },
+            BT_COST: {
+                name: 'Base Platform Spend',
+                value: 'bt_cost',
+                type: TYPE_CURRENCY,
+                fractionSize: 2,
+                shown: 'zemauth.can_see_service_fee',
+                costMode: constants.costMode.ANY,
+            },
 
+            SERVICE_FEE: {
+                name: 'Service Fee',
+                value: 'service_fee',
+                type: TYPE_CURRENCY,
+                fractionSize: 2,
+                shown: 'zemauth.can_see_service_fee',
+            },
             LICENSE_FEE: {
                 name: 'License Fee',
                 value: 'license_fee',
@@ -253,57 +235,6 @@ angular
                 fractionSize: 1,
                 shown: true,
             },
-
-            COST_PER_MINUTE: {
-                name: 'Avg. Cost per Minute',
-                value: 'avg_cost_per_minute',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            COST_PER_PAGEVIEW: {
-                name: 'Avg. Cost for Pageview',
-                value: 'avg_cost_per_pageview',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            COST_PER_VISIT: {
-                name: 'Avg. Cost per Visit',
-                value: 'avg_cost_per_visit',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            COST_PER_NON_BOUNCED_VISIT: {
-                name: 'Avg. Cost per Non-Bounced Visit',
-                value: 'avg_cost_per_non_bounced_visit',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-            COST_PER_NEW_VISITOR: {
-                name: 'Avg. Cost for New Visitor',
-                value: 'avg_cost_for_new_visitor',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.LEGACY,
-                shown: true,
-            },
-
-            ET_COST_PER_MINUTE: {
-                name: 'Avg. Platform Cost per Minute',
-                value: 'avg_et_cost_per_minute',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.PLATFORM,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                fieldGroup: 'avg_cost_per_minute',
-            },
             ETFM_COST_PER_MINUTE: {
                 name: 'Avg. Cost per Minute',
                 value: 'avg_etfm_cost_per_minute',
@@ -311,16 +242,6 @@ angular
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
-                fieldGroup: 'avg_cost_per_minute',
-            },
-            ET_COST_PER_PAGEVIEW: {
-                name: 'Avg. Platform Cost for Pageview',
-                value: 'avg_et_cost_per_pageview',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.PLATFORM,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                fieldGroup: 'avg_cost_per_pageview',
             },
             ETFM_COST_PER_PAGEVIEW: {
                 name: 'Avg. Cost for Pageview',
@@ -329,16 +250,6 @@ angular
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
-                fieldGroup: 'avg_cost_per_pageview',
-            },
-            ET_COST_PER_VISIT: {
-                name: 'Avg. Platform Cost per Visit',
-                value: 'avg_et_cost_per_visit',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.PLATFORM,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                fieldGroup: 'avg_cost_per_visit',
             },
             ETFM_COST_PER_VISIT: {
                 name: 'Avg. Cost per Visit',
@@ -347,16 +258,6 @@ angular
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
-                fieldGroup: 'avg_cost_per_visit',
-            },
-            ET_COST_PER_NON_BOUNCED_VISIT: {
-                name: 'Avg. Platform Cost per Non-Bounced Visit',
-                value: 'avg_et_cost_per_non_bounced_visit',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.PLATFORM,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                fieldGroup: 'avg_cost_per_non_bounced_visit',
             },
             ETFM_COST_PER_NON_BOUNCED_VISIT: {
                 name: 'Avg. Cost per Non-Bounced Visit',
@@ -365,16 +266,6 @@ angular
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
-                fieldGroup: 'avg_cost_per_non_bounced_visit',
-            },
-            ET_COST_PER_NEW_VISITOR: {
-                name: 'Avg. Platform Cost for New Visitor',
-                value: 'avg_et_cost_for_new_visitor',
-                type: TYPE_CURRENCY,
-                fractionSize: 2,
-                costMode: constants.costMode.PLATFORM,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                fieldGroup: 'avg_cost_for_new_visitor',
             },
             ETFM_COST_PER_NEW_VISITOR: {
                 name: 'Avg. Cost for New Visitor',
@@ -383,7 +274,6 @@ angular
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
-                fieldGroup: 'avg_cost_for_new_visitor',
             },
 
             VIDEO_START: {
@@ -423,15 +313,6 @@ angular
                 shown: true,
             },
 
-            VIDEO_ET_CPV: {
-                name: 'Avg. Platform CPV',
-                value: 'video_et_cpv',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'video_cpv',
-            },
             VIDEO_ETFM_CPV: {
                 name: 'Avg. CPV',
                 value: 'video_etfm_cpv',
@@ -439,16 +320,6 @@ angular
                 fractionSize: 3,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'video_cpv',
-            },
-            VIDEO_ET_CPCV: {
-                name: 'Avg. Platform CPCV',
-                value: 'video_et_cpcv',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'video_cpcv',
             },
             VIDEO_ETFM_CPCV: {
                 name: 'Avg. CPCV',
@@ -457,7 +328,6 @@ angular
                 fractionSize: 3,
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'video_cpcv',
             },
             MRC50_MEASURABLE: {
                 name: 'Measurable Impressions',
@@ -527,16 +397,6 @@ angular
                 shown: ['zemauth.can_see_mrc50_metrics'],
                 shortName: 'Not-Viewable Dist.',
             },
-            ET_MRC50_VCPM: {
-                name: 'Avg. Platform VCPM',
-                value: 'et_mrc50_vcpm',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_mrc50_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                fieldGroup: 'mrc50_vcpm',
-                shortName: 'Avg. Platform VCPM',
-            },
             ETFM_MRC50_VCPM: {
                 name: 'Avg. VCPM',
                 value: 'etfm_mrc50_vcpm',
@@ -544,7 +404,6 @@ angular
                 fractionSize: 3,
                 shown: ['zemauth.can_see_mrc50_metrics'],
                 costMode: constants.costMode.PUBLIC,
-                fieldGroup: 'mrc50_vcpm',
                 shortName: 'Avg. VCPM',
             },
             MRC100_MEASURABLE: {
@@ -624,17 +483,6 @@ angular
                 internal: 'zemauth.can_see_mrc100_metrics',
                 shortName: 'Not-Viewable Dist.',
             },
-            ET_MRC100_VCPM: {
-                name: 'Avg. MRC100 Platform VCPM',
-                value: 'et_mrc100_vcpm',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_mrc100_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.can_see_mrc100_metrics',
-                fieldGroup: 'mrc100_vcpm',
-                shortName: 'Avg. Platform VCPM',
-            },
             ETFM_MRC100_VCPM: {
                 name: 'Avg. MRC100 VCPM',
                 value: 'etfm_mrc100_vcpm',
@@ -643,7 +491,6 @@ angular
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 costMode: constants.costMode.PUBLIC,
                 internal: 'zemauth.can_see_mrc100_metrics',
-                fieldGroup: 'mrc100_vcpm',
                 shortName: 'Avg. VCPM',
             },
             VAST4_MEASURABLE: {
@@ -723,17 +570,6 @@ angular
                 internal: 'zemauth.can_see_vast4_metrics',
                 shortName: 'Not-Viewable Dist.',
             },
-            ET_VAST4_VCPM: {
-                name: 'Avg. VAST4 Platform VCPM',
-                value: 'et_vast4_vcpm',
-                type: TYPE_CURRENCY,
-                fractionSize: 3,
-                shown: ['zemauth.can_see_vast4_metrics'],
-                costMode: constants.costMode.PLATFORM,
-                internal: 'zemauth.can_see_vast4_metrics',
-                fieldGroup: 'vast4_vcpm',
-                shortName: 'Avg. Platform VCPM',
-            },
             ETFM_VAST4_VCPM: {
                 name: 'Avg. VAST4 VCPM',
                 value: 'etfm_vast4_vcpm',
@@ -742,7 +578,6 @@ angular
                 shown: ['zemauth.can_see_vast4_metrics'],
                 costMode: constants.costMode.PUBLIC,
                 internal: 'zemauth.can_see_vast4_metrics',
-                fieldGroup: 'vast4_vcpm',
                 shortName: 'Avg. VCPM',
             },
         };
@@ -752,11 +587,7 @@ angular
             METRICS.IMPRESSIONS,
             METRICS.CLICKS,
             METRICS.CTR,
-            METRICS.CPC,
-            METRICS.ET_CPC,
             METRICS.ETFM_CPC,
-            METRICS.CPM,
-            METRICS.ET_CPM,
             METRICS.ETFM_CPM,
         ];
 
@@ -770,7 +601,6 @@ angular
             METRICS.MRC50_VIEWABLE_DISTRIBUTION,
             METRICS.MRC50_NON_MEASURABLE_DISTRIBUTION,
             METRICS.MRC50_NON_VIEWABLE_DISTRIBUTION,
-            METRICS.ET_MRC50_VCPM,
             METRICS.ETFM_MRC50_VCPM,
         ];
 
@@ -784,7 +614,6 @@ angular
             METRICS.MRC100_VIEWABLE_DISTRIBUTION,
             METRICS.MRC100_NON_MEASURABLE_DISTRIBUTION,
             METRICS.MRC100_NON_VIEWABLE_DISTRIBUTION,
-            METRICS.ET_MRC100_VCPM,
             METRICS.ETFM_MRC100_VCPM,
         ];
 
@@ -798,20 +627,22 @@ angular
             METRICS.VAST4_VIEWABLE_DISTRIBUTION,
             METRICS.VAST4_NON_MEASURABLE_DISTRIBUTION,
             METRICS.VAST4_NON_VIEWABLE_DISTRIBUTION,
-            METRICS.ET_VAST4_VCPM,
             METRICS.ETFM_VAST4_VCPM,
         ];
 
         var COST_METRICS = [
             METRICS.MEDIA_COST,
             METRICS.E_MEDIA_COST,
+            METRICS.B_MEDIA_COST,
             METRICS.DATA_COST,
             METRICS.E_DATA_COST,
+            METRICS.B_DATA_COST,
+            METRICS.SERVICE_FEE,
             METRICS.LICENSE_FEE,
-            METRICS.BILLING_COST,
             METRICS.ETFM_COST,
             METRICS.ETF_COST,
             METRICS.ET_COST,
+            METRICS.BT_COST,
         ];
 
         var POST_CLICK_METRICS = [
@@ -831,20 +662,10 @@ angular
         ];
 
         var GOAL_METRICS = [
-            METRICS.COST_PER_VISIT,
-            METRICS.ET_COST_PER_VISIT,
             METRICS.ETFM_COST_PER_VISIT,
-            METRICS.COST_PER_NEW_VISITOR,
-            METRICS.ET_COST_PER_NEW_VISITOR,
             METRICS.ETFM_COST_PER_NEW_VISITOR,
-            METRICS.COST_PER_PAGEVIEW,
-            METRICS.ET_COST_PER_PAGEVIEW,
             METRICS.ETFM_COST_PER_PAGEVIEW,
-            METRICS.COST_PER_NON_BOUNCED_VISIT,
-            METRICS.ET_COST_PER_NON_BOUNCED_VISIT,
             METRICS.ETFM_COST_PER_NON_BOUNCED_VISIT,
-            METRICS.COST_PER_MINUTE,
-            METRICS.ET_COST_PER_MINUTE,
             METRICS.ETFM_COST_PER_MINUTE,
         ];
 
@@ -855,9 +676,7 @@ angular
             METRICS.VIDEO_MIDPOINT,
             METRICS.VIDEO_THIRD_QUARTILE,
             METRICS.VIDEO_COMPLETE,
-            METRICS.VIDEO_ET_CPV,
             METRICS.VIDEO_ETFM_CPV,
-            METRICS.VIDEO_ET_CPCV,
             METRICS.VIDEO_ETFM_CPCV,
         ];
 
@@ -1050,39 +869,6 @@ angular
                 });
 
                 pixelGoalMetrics.push({
-                    value: 'avg_cost_per_' + metricValue,
-                    shortName: conversionWindow.value / 24,
-                    name:
-                        'CPA (' +
-                        pixel.name +
-                        ' ' +
-                        conversionWindow.name +
-                        columnSuffix +
-                        ')',
-                    type: TYPE_CURRENCY,
-                    fractionSize: 2,
-                    shown: true,
-                    costMode: constants.costMode.LEGACY,
-                });
-
-                pixelGoalMetrics.push({
-                    value: 'avg_et_cost_per_' + metricValue,
-                    shortName: conversionWindow.value / 24 + '(P)',
-                    name:
-                        'Platform CPA (' +
-                        pixel.name +
-                        ' ' +
-                        conversionWindow.name +
-                        columnSuffix +
-                        ')',
-                    type: TYPE_CURRENCY,
-                    fractionSize: 2,
-                    shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                    costMode: constants.costMode.PLATFORM,
-                    fieldGroup: 'avg_cost_per_' + metricValue,
-                });
-
-                pixelGoalMetrics.push({
                     value: 'avg_etfm_cost_per_' + metricValue,
                     shortName: conversionWindow.value / 24,
                     name:
@@ -1094,9 +880,8 @@ angular
                         ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
-                    shown: true,
                     costMode: constants.costMode.PUBLIC,
-                    fieldGroup: 'avg_cost_per_' + metricValue,
+                    shown: true,
                 });
             });
 
@@ -1132,32 +917,12 @@ angular
                 });
 
                 conversionGoalMetrics.push({
-                    value: 'avg_cost_per_' + goal.id,
-                    name: 'CPA (' + goal.name + ')',
-                    type: TYPE_CURRENCY,
-                    fractionSize: 2,
-                    shown: true,
-                    costMode: constants.costMode.LEGACY,
-                });
-
-                conversionGoalMetrics.push({
-                    value: 'avg_et_cost_per_' + goal.id,
-                    name: 'Platform CPA (' + goal.name + ')',
-                    type: TYPE_CURRENCY,
-                    fractionSize: 2,
-                    shown: 'zemauth.can_view_platform_cost_breakdown_derived',
-                    costMode: constants.costMode.PLATFORM,
-                    fieldGroup: 'avg_cost_per_' + goal.id,
-                });
-
-                conversionGoalMetrics.push({
                     value: 'avg_etfm_cost_per_' + goal.id,
                     name: 'CPA (' + goal.name + ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
-                    shown: true,
                     costMode: constants.costMode.PUBLIC,
-                    fieldGroup: 'avg_cost_per_' + goal.id,
+                    shown: true,
                 });
             });
 
@@ -1271,7 +1036,7 @@ angular
                 metric.name = '<Goal metric>';
             }
 
-            if (value.indexOf('avg_cost_per_') === 0) {
+            if (value.indexOf('avg_etfm_cost_per_') === 0) {
                 metric.name = 'CPA (' + metric.name + ')';
                 metric.type = TYPE_CURRENCY;
                 metric.fractionSize = 2;

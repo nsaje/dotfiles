@@ -52,6 +52,8 @@ class AutopilotPrefetchTestCase(TestCase):
             credit__end_date=dates_helper.day_after(cls.today),
             credit__amount=100000,
             credit__status=constants.CreditLineItemStatus.SIGNED,
+            credit__service_fee=Decimal("0.1"),
+            credit__license_fee=Decimal("0.2"),
             amount=10000,
             start_date=cls.today,
             end_date=dates_helper.day_after(cls.today),
@@ -130,7 +132,13 @@ class AutopilotPrefetchTestCase(TestCase):
                 "value": self.goal_value.value,
             }
         }
-        expected_bcm = {self.ad_group_source.ad_group.campaign: {"fee": Decimal("0.2"), "margin": Decimal("0")}}
+        expected_bcm = {
+            self.ad_group_source.ad_group.campaign: {
+                "service_fee": Decimal("0.1"),
+                "fee": Decimal("0.2"),
+                "margin": Decimal("0"),
+            }
+        }
         self.assertEqual(data, expected_data)
         self.assertEqual(campaign_goals, expected_goals)
         self.assertEqual(bcm_modifiers_map, expected_bcm)
@@ -176,7 +184,13 @@ class AutopilotPrefetchTestCase(TestCase):
                 "value": Decimal("1") / self.goal_value.value,
             }
         }
-        expected_bcm = {self.ad_group_source.ad_group.campaign: {"fee": Decimal("0.2"), "margin": Decimal("0")}}
+        expected_bcm = {
+            self.ad_group_source.ad_group.campaign: {
+                "service_fee": Decimal("0.1"),
+                "fee": Decimal("0.2"),
+                "margin": Decimal("0"),
+            }
+        }
         self.assertEqual(data, expected_data)
         self.assertEqual(campaign_goals, expected_goals)
         self.assertEqual(bcm_modifiers_map, expected_bcm)
@@ -221,7 +235,13 @@ class AutopilotPrefetchTestCase(TestCase):
                 "value": self.goal_value.value,
             }
         }
-        expected_bcm = {self.ad_group_source.ad_group.campaign: {"fee": Decimal("0.2"), "margin": Decimal("0")}}
+        expected_bcm = {
+            self.ad_group_source.ad_group.campaign: {
+                "service_fee": Decimal("0.1"),
+                "fee": Decimal("0.2"),
+                "margin": Decimal("0"),
+            }
+        }
         self.assertEqual(data, expected_data)
         self.assertEqual(campaign_goals, expected_goals)
         self.assertEqual(bcm_modifiers_map, expected_bcm)
