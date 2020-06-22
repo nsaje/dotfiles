@@ -67,6 +67,7 @@ angular
                 value: 'etfm_cpc',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'cpc',
             },
@@ -93,6 +94,7 @@ angular
                 value: 'etfm_cpm',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'cpm',
             },
@@ -140,6 +142,7 @@ angular
                 value: 'etfm_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
+                shown: true,
                 costMode: constants.costMode.ANY,
             },
             ETF_COST: {
@@ -307,6 +310,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
+                shown: true,
                 fieldGroup: 'avg_cost_per_minute',
             },
             ET_COST_PER_PAGEVIEW: {
@@ -324,6 +328,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
+                shown: true,
                 fieldGroup: 'avg_cost_per_pageview',
             },
             ET_COST_PER_VISIT: {
@@ -341,6 +346,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
+                shown: true,
                 fieldGroup: 'avg_cost_per_visit',
             },
             ET_COST_PER_NON_BOUNCED_VISIT: {
@@ -358,6 +364,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
+                shown: true,
                 fieldGroup: 'avg_cost_per_non_bounced_visit',
             },
             ET_COST_PER_NEW_VISITOR: {
@@ -375,6 +382,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,
+                shown: true,
                 fieldGroup: 'avg_cost_for_new_visitor',
             },
 
@@ -382,31 +390,37 @@ angular
                 name: 'Video Start',
                 value: 'video_start',
                 type: TYPE_NUMBER,
+                shown: true,
             },
             VIDEO_PROGRESS_3S: {
                 name: 'Video Progress 3s',
                 value: 'video_progress_3s',
                 type: TYPE_NUMBER,
+                shown: true,
             },
             VIDEO_FIRST_QUARTILE: {
                 name: 'Video First Quartile',
                 value: 'video_first_quartile',
                 type: TYPE_NUMBER,
+                shown: true,
             },
             VIDEO_MIDPOINT: {
                 name: 'Video Midpoint',
                 value: 'video_midpoint',
                 type: TYPE_NUMBER,
+                shown: true,
             },
             VIDEO_THIRD_QUARTILE: {
                 name: 'Video Third Quartile',
                 value: 'video_third_quartile',
                 type: TYPE_NUMBER,
+                shown: true,
             },
             VIDEO_COMPLETE: {
                 name: 'Video Complete',
                 value: 'video_complete',
                 type: TYPE_NUMBER,
+                shown: true,
             },
 
             VIDEO_ET_CPV: {
@@ -423,6 +437,7 @@ angular
                 value: 'video_etfm_cpv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'video_cpv',
             },
@@ -440,6 +455,7 @@ angular
                 value: 'video_etfm_cpcv',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'video_cpcv',
             },
@@ -1078,6 +1094,7 @@ angular
                         ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
+                    shown: true,
                     costMode: constants.costMode.PUBLIC,
                     fieldGroup: 'avg_cost_per_' + metricValue,
                 });
@@ -1138,6 +1155,7 @@ angular
                     name: 'CPA (' + goal.name + ')',
                     type: TYPE_CURRENCY,
                     fractionSize: 2,
+                    shown: true,
                     costMode: constants.costMode.PUBLIC,
                     fieldGroup: 'avg_cost_per_' + goal.id,
                 });
