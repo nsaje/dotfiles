@@ -42,13 +42,8 @@ CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 
 
 class AdGroupSettingsState(DASHAPIBaseView):
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        current_settings = ad_group.get_current_settings()
-        return self.create_api_response({"id": str(ad_group.pk), "state": current_settings.state})
-
     def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         data = json.loads(request.body)
         new_state = data.get("state")
 

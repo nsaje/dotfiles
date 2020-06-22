@@ -30,7 +30,7 @@ from utils.test_helper import remove_permissions
 from zemauth.models import User
 
 
-class AdGroupSettingsStateTest(TestCase):
+class LegacyAdGroupSettingsStateTestCase(DASHAPITestCase):
     fixtures = ["test_models.yaml", "test_adgroup_settings_state.yaml", "test_non_superuser.yaml", "test_geolocations"]
 
     def setUp(self):
@@ -40,19 +40,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         account = models.Account.objects.get(pk=1)
         account.users.add(self.user)
-
         self.client.login(username=self.user.email, password="secret")
-
-    def test_get(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
-        response = self.client.get(reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}), follow=True)
-
-        self.assertDictEqual(
-            json.loads(response.content),
-            {"data": {"id": str(ad_group.pk), "state": ad_group.get_current_settings().state}, "success": True},
-        )
 
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")
     @patch("utils.k1_helper.update_ad_group")
@@ -63,7 +51,6 @@ class AdGroupSettingsStateTest(TestCase):
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
 
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 1}),
@@ -84,7 +71,6 @@ class AdGroupSettingsStateTest(TestCase):
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create_unsafe(campaign_id=ad_group.campaign_id)
 
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 1}),
@@ -99,7 +85,6 @@ class AdGroupSettingsStateTest(TestCase):
     def test_activate_without_budget(self, mock_k1_ping):
         ad_group = models.AdGroup.objects.get(pk=2)
 
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 1}),
@@ -117,7 +102,6 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 1}),
@@ -131,7 +115,6 @@ class AdGroupSettingsStateTest(TestCase):
     def test_inactivate(self, mock_k1_ping):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 2}),
@@ -145,7 +128,6 @@ class AdGroupSettingsStateTest(TestCase):
 
     def test_inactivate_already_inactivated(self):
         ad_group = models.AdGroup.objects.get(pk=2)
-        add_permissions(self.user, ["can_control_ad_group_state_in_table"])
         response = self.client.post(
             reverse("ad_group_settings_state", kwargs={"ad_group_id": ad_group.id}),
             json.dumps({"state": 2}),
@@ -154,6 +136,10 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+
+
+class AdGroupSettingsStateTestCase(FutureDASHAPITestCase, LegacyAdGroupSettingsStateTestCase):
+    pass
 
 
 class LegacyConversionPixelTestCase(DASHAPITestCase):
