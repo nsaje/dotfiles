@@ -217,6 +217,16 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     name: 'Automation Rules',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
+            } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USERS)) {
+                urlTree = [
+                    RoutePathName.APP_BASE,
+                    RoutePathName.USERS
+                ];
+                return {
+                    typeName: 'Management Console',
+                    name: 'User management',
+                    href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
+                };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.INVENTORY_PLANNING)) {
                 urlTree = [
                     RoutePathName.APP_BASE,
