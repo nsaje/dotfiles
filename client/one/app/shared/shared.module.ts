@@ -74,6 +74,7 @@ import {NoteCellComponent} from './components/smart-grid/components/cell/note-ce
 import {LinkCellComponent} from './components/smart-grid/components/cell/link-cell/link-cell.component';
 import {PortalComponent} from './components/portal/portal.component';
 import {AlertComponent} from './components/alert/alert.component';
+import {ListGroupItemComponent} from './components/list-group/components/list-group-item/list-group-item.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -130,6 +131,7 @@ const EXPORTED_DECLARATIONS = [
     ScopeSelectorComponent,
     BidModifierTypesGridComponent,
     ListGroupComponent,
+    ListGroupItemComponent,
     ImageCheckboxInputComponent,
     ImageCheckboxInputGroupComponent,
     ExpandableSectionComponent,

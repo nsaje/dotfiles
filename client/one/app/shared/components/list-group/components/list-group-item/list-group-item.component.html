@@ -1,0 +1,43 @@
+<div
+    class="zem-list-group-item__item zem-list-group-item__item--level-{{
+        level
+    }}"
+    [class.zem-list-group-item__item--selected]="isSelected"
+    (click)="toggleItem()"
+>
+    <div class="zem-list-group-item__icon-container" *ngIf="isIconVisible">
+        <div class="zem-list-group-item__icon {{ item.icon }}"></div>
+    </div>
+    <div
+        class="zem-list-group-item__value-container"
+        *ngIf="isDisplayValueVisible"
+    >
+        <div class="zem-list-group-item__value">{{ item.displayValue }}</div>
+    </div>
+    <div
+        *ngIf="item.subItems && item.subItems.length && isDisplayValueVisible"
+        class="zem-list-group-item__expand-icon-container"
+    >
+        <div
+            class="zem-list-group-item__expand-icon"
+            [class.zem-list-group-item__expand-icon--expanded]="isExpanded"
+        ></div>
+    </div>
+</div>
+<div
+    *ngIf="item.subItems && item.subItems.length && isDisplayValueVisible"
+    class="zem-list-group-item__sub-items"
+    [class.zem-list-group-item__sub-items--expanded]="isExpanded"
+>
+    <zem-list-group-item
+        *ngFor="let subItem of item.subItems; trackBy: trackByIndex"
+        class="zem-list-group-item"
+        [item]="subItem"
+        [isIconVisible]="isIconVisible"
+        [isDisplayValueVisible]="isDisplayValueVisible"
+        [isParentExpanded]="isExpanded"
+        [level]="level + 1"
+        [value]="value"
+        (valueChange)="valueChange.emit($event)"
+    ></zem-list-group-item>
+</div>

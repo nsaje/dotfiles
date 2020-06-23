@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import {SidebarContentStore} from '../../services/sidebar-content.store';
 import {ListGroupItem} from '../../../../shared/components/list-group/types/list-group-item';
-import {ListGroupIcon} from '../../../../shared/components/list-group/list-group.component.constants';
+import {ListGroupItemIcon} from '../../../../shared/components/list-group/components/list-group-item/list-group-item.component.constants';
 import * as routerHelpers from '../../../../shared/helpers/router.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {Subject, Observable, merge} from 'rxjs';
@@ -36,7 +36,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         {
             value: RoutePathName.CREDITS,
             displayValue: 'Credits',
-            icon: ListGroupIcon.Credit,
+            icon: ListGroupItemIcon.Credit,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(
                     'zemauth.account_credit_view'
@@ -46,7 +46,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         {
             value: RoutePathName.DEALS,
             displayValue: 'Deals',
-            icon: ListGroupIcon.Folder,
+            icon: ListGroupItemIcon.Folder,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(
                     'zemauth.can_see_deals_library'
@@ -56,7 +56,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         {
             value: RoutePathName.USERS,
             displayValue: 'User management',
-            icon: ListGroupIcon.User,
+            icon: ListGroupItemIcon.User,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(
                     'zemauth.can_see_user_management'
@@ -70,7 +70,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             )
                 ? 'Publishers & Placements'
                 : 'Publisher Groups',
-            icon: ListGroupIcon.PublisherGroups,
+            icon: ListGroupItemIcon.PublisherGroups,
             isVisible: () => {
                 return (
                     this.zemPermissions.hasPermission(
@@ -85,7 +85,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         {
             value: RoutePathName.RULES,
             displayValue: 'Automation Rules',
-            icon: ListGroupIcon.AutomationRules,
+            icon: ListGroupItemIcon.AutomationRules,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(
                     'zemauth.fea_can_create_automation_rules'

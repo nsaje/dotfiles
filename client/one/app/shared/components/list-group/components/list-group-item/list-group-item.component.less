@@ -1,0 +1,165 @@
+@import 'variables';
+
+.zem-list-group-item {
+    display: block;
+}
+
+.zem-list-group-item__item {
+    display: flex;
+    height: 45px;
+    background-color: darken(@color--lighter-neutral, 4%);
+    cursor: pointer;
+
+    &:not(.zem-list-group-item__item--selected):hover {
+        background-color: #ffffff;
+    }
+}
+
+.zem-list-group-item__item--selected {
+    background-color: @color--secondary;
+}
+
+.zem-list-group-item__icon-container {
+    display: flex;
+    flex: 0 0 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+}
+
+.zem-list-group-item__icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.zem-list-group-item__icon--folder {
+    background: url('@{images-folder}/folder-sec.svg') no-repeat center;
+    background-size: 20px;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__icon-container
+    > .zem-list-group-item__icon--folder {
+    background-image: url('images/folder-white.svg');
+}
+
+.zem-list-group-item__icon--credit {
+    background: url('@{images-folder}/credit-sec.svg') no-repeat center;
+    background-size: 20px;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__icon-container
+    > .zem-list-group-item__icon--credit {
+    background-image: url('images/credit-white.svg');
+}
+
+.zem-list-group-item__icon--user {
+    background: url('@{images-folder}/user-sec.svg') no-repeat center;
+    background-size: 20px;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__icon-container
+    > .zem-list-group-item__icon--user {
+    background-image: url('images/user-white.svg');
+}
+
+.zem-list-group-item__icon--publisher-groups {
+    background: url('@{images-folder}/publisher-groups-sec.svg') no-repeat
+        center;
+    background-size: 23px;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__icon-container
+    > .zem-list-group-item__icon--publisher-groups {
+    background-image: url('images/publisher-groups-white.svg');
+}
+
+.zem-list-group-item__icon--automation-rules {
+    background: url('@{images-folder}/automation-rules-sec.svg') no-repeat
+        center;
+    background-size: 23px;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__icon-container
+    > .zem-list-group-item__icon--automation-rules {
+    background-image: url('images/automation-rules-white.svg');
+}
+
+.zem-list-group-item__value-container {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+}
+
+.zem-list-group-item__value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: @color--secondary;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group-item__value-container
+    > .zem-list-group-item__value {
+    color: #ffffff;
+}
+
+.zem-list-group-item__expand-icon-container {
+    display: flex;
+    flex: 0 0 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+}
+
+.zem-list-group-item__expand-icon {
+    display: block;
+    width: 15px;
+    height: 15px;
+    background: url('@{images-folder}/arrow-sec.svg') no-repeat center;
+    transform: rotate(90deg);
+}
+
+.zem-list-group-item__expand-icon--expanded {
+    transform: rotate(-90deg);
+}
+
+.zem-list-group-item__item--selected
+    > .zem-list-group__expand-icon-container
+    > .zem-list-group__expand-icon {
+    background-image: url('@{images-folder}/arrow-white.svg');
+}
+
+.zem-list-group-item__sub-items
+    > .zem-list-group-item
+    > .zem-list-group-item__item {
+    display: none;
+}
+
+.zem-list-group-item__sub-items--expanded
+    > .zem-list-group-item
+    > .zem-list-group-item__item {
+    display: flex;
+}
+
+.zem-list-group-item__sub-items
+    > .zem-list-group-item
+    > .zem-list-group-item__item--selected {
+    background-color: @color--secondary;
+}
+
+/* TODO jholas next level styles can be added here with corresponding level numbering */
+
+.zem-list-group-item__item--level-1 {
+    height: 40px;
+    background-color: darken(@color--lighter-neutral, 12%);
+}

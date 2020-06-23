@@ -1,13 +1,12 @@
-<div
+<zem-list-group-item
     *ngFor="let item of filteredItems; trackBy: trackByIndex"
-    class="zem-list-group__item"
-    [class.zem-list-group__item--selected]="item.value === value"
-    (click)="valueChange.emit(item.value)"
+    class="zem-list-group-item"
+    [item]="item"
+    [isIconVisible]="isIconVisible"
+    [isDisplayValueVisible]="isDisplayValueVisible"
+    [isParentExpanded]="true"
+    [level]="0"
+    [value]="value"
+    (valueChange)="valueChange.emit($event)"
 >
-    <div class="zem-list-group__icon-container" *ngIf="isIconVisible">
-        <div class="zem-list-group__icon {{ item.icon }}"></div>
-    </div>
-    <div class="zem-list-group__value-container" *ngIf="isDisplayValueVisible">
-        <div class="zem-list-group__value">{{ item.displayValue }}</div>
-    </div>
-</div>
+</zem-list-group-item>
