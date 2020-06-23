@@ -53,7 +53,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "172.26.4.126",
+        "HOST": "z1statspostgres.int.zemanta.com",
         "PORT": 5432,
     },
 }
