@@ -16,6 +16,7 @@ import {Currency, CreditStatus} from '../../../../app.constants';
 import {CURRENCIES, APP_CONFIG} from '../../../../app.config';
 import * as moment from '../../../../../../lib/components/moment/moment';
 import * as clone from 'clone';
+import {FeeItem} from '../../types/fee-item';
 
 @Component({
     selector: 'zem-credit-edit-form',
@@ -32,25 +33,22 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
     @Input()
     showLicenseFee: boolean;
     @Input()
+    showServiceFee: boolean;
+    @Input()
     creditErrors: CreditsStoreFieldsErrorsState;
     @Output()
     creditChange: EventEmitter<ChangeEvent<Credit>> = new EventEmitter<
         ChangeEvent<Credit>
     >();
 
-    defaultLicenseFeeItems: {
-        value: string;
-        name: string;
-    }[] = [
+    defaultFeeItems: FeeItem[] = [
         {value: '15', name: '15%'},
         {value: '20', name: '20%'},
         {value: '25', name: '25%'},
     ];
 
-    licenseFeeItems: {
-        value: string;
-        name: string;
-    }[];
+    licenseFeeItems: FeeItem[];
+    serviceFeeItems: FeeItem[];
 
     CURRENCIES = CURRENCIES;
     currencySymbol: string;
@@ -73,9 +71,14 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
             );
         }
 
-        this.licenseFeeItems = this.getLicenseFeeItems(
-            this.credit,
-            clone(this.defaultLicenseFeeItems)
+        this.licenseFeeItems = this.getFeeItems(
+            this.credit.licenseFee,
+            clone(this.defaultFeeItems)
+        );
+
+        this.serviceFeeItems = this.getFeeItems(
+            this.credit.serviceFee,
+            clone(this.defaultFeeItems)
         );
     }
 
@@ -108,6 +111,15 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
             target: this.credit,
             changes: {
                 licenseFee: licenseFee,
+            },
+        });
+    }
+
+    onServiceFeeChange(serviceFee: string): void {
+        this.creditChange.emit({
+            target: this.credit,
+            changes: {
+                serviceFee: serviceFee,
             },
         });
     }
@@ -166,38 +178,24 @@ export class CreditEditFormComponent implements OnChanges, OnInit {
         });
     }
 
-    addLicenseFeeItem(
-        item: string
-    ): {
-        value: string;
-        name: string;
-    } {
+    addFeeItem(item: string): FeeItem {
         return {value: item, name: `${item}%`};
     }
 
-    private getLicenseFeeItems(
-        credit: Credit,
-        licenseFeeItems: {
-            value: string;
-            name: string;
-        }[]
-    ): {
-        value: string;
-        name: string;
-    }[] {
-        if (!credit.licenseFee) {
-            return licenseFeeItems;
+    private getFeeItems(currentFee: string, feeItems: FeeItem[]): FeeItem[] {
+        if (!currentFee) {
+            return feeItems;
         }
 
-        const itemExists = licenseFeeItems.find(licenseFeeItem => {
-            return licenseFeeItem.value === credit.licenseFee;
+        const itemExists = feeItems.find(feeItem => {
+            return feeItem.value === currentFee;
         });
         if (!itemExists) {
-            licenseFeeItems.push({
-                value: credit.licenseFee,
-                name: `${credit.licenseFee}%`,
+            feeItems.push({
+                value: currentFee,
+                name: `${currentFee}%`,
             });
         }
-        return licenseFeeItems;
+        return feeItems;
     }
 }

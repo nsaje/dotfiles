@@ -27,6 +27,7 @@ export class CreditsStoreState {
             startDate: null,
             endDate: null,
             licenseFee: null,
+            serviceFee: null,
             status: null,
             currency: null,
             amount: null,

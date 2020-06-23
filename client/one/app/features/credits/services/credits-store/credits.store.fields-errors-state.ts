@@ -8,6 +8,7 @@ export class CreditsStoreFieldsErrorsState {
     startDate: FieldErrors = [];
     endDate: FieldErrors = [];
     licenseFee: FieldErrors = [];
+    serviceFee: FieldErrors = [];
     currency: FieldErrors = [];
     amount: FieldErrors = [];
     comment: FieldErrors = [];

@@ -106,7 +106,18 @@ export const COLUMN_LICENSE_FEE: ColDef = {
     headerName: 'License fee',
     field: 'licenseFee',
     width: 80,
-    minWidth: 60,
+    minWidth: 80,
+    resizable: false,
+    valueFormatter: params => {
+        return `${params.value}%`;
+    },
+};
+
+export const COLUMN_SERVICE_FEE: ColDef = {
+    headerName: 'Service fee',
+    field: 'serviceFee',
+    width: 80,
+    minWidth: 80,
     resizable: false,
     valueFormatter: params => {
         return `${params.value}%`;

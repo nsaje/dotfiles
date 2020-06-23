@@ -10,6 +10,7 @@ export interface Credit {
     allocated?: string;
     available?: string;
     licenseFee: string;
+    serviceFee: string;
     status: CreditStatus;
     currency: Currency;
     accountId?: string | null;

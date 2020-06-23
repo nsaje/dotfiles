@@ -31,6 +31,7 @@ import {
     COLUMN_CURRENCY,
     COLUMN_ACTION_REFUND_PAST,
     COLUMN_AMOUNT_PAST,
+    COLUMN_SERVICE_FEE,
 } from './credits-grid.component.config';
 
 @Component({
@@ -53,6 +54,8 @@ export class CreditsGridComponent implements OnInit, OnChanges {
     isLoading: boolean;
     @Input()
     showLicenseFee: boolean;
+    @Input()
+    showServiceFee: boolean;
     @Output()
     paginationChange: EventEmitter<PaginationState> = new EventEmitter<
         PaginationState
@@ -82,6 +85,7 @@ export class CreditsGridComponent implements OnInit, OnChanges {
             COLUMN_SIGNED,
             COLUMN_CURRENCY,
             COLUMN_LICENSE_FEE,
+            COLUMN_SERVICE_FEE,
             COLUMN_FLAT_FEE,
             COLUMN_AMOUNT,
             COLUMN_ALLOCATED,
@@ -99,6 +103,7 @@ export class CreditsGridComponent implements OnInit, OnChanges {
             COLUMN_SIGNED,
             COLUMN_CURRENCY,
             COLUMN_LICENSE_FEE,
+            COLUMN_SERVICE_FEE,
             COLUMN_FLAT_FEE,
             COLUMN_AMOUNT_PAST,
             COLUMN_ALLOCATED,
@@ -117,6 +122,9 @@ export class CreditsGridComponent implements OnInit, OnChanges {
         this.commonColumnDefs[this.creditGridType].find(
             column => column.field === 'licenseFee'
         ).hide = !this.showLicenseFee;
+        this.commonColumnDefs[this.creditGridType].find(
+            column => column.field === 'serviceFee'
+        ).hide = !this.showServiceFee;
         this.columnDefs = this.commonColumnDefs[this.creditGridType];
     }
 

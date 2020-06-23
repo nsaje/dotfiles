@@ -35,6 +35,9 @@
                     'zemauth.can_view_platform_cost_breakdown'
                 )
             "
+            [showServiceFee]="
+                zemPermissions.hasPermission('zemauth.can_see_service_fee')
+            "
             [creditGridType]="creditGridType.ACTIVE"
             [paginationOptions]="activePaginationOptions"
             [paginationCount]="state.requests.listActive.count"
@@ -54,6 +57,9 @@
                 zemPermissions.hasPermission(
                     'zemauth.can_view_platform_cost_breakdown'
                 )
+            "
+            [showServiceFee]="
+                zemPermissions.hasPermission('zemauth.can_see_service_fee')
             "
             [creditGridType]="creditGridType.PAST"
             [paginationOptions]="pastPaginationOptions"
@@ -84,6 +90,11 @@
                     [showLicenseFee]="
                         zemPermissions.hasPermission(
                             'zemauth.can_view_platform_cost_breakdown'
+                        )
+                    "
+                    [showServiceFee]="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_see_service_fee'
                         )
                     "
                     [creditErrors]="state.creditActiveEntity.fieldsErrors"

@@ -33,9 +33,26 @@
     [bindValue]="'value'"
     [items]="licenseFeeItems"
     [isSearchable]="true"
-    [addCustomItemFn]="addLicenseFeeItem"
+    [addCustomItemFn]="addFeeItem"
     [errors]="creditErrors?.licenseFee"
     (valueChange)="onLicenseFeeChange($event)"
+></zem-select-form-group>
+<zem-select-form-group
+    *ngIf="showServiceFee"
+    class="zem-credit-edit-form__item zem-select-form-group zem-credit-edit-form__select-form-group"
+    [isDisabled]="isReadOnly || isSigned"
+    [label]="'Service fee (%)'"
+    [helpMessage]="
+        'Service fee is charged by the advertiser to their client. Service fee is charged on top of base media spend. Only advertisers with specific permission can see the service fee.'
+    "
+    [value]="credit.serviceFee"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="serviceFeeItems"
+    [isSearchable]="true"
+    [addCustomItemFn]="addFeeItem"
+    [errors]="creditErrors?.serviceFee"
+    (valueChange)="onServiceFeeChange($event)"
 ></zem-select-form-group>
 <zem-select-form-group
     class="zem-credit-edit-form__item zem-select-form-group zem-credit-edit-form__select-form-group"
