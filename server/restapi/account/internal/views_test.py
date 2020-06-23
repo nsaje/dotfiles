@@ -168,9 +168,10 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["salesforceUrl"], "")
 
         self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 3)
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][0]["id"], str(sources[0].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][1]["id"], str(sources[1].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][2]["id"], str(sources[2].id))
+        self.assertEqual(
+            {str(sources[0].id), str(sources[1].id), str(sources[2].id)},
+            set(source["id"] for source in resp_json["data"]["allowedMediaSources"]),
+        )
 
         self.assertEqual(resp_json["data"]["deals"], [])
 
