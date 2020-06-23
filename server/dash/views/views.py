@@ -28,6 +28,8 @@ import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
 import demo
 import stats.helpers
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
@@ -42,6 +44,7 @@ from utils import lc_helper
 from utils import metrics_compat
 from utils import threads
 from utils import zlogging
+from zemauth.features.entity_permission import Permission
 
 logger = zlogging.getLogger(__name__)
 
@@ -189,7 +192,7 @@ class AccountRestore(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         account.restore(request)
         return self.create_api_response({})
 
@@ -200,7 +203,7 @@ class CampaignRestore(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
         campaign.restore(request)
 
         return self.create_api_response({})
@@ -209,7 +212,7 @@ class CampaignRestore(DASHAPIBaseView):
 class AdGroupOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():
             raise exc.ValidationError(errors=dict(view_filter.errors))
@@ -311,7 +314,7 @@ class AdGroupRestore(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         ad_group.restore(request)
 
         return self.create_api_response({})
@@ -320,7 +323,7 @@ class AdGroupRestore(DASHAPIBaseView):
 class CampaignOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
         view_filter = forms.ViewFilterForm(request.GET)
@@ -479,7 +482,7 @@ class CampaignOverview(DASHAPIBaseView):
 class AccountOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, account_id):
-        account = helpers.get_account(request.user, account_id, select_related_users=True)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id, select_related_users=True)
 
         account_running_status = infobox_helpers.get_account_running_status(account)
 
@@ -569,7 +572,13 @@ class AccountOverview(DASHAPIBaseView):
 class AvailableSources(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request):
-        user_accounts = models.Account.objects.all().filter_by_user(request.user)
+        accounts_user_perm = models.Account.objects.all().filter_by_user(request.user)
+
+        accounts_entity_perm = models.Account.objects.all().filter_by_entity_permission(request.user, Permission.READ)
+
+        user_accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
+        )
         user_sources = (
             models.Source.objects.filter(account__in=user_accounts)
             .filter(deprecated=False)
@@ -590,7 +599,7 @@ class AdGroupSources(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
         existing_ad_group_sources = ad_group.adgroupsource_set.exclude(ad_review_only=True)
@@ -646,7 +655,7 @@ class AdGroupSourceSettings(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         try:
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
@@ -923,10 +932,20 @@ class AllAccountsOverview(DASHAPIBaseView):
         return [setting.as_dict() for setting in settings]
 
     def _append_performance_agency_settings(self, overview_settings, user, view_filter):
-        accounts = (
+        accounts_user_perm = (
             models.Account.objects.all()
             .filter_by_user(user)
             .exclude_archived(view_filter.cleaned_data.get("show_archived"))
+        )
+
+        accounts_entity_perm = (
+            models.Account.objects.all()
+            .filter_by_entity_permission(user, Permission.READ)
+            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
+        )
+
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
         currency = stats.helpers.get_report_currency(user, accounts)
 
@@ -952,12 +971,24 @@ class AllAccountsOverview(DASHAPIBaseView):
         return overview_settings
 
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
-        accounts = (
+        accounts_user_perm = (
             models.Account.objects.filter_by_user(user)
             .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
             .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
             .exclude_archived(view_filter.cleaned_data.get("show_archived"))
         )
+
+        accounts_entity_perm = (
+            models.Account.objects.filter_by_entity_permission(user, Permission.READ)
+            .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
+            .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
+            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
+        )
+
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, accounts_user_perm, accounts_entity_perm
+        )
+
         currency = stats.helpers.get_report_currency(user, accounts)
 
         use_local_currency = currency != constants.Currency.USD

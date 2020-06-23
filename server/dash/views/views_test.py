@@ -16,10 +16,13 @@ from mock import patch
 
 import core.models.source_type.model
 import demo
+import utils.test_helper
 import zemauth.models
 from dash import constants
 from dash import history_helpers
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
@@ -129,12 +132,13 @@ class UserTest(TestCase):
         )
 
 
-class AdGroupSourceSettingsTest(TestCase):
+class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
     fixtures = ["test_models.yaml", "test_views.yaml"]
 
     def setUp(self):
         self.client = Client()
-        self.client.login(username=User.objects.get(pk=1).email, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
         self.ad_group = models.AdGroup.objects.get(pk=1)
         self._set_ad_group_sources_state(constants.AdGroupSettingsState.INACTIVE)
 
@@ -304,7 +308,11 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertTrue("0.13" in json_data["errors"]["cpm"][0])
 
 
-class AdGroupRestoreTest(TestCase):
+class AdGroupSourceSettingsTestCase(FutureDASHAPITestCase, LegacyAdGroupSourceSettingsTestCase):
+    pass
+
+
+class LegacyAdGroupRestoreTestCase(DASHAPITestCase):
     fixtures = ["test_models.yaml", "test_views.yaml"]
 
     class MockSettingsWriter(object):
@@ -316,7 +324,9 @@ class AdGroupRestoreTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.client.login(username=User.objects.get(pk=1).email, password="secret")
+        self.user = User.objects.get(pk=2)
+        test_helper.add_permissions(self.user, ["archive_restore_entity"])
+        self.client.login(username=self.user.email, password="secret")
 
     def _post_restore_ad_group(self, ad_group_id):
         return self.client.post(
@@ -350,12 +360,18 @@ class AdGroupRestoreTest(TestCase):
         self.assertFalse(ad_group.is_archived())
 
 
-class AdGroupSourcesTest(TestCase):
+class AdGroupRestoreTestCase(FutureDASHAPITestCase, LegacyAdGroupRestoreTestCase):
+    pass
+
+
+class LegacyAdGroupSourcesTestCase(DASHAPITestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
         self.client = Client()
-        self.client.login(username=User.objects.get(pk=1).email, password="secret")
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, ["ad_group_sources_add_source"])
 
     def test_get_name(self):
         request = HttpRequest()
@@ -498,19 +514,19 @@ class AdGroupSourcesTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class AdGroupOverviewTest(TestCase):
+class AdGroupSourcesTestCase(FutureDASHAPITestCase, LegacyAdGroupSourcesTestCase):
+    pass
+
+
+class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml", "users"]
 
     def setUp(self):
         self.client = Client()
-        self.user = zemauth.models.User.objects.get(email="chuck.norris@zemanta.com")
-
-    def setUpPermissions(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        campaign.account.users.add(self.user)
+        self.user = zemauth.models.User.objects.get(pk=2)
 
     def _get_ad_group_overview(self, ad_group_id, with_status=False):
-        self.client.login(username=self.user.username, password="norris")
+        self.client.login(username=self.user.username, password="secret")
         reversed_url = reverse("ad_group_overview", kwargs={"ad_group_id": ad_group_id})
 
         response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
@@ -525,7 +541,6 @@ class AdGroupOverviewTest(TestCase):
 
     @patch("redshiftapi.api_breakdowns.query")
     def test_run_empty(self, mock_query):
-        self.setUpPermissions()
         mock_query.return_value = [
             {
                 "adgroup_id": 1,
@@ -597,7 +612,6 @@ class AdGroupOverviewTest(TestCase):
 
     @patch("redshiftapi.api_breakdowns.query")
     def test_run_mid(self, mock_query):
-        self.setUpPermissions()
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -678,19 +692,19 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual("12.00% of $500.00 Daily Spend Cap", yesterday_setting["description"])
 
 
-class CampaignOverviewTest(TestCase):
+class AdGroupOverviewTestCase(FutureDASHAPITestCase, LegacyAdGroupOverviewTestCase):
+    pass
+
+
+class LegacyCampaignOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api", "users"]
 
     def setUp(self):
         self.client = Client()
-        self.user = zemauth.models.User.objects.get(email="chuck.norris@zemanta.com")
-
-    def setUpPermissions(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        campaign.account.users.add(self.user)
+        self.user = User.objects.get(pk=2)
 
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
-        self.client.login(username=self.user.username, password="norris")
+        self.client.login(username=self.user.username, password="secret")
         reversed_url = reverse("campaign_overview", kwargs={"campaign_id": campaign_id})
         response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
@@ -730,8 +744,6 @@ class CampaignOverviewTest(TestCase):
             new_adgss = adgss.copy_settings()
             new_adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
             new_adgss.save(req)
-
-        self.setUpPermissions()
 
         campaign = models.Campaign.objects.get(pk=1)
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
@@ -774,12 +786,15 @@ class CampaignOverviewTest(TestCase):
         self.assertEqual("0.00% on plan", pacing_setting["description"])
 
 
-class AccountOverviewTest(TestCase):
+class CampaignOverviewTestCase(FutureDASHAPITestCase, LegacyCampaignOverviewTestCase):
+    pass
+
+
+class LegacyAccountOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
         self.client = Client()
-
         self.user = zemauth.models.User.objects.get(pk=2)
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
@@ -869,15 +884,19 @@ class AccountOverviewTest(TestCase):
         settings = response["data"]["basic_settings"]
 
 
-class AllAccountsOverviewTest(TestCase):
+class AccountOverviewTestCase(FutureDASHAPITestCase, LegacyAccountOverviewTestCase):
+    pass
+
+
+class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml"]
 
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.username, password="secret")
 
-    def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):
-        user = User.objects.get(pk=user_id)
-        self.client.login(username=user.username, password="secret")
+    def _get_all_accounts_overview(self, campaign_id, with_status=False):
         reversed_url = reverse("all_accounts_overview", kwargs={})
         response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
@@ -917,6 +936,10 @@ class AllAccountsOverviewTest(TestCase):
         self.assertTrue(response["success"])
 
         self.assertEqual(set(["Active accounts:"]), set(s["name"] for s in response["data"]["basic_settings"]))
+
+
+class AllAccountsOverviewTestCase(FutureDASHAPITestCase, LegacyAllAccountsOverviewTestCase):
+    pass
 
 
 class DemoTest(TestCase):
