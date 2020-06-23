@@ -1,4 +1,29 @@
 <zem-scope-selector-card
+    *ngIf="isAllAccountsScopeVisible"
+    class="zem-scope-selector-card zem-scope-selector__item"
+    [class.zem-scope-selector-card--error]="allAccountsErrors?.length > 0"
+    [scopeState]="scopeState"
+    [value]="ScopeSelectorState.ALL_ACCOUNTS_SCOPE"
+    [isDisabled]="isAllAccountsScopeDisabled"
+    [zemInternalFeature]="true"
+    (valueChange)="scopeStateChange.emit($event)"
+>
+    <ng-container *ngIf="allAccountsScopeHeaderTemplate">
+        <ng-template #scopeHeaderTemplate>
+            <ng-container
+                *ngTemplateOutlet="allAccountsScopeHeaderTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+    <ng-container *ngIf="allAccountsScopeContentTemplate">
+        <ng-template #scopeContentTemplate>
+            <ng-container
+                *ngTemplateOutlet="allAccountsScopeContentTemplate"
+            ></ng-container>
+        </ng-template>
+    </ng-container>
+</zem-scope-selector-card>
+<zem-scope-selector-card
     class="zem-scope-selector-card zem-scope-selector__item"
     [class.zem-scope-selector-card--error]="agencyErrors?.length > 0"
     [scopeState]="scopeState"

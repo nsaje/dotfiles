@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {ScopeSelectorCardComponent} from './components/scope-selector-card.component';
 import {ScopeSelectorComponent} from './scope-selector.component';
 import {RadioInputComponent} from '../radio-input/radio-input.component';
+import {InternalFeatureDirective} from '../../directives/internal-feature/internal-feature.directive';
 
 describe('ScopeSelectorComponent', () => {
     let component: ScopeSelectorComponent;
@@ -14,6 +15,7 @@ describe('ScopeSelectorComponent', () => {
                 RadioInputComponent,
                 ScopeSelectorCardComponent,
                 ScopeSelectorComponent,
+                InternalFeatureDirective,
             ],
             imports: [FormsModule],
         });

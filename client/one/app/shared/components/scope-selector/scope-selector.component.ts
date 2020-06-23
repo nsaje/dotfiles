@@ -23,9 +23,15 @@ export class ScopeSelectorComponent implements OnChanges {
     @Input()
     scopeState: ScopeSelectorState;
     @Input()
+    isAllAccountsScopeVisible: boolean = false;
+    @Input()
+    isAllAccountsScopeDisabled: boolean;
+    @Input()
     isAgencyScopeDisabled: boolean;
     @Input()
     isAccountScopeDisabled: boolean;
+    @Input()
+    allAccountsErrors: FieldErrors = [];
     @Input()
     agencyErrors: FieldErrors = [];
     @Input()
@@ -35,6 +41,18 @@ export class ScopeSelectorComponent implements OnChanges {
 
     ScopeSelectorState = ScopeSelectorState;
     errors: FieldErrors = [];
+
+    @ContentChild('allAccountsScopeHeaderTemplate', {
+        read: TemplateRef,
+        static: false,
+    })
+    allAccountsScopeHeaderTemplate: TemplateRef<any>;
+
+    @ContentChild('allAccountsScopeContentTemplate', {
+        read: TemplateRef,
+        static: false,
+    })
+    allAccountsScopeContentTemplate: TemplateRef<any>;
 
     @ContentChild('agencyScopeHeaderTemplate', {
         read: TemplateRef,
@@ -61,10 +79,16 @@ export class ScopeSelectorComponent implements OnChanges {
     accountScopeContentTemplate: TemplateRef<any>;
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.accountErrors || changes.agencyErrors) {
-            this.errors = (this.agencyErrors || []).concat(
-                this.accountErrors || []
-            );
+        if (
+            changes.allAccountsErrors ||
+            changes.agencyErrors ||
+            changes.accountErrors
+        ) {
+            this.errors = [
+                ...(this.allAccountsErrors || []),
+                ...(this.agencyErrors || []),
+                ...(this.accountErrors || []),
+            ];
         }
     }
 }
