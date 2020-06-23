@@ -35,6 +35,8 @@ export class CampaignBudgetsListComponent implements OnChanges {
     @Input()
     showLicenseFee: boolean;
     @Input()
+    showServiceFee: boolean;
+    @Input()
     showMargin: boolean;
     @Input()
     isEditingEnabled: boolean = false;
@@ -140,6 +142,11 @@ export class CampaignBudgetsListComponent implements OnChanges {
                     : 'N/A',
                 licenseFee: commonHelpers.isDefined(budget.licenseFee)
                     ? `${budget.licenseFee}${unitsHelpers.getUnitText(
+                          Unit.Percent
+                      )}`
+                    : 'N/A',
+                serviceFee: commonHelpers.isDefined(budget.serviceFee)
+                    ? `${budget.serviceFee}${unitsHelpers.getUnitText(
                           Unit.Percent
                       )}`
                     : 'N/A',

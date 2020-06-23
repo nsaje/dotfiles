@@ -11,6 +11,7 @@ export interface CampaignBudget {
     spend?: string;
     margin: string;
     licenseFee?: string;
+    serviceFee?: string;
     comment: string;
     createdDt?: Date;
     createdBy?: string;

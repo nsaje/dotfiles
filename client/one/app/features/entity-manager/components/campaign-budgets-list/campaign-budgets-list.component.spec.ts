@@ -20,6 +20,7 @@ describe('CampaignBudgetsListComponent', () => {
             spend: '3000000',
             margin: '15.00',
             licenseFee: '13.05',
+            serviceFee: '10',
             comment: 'A generic comment',
             createdDt: new Date(1970, 0, 21),
             createdBy: 'test@test.com',
@@ -62,6 +63,7 @@ describe('CampaignBudgetsListComponent', () => {
                 spend: '€3,000,000.00',
                 margin: '15.00%',
                 licenseFee: '13.05%',
+                serviceFee: '10%',
             },
         ]);
     });
@@ -80,6 +82,7 @@ describe('CampaignBudgetsListComponent', () => {
                 spend: '€3,000,000.00',
                 margin: '15.00%',
                 licenseFee: '13.05%',
+                serviceFee: '10%',
             },
         ];
         component.ngOnChanges({
@@ -96,6 +99,7 @@ describe('CampaignBudgetsListComponent', () => {
                 spend: '$3,000,000.00',
                 margin: '15.00%',
                 licenseFee: '13.05%',
+                serviceFee: '10%',
             },
         ]);
     });

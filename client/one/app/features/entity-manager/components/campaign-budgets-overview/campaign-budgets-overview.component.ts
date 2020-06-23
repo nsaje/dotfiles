@@ -24,6 +24,8 @@ export class CampaignBudgetsOverviewComponent implements OnChanges {
     @Input()
     showLicenseFee: boolean;
     @Input()
+    showServiceFee: boolean;
+    @Input()
     showMargin: boolean;
 
     formattedOverview: CampaignBudgetsOverview;
@@ -39,12 +41,24 @@ export class CampaignBudgetsOverviewComponent implements OnChanges {
                     this.overview.mediaSpend,
                     this.currency
                 ),
+                baseMediaSpend: currencyHelpers.getValueInCurrency(
+                    this.overview.baseMediaSpend,
+                    this.currency
+                ),
                 dataSpend: currencyHelpers.getValueInCurrency(
                     this.overview.dataSpend,
                     this.currency
                 ),
+                baseDataSpend: currencyHelpers.getValueInCurrency(
+                    this.overview.baseDataSpend,
+                    this.currency
+                ),
                 licenseFee: currencyHelpers.getValueInCurrency(
                     this.overview.licenseFee,
+                    this.currency
+                ),
+                serviceFee: currencyHelpers.getValueInCurrency(
+                    this.overview.serviceFee,
                     this.currency
                 ),
                 margin: currencyHelpers.getValueInCurrency(

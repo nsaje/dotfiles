@@ -6,6 +6,7 @@
             <th>End date</th>
             <th>Total budget</th>
             <th *ngIf="showLicenseFee">License fee</th>
+            <th *ngIf="showServiceFee">Service fee</th>
             <th *ngIf="showMargin">Margin</th>
             <th>Total spend</th>
             <th>Available budget</th>
@@ -32,6 +33,7 @@
                     <td>{{ budget.endDate }}</td>
                     <td>{{ budget.amount }}</td>
                     <td *ngIf="showLicenseFee">{{ budget.licenseFee }}</td>
+                    <td *ngIf="showServiceFee">{{ budget.serviceFee }}</td>
                     <td *ngIf="showMargin">{{ budget.margin }}</td>
                     <td>{{ budget.spend }}</td>
                     <td>{{ budget.available }}</td>

@@ -144,6 +144,10 @@ export class CampaignSettingsDrawerView
         );
     }
 
+    canSeeServiceFee(): boolean {
+        return this.zemPermissions.hasPermission('zemauth.can_see_service_fee');
+    }
+
     private navigateToRoute(routePath: string[]) {
         this.isOpen = false;
         this.router

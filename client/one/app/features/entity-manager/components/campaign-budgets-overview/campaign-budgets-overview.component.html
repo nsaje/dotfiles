@@ -1,26 +1,34 @@
 <div class="zem-campaign-budgets-overview__container">
-    <div class="zem-campaign-budgets-overview__section">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
         <div class="zem-campaign-budgets-overview__section-name">
-            Campaign Spend
+            {{ showServiceFee ? 'Base Media Spend' : 'Media Spend' }}
         </div>
         <div class="zem-campaign-budgets-overview__section-value">
-            {{ formattedOverview.campaignSpend }}
+            {{
+                showServiceFee
+                    ? formattedOverview.baseMediaSpend
+                    : formattedOverview.mediaSpend
+            }}
         </div>
     </div>
     <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
         <div class="zem-campaign-budgets-overview__section-name">
-            Media Spend
+            {{ showServiceFee ? 'Base Data Spend' : 'Data Spend' }}
         </div>
         <div class="zem-campaign-budgets-overview__section-value">
-            {{ formattedOverview.mediaSpend }}
+            {{
+                showServiceFee
+                    ? formattedOverview.baseDataSpend
+                    : formattedOverview.dataSpend
+            }}
         </div>
     </div>
-    <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showServiceFee">
         <div class="zem-campaign-budgets-overview__section-name">
-            Data Spend
+            Service Fee
         </div>
         <div class="zem-campaign-budgets-overview__section-value">
-            {{ formattedOverview.dataSpend }}
+            {{ formattedOverview.serviceFee }}
         </div>
     </div>
     <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
@@ -35,6 +43,14 @@
         <div class="zem-campaign-budgets-overview__section-name">Margin</div>
         <div class="zem-campaign-budgets-overview__section-value">
             {{ formattedOverview.margin }}
+        </div>
+    </div>
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">
+            Total Spend
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.campaignSpend }}
         </div>
     </div>
     <div

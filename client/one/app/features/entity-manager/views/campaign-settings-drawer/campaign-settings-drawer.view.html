@@ -358,6 +358,7 @@
                         [overview]="state.extras.budgetsOverview"
                         [currency]="state.extras.currency"
                         [showLicenseFee]="canAccessPlatformCosts()"
+                        [showServiceFee]="canSeeServiceFee()"
                         [showMargin]="canAccessAgencyCosts()"
                     ></zem-campaign-budgets-overview>
                 </div>
@@ -376,6 +377,7 @@
                             [currency]="state.extras.currency"
                             [budgetsErrors]="state.fieldsErrors.budgets"
                             [showLicenseFee]="canAccessPlatformCosts()"
+                            [showServiceFee]="canSeeServiceFee()"
                             [showMargin]="canAccessAgencyCosts()"
                             [isEditingEnabled]="
                                 !zemPermissions.hasPermission(

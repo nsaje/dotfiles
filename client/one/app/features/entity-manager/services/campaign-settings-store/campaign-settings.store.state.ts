@@ -65,8 +65,11 @@ export class CampaignSettingsStoreState {
         budgetsOverview: {
             campaignSpend: null,
             mediaSpend: null,
+            baseMediaSpend: null,
             dataSpend: null,
+            baseDataSpend: null,
             licenseFee: null,
+            serviceFee: null,
             margin: null,
             availableBudgetsSum: null,
             unallocatedCredit: null,
