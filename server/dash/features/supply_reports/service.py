@@ -173,7 +173,7 @@ def _get_source_stats_for_outbrain_publishers(recipient, start_date_str, end_dat
     with connections[settings.STATS_DB_HOT_CLUSTER].cursor() as c:
         c.execute(query)
         for date, impressions, _, spend in c.fetchall():
-            out[str(date)] = _get_stats_obj(impressions, spend)
+            out[date] = _get_stats_obj(impressions, spend)
         return out
     return []
 
