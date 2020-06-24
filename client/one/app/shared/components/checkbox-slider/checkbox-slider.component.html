@@ -1,0 +1,11 @@
+<zem-checkbox-input
+    *ngFor="let option of options; let index = index; trackBy: trackByIndex"
+    class="zem-checkbox-input"
+    [isDisabled]="isDisabled"
+    [hasError]="errors && errors.length > 0"
+    [enableIndeterminateState]="true"
+    [isChecked]="option.selected"
+    (toggle)="toggle($event, index)"
+>
+    {{ option.displayValue }}
+</zem-checkbox-input>
