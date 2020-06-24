@@ -7,12 +7,16 @@ from dash import constants
 
 
 class TargetingIncludeExcludeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    included = serializers.ListField(child=serializers.IntegerField(), source="whitelist_publisher_groups")
-    excluded = serializers.ListField(child=serializers.IntegerField(), source="blacklist_publisher_groups")
+    included = serializers.ListField(
+        child=serializers.IntegerField(), source="whitelist_publisher_groups", required=False
+    )
+    excluded = serializers.ListField(
+        child=serializers.IntegerField(), source="blacklist_publisher_groups", required=False
+    )
 
 
 class AccountTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    publisher_groups = TargetingIncludeExcludeSerializer(source="*")
+    publisher_groups = TargetingIncludeExcludeSerializer(source="*", required=False)
 
 
 class AccountSerializer(
