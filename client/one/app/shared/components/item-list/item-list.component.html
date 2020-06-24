@@ -1,0 +1,29 @@
+<div>
+    <div *ngFor="let item of items" (click)="clickItem($event, item)">
+        <ng-container
+            *ngTemplateOutlet="
+                itemTemplate;
+                context: {item: item, selected: selectedItems.includes(item)}
+            "
+        ></ng-container>
+    </div>
+</div>
+<div class="zem-item-list__footer">
+    <button
+        class="zem-button zem-button--highlighted zem-button--with-icon zem-button--icon-only zem-button--add-icon"
+        (click)="addItemsClicked.emit()"
+    ></button>
+    <button
+        *ngIf="multiple"
+        class="zem-button zem-button--highlighted"
+        (click)="selectedItemsChange.emit(items)"
+    >
+        Select all
+    </button>
+    <button
+        class="zem-button zem-button--highlighted"
+        (click)="removeItemsClicked.emit()"
+    >
+        Remove
+    </button>
+</div>

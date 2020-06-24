@@ -76,6 +76,7 @@ import {PortalComponent} from './components/portal/portal.component';
 import {AlertComponent} from './components/alert/alert.component';
 import {ListGroupItemComponent} from './components/list-group/components/list-group-item/list-group-item.component';
 import {CheckboxSliderComponent} from './components/checkbox-slider/checkbox-slider.component';
+import {ItemListComponent} from './components/item-list/item-list.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -145,6 +146,7 @@ const EXPORTED_DECLARATIONS = [
     PortalComponent,
     AlertComponent,
     CheckboxSliderComponent,
+    ItemListComponent,
 ];
 
 @NgModule({
