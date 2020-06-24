@@ -9,6 +9,7 @@ import stats.api_breakdowns
 import stats.constants
 import stats.constraints_helper
 import stats.helpers
+import zemauth.access
 from core.features import bid_modifiers
 from dash import campaign_goals
 from dash import constants
@@ -19,6 +20,7 @@ from dash.views import helpers
 from restapi.serializers.bid_modifiers import BidModifierTypeSummary
 from utils import exc
 from utils import threads
+from zemauth.features.entity_permission import Permission
 
 DEFAULT_OFFSET = 0
 DEFAULT_LIMIT = 10
@@ -211,7 +213,7 @@ class AccountBreakdown(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         currency = stats.helpers.get_report_currency(request.user, [account])
 
         request_body = json.loads(request.body).get("params")
@@ -292,7 +294,7 @@ class CampaignBreakdown(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.AuthorizationError()
 
-        campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
+        campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id, select_related=True)
 
         request_body = json.loads(request.body).get("params")
         form = forms.BreakdownForm(breakdown, request_body)
@@ -382,7 +384,7 @@ class AdGroupBreakdown(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature_on_ad_group_level"):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         request_body = json.loads(request.body).get("params")
         form = forms.BreakdownForm(breakdown, request_body)

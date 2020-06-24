@@ -1,22 +1,24 @@
 import datetime
 
 from django.conf import settings
-from django.test import TestCase
 
 import dash.constants
 import dash.models
 from stats import constraints_helper
+from stats.common.base_test_case import FutureStatsTestCase
+from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class PrepareConstraints(TestCase):
+class LegacyPrepareConstraintsTestCase(StatsTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_prepare_all_accounts_constraints(self):
         sources = dash.models.Source.objects.all()
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
 
@@ -92,7 +94,7 @@ class PrepareConstraints(TestCase):
     def test_prepare_account_constraints(self):
         self.maxDiff = None
         sources = dash.models.Source.objects.all()
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
         account = dash.models.Account.objects.get(pk=1)
@@ -123,7 +125,7 @@ class PrepareConstraints(TestCase):
 
     def test_prepare_campaign_constraints(self):
         sources = dash.models.Source.objects.all()
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -188,7 +190,7 @@ class PrepareConstraints(TestCase):
 
     def test_prepare_ad_group_constraints(self):
         sources = dash.models.Source.objects.all()
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
@@ -224,7 +226,7 @@ class PrepareConstraints(TestCase):
 
     def test_prepare_ad_group_constraints_publishers(self):
         sources = dash.models.Source.objects.all()
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
@@ -267,12 +269,19 @@ class PrepareConstraints(TestCase):
         )
 
 
-class NarrowFilteredSourcesTest(TestCase):
+class PrepareConstraintsTestCase(FutureStatsTestCase, LegacyPrepareConstraintsTestCase):
+    pass
+
+
+class LegacyNarrowFilteredSourcesTestCase(StatsTestCase):
     def setUp(self):
+        super().setUp()
+        self.account = self.mix_account(self.user, permissions=[Permission.READ])
+
         self.source_credentials = magic_mixer.cycle(2).blend(dash.models.SourceCredentials)
         self.sources = dash.models.Source.objects.all()
 
-        self.ad_group = magic_mixer.blend(dash.models.AdGroup)
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=self.account)
         self.ad_group_sources = magic_mixer.cycle(2).blend(
             dash.models.AdGroupSource,
             ad_group=self.ad_group,
@@ -283,7 +292,6 @@ class NarrowFilteredSourcesTest(TestCase):
 
         self.start_date = datetime.date(2018, 5, 1)
         self.end_date = datetime.date(2018, 6, 1)
-        self.user = magic_mixer.blend_user(is_superuser=True)
 
     def test_prepare_all_accounts_constraints(self):
         constraints = constraints_helper.prepare_all_accounts_constraints(
@@ -362,3 +370,7 @@ class NarrowFilteredSourcesTest(TestCase):
             only_used_sources=True,
         )
         self.assertEqual(constraints["filtered_sources"], test_helper.QuerySetMatcher([self.sources[0]]))
+
+
+class NarrowFilteredSourcesTestCase(FutureStatsTestCase, LegacyNarrowFilteredSourcesTestCase):
+    pass

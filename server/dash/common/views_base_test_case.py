@@ -1,8 +1,8 @@
 from django.test import override_settings
 
 import zemauth.models
-from utils.api_test_case import APITestCase
-from utils.api_test_case import FutureAPITestCase
+from utils.base_test_case import APITestCase
+from utils.base_test_case import FutureAPITestCase
 
 
 @override_settings(R1_DEMO_MODE=True)
