@@ -13,9 +13,9 @@ ACCOUNT_DEFAULT_ICON_ALERT = (
 
 PLACEMENT_CONVERSIONS_START_DATE = "2020-04-15"
 PLACEMENT_CONVERSIONS_ALERT = (
-    "You have selected date range including dates before 15th of March "
+    "You have selected date range including dates before 15th of April "
     "which may result in displaying certain conversion data only as total "
-    "and not as individual placement brake down."
+    "and not as individual placement breakdown."
 )
 
 
