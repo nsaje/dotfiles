@@ -1,0 +1,42 @@
+@import 'variables';
+
+.zem-account-list-item {
+    display: block;
+}
+
+.zem-account-list-item__item {
+    min-height: 50px;
+    border: 1px solid black;
+    border-radius: @border-radius--default;
+    background-color: @color--lighter-neutral;
+    margin: @spacing--small;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: @spacing--small;
+}
+
+.zem-account-list-item__item:hover {
+    background-color: darken(@color--light-neutral, 8%);
+    box-shadow: 0px 0px 6px 0px fade(@color--light-neutral, 60%);
+}
+
+.zem-account-list-item__item--selected {
+    color: @color--lightest-neutral;
+    background-color: @color--primary;
+}
+
+.zem-account-list-item__item--selected:hover {
+    color: darken(@color--lightest-neutral, 8%);
+    background-color: darken(@color--primary, 8%);
+    box-shadow: 0px 0px 6px 0px fade(@color--primary, 60%);
+}
+
+.zem-account-list-item__link {
+    color: @color--secondary;
+    font-weight: 500;
+}
+
+.zem-account-list-item__link:hover,
+.zem-account-list-item__link:active {
+    color: @color--secondary;
+}

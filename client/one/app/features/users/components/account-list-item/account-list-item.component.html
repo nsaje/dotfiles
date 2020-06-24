@@ -1,0 +1,17 @@
+<div
+    class="zem-account-list-item__item"
+    [ngClass]="{
+        'zem-account-list-item__item--selected': selected
+    }"
+>
+    {{ account.id }}
+    <br />
+    <a
+        class="zem-account-list-item__link"
+        *ngIf="accountUrl"
+        [href]="accountUrl"
+        title="{{ account.displayName }}"
+        target="_blank"
+        >{{ account.displayName }}</a
+    >
+</div>
