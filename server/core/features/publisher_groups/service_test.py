@@ -4,16 +4,18 @@ import textwrap
 
 import mock
 from django.http.request import HttpRequest
-from django.test import TestCase
 from django.test import override_settings
 
 import zemauth.models
+from core.common.base_test_case import CoreTestCase
+from core.common.base_test_case import FutureCoreTestCase
 from dash import constants
 from dash import history_helpers
 from dash import models
 from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import connection_definitions
 from . import csv_helper
@@ -21,12 +23,12 @@ from . import exceptions
 from . import service
 
 
-class PublisherGroupHelpersTest(TestCase):
+class LegacyPublisherGroupHelpersTestCase(CoreTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
         self.request = HttpRequest()
-        self.request.user = zemauth.models.User.objects.get(id=1)
+        self.request.user = zemauth.models.User.objects.get(id=2)
 
     def assertEntriesEqual(self, publisher_group, entries):
         self.assertCountEqual(
@@ -468,7 +470,6 @@ class PublisherGroupHelpersTest(TestCase):
             service.blacklist_publishers(self.request, entries, None)
 
     def test_upsert_publisher_group_update(self):
-
         form_data = {"id": 1, "name": "Bla bla bla", "include_subdomains": False, "account_id": 1}
 
         publisher_group = service.upsert_publisher_group(self.request, form_data, None)
@@ -501,7 +502,11 @@ class PublisherGroupHelpersTest(TestCase):
         )
 
 
-class PublisherGroupCSVHelpersTest(TestCase):
+class PublisherGroupHelpersTestCase(FutureCoreTestCase, LegacyPublisherGroupHelpersTestCase):
+    pass
+
+
+class PublisherGroupCSVHelpersTestCase(FutureCoreTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def test_get_csv_content(self):
@@ -779,14 +784,12 @@ class PublisherGroupCSVHelpersTest(TestCase):
         )
 
 
-class GetOrCreatePublisherGroupTest(TestCase):
+class LegacyGetOrCreatePublisherGroupTestCase(CoreTestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user()
+        super().setUp()
         self.request = get_request_mock(self.user)
-        self.account = magic_mixer.blend(models.Account)
-        self.account.users.add(self.user)
-        self.agency = magic_mixer.blend(models.Agency)
-        self.agency.users.add(self.user)
+        self.account = self.mix_account(self.request.user, permissions=[Permission.READ, Permission.WRITE])
+        self.agency = self.mix_agency(self.request.user, permissions=[Permission.READ, Permission.WRITE])
         self.other_account = magic_mixer.blend(models.Account)
         self.publisher_group = magic_mixer.blend(models.PublisherGroup, account=self.account)
         self.other_publisher_group = magic_mixer.blend(models.PublisherGroup, account=self.other_account)
@@ -841,7 +844,11 @@ class GetOrCreatePublisherGroupTest(TestCase):
             )
 
 
-class AddPublisherGroupEntriesTest(TestCase):
+class GetOrCreatePublisherGroupTestCase(FutureCoreTestCase, LegacyGetOrCreatePublisherGroupTestCase):
+    pass
+
+
+class AddPublisherGroupEntriesTestCase(FutureCoreTestCase):
     def setUp(self):
         self.source = magic_mixer.blend(models.Source)
         self.request = magic_mixer.blend_request_user()
@@ -939,11 +946,11 @@ class AddPublisherGroupEntriesTest(TestCase):
         self.assertTrue(self.publisher_group_2.entries.filter(id=self.pge_3.id).exists())
 
 
-class PublisherGroupConnectionsTest(TestCase):
+class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
-        self.agency = magic_mixer.blend(models.Agency)
-        self.agency.users.add(self.request.user)
+        super().setUp()
+        self.request = get_request_mock(self.user)
+        self.agency = self.mix_agency(self.request.user, permissions=[Permission.READ, Permission.WRITE])
         self.account = magic_mixer.blend(models.Account, agency=self.agency)
         self.campaign = magic_mixer.blend(models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(models.AdGroup, campaign=self.campaign)
@@ -962,7 +969,12 @@ class PublisherGroupConnectionsTest(TestCase):
         self.campaign.settings.update(self.request, whitelist_publisher_groups=[self.publisher_group_1.id])
         self.ad_group.settings.update(self.request, blacklist_publisher_groups=[self.publisher_group_2.id])
 
-        with self.assertNumQueries(1):
+        num_queries = 1
+        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
+            # extra 8 query for all entities permission check
+            num_queries += 8
+
+        with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_2.id)
 
         self.assertCountEqual(
@@ -983,7 +995,7 @@ class PublisherGroupConnectionsTest(TestCase):
             ],
         )
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_1.id)
 
         self.assertCountEqual(
@@ -1070,21 +1082,30 @@ class PublisherGroupConnectionsTest(TestCase):
         foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
         foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
 
-        # extra 2 queries for permission checks
-        with self.assertNumQueries(3):
+        num_queries = 1
+        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
+            # extra 8 query for all entities permission check
+            num_queries += 8
+
+        with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
 
         self.assertCountEqual(connections, [])
 
     def test_get_connections_foreign_entities_can_see_all_accounts(self):
         test_helper.add_permissions(self.request.user, ["can_see_all_accounts"])
+
         foreign_agency = magic_mixer.blend(models.Agency)
         foreign_account = magic_mixer.blend(models.Account, agency=foreign_agency)
         foreign_publisher_group = magic_mixer.blend(models.PublisherGroup, account=foreign_account)
         foreign_agency.settings.update(self.request, whitelist_publisher_groups=[foreign_publisher_group.id])
 
-        # extra 2 queries for permission checks
-        with self.assertNumQueries(3):
+        num_queries = 1
+        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
+            # extra 8 query for all entities permission check
+            num_queries += 8
+
+        with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
 
         self.assertCountEqual(
@@ -1179,3 +1200,23 @@ class PublisherGroupConnectionsTest(TestCase):
                 connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
                 self.ad_group.id,
             )
+
+
+class PublisherGroupConnectionsTestCase(FutureCoreTestCase, LegacyPublisherGroupConnectionsTestCase):
+    def test_get_connections_foreign_entities_can_see_all_accounts(self):
+        self.request.user.entitypermission_set.all().delete()
+        magic_mixer.blend(
+            zemauth.features.entity_permission.EntityPermission,
+            user=self.request.user,
+            agency=None,
+            account=None,
+            permission=Permission.READ,
+        )
+        magic_mixer.blend(
+            zemauth.features.entity_permission.EntityPermission,
+            user=self.request.user,
+            agency=None,
+            account=None,
+            permission=Permission.WRITE,
+        )
+        super().test_get_connections_foreign_entities_can_see_all_accounts()

@@ -25,7 +25,6 @@ import zemauth.features.entity_permission.helpers
 from dash import constants
 from dash import history_helpers
 from dash import models
-from dash.views import helpers
 from utils import email_helper
 from utils import k1_helper
 from utils import zlogging
@@ -382,7 +381,7 @@ def upsert_publisher_group(request, publisher_group_dict, entry_dicts):
 
     # update or create publisher group
     if publisher_group_dict.get("id"):
-        publisher_group = helpers.get_publisher_group(request.user, publisher_group_dict["id"])
+        publisher_group = zemauth.access.get_publisher_group(request.user, Permission.WRITE, publisher_group_dict["id"])
         history_action_type = constants.HistoryActionType.PUBLISHER_GROUP_UPDATE
         changes_text = 'Publisher group "{} [{}]" updated'.format(publisher_group.name, publisher_group.id)
 
@@ -395,18 +394,26 @@ def upsert_publisher_group(request, publisher_group_dict, entry_dicts):
             publisher_group.name = publisher_group_dict["name"]
 
         if publisher_group.agency_id != agency_id:
-            agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
+            agency = (
+                zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+            )
             publisher_group.agency = agency
 
         if publisher_group.account_id != account_id:
-            account = helpers.get_account(request.user, account_id) if account_id is not None else None
+            account = (
+                zemauth.access.get_account(request.user, Permission.WRITE, account_id)
+                if account_id is not None
+                else None
+            )
             publisher_group.account = account
 
         publisher_group.save(request)
 
     else:
-        agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
-        account = helpers.get_account(request.user, account_id) if account_id is not None else None
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+        account = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
         publisher_group = models.PublisherGroup.objects.create(
             request,
             name=publisher_group_dict["name"],

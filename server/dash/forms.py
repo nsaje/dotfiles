@@ -34,6 +34,7 @@ from dash.features.custom_flags.forms import CustomFlagsFormMixin
 from utils import dates_helper
 from utils import validation_helper
 from zemauth.models import User as ZemUser
+from zemauth.features.entity_permission import Permission
 
 import stats.constants
 
@@ -1836,9 +1837,25 @@ class PublisherTargetingForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super(PublisherTargetingForm, self).__init__(*args, **kwargs)
-        self.fields["ad_group"].queryset = models.AdGroup.objects.all().filter_by_user(user)
-        self.fields["campaign"].queryset = models.Campaign.objects.all().filter_by_user(user)
-        self.fields["account"].queryset = models.Account.objects.all().filter_by_user(user)
+        ad_group_qs = (
+            models.AdGroup.objects.all().filter_by_entity_permission(user, Permission.WRITE)
+            if user.has_perm("zemauth.fea_use_entity_permission")
+            else models.AdGroup.objects.all().filter_by_user(user)
+        )
+        campaign_qs = (
+            models.Campaign.objects.all().filter_by_entity_permission(user, Permission.WRITE)
+            if user.has_perm("zemauth.fea_use_entity_permission")
+            else models.Campaign.objects.all().filter_by_user(user)
+        )
+        account_qs = (
+            models.Account.objects.all().filter_by_entity_permission(user, Permission.WRITE)
+            if user.has_perm("zemauth.fea_use_entity_permission")
+            else models.Account.objects.all().filter_by_user(user)
+        )
+
+        self.fields["ad_group"].queryset = ad_group_qs
+        self.fields["campaign"].queryset = campaign_qs
+        self.fields["account"].queryset = account_qs
 
     def _clean_entries(self, entries):
         clean_entries = []

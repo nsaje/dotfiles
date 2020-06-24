@@ -77,6 +77,7 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
     def has_perm_on_all_entities(self, permission: str) -> bool:
         if permission is None or permission not in zemauth.features.entity_permission.Permission.get_all():
             return False
+
         return self.entitypermission_set.filter(permission=permission, agency=None, account=None).exists()
 
     def refresh_entity_permissions(self):

@@ -1,11 +1,20 @@
-from django.test import override_settings
+import json
 
-from utils.base_test_case import APITestCase
-from utils.base_test_case import FutureAPITestCase
+from django.test import override_settings
+from rest_framework.test import APIClient
+
+from utils import json_helper
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 
 
 @override_settings(R1_DEMO_MODE=True)
-class RESTAPITestCase(APITestCase):
+class RESTAPITestCase(BaseTestCase):
+    """
+    RESTAPITestCase will be replaced with FutureRESTAPITestCase
+    after User Roles will be released.
+    """
+
     permissions = [
         "can_use_restapi",
         "settings_view",
@@ -56,7 +65,30 @@ class RESTAPITestCase(APITestCase):
         "can_see_service_fee",
     ]
 
+    def setUp(self):
+        super().setUp()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.maxDiff = None
+
+    def assertResponseValid(self, r, status_code=200, data_type=dict):
+        resp_json = json.loads(r.content)
+        self.assertNotIn("errorCode", resp_json)
+        self.assertEqual(r.status_code, status_code)
+        self.assertIsInstance(resp_json["data"], data_type)
+        return resp_json
+
+    def assertResponseError(self, r, error_code):
+        resp_json = json.loads(r.content)
+        self.assertIn("errorCode", resp_json)
+        self.assertEqual(resp_json["errorCode"], error_code)
+        return resp_json
+
+    @staticmethod
+    def normalize(d):
+        return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
+
 
 @override_settings(R1_DEMO_MODE=True)
-class FutureRESTAPITestCase(FutureAPITestCase, RESTAPITestCase):
+class FutureRESTAPITestCase(FutureBaseTestCase, RESTAPITestCase):
     pass

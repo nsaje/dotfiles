@@ -4,20 +4,22 @@ import json
 
 from django.http.request import HttpRequest
 from django.test import Client
-from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 from mock import patch
 
 from dash import constants
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import s3helpers
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class PublisherTargetingViewTest(TestCase):
+class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
@@ -159,7 +161,11 @@ class PublisherTargetingViewTest(TestCase):
         self.assertEqual(response.json()["data"]["errors"], {"entries": ["Invalid field: placement"]})
 
 
-class PublisherGroupsViewTest(TestCase):
+class PublisherTargetingViewTestCase(FutureDASHAPITestCase, LegacyPublisherTargetingViewTestCase):
+    pass
+
+
+class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -187,7 +193,7 @@ class PublisherGroupsViewTest(TestCase):
 
     def test_get_with_agency(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
-        agency = magic_mixer.blend(models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
         publisher_group = magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
 
         response = self.client.get(reverse("publisher_groups"), {"agency_id": agency.id})
@@ -204,7 +210,7 @@ class PublisherGroupsViewTest(TestCase):
 
     def test_get_without_agency_and_account(self):
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
-        agency = magic_mixer.blend(models.Agency, users=[self.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
 
         magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
 
@@ -230,7 +236,11 @@ class PublisherGroupsViewTest(TestCase):
             self.assertFalse(pgs.first().implicit)
 
 
-class PublisherGroupsUploadTest(TestCase):
+class PublisherGroupsViewTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsViewTestCase):
+    pass
+
+
+class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
 
     fixtures = ["test_publishers.yaml"]
 
@@ -568,17 +578,19 @@ class PublisherGroupsUploadTest(TestCase):
         )
 
 
-class PublisherGroupsDownloadTest(TestCase):
+class PublisherGroupsUploadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsUploadTestCase):
+    pass
+
+
+class LegacyPublisherGroupsDownloadTestCase(DASHAPITestCase):
     def setUp(self):
-        self.user = self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
+        self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-        self.agency = magic_mixer.blend(models.Agency)
-        self.agency.users.add(self.user)
+        self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.account = magic_mixer.blend(models.Account, agency=self.agency)
-        self.account.users.add(self.user)
         self.source = magic_mixer.blend(models.Source, bidder_slug="somesource")
         self.publisher_group = magic_mixer.blend(models.PublisherGroup, account=self.account)
         self.publisher_group_entries = [
@@ -668,9 +680,13 @@ class PublisherGroupsDownloadTest(TestCase):
         )
 
 
-class PublisherGroupsExampleDownloadTest(TestCase):
+class PublisherGroupsDownloadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsDownloadTestCase):
+    pass
+
+
+class LegacyPublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
     def setUp(self):
-        self.user = self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
+        self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
         test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
@@ -701,3 +717,7 @@ class PublisherGroupsExampleDownloadTest(TestCase):
                 (("Publisher", "some.example.com"), ("Placement (optional)", ""), ("Source (optional)", "")),
             },
         )
+
+
+class PublisherGroupsExampleDownloadTestCase(FutureDASHAPITestCase, LegacyPublisherGroupsExampleDownloadTestCase):
+    pass

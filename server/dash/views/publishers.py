@@ -6,12 +6,13 @@ from django.conf import settings
 from django.db.models import Q
 
 import core.features.publisher_groups
+import zemauth.access
 from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
-from dash.views import helpers
 from utils import exc
 from utils import s3helpers
+from zemauth.features.entity_permission import Permission
 
 
 def serialize_publisher_group(publisher_group):
@@ -67,10 +68,10 @@ class PublisherGroups(DASHAPIBaseView):
         account_id = request.GET.get("account_id")
 
         if account_id is not None:
-            account = helpers.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
             publisher_groups_q = models.PublisherGroup.objects.filter_by_account(account).annotate_entities_count()
         elif agency_id is not None:
-            agency = helpers.get_agency(request.user, agency_id)
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             publisher_groups_q = models.PublisherGroup.objects.filter(
                 Q(agency=agency) | Q(account__agency=agency)
             ).annotate_entities_count()
@@ -104,8 +105,10 @@ class PublisherGroupsUpload(DASHAPIBaseView):
                 }
             )
 
-        account = helpers.get_account(request.user, account_id) if account_id is not None else None
-        agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
+        account = (
+            zemauth.access.get_account(request.user, Permission.READ, account_id) if account_id is not None else None
+        )
+        agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id) if agency_id is not None else None
 
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
 
@@ -134,8 +137,10 @@ class PublisherGroupsUpload(DASHAPIBaseView):
                 }
             )
 
-        account = helpers.get_account(request.user, account_id) if account_id is not None else None
-        agency = helpers.get_agency(request.user, agency_id) if agency_id is not None else None
+        account = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
+        agency = zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
 
         form = forms.PublisherGroupUploadForm(request.POST, request.FILES, user=request.user)
         if not form.is_valid():
@@ -174,7 +179,7 @@ class PublisherGroupsDownload(DASHAPIBaseView):
 
             if publisher_group.agency is not None:
                 try:
-                    helpers.get_agency(request.user, publisher_group.agency.id)
+                    zemauth.access.get_agency(request.user, Permission.READ, publisher_group.agency.id)
                 except exc.MissingDataError:
                     accounts = core.models.Account.objects.filter(agency_id=publisher_group.agency.id).filter_by_user(
                         request.user
@@ -183,7 +188,7 @@ class PublisherGroupsDownload(DASHAPIBaseView):
                         raise exc.MissingDataError("Publisher group does not exist")
 
             elif publisher_group.account is not None:
-                helpers.get_account(request.user, publisher_group.account.id)
+                zemauth.access.get_account(request.user, Permission.READ, publisher_group.account.id)
             else:
                 raise exc.MissingDataError("Publisher group does not exist")
 

@@ -13,6 +13,15 @@ class LegacySourceViewSetTest(RESTAPITestCase):
         super().setUp()
         utils.test_helper.remove_permissions(self.user, ["can_see_all_available_sources"])
 
+    @staticmethod
+    def source_repr(source):
+        return {
+            "slug": source.bidder_slug,
+            "name": source.name,
+            "released": source.released,
+            "deprecated": source.deprecated,
+        }
+
     def test_list(self):
         agency = magic_mixer.blend(core.models.Agency)
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
@@ -21,29 +30,10 @@ class LegacySourceViewSetTest(RESTAPITestCase):
         r = self.client.get(reverse("restapi.source.internal:source_list", kwargs={"agency_id": agency.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
 
-        self.assertEqual(
-            resp_json["data"],
-            [
-                {
-                    "slug": sources[0].bidder_slug,
-                    "name": sources[0].name,
-                    "released": sources[0].released,
-                    "deprecated": sources[0].deprecated,
-                },
-                {
-                    "slug": sources[1].bidder_slug,
-                    "name": sources[1].name,
-                    "released": sources[1].released,
-                    "deprecated": sources[1].deprecated,
-                },
-                {
-                    "slug": sources[2].bidder_slug,
-                    "name": sources[2].name,
-                    "released": sources[2].released,
-                    "deprecated": sources[2].deprecated,
-                },
-            ],
-        )
+        self.assertEqual(len(resp_json["data"]), 3)
+        self.assertTrue(self.source_repr(sources[0]) in resp_json["data"])
+        self.assertTrue(self.source_repr(sources[1]) in resp_json["data"])
+        self.assertTrue(self.source_repr(sources[2]) in resp_json["data"])
 
 
 class SourceViewSetTest(FutureRESTAPITestCase, LegacySourceViewSetTest):
