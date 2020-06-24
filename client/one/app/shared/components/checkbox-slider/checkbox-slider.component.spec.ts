@@ -1,6 +1,5 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {CheckboxSliderComponent} from './checkbox-slider.component';
-import {CheckboxSliderItem} from './types/checkbox-slider-item';
 import Spy = jasmine.Spy;
 import {CheckboxInputComponent} from '../checkbox-input/checkbox-input.component';
 

@@ -20,8 +20,9 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
 };
 
 export const ENTITY_PERMISSION_VALUE_TO_NAME: {
-    [key in EntityPermissionValue]: string;
+    [key in 'total_spend' | EntityPermissionValue]: string;
 } = {
+    total_spend: 'Total spend',
     read: 'Read',
     write: 'Edit',
     user: 'Manage users',
@@ -29,4 +30,16 @@ export const ENTITY_PERMISSION_VALUE_TO_NAME: {
     budget_margin: 'Manage budget margin',
     agency_spend_margin: 'Agency spend and margin',
     media_cost_data_cost_licence_fee: 'Media cost, data cost and licence fee',
+};
+
+export const ENTITY_PERMISSION_VALUE_TO_DESCRIPTION: {
+    [key in EntityPermissionValue]: string;
+} = {
+    read: '',
+    write: 'Can edit accounts, campaigns, ad groups or ads.',
+    user: 'Can add, delete users and change users permissions.',
+    budget: 'Can allocate budget to campaign',
+    budget_margin: '',
+    agency_spend_margin: '',
+    media_cost_data_cost_licence_fee: '',
 };

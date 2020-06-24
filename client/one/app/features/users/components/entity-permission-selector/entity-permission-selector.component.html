@@ -1,0 +1,36 @@
+<div class="zem-entity-permission-selector__section">
+    <label>Permissions</label>
+    <div
+        class="zem-entity-permission-selector__option"
+        *ngFor="let option of formattedOptions"
+    >
+        <zem-checkbox-input
+            class="zem-checkbox-input"
+            [isDisabled]="isDisabled"
+            [hasError]="errors && errors.length > 0"
+            [enableIndeterminateState]="true"
+            [isChecked]="option.selected"
+            (toggle)="toggleOption(option)"
+        >
+            {{ option.displayValue }}
+        </zem-checkbox-input>
+        <div class="zem-entity-permission-selector__description">
+            {{ option.description }}
+        </div>
+    </div>
+</div>
+<div class="zem-entity-permission-selector__section">
+    <label>Reporting</label>
+    <div class="zem-entity-permission-selector__description">
+        Users always see total spend. You control which other costs the user
+        sees by selecting the appropriate checkboxes.
+    </div>
+    <zem-checkbox-slider
+        class="zem-checkbox-slider"
+        [options]="formattedReportingOptions"
+        [isDisabled]="isDisabled"
+        [errors]="errors"
+        (selectionChange)="toggleReportingOptions($event)"
+    >
+    </zem-checkbox-slider>
+</div>
