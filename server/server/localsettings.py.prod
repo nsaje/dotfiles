@@ -115,7 +115,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "172.26.2.246",
+        "HOST": "10.50.68.197",
         "PORT": 5432,
     },
     "stats-postgres-2": {
@@ -127,7 +127,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "172.26.4.205",
+        "HOST": "10.50.66.148",
         "PORT": 5432,
     },
 }
