@@ -338,13 +338,13 @@ CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
     "breakdowns_rs": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://docker-z1-redis.6keury.0001.use1.cache.amazonaws.com:6379/2",
+        "LOCATION": "redis://z1-cache-redis.6keury.0001.use1.cache.amazonaws.com:6379/2",
         "TIMEOUT": 60 * 60 * 2,  # 2 hours
         "OPTIONS": {"MAX_ENTRIES": 5000},
     },
     "redshift_background": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://docker-z1-redis.6keury.0001.use1.cache.amazonaws.com:6379/3",
+        "LOCATION": "redis://z1-cache-redis.6keury.0001.use1.cache.amazonaws.com:6379/3",
         "TIMEOUT": 60 * 60 * 12,  # 12 hours
         "OPTIONS": {"MAX_ENTRIES": 10000},
     },
