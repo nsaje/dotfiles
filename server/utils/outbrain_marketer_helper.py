@@ -82,6 +82,9 @@ def get_marketer_user_emails(include_defaults=True) -> List[str]:
         .values_list("email", flat=True)
     )
 
+    # remove the "CS user" that does not exist in Amplify
+    emails = [email for email in emails if email != "help@zemanta.com"]
+
     if include_defaults:
         for email in DEFUALT_OUTBRAIN_USER_EMAILS:
             if email not in emails:
