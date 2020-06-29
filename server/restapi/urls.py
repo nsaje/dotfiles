@@ -1,4 +1,3 @@
-import dash.features.bluekai.urls
 import restapi.account.urls
 import restapi.adgroup.urls
 import restapi.adgroupsource.urls
@@ -10,6 +9,7 @@ import restapi.audience.urls
 import restapi.availablesources.urls
 import restapi.bidmodifiers.internal.urls
 import restapi.bidmodifiers.urls
+import restapi.bluekai.urls
 import restapi.campaign.urls
 import restapi.campaignbudget.urls
 import restapi.campaigngoal.urls
@@ -61,5 +61,4 @@ urlpatterns += restapi.source.urls.urlpatterns
 urlpatterns += restapi.availablesources.urls.urlpatterns
 urlpatterns += restapi.videoassets.urls.urlpatterns
 urlpatterns += restapi.user.urls.urlpatterns
-
-urlpatterns += dash.features.bluekai.urls.urlpatterns
+urlpatterns += restapi.bluekai.urls.urlpatterns

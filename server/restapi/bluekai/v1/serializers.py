@@ -3,10 +3,11 @@ import decimal
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
 
+import restapi.serializers.base
 import restapi.serializers.fields
 
 
-class BlueKaiCategorySerializer(serializers.Serializer):
+class BlueKaiCategorySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     category_id = serializers.IntegerField()
     name = restapi.serializers.fields.PlainCharField()
     description = restapi.serializers.fields.PlainCharField()
@@ -17,12 +18,3 @@ class BlueKaiCategorySerializer(serializers.Serializer):
 
     def get_reach(self, data):
         return data["reach"]["value"]
-
-
-class BlueKaiReachSerializer(serializers.Serializer):
-    value = serializers.IntegerField()
-    relative = serializers.IntegerField()
-
-
-class BlueKaiCategoryInternalSerializer(BlueKaiCategorySerializer):
-    reach = BlueKaiReachSerializer()
