@@ -1,0 +1,375 @@
+#!/usr/bin/env python
+
+import collections
+import os
+import socket
+import time
+
+from secretcrypt import Secret
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = "=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l"
+
+# Entities databases
+DATABASE_READ_REPLICAS = []
+
+# Stats databases
+STATS_DB_POSTGRES_MAX_DAYS = 62
+STATS_DB_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
+STATS_DB_HOT_CLUSTER = "stats-hot-1"
+STATS_DB_COLD_CLUSTERS = []
+
+# Database
+# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "one",
+        "USER": "eins23",
+        "PASSWORD": Secret(
+            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QFxA0uz7lzmK6UfzvIjpIQGAAAAmjCBlwYJKoZIhvcNAQcGoIGJMIGGAgEAMIGABgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDFTdvIdvRLuhKZKhDAIBEIBTe4imRxN3SNhOEqHuORXRGr06Q1cL16j727Xy3N44cBKhrTkbICmtsP+hTgI9CcfID+CdR8i3bhIy3sWiFGoS7Febqy8/P35Yee4cYwu3J7Qfg0M="
+        )
+        .get()
+        .decode("utf-8"),  # noqa
+        "HOST": "eins-replica-1.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "PORT": 5432,
+        "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1E6))},
+    },
+    "b1": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "one",
+        "USER": "eins23",
+        "PASSWORD": Secret(
+            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QGYOwE/6UNrQPUAtPwB9RtAAAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIspcr9+HGakFL33vQIBEIBDIbb2TVlvYolKYKSux4rtWpiL/oyv0J45r+0B6RdlmyyqJUGdgz9LCWSFEkV4ZZMJGrhsiXK/lvfdhlNf5OSpMV0KNA=="
+        )
+        .get()
+        .decode("utf-8"),  # noqa
+        "HOST": "b1-replica-2.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "PORT": 5432,
+    },
+    STATS_DB_HOT_CLUSTER: {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "k1",
+        "USER": "apt_readonly",
+        "PASSWORD": Secret(
+            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QH0o1sX5JYVjW4EyDrPE3BmAAAAfDB6BgkqhkiG9w0BBwagbTBrAgEAMGYGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMHwv+5JXdMM+0cUtuAgEQgDn1y1DxfXPAz8UziqZTkwcQt48Ers9Yv2tbdLS3+VM8vZV3Qp61xyNJc54tWKJb/4zow1KHTxQ6i74="
+        )
+        .get()
+        .decode("utf-8"),  # noqa
+        "HOST": "zemantaone-new.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
+        "PORT": 5439,
+    },
+}
+
+ALLOWED_HOSTS = ["*"]
+
+BASE_URL = "https://one.zemanta.com"
+
+ACCOUNT_ACTIVATION_DAYS = 30
+
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_REDIRECT_EXEMPT = ["^healthcheck$", "^k1api/"]
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# added by request from asraka@outbrain.com (https://trello.com/c/BH1S1NNA/8-continuous-dast)
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+
+# Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = ""
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
+SUPPLY_REPORTS_FROM_EMAIL = "supplyreports@zemanta.com"
+FROM_EMAIL = "help@zemanta.com"
+
+# Path to log file
+LOG_FILE = "/app/logs/zemanta-eins.server.log"
+
+# Stats
+STATSD_INFLUX_HOST = "172.17.0.1"
+STATSD_INFLUX_PORT = 8125
+
+# Intercom
+INTERCOM_ID_VERIFICATION_SECRET = ""
+
+# Saucelabs
+SAUCELABS_USERNAME = ""
+SAUCELABS_ACCESS_KEY = ""
+
+# Auth
+GOOGLE_OAUTH_ENABLED = False
+GOOGLE_OAUTH_CLIENT_ID = ""
+GOOGLE_OAUTH_CLIENT_SECRET = ""
+
+# Static files
+BRANCH = None
+if os.environ.get("BRANCH"):
+    BRANCH = os.environ.get("BRANCH")
+
+BUILD_NUMBER = None
+if os.environ.get("BUILD"):
+    BUILD_NUMBER = os.environ.get("BUILD")
+elif os.path.isfile("build_number.txt"):
+    with open("build_number.txt", "r") as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+_ROOT_STATIC_URL = "https://one-static.zemanta.com/build-{}".format(
+    (BRANCH if BRANCH != "master" else "") + BUILD_NUMBER
+)
+SERVER_STATIC_URL = _ROOT_STATIC_URL + "/server"
+CLIENT_STATIC_URL = _ROOT_STATIC_URL + "/client"
+
+# K1 API
+K1_API_SIGN_KEY = [Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()]
+K1_REALTIMESTATS_ADGROUP_URL = "https://k1.zemanta.com/realtimestats/adgroups/{ad_group_id}/"
+K1_YAHOO_MIGRATION_URL = "https://k1.zemanta.com/yahoo_migration/{account_id}/"
+K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = "https://k1.zemanta.com/yahoo_migration/{account_id}/campaign_mappings/"
+K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = "https://k1.zemanta.com/yahoo_migration/{account_id}/content_ad_mappings/"
+
+# Network credentials encryption key
+CREDENTIALS_ENCRYPTION_KEY = ""
+
+# Pagerduty settings
+PAGER_DUTY_ENABLED = True
+PAGER_DUTY_REST_API_URL = "https://api.pagerduty.com"
+PAGER_DUTY_REST_API_KEY = Secret("plain::fake").get().decode("utf-8")
+PAGER_DUTY_Z1_TEAM_ID = "PDMB8ZZ"
+PAGER_DUTY_Z1_TEAM_SCHEDULE_ID = "P6Q61HP"
+PAGER_DUTY_URL = "https://events.pagerduty.com/v2/enqueue"
+PAGER_DUTY_ADOPS_SERVICE_KEY = ""
+PAGER_DUTY_SYSOPS_SERVICE_KEY = ""
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = ""
+PAGER_DUTY_Z1_SERVICE_KEY = ""
+
+PAGER_DUTY_PRODOPS_SERVICE_KEY = Secret("plain::fake").get().decode("utf-8")  # noqa
+
+# Sentry config
+SENTRY_CONFIG = {"dsn": ""}
+
+HARDCODED_ACCOUNT_ID_OEN = 305
+HARDCODED_ACCOUNT_ID_BUSINESSWIRE = 293
+HARDCODED_ACCOUNT_ID_INPOWERED_1 = 490
+HARDCODED_ACCOUNT_ID_INPOWERED_2 = 512
+HARDCODED_ACCOUNT_ID_INPOWERED_3 = 513
+
+# S3 related settings
+S3_BUCKET = "zemantaone"
+S3_BUCKET_STATS = "z1-stats"
+S3_BUCKET_DEMO = "z1-demo"
+S3_BUCKET_ARTIFACTS = "zemanta-artifacts"
+S3_BUCKET_THUMBNAILER = "zemthumbnailer"
+S3_BUCKET_CUSTOM_REPORTS = "z1-custom-reports"
+S3_BUCKET_PUBLISHER_GROUPS = "z1-publisher-groups-csv-upload"
+S3_BUCKET_VIDEO = "zemvideos"
+S3_BUCKET_B1_DATA_USE = "b1-data-use"
+
+USE_S3 = True
+
+# adgroup-level reports aggregations
+QUERY_AGGREGATE_REPORTS = True
+
+CACHES = {
+    "default": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "breakdowns_rs": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "redshift_background": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
+    },
+    "dash_db_cache": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "audience_sample_size": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
+    },
+    "inventory_planning": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
+    },
+    "local_memory_cache": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "TIMEOUT": 60,  # 1 min
+    },
+}
+
+USE_HASH_CACHE = True
+HASH_CACHE_TTL = 24 * 60 * 60
+
+USE_REDSHIFT_BACKGROUND_CACHE = True
+
+IMAGE_THUMBNAIL_URL = "https://images2.zemanta.com/"
+
+BROKER_TRANSPORT = "sqs"
+BROKER_URL = BROKER_TRANSPORT + "://"
+
+CELERY_RESULT_BACKEND = "django-db"
+
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_ACCEPT_CONTENT = ["pickle"]
+
+CELERY_ROUTES = {
+    "reports_execute": {"queue": "z1-reports"},
+    "upload_lambda_execute": {"queue": "z1-upload-lambda"},
+    "redshift_background_cache": {"queue": "redshift-background-cache"},
+    "campaign_cloning": {"queue": "z1-campaign-cloning"},
+}
+
+# must be empty otherwise k1 queues get prefixed as well
+QUEUE_NAME_PREFIX = ""
+
+SQS_REGION = "us-east-1"
+SQS_VISIBILITY_TIMEOUT = 60 * 60
+
+BROKER_TRANSPORT_OPTIONS = {
+    "visibility_timeout": SQS_VISIBILITY_TIMEOUT,
+    "region": SQS_REGION,
+    "polling_interval": 10,
+    "queue_name_prefix": QUEUE_NAME_PREFIX,
+}
+
+USE_CELERY_FOR_REPORTS = True
+USE_CELERY_FOR_UPLOAD_LAMBDAS = False
+USE_CELERY_FOR_CAMPAIGN_CLONING = True
+
+R1_DEMO_MODE = False
+R1_API_SIGN_KEY = Secret("plain::fake").get()  # noqa
+R1_REDIRECTS_API_URL = "https://r1.zemanta.com/api/redirects/"
+R1_REDIRECTS_BATCH_API_URL = "https://r1.zemanta.com/api/redirectsbatch/"
+R1_REDIRECTS_ADGROUP_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/"
+R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/realtimestats"
+R1_VALIDATE_API_URL = "https://r1.zemanta.com/api/validate/"
+R1_BLANK_REDIRECT_URL = "https://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/"
+R1_CUSTOM_AUDIENCE_API_URL = "https://r1.zemanta.com/api/audience/{audience_id}/"
+R1_PIXEL_TRAFFIC_URL = "https://r1.zemanta.com/api/pixeltraffic/request/"
+R1_PIXEL_TRAFFIC_RESULT_URL = "https://r1.zemanta.com/api/pixeltraffic/result/{job_id}/"
+R1_PIXEL_URL = "https://r1.zemanta.com/api/pixel/{account_id}/{slug}/"
+
+# Budget automation
+DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"
+
+SEND_NOTIFICATION_MAIL = True
+
+BIDDER_API_SIGN_KEY = [Secret("").get()]
+BIDDER_API_URL_BASE = "https://b1api.zemanta.com"
+
+# BCM
+BUDGET_RESERVE_FACTOR = 0.10
+
+QUERY_INSPECT_ENABLED = False
+ENABLE_DEBUG_TOOLBAR = False
+ENABLE_DJANGO_EXTENSIONS = False
+
+# campaignstop
+
+CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE = "campaignstop-updates"
+DISABLE_CAMPAIGNSTOP_SIGNALS = False
+
+# k1
+K1_DEMO_MODE = False
+K1_CONSISTENCY_SYNC = True
+
+K1_CONSISTENCY_PING_ACCOUNT_QUEUE = "k1-consistency_ping_account"
+K1_CONSISTENCY_PING_AD_GROUP_QUEUE = "k1-consistency_ping_ad_group"
+K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = "k1-consistency_ping_content_ad"
+K1_CONSISTENCY_PING_BLACKLIST_QUEUE = "k1-consistency_ping_blacklist"
+
+DEMO_NODE_HOSTNAME = "ec2-52-20-73-115.compute-1.amazonaws.com"
+DEMO_NODE_SSH_KEY = ""
+DEMO_USERNAME = "regular.user+demo@zemanta.com"
+DEMO_PASSWORD = ""
+DEMO_URL = "https://{instance_name}.demo.zemanta.com"
+
+LAMBDA_REGION = "us-east-1"
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = ""
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = "t"
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = "z1-content-upload"
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = "https://one-cb.zemanta.com/api/callbacks/content-upload/"
+
+LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret("plain::fake").get()  # noqa
+LAMBDA_ENVIRONMENT = "prod"
+LAMBDA_CALLBACK_HOST = "https://one-cb.zemanta.com/"
+VIDEO_PREVIEW_URL = "https://videos.zemanta.com/{filename}"
+VAST_URL = "https://s3.amazonaws.com/zemvideos/vast/{filename}"
+
+# Slack hooks
+SLACK_INCOMING_HOOK_URL = ""
+
+# GA credentials - order newest to oldest
+GA_CREDENTIALS = collections.OrderedDict()
+
+# bizwire
+BIZWIRE_API_SIGN_KEY = Secret("plain::fake").get()  # noqa
+
+S3_MOCK_DIR = ""
+
+BLUEKAI_API_PARTNER_ID = "2661"
+BLUEKAI_API_USER_KEY = ""
+BLUEKAI_API_SECRET_KEY = Secret("").get().decode("utf-8")
+
+REST_FRAMEWORK = {
+    "UNICODE_JSON": False,
+    "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": ("restapi.throttling.UserRateOverrideThrottle",),
+    "DEFAULT_THROTTLE_RATES": {"user": "10/second", "reportjob-create": "10/minute"},  # per compute node
+    "DEFAULT_OVERRIDE_THROTTLE_RATES": {
+        "oendev@outbrain.com": "320/second",
+        "filippo.portolano@inpwrd.com": "30/second",
+        "orz@cortexmg.com": "30/second",
+        "ariel@bruleemedia.com": "30/second",
+        "nsaje@outbrain.com": "30/second",  # FIXME(nsaje): remove after test
+    },
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+}
+
+DISABLE_FACEBOOK = True
+AMPLIFY_REVIEW = True
+
+SPARK_MASTER = ""
+FTP_REPORTS = {}
+
+AMELIA_INTEGRATION_ENABLED = True
+AMELIA_BASE_URL = "http://ec2-18-204-166-9.compute-1.amazonaws.com:8080/amelia.outbrain.com/Amelia/api/internal/v2"
+OUTBRAIN_INTERNAL_USERNAME = "Zemanta-One"
+OUTBRAIN_INTERNAL_PASSWORD = Secret("plain::fake").get().decode("utf-8")  # noqa
+
+SSPD_ACCOUNT_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?accountId={id}"
+SSPD_CAMPAIGN_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?campaignId={id}"
+SSPD_AD_GROUP_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?adGroupId={id}"
+SSPD_CONTENT_AD_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?contentAdId={id}"
+
+SSPD_BASE_URL = "https://ssp.zemanta.com"
+SSPD_AUTH_SECRET = ""
+
+
+BIGQUERY_CREDENTIALS = {
+    "type": "service_account",
+    "project_id": "",
+    "private_key_id": "",
+    "private_key": "",
+    "client_email": "",
+    "client_id": "",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "",
+}
+
+RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify"
+RECAPTCHA_SECRET_KEY = Secret("plain::fake").get().decode("utf-8")  # noqa
+
+METRICS_PUSH_GATEWAY = "http://pushgateway:8000"
+
+LOGGING_FORMATTER = "json"

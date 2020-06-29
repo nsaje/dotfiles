@@ -35,8 +35,8 @@ class S3Helper(object):
             k.key = key
             return k.get_contents_as_string()
 
-        if settings.FILE_STORAGE_DIR:
-            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), "rb") as f:
+        if settings.S3_MOCK_DIR:
+            with open(os.path.join(settings.S3_MOCK_DIR, os.path.basename(key)), "rb") as f:
                 return f.read()
 
     def open_keys_async(self, keys):
@@ -72,11 +72,11 @@ class S3Helper(object):
             k.copy(self.bucket, to)
             k.delete()
 
-        elif settings.FILE_STORAGE_DIR:
+        elif settings.S3_MOCK_DIR:
             os.rename(self._local_file_name(frm), self._local_file_name(to))
 
     def _local_file_name(self, key):
-        return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key))
+        return os.path.join(settings.S3_MOCK_DIR, os.path.basename(key))
 
     def put(self, key, contents, human_readable_filename=None):
         try:
@@ -91,7 +91,7 @@ class S3Helper(object):
 
             k.set_contents_from_string(contents)
 
-        elif settings.FILE_STORAGE_DIR:
+        elif settings.S3_MOCK_DIR:
             with open(self._local_file_name(key), "wb+") as f:
                 f.write(contents)
 
@@ -104,7 +104,7 @@ class S3Helper(object):
 
             k.set_contents_from_file(source)
 
-        elif settings.FILE_STORAGE_DIR:
+        elif settings.S3_MOCK_DIR:
             with open(self._local_file_name(key), "wb+") as f:
                 _copy_file(source, f)
 
@@ -121,7 +121,7 @@ class S3Helper(object):
     def list(self, prefix, delimiter=""):
         if self.use_s3:
             return self.bucket.list(prefix=prefix, delimiter=delimiter)
-        elif settings.FILE_STORAGE_DIR:
+        elif settings.S3_MOCK_DIR:
             try:
                 return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]
             except OSError:
@@ -140,22 +140,22 @@ class S3Helper(object):
             k.key = key
             return k.generate_url(3600)
 
-        if settings.FILE_STORAGE_DIR:
-            return "file://" + os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key))
+        if settings.S3_MOCK_DIR:
+            return "file://" + os.path.join(settings.S3_MOCK_DIR, os.path.basename(key))
 
 
 class FakeMultiPartUpload(object):
     def __init__(self, key):
         self.key = key
         self.last_num = 0
-        if settings.FILE_STORAGE_DIR:
+        if settings.S3_MOCK_DIR:
             open(self._get_file(), "wb").close()
 
     def _get_file(self):
-        return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(self.key))
+        return os.path.join(settings.S3_MOCK_DIR, os.path.basename(self.key))
 
     def cancel_upload(self):
-        if settings.FILE_STORAGE_DIR:
+        if settings.S3_MOCK_DIR:
             os.remove(self._get_file())
 
     def complete_upload(self):
@@ -165,7 +165,7 @@ class FakeMultiPartUpload(object):
         if part_num != self.last_num + 1:
             raise Exception("Only sequential uploads supported, expected part_num: %d" % self.last_num + 1)
         self.last_num = part_num
-        if settings.FILE_STORAGE_DIR:
+        if settings.S3_MOCK_DIR:
             with open(self._get_file(), "ab+") as f:
                 _copy_file(source, f)
 

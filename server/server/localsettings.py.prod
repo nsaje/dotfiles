@@ -576,8 +576,8 @@ GA_CREDENTIALS["account-1@zemanta-api.iam.gserviceaccount.com"] = (
 BIZWIRE_API_SIGN_KEY = Secret(
     "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDtsszs9Y8ta5B7PEgIBEIArKhoNTUqBrzTjjwQs2BgvaOyvQXbHdnS1C6vY4V/QBYR3+rrlGrWZSproTA=="  # noqa
 ).get()
-# path for S3 mock
-FILE_STORAGE_DIR = ""
+
+S3_MOCK_DIR = ""
 
 BLUEKAI_API_PARTNER_ID = "2661"
 BLUEKAI_API_USER_KEY = "3956332bd95021a9ad6f9ed4029cd7fb4d6e8354"
@@ -610,7 +610,7 @@ AMPLIFY_REVIEW = True
 SPARK_MASTER = "ec2-54-210-221-147.compute-1.amazonaws.com"
 
 #  TAPCLICK FTP config
-TAPCLICK_FTP_CONFIG = {
+_TAPCLICK_FTP_CONFIG = {
     "ftp_server": Secret(
         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDG72iGlMrtDPHHVW8wIBEIAshBlVActmNG3EhD/GWzRjTraCyWvT08W7oBwBF7oDjTm0arJQ+F189SVnH80="  # noqa
     )
@@ -630,8 +630,8 @@ TAPCLICK_FTP_CONFIG = {
 }
 
 
-#  AMMET FTP config
-AMMET_FTP_CONFIG = {
+#  AMNET FTP config
+_AMNET_FTP_CONFIG = {
     "ftp_server": Secret(
         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJW9SdchR9Dr4Q+vDQIBEIArSfMz+DTO8Oe9prgW8OQn38e4/5sPwgbsPv5eXD20saIO/J97hQImdEYZIg=="  # noqa
     )
@@ -653,21 +653,21 @@ AMMET_FTP_CONFIG = {
 FTP_REPORTS = {
     # Key is the report ID, Value is the remote destination for that report
     # Agency Buthler - Tapclick FTP
-    737: {"destination": "The_Hershey_Company", "config": TAPCLICK_FTP_CONFIG},
-    738: {"destination": "RiteAid", "config": TAPCLICK_FTP_CONFIG},
-    739: {"destination": "Treasury_Keystone_Scholars", "config": TAPCLICK_FTP_CONFIG},
-    740: {"destination": "Harrisburg_University_Cybersecurity", "config": TAPCLICK_FTP_CONFIG},
-    746: {"destination": "Quest_Diagnostics", "config": TAPCLICK_FTP_CONFIG},
-    785: {"destination": "Quest_Direct", "config": TAPCLICK_FTP_CONFIG},
-    795: {"destination": "Quest_UnitedHealthcare", "config": TAPCLICK_FTP_CONFIG},
-    796: {"destination": "PA_College_of_Health_and_Sciences", "config": TAPCLICK_FTP_CONFIG},
-    832: {"destination": "QuestDiagnosticsFlu", "config": TAPCLICK_FTP_CONFIG},
-    833: {"destination": "USCoastGuardAcademy", "config": TAPCLICK_FTP_CONFIG},
-    834: {"destination": "PointParkUniversity", "config": TAPCLICK_FTP_CONFIG},
-    900: {"destination": "Quest_HIV", "config": TAPCLICK_FTP_CONFIG},
-    1039: {"destination": "Oklahoma_City_Business_School", "config": TAPCLICK_FTP_CONFIG},
+    737: {"destination": "The_Hershey_Company", "config": _TAPCLICK_FTP_CONFIG},
+    738: {"destination": "RiteAid", "config": _TAPCLICK_FTP_CONFIG},
+    739: {"destination": "Treasury_Keystone_Scholars", "config": _TAPCLICK_FTP_CONFIG},
+    740: {"destination": "Harrisburg_University_Cybersecurity", "config": _TAPCLICK_FTP_CONFIG},
+    746: {"destination": "Quest_Diagnostics", "config": _TAPCLICK_FTP_CONFIG},
+    785: {"destination": "Quest_Direct", "config": _TAPCLICK_FTP_CONFIG},
+    795: {"destination": "Quest_UnitedHealthcare", "config": _TAPCLICK_FTP_CONFIG},
+    796: {"destination": "PA_College_of_Health_and_Sciences", "config": _TAPCLICK_FTP_CONFIG},
+    832: {"destination": "QuestDiagnosticsFlu", "config": _TAPCLICK_FTP_CONFIG},
+    833: {"destination": "USCoastGuardAcademy", "config": _TAPCLICK_FTP_CONFIG},
+    834: {"destination": "PointParkUniversity", "config": _TAPCLICK_FTP_CONFIG},
+    900: {"destination": "Quest_HIV", "config": _TAPCLICK_FTP_CONFIG},
+    1039: {"destination": "Oklahoma_City_Business_School", "config": _TAPCLICK_FTP_CONFIG},
     # Amnet - Datorama FTP
-    786: {"destination": "", "config": AMMET_FTP_CONFIG},
+    786: {"destination": "", "config": _AMNET_FTP_CONFIG},
 }
 
 

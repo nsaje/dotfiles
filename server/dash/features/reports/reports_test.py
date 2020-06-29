@@ -20,6 +20,18 @@ from . import reports
 from .reportjob import ReportJob
 from .reports import ReportJobExecutor
 
+TEST_FTP_CONFIG_1 = {"ftp_server": "127.0.0.1", "ftp_port": 21, "ftp_user": "test1", "ftp_password": "test2"}
+TEST_FTP_CONFIG_2 = {"ftp_server": "127.0.0.1", "ftp_port": 2121, "ftp_user": "test2", "ftp_password": "test2"}
+TEST_FTP_REPORTS = {
+    # Key is the report ID, Value is the remote destination for that report
+    1: {"destination": "account1", "config": TEST_FTP_CONFIG_1},
+    2: {"destination": "account2", "server_config": TEST_FTP_CONFIG_1},
+    3: {"destination": "account3", "config": TEST_FTP_CONFIG_1},
+    4: {"destination": "account4", "config": TEST_FTP_CONFIG_1},
+    5: {"destination": "account5", "config": TEST_FTP_CONFIG_1},
+    6: {"destination": "", "config": TEST_FTP_CONFIG_2},
+}
+
 
 class ReportsExecuteTest(TestCase):
     def setUp(self):
@@ -178,6 +190,7 @@ class ReportsExecuteTest(TestCase):
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_ftp")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_s3")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
+    @mock.patch("django.conf.settings.FTP_REPORTS", TEST_FTP_REPORTS)
     def test_ftp_success(self, mock_get_report, mock_save, mock_ftp, mock_send):
         self.reportJob.scheduled_report = magic_mixer.blend(
             scheduled_reports.ScheduledReport, id=list(settings.FTP_REPORTS.keys())[0], query={}
@@ -209,6 +222,7 @@ class ReportsExecuteTest(TestCase):
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_ftp")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_s3")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
+    @mock.patch("django.conf.settings.FTP_REPORTS", TEST_FTP_REPORTS)
     def test_ftp_fail(self, mock_get_report, mock_save, mock_ftp, mock_send):
         self.reportJob.scheduled_report = magic_mixer.blend(
             scheduled_reports.ScheduledReport, id=list(settings.FTP_REPORTS.keys())[0], query={}

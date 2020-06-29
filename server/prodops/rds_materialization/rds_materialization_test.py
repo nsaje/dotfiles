@@ -42,7 +42,7 @@ class RDSAgencyTest(TestCase):
         rds_agency = rds_materialization.RDSAgency()
         s3_path = rds_agency._put_csv_to_s3()
         self.assertEqual(s3_path, "agency.csv")
-        local_path = "{}/agency.csv".format(settings.FILE_STORAGE_DIR)
+        local_path = "{}/agency.csv".format(settings.S3_MOCK_DIR)
         self.assertTrue(os.path.isfile(local_path))
         csv_open = os.open(local_path, os.O_RDONLY)
         self.assertEqual(
