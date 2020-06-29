@@ -219,8 +219,10 @@ class AccountsBulkMarketerParametersView(K1APIView):
         if account_ids:
             account_data = account_data.filter(id__in=account_ids.split(","))
 
-        account_data = account_data.order_by("id").values(
-            "id", "created_dt", "outbrain_marketer_id", "outbrain_marketer_version"
+        account_data = (
+            account_data.distinct()
+            .order_by("id")
+            .values("id", "created_dt", "outbrain_marketer_id", "outbrain_marketer_version")
         )
 
         data = {"accounts": list(account_data), "emails": outbrain_marketer_helper.get_marketer_user_emails()}
