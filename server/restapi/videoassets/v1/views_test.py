@@ -1,23 +1,21 @@
 import mock
 from django.test import override_settings
 from django.urls import reverse
-from rest_framework.test import APIClient
 
-import core.models.account
-import restapi.common.views_base_test_case
+from core.features.videoassets import constants
+from core.features.videoassets import models
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
-
-from . import constants
-from . import models
+from zemauth.features.entity_permission import Permission
 
 
-class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class LegacyVideoAssetTestCase(RESTAPITestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user(permissions=["fea_video_upload"])
-        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
-        self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
-
+        super().setUp()
+        test_helper.add_permissions(self.user, permissions=["fea_video_upload"])
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         patcher = mock.patch("boto3.client")
         self.boto3_get_client = patcher.start()
         self.addCleanup(patcher.stop)
@@ -25,14 +23,20 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def test_permissions(self):
         video_asset = magic_mixer.blend(models.VideoAsset)
         r = self.client.get(
-            reverse("videoassets_details", kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id))
+            reverse(
+                "restapi.videoassets.v1:videoassets_details",
+                kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id),
+            )
         )
-        r = self.assertResponseError(r, "MissingDataError")
+        self.assertResponseError(r, "MissingDataError")
 
     def test_get(self):
         video_asset = magic_mixer.blend(models.VideoAsset, account=self.account, name="myvideo", error_code="4006")
         r = self.client.get(
-            reverse("videoassets_details", kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id))
+            reverse(
+                "restapi.videoassets.v1:videoassets_details",
+                kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id),
+            )
         )
         r = self.assertResponseValid(r)
         self.assertEqual(r["data"]["name"], video_asset.name)
@@ -51,7 +55,8 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         )
         r = self.client.put(
             reverse(
-                "videoassets_details", kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id)
+                "restapi.videoassets.v1:videoassets_details",
+                kwargs=dict(videoasset_id=video_asset.id, account_id=video_asset.account.id),
             ),
             data={"status": "PROCESSING"},
             format="json",
@@ -74,7 +79,9 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         self.boto3_get_client.return_value = mock_s3_client
         data = {"name": "myvideo", "upload": {"type": "DIRECT_UPLOAD"}}
         r = self.client.post(
-            reverse("videoassets_list", kwargs=dict(account_id=self.account.id)), data=data, format="json"
+            reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),
+            data=data,
+            format="json",
         )
         r = self.assertResponseValid(r)
         self.assertEqual(r["data"]["name"], "myvideo")
@@ -91,7 +98,9 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         self.boto3_get_client.return_value = mock_s3_client
         data = {"name": "myvideo", "upload": {"type": "VAST_UPLOAD"}}
         r = self.client.post(
-            reverse("videoassets_list", kwargs=dict(account_id=self.account.id)), data=data, format="json"
+            reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),
+            data=data,
+            format="json",
         )
         r = self.assertResponseValid(r)
         self.assertEqual(r["data"]["name"], "")
@@ -107,7 +116,9 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         mock_parse.return_value = 30, []
         data = {"name": "myvideo", "vast_url": "http://vasturl.com", "upload": {"type": "VAST_URL"}}
         r = self.client.post(
-            reverse("videoassets_list", kwargs=dict(account_id=self.account.id)), data=data, format="json"
+            reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),
+            data=data,
+            format="json",
         )
         r = self.assertResponseValid(r)
         self.assertEqual(r["data"]["name"], "")
@@ -117,3 +128,7 @@ class VideoAssetTest(restapi.common.views_base_test_case.RESTAPITestCase):
         self.assertEqual(r["data"]["status"], "READY_FOR_USE")
 
         mock_parse.assert_called_once_with("http://vasturl.com")
+
+
+class VideoAssetTestCase(FutureRESTAPITestCase, LegacyVideoAssetTestCase):
+    pass

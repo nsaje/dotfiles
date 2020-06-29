@@ -1,4 +1,3 @@
-import core.features.videoassets.urls
 import dash.features.bluekai.urls
 import restapi.account.urls
 import restapi.adgroup.urls
@@ -29,6 +28,7 @@ import restapi.report.urls
 import restapi.rules.urls
 import restapi.source.urls
 import restapi.user.urls
+import restapi.videoassets.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
 
@@ -61,9 +61,9 @@ urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.rules.urls.urlpatterns
 urlpatterns += restapi.source.urls.urlpatterns
 urlpatterns += restapi.availablesources.urls.urlpatterns
+urlpatterns += restapi.videoassets.urls.urlpatterns
+urlpatterns += restapi.user.urls.urlpatterns
 
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
-urlpatterns += core.features.videoassets.urls.urlpatterns
-urlpatterns += restapi.user.urls.urlpatterns

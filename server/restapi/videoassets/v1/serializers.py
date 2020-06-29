@@ -2,9 +2,8 @@ from rest_framework import fields
 from rest_framework import serializers
 
 import restapi.serializers.fields
-
-from . import constants
-from . import models
+from core.features.videoassets import constants
+from core.features.videoassets import models
 
 
 class UploadInfoSerializer(serializers.Serializer):

@@ -1,25 +1,29 @@
 import rest_framework.permissions
 import rest_framework.serializers
+from rest_framework import permissions
 
 import restapi.common.views_base
+import zemauth.access
+from core.features.videoassets import constants
+from core.features.videoassets import models
+from core.features.videoassets import service
+from zemauth.features.entity_permission import Permission
 
-from . import constants
-from . import models
 from . import serializers
-from . import service
 
 
-class VideoAssetBaseView(restapi.common.views_base.RESTAPIBaseView):
-
-    permission_classes = (
-        rest_framework.permissions.IsAuthenticated,
-        restapi.access.gen_permission_class("zemauth.fea_video_upload"),
-    )
+class CanUseVideoAssetPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.has_perm("zemauth.fea_video_upload"))
 
 
-class VideoAssetListView(VideoAssetBaseView):
+class VideoAssetBaseViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
+    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseVideoAssetPermission)
+
+
+class VideoAssetListViewSet(VideoAssetBaseViewSet):
     def post(self, request, account_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         serializer = serializers.VideoAssetPostSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -43,15 +47,15 @@ class VideoAssetListView(VideoAssetBaseView):
             raise rest_framework.serializers.ValidationError("Unsupported upload type")
 
 
-class VideoAssetView(VideoAssetBaseView):
+class VideoAssetViewSet(VideoAssetBaseViewSet):
     def get(self, request, account_id, videoasset_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         video_asset = models.VideoAsset.objects.get(account=account, id=videoasset_id)
         serializer = serializers.VideoAssetSerializer(video_asset)
         return self.response_ok(serializer.data)
 
     def put(self, request, account_id, videoasset_id):
-        account = restapi.access.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
         video_asset = models.VideoAsset.objects.get(account=account, id=videoasset_id)
 
         serializer = serializers.VideoAssetPostSerializer(data=request.data)
