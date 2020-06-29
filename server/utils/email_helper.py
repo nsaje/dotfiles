@@ -487,10 +487,6 @@ def send_new_user_device_email(request, browser, os, city, country):
     )
 
 
-def send_outbrain_accounts_running_out_email(n):
-    send_internal_email(**params_from_template(dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT, n=n))
-
-
 def send_ga_setup_instructions(user):
     send_official_email(
         agency_or_user=user,

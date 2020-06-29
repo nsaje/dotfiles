@@ -18,8 +18,8 @@
 
 # test Outbrain accounts
 -   fields:
-        marketer_id: 'dcefg'
-        marketer_name: 'Zemanta_XY'
+        marketer_id: 'dcefg1'
+        marketer_name: 'Zemanta_XY1'
         used: False
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
@@ -27,8 +27,8 @@
     pk: 1
 
 -   fields:
-        marketer_id: 'dcefg'
-        marketer_name: 'Zemanta_XY'
+        marketer_id: 'dcefg2'
+        marketer_name: 'Zemanta_XY2'
         used: False
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
@@ -36,8 +36,8 @@
     pk: 2
 
 -   fields:
-        marketer_id: 'dcefg'
-        marketer_name: 'Zemanta_XY'
+        marketer_id: 'dcefg3'
+        marketer_name: 'Zemanta_XY3'
         used: False
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'

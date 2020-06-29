@@ -72,7 +72,8 @@ class K1APITest(K1APIBaseTest):
                     "k1api.content_ads_details",
                     "k1api.r1_pixel_mapping",
                     "k1api.r1_ad_group_mapping",
-                    "k1api.account_marketer_id",
+                    "k1api.account_marketer",
+                    "k1api.account_marketer_parameters",
                 ]
                 else None
             )

@@ -6,6 +6,7 @@ import core.models
 import dash.features.custom_flags.constants
 from dash import constants
 from prodops import hacks
+from utils import k1_helper
 from utils import slack
 from utils import zlogging
 
@@ -48,6 +49,7 @@ class AccountManager(core.common.BaseManager):
         hacks.apply_account_create_hack(request, account)
 
         self._log_new_account_to_slack(account)
+        k1_helper.update_account(account, msg="account.created")
         return account
 
     def get_default(self, request, agency=None):

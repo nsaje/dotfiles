@@ -8,6 +8,7 @@ import dash.features.geolocation
 import dash.models
 from utils import zlogging
 from utils.magic_mixer import magic_mixer
+from utils.outbrain_marketer_helper import DEFUALT_OUTBRAIN_USER_EMAILS
 
 from .base_test import K1APIBaseTest
 
@@ -144,39 +145,119 @@ class AccountsTest(K1APIBaseTest):
         )
 
 
-class AccountMarketerIdViewTest(K1APIBaseTest):
+class AccountMarketerViewTest(K1APIBaseTest):
     def setUp(self):
         super().setUp()
         self.current_marketer_id = "0058790e8fa99b8c1509749b97cb2278cd"
-        self.account = magic_mixer.blend(dash.models.Account, outbrain_marketer_id=self.current_marketer_id)
-
-    def test_change_marketer_id(self):
-        self._set_and_assert_marketer_id(self.current_marketer_id, "0a587b0e8fa79b8c1309769b97ab22b8c2")
-
-    def test_set_marketer_id(self):
-        self.current_marketer_id = None
-        self.account.outbrain_marketer_id = None
-        self.account.save(None)
-        self._set_and_assert_marketer_id(self.current_marketer_id, "0a587b0e8fa79b8c1309769b97ab22b8c2")
+        self.current_marketer_version = 1
+        self.account = magic_mixer.blend(
+            dash.models.Account,
+            outbrain_marketer_id=self.current_marketer_id,
+            outbrain_marketer_version=self.current_marketer_version,
+        )
 
     def test_reset_marketer_id(self):
-        self._set_and_assert_marketer_id(self.current_marketer_id, None)
+        marketer_id = None
 
-    def _set_and_assert_marketer_id(self, current_marketer_id, marketer_id):
         response = self.client.put(
-            reverse("k1api.account_marketer_id", kwargs={"account_id": self.account.id}),
-            json.dumps({"current_outbrain_marketer_id": current_marketer_id, "outbrain_marketer_id": marketer_id}),
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps({"current_outbrain_marketer_id": self.current_marketer_id, "outbrain_marketer_id": marketer_id}),
             "application/json",
         )
 
         json_data = json.loads(response.content)
         self.assert_response_ok(response, json_data)
-        self.assertEqual(json_data["response"], {"id": self.account.id, "outbrain_marketer_id": marketer_id})
-        self.assertEqual(dash.models.Account.objects.get(id=self.account.id).outbrain_marketer_id, marketer_id)
+        self.assertEqual(
+            json_data["response"],
+            {
+                "id": self.account.id,
+                "outbrain_marketer_id": marketer_id,
+                "outbrain_marketer_version": self.current_marketer_version,
+            },
+        )
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, marketer_id)
+        self.assertEqual(account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_change_marketer_id(self):
+        marketer_name = f"Zemanta_{self.account.id}_{self.current_marketer_version + 1}"
+        marketer_id = "0a587b0e8fa79b8c1309769b97ab22b8c2"
+
+        ob_account_qs = dash.models.OutbrainAccount.objects.filter(marketer_id=marketer_id, marketer_name=marketer_name)
+        self.assertFalse(ob_account_qs.exists())
+
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": marketer_id,
+                    "outbrain_marketer_name": marketer_name,
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assert_response_ok(response, json_data)
+        self.assertEqual(
+            json_data["response"],
+            {
+                "id": self.account.id,
+                "outbrain_marketer_id": marketer_id,
+                "outbrain_marketer_version": self.current_marketer_version + 1,
+            },
+        )
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, marketer_id)
+        self.assertEqual(account.outbrain_marketer_version, self.current_marketer_version + 1)
+
+        self.assertEqual(ob_account_qs.count(), 1)
+        self.assertTrue(ob_account_qs.first().used)
+
+    def test_set_marketer_id(self):
+        self.current_marketer_id = None
+        self.account.outbrain_marketer_id = None
+        self.account.save(None)
+
+        marketer_name = f"Zemanta_{self.account.id}_{self.current_marketer_version + 1}"
+        marketer_id = "0a587b0e8fa79b8c1309769b97ab22b8c2"
+
+        ob_account_qs = dash.models.OutbrainAccount.objects.filter(marketer_id=marketer_id, marketer_name=marketer_name)
+        self.assertFalse(ob_account_qs.exists())
+
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": marketer_id,
+                    "outbrain_marketer_name": marketer_name,
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assert_response_ok(response, json_data)
+        self.assertEqual(
+            json_data["response"],
+            {
+                "id": self.account.id,
+                "outbrain_marketer_id": marketer_id,
+                "outbrain_marketer_version": self.current_marketer_version + 1,
+            },
+        )
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, marketer_id)
+        self.assertEqual(account.outbrain_marketer_version, self.current_marketer_version + 1)
+
+        self.assertEqual(ob_account_qs.count(), 1)
+        self.assertTrue(ob_account_qs.first().used)
 
     def test_invalid_account_id(self):
         response = self.client.put(
-            reverse("k1api.account_marketer_id", kwargs={"account_id": 0}),
+            reverse("k1api.account_marketer", kwargs={"account_id": 0}),
             json.dumps({"current_outbrain_marketer_id": self.current_marketer_id, "outbrain_marketer_id": None}),
             "application/json",
         )
@@ -187,7 +268,7 @@ class AccountMarketerIdViewTest(K1APIBaseTest):
 
     def test_invalid_current_marketer_id(self):
         response = self.client.put(
-            reverse("k1api.account_marketer_id", kwargs={"account_id": self.account.id}),
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
             json.dumps({"current_outbrain_marketer_id": "invalid_marketer_id", "outbrain_marketer_id": None}),
             "application/json",
         )
@@ -195,6 +276,225 @@ class AccountMarketerIdViewTest(K1APIBaseTest):
         json_data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json_data, {"error": "Invalid current Outbrain marketer id", "response": None})
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_missing_argments(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps({}),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue("error" in json_data)
+        self.assertTrue("Missing attributes" in json_data["error"])
+        self.assertTrue("current_outbrain_marketer_id" in json_data["error"])
+        self.assertTrue("outbrain_marketer_id" in json_data["error"])
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_missing_marketer_name(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": "0a587b0e8fa79b8c1309769b97ab22b8c2",
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_data, {"error": "Missing required outbrain_marketer_name attribute", "response": None})
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(self.account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_invalid_marketer_name(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": "0a587b0e8fa79b8c1309769b97ab22b8c2",
+                    "outbrain_marketer_name": "invalid",
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_data, {"error": "Invalid format of outbrain_marketer_name", "response": None})
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(self.account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_invalid_marketer_name_account(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": "0a587b0e8fa79b8c1309769b97ab22b8c2",
+                    "outbrain_marketer_name": f"Zemanta_0_{self.current_marketer_version + 1}",
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_data, {"error": "Account ID mismatch", "response": None})
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(self.account.outbrain_marketer_version, self.current_marketer_version)
+
+    def test_invalid_marketer_name_version(self):
+        response = self.client.put(
+            reverse("k1api.account_marketer", kwargs={"account_id": self.account.id}),
+            json.dumps(
+                {
+                    "current_outbrain_marketer_id": self.current_marketer_id,
+                    "outbrain_marketer_id": "0a587b0e8fa79b8c1309769b97ab22b8c2",
+                    "outbrain_marketer_name": f"Zemanta_{self.account.id}_{self.current_marketer_version + 2}",
+                }
+            ),
+            "application/json",
+        )
+
+        json_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json_data, {"error": "Invalid Outbrain marketer version", "response": None})
+        account = dash.models.Account.objects.get(id=self.account.id)
+        self.assertEqual(account.outbrain_marketer_id, self.current_marketer_id)
+        self.assertEqual(self.account.outbrain_marketer_version, self.current_marketer_version)
+
+
+class AccountMarketerParametersViewTest(K1APIBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.non_cs_user_1 = magic_mixer.blend_user()
+        self.non_cs_user_2 = magic_mixer.blend_user()
+        self.cs_user_1 = magic_mixer.blend_user(permissions=["campaign_settings_cs_rep"])
+        self.cs_user_2 = magic_mixer.blend_user(permissions=["campaign_settings_cs_rep"])
+
+        self.non_ob_tag_1 = magic_mixer.blend(dash.models.EntityTag, name="some/tag")
+        self.non_ob_tag_2 = magic_mixer.blend(dash.models.EntityTag, name="some/other/tag")
+        self.ob_tag_1 = magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search")
+        self.ob_tag_2 = magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg")
+        self.ob_tag_3 = magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/publisher")
+        self.ob_tag_4 = magic_mixer.blend(dash.models.EntityTag, name="account_type/invalid/tag")
+
+        self.account = magic_mixer.blend(
+            dash.models.Account, outbrain_marketer_id="0a587b0e8fa79b8c1309769b97ab22b8c2", outbrain_marketer_version=3
+        )
+        self.account.entity_tags.add(self.non_ob_tag_1, self.non_ob_tag_2, self.ob_tag_1, self.ob_tag_2, self.ob_tag_4)
+
+    def test_get_marketer_parameters(self):
+        response = self.client.get(reverse("k1api.account_marketer_parameters", kwargs={"account_id": self.account.id}))
+
+        json_data = json.loads(response.content)
+        self.assert_response_ok(response, json_data)
         self.assertEqual(
-            dash.models.Account.objects.get(id=self.account.id).outbrain_marketer_id, self.current_marketer_id
+            json_data["response"],
+            {
+                "id": self.account.id,
+                "created_dt": self.account.created_dt.isoformat(),
+                "outbrain_marketer_id": "0a587b0e8fa79b8c1309769b97ab22b8c2",
+                "outbrain_marketer_version": 3,
+                "outbrain_marketer_type": "ELASTIC_PUBLISHER",
+                "content_classification": "PremiumElasticPublishers",
+                "emails": [self.cs_user_1.email, self.cs_user_2.email] + DEFUALT_OUTBRAIN_USER_EMAILS,
+            },
+        )
+
+
+class AccountsBulkMarketerParametersViewTest(K1APIBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.non_cs_user_1 = magic_mixer.blend_user()
+        self.non_cs_user_2 = magic_mixer.blend_user()
+        self.cs_user_1 = magic_mixer.blend_user(permissions=["campaign_settings_cs_rep"])
+        self.cs_user_2 = magic_mixer.blend_user(permissions=["campaign_settings_cs_rep"])
+
+        self.non_ob_tag_1 = magic_mixer.blend(dash.models.EntityTag, name="some/tag")
+        self.non_ob_tag_2 = magic_mixer.blend(dash.models.EntityTag, name="some/other/tag")
+        self.ob_tag_1 = magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search")
+        self.ob_tag_2 = magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg")
+        self.ob_tag_3 = magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/publisher")
+        self.ob_tag_4 = magic_mixer.blend(dash.models.EntityTag, name="account_type/invalid/tag")
+
+        self.account_1 = magic_mixer.blend(dash.models.Account, outbrain_marketer_id="1", outbraion_marketer_version=1)
+        self.account_2 = magic_mixer.blend(dash.models.Account, outbrain_marketer_id="2", outbraion_marketer_version=2)
+        self.account_3 = magic_mixer.blend(dash.models.Account, outbrain_marketer_id="3", outbraion_marketer_version=3)
+        self.account_4 = magic_mixer.blend(dash.models.Account, outbrain_marketer_id="4", outbraion_marketer_version=4)
+        self.account_5 = magic_mixer.blend(dash.models.Account, outbrain_marketer_id="5", outbraion_marketer_version=5)
+        self.account_1.entity_tags.add(self.non_ob_tag_1, self.ob_tag_1, self.ob_tag_2, self.ob_tag_4)
+        self.account_2.entity_tags.add(self.non_ob_tag_2, self.ob_tag_3)
+        self.account_3.entity_tags.add(self.non_ob_tag_2)
+
+        for a in (self.account_1, self.account_2, self.account_3, self.account_4):
+            c = magic_mixer.blend(dash.models.Campaign, account=a)
+            ag = magic_mixer.blend(dash.models.AdGroup, campaign=c)
+            magic_mixer.blend(dash.models.AdGroupSource, ad_group=ag, source__id=3)
+
+    def test_get_bulk_marketer_parameters(self):
+        account_ids = ",".join(
+            str(i) for i in [self.account_1.id, self.account_2.id, self.account_3.id, self.account_4.id]
+        )
+
+        # 1 query related to replica, 2 queries due to permissions checks, 1 for accounts, 1 for entity tags
+        with self.assertNumQueries(6):
+            response = self.client.get(
+                reverse("k1api.accounts_bulk_marketer_parameters") + f"?account_ids={account_ids}"
+            )
+
+        json_data = json.loads(response.content)
+        self.assert_response_ok(response, json_data)
+        self.assertEqual(
+            json_data["response"],
+            {
+                "accounts": [
+                    {
+                        "id": self.account_1.id,
+                        "created_dt": self.account_1.created_dt.isoformat(),
+                        "outbrain_marketer_id": self.account_1.outbrain_marketer_id,
+                        "outbrain_marketer_version": self.account_1.outbrain_marketer_version,
+                        "outbrain_marketer_type": "ELASTIC_PUBLISHER",
+                        "content_classification": "PremiumElasticPublishers",
+                    },
+                    {
+                        "id": self.account_2.id,
+                        "created_dt": self.account_2.created_dt.isoformat(),
+                        "outbrain_marketer_id": self.account_2.outbrain_marketer_id,
+                        "outbrain_marketer_version": self.account_2.outbrain_marketer_version,
+                        "outbrain_marketer_type": "AFFILIATES_AND_SMB",
+                        "content_classification": "AdvertorialOther",
+                    },
+                    {
+                        "id": self.account_3.id,
+                        "created_dt": self.account_3.created_dt.isoformat(),
+                        "outbrain_marketer_id": self.account_3.outbrain_marketer_id,
+                        "outbrain_marketer_version": self.account_3.outbrain_marketer_version,
+                        "outbrain_marketer_type": "AFFILIATES_AND_SMB",
+                        "content_classification": "AdvertorialOther",
+                    },
+                    {
+                        "id": self.account_4.id,
+                        "created_dt": self.account_4.created_dt.isoformat(),
+                        "outbrain_marketer_id": self.account_4.outbrain_marketer_id,
+                        "outbrain_marketer_version": self.account_4.outbrain_marketer_version,
+                        "outbrain_marketer_type": "AFFILIATES_AND_SMB",
+                        "content_classification": "AdvertorialOther",
+                    },
+                ],
+                "emails": [self.cs_user_1.email, self.cs_user_2.email] + DEFUALT_OUTBRAIN_USER_EMAILS,
+            },
         )

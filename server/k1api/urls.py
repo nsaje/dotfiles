@@ -42,9 +42,19 @@ urlpatterns = [
     url(r"^content_ads/sources$", content_ads.ContentAdSourcesView.as_view(), name="k1api.content_ads.sources"),
     url(r"^accounts$", accounts.AccountsView.as_view(), name="k1api.accounts"),
     url(
-        r"^accounts/(?P<account_id>\d+)/marketer_id$",
-        accounts.AccountMarketerIdView.as_view(),
-        name="k1api.account_marketer_id",
+        r"^accounts/bulk_marketer_parameters$",
+        accounts.AccountsBulkMarketerParametersView.as_view(),
+        name="k1api.accounts_bulk_marketer_parameters",
+    ),
+    url(
+        r"^accounts/(?P<account_id>\d+)/marketer$",
+        accounts.AccountMarketerView.as_view(),
+        name="k1api.account_marketer",
+    ),
+    url(
+        r"^accounts/(?P<account_id>\d+)/marketer_parameters$",
+        accounts.AccountMarketerParametersView.as_view(),
+        name="k1api.account_marketer_parameters",
     ),
     url(
         r"^accounts/(?P<account_id>\d+)/r1_pixel_mapping$",

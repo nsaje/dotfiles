@@ -7,6 +7,7 @@ from django.db.models import Q
 import dash.constants
 import dash.models
 from utils import db_router
+from utils import outbrain_marketer_helper
 from utils import zlogging
 
 from .base import K1APIView
@@ -126,21 +127,124 @@ class AccountsView(K1APIView):
         )
 
 
-class AccountMarketerIdView(K1APIView):
+class AccountMarketerView(K1APIView):
     def put(self, request, account_id):
+        # validation of input parameters
+        missing_required_fields = {"current_outbrain_marketer_id", "outbrain_marketer_id"} - request.data.keys()
+        if missing_required_fields:
+            return self.response_error("Missing attributes: %s" % ", ".join(missing_required_fields))
+
         current_marketer_id = request.data["current_outbrain_marketer_id"]
         desired_marketer_id = request.data["outbrain_marketer_id"]
+
+        marketer_version = None
+
+        if desired_marketer_id is not None:
+            if "outbrain_marketer_name" not in request.data:
+                return self.response_error("Missing required outbrain_marketer_name attribute")
+
+            try:
+                name_account_id, marketer_version = outbrain_marketer_helper.parse_marketer_name(
+                    request.data["outbrain_marketer_name"]
+                )
+            except ValueError:
+                return self.response_error("Invalid format of outbrain_marketer_name")
+
+            if name_account_id != int(account_id):
+                return self.response_error("Account ID mismatch")
 
         with transaction.atomic():
             try:
                 account = dash.models.Account.objects.select_for_update().get(id=account_id)
             except dash.models.Account.DoesNotExist:
                 return self.response_error("Account does not exist", status=404)
-            if account.outbrain_marketer_id == current_marketer_id:
-                account.outbrain_marketer_id = desired_marketer_id
-                account.save(None)
-            else:
+
+            if account.outbrain_marketer_id != current_marketer_id:
                 return self.response_error("Invalid current Outbrain marketer id")
 
-        data = {"id": account.id, "outbrain_marketer_id": account.outbrain_marketer_id}
+            if marketer_version is not None and account.outbrain_marketer_version + 1 != marketer_version:
+                return self.response_error("Invalid Outbrain marketer version")
+
+            # updating and creating entites
+            if marketer_version is not None:
+                dash.models.OutbrainAccount.objects.create(
+                    marketer_id=desired_marketer_id, marketer_name=request.data["outbrain_marketer_name"], used=True
+                )
+
+            update_kwargs = {"outbrain_marketer_id": desired_marketer_id}
+            if marketer_version is not None:
+                update_kwargs.update({"outbrain_marketer_version": marketer_version})
+
+            k1_sync = desired_marketer_id is None
+            account.update(None, k1_sync=k1_sync, **update_kwargs)
+
+        return self.response_ok(
+            {
+                "id": account.id,
+                "outbrain_marketer_id": account.outbrain_marketer_id,
+                "outbrain_marketer_version": account.outbrain_marketer_version,
+            }
+        )
+
+
+class AccountMarketerParametersView(K1APIView):
+    def get(self, request, account_id):
+        try:
+            account = dash.models.Account.objects.get(id=account_id)
+        except dash.models.Account.DoesNotExist:
+            return self.response_error("Account does not exist")
+
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account_id)
+
+        data = {
+            "id": account.id,
+            "created_dt": account.created_dt.isoformat(),
+            "outbrain_marketer_id": account.outbrain_marketer_id,
+            "outbrain_marketer_version": account.outbrain_marketer_version,
+            "outbrain_marketer_type": marketer_type,
+            "content_classification": content_classification,
+            "emails": outbrain_marketer_helper.get_marketer_user_emails(),
+        }
+        return self.response_ok(data)
+
+
+class AccountsBulkMarketerParametersView(K1APIView):
+    @db_router.use_read_replica()
+    def get(self, request):
+        account_ids = request.GET.get("account_ids")
+
+        account_data = dash.models.Account.objects.exclude_archived().filter(
+            campaign__adgroup__adgroupsource__source_id=OUTBRAIN_SOURCE_ID
+        )
+        if account_ids:
+            account_data = account_data.filter(id__in=account_ids.split(","))
+
+        account_data = account_data.order_by("id").values(
+            "id", "created_dt", "outbrain_marketer_id", "outbrain_marketer_version"
+        )
+
+        data = {"accounts": list(account_data), "emails": outbrain_marketer_helper.get_marketer_user_emails()}
+
+        entries = (
+            dash.models.EntityTag.objects.get(name=outbrain_marketer_helper.MARKETER_TYPE_PREFIX)
+            .get_descendants()
+            .filter(account__id__in=[e["id"] for e in data["accounts"]])
+            .values("name", "account__id")
+        )
+
+        account_tag_map = defaultdict(list)
+        for entry in entries:
+            account_tag_map[entry["account__id"]].append(entry["name"])
+
+        for entry in data["accounts"]:
+            entity_tag_names = account_tag_map.get(entry["id"])
+            marketer_type, content_classification = outbrain_marketer_helper.determine_best_match(entity_tag_names)
+            entry.update(
+                {
+                    "created_dt": entry["created_dt"].isoformat(),
+                    "outbrain_marketer_type": marketer_type,
+                    "content_classification": content_classification,
+                }
+            )
+
         return self.response_ok(data)

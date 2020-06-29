@@ -8,6 +8,7 @@ import core.features.history
 import core.models
 from dash import constants
 from utils import json_helper
+from utils import k1_helper
 
 
 class AccountInstanceMixin:
@@ -133,12 +134,14 @@ class AccountInstanceMixin:
         super().save(*args, **kwargs)
 
     @transaction.atomic
-    def update(self, request, **kwargs):
+    def update(self, request, k1_sync=True, **kwargs):
         updates = self._clean_updates(kwargs)
         if not updates:
             return
         self.validate(updates, request=request)
         self._apply_updates_and_save(request, updates)
+        if k1_sync:
+            k1_helper.update_account(self, msg="account.updated")
 
     def _clean_updates(self, updates):
         new_updates = {}

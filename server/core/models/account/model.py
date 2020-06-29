@@ -32,6 +32,7 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
         "auto_archiving_enabled",
         "agency",
         "outbrain_marketer_id",
+        "outbrain_marketer_version",
         "outbrain_internal_marketer_id",
         "salesforce_url",
         "custom_flags",
@@ -81,6 +82,7 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
     allowed_sources = models.ManyToManyField("Source")
 
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
+    outbrain_marketer_version = models.IntegerField(default=0)
     outbrain_internal_marketer_id = models.CharField(null=True, blank=True, max_length=255)
     yahoo_account = models.ForeignKey(
         core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True
