@@ -1,8 +1,8 @@
 from django.db import transaction
 
 import core.models
+import dash.features.clonecontentad
 from core.models.account.exceptions import AccountDoesNotMatch
-from dash.features.bulkactions import clonecontent
 
 
 def clone(request, source_ad_group, campaign, ad_group_name, clone_ads, state_override=None, ad_state_override=None):
@@ -17,7 +17,7 @@ def clone(request, source_ad_group, campaign, ad_group_name, clone_ads, state_ov
             content_ads = source_ad_group.contentad_set.all().exclude_archived()
 
             if content_ads.exists():
-                clonecontent.service.clone(
+                dash.features.clonecontentad.service.clone(
                     request, source_ad_group, content_ads, ad_group, state_override=ad_state_override
                 )
 

@@ -1,27 +1,26 @@
 import mock
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 import core.models
 import dash.constants
-import restapi.common.views_base_test_case
+import dash.features.clonecontentad
+from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
-from . import service
 
-
-class CloneContentViewTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class LegacyCloneContentAdsViewSetTestCase(RESTAPITestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user(permissions=["can_clone_contentads"])
-        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        super().setUp()
+        test_helper.add_permissions(self.user, permissions=["can_clone_contentads"])
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.content_ads = magic_mixer.cycle().blend(
             core.models.ContentAd, ad_group=self.ad_group, type=dash.constants.AdType.CONTENT
         )
-
-        self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
 
     @classmethod
     def clone_repr(cls, source_ad_group, destination_ad_group, selected_content_ads):
@@ -40,17 +39,23 @@ class CloneContentViewTest(restapi.common.views_base_test_case.RESTAPITestCase):
 
         data = self.clone_repr(ad_group, ad_group, content_ads)
 
-        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        r = self.client.post(reverse("restapi.contentad.internal:content_ads_batch_clone"), data=data, format="json")
         self.assertResponseError(r, "MissingDataError")
 
-    @mock.patch.object(service, "clone_edit", autospec=True)
+    @mock.patch.object(dash.features.clonecontentad.service, "clone_edit", autospec=True)
     def test_post(self, mock_clone):
         batch_clone = magic_mixer.blend(core.models.UploadBatch)
         mock_clone.return_value = (batch_clone, [])
 
         data = self.clone_repr(self.ad_group, self.ad_group, self.content_ads)
 
-        response = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        response = self.client.post(
+            reverse("restapi.contentad.internal:content_ads_batch_clone"), data=data, format="json"
+        )
         response = self.assertResponseValid(response)
 
         self.assertDictContainsSubset({"id": str(batch_clone.pk)}, response["data"]["destinationBatch"])
+
+
+class CloneContentAdsViewSetTestCase(FutureRESTAPITestCase, LegacyCloneContentAdsViewSetTestCase):
+    pass

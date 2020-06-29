@@ -8,19 +8,20 @@ from utils.magic_mixer import magic_mixer
 from . import serializers
 
 
-class CloneContentAdsSerializer(TestCase):
+class CloneContentAdsSerializerTestCase(TestCase):
     def test_validate_select_all(self):
-        form = serializers.CloneContentAdsSerializer(
+        serializer = serializers.CloneContentAdsSerializer(
             data={"ad_group_id": "123", "destination_ad_group_id": "223", "destination_batch_name": "asd"}
         )
 
-        form.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
         self.assertEqual(
-            form.validated_data, {"ad_group_id": 123, "destination_ad_group_id": 223, "destination_batch_name": "asd"}
+            serializer.validated_data,
+            {"ad_group_id": 123, "destination_ad_group_id": 223, "destination_batch_name": "asd"},
         )
 
     def test_validate_select_batch(self):
-        form = serializers.CloneContentAdsSerializer(
+        serializer = serializers.CloneContentAdsSerializer(
             data={
                 "ad_group_id": "123",
                 "destination_ad_group_id": "223",
@@ -29,14 +30,14 @@ class CloneContentAdsSerializer(TestCase):
             }
         )
 
-        form.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
         self.assertEqual(
-            form.validated_data,
+            serializer.validated_data,
             {"ad_group_id": 123, "destination_ad_group_id": 223, "destination_batch_name": "asd", "batch_id": 1},
         )
 
     def test_validate_select_content_ads(self):
-        form = serializers.CloneContentAdsSerializer(
+        serializer = serializers.CloneContentAdsSerializer(
             data={
                 "ad_group_id": "123",
                 "destination_ad_group_id": "223",
@@ -45,9 +46,9 @@ class CloneContentAdsSerializer(TestCase):
             }
         )
 
-        form.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)
         self.assertEqual(
-            form.validated_data,
+            serializer.validated_data,
             {
                 "ad_group_id": 123,
                 "destination_ad_group_id": 223,
@@ -57,7 +58,7 @@ class CloneContentAdsSerializer(TestCase):
         )
 
 
-class GetContentAds(TestCase):
+class GetContentAdsTestCase(TestCase):
     def setUp(self):
         self.ads = magic_mixer.cycle(5).blend(core.models.ContentAd, batch=magic_mixer.RANDOM)
 

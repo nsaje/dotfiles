@@ -29,7 +29,6 @@ import restapi.rules.urls
 import restapi.source.urls
 import restapi.user.urls
 import restapi.videoassets.urls
-from dash.features.bulkactions import clonecontent
 
 urlpatterns = []
 urlpatterns += restapi.account.urls.urlpatterns
@@ -63,5 +62,4 @@ urlpatterns += restapi.availablesources.urls.urlpatterns
 urlpatterns += restapi.videoassets.urls.urlpatterns
 urlpatterns += restapi.user.urls.urlpatterns
 
-urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
