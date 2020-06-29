@@ -6,7 +6,7 @@ from django.db import models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0464_historystacktrace_created_dt")]
+    dependencies = [("dash", "0468_auto_20200619_1148")]
 
     operations = [
         migrations.AddField(

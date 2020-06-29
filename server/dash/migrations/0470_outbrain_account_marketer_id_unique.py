@@ -6,7 +6,7 @@ from django.db import models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0465_add_outbrain_marketer_version")]
+    dependencies = [("dash", "0469_add_outbrain_marketer_version")]
 
     operations = [
         migrations.AlterField(
