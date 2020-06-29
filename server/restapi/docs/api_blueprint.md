@@ -1541,7 +1541,7 @@ dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
 |-----------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|----------|
 | id         | string | the id of bid modifier                                                                                                                                                 | N/A      | read only |
 | type       | string | the [type](#bid-modifier-types) of bid modifier                                                                                                                        | required | optional  |
-| sourceSlug | string | this value is always an empty string, except for the `PUBLISHER` type bid modifiers where it contains the source slug of the source it targets (for a given publisher) | optional | optional  |
+| sourceSlug | string | this value is always an empty string, except for the `PUBLISHER` and `PLACEMENT` type bid modifiers where it contains the source slug of the source it targets (for a given publisher) | optional | optional  |
 | target     | string | a string representing the target of bid modifier                                                                                                                       | required | optional  |
 | modifier   | number | a floating point factor for bidding price calculation                                                                                                                  | required | required  |
 
@@ -1563,6 +1563,8 @@ The following bid modifier types are supported:
 | STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
 | DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
 | AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
+| DAY_HOUR         | Modifies the bidding price for a specific day and hour combination.  | see [DAY HOUR](#day_hour) |
+| PLACEMENT        | Modifies the bidding price for a specific placement at a specific publisher and source combination.       | a string of the form `<publisher domain name>__<source id>__<placement id>` |
 
 ### Get bid modifiers for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{?type}]
 
@@ -1595,6 +1597,13 @@ The following bid modifier types are supported:
                     "sourceSlug": "",
                     "target": "16805",
                     "modifier": 1.20
+                },
+                {
+                    "id": "1237",
+                    "type": "PLACEMENT",
+                    "sourceSlug": "outbrainrtb",
+                    "target": "www.orange.fr__85__00000000-0049-c63d-0000-000000000069",
+                    "modifier": 1.02
                 }
             ]
         }
@@ -2051,6 +2060,7 @@ Property           | Type                | Description                          
 id                 | string              | id of the entry                                                       | N/A            |
 publisherGroupId   | string              | id of the publisher group                                             | required       |
 publisher          | string              | publisher's domain (or name), strict matching                         | required       |
+placement          | string              | the placement identifier string                                    | optional       |
 source             | string              | source identifier, if not set it refers to all sources                | optional       |
 includeSubdomains  | boolean             | if true, the publisher's subdomains will also be included in the group | optional, defaults to true      |
 
@@ -2317,6 +2327,7 @@ Entity breakdown:
 Delivery breakdown:
 - Media Source, Media Source Id
 - Publisher
+- Placement
 - Country
 - State / Region
 - DMA
@@ -2346,6 +2357,8 @@ Time breakdown:
     - Batch Name
 - Media Source:
     - Media Source Slug
+- Placement:
+    - Placement Type
 
 #### Common Fields
 - Impressions
@@ -3299,6 +3312,13 @@ Examples:
 - `US:10001` - New York, United States
 - `CA:M4E` - East Toronto (The Beaches), Ontario, Canada
 
+<a name="day_hour"></a>
+## DAY HOUR
+Day hour constants represent a particular hour of a day of the week and are used for example with bid modifiers to modify bids on traffic at that those hours.
+
+Examples:
+- `MONDAY_0` - mondays from 00:00 to 01:00 EST timezone
+- `SUNDAY_23` - sundays from 23:00 to 00:00 EST timezone
 
 # Data Structures
 
