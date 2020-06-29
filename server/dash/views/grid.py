@@ -14,15 +14,19 @@ import core.features.multicurrency
 import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
+import dash.views.agency
+import dash.views.bulk_actions
+import dash.views.views
 import stats.helpers
+import zemauth.access
 from core.models import all_rtb
 from dash import constants
 from dash import legacy
-from dash import views
 from dash.common.views_base import DASHAPIBaseView
 from dash.features import contentupload
 from dash.views import helpers
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 from . import breakdown_helpers
 
@@ -31,7 +35,6 @@ class AdGroupSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
-        helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
         settings = data["settings"]
@@ -41,7 +44,7 @@ class AdGroupSettings(DASHAPIBaseView):
             raise exc.ValidationError()
 
         request._body = json.dumps(settings)
-        views.agency.AdGroupSettingsState().post(request, ad_group_id)
+        dash.views.agency.AdGroupSettingsState().post(request, ad_group_id)
 
         response = {"rows": [{"ad_group": ad_group_id, "state": state}]}
         convert_resource_response(constants.Level.CAMPAIGNS, "ad_group_id", response)
@@ -52,7 +55,7 @@ class ContentAdSettings(DASHAPIBaseView):
     def post(self, request, content_ad_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
-        content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
+        content_ad = zemauth.access.get_content_ad(request.user, Permission.WRITE, content_ad_id)
 
         data = json.loads(request.body)
         settings = data["settings"]
@@ -64,7 +67,7 @@ class ContentAdSettings(DASHAPIBaseView):
 
         request_settings = {"state": state, "content_ad_ids_selected": [content_ad_id]}
         request._body = json.dumps(request_settings)
-        views.bulk_actions.AdGroupContentAdState().post(request, ad_group.id)
+        dash.views.bulk_actions.AdGroupContentAdState().post(request, ad_group.id)
 
         response = {"rows": [{"id": content_ad_id, "status_setting": state}]}
         convert_resource_response(constants.Level.AD_GROUPS, "content_ad_id", response)
@@ -73,7 +76,7 @@ class ContentAdSettings(DASHAPIBaseView):
 
 class ContentAdEdit(DASHAPIBaseView):
     def post(self, request, content_ad_id):
-        content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
+        content_ad = zemauth.access.get_content_ad(request.user, Permission.WRITE, content_ad_id)
 
         try:
             batch, candidates = contentupload.upload.insert_edit_candidates(
@@ -92,7 +95,6 @@ class AdGroupSourceSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id, source_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
-        helpers.get_ad_group(request.user, ad_group_id)
 
         data = json.loads(request.body)
         config = data["config"] if "config" in data else {}
@@ -108,7 +110,7 @@ class AdGroupSourceSettings(DASHAPIBaseView):
             return self.post_all_rtb_source(request, ad_group_id, filtered_sources, settings)
 
         request._body = json.dumps(settings)
-        response_save_http = views.views.AdGroupSourceSettings().put(request, ad_group_id, source_id)
+        response_save_http = dash.views.views.AdGroupSourceSettings().put(request, ad_group_id, source_id)
         response_save = json.loads(response_save_http.content)["data"]
         response_update = legacy.get_updated_ad_group_sources_changes(
             request.user, last_change_dt, filtered_sources, ad_group_id_=ad_group_id
