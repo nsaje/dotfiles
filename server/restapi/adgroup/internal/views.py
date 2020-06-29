@@ -1,15 +1,22 @@
 import rest_framework.permissions
 import rest_framework.serializers
 from django.db import transaction
+from rest_framework import permissions
 
+import automation.campaignstop
 import core.models
+import core.models.ad_group.exceptions
+import core.models.content_ad.exceptions
 import dash.features.alerts
+import dash.features.cloneadgroup
+import dash.views.navigation_helpers
 import prodops.hacks
 import restapi.adgroup.v1.views
 import restapi.serializers.alert
 import utils.exc
 import zemauth.access
 from dash import constants
+from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
 
 from . import helpers
@@ -154,3 +161,44 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         if to_be_removed or to_be_added:
             ad_group.remove_deals(request, list(to_be_removed))
             ad_group.add_deals(request, list(to_be_added))
+
+
+class CanUseCloneAdGroupsPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.has_perm("zemauth.can_clone_adgroups"))
+
+
+class CloneAdGroupViewSet(RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated, CanUseCloneAdGroupsPermission)
+
+    def post(self, request):
+        serializer = serializers.CloneAdGroupSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        try:
+            ad_group = dash.features.cloneadgroup.service.clone(
+                request,
+                zemauth.access.get_ad_group(request.user, Permission.WRITE, validated_data["ad_group_id"]),
+                zemauth.access.get_campaign(request.user, Permission.WRITE, validated_data["destination_campaign_id"]),
+                validated_data["destination_ad_group_name"],
+                validated_data["clone_ads"],
+            )
+
+        except (
+            core.models.ad_group.exceptions.CampaignTypesDoNotMatch,
+            core.models.content_ad.exceptions.CampaignAdTypeMismatch,
+        ) as err:
+            raise utils.exc.ValidationError(errors={"destination_campaign_id": [str(err)]})
+
+        response = dash.views.navigation_helpers.get_ad_group_dict(
+            request.user,
+            ad_group.__dict__,
+            ad_group.get_current_settings(),
+            ad_group.campaign.get_current_settings(),
+            automation.campaignstop.get_campaignstop_state(ad_group.campaign),
+            real_time_campaign_stop=ad_group.campaign.real_time_campaign_stop,
+        )
+
+        response["campaign_id"] = ad_group.campaign_id
+        return self.response_ok(serializers.CloneAdGroupResponseSerializer(response).data)

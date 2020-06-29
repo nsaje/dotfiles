@@ -14,6 +14,33 @@ import restapi.serializers.serializers
 import restapi.serializers.targeting
 
 
+class CloneAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    ad_group_id = restapi.serializers.fields.IdField(required=True)
+    destination_campaign_id = restapi.serializers.fields.IdField(
+        required=True,
+        error_messages={"required": "Please select destination campaign", "null": "Please select destination campaign"},
+    )
+    destination_ad_group_name = restapi.serializers.fields.PlainCharField(
+        required=True,
+        error_messages={
+            "required": "Please provide a name for destination ad group",
+            "blank": "Please provide a name for destination ad group",
+        },
+        max_length=127,
+    )
+    clone_ads = rest_framework.serializers.BooleanField()
+
+
+class CloneAdGroupResponseSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField()
+    campaign_id = restapi.serializers.fields.IdField()
+    name = rest_framework.serializers.CharField(read_only=True)
+
+    state = restapi.serializers.fields.DashConstantField(dash.constants.AdGroupSettingsState)
+    status = restapi.serializers.fields.DashConstantField(dash.constants.AdGroupRunningStatus)
+    active = restapi.serializers.fields.DashConstantField(dash.constants.InfoboxStatus)
+
+
 class ExtraDataDefaultSettingsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     target_regions = restapi.serializers.targeting.TargetRegionsSerializer(required=False, allow_null=True)
     exclusion_target_regions = restapi.serializers.targeting.TargetRegionsSerializer(required=False, allow_null=True)

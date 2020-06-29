@@ -9,4 +9,5 @@ urlpatterns = [
     url(r"^$", views.AdGroupViewSet.as_view({"get": "list", "post": "create"}), name="adgroups_list"),
     url(r"^validate/$", views.AdGroupViewSet.as_view({"post": "validate"}), name="adgroups_validate"),
     url(r"^defaults/$", views.AdGroupViewSet.as_view({"get": "defaults"}), name="adgroups_defaults"),
+    url(r"^clone/$", views.CloneAdGroupViewSet.as_view({"post": "post"}), name="adgroups_clone"),
 ]

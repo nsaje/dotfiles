@@ -6,6 +6,7 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 import dash.constants
+import dash.features.cloneadgroup
 from core.features import bid_modifiers
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
@@ -14,7 +15,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupViewSetTest(RESTAPITestCase):
+class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -494,5 +495,50 @@ class LegacyAdGroupViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
 
-class AdGroupViewSetTest(FutureRESTAPITestCase, LegacyAdGroupViewSetTest):
+class AdGroupViewSetTestCase(FutureRESTAPITestCase, LegacyAdGroupViewSetTestCase):
+    pass
+
+
+class LegacyCloneAdGroupViewTestCase(RESTAPITestCase):
+    def setUp(self):
+        super().setUp()
+        test_helper.add_permissions(self.user, permissions=["can_clone_adgroups"])
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+
+    @classmethod
+    def clone_repr(cls, source_ad_group, destination_campaign):
+        return cls.normalize(
+            {
+                "adGroupId": str(source_ad_group.pk),
+                "destinationCampaignId": str(destination_campaign.pk),
+                "destinationAdGroupName": "New ad group clone",
+                "cloneAds": False,
+            }
+        )
+
+    def test_no_obj_access(self):
+        account = magic_mixer.blend(core.models.Account)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        data = self.clone_repr(ad_group, campaign)
+
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_clone"), data=data, format="json")
+        self.assertResponseError(r, "MissingDataError")
+
+    @mock.patch.object(dash.features.cloneadgroup.service, "clone", autospec=True)
+    def test_post(self, mock_clone):
+        cloned_ad_group = magic_mixer.blend(core.models.AdGroup)
+        mock_clone.return_value = cloned_ad_group
+
+        data = self.clone_repr(self.ad_group, self.campaign)
+
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_clone"), data=data, format="json")
+        r = self.assertResponseValid(r)
+        self.assertDictContainsSubset({"id": str(cloned_ad_group.pk)}, r["data"])
+
+
+class CloneAdGroupViewTestCase(FutureRESTAPITestCase, LegacyCloneAdGroupViewTestCase):
     pass
