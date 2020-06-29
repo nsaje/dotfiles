@@ -63,6 +63,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         agency_id=None,
         account_id=None,
         name,
+        state,
         ad_groups_included,
         campaigns_included,
         accounts_included,
@@ -80,15 +81,20 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         publisher_group_id,
         conditions,
     ):
+        agency = core.models.Agency.objects.get(id=agency_id) if agency_id else None
+        account = core.models.Account.objects.get(id=account_id) if account_id else None
         representation = {
             "name": name,
+            "state": automation.rules.RuleState.get_name(state),
             "agencyId": agency_id,
+            "agencyName": agency.name if agency else "",
             "accountId": account_id,
             "entities": {
                 "adGroup": {"included": ad_groups_included},
                 "campaign": {"included": campaigns_included},
                 "account": {"included": accounts_included},
             },
+            "accountName": account.settings.name if account else "",
             "targetType": automation.rules.TargetType.get_name(target_type),
             "actionType": automation.rules.ActionType.get_name(action_type),
             "window": automation.rules.MetricWindow.get_name(window),
@@ -147,6 +153,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             agency_id=rule_db.agency_id,
             account_id=rule_db.account_id,
             name=rule_db.name,
+            state=rule_db.state,
             ad_groups_included=[ag.id for ag in rule_db.ad_groups_included.all()],
             campaigns_included=[campaign.id for campaign in rule_db.campaigns_included.all()],
             accounts_included=[acc.id for acc in rule_db.accounts_included.all()],
@@ -234,19 +241,35 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
 
-        magic_mixer.cycle(3).blend(automation.rules.Rule, agency=agency)
+        rules_with_agency = magic_mixer.cycle(3).blend(automation.rules.Rule, agency=agency)
         rules_with_account = magic_mixer.cycle(3).blend(automation.rules.Rule, account=account_on_agency)
 
         response = self.client.get(reverse("restapi.rules.internal:rules_list"), {"account_id": account_on_agency.id})
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
 
         response_ids = [int(item.get("id")) for item in result["data"]]
-        expected_response_ids = [item.id for item in rules_with_account]
+        expected_response_ids = [item.id for item in rules_with_account] + [item.id for item in rules_with_agency]
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
+    def test_list_with_keyword(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+
+        magic_mixer.blend(automation.rules.Rule, agency=agency, name="Rule 1")
+        magic_mixer.blend(automation.rules.Rule, agency=agency, name="Rule 2")
+        magic_mixer.blend(automation.rules.Rule, agency=agency, name="Rule test 3")
+
+        r = self.client.get(reverse("restapi.rules.internal:rules_list"), {"keyword": "test", "agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["count"], 1)
+
+        r = self.client.get(reverse("restapi.rules.internal:rules_list"), {"keyword": "rule", "agencyId": agency.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["count"], 3)
 
     def test_create(self):
         rule_data = self.rule_repr(
             name="New test rule",
+            state=automation.rules.RuleState.ENABLED,
             agency_id=self.agency.id,
             ad_groups_included=[self.ad_group.id],
             campaigns_included=[],
@@ -286,6 +309,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         )
         rule_data = self.rule_repr(
             name="New test rule",
+            state=automation.rules.RuleState.ENABLED,
             agency_id=self.agency.id,
             ad_groups_included=[self.ad_group.id],
             campaigns_included=[],
@@ -370,14 +394,14 @@ class LegacyRuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITe
         account_on_another_agency = magic_mixer.blend(core.models.Account, agency=another_agency)
 
         rule_with_agency = magic_mixer.blend(automation.rules.Rule, agency=agency)
-        rule_with_anoher_agency = magic_mixer.blend(automation.rules.Rule, agency=another_agency)
+        rule_with_another_agency = magic_mixer.blend(automation.rules.Rule, agency=another_agency)
         rule_with_account_on_agency = magic_mixer.blend(automation.rules.Rule, account=account_on_agency)
         rule_with_account_on_another_agency = magic_mixer.blend(
             automation.rules.Rule, account=account_on_another_agency
         )
 
         rule_histories_with_agency = magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_agency)
-        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_anoher_agency)
+        magic_mixer.cycle(3).blend(automation.rules.RuleHistory, rule=rule_with_another_agency)
         rule_histories_with_account_on_agency = magic_mixer.cycle(3).blend(
             automation.rules.RuleHistory, rule=rule_with_account_on_agency
         )

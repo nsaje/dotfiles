@@ -57,24 +57,32 @@ class RuleViewSet(RESTAPIBaseViewSet):
 
         if account_id is not None:
             account = zemauth.access.get_account(request.user, Permission.READ, account_id)
-            rules = automation.rules.Rule.objects.filter(Q(account=account)).exclude_archived().order_by("-created_dt")
+            if account.agency:
+                rules = automation.rules.Rule.objects.filter(
+                    Q(account=account) | Q(agency=account.agency)
+                ).select_related("agency")
+            else:
+                rules = automation.rules.Rule.objects.filter(account=account).select_related("agency")
+
         elif agency_id is not None:
             agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
             if agency_only:
-                rules = (
-                    automation.rules.Rule.objects.filter(Q(agency=agency)).exclude_archived().order_by("-created_dt")
-                )
+                rules = automation.rules.Rule.objects.filter(agency=agency).select_related("account")
             else:
-                rules = (
-                    automation.rules.Rule.objects.filter(Q(agency=agency) | Q(account__agency=agency))
-                    .exclude_archived()
-                    .order_by("-created_dt")
-                )
+                rules = automation.rules.Rule.objects.filter(
+                    Q(agency=agency) | Q(account__agency=agency)
+                ).select_related("account")
 
         else:
             raise utils.exc.ValidationError(
                 errors={"non_field_errors": "Either agency id or account id must be provided."}
             )
+
+        keyword = qpe.validated_data.get("keyword")
+        if keyword:
+            rules = rules.filter(name__icontains=keyword)
+
+        rules = rules.exclude_archived().order_by("-created_dt")
 
         paginator = StandardPagination()
         rules_paginated = paginator.paginate_queryset(rules, request)

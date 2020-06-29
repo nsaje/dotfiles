@@ -59,11 +59,14 @@ class RuleEntitiesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
+    agency_name = rest_framework.serializers.CharField(source="agency.name", default=None, read_only=True)
     account_id = restapi.serializers.fields.IdField(allow_null=True, required=False)
+    account_name = rest_framework.serializers.CharField(source="account.settings.name", default=None, read_only=True)
     name = restapi.serializers.fields.PlainCharField(
         max_length=127,
         error_messages={"required": "Please specify a rule name.", "null": "Please specify a rule name."},
     )
+    state = restapi.serializers.fields.DashConstantField(automation.rules.RuleState, read_only=True, required=False)
 
     entities = RuleEntitiesSerializer(source="*")
 
@@ -118,6 +121,7 @@ class RuleQueryParams(
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
     agency_only = restapi.serializers.fields.NullBooleanField(required=False, default=False)
+    keyword = restapi.serializers.fields.PlainCharField(required=False)
 
 
 class RuleHistorySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
