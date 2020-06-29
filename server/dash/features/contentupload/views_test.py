@@ -3,7 +3,6 @@ import json
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
-from django.test import TestCase
 from django.urls import reverse
 from mock import MagicMock
 from mock import patch
@@ -11,29 +10,23 @@ from mock import patch
 import utils.test_helper
 from dash import constants
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-def _get_client(superuser=False):
-    password = "secret"
-
-    user_id = 1 if superuser else 2
-    user = User.objects.get(pk=user_id)
-    username = user.email
-
-    client = Client()
-    client.login(username=username, password=password)
-
-    return client
-
-
-class UploadCsvTestCase(TestCase):
+class LegacyUploadCsvTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
     def setUp(self):
-        utils.test_helper.add_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad(self):
@@ -45,7 +38,7 @@ class UploadCsvTestCase(TestCase):
             b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": 1, "account_id": 1},
             follow=True,
@@ -83,7 +76,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("Click for more", candidate.call_to_action)
 
     def test_post_content_ad_no_icon_permission(self):
-        utils.test_helper.remove_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+        utils.test_helper.remove_permissions(self.user, permissions=["can_use_creative_icon"])
 
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
@@ -92,7 +85,7 @@ class UploadCsvTestCase(TestCase):
             b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": 1, "account_id": 1},
             follow=True,
@@ -113,7 +106,8 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad_ad_group_archived(self):
-        account = magic_mixer.blend(models.Account, users=[User.objects.get(pk=2)])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
         campaign = magic_mixer.blend(models.Campaign, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign, archived=True)
         mock_file = SimpleUploadedFile(
@@ -123,7 +117,7 @@ class UploadCsvTestCase(TestCase):
             b"http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": ad_group.id, "account_id": account.id},
             follow=True,
@@ -144,8 +138,7 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_image_ad(self):
-        user = User.objects.get(pk=2)
-        account = magic_mixer.blend(models.Account, users=[user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
@@ -155,7 +148,7 @@ class UploadCsvTestCase(TestCase):
             b"http://zemanta.com/test-image.jpg,zemanta.com,test,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
             follow=True,
@@ -193,8 +186,7 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_ad_tag(self):
-        user = User.objects.get(pk=2)
-        account = magic_mixer.blend(models.Account, users=[user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
@@ -204,7 +196,7 @@ class UploadCsvTestCase(TestCase):
             b",  300 X  250 ,<body></body>,zemanta.com,test,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
             follow=True,
@@ -258,7 +250,7 @@ class UploadCsvTestCase(TestCase):
             b"test content ad,http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,description,example.com,Example",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": ad_group_id, "account_id": 1},
             follow=True,
@@ -305,7 +297,7 @@ class UploadCsvTestCase(TestCase):
             b"testtoolonglabelforthecontentadcandidatelabelfield,entropy,"
             b"http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": ad_group_id, "account_id": 1},
             follow=True,
@@ -337,8 +329,7 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_image_ad_errors(self):
-        user = User.objects.get(pk=2)
-        account = magic_mixer.blend(models.Account, users=[user])
+        account = self.mix_account(self.user, [Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
@@ -348,7 +339,7 @@ class UploadCsvTestCase(TestCase):
             b"ahttp://zemanta.com/test-image.jpg,,,http://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
             follow=True,
@@ -378,9 +369,7 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_ad_tag_errors(self):
-        self.maxDiff = None
-        user = User.objects.get(pk=2)
-        account = magic_mixer.blend(models.Account, users=[user])
+        account = self.mix_account(self.user, [Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
@@ -390,7 +379,7 @@ class UploadCsvTestCase(TestCase):
             b",  350 X  200 ,<body></body>,,test,http://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_csv", kwargs={}),
             {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
             follow=True,
@@ -428,9 +417,19 @@ class UploadCsvTestCase(TestCase):
         )
 
 
-class UploadStatusTestCase(TestCase):
+class UploadCsvTestCase(FutureDASHAPITestCase, LegacyUploadCsvTestCase):
+    pass
+
+
+class LegacyUploadStatusTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_pending(self):
         batch_id = 1
@@ -440,7 +439,8 @@ class UploadStatusTestCase(TestCase):
         expected_candidate = candidate.to_dict(can_use_icon=True)
         expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
 
-        response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
+
         self.assertEqual(200, response.status_code)
         response_json = json.loads(response.content)
         self.assertEqual(
@@ -457,7 +457,7 @@ class UploadStatusTestCase(TestCase):
 
         expected_candidate["errors"] = {}
 
-        response = _get_client(True).get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         response_json = json.loads(response.content)
         self.assertEqual(
@@ -481,7 +481,7 @@ class UploadStatusTestCase(TestCase):
             "secondary_tracker_url": ["Invalid or unreachable tracker URL"],
         }
 
-        response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         response_json = json.loads(response.content)
         self.assertEqual(
@@ -490,9 +490,19 @@ class UploadStatusTestCase(TestCase):
         self.assertIsNone(response_json["data"]["candidates"][str(candidate.id)]["hosted_icon_url"])
 
 
-class UploadSaveTestCase(TestCase):
+class UploadStatusTestCase(FutureDASHAPITestCase, LegacyUploadStatusTestCase):
+    pass
+
+
+class LegacyUploadSaveTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     @staticmethod
     def _mock_insert_redirects(content_ads, clickthrough_resolve):
@@ -509,7 +519,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 7
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -533,7 +543,7 @@ class UploadSaveTestCase(TestCase):
         ad_group.archived = True
         ad_group.save(None)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -558,7 +568,7 @@ class UploadSaveTestCase(TestCase):
         mock_insert_batch.side_effect = self._mock_insert_redirects
         batch_id = 8
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -586,7 +596,7 @@ class UploadSaveTestCase(TestCase):
         batch_id = 8
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({"batch_name": "new batch name"}),
             content_type="application/json",
@@ -601,7 +611,7 @@ class UploadSaveTestCase(TestCase):
     def test_invalid_batch_name(self):
         batch_id = 2
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({"batch_name": "new batch name" * 50}),
             content_type="application/json",
@@ -630,7 +640,7 @@ class UploadSaveTestCase(TestCase):
 
         batch_id = 3
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -658,7 +668,7 @@ class UploadSaveTestCase(TestCase):
         ad_group_id = 7
         models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -677,7 +687,7 @@ class UploadSaveTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
             json.dumps({}),
             content_type="application/json",
@@ -705,7 +715,7 @@ class UploadSaveTestCase(TestCase):
         account = ad_group.campaign.account
         batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_save", kwargs={"batch_id": batch.id}),
             json.dumps({}),
             content_type="application/json",
@@ -721,19 +731,26 @@ class UploadSaveTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class CandidatesDownloadTestCase(TestCase):
+class UploadSaveTestCase(FutureDASHAPITestCase, LegacyUploadSaveTestCase):
+    pass
+
+
+class LegacyCandidatesDownloadTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
 
     def setUp(self):
-        utils.test_helper.add_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_valid(self):
         batch_id = 1
 
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
-        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             (
@@ -754,7 +771,7 @@ class CandidatesDownloadTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
-        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             (
@@ -776,7 +793,7 @@ class CandidatesDownloadTestCase(TestCase):
         batch.ad_group.campaign.save(None)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
-        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             (
@@ -793,7 +810,7 @@ class CandidatesDownloadTestCase(TestCase):
     def test_custom_batch_name(self):
         batch_id = 1
 
-        response = _get_client().get(
+        response = self.client.get(
             reverse("upload_candidates_download", kwargs={"batch_id": batch_id}),
             {"batch_name": "Another batch"},
             follow=True,
@@ -806,7 +823,7 @@ class CandidatesDownloadTestCase(TestCase):
         account = ad_group.campaign.account
         batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
-        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch.id}), follow=True)
+        response = self.client.get(reverse("upload_candidates_download", kwargs={"batch_id": batch.id}), follow=True)
         self.assertEqual(404, response.status_code)
         self.assertEqual(
             {"success": False, "data": {"error_code": "MissingDataError", "message": "Upload batch does not exist"}},
@@ -817,9 +834,19 @@ class CandidatesDownloadTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadCancelTestCase(TestCase):
+class CandidatesDownloadTestCase(FutureDASHAPITestCase, LegacyCandidatesDownloadTestCase):
+    pass
+
+
+class LegacyUploadCancelTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_valid(self):
         batch_id = 1
@@ -827,7 +854,7 @@ class UploadCancelTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
-        response = _get_client().post(reverse("upload_cancel", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.post(reverse("upload_cancel", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         self.assertEqual({"success": True}, json.loads(response.content))
 
@@ -843,7 +870,7 @@ class UploadCancelTestCase(TestCase):
         batch.status = constants.UploadBatchStatus.DONE
         batch.save()
 
-        response = _get_client().post(reverse("upload_cancel", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.post(reverse("upload_cancel", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(400, response.status_code)
         self.assertEqual(
             {
@@ -866,7 +893,7 @@ class UploadCancelTestCase(TestCase):
         account = ad_group.campaign.account
         batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
 
-        response = _get_client().post(reverse("upload_cancel", kwargs={"batch_id": batch.id}), follow=True)
+        response = self.client.post(reverse("upload_cancel", kwargs={"batch_id": batch.id}), follow=True)
         self.assertEqual(404, response.status_code)
         self.assertEqual(
             {"success": False, "data": {"error_code": "MissingDataError", "message": "Upload batch does not exist"}},
@@ -877,14 +904,23 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
-class UploadBatchTest(TestCase):
+class UploadCancelTestCase(FutureDASHAPITestCase, LegacyUploadCancelTestCase):
+    pass
+
+
+class LegacyUploadBatchTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
 
     def test_create_empty_batch(self):
         batch_name = "test"
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_batch", kwargs={}),
             json.dumps({"batch_name": batch_name, "account_id": 1, "ad_group_id": 1}),
             content_type="application/json",
@@ -906,7 +942,7 @@ class UploadBatchTest(TestCase):
     def test_create_empty_batch_invalid_batch_name(self):
         batch_name = ""
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_batch", kwargs={}),
             json.dumps({"batch_name": batch_name}),
             content_type="application/json",
@@ -915,15 +951,25 @@ class UploadBatchTest(TestCase):
         self.assertEqual(400, response.status_code)
 
 
-class CandidateTest(TestCase):
+class UploadBatchTestCase(FutureDASHAPITestCase, LegacyUploadBatchTestCase):
+    pass
+
+
+class LegacyCandidateTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_get_candidate(self):
         batch_id = 1
         candidate_id = 1
 
-        response = _get_client().get(
+        response = self.client.get(
             reverse("upload_candidate", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}), follow=True
         )
         self.assertEqual(400, response.status_code)
@@ -932,7 +978,12 @@ class CandidateTest(TestCase):
         batch_id = 1
         self.maxDiff = None
 
-        response = _get_client(True).get(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
+        user = User.objects.get(pk=1)
+        client = Client()
+        client.login(username=user.email, password="secret")
+        utils.test_helper.add_permissions(user, permissions=["can_use_creative_icon"])
+
+        response = self.client.get(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
 
         response = json.loads(response.content)
@@ -992,7 +1043,7 @@ class CandidateTest(TestCase):
     def test_add_candidate(self):
         batch_id = 1
 
-        response = _get_client().post(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
+        response = self.client.post(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
         response = json.loads(response.content)
         candidate = models.ContentAdCandidate.objects.latest("created_dt")
@@ -1051,7 +1102,7 @@ class CandidateTest(TestCase):
         batch_id = 1
         candidate_id = 1
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_candidate", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}), follow=True
         )
         self.assertEqual(400, response.status_code)
@@ -1060,7 +1111,7 @@ class CandidateTest(TestCase):
         batch_id = 5
         candidate_id = 4
 
-        response = _get_client().delete(
+        response = self.client.delete(
             reverse("upload_candidate", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}), follow=True
         )
         self.assertEqual(200, response.status_code)
@@ -1073,7 +1124,7 @@ class CandidateTest(TestCase):
         batch_id = 5
         candidate_id = 555
 
-        response = _get_client().delete(
+        response = self.client.delete(
             reverse("upload_candidate", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}), follow=True
         )
         self.assertEqual(404, response.status_code)
@@ -1088,7 +1139,7 @@ class CandidateTest(TestCase):
         batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
         candidate_id = 4
 
-        response = _get_client().delete(
+        response = self.client.delete(
             reverse("upload_candidate", kwargs={"batch_id": batch.id, "candidate_id": candidate_id}), follow=True
         )
         self.assertEqual(404, response.status_code)
@@ -1098,9 +1149,19 @@ class CandidateTest(TestCase):
         )
 
 
-class CandidateUpdateTest(TestCase):
+class CandidateTestCase(FutureDASHAPITestCase, LegacyCandidateTestCase):
+    pass
+
+
+class LegacyCandidateUpdateTestCase(DASHAPITestCase):
 
     fixtures = ["test_upload.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_update_candidate(self):
         batch_id = 5
@@ -1124,7 +1185,7 @@ class CandidateUpdateTest(TestCase):
             "defaults": [],
         }
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_candidate_update", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}),
             {"data": json.dumps(resource)},
             follow=True,
@@ -1175,7 +1236,7 @@ class CandidateUpdateTest(TestCase):
             "defaults": [],
         }
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_candidate_update", kwargs={"batch_id": batch_id, "candidate_id": candidate_id}),
             {"data": json.dumps(resource)},
             follow=True,
@@ -1192,7 +1253,7 @@ class CandidateUpdateTest(TestCase):
         batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group, account=account)
         candidate_id = 4
 
-        response = _get_client().post(
+        response = self.client.post(
             reverse("upload_candidate_update", kwargs={"batch_id": batch.id, "candidate_id": candidate_id}),
             {"data": "x"},
             follow=True,
@@ -1202,3 +1263,7 @@ class CandidateUpdateTest(TestCase):
             {"success": False, "data": {"error_code": "MissingDataError", "message": "Upload batch does not exist"}},
             json.loads(response.content),
         )
+
+
+class CandidateUpdateTestCase(FutureDASHAPITestCase, LegacyCandidateUpdateTestCase):
+    pass

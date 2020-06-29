@@ -6,21 +6,22 @@ from django.http import Http404
 import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
 import utils.exc
+import zemauth.access
 from dash import constants
 from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
-from dash.views import helpers
+from zemauth.features.entity_permission import Permission
 
 from . import exc
 from . import upload
 
 
 def _get_account_ad_group(user, form):
-    account = helpers.get_account(user, form.cleaned_data["account_id"])  # check access permission
+    account = zemauth.access.get_account(user, Permission.WRITE, form.cleaned_data["account_id"])
     ad_group = None
     if form.cleaned_data["ad_group_id"]:
-        ad_group = helpers.get_ad_group(user, form.cleaned_data["ad_group_id"])
+        ad_group = zemauth.access.get_ad_group(user, Permission.WRITE, form.cleaned_data["ad_group_id"])
     return account, ad_group
 
 
@@ -69,10 +70,8 @@ class UploadCsv(DASHAPIBaseView):
             batch, candidates = upload.insert_candidates(
                 request.user, account, candidates_data, ad_group, batch_name, filename
             )
-
         except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
             raise utils.exc.ValidationError(message=str(err))
-
         candidates_result = upload.get_candidates_with_errors(request, candidates)
         return self.create_api_response(
             {"batch_id": batch.id, "batch_name": batch.name, "candidates": candidates_result}
@@ -81,7 +80,7 @@ class UploadCsv(DASHAPIBaseView):
 
 class UploadStatus(DASHAPIBaseView):
     def get(self, request, batch_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.READ, batch_id)
 
         candidates = batch.contentadcandidate_set.all()
         candidate_ids = request.GET.get("candidates")
@@ -131,7 +130,7 @@ class UploadSave(DASHAPIBaseView):
             raise utils.exc.ValidationError(message=str(e))
 
     def post(self, request, batch_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.WRITE, batch_id)
 
         if batch.type != constants.UploadBatchType.EDIT:
             content_ads = self._execute_save(request, batch)
@@ -145,7 +144,7 @@ class UploadSave(DASHAPIBaseView):
 
 class UploadCancel(DASHAPIBaseView):
     def post(self, request, batch_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.WRITE, batch_id)
 
         try:
             upload.cancel_upload(batch)
@@ -157,7 +156,7 @@ class UploadCancel(DASHAPIBaseView):
 
 class CandidatesDownload(DASHAPIBaseView):
     def get(self, request, batch_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.READ, batch_id)
 
         batch_name = batch.name
         if "batch_name" in request.GET:
@@ -169,7 +168,7 @@ class CandidatesDownload(DASHAPIBaseView):
 
 class CandidateUpdate(DASHAPIBaseView):
     def post(self, request, batch_id, candidate_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.WRITE, batch_id)
         resource = json.loads(request.POST["data"])
 
         try:
@@ -188,7 +187,7 @@ class Candidate(DASHAPIBaseView):
             raise utils.exc.ValidationError("Not supported")
 
         try:
-            batch = helpers.get_upload_batch(request.user, batch_id)
+            batch = zemauth.access.get_upload_batch(request.user, Permission.READ, batch_id)
         except models.UploadBatch.DoesNotExist:
             raise utils.exc.MissingDataError("Batch does not exist")
 
@@ -199,13 +198,13 @@ class Candidate(DASHAPIBaseView):
     def post(self, request, batch_id, candidate_id=None):
         if candidate_id:
             raise utils.exc.ValidationError("Not supported")
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.WRITE, batch_id)
         candidate = upload.add_candidate(batch)
 
         return self.create_api_response({"candidate": candidate.to_dict()})  # don't add errors for new candidate
 
     def delete(self, request, batch_id, candidate_id):
-        batch = helpers.get_upload_batch(request.user, batch_id)
+        batch = zemauth.access.get_upload_batch(request.user, Permission.WRITE, batch_id)
         try:
             candidate = batch.contentadcandidate_set.get(id=candidate_id)
         except models.ContentAdCandidate.DoesNotExist:
