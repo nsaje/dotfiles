@@ -34,6 +34,7 @@ describe('CampaignBudgetEditFormComponent', () => {
             startDate: new Date(1970, 2, 21),
             endDate: new Date(1970, 3, 21),
             licenseFee: '13.05',
+            serviceFee: '10.05',
             amount: 5000000,
             total: '5000000',
             allocated: '3000000',
@@ -83,6 +84,7 @@ describe('CampaignBudgetEditFormComponent', () => {
                 allocated: '€3,000,000.00',
                 available: '€2,000,000.00',
                 licenseFee: '13.05%',
+                serviceFee: '10.05%',
             },
         ]);
     });
@@ -107,6 +109,7 @@ describe('CampaignBudgetEditFormComponent', () => {
                 allocated: '$3,000,000.00',
                 available: '$2,000,000.00',
                 licenseFee: '13.05%',
+                serviceFee: '10.05%',
             },
         ]);
     });

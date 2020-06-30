@@ -35,6 +35,8 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     @Input()
     showLicenseFee: boolean;
     @Input()
+    showServiceFee: boolean;
+    @Input()
     showMargin: boolean;
     @Input()
     credits: Credit[];
@@ -141,6 +143,7 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
 
     private getFormattedCredits(credits: Credit[]): FormattedCredit[] {
         const formattedCredits: FormattedCredit[] = [];
+        // tslint:disable-next-line: cyclomatic-complexity
         credits.forEach(credit => {
             if (
                 (!commonHelpers.isDefined(this.budget.id) &&
@@ -179,6 +182,11 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                         : 'N/A',
                     licenseFee: commonHelpers.isDefined(credit.licenseFee)
                         ? `${credit.licenseFee}${unitsHelpers.getUnitText(
+                              Unit.Percent
+                          )}`
+                        : 'N/A',
+                    serviceFee: commonHelpers.isDefined(credit.serviceFee)
+                        ? `${credit.serviceFee}${unitsHelpers.getUnitText(
                               Unit.Percent
                           )}`
                         : 'N/A',

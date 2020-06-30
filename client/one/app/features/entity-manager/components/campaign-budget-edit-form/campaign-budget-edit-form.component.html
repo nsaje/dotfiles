@@ -31,6 +31,7 @@
                         <th>Available credit</th>
                         <th>Total credit</th>
                         <th *ngIf="showLicenseFee">License Fee</th>
+                        <th *ngIf="showServiceFee">Service Fee</th>
                         <th>Valid From</th>
                         <th>Valid To</th>
                         <th>Notes</th>
@@ -62,6 +63,9 @@
                             <td>{{ credit.total }}</td>
                             <td *ngIf="showLicenseFee">
                                 {{ credit.licenseFee }}
+                            </td>
+                            <td *ngIf="showServiceFee">
+                                {{ credit.serviceFee }}
                             </td>
                             <td>{{ credit.startDate }}</td>
                             <td>{{ credit.endDate }}</td>

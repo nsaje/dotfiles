@@ -406,6 +406,7 @@
                             [currency]="currency"
                             [budgetErrors]="budgetErrors"
                             [showLicenseFee]="showLicenseFee"
+                            [showServiceFee]="canSeeServiceFee()"
                             [showMargin]="showMargin"
                             [credits]="credits"
                             (budgetChange)="store.updateBudget($event)"
@@ -448,6 +449,7 @@
                                 [budgets]="state.extras.budgetsDepleted"
                                 [currency]="state.extras.currency"
                                 [showLicenseFee]="canAccessPlatformCosts()"
+                                [showServiceFee]="canSeeServiceFee()"
                                 [showMargin]="canAccessAgencyCosts()"
                             ></zem-campaign-budgets-list>
                         </div>
