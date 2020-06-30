@@ -1087,10 +1087,8 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
 
-        self.assertEqual(len(resp_json["data"]["allowedMediaSources"]), 3)
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][0]["id"], str(sources[0].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][1]["id"], str(sources[1].id))
-        self.assertEqual(resp_json["data"]["allowedMediaSources"][2]["id"], str(sources[2].id))
+        allowed_media_sources_ids = [x["id"] for x in resp_json["data"]["allowedMediaSources"]]
+        self.assertCountEqual([str(x.id) for x in [sources[0], sources[1], sources[2]]], allowed_media_sources_ids)
 
         put_data = resp_json["data"].copy()
 

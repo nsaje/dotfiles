@@ -17,3 +17,4 @@ from .entity_access import get_publisher_group
 from .entity_access import get_publisher_groups
 from .entity_access import get_refund_line_item
 from .entity_access import get_upload_batch
+from .entity_access import get_user

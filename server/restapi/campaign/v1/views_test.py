@@ -308,7 +308,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         )
         resp_json = self.assertResponseValid(r, data_type=list)
 
-        self.assertEqual([{"id": str(x.id)} for x in campaigns[5:7]], resp_json["data"])
+        self.assertCountEqual([{"id": str(x.id)} for x in campaigns[5:7]], resp_json["data"])
 
     def test_campaigns_list_marker_pagination_only_ids(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])

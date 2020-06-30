@@ -28,6 +28,20 @@ class EntityPermissionMixinTestCase(TestCase):
             self._for_account(user, entity_perm_function, permission)
             self._no_access(user, entity_perm_function)
 
+    def test_has_perm_on_all_entities(self):
+        user: User = magic_mixer.blend(User)
+        for permission in zemauth.features.entity_permission.Permission.get_all():
+            magic_mixer.blend(
+                zemauth.features.entity_permission.EntityPermission,
+                user=user,
+                agency=None,
+                account=None,
+                permission=permission,
+            )
+        with self.assertNumQueries(1):
+            for permission in zemauth.features.entity_permission.Permission.get_all():
+                self.assertTrue(user.has_perm_on_all_entities(permission))
+
     def test_set_entity_permissions(self):
         calling_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
         request = type("", (), {})()
@@ -59,7 +73,7 @@ class EntityPermissionMixinTestCase(TestCase):
             {"agency": agency, "permission": Permission.BUDGET},
         ]
 
-        requested_user.set_entity_permissions(entity_permissions, request, None, agency)
+        requested_user.set_entity_permissions(request, None, agency, entity_permissions)
 
         # 1 existing permission on another agency + 2 new permissions from the request on this agency
         eps = requested_user.entitypermission_set.all()
@@ -86,10 +100,10 @@ class EntityPermissionMixinTestCase(TestCase):
         self.assertRaises(
             EntityPermissionChangeNotAllowed,
             requested_user.set_entity_permissions,
-            new_entity_permissions=entity_permissions,
             request=request,
             account=None,
             agency=agency,
+            new_entity_permissions=entity_permissions,
         )
 
     def test_set_entity_permissions_promote_to_internal(self):
@@ -120,7 +134,7 @@ class EntityPermissionMixinTestCase(TestCase):
 
         entity_permissions = [{"permission": Permission.READ}, {"permission": Permission.BUDGET}]
 
-        requested_user.set_entity_permissions(entity_permissions, request, None, agency)
+        requested_user.set_entity_permissions(request, None, agency, entity_permissions)
 
         # 2 new internal permissions, all other permissions are gone
         eps = requested_user.entitypermission_set.all()

@@ -13,10 +13,14 @@ from utils import test_helper
 from zemauth.models import User
 
 
-class MockDatetime(datetime.datetime):
-    @classmethod
-    def utcnow(cls):
-        return datetime.datetime(2016, 1, 2)
+def _configure_datetime_utcnow_mock(mock_datetime, utcnow_value):
+    class DatetimeMock(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return utcnow_value
+
+    mock_datetime.datetime = DatetimeMock
+    mock_datetime.timedelta = datetime.timedelta
 
 
 class LegacyNavigationAllAccountsDataViewTestCase(DASHAPITestCase):
@@ -58,8 +62,11 @@ class NavigationAllAccountsDataViewTestCase(FutureDASHAPITestCase, LegacyNavigat
 class LegacyNavigationDataViewTestCase(DASHAPITestCase):
     fixtures = ["test_navigation.yaml"]
 
-    def _get(self, user_id, level, obj_id, filtered_sources=None, filtered_agencies=None, filtered_account_types=None):
+    def setUp(self):
+        super().setUp()
+        self.mock_today = datetime.date(2016, 1, 2)
 
+    def _get(self, user_id, level, obj_id, filtered_sources=None, filtered_agencies=None, filtered_account_types=None):
         username = User.objects.get(pk=user_id).email
         self.client.login(username=username, password="secret")
 
@@ -172,8 +179,11 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
         response = self._get(4, "campaigns", 2)
         self.assertDictEqual(response, {"message": "Campaign does not exist", "error_code": "MissingDataError"})
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_ad_group(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_ad_group(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(1, "ad_groups", 1)
 
         self.assertDictEqual(
@@ -294,6 +304,7 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
 
     def setUp(self):
         super().setUp()
+        self.mock_today = datetime.date(2016, 1, 2)
         self.expected_response = [
             {
                 "archived": False,
@@ -355,13 +366,19 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
         response = json.loads(response.content)
         return response
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(1)
         self.assertCountEqual(response["data"], self.expected_response)
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_no_statuses(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_no_statuses(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(1, loadStatuses="false")
         self.assertCountEqual(
             [
@@ -389,8 +406,11 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
             response["data"],
         )
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_filtered_sources(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_filtered_sources(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(1, filtered_sources=[2])
         expected_response = [
             {
@@ -445,8 +465,11 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
         ]
         self.assertCountEqual(response["data"], expected_response)
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_archived_ad_group_excluded(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_archived_ad_group_excluded(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(2)
 
         expected_response = [
@@ -471,8 +494,11 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
         ]
         self.assertCountEqual(response["data"], expected_response)
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_archived_campaign_excluded(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_archived_campaign_excluded(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(7)
 
         expected_response = [
@@ -489,8 +515,11 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
         ]
         self.assertCountEqual(response["data"], expected_response)
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_archived_account_excluded(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_archived_account_excluded(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         response = self._get(3)
 
         expected_response = {"success": True}
@@ -499,8 +528,11 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
     def test_get_no_data(self):
         self.assertDictEqual(self._get(4), {"success": True})
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_account_filter_agency(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_account_filter_agency(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
         user = User.objects.get(pk=1)
 
         account = models.Account.objects.get(pk=1)
@@ -524,8 +556,12 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
         response = self._get(1, filtered_agencies=[agency2.id, agency.id])
         self.assertCountEqual(self.expected_response, response["data"])
 
-    @patch("datetime.datetime", MockDatetime)
-    def test_get_account_type_filter(self):
+    @patch("utils.dates_helper.datetime")
+    def test_get_account_type_filter(self, mock_datetime):
+        _configure_datetime_utcnow_mock(
+            mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day)
+        )
+
         response = self._get(1)
         self.assertCountEqual(self.expected_response, response["data"])
 

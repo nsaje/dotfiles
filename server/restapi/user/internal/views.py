@@ -10,7 +10,6 @@ from core.models import Agency
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils.exc import ValidationError
-from zemauth.access import entity_access
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User as ZemUser
 from zemauth.models.user.exceptions import MissingReadPermission
@@ -75,7 +74,7 @@ class UserViewSet(RESTAPIBaseViewSet):
                 for user_data in changes.get("users"):
                     user = ZemUser.objects.get_or_create_user_by_email(user_data["email"])
                     user.update(**user_data)
-                    user.set_entity_permissions(user_data.get("entity_permissions"), request, account, agency)
+                    user.set_entity_permissions(request, account, agency, user_data.get("entity_permissions"))
                     self._augment_user(user, request, account, agency)
 
                     created_users.append(user)
@@ -88,7 +87,7 @@ class UserViewSet(RESTAPIBaseViewSet):
     def get(self, request, user_id):
         account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
 
-        requested_user = entity_access.get_user(calling_user, user_id, account, agency)
+        requested_user = zemauth.access.get_user(calling_user, user_id, account, agency)
         self._augment_user(requested_user, request, account, agency)
 
         return self.response_ok(self.serializer(requested_user, context={"request": request}).data)
@@ -102,9 +101,9 @@ class UserViewSet(RESTAPIBaseViewSet):
 
         try:
             with transaction.atomic():
-                requested_user = entity_access.get_user(calling_user, user_id, account, agency, Permission.USER)
+                requested_user = zemauth.access.get_user(calling_user, user_id, account, agency, Permission.USER)
                 requested_user.update(**user_data)
-                requested_user.set_entity_permissions(user_data.get("entity_permissions"), request, account, agency)
+                requested_user.set_entity_permissions(request, account, agency, user_data.get("entity_permissions"))
                 self._augment_user(requested_user, request, account, agency)
 
         except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
@@ -115,7 +114,7 @@ class UserViewSet(RESTAPIBaseViewSet):
     def remove(self, request, user_id):
         account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
 
-        requested_user = entity_access.get_user(calling_user, user_id, account, agency, Permission.USER)
+        requested_user = zemauth.access.get_user(calling_user, user_id, account, agency, Permission.USER)
         requested_user.delete_entity_permissions(request, account, agency)
 
         return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)

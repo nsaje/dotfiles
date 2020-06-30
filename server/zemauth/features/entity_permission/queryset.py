@@ -32,3 +32,8 @@ class EntityPermissionQuerySet(models.QuerySet):
 
     def filter_by_internal(self):
         return self.filter(models.Q(agency=None) & models.Q(account=None))
+
+    def delete(self):
+        for item in self:
+            item.user.invalidate_entity_permission_cache()
+        super().delete()

@@ -171,6 +171,11 @@ CACHES = {
         "LOCATION": "unique-snowflake",
         "TIMEOUT": 60,  # 1 min
     },
+    "entity_permission_cache": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "entity_permission_cache",
+        "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
+    },
 }
 
 DATABASE_ROUTERS = ["utils.db_router.routers.UseReadReplicaRouter"]
@@ -315,6 +320,11 @@ if TESTING:
         "dash_db_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "bizwire_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
         "local_memory_cache": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+        "entity_permission_cache": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "entity_permission_cache",
+            "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
+        },
     }
 
     PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

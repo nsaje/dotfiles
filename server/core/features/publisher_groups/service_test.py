@@ -971,8 +971,8 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
 
         num_queries = 1
         if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 8 query for all entities permission check
-            num_queries += 8
+            # extra 1 query for all entities permission check
+            num_queries += 1
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_2.id)
@@ -994,6 +994,10 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
                 },
             ],
         )
+
+        if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
+            # reduce for all entities permission check (already in cache)
+            num_queries -= 1
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, self.publisher_group_1.id)
@@ -1084,8 +1088,8 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
 
         num_queries = 1
         if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 8 query for all entities permission check
-            num_queries += 8
+            # extra 1 query for all entities permission check
+            num_queries += 1
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
@@ -1102,8 +1106,8 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
 
         num_queries = 1
         if self.request.user.has_perm("zemauth.fea_use_entity_permission"):
-            # extra 8 query for all entities permission check
-            num_queries += 8
+            # extra 1 query for all entities permission check
+            num_queries += 1
 
         with self.assertNumQueries(num_queries):
             connections = service.get_publisher_group_connections(self.request.user, foreign_publisher_group.id)
@@ -1205,18 +1209,5 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
 class PublisherGroupConnectionsTestCase(FutureCoreTestCase, LegacyPublisherGroupConnectionsTestCase):
     def test_get_connections_foreign_entities_can_see_all_accounts(self):
         self.request.user.entitypermission_set.all().delete()
-        magic_mixer.blend(
-            zemauth.features.entity_permission.EntityPermission,
-            user=self.request.user,
-            agency=None,
-            account=None,
-            permission=Permission.READ,
-        )
-        magic_mixer.blend(
-            zemauth.features.entity_permission.EntityPermission,
-            user=self.request.user,
-            agency=None,
-            account=None,
-            permission=Permission.WRITE,
-        )
+        test_helper.add_entity_permissions(self.request.user, [Permission.READ, Permission.WRITE], None)
         super().test_get_connections_foreign_entities_can_see_all_accounts()

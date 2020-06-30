@@ -3,10 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import Iterable
 from typing import Union
+
+import django.core.cache
 
 import core.models
 import zemauth.features.entity_permission
+from utils import cache_helper
 from utils import zlogging
 from zemauth.features.entity_permission import EntityPermission
 from zemauth.features.entity_permission import Permission
@@ -19,9 +23,11 @@ if TYPE_CHECKING:
 logger = zlogging.getLogger(__name__)
 
 LOG_MESSAGE = "Detected entity permission access differences"
+CACHE_NAME = "entity_permission_cache"
 
 
 class EntityPermissionMixin(EntityPermissionValidationMixin):
+    id: int
     email: str
     has_perm: Callable[..., bool]
     entitypermission_set: Any
@@ -78,29 +84,30 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
         if permission is None or permission not in zemauth.features.entity_permission.Permission.get_all():
             return False
 
-        return self.entitypermission_set.filter(permission=permission, agency=None, account=None).exists()
+        return any(
+            x.permission == permission and x.agency is None and x.account is None for x in self._entity_permission_cache
+        )
 
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 
-    def get_entity_permissions(self, request, account, agency):
+    def get_entity_permissions(self, request, account, agency) -> Iterable[EntityPermission]:
         calling_user = request.user
-
         if account is None and agency is None and calling_user.has_perm_on_all_entities(Permission.USER):
-            return self.entitypermission_set
+            return self._entity_permission_cache
 
         requested_agency = account.agency if account else agency
 
-        callers_accounts = zemauth.access.get_accounts(calling_user, Permission.USER)
-        callers_accounts_on_agency = callers_accounts.filter(agency=requested_agency)
+        accounts_qs = zemauth.access.get_accounts(calling_user, Permission.USER)
+        accounts = list(accounts_qs.filter(agency=requested_agency))
 
-        return (
-            self.entitypermission_set.filter_by_accounts(callers_accounts_on_agency)
-            | self.entitypermission_set.filter_by_agency(requested_agency)
-            | self.entitypermission_set.filter_by_internal()
-        )
+        return [
+            x
+            for x in self._entity_permission_cache
+            if (x.account in accounts) or (x.agency == requested_agency) or (x.agency is None and x.account is None)
+        ]
 
-    def set_entity_permissions(self, new_entity_permissions, request, account, agency):
+    def set_entity_permissions(self, request, account, agency, new_entity_permissions):
         calling_user = request.user
         self.validate_entity_permissions(new_entity_permissions)
 
@@ -135,7 +142,27 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
                         raise EntityPermissionChangeNotAllowed("No internal USER permission")
 
     def delete_entity_permissions(self, request, account, agency):
-        self.get_entity_permissions(request, account, agency).all().delete()
+        entity_permissions = self.get_entity_permissions(request, account, agency)
+        for entity_permission in entity_permissions:
+            entity_permission.delete()
+
+    def invalidate_entity_permission_cache(self):
+        cache_key = cache_helper.get_cache_key(self.id)
+        cache = django.core.cache.caches[CACHE_NAME]
+        cache.delete(cache_key)
+
+    @property
+    def _entity_permission_cache(self) -> Iterable[EntityPermission]:
+        cache_key = cache_helper.get_cache_key(self.id)
+        cache = django.core.cache.caches[CACHE_NAME]
+
+        cached = cache.get(cache_key, None)
+        if cached is None:
+            results = list(self.entitypermission_set.all().select_related("user", "agency", "account"))
+            cache.set(cache_key, results)
+            return results
+
+        return cached
 
     def _has_perm_on_and_log_differences(
         self, permission: str, entity: Entity, fallback_permission: str = None, negate_fallback_permission: bool = False
@@ -166,21 +193,33 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
             return False
 
         if isinstance(entity, core.models.Agency):
-            if self.entitypermission_set.filter(permission=permission).filter_by_agency(entity).exists():
+            if self.has_perm_on_all_entities(permission):
                 return True
-            return self.has_perm_on_all_entities(permission)
+            return any(x.permission == permission and x.agency == entity for x in self._entity_permission_cache)
         elif isinstance(entity, core.models.Account):
-            if self.entitypermission_set.filter(permission=permission).filter_by_account(entity).exists():
+            if self.has_perm_on_all_entities(permission):
                 return True
-            return self.has_perm_on_all_entities(permission)
+            return any(
+                x.permission == permission and x.account == entity for x in self._entity_permission_cache
+            ) or any(x.permission == permission and x.agency == entity.agency for x in self._entity_permission_cache)
         elif isinstance(entity, core.models.Campaign):
-            if self.entitypermission_set.filter(permission=permission).filter_by_campaign(entity).exists():
+            if self.has_perm_on_all_entities(permission):
                 return True
-            return self.has_perm_on_all_entities(permission)
+            return any(
+                x.permission == permission and x.account == entity.account for x in self._entity_permission_cache
+            ) or any(
+                x.permission == permission and x.agency == entity.account.agency for x in self._entity_permission_cache
+            )
         elif isinstance(entity, core.models.AdGroup):
-            if self.entitypermission_set.filter(permission=permission).filter_by_adgroup(entity).exists():
+            if self.has_perm_on_all_entities(permission):
                 return True
-            return self.has_perm_on_all_entities(permission)
+            return any(
+                x.permission == permission and x.account == entity.campaign.account
+                for x in self._entity_permission_cache
+            ) or any(
+                x.permission == permission and x.agency == entity.campaign.account.agency
+                for x in self._entity_permission_cache
+            )
         else:
             agency_full_name = f"{core.models.Agency.__module__}.{core.models.Agency.__name__}"
             account_full_name = f"{core.models.Account.__module__}.{core.models.Account.__name__}"
