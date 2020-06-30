@@ -574,7 +574,7 @@ class SlackAlertTestCase(TestCase):
     def generate_params(
         command_name, channel, username, title, title_link, color, fallback, text, field_title, field_value
     ):
-        log_viewer_link = settings.DCRON["log_viewer_link"].format(command_name=command_name)
+        log_viewer_link = settings.DCRON["log_viewer_link"].format(command_name=command_name.replace("_", ""))
         return {
             "channel": channel,
             "msg_type": None,
