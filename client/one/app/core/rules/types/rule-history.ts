@@ -6,6 +6,7 @@ export interface RuleHistory {
     status: RuleHistoryStatus;
     changes: string | null;
     changesText: string | null;
+    changesFormatted: string | null;
     ruleId: string;
     ruleName: string;
     adGroupId: string;

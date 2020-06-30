@@ -30,6 +30,7 @@ describe('RulesHistoriesStore', () => {
                 status: RuleHistoryStatus.SUCCESS,
                 changes: '',
                 changesText: '',
+                changesFormatted: '',
                 ruleId: '10000000',
                 ruleName: 'Test rule',
                 adGroupId: '1234',

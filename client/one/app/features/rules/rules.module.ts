@@ -7,6 +7,7 @@ import {RuleEditFormNotificationComponent} from './components/rule-edit-form-not
 import {RuleEditFormConditionsComponent} from './components/rule-edit-form-conditions/rule-edit-form-conditions.component';
 import {RuleEditFormConditionComponent} from './components/rule-edit-form-condition/rule-edit-form-condition.component';
 import {RuleEditFormConditionModifierComponent} from './components/rule-edit-form-condition-modifier/rule-edit-form-condition-modifier.component';
+import {RulesHistoriesGridComponent} from './components/rules-histories-grid/rules-histories-grid.component';
 
 @NgModule({
     declarations: [
@@ -16,6 +17,7 @@ import {RuleEditFormConditionModifierComponent} from './components/rule-edit-for
         RuleEditFormConditionsComponent,
         RuleEditFormConditionComponent,
         RuleEditFormConditionModifierComponent,
+        RulesHistoriesGridComponent,
     ],
     imports: [SharedModule],
     exports: [RuleEditFormComponent],
