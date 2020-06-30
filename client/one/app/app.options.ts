@@ -184,10 +184,13 @@ export const APP_OPTIONS = {
     ],
     actualCostChartMetrics: [
         {
-            name: 'Actual Media Spend',
+            name: 'Actual Base Media Spend',
             value: APP_CONSTANTS.chartMetric.MEDIA_COST,
         },
-        {name: 'Actual Data Cost', value: APP_CONSTANTS.chartMetric.DATA_COST},
+        {
+            name: 'Actual Base Data Cost',
+            value: APP_CONSTANTS.chartMetric.DATA_COST,
+        },
     ],
     languages: [
         {name: 'English', value: APP_CONSTANTS.language.ENGLISH},

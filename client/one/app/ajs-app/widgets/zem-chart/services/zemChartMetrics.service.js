@@ -63,14 +63,14 @@ angular
             },
 
             DATA_COST: {
-                name: 'Actual Data Cost',
+                name: 'Actual Base Data Cost',
                 value: 'data_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_view_actual_costs',
             },
             MEDIA_COST: {
-                name: 'Actual Media Spend',
+                name: 'Actual Base Media Spend',
                 value: 'media_cost',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,

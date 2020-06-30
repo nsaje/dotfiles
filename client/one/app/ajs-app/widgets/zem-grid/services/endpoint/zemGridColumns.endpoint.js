@@ -603,7 +603,7 @@ angular
 
             // Costs
             mediaCost: {
-                name: 'Actual Media Spend',
+                name: 'Actual Base Media Spend',
                 field: 'media_cost',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 totalRow: true,
@@ -637,7 +637,7 @@ angular
                 supportsRefunds: true,
             },
             dataCost: {
-                name: 'Actual Data Cost',
+                name: 'Actual Base Data Cost',
                 field: 'data_cost',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 totalRow: true,
@@ -784,7 +784,7 @@ angular
                 costMode: constants.costMode.ANY,
             },
             atCost: {
-                name: 'Actual Platform Spend',
+                name: 'Actual Base Platform Spend',
                 field: 'at_cost',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 totalRow: true,
@@ -832,7 +832,7 @@ angular
 
             // Yesterday cost metrics
             yesterdayAtCost: {
-                name: 'Actual Yesterday Spend',
+                name: 'Actual Base Yesterday Spend',
                 field: 'yesterday_at_cost',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 help:
