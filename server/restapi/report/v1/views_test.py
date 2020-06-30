@@ -18,8 +18,10 @@ class ReportViewsTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
+        self.user = User.objects.get(pk=2)
+
         self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.get(pk=1))
+        self.client.force_authenticate(user=self.user)
 
     @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
     @mock.patch("dash.features.reports.reports.ReportJobExecutor", reports.MockJobExecutor)
@@ -69,7 +71,7 @@ class ReportViewsTest(TestCase):
         self.assertEqual(r.status_code, 200)
 
         # try as different user
-        self.client.force_authenticate(user=User.objects.get(pk=2))
+        self.client.force_authenticate(user=User.objects.get(pk=3))
         r = self.client.get(reverse("restapi.report.v1:reports_details", kwargs={"job_id": job_id}))
         self.assertEqual(r.status_code, 403)
 

@@ -2,17 +2,19 @@ import json
 
 from django.contrib.auth.models import Permission
 from django.test import Client
-from django.test import TestCase
 from django.urls import reverse
 
-import dash.models
+import zemauth.features.entity_permission
 import zemauth.models
 from dash import constants
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.features.scheduled_reports import models
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
-class ScheduledReportsTestCase(TestCase):
+class LegacyScheduledReportsTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend(zemauth.models.User, is_active=True)
         self.user.set_password("secret")
@@ -119,13 +121,35 @@ class ScheduledReportsTestCase(TestCase):
         self.assertEqual(1, len(response.json()["data"]["reports"]))
 
     def _setup_multiple_users_and_accounts(self):
-        self.account = magic_mixer.blend(dash.models.Account)
+        self.account = self.mix_account(
+            self.user,
+            permissions=[
+                zemauth.features.entity_permission.Permission.READ,
+                zemauth.features.entity_permission.Permission.WRITE,
+            ],
+        )
         self.user_1 = magic_mixer.blend(zemauth.models.User, is_active=True)
         self.user_2 = magic_mixer.blend(zemauth.models.User, is_active=True)
-        self.account.users.add(self.user)
-        self.account.users.add(self.user_1)
-        self.account_2 = magic_mixer.blend(dash.models.Account, request=None)
-        self.account_2.users.add(self.user_2)
+
+        if self.user.has_perm("fea_use_entity_permission"):
+            test_helper.add_entity_permissions(
+                self.user_1,
+                [
+                    zemauth.features.entity_permission.Permission.READ,
+                    zemauth.features.entity_permission.Permission.WRITE,
+                ],
+                self.account,
+            )
+        else:
+            self.account.users.add(self.user_1)
+
+        self.account_2 = self.mix_account(
+            self.user_2,
+            permissions=[
+                zemauth.features.entity_permission.Permission.READ,
+                zemauth.features.entity_permission.Permission.WRITE,
+            ],
+        )
         magic_mixer.cycle(3).blend(
             models.ScheduledReport,
             state=constants.ScheduledReportState.ACTIVE,
@@ -133,3 +157,7 @@ class ScheduledReportsTestCase(TestCase):
             account=(account for account in (self.account, self.account, self.account_2)),
             query={"filters": [], "fields": [{"field": "Content Ad"}], "options": {"recipients": []}},
         )
+
+
+class ScheduledReportsTestCase(FutureDASHAPITestCase, LegacyScheduledReportsTestCase):
+    pass

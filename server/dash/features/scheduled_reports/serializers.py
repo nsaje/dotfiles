@@ -2,10 +2,11 @@ from rest_framework import serializers
 
 import restapi.serializers.fields
 import stats.constants
+import zemauth.access
 from dash import constants
 from dash.features.reports import helpers as reports_helpers
 from dash.features.reports import serializers as reports_serializers
-from dash.views import helpers
+from zemauth.features.entity_permission import Permission
 
 
 class ScheduledReportSerializer(serializers.Serializer):
@@ -28,13 +29,13 @@ class ScheduledReportSerializer(serializers.Serializer):
     def get_level(self, obj):
         constraints = reports_helpers.get_filter_constraints(obj.query["filters"])
         if stats.constants.AD_GROUP in constraints:
-            ad_group = helpers.get_ad_group(obj.user, constraints[stats.constants.AD_GROUP])
+            ad_group = zemauth.access.get_ad_group(obj.user, Permission.READ, constraints[stats.constants.AD_GROUP])
             return "Ad Group - " + ad_group.name
         elif stats.constants.CAMPAIGN in constraints:
-            campaign = helpers.get_campaign(obj.user, constraints[stats.constants.CAMPAIGN])
+            campaign = zemauth.access.get_campaign(obj.user, Permission.READ, constraints[stats.constants.CAMPAIGN])
             return "Campaign - " + campaign.name
         elif stats.constants.ACCOUNT in constraints:
-            account = helpers.get_account(obj.user, constraints[stats.constants.ACCOUNT])
+            account = zemauth.access.get_account(obj.user, Permission.READ, constraints[stats.constants.ACCOUNT])
             return "Account - " + account.name
         else:
             return "All accounts"

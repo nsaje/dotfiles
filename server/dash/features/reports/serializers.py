@@ -5,7 +5,9 @@ import dash.views.helpers
 import restapi.serializers.fields
 import stats.api_reports
 import stats.constants
+import zemauth.access
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 from . import helpers
@@ -69,11 +71,15 @@ class ReportQuerySerializer(serializers.Serializer):
         if "start_date" not in filter_constraints or "end_date" not in filter_constraints:
             raise serializers.ValidationError("Please specify a date range!")
         if "ad_group_id" in filter_constraints:
-            dash.views.helpers.get_ad_group(self.context["request"].user, filter_constraints["ad_group_id"])
+            zemauth.access.get_ad_group(
+                self.context["request"].user, Permission.WRITE, filter_constraints["ad_group_id"]
+            )
         if "campaign_id" in filter_constraints:
-            dash.views.helpers.get_campaign(self.context["request"].user, filter_constraints["campaign_id"])
+            zemauth.access.get_campaign(
+                self.context["request"].user, Permission.WRITE, filter_constraints["campaign_id"]
+            )
         if "account_id" in filter_constraints:
-            dash.views.helpers.get_account(self.context["request"].user, filter_constraints["account_id"])
+            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, filter_constraints["account_id"])
         return filters
 
     def validate(self, data):

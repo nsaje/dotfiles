@@ -1,8 +1,9 @@
 import json
 
+import zemauth.access
 from dash.common.views_base import DASHAPIBaseView
-from dash.views import helpers
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 from . import models
 from . import serializers
@@ -13,7 +14,7 @@ class ScheduledReports(DASHAPIBaseView):
         account = None
         account_id = request.GET.get("account_id")
         if account_id:
-            account = helpers.get_account(request.user, account_id)
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         scheduled_reports = models.ScheduledReport.objects.for_view(request.user, account)
 
