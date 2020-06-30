@@ -4,18 +4,21 @@ import json
 from decimal import Decimal
 
 from django.contrib.auth import models as authmodels
-from django.test import TestCase
+from django.test import Client
 from django.urls import reverse
 from mock import patch
 
 from dash import constants
 from dash import models
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
+from utils import test_helper
 from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
 from zemauth.models import User
 
 
-class BaseDailyStatsTest(TestCase):
+class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_api.yaml", "test_views.yaml"]
 
     def setUp(self):
@@ -148,7 +151,7 @@ class BaseDailyStatsTest(TestCase):
         """
 
 
-class AccountsDailyStatsTest(BaseDailyStatsTest):
+class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
     # def test_invalid_metrics(self):
     #     perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
@@ -310,7 +313,11 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         self._assert_response(response, "selected", "Selected", with_conversion_goals=False, with_pixels=False)
 
 
-class AccountDailyStatsTest(BaseDailyStatsTest):
+class AccountsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountsDailyStatsTestCase):
+    pass
+
+
+class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -429,7 +436,11 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         )
 
 
-class CampaignDailyStatsTest(BaseDailyStatsTest):
+class AccountDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountDailyStatsTestCase):
+    pass
+
+
+class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -571,7 +582,11 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         )
 
 
-class AdGroupDailyStatsTest(BaseDailyStatsTest):
+class CampaignDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignDailyStatsTestCase):
+    pass
+
+
+class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
     def test_get_by_source(self):
         source_id = 3
 
@@ -877,15 +892,20 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         )
 
 
+class AdGroupDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AdGroupPublishersDailyStatsTest(TestCase):
+class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -908,7 +928,6 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         response = self.client.get(
             reverse("ad_group_publishers_daily_stats", kwargs={"ad_group_id": 987}), params, follow=True
         )
-
         self.assertJSONEqual(
             response.content,
             {
@@ -1022,15 +1041,20 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         )
 
 
+class AdGroupPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupPublishersDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AdGroupPlacementsDailyStatsTest(TestCase):
+class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1167,15 +1191,20 @@ class AdGroupPlacementsDailyStatsTest(TestCase):
         )
 
 
+class AdGroupPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAdGroupPlacementsDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class CampaignPublishersDailyStatsTest(TestCase):
+class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1312,15 +1341,20 @@ class CampaignPublishersDailyStatsTest(TestCase):
         )
 
 
+class CampaignPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignPublishersDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class CampaignPlacementDailyStatsTest(TestCase):
+class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1457,15 +1491,20 @@ class CampaignPlacementDailyStatsTest(TestCase):
         )
 
 
+class CampaignPlacementDailyStatsTestCase(FutureDASHAPITestCase, LegacyCampaignPlacementDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AccountPublishersDailyStatsTest(TestCase):
+class LegacyAccountPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1535,15 +1574,20 @@ class AccountPublishersDailyStatsTest(TestCase):
         )
 
 
+class AccountPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountPublishersDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AccountPlacementsDailyStatsTest(TestCase):
+class LegacyAccountPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1613,15 +1657,20 @@ class AccountPlacementsDailyStatsTest(TestCase):
         )
 
 
+class AccountPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountPlacementsDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AllAccountsPublishersDailyStatsTest(TestCase):
+class LegacyAllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1664,15 +1713,20 @@ class AllAccountsPublishersDailyStatsTest(TestCase):
         )
 
 
+class AllAccountsPublishersDailyStatsTestCase(FutureDASHAPITestCase, LegacyAllAccountsPublishersDailyStatsTestCase):
+    pass
+
+
 @patch("stats.api_dailystats.query")
-class AllAccountsPlacementsDailyStatsTest(TestCase):
+class LegacyAllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
     fixtures = ["test_views"]
 
     def setUp(self):
         password = "secret"
-        self.user = User.objects.get(pk=1)
-
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1713,3 +1767,7 @@ class AllAccountsPlacementsDailyStatsTest(TestCase):
                 "success": True,
             },
         )
+
+
+class AllAccountsPlacementsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAllAccountsPlacementsDailyStatsTestCase):
+    pass

@@ -8,6 +8,8 @@ import stats.api_dailystats
 import stats.constants
 import stats.constraints_helper
 import stats.helpers
+import zemauth.access
+import zemauth.features.entity_permission.helpers
 from dash import campaign_goals
 from dash import constants
 from dash import forms
@@ -15,6 +17,7 @@ from dash import models
 from dash.common.views_base import DASHAPIBaseView
 from utils import columns
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 from . import helpers
 
@@ -205,11 +208,23 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
         self.view_filter = forms.ViewFilterForm(request.GET)
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
-        accounts = (
+
+        accounts_user_perm = (
             models.Account.objects.all()
             .filter_by_user(request.user)
             .filter_by_agencies(self.view_filter.cleaned_data.get("filtered_agencies"))
             .filter_by_account_types(self.view_filter.cleaned_data.get("filtered_account_types"))
+        )
+
+        accounts_entity_perm = (
+            models.Account.objects.all()
+            .filter_by_entity_permission(request.user, Permission.READ)
+            .filter_by_agencies(self.view_filter.cleaned_data.get("filtered_agencies"))
+            .filter_by_account_types(self.view_filter.cleaned_data.get("filtered_account_types"))
+        )
+
+        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
         )
 
         self.validate_metrics(request.GET.getlist("metrics"))
@@ -343,11 +358,19 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
         return params
 
     def get(self, request, account_id):
-        self.account = dash.views.helpers.get_account(request.user, account_id)
+        self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
 
-        campaigns = self.account.campaign_set.all().filter_by_user(request.user)
+        campaigns_user_perm = self.account.campaign_set.all().filter_by_user(request.user)
+        campaigns_entity_perm = self.account.campaign_set.all().filter_by_entity_permission(
+            request.user, Permission.READ
+        )
+
+        campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            request.user, Permission.READ, campaigns_user_perm, campaigns_entity_perm
+        )
+
         self.selected_objects = self._get_selected_objects(request, campaigns)
 
         return self.create_api_response(
@@ -365,7 +388,7 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
         return params
 
     def get(self, request, account_id):
-        self.account = dash.views.helpers.get_account(request.user, account_id)
+        self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
 
@@ -389,7 +412,7 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
 
-        self.account = dash.views.helpers.get_account(request.user, account_id)
+        self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
@@ -414,7 +437,7 @@ class AccountPlacementsDailyStats(AccountPublishersDailyStats):
         if not request.user.has_perm("zemauth.can_use_placement_targeting"):
             raise exc.MissingDataError()
 
-        self.account = dash.views.helpers.get_account(request.user, account_id)
+        self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
@@ -433,7 +456,7 @@ class AccountDeliveryDailyStats(AccountDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
             raise exc.MissingDataError()
 
-        self.account = dash.views.helpers.get_account(request.user, account_id)
+        self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels)
@@ -483,7 +506,7 @@ class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
         return params
 
     def get(self, request, campaign_id):
-        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+        self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, conversion_goals=conversion_goals)
@@ -509,7 +532,7 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
         return params
 
     def get(self, request, campaign_id):
-        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+        self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, conversion_goals=conversion_goals)
@@ -537,7 +560,7 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
 
-        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+        self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
@@ -563,7 +586,7 @@ class CampaignPlacementsDailyStats(CampaignPublishersDailyStats):
         if not request.user.has_perm("zemauth.can_use_placement_targeting"):
             raise exc.MissingDataError()
 
-        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+        self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
@@ -584,7 +607,7 @@ class CampaignDeliveryDailyStats(CampaignDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
             raise exc.MissingDataError()
 
-        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+        self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
         pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
@@ -635,7 +658,7 @@ class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
         return params
 
     def get(self, request, ad_group_id):
-        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, conversion_goals=conversion_goals)
@@ -663,7 +686,7 @@ class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
         return params
 
     def get(self, request, ad_group_id):
-        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, conversion_goals=conversion_goals)
@@ -693,7 +716,7 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
 
-        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
@@ -721,7 +744,7 @@ class AdGroupPlacementsDailyStats(AdGroupPublishersDailyStats):
         if not request.user.has_perm("zemauth.can_use_placement_targeting"):
             raise exc.MissingDataError()
 
-        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
@@ -744,7 +767,7 @@ class AdGroupDeliveryDailyStats(AdGroupDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
             raise exc.MissingDataError()
 
-        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+        self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
         pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
