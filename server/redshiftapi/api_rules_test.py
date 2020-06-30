@@ -79,7 +79,6 @@ class ApiRulesTest(TestCase):
         {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
- COALESCE(SUM(local_service_fee_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
  COALESCE(SUM(local_margin_nano), 0)
 )::float/1000000000 local_etfm_cost, SUM(clicks)::FLOAT / (
@@ -87,14 +86,12 @@ NULLIF(SUM(impressions), 0) * 0.01)
 ctr, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(clicks), 0) * 1000000000)
 local_etfm_cpc, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(impressions), 0) * 1000000.0)
@@ -114,27 +111,23 @@ NULLIF(SUM(visits), 0) * 1)
 avg_tos, SUM(returning_users) returning_users, SUM(users) unique_users, SUM(new_visits) new_users, SUM(bounced_visits) bounced_visits, SUM(total_time_on_site) total_seconds, (COALESCE(SUM(visits)) - COALESCE(SUM(bounced_visits), 0)) non_bounced_visits, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(visits), 0) * 1000000000)
 local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
 local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(pageviews), 0) * 1000000000)
 local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 ) +
   COALESCE( SUM(local_effective_data_cost_nano), 0 ) +
-  COALESCE( SUM(local_service_fee_nano), 0 ) +
   COALESCE( SUM(local_license_fee_nano), 0 ) +
   COALESCE( SUM(local_margin_nano), 0 )
 )::float
@@ -145,21 +138,18 @@ local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 
 local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
 local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_first_quartile), 0) * 1000000000)
 local_video_etfm_cpv, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
@@ -178,7 +168,6 @@ local_video_etfm_cpcv
         {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
- COALESCE(SUM(local_service_fee_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
  COALESCE(SUM(local_margin_nano), 0)
 )::float/1000000000 local_etfm_cost, SUM(clicks)::FLOAT / (
@@ -186,14 +175,12 @@ NULLIF(SUM(impressions), 0) * 0.01)
 ctr, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(clicks), 0) * 1000000000)
 local_etfm_cpc, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(impressions), 0) * 1000000.0)
@@ -213,27 +200,23 @@ NULLIF(SUM(visits), 0) * 1)
 avg_tos, SUM(returning_users) returning_users, SUM(users) unique_users, SUM(new_visits) new_users, SUM(bounced_visits) bounced_visits, SUM(total_time_on_site) total_seconds, (COALESCE(SUM(visits)) - COALESCE(SUM(bounced_visits), 0)) non_bounced_visits, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(visits), 0) * 1000000000)
 local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
 local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(pageviews), 0) * 1000000000)
 local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 ) +
   COALESCE( SUM(local_effective_data_cost_nano), 0 ) +
-  COALESCE( SUM(local_service_fee_nano), 0 ) +
   COALESCE( SUM(local_license_fee_nano), 0 ) +
   COALESCE( SUM(local_margin_nano), 0 )
 )::float
@@ -244,21 +227,18 @@ local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 
 local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
 local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_first_quartile), 0) * 1000000000)
 local_video_etfm_cpv, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
@@ -277,7 +257,6 @@ local_video_etfm_cpcv
         {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
- COALESCE(SUM(local_service_fee_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
  COALESCE(SUM(local_margin_nano), 0)
 )::float/1000000000 local_etfm_cost, SUM(clicks)::FLOAT / (
@@ -285,14 +264,12 @@ NULLIF(SUM(impressions), 0) * 0.01)
 ctr, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(clicks), 0) * 1000000000)
 local_etfm_cpc, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(impressions), 0) * 1000000.0)
@@ -312,27 +289,23 @@ NULLIF(SUM(visits), 0) * 1)
 avg_tos, SUM(returning_users) returning_users, SUM(users) unique_users, SUM(new_visits) new_users, SUM(bounced_visits) bounced_visits, SUM(total_time_on_site) total_seconds, (COALESCE(SUM(visits)) - COALESCE(SUM(bounced_visits), 0)) non_bounced_visits, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(visits), 0) * 1000000000)
 local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
 local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(pageviews), 0) * 1000000000)
 local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 ) +
   COALESCE( SUM(local_effective_data_cost_nano), 0 ) +
-  COALESCE( SUM(local_service_fee_nano), 0 ) +
   COALESCE( SUM(local_license_fee_nano), 0 ) +
   COALESCE( SUM(local_margin_nano), 0 )
 )::float
@@ -343,21 +316,18 @@ local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 
 local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
 local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_first_quartile), 0) * 1000000000)
 local_video_etfm_cpv, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
@@ -376,7 +346,6 @@ local_video_etfm_cpcv
         {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
- COALESCE(SUM(local_service_fee_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
  COALESCE(SUM(local_margin_nano), 0)
 )::float/1000000000 local_etfm_cost, SUM(clicks)::FLOAT / (
@@ -384,14 +353,12 @@ NULLIF(SUM(impressions), 0) * 0.01)
 ctr, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(clicks), 0) * 1000000000)
 local_etfm_cpc, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(impressions), 0) * 1000000.0)
@@ -411,27 +378,23 @@ NULLIF(SUM(visits), 0) * 1)
 avg_tos, SUM(returning_users) returning_users, SUM(users) unique_users, SUM(new_visits) new_users, SUM(bounced_visits) bounced_visits, SUM(total_time_on_site) total_seconds, (COALESCE(SUM(visits)) - COALESCE(SUM(bounced_visits), 0)) non_bounced_visits, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(visits), 0) * 1000000000)
 local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
 local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(pageviews), 0) * 1000000000)
 local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 ) +
   COALESCE( SUM(local_effective_data_cost_nano), 0 ) +
-  COALESCE( SUM(local_service_fee_nano), 0 ) +
   COALESCE( SUM(local_license_fee_nano), 0 ) +
   COALESCE( SUM(local_margin_nano), 0 )
 )::float
@@ -442,21 +405,18 @@ local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 
 local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
 local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_first_quartile), 0) * 1000000000)
 local_video_etfm_cpv, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)
@@ -475,7 +435,6 @@ local_video_etfm_cpcv
         {fields}, ad_group_id AS ad_group_id,
         SUM(clicks) clicks, SUM(impressions) impressions, (COALESCE(SUM(local_effective_cost_nano), 0) +
  COALESCE(SUM(local_effective_data_cost_nano), 0) +
- COALESCE(SUM(local_service_fee_nano), 0) +
  COALESCE(SUM(local_license_fee_nano), 0) +
  COALESCE(SUM(local_margin_nano), 0)
 )::float/1000000000 local_etfm_cost, SUM(clicks)::FLOAT / (
@@ -483,14 +442,12 @@ NULLIF(SUM(impressions), 0) * 0.01)
 ctr, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(clicks), 0) * 1000000000)
 local_etfm_cpc, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(impressions), 0) * 1000000.0)
@@ -510,27 +467,23 @@ NULLIF(SUM(visits), 0) * 1)
 avg_tos, SUM(returning_users) returning_users, SUM(users) unique_users, SUM(new_visits) new_users, SUM(bounced_visits) bounced_visits, SUM(total_time_on_site) total_seconds, (COALESCE(SUM(visits)) - COALESCE(SUM(bounced_visits), 0)) non_bounced_visits, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(visits), 0) * 1000000000)
 local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
 local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(pageviews), 0) * 1000000000)
 local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 ) +
   COALESCE( SUM(local_effective_data_cost_nano), 0 ) +
-  COALESCE( SUM(local_service_fee_nano), 0 ) +
   COALESCE( SUM(local_license_fee_nano), 0 ) +
   COALESCE( SUM(local_margin_nano), 0 )
 )::float
@@ -541,21 +494,18 @@ local_avg_etfm_cost_per_pageview, ( COALESCE( SUM(local_effective_cost_nano), 0 
 local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
 local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_first_quartile), 0) * 1000000000)
 local_video_etfm_cpv, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
-  COALESCE(SUM(local_service_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(video_complete), 0) * 1000000000)

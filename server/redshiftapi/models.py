@@ -23,20 +23,20 @@ BT_COST_COLUMNS = {"column_name1": "base_effective_cost_nano", "column_name2": "
 ET_COST_COLUMNS = {
     "column_name1": "effective_cost_nano",
     "column_name2": "effective_data_cost_nano",
-    "column_name3": "service_fee_nano",
+    # service fee already included in effective cost
 }
 ETF_COST_COLUMNS = {
     "column_name1": "effective_cost_nano",
     "column_name2": "effective_data_cost_nano",
-    "column_name3": "service_fee_nano",
-    "column_name4": "license_fee_nano",
+    "column_name3": "license_fee_nano",
+    # service fee already included in effective cost
 }
 ETFM_COST_COLUMNS = {
     "column_name1": "effective_cost_nano",
     "column_name2": "effective_data_cost_nano",
-    "column_name3": "service_fee_nano",
-    "column_name4": "license_fee_nano",
-    "column_name5": "margin_nano",
+    "column_name3": "license_fee_nano",
+    "column_name4": "margin_nano",
+    # service fee already included in effective cost
 }
 
 LOCAL_AT_COST_COLUMNS = {"column_name1": "local_cost_nano", "column_name2": "local_data_cost_nano"}
@@ -47,20 +47,20 @@ LOCAL_BT_COST_COLUMNS = {
 LOCAL_ET_COST_COLUMNS = {
     "column_name1": "local_effective_cost_nano",
     "column_name2": "local_effective_data_cost_nano",
-    "column_name3": "local_service_fee_nano",
+    # service fee already included in effective cost
 }
 LOCAL_ETF_COST_COLUMNS = {
     "column_name1": "local_effective_cost_nano",
     "column_name2": "local_effective_data_cost_nano",
-    "column_name3": "local_service_fee_nano",
-    "column_name4": "local_license_fee_nano",
+    "column_name3": "local_license_fee_nano",
+    # service fee already included in effective cost
 }
 LOCAL_ETFM_COST_COLUMNS = {
     "column_name1": "local_effective_cost_nano",
     "column_name2": "local_effective_data_cost_nano",
-    "column_name3": "local_service_fee_nano",
-    "column_name4": "local_license_fee_nano",
-    "column_name5": "local_margin_nano",
+    "column_name3": "local_license_fee_nano",
+    "column_name4": "local_margin_nano",
+    # service fee already included in effective cost
 }
 
 
@@ -207,9 +207,9 @@ class BreakdownsBase(backtosql.Model):
         self.add_column(
             backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, alias="local_yesterday_at_cost")
         )
-        self.add_column(backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, alias="yesterday_etfm_cost"))
+        self.add_column(backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, alias="yesterday_etfm_cost"))
         self.add_column(
-            backtosql.TemplateColumn("part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, alias="local_yesterday_etfm_cost")
+            backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, alias="local_yesterday_etfm_cost")
         )
 
         if "publisher_id" in breakdown:
@@ -281,12 +281,12 @@ class MVMaster(BreakdownsBase):
     local_e_data_cost = backtosql.TemplateColumn(
         "part_sum_nano.sql", {"column_name": "local_effective_data_cost_nano"}, AGGREGATE
     )
-    et_cost = backtosql.TemplateColumn("part_3sum_nano.sql", ET_COST_COLUMNS, group=AGGREGATE)
-    local_et_cost = backtosql.TemplateColumn("part_3sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=AGGREGATE)
-    etf_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETF_COST_COLUMNS, group=AGGREGATE)
-    local_etf_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETF_COST_COLUMNS, group=AGGREGATE)
-    etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
-    local_etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
+    et_cost = backtosql.TemplateColumn("part_2sum_nano.sql", ET_COST_COLUMNS, group=AGGREGATE)
+    local_et_cost = backtosql.TemplateColumn("part_2sum_nano.sql", LOCAL_ET_COST_COLUMNS, group=AGGREGATE)
+    etf_cost = backtosql.TemplateColumn("part_3sum_nano.sql", ETF_COST_COLUMNS, group=AGGREGATE)
+    local_etf_cost = backtosql.TemplateColumn("part_3sum_nano.sql", LOCAL_ETF_COST_COLUMNS, group=AGGREGATE)
+    etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
+    local_etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
 
     # Fees
     service_fee = backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "service_fee_nano"}, AGGREGATE)
@@ -306,15 +306,15 @@ class MVMaster(BreakdownsBase):
     )
 
     _context = {"divisor": "clicks", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    etfm_cpc = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_cpc = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_cpc = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "impressions", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    etfm_cpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_cpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_cpm = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # Postclick acquisition fields
@@ -349,10 +349,10 @@ class MVMaster(BreakdownsBase):
     # Average costs per metrics
     _context = {"divisor": "total_time_on_site", "divisor_modifier": converters.CURRENCY_TO_NANO / 60.0}
     avg_etfm_cost_per_minute = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_minute = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     avg_etfm_cost_per_non_bounced_visit = backtosql.TemplateColumn(
@@ -364,26 +364,26 @@ class MVMaster(BreakdownsBase):
 
     _context = {"divisor": "pageviews", "divisor_modifier": converters.CURRENCY_TO_NANO}
     avg_etfm_cost_per_pageview = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_pageview = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "new_visits", "divisor_modifier": converters.CURRENCY_TO_NANO}
     avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "visits", "divisor_modifier": converters.CURRENCY_TO_NANO}
     avg_etfm_cost_per_visit = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
     local_avg_etfm_cost_per_visit = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # Video
@@ -396,15 +396,15 @@ class MVMaster(BreakdownsBase):
 
     # Video derivatives
     _context = {"divisor": "video_first_quartile", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    video_etfm_cpv = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    video_etfm_cpv = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_video_etfm_cpv = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     _context = {"divisor": "video_complete", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    video_etfm_cpcv = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    video_etfm_cpcv = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_video_etfm_cpcv = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # MRC50 viewability
@@ -443,9 +443,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "mrc50_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    etfm_mrc50_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_mrc50_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_mrc50_vcpm = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # MRC100 viewability
@@ -484,9 +484,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "mrc100_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    etfm_mrc100_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_mrc100_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_mrc100_vcpm = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
     # VAST4 viewability
@@ -525,9 +525,9 @@ class MVMaster(BreakdownsBase):
         AGGREGATE,
     )
     _context = {"divisor": "vast4_viewable", "divisor_modifier": converters.CURRENCY_TO_NANO * 0.001}
-    etfm_vast4_vcpm = backtosql.TemplateColumn("part_5sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
+    etfm_vast4_vcpm = backtosql.TemplateColumn("part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE)
     local_etfm_vast4_vcpm = backtosql.TemplateColumn(
-        "part_5sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
 
@@ -576,9 +576,9 @@ class MVJointMaster(MVMaster):
     local_yesterday_at_cost = backtosql.TemplateColumn(
         "part_2sum_nano.sql", LOCAL_AT_COST_COLUMNS, group=YESTERDAY_AGGREGATES
     )
-    yesterday_etfm_cost = backtosql.TemplateColumn("part_5sum_nano.sql", ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
+    yesterday_etfm_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES)
     local_yesterday_etfm_cost = backtosql.TemplateColumn(
-        "part_5sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES
+        "part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=YESTERDAY_AGGREGATES
     )
 
     def init_conversion_columns(self, conversion_goals):

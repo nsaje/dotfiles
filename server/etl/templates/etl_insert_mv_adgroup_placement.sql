@@ -27,32 +27,20 @@ INSERT INTO mv_adgroup_placement (
             (d.data_spend * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_service_fee::decimal(10, 8)) * 1000
         ) as effective_data_cost_nano,
         round(
-            round(
-                (
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                    ) * cf.pct_service_fee::decimal(10, 8)
-                ) * 1000
-            )::bigint * cf.pct_license_fee::decimal(10, 8)
+          round(
+            (
+              (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) * 1000 -- effective spend
+            ) * (1 + cf.pct_service_fee::decimal(10, 8)) -- add service fee
+          )::bigint * cf.pct_license_fee::decimal(10, 8)
         ) as license_fee_nano,
         round(
+          (
             round(
-                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
-                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
-                round(
-                    (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (
-                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                        ) * cf.pct_service_fee::decimal(10, 8)
-                    ) * 1000
-                )::bigint * cf.pct_license_fee::decimal(10, 8)
-            )::bigint * cf.pct_margin::decimal(10, 8)
+              (
+                (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) * 1000 -- effective spend
+              ) * (1 + cf.pct_service_fee::decimal(10, 8)) -- add service fee
+            )::bigint * (1 + cf.pct_license_fee::decimal(10, 8)) -- add license fee
+          ) * cf.pct_margin::decimal(10, 8)
         ) as margin_nano,
 
         d.video_start as video_start,
@@ -76,36 +64,24 @@ INSERT INTO mv_adgroup_placement (
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_effective_data_cost_nano,
         round(
+          (
             round(
-                round(
-                    (
-                        (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                        (
-                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                        ) * cf.pct_service_fee::decimal(10, 8)
-                    ) * 1000
-                )::bigint * cf.pct_license_fee::decimal(10, 8)
-            )::bigint * cer.exchange_rate::decimal(10, 4)
+              (
+                (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) * 1000 -- effective spend
+              ) * (1 + cf.pct_service_fee::decimal(10, 8)) -- add service fee
+            )::bigint * cf.pct_license_fee::decimal(10, 8)
+          ) * cer.exchange_rate::decimal(10, 4)
         ) as local_license_fee_nano,
         round(
-            round(
-                round(
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * 1000 +
-                    round(
-                        (
-                            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                            (
-                                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                            ) * cf.pct_service_fee::decimal(10, 8)
-                        ) * 1000
-                    )::bigint * cf.pct_license_fee::decimal(10, 8)
-                )::bigint * cf.pct_margin::decimal(10, 8)
-            )::bigint * cer.exchange_rate::decimal(10, 4)
+          (
+            (
+              round(
+                (
+                  (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) * 1000 -- effective spend
+                ) * (1 + cf.pct_service_fee::decimal(10, 8)) -- add service fee
+              )::bigint * (1 + cf.pct_license_fee::decimal(10, 8)) -- add license fee
+            ) * cf.pct_margin::decimal(10, 8)
+          ) * cer.exchange_rate::decimal(10, 4)
         ) as local_margin_nano,
 
         null as visits,
@@ -130,8 +106,7 @@ INSERT INTO mv_adgroup_placement (
         round(d.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as base_effective_data_cost_nano,
         round(
             (
-                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+              (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) -- effective spend
             ) * cf.pct_service_fee::decimal(10, 8) * 1000
         ) as service_fee_nano,
 
@@ -144,8 +119,7 @@ INSERT INTO mv_adgroup_placement (
         round(
             round(
                 (
-                    (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
-                    (nvl(d.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                  (nvl(d.spend, 0) + nvl(d.data_spend, 0)) * cf.pct_actual_spend::decimal(10, 8) -- effective spend
                 ) * cf.pct_service_fee::decimal(10, 8) * 1000
             )::bigint * cer.exchange_rate::decimal(10, 4)
         ) as local_service_fee_nano
