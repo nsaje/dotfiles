@@ -6,6 +6,8 @@ from utils import dates_helper
 from utils import slack
 from utils.command_helpers import Z1Command
 
+OVERSPEND_THRESHOLD = 0.01
+
 
 class Command(Z1Command):
     def add_arguments(self, parser):
@@ -46,26 +48,38 @@ class Command(Z1Command):
         message_parts = []
         stopped_by_end_date_count = 0
         stopped_by_end_date_overspend = 0
+        stopped_on_time_count = 0
+
         for campaign, data in campaigns.items():
+            if not self._has_overspend(data):
+                stopped_on_time_count += 1
+                continue
+
             if not data["active_budgets"]:
                 stopped_by_end_date_count += 1
-                if data["overspend"] and data["overspend"] >= 0.01:
+                if not self._has_overspend(data):
                     stopped_by_end_date_overspend += data["overspend"]
                 continue
 
             message_part = self._get_campaign_part(campaign, output_type=output_type)
             message_part += "${} remaining budget".format(data["available"])
-            if data["overspend"] and data["overspend"] >= 0.01:
+            if self._has_overspend(data):
                 message_part += self._get_overspend_part(data["overspend"], output_type=output_type)
             message_parts.append(message_part)
 
         message = self._get_message_title() + "\n".join(message_parts + [""])
+
+        if stopped_on_time_count:
+            message += f"\n{stopped_on_time_count} campaigns were stopped on time without overspend."
         if stopped_by_end_date_count:
-            message += "\nAdditionally, {} campaigns were stopped by end date - no active budgets left".format(
-                "*" + str(stopped_by_end_date_count) + "*" if output_type == "slack" else stopped_by_end_date_count
+            message += "\nAdditionally, {} campaign{} {} stopped by end date - no active budgets left.".format(
+                "*" + str(stopped_by_end_date_count) + "*" if output_type == "slack" else stopped_by_end_date_count,
+                "s" if stopped_by_end_date_count > 1 else "",
+                "were" if stopped_by_end_date_count > 1 else "was",
             )
             if stopped_by_end_date_overspend:
                 message += self._get_overspend_part(stopped_by_end_date_overspend, output_type=output_type)
+
         return message
 
     def _get_campaign_part(self, campaign, *, output_type):
@@ -89,4 +103,7 @@ class Command(Z1Command):
             date_str = "yesterday"
         else:
             date_str = "on " + self.date.isoformat()
-        return "Campaigns stopped {}:\n".format(date_str)
+        return "Campaigns with overspend {}:\n".format(date_str)
+
+    def _has_overspend(self, data):
+        return data["overspend"] and data["overspend"] >= OVERSPEND_THRESHOLD
