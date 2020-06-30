@@ -105,6 +105,7 @@ def _refresh(update_since, views, account_id=None, skip_daily_statements=False, 
 
 
 def _materialize_view(mv_class, job_id, date_from, date_to, dump_and_abort, effective_spend_factors, account_id):
+    logger.info("Materializing view", job_id=job_id, table=mv_class.TABLE_NAME)
     mv = mv_class(job_id, date_from, date_to, account_id=account_id)
     with metrics_compat.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
         mv.generate(campaign_factors=effective_spend_factors)
@@ -117,6 +118,7 @@ def _materialize_view(mv_class, job_id, date_from, date_to, dump_and_abort, effe
             logger.info("Dumped table", table=dump_and_abort, s3_path=s3_path)
             logger.info("Aborting after table", table=dump_and_abort)
             exit()
+    logger.info("Finished materializing view", job_id=job_id, table=mv_class.TABLE_NAME)
 
 
 def unload_and_copy_into_replicas(views, job_id, date_from, date_to, account_id=None):

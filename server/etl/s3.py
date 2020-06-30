@@ -30,7 +30,7 @@ def _do_upload_csv(s3_path, generator, bucket_name=None):
 
 
 def upload_csv_async(table_name, date, job_id, generator):
-    logger.info("Create async CSV", table_name=table_name, job_id=job_id)
+    logger.info("Create async CSV", table=table_name, job_id=job_id)
     s3_path = os.path.join(
         MATERIALIZED_VIEWS_S3_PREFIX,
         table_name,
@@ -45,7 +45,7 @@ def upload_csv_async(table_name, date, job_id, generator):
 
 
 def upload_csv(table_name, date, job_id, generator):
-    logger.info("Create CSV", table_name=table_name, job_id=job_id)
+    logger.info("Create CSV", table=table_name, job_id=job_id)
     s3_path = os.path.join(
         MATERIALIZED_VIEWS_S3_PREFIX,
         table_name,
@@ -54,13 +54,13 @@ def upload_csv(table_name, date, job_id, generator):
     )
 
     _do_upload_csv(s3_path, generator)
-    logger.info("CSV uploaded", table_name=table_name, job_id=job_id)
+    logger.info("CSV uploaded", table=table_name, job_id=job_id)
 
     return s3_path
 
 
 def upload_csv_without_job(table_name, generator, s3_path, bucket_name):
-    logger.info("Create CSV", table_name=table_name)
+    logger.info("Create CSV", table=table_name)
     _do_upload_csv(s3_path, generator, bucket_name=bucket_name)
-    logger.info("CSV uploaded", table_name=table_name)
+    logger.info("CSV uploaded", table=table_name)
     return s3_path

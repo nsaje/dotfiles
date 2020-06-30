@@ -162,7 +162,7 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
         summary = "The problem with a command run by cron has been resolved"
 
     log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(
-        command_name=dcron_job.command_name
+        command_name=dcron_job.command_name.replace("_", "")
     )
 
     return {

@@ -212,6 +212,7 @@ def _get_dates(from_date, campaign):
 
 
 def get_effective_spend(total_spend, date_since, account_id=None):
+    logger.info("Getting effective spend factors", date_since=date_since, account_id=account_id)
 
     campaigns = dash.models.Campaign.objects.all()
     if account_id:
@@ -244,6 +245,7 @@ def get_effective_spend(total_spend, date_since, account_id=None):
                 date, campaign, spend, attributed_spends[campaign.id].get(date, {})
             )
 
+    logger.info("Finished getting effective spend factors", date_since=date_since, account_id=account_id)
     return dict(effective_spend)
 
 
@@ -325,7 +327,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
                 if base_media_spend > 0 or base_data_spend > 0:
-                    logger.info(
+                    logger.debug(
                         "Got spend for adgroup in campaign that is not being reprocessed", ad_group_id=ad_group_id
                     )
                     campaign_id = dash.models.AdGroup.objects.get(pk=ad_group_id).campaign_id
@@ -436,6 +438,7 @@ def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
         # generate daily statements for the date for the campaign
         _reprocess_campaign_statements(campaign, dates, total_spend)
 
+    logger.info("Finished reprocessing daily statements", date_since=date_since, account_id=account_id)
     return total_spend
 
 
