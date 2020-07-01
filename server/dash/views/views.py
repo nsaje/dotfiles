@@ -40,6 +40,7 @@ from dash.views import helpers
 from prodops import hacks
 from utils import email_helper
 from utils import exc
+from utils import k1_helper
 from utils import lc_helper
 from utils import metrics_compat
 from utils import threads
@@ -1117,6 +1118,7 @@ class PushMetrics(DASHAPIBaseView, SlackLoggerMixin):
             ad_group.custom_flags = {}
         ad_group.custom_flags["b1_push_metrics"] = switch == "enable"
         ad_group.save(None)
+        k1_helper.update_ad_group(ad_group, priority=True)
         self.log_custom_flags_event_to_slack(old_ad_group, ad_group, user=request.user.email)
         timestamp = datetime.datetime.now().timestamp()
         url = f"https://redash-zemanta.outbrain.com/dashboard/wizard?p_ad_group_id={ad_group_id}&p_w643_toggle={timestamp}"
