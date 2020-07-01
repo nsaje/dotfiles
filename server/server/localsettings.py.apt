@@ -43,8 +43,8 @@ DATABASES = {
     },
     "b1": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "one",
-        "USER": "eins23",
+        "NAME": "bidder",
+        "USER": "bidder",
         "PASSWORD": Secret(
             "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QGYOwE/6UNrQPUAtPwB9RtAAAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIspcr9+HGakFL33vQIBEIBDIbb2TVlvYolKYKSux4rtWpiL/oyv0J45r+0B6RdlmyyqJUGdgz9LCWSFEkV4ZZMJGrhsiXK/lvfdhlNf5OSpMV0KNA=="
         )
