@@ -1,3 +1,4 @@
+import concurrent.futures
 import time
 from collections import defaultdict
 
@@ -20,6 +21,12 @@ logger = zlogging.getLogger(__name__)
 MAX_MESSAGES_TO_FETCH = 5000
 CAMPAIGNS_PER_BATCH = 100
 MAX_JOB_DURATION_SECONDS = 4 * 60 + 30
+
+
+def handle_updates_parallel(parallelism=1):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=parallelism) as executor:
+        for _ in range(parallelism):
+            executor.submit(handle_updates)
 
 
 def handle_updates():
