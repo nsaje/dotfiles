@@ -18,7 +18,7 @@ from . import update_campaigns_state
 logger = zlogging.getLogger(__name__)
 
 
-MAX_MESSAGES_TO_FETCH = 5000
+MAX_MESSAGES_TO_FETCH = 500
 CAMPAIGNS_PER_BATCH = 100
 MAX_JOB_DURATION_SECONDS = 4 * 60 + 30
 

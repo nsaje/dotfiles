@@ -2,7 +2,7 @@ import automation.campaignstop
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-PARALLELISM = 3
+PARALLELISM = 20
 
 
 class Command(Z1Command):
