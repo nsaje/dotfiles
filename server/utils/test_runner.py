@@ -9,8 +9,12 @@ from django.conf import settings
 from django.core.management import call_command
 from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
+from apt.base.test_case import APTTestCase
 
-class SplitTestsRunner(django.test.runner.DiscoverRunner):
+from .test_runner_mixin import FilterSuiteMixin
+
+
+class SplitTestsRunner(FilterSuiteMixin, django.test.runner.DiscoverRunner):
     @classmethod
     def add_arguments(cls, parser):
         super(SplitTestsRunner, cls).add_arguments(parser)
@@ -74,6 +78,11 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             monkey_patch_test_case_for_timing(self.test_timings)
 
         super(SplitTestsRunner, self).__init__(*args, **kwargs)
+        self.filter_functions.append(self._get_filter_apt_fn())
+        if self.skip_transaction_tests:
+            self.filter_functions.append(self._get_filter_transaction_tests_fn())
+        if self.test_name is not None:
+            self.filter_functions.append(self._get_filter_by_prefix_fn(self.test_name))
 
     def setup_databases(self, **kwargs):
         from django.db import connections
@@ -121,54 +130,27 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
         if self.test_timings:
             print_times(self.test_timings)
 
-    def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
-        return self._filter_by_prefix(
-            self._filter_transaction_tests(
-                super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
-            )
-        )
-
-    def _filter_transaction_tests(self, test_suite):
-        if not self.skip_transaction_tests:
-            return test_suite
-
-        def _filter_non_transaction_tests(test):
+    def _get_filter_transaction_tests_fn(self):
+        def _is_not_transaction_test(test):
             # django.test.TestCase inherits from django.test.TransactionTestCase so
             # every test will be subclass of TransactionTestCase unless it uses
             # python unittest.TestCase base class
-            return issubclass(type(test), django.test.TestCase) or not issubclass(
-                type(test), django.test.TransactionTestCase
-            )
+            return isinstance(test, django.test.TestCase) or not isinstance(test, django.test.TransactionTestCase)
 
-        return self._filter_suite(test_suite, _filter_non_transaction_tests)
+        return _is_not_transaction_test
 
-    def _filter_by_prefix(self, test_suite):
-        prefix = self.test_name
-        if prefix is None:
-            return test_suite
-
-        def _filter_tests_wo_prefix(test):
+    def _get_filter_by_prefix_fn(self, prefix):
+        def _is_prefixed(test):
             # the next string is <test_name> (<module path>)
             return str(test).split()[0] == prefix
 
-        return self._filter_suite(test_suite, _filter_tests_wo_prefix)
+        return _is_prefixed
 
-    def _filter_suite(self, suite, fn):
-        new_suite = unittest.TestSuite()
-        if type(suite) == unittest.TestSuite:
-            self._add_filtered_tests(suite, new_suite, fn)
-            return new_suite
+    def _get_filter_apt_fn(self):
+        def _is_not_apt_test(test):
+            return not isinstance(test, APTTestCase)
 
-        assert type(suite) == django.test.runner.ParallelTestSuite
-        for subsuite in suite.subsuites:
-            self._add_filtered_tests(subsuite, new_suite, fn)
-        return self.parallel_test_suite(new_suite, self.parallel, self.failfast)
-
-    def _add_filtered_tests(self, suite, new_suite, fn):
-        for test in suite._tests:
-            if not fn(test):
-                continue
-            new_suite.addTest(test)
+        return _is_not_apt_test
 
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):
