@@ -20,6 +20,8 @@ SECRET_KEY = (
     .decode("utf-8")
 )
 
+APT_MODE = False
+
 # Entities databases
 DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
 

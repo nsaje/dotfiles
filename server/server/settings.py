@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "demo",
     "drf_yasg",
     "django_celery_results",
+    "apt",
 ]
 
 MIDDLEWARE = [
@@ -471,3 +472,5 @@ DCRON = {
 }
 
 sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])
+
+APT_TESTS_PATH = "apt/tests"
