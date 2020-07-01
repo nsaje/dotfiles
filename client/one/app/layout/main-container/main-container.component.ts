@@ -8,11 +8,12 @@ import {
     OnDestroy,
 } from '@angular/core';
 import {SIDEBAR_ROUTER_PATH_NAMES} from './main-container.component.config';
-import {Router, NavigationEnd} from '@angular/router';
+import {Router, NavigationEnd, PRIMARY_OUTLET} from '@angular/router';
 import {takeUntil, filter} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {RoutePathName} from '../../app.constants';
 import * as commonHelpers from '../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../shared/helpers/array.helpers';
 
 @Component({
     selector: 'zem-main-container',
@@ -20,7 +21,7 @@ import * as commonHelpers from '../../shared/helpers/common.helpers';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainContainerComponent implements OnInit, OnDestroy {
-    routePathName: RoutePathName;
+    routePathNames: RoutePathName[];
     isSidebarVisible: boolean = false;
     opened: boolean = true;
 
@@ -32,19 +33,21 @@ export class MainContainerComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.routePathName = SIDEBAR_ROUTER_PATH_NAMES.find(path =>
-            this.router.url.includes(path)
+        this.routePathNames = this.getRoutePathNames(
+            this.router,
+            SIDEBAR_ROUTER_PATH_NAMES
         );
-        this.isSidebarVisible = commonHelpers.isDefined(this.routePathName);
+        this.isSidebarVisible = commonHelpers.isDefined(this.routePathNames);
         this.router.events
             .pipe(takeUntil(this.ngUnsubscribe$))
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => {
-                this.routePathName = SIDEBAR_ROUTER_PATH_NAMES.find(path =>
-                    this.router.url.includes(path)
+                this.routePathNames = this.getRoutePathNames(
+                    this.router,
+                    SIDEBAR_ROUTER_PATH_NAMES
                 );
                 this.isSidebarVisible = commonHelpers.isDefined(
-                    this.routePathName
+                    this.routePathNames
                 );
                 this.changeDetectorRef.markForCheck();
             });
@@ -53,5 +56,19 @@ export class MainContainerComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+    }
+
+    private getRoutePathNames(
+        router: Router,
+        pathNames: RoutePathName[][]
+    ): RoutePathName[] {
+        const currentPath = router
+            .parseUrl(router.url)
+            .root.children[PRIMARY_OUTLET].segments.map(
+                segment => segment.path
+            );
+        return (this.routePathNames = pathNames.find(path =>
+            arrayHelpers.isEqual(currentPath, path)
+        ));
     }
 }

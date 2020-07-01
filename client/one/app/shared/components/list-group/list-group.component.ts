@@ -22,13 +22,15 @@ export class ListGroupComponent implements OnChanges {
     @Input()
     items: ListGroupItem[];
     @Input()
-    value: string;
+    rootPath: string[];
+    @Input()
+    selectedItemPath: string[];
     @Input()
     isIconVisible: boolean = true;
     @Input()
     isDisplayValueVisible: boolean = true;
     @Output()
-    valueChange = new EventEmitter<string>();
+    selectedItemPathChange = new EventEmitter<string[]>();
 
     filteredItems: ListGroupItem[] = [];
 

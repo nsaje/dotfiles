@@ -13,8 +13,9 @@
     <zem-list-group
         class="zem-list-group"
         [items]="items"
-        [value]="routePathName"
+        [rootPath]="rootPath"
+        [selectedItemPath]="routePathNames"
         [isDisplayValueVisible]="isOpen"
-        (valueChange)="onRoutePathChange($event)"
+        (selectedItemPathChange)="onRoutePathChange($event)"
     ></zem-list-group>
 </ng-container>

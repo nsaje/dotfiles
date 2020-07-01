@@ -1,7 +1,6 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {ListGroupItemComponent} from './list-group-item.component';
-import {SimpleChange} from '@angular/core';
 
 describe('ListGroupItemComponent', () => {
     let component: ListGroupItemComponent;
@@ -41,35 +40,32 @@ describe('ListGroupItemComponent', () => {
     });
 
     it('should be expanded and not selected when not in dock mode', () => {
-        component.value = 'subitem1';
+        component.selectedItemPath = ['item1', 'subitem1'];
+        component.parentItemPath = [];
         component.isParentExpanded = true;
         component.isDisplayValueVisible = true;
-        component.ngOnChanges({
-            value: new SimpleChange(null, component.value, false),
-        });
+        component.ngOnChanges();
 
         expect(component.isExpanded).toBeTrue();
         expect(component.isSelected).toBeFalse();
     });
 
     it('should be selected when in dock mode', () => {
-        component.value = 'subitem1';
+        component.selectedItemPath = ['item1', 'subitem1'];
+        component.parentItemPath = [];
         component.isParentExpanded = true;
         component.isDisplayValueVisible = false;
-        component.ngOnChanges({
-            value: new SimpleChange(null, component.value, false),
-        });
+        component.ngOnChanges();
 
         expect(component.isSelected).toBeTrue();
     });
 
     it('should be not selected and not expanded when parent is not expanded', () => {
-        component.value = 'subitem1';
+        component.selectedItemPath = ['item1', 'subitem1'];
+        component.parentItemPath = ['item1'];
         component.isParentExpanded = false;
         component.isDisplayValueVisible = true;
-        component.ngOnChanges({
-            value: new SimpleChange(null, component.value, false),
-        });
+        component.ngOnChanges();
 
         expect(component.isExpanded).toBeFalse();
         expect(component.isSelected).toBeFalse();

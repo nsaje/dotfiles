@@ -1,4 +1,5 @@
 import * as commonHelpers from './common.helpers';
+import * as deepEqual from 'fast-deep-equal';
 
 export function isEmpty(value: any[]): boolean {
     if (!commonHelpers.isDefined(value)) {
@@ -30,4 +31,8 @@ export function includesAny<T>(array1: T[], array2: T[]) {
 
 export function distinct<T>(values: T[]): T[] {
     return Array.from(new Set(values));
+}
+
+export function isEqual(array1: any[], array2: any[]): boolean {
+    return deepEqual(array1, array2);
 }

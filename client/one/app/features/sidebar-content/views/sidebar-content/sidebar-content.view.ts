@@ -15,10 +15,12 @@ import {ListGroupItem} from '../../../../shared/components/list-group/types/list
 import {ListGroupItemIcon} from '../../../../shared/components/list-group/components/list-group-item/list-group-item.component.constants';
 import * as routerHelpers from '../../../../shared/helpers/router.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {Subject, Observable, merge} from 'rxjs';
 import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
 import {Router} from '@angular/router';
+import {isDefined} from 'angular';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -28,9 +30,11 @@ import {Router} from '@angular/router';
 })
 export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
     @Input()
-    routePathName: RoutePathName;
+    routePathNames: RoutePathName[];
     @Input()
     isOpen: boolean;
+
+    rootPath: RoutePathName[] = [RoutePathName.APP_BASE];
 
     items: ListGroupItem[] = [
         {
@@ -109,7 +113,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.routePathName) {
+        if (changes.routePathNames) {
             const route = routerHelpers.getActivatedRoute(this.router);
             const agencyId = route.snapshot.queryParamMap.get('agencyId');
             const accountId = route.snapshot.queryParamMap.get('accountId');
@@ -131,10 +135,10 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         this.ngUnsubscribe$.complete();
     }
 
-    onRoutePathChange($event: RoutePathName) {
-        if (this.routePathName !== $event) {
+    onRoutePathChange($event: RoutePathName[]) {
+        if (!arrayHelpers.isEqual(this.routePathNames, $event)) {
             const route = routerHelpers.getActivatedRoute(this.router);
-            this.router.navigate([RoutePathName.APP_BASE, $event], {
+            this.router.navigate($event, {
                 queryParams: commonHelpers.getValueWithOnlyProps(
                     route.snapshot.queryParams,
                     ['agencyId', 'accountId']

@@ -37,7 +37,8 @@
         [isDisplayValueVisible]="isDisplayValueVisible"
         [isParentExpanded]="isExpanded"
         [level]="level + 1"
-        [value]="value"
-        (valueChange)="valueChange.emit($event)"
+        [selectedItemPath]="selectedItemPath"
+        [parentItemPath]="itemPath"
+        (selectedItemPathChange)="selectedItemPathChange.emit($event)"
     ></zem-list-group-item>
 </div>
