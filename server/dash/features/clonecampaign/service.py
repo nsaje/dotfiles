@@ -3,9 +3,10 @@ from django.http import HttpRequest
 
 import core.models
 import dash.features.cloneadgroup.service
-import dash.views.helpers
 import utils.email_helper
+import zemauth.access
 from server import celery
+from zemauth.features.entity_permission import Permission
 
 from . import exceptions
 
@@ -58,7 +59,7 @@ def clone_async(
     request = HttpRequest()
     request.user = user
     try:
-        source_campaign = dash.views.helpers.get_campaign(request.user, source_campaign_id)
+        source_campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, source_campaign_id)
         cloned_campaign = clone(
             request,
             source_campaign,

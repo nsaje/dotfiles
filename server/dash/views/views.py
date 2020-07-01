@@ -631,7 +631,7 @@ class AdGroupSources(DASHAPIBaseView):
         if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         source_id = json.loads(request.body)["source_id"]
         source = models.Source.objects.get(id=source_id)

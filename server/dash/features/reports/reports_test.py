@@ -4,16 +4,18 @@ from decimal import Decimal
 import mock
 from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
-from django.test import TestCase
 
 import core.models
 import dash.constants
 import utils.dates_helper
 import utils.test_helper
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from dash.features import geolocation
 from dash.features import scheduled_reports
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 from . import reports
@@ -33,7 +35,7 @@ TEST_FTP_REPORTS = {
 }
 
 
-class ReportsExecuteTest(TestCase):
+class LegacyReportsExecuteTestCase(DASHAPITestCase):
     def setUp(self):
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
         self.reportJob.user = magic_mixer.blend_user()
@@ -263,7 +265,11 @@ class ReportsExecuteTest(TestCase):
         self.assertEqual(ReportJobExecutor._get_csv_separators(self.reportJob), ("\t", "."))
 
 
-class ReportsGetReportCSVTest(TestCase):
+class ReportsExecuteTestCase(FutureDASHAPITestCase, LegacyReportsExecuteTestCase):
+    pass
+
+
+class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
     def setUp(self):
         magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -500,23 +506,32 @@ class ReportsGetReportCSVTest(TestCase):
         self.assertEqual(expected, output)
 
 
-class IncludeEntityTagsReportTestCase(TestCase):
+class ReportsGetReportCSVTestCase(FutureDASHAPITestCase, LegacyReportsGetReportCSVTestCase):
+    pass
+
+
+class LegacyIncludeEntityTagsReportTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
-        self.agency = magic_mixer.blend(core.models.Agency)
+
+        self.agency = self.mix_agency(self.user, permissions=[Permission.WRITE, Permission.READ])
         self.agency.entity_tags.add("some/agency", "another/agency")
+
         self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.account.entity_tags.add("some/account", "another/account")
-        self.account.users.add(self.user)
-        self.another_account = magic_mixer.blend(core.models.Account)
+
+        self.another_account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.another_account.entity_tags.add("other/account", "foreign/account")
-        self.another_account.users.add(self.user)
+
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.campaign.entity_tags.add("some/campaign", "another/campaign")
+
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group.entity_tags.add("some/ad_group", "another/ad_group")
+
         self.source = magic_mixer.blend(core.models.Source)
         self.source.entity_tags.add("some/source", "another/source")
+
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
         magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -633,7 +648,11 @@ class IncludeEntityTagsReportTestCase(TestCase):
         self.assertEqual(expected, output)
 
 
-class ReportsImplementationTest(TestCase):
+class IncludeEntityTagsReportTestCase(FutureDASHAPITestCase, LegacyIncludeEntityTagsReportTestCase):
+    pass
+
+
+class LegacyReportsImplementationTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.report_job = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
@@ -1277,3 +1296,7 @@ class ReportsImplementationTest(TestCase):
         self.report_job.query = query
         with self.assertRaises(utils.exc.ValidationError):
             ReportJobExecutor.get_report(self.report_job)
+
+
+class ReportsImplementationTestCase(FutureDASHAPITestCase, LegacyReportsImplementationTestCase):
+    pass

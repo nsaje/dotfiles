@@ -24,7 +24,6 @@ from dash import constants
 from dash import legacy
 from dash.common.views_base import DASHAPIBaseView
 from dash.features import contentupload
-from dash.views import helpers
 from utils import exc
 from zemauth.features.entity_permission import Permission
 
@@ -146,7 +145,8 @@ class AdGroupSourceSettings(DASHAPIBaseView):
         if "state" in settings:
             updates["b1_sources_group_state"] = settings["state"]
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
+
         try:
             ad_group.settings.update(request, **updates)
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:

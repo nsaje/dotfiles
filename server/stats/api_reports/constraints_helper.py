@@ -3,6 +3,8 @@ import dash.constants
 import dash.models
 import stats.constants
 import stats.constraints_helper
+import zemauth.features.entity_permission.helpers
+from zemauth.features.entity_permission import Permission
 
 
 def _intersection(base_collection, qs_ids):
@@ -56,15 +58,35 @@ def prepare_constraints(
 
     # filter by user and sources only on level that is restricted
     if content_ad_ids:
-        allowed_content_ads = allowed_content_ads.filter_by_user(user)
+        allowed_content_ads_user_perm = allowed_content_ads.filter_by_user(user)
+        allowed_content_ads_entity_perm = allowed_content_ads.filter_by_entity_permission(user, Permission.READ)
+        allowed_content_ads = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, allowed_content_ads_user_perm, allowed_content_ads_entity_perm
+        )
     elif ad_group_ids:
-        allowed_ad_groups = allowed_ad_groups.filter_by_user(user)
+        allowed_ad_groups_user_perm = allowed_ad_groups.filter_by_user(user)
+        allowed_ad_groups_entity_perm = allowed_ad_groups.filter_by_entity_permission(user, Permission.READ)
+        allowed_ad_groups = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, allowed_ad_groups_user_perm, allowed_ad_groups_entity_perm
+        )
     elif campaign_ids:
-        allowed_campaigns = allowed_campaigns.filter_by_user(user).filter_by_sources(filtered_sources)
+        allowed_campaigns_user_perm = allowed_campaigns.filter_by_user(user).filter_by_sources(filtered_sources)
+        allowed_campaigns_entity_perm = allowed_campaigns.filter_by_entity_permission(
+            user, Permission.READ
+        ).filter_by_sources(filtered_sources)
+        allowed_campaigns = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, allowed_campaigns_user_perm, allowed_campaigns_entity_perm
+        )
     else:
-        allowed_accounts = allowed_accounts.filter_by_user(user).filter_by_sources(filtered_sources)
+        allowed_accounts_user_perm = allowed_accounts.filter_by_user(user).filter_by_sources(filtered_sources)
+        allowed_accounts_entity_perm = allowed_accounts.filter_by_entity_permission(
+            user, Permission.READ
+        ).filter_by_sources(filtered_sources)
+        allowed_accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+            user, Permission.READ, allowed_accounts_user_perm, allowed_accounts_entity_perm
+        )
 
-    # limit by ids
+        # limit by ids
     ad_group_sources = None
     if content_ad_ids:
         allowed_content_ads = allowed_content_ads.filter(pk__in=content_ad_ids)

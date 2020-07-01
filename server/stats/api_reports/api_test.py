@@ -6,6 +6,8 @@ from mock import patch
 import dash.models
 from core.features import bid_modifiers
 from dash import publisher_helpers
+from dash.common.views_base_test_case import DASHAPITestCase
+from dash.common.views_base_test_case import FutureDASHAPITestCase
 from stats import api_reports
 from stats.api_reports import constraints_helper
 from utils import test_helper
@@ -184,8 +186,21 @@ class CampaignGoalTest(TestCase):
         )
 
 
-class PlacementBreakdownQueryTest(TestCase):
+class LegacyPlacementBreakdownQueryTestCase(DASHAPITestCase):
     fixtures = ["test_api_breakdowns.yaml"]
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        test_helper.add_permissions(
+            self.user,
+            permissions=[
+                "can_use_placement_targeting",
+                "can_use_publisher_bid_modifiers_in_ui",
+                "can_view_account_agency_information",
+                "can_see_sspd_url",
+            ],
+        )
+        self.maxDiff = None
 
     def _convert_to_placement_entries(self):
         # convert existing PublisherGroupEntry objects into placement ones
@@ -230,10 +245,9 @@ class PlacementBreakdownQueryTest(TestCase):
             }
         ]
 
-        user = User.objects.get(pk=1)
         breakdown = ["placement_id"]
         constraints = constraints_helper.prepare_constraints(
-            user,
+            self.user,
             breakdown,
             datetime.date(2016, 8, 1),
             datetime.date(2016, 8, 5),
@@ -250,7 +264,7 @@ class PlacementBreakdownQueryTest(TestCase):
         limit = 2
 
         result = api_reports.query(
-            user, breakdown, constraints, goals, order, offset, limit, dash.constants.Level.AD_GROUPS
+            self.user, breakdown, constraints, goals, order, offset, limit, dash.constants.Level.AD_GROUPS
         )
 
         mock_rs_query.assert_called_with(
@@ -347,10 +361,9 @@ class PlacementBreakdownQueryTest(TestCase):
             },
         ]
 
-        user = User.objects.get(pk=1)
         breakdown = ["ad_group_id", "placement_id"]
         constraints = constraints_helper.prepare_constraints(
-            user,
+            self.user,
             breakdown,
             datetime.date(2016, 8, 1),
             datetime.date(2016, 8, 5),
@@ -367,7 +380,7 @@ class PlacementBreakdownQueryTest(TestCase):
         limit = 2
 
         result = api_reports.query(
-            user,
+            self.user,
             breakdown,
             constraints,
             goals,
@@ -500,3 +513,7 @@ class PlacementBreakdownQueryTest(TestCase):
                 },
             ],
         )
+
+
+class PlacementBreakdownQueryTestCase(FutureDASHAPITestCase, LegacyPlacementBreakdownQueryTestCase):
+    pass

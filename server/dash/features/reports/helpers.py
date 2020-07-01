@@ -3,10 +3,11 @@ import datetime
 from rest_framework import serializers
 
 import dash.constants
-import dash.views.helpers
 import stats.augmenter
 import stats.constants
 import utils.columns
+import zemauth.access
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 
@@ -64,13 +65,13 @@ def get_breakdown_names(query):
 
 def extract_entity_names(user, constraints):
     if stats.constants.AD_GROUP in constraints:
-        ad_group = dash.views.helpers.get_ad_group(user, constraints[stats.constants.AD_GROUP])
+        ad_group = zemauth.access.get_ad_group(user, Permission.READ, constraints[stats.constants.AD_GROUP])
         return ad_group.name, ad_group.campaign.name, ad_group.campaign.account.name
     elif stats.constants.CAMPAIGN in constraints:
-        campaign = dash.views.helpers.get_campaign(user, constraints[stats.constants.CAMPAIGN])
+        campaign = zemauth.access.get_campaign(user, Permission.READ, constraints[stats.constants.CAMPAIGN])
         return None, campaign.name, campaign.account.name
     elif stats.constants.ACCOUNT in constraints:
-        account = dash.views.helpers.get_account(user, constraints[stats.constants.ACCOUNT])
+        account = zemauth.access.get_account(user, Permission.READ, constraints[stats.constants.ACCOUNT])
         return None, None, account.name
     else:
         return None, None, None
