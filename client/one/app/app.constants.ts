@@ -758,6 +758,7 @@ export enum RoutePathName {
     DEALS = 'deals',
     USERS = 'user-management',
     RULES = 'rules',
+    RULES_HISTORY = 'history',
     ERROR_FORBIDDEN = 'error/forbidden',
 }
 

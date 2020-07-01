@@ -20,7 +20,6 @@ import {Subject, Observable, merge} from 'rxjs';
 import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
 import {Router} from '@angular/router';
-import {isDefined} from 'angular';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -95,6 +94,26 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                     'zemauth.fea_can_create_automation_rules'
                 );
             },
+            subItems: [
+                {
+                    value: '',
+                    displayValue: 'Library',
+                    isVisible: () => {
+                        return this.zemPermissions.hasPermission(
+                            'zemauth.fea_can_create_automation_rules'
+                        );
+                    },
+                },
+                {
+                    value: RoutePathName.RULES_HISTORY,
+                    displayValue: 'History',
+                    isVisible: () => {
+                        return this.zemPermissions.hasPermission(
+                            'zemauth.fea_can_create_automation_rules'
+                        );
+                    },
+                },
+            ],
         },
     ];
 

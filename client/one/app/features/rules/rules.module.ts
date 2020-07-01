@@ -8,6 +8,7 @@ import {RuleEditFormConditionsComponent} from './components/rule-edit-form-condi
 import {RuleEditFormConditionComponent} from './components/rule-edit-form-condition/rule-edit-form-condition.component';
 import {RuleEditFormConditionModifierComponent} from './components/rule-edit-form-condition-modifier/rule-edit-form-condition-modifier.component';
 import {RulesHistoriesGridComponent} from './components/rules-histories-grid/rules-histories-grid.component';
+import {RulesHistoriesView} from './views/rules-histories/rules-histories.view';
 
 @NgModule({
     declarations: [
@@ -18,8 +19,10 @@ import {RulesHistoriesGridComponent} from './components/rules-histories-grid/rul
         RuleEditFormConditionComponent,
         RuleEditFormConditionModifierComponent,
         RulesHistoriesGridComponent,
+        RulesHistoriesView,
     ],
     imports: [SharedModule],
     exports: [RuleEditFormComponent],
+    entryComponents: [RulesHistoriesView],
 })
 export class RulesModule {}

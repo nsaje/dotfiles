@@ -1,0 +1,18 @@
+<h1 class="zem-main-container__view-title">Rules History</h1>
+
+<ng-container *ngIf="store.state$ | async as state">
+    <div
+        class="zem-panel zem-panel--with-padding zem-rules-histories-view__panel"
+    >
+        <zem-rules-histories-grid
+            class="zem-rules-histories-grid"
+            [rulesHistories]="state.entities"
+            [context]="context"
+            [isLoading]="state.requests.listHistories.inProgress"
+            [paginationOptions]="paginationOptions"
+            [paginationCount]="state.requests.listHistories.count"
+            (paginationChange)="onPaginationChange($event)"
+        >
+        </zem-rules-histories-grid>
+    </div>
+</ng-container>
