@@ -7,6 +7,7 @@ from .service import calculate_minimum_budget_amount
 from .service import get_campaignstop_state
 from .service import get_campaignstop_states
 from .service import handle_updates
+from .service import handle_updates_parallel
 from .service import mark_almost_depleted_campaigns
 from .service import notify_depleting_budget_campaigns
 from .service import notify_initialize
