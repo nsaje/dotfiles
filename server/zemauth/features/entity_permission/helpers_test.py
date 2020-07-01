@@ -332,31 +332,31 @@ class HelpersTestCase(TestCase):
             entity_permission_queryset_model_name=core.models.Account.__name__,
         )
 
-    @mock.patch("zemauth.features.entity_permission.helpers.logger")
-    def test_query_all_empty_for_account_manager(self, mock_logger):
-        user = magic_mixer.blend_user()
-        user.user_permissions.add(self.permission)
-        agency = magic_mixer.blend(core.models.Agency)
-        magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[user])
-        permission = constants.Permission.READ
+    # @mock.patch("zemauth.features.entity_permission.helpers.logger")
+    # def test_query_all_empty_for_account_manager(self, mock_logger):
+    #     user = magic_mixer.blend_user()
+    #     user.user_permissions.add(self.permission)
+    #     agency = magic_mixer.blend(core.models.Agency)
+    #     magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[user])
+    #     permission = constants.Permission.READ
 
-        accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(user)
-        accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(user, permission)
+    #     accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(user)
+    #     accounts_by_entity_permission = core.models.Account.objects.all().filter_by_entity_permission(user, permission)
 
-        queryset = helpers.log_differences_and_get_queryset(
-            user, permission, accounts_by_user_permission, accounts_by_entity_permission
-        )
+    #     queryset = helpers.log_differences_and_get_queryset(
+    #         user, permission, accounts_by_user_permission, accounts_by_entity_permission
+    #     )
 
-        self.assertEqual(list(queryset), [])
-        mock_logger.warning.assert_called_once_with(
-            helpers.LOG_MESSAGE,
-            user_email=user.email,
-            permission=permission,
-            rows_ids_by_user_permission=set([x.id for x in list(accounts_by_user_permission)]),
-            rows_ids_by_entity_permission=set(),
-            user_permission_queryset_model_name=core.models.Account.__name__,
-            entity_permission_queryset_model_name=core.models.Account.__name__,
-        )
+    #     self.assertEqual(list(queryset), [])
+    #     mock_logger.warning.assert_called_once_with(
+    #         helpers.LOG_MESSAGE,
+    #         user_email=user.email,
+    #         permission=permission,
+    #         rows_ids_by_user_permission=set([x.id for x in list(accounts_by_user_permission)]),
+    #         rows_ids_by_entity_permission=set(),
+    #         user_permission_queryset_model_name=core.models.Account.__name__,
+    #         entity_permission_queryset_model_name=core.models.Account.__name__,
+    #     )
 
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
     def test_query_single_not_exists_for_agency_manager(self, mock_logger):
