@@ -114,6 +114,12 @@ class AdGroupSourcesView(K1APIView):
         if ad_group.id == settings.AD_LOOKUP_AD_GROUP_ID:
             return True
 
+        # Ensure APT demand is always enabled on APT supply and nowhere else
+        if ad_group.campaign.account_id == settings.APT_ACCOUNT_ID:
+            if ad_group_source.source_id in settings.APT_SOURCE_IDS:
+                return True
+            return False
+
         if not allowed_to_run:
             return False
 

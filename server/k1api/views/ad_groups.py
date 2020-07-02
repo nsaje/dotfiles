@@ -201,6 +201,8 @@ class AdGroupsView(K1APIView):
     def _get_end_date(ad_group_settings, campaignstop_states):
         if ad_group_settings.ad_group.id == settings.AD_LOOKUP_AD_GROUP_ID:
             return None
+        if ad_group_settings.ad_group.campaign.account_id == settings.APT_ACCOUNT_ID:
+            return None
         campaign = ad_group_settings.ad_group.campaign
         max_allowed_end_date = campaignstop_states.get(campaign.id, {}).get("max_allowed_end_date")
         if max_allowed_end_date is None:
