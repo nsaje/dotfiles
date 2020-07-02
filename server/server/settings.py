@@ -473,4 +473,4 @@ DCRON = {
 
 sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])
 
-APT_TESTS_PATH = "apt/tests"
+APT_TESTS_PATH = os.path.join(BASE_DIR, "apt/")

@@ -1,12 +1,13 @@
 import django.test.runner
 from django.conf import settings
+from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 from utils.test_runner_mixin import FilterSuiteMixin
 
 from .test_case import APTTestCase
 
 
-class APTTestRunner(FilterSuiteMixin, django.test.runner.DiscoverRunner):
+class APTTestRunner(FilterSuiteMixin, XMLTestRunner, django.test.runner.DiscoverRunner):
     def run_tests(self, *args, **kwargs):
         assert settings.APT_MODE, 'Not running in "apt" environment. Set CONF_ENV=apt to use it.'
 

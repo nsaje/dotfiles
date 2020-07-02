@@ -1,0 +1,48 @@
+#!groovy
+import hudson.model.Run
+
+node('master') {
+    stage('Kill previous builds') {
+        if (env.BRANCH_NAME != 'master') {
+            Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+
+            while (previousBuild != null) {
+                if (previousBuild.isInProgress()) {
+                    echo ">> Aborting older build #${previousBuild.number}"
+                    previousBuild.doTerm()
+                }
+
+                previousBuild = previousBuild.getPreviousBuildInProgress()
+            }
+        }
+    }
+
+    stage('Setup') {
+        sh 'export' // for debug purposes
+        env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
+        sh 'mkdir -p ${CACHE_DIR}'
+        env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
+        env.AWS_DEFAULT_REGION="us-east-1"
+    }
+
+    stage('Code checkout') {
+        checkout scm
+        // make sure we don't have leftovers from previous builds
+        sh 'sudo git clean --force -d -x'
+    }
+
+    stage('Prepare containers') {
+        sh 'make pull'
+    }
+
+    stage('APT tests') {
+        // login to ECR
+        sh 'make login'
+
+        try {
+            sh 'make test_apt | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+        } finally {
+            junit testResults: 'server/apt/.junit_xml/*.xml', allowEmptyResults: true
+        }
+    }
+}

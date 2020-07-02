@@ -5,7 +5,8 @@ GIT_HASH := $(shell git rev-parse --verify HEAD)
 TIMESTAMP := $(shell date +"Created_%Y-%m-%d_%H.%M")
 
 ifdef HUDSON_COOKIE # Jenkins
-	GIT_BRANCH := $(shell printf ${BRANCH_NAME} )# Jenkins
+	# BRANCH_NAME is only available in multibranch pipeline (not used in APT tests)
+	GIT_BRANCH := $(shell [[ "$(BRANCH_NAME)" ]] && printf $(BRANCH_NAME) || printf "master")# Jenkins
 	BUILD_NUM := $(shell printf ${BUILD_NUMBER} )# Jenkins
 	Z1_CLIENT_IMAGE := $(shell printf "$(ECR_BASE)/z1-client:$(GIT_BRANCH).$(BUILD_NUM)")
 	Z1_SERVER_IMAGE := $(shell printf "$(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM)")
@@ -87,6 +88,15 @@ test_client:	## runs client tests
 test_acceptance:	## runs tests against a running server in a container
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	./scripts/docker_test_acceptance.sh
+
+test_apt:
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
+	docker run \
+		   --rm \
+		   -u 1000 \
+		   -v $(PWD)/server/:/app/z1/ \
+		   $(ECR_BASE)/z1-base:master \
+		   bash -x ./run_apt.sh
 
 test_e2e:	## runs e2e tests against a running app in a container
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \

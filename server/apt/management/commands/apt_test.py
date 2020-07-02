@@ -1,3 +1,7 @@
+import os
+
+from django.conf import settings
+
 import apt.base.runner
 from utils import zlogging
 from utils.command_helpers import Z1Command
@@ -18,5 +22,5 @@ class Command(Z1Command):
         apt.base.runner.APTTestRunner.add_arguments(parser)
 
     def handle(self, *test_labels, **options):
-        runner = apt.base.runner.APTTestRunner()
+        runner = apt.base.runner.APTTestRunner(output=os.path.join(settings.APT_TESTS_PATH, ".junit_xml"))
         runner.run_tests(test_labels)
