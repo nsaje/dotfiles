@@ -96,8 +96,9 @@ test_apt:
 		   -u 1000 \
 		   -v $(PWD)/server/:/app/z1/ \
 		   -v $(PWD)/server/apt/.junit_xml/:/app/z1/apt/.junit_xml/ \
+		   -w /app/z1/ \
 		   $(ECR_BASE)/z1-base:master \
-		   bash -x /app/z1/run_apt.sh
+		   bash -x ./run_apt.sh
 
 test_e2e:	## runs e2e tests against a running app in a container
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
