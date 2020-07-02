@@ -369,6 +369,6 @@ BIGQUERY_CREDENTIALS = {
 RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify"
 RECAPTCHA_SECRET_KEY = Secret("plain::fake").get().decode("utf-8")  # noqa
 
-METRICS_PUSH_GATEWAY = "http://pushgateway:8000"
+METRICS_PUSH_GATEWAY = "http://localhost:8000"
 
 LOGGING_FORMATTER = "json"
