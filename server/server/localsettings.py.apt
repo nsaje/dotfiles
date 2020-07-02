@@ -128,11 +128,8 @@ elif os.path.isfile("build_number.txt"):
     with open("build_number.txt", "r") as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-_ROOT_STATIC_URL = "https://one-static.zemanta.com/build-{}".format(
-    (BRANCH if BRANCH != "master" else "") + BUILD_NUMBER
-)
-SERVER_STATIC_URL = _ROOT_STATIC_URL + "/server"
-CLIENT_STATIC_URL = _ROOT_STATIC_URL + "/client"
+SERVER_STATIC_URL = "/static"
+CLIENT_STATIC_URL = "http://localhost:9999"
 
 # K1 API
 K1_API_SIGN_KEY = [Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()]
