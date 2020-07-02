@@ -105,6 +105,9 @@ class PublisherGroupsFormMixin(forms.Form):
         elif hasattr(self, "agency"):
             self.fields["whitelist_publisher_groups"].queryset = qs.filter_by_agency(self.agency)
             self.fields["blacklist_publisher_groups"].queryset = qs.filter_by_agency(self.agency)
+        else:
+            self.fields["whitelist_publisher_groups"].queryset = qs
+            self.fields["blacklist_publisher_groups"].queryset = qs
 
     def clean_whitelist_publisher_groups(self):
         publisher_groups = self.cleaned_data.get("whitelist_publisher_groups") or []
