@@ -40,7 +40,7 @@ class CalculateMarketerTypeTestCase(TestCase):
 
     def test_one_mapped_account_type_tag(self):
         self.account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"))
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, "ELASTIC_PUBLISHER")
         self.assertEqual(content_classification, "PremiumElasticPublishers")
 
@@ -49,12 +49,12 @@ class CalculateMarketerTypeTestCase(TestCase):
             magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search"),
             magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"),
         )
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, "ELASTIC_PUBLISHER")
         self.assertEqual(content_classification, "PremiumElasticPublishers")
 
     def test_no_account_type_tags(self):
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_TYPE)
         self.assertEqual(
             content_classification, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
@@ -64,16 +64,16 @@ class CalculateMarketerTypeTestCase(TestCase):
         account = magic_mixer.blend(dash.models.Account)
         account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"))
         self.account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search"))
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, "SEARCH")
         self.assertEqual(content_classification, "SERP")
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
         self.assertEqual(marketer_type, "ELASTIC_PUBLISHER")
         self.assertEqual(content_classification, "PremiumElasticPublishers")
 
     def test_unmapped_account_type_tag(self):
         self.account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/unknown/tag"))
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_TYPE)
         self.assertEqual(
             content_classification, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
@@ -81,7 +81,7 @@ class CalculateMarketerTypeTestCase(TestCase):
 
     def test_non_account_type_tag(self):
         self.account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="invalid/tag"))
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_TYPE)
         self.assertEqual(
             content_classification, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
@@ -92,9 +92,64 @@ class CalculateMarketerTypeTestCase(TestCase):
             magic_mixer.blend(dash.models.EntityTag, name="invalild/tag"),
             magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"),
         )
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account.id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(self.account)
         self.assertEqual(marketer_type, "ELASTIC_PUBLISHER")
         self.assertEqual(content_classification, "PremiumElasticPublishers")
+
+    def test_agency_mapped_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, "ELASTIC_PUBLISHER")
+        self.assertEqual(content_classification, "PremiumElasticPublishers")
+
+    def test_agency_unmapped_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/unknown/tag"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_TYPE)
+        self.assertEqual(
+            content_classification, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
+        )
+
+    def test_agency_non_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="some/tag"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_TYPE)
+        self.assertEqual(
+            content_classification, outbrain_marketer_helper.DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
+        )
+
+    def test_account_over_agency_priority_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/audiencedev/socagg"))
+        account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, "SEARCH")
+        self.assertEqual(content_classification, "SERP")
+
+    def test_account_over_agency_unmapped_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/unknown/tag"))
+        account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, "SEARCH")
+        self.assertEqual(content_classification, "SERP")
+
+    def test_account_over_agency_non_account_tag(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        account = magic_mixer.blend(dash.models.Account, agency=agency)
+        agency.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="some/tag"))
+        account.entity_tags.add(magic_mixer.blend(dash.models.EntityTag, name="account_type/performance/search"))
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
+        self.assertEqual(marketer_type, "SEARCH")
+        self.assertEqual(content_classification, "SERP")
 
 
 class GetMarketerUserEmailsTestCase(TestCase):

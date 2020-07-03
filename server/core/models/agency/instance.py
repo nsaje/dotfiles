@@ -4,6 +4,7 @@ import core.features.history
 from dash import constants
 from utils import exc
 from utils import json_helper
+from utils import k1_helper
 
 from .validation import OUTBRAIN_SALESFORCE_SERVICE_USER
 
@@ -77,9 +78,11 @@ class AgencyInstanceMixin:
 
     def _apply_updates_and_save(self, request, updates):
         sub_accounts_updates = dict()
+        entity_tags_changed = False
 
         for field, value in updates.items():
             if field == "entity_tags":
+                entity_tags_changed = True
                 self.entity_tags.clear()
                 if value:
                     self.entity_tags.add(*value)
@@ -119,9 +122,9 @@ class AgencyInstanceMixin:
             else:
                 setattr(self, field, value)
         self.save(request)
-        self._update_sub_accounts(request, **sub_accounts_updates)
+        self._update_sub_accounts(request, k1_sync=entity_tags_changed, **sub_accounts_updates)
 
-    def _update_sub_accounts(self, request, **updates):
+    def _update_sub_accounts(self, request, k1_sync=False, **updates):
         if self.is_externally_managed and request.user.email != OUTBRAIN_SALESFORCE_SERVICE_USER:
             return
         if updates:
@@ -129,3 +132,6 @@ class AgencyInstanceMixin:
 
                 account.update(request, **updates)
                 account.settings.update(request, **updates)
+
+            if k1_sync:
+                k1_helper.update_accounts(self.account_set.filter(archived=False), msg="account.updated")

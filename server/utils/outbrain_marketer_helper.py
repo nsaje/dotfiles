@@ -2,7 +2,9 @@ import re
 from typing import Dict
 from typing import List
 from typing import Tuple
+from typing import Union
 
+from django.db.models import Q
 from typing_extensions import TypedDict
 
 import dash.models
@@ -13,6 +15,12 @@ class MarketerTypeDict(TypedDict):
     type: str
     content_classification: str
     importance: int
+
+
+class EntityTagDict(TypedDict):
+    name: str
+    account__id: Union[None, int]
+    agency__id: Union[None, int]
 
 
 MARKETER_NAME_REGEX = r"^Zemanta_(?P<account_id>\d+)_(?P<marketer_version>\d+)$"
@@ -42,30 +50,40 @@ def parse_marketer_name(marketer_name: str) -> Tuple[int, int]:
     return int(values["account_id"]), int(values["marketer_version"])
 
 
-def calculate_marketer_parameters(account_id: int) -> Tuple[str, str]:
+def calculate_marketer_parameters(account: dash.models.Account) -> Tuple[str, str]:
     try:
-        entity_tag_names = list(
+        filter_qs = Q(account__id=account.id)
+        if account.agency_id is not None:
+            filter_qs |= Q(agency__id=account.agency_id)
+
+        entity_tag_data = list(
             dash.models.EntityTag.objects.get(name=MARKETER_TYPE_PREFIX)
             .get_descendants()
-            .filter(account__id=account_id)
+            .filter(filter_qs)
+            .distinct()
             .order_by("id")
-            .values_list("name", flat=True)
+            .values("name", "account__id", "agency__id")
         )
     except dash.models.EntityTag.DoesNotExist:
         return DEFAULT_OUTBRAIN_MARKETER_TYPE, DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
 
-    entity_tag_names = [name for name in entity_tag_names if name in MARKETER_TYPE_MAP]
+    entity_tag_data = [e for e in entity_tag_data if e["name"] in MARKETER_TYPE_MAP]
 
-    return determine_best_match(entity_tag_names)
+    return determine_best_match(entity_tag_data)
 
 
-def determine_best_match(entity_tag_names):
-    if not entity_tag_names:
+def determine_best_match(entity_tag_data: List[EntityTagDict]) -> Tuple[str, str]:
+    if not entity_tag_data:
         return DEFAULT_OUTBRAIN_MARKETER_TYPE, DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
 
+    entity_tag_data = [e for e in entity_tag_data if e["name"] in MARKETER_TYPE_MAP]
+    selected_entity_tag_data = [e for e in entity_tag_data if e["account__id"] is not None]
+    if not selected_entity_tag_data:
+        # there are no account specific tags, take agency ones
+        selected_entity_tag_data = entity_tag_data
+
     sorted_matches = sorted(
-        [MARKETER_TYPE_MAP[name] for name in entity_tag_names if name in MARKETER_TYPE_MAP],
-        key=lambda x: x["importance"],
+        [MARKETER_TYPE_MAP[e["name"]] for e in selected_entity_tag_data], key=lambda x: x["importance"]
     )
     if not sorted_matches:
         return DEFAULT_OUTBRAIN_MARKETER_TYPE, DEFAULT_OUTBRAIN_MARKETER_CONTENT_CLASSIFICATION
@@ -73,7 +91,7 @@ def determine_best_match(entity_tag_names):
     return sorted_matches[0]["type"], sorted_matches[0]["content_classification"]
 
 
-def get_marketer_user_emails(include_defaults=True) -> List[str]:
+def get_marketer_user_emails(include_defaults: bool = True) -> List[str]:
     emails = list(
         User.objects.get_users_with_perm("campaign_settings_cs_rep")
         .exclude(groups__name="ProdOps")

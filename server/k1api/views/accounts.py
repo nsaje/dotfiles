@@ -194,7 +194,7 @@ class AccountMarketerParametersView(K1APIView):
         except dash.models.Account.DoesNotExist:
             return self.response_error("Account does not exist")
 
-        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account_id)
+        marketer_type, content_classification = outbrain_marketer_helper.calculate_marketer_parameters(account)
 
         data = {
             "id": account.id,
@@ -222,7 +222,7 @@ class AccountsBulkMarketerParametersView(K1APIView):
         account_data = (
             account_data.distinct()
             .order_by("id")
-            .values("id", "created_dt", "outbrain_marketer_id", "outbrain_marketer_version")
+            .values("id", "agency__id", "created_dt", "outbrain_marketer_id", "outbrain_marketer_version")
         )
 
         data = {"accounts": list(account_data), "emails": outbrain_marketer_helper.get_marketer_user_emails()}
@@ -230,17 +230,32 @@ class AccountsBulkMarketerParametersView(K1APIView):
         entries = (
             dash.models.EntityTag.objects.get(name=outbrain_marketer_helper.MARKETER_TYPE_PREFIX)
             .get_descendants()
-            .filter(account__id__in=[e["id"] for e in data["accounts"]])
-            .values("name", "account__id")
+            .filter(
+                Q(account__id__in=[e["id"] for e in data["accounts"]])
+                | Q(agency__id__in=[e["agency__id"] for e in data["accounts"]])
+            )
+            .distinct()
+            .values("name", "account__id", "agency__id")
         )
 
+        agency_tag_map = defaultdict(list)
         account_tag_map = defaultdict(list)
         for entry in entries:
-            account_tag_map[entry["account__id"]].append(entry["name"])
+            if entry["account__id"]:
+                account_entry = entry.copy()
+                account_entry.update({"agency__id": None})
+                account_tag_map[entry["account__id"]].append(account_entry)
+            if entry["agency__id"]:
+                agency_entry = entry.copy()
+                agency_entry.update({"account__id": None})
+                agency_tag_map[entry["agency__id"]].append(agency_entry)
 
         for entry in data["accounts"]:
-            entity_tag_names = account_tag_map.get(entry["id"])
-            marketer_type, content_classification = outbrain_marketer_helper.determine_best_match(entity_tag_names)
+            entity_tag_data = []
+            entity_tag_data.extend(account_tag_map.get(entry["id"], []))
+            if entry["agency__id"]:
+                entity_tag_data.extend(agency_tag_map.get(entry["agency__id"], []))
+            marketer_type, content_classification = outbrain_marketer_helper.determine_best_match(entity_tag_data)
             entry.update(
                 {
                     "created_dt": entry["created_dt"].isoformat(),
@@ -248,5 +263,6 @@ class AccountsBulkMarketerParametersView(K1APIView):
                     "content_classification": content_classification,
                 }
             )
+            del entry["agency__id"]
 
         return self.response_ok(data)
