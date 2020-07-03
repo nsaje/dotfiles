@@ -34,6 +34,7 @@ class PublisherGroupsEntriesView(K1APIView):
         publisher_group_ids = request.GET.get("publisher_group_ids")
         offset = request.GET.get("offset") or 0
         limit = request.GET.get("limit")
+        marker = request.GET.get("marker")
 
         if not limit:
             return self.response_error("Limit parameter is missing", status=400)
@@ -55,10 +56,14 @@ class PublisherGroupsEntriesView(K1APIView):
         if source_slug:
             entries = entries.filter(source__bidder_slug=source_slug)
 
+        if marker:
+            entries = entries.filter(pk__gt=int(marker))
+
         entry_values = list(
             entries[offset : offset + limit]
             .annotate(source_slug=F("source__bidder_slug"))
             .values(
+                "id",
                 "source_slug",
                 "publisher_group_id",
                 "include_subdomains",

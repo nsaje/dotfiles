@@ -36,6 +36,7 @@ class PublishersTest(K1APIBaseTest):
             data,
             [
                 {
+                    "id": 1,
                     "outbrain_section_id": "",
                     "outbrain_amplify_publisher_id": "",
                     "outbrain_engage_publisher_id": "",
@@ -48,6 +49,7 @@ class PublishersTest(K1APIBaseTest):
                     "account_id": 1,
                 },
                 {
+                    "id": 2,
                     "outbrain_section_id": "asd1234",
                     "outbrain_amplify_publisher_id": "asd12345",
                     "outbrain_engage_publisher_id": "df164",
@@ -78,6 +80,7 @@ class PublishersTest(K1APIBaseTest):
             data,
             [
                 {
+                    "id": 6,
                     "outbrain_section_id": "",
                     "outbrain_amplify_publisher_id": "",
                     "outbrain_engage_publisher_id": "",
@@ -90,6 +93,7 @@ class PublishersTest(K1APIBaseTest):
                     "account_id": 1,
                 },
                 {
+                    "id": 7,
                     "outbrain_section_id": "",
                     "outbrain_amplify_publisher_id": "",
                     "outbrain_engage_publisher_id": "",
@@ -121,6 +125,7 @@ class PublishersTest(K1APIBaseTest):
             data,
             [
                 {
+                    "id": 1,
                     "outbrain_section_id": "",
                     "outbrain_amplify_publisher_id": "",
                     "outbrain_engage_publisher_id": "",
@@ -150,6 +155,7 @@ class PublishersTest(K1APIBaseTest):
             data,
             [
                 {
+                    "id": 2,
                     "outbrain_section_id": "asd1234",
                     "outbrain_amplify_publisher_id": "asd12345",
                     "outbrain_engage_publisher_id": "df164",
