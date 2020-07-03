@@ -33,10 +33,10 @@ class PublisherGroupQuerySet(
     def filter_by_agency(self, agency):
         return self.filter(models.Q(agency=agency))
 
-    def filter_by_active_adgroups(self):
+    def filter_by_active_candidate_adgroups(self):
         data = (
             core.models.AdGroup.objects.all()
-            .filter_current_and_active()
+            .filter_active_candidate()
             .values_list(
                 "default_blacklist_id",
                 "default_whitelist_id",

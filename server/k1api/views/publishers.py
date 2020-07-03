@@ -19,7 +19,7 @@ class PublisherGroupsView(K1APIView):
     def get(self, request):
         account_id = request.GET.get("account_id")
 
-        publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_active_adgroups()
+        publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_active_candidate_adgroups()
         if account_id:
             publisher_groups = publisher_groups.filter_by_account(dash.models.Account.objects.get(pk=account_id))
 

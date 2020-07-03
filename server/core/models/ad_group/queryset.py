@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 import dash.constants
@@ -55,6 +57,27 @@ class AdGroupQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
             date = utils.dates_helper.local_today()
         return self.filter(
             settings__state=dash.constants.AdGroupSettingsState.ACTIVE, settings__start_date__lte=date
+        ).exclude_end_date_before_date(date)
+
+    def filter_active_candidate(self, date=None):
+        """
+        This function checks if adgroup is active and current or if it has hight probability of being active soon.
+            - Ad group is active now or start date is in the near future
+            - Settings were modified recently
+            - Is not past the end date
+        """
+        if not date:
+            date = utils.dates_helper.local_today()
+
+        tomorrow_dt = date + datetime.timedelta(hours=24)
+        recent_dt = date - datetime.timedelta(hours=72)
+
+        return self.filter(
+            (
+                models.Q(settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
+                & models.Q(settings__start_date__lte=tomorrow_dt)
+            )
+            | models.Q(settings__created_dt__gte=recent_dt)
         ).exclude_end_date_before_date(date)
 
     def filter_active(self):
