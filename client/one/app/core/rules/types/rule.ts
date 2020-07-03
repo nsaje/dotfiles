@@ -3,6 +3,7 @@ import {
     TimeRange,
     RuleActionType,
     RuleActionFrequency,
+    RuleState,
 } from '../rules.constants';
 import {RuleCondition} from './rule-condition';
 import {RuleNotificationType} from '../rules.constants';
@@ -27,4 +28,5 @@ export interface Rule {
     window: TimeRange;
     notificationType: RuleNotificationType;
     notificationRecipients: string[];
+    state?: RuleState;
 }

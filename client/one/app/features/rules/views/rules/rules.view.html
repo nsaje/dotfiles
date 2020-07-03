@@ -1,0 +1,15 @@
+<h1 class="zem-main-container__view-title">Automation Rules</h1>
+
+<ng-container *ngIf="store.state$ | async as state">
+    <div class="zem-panel zem-panel--with-padding zem-rules-view__panel">
+        <zem-rules-grid
+            class="zem-rules-grid"
+            [rules]="state.entities"
+            [context]="context"
+            [isLoading]="state.requests.list.inProgress"
+            [paginationOptions]="paginationOptions"
+            [paginationCount]="state.requests.list.count"
+            (paginationChange)="onPaginationChange($event)"
+        ></zem-rules-grid>
+    </div>
+</ng-container>

@@ -25,9 +25,9 @@ export enum RuleActionType {
 }
 
 export enum RuleActionFrequency {
-    Day1 = '1_DAY',
-    Days3 = '3_DAYS',
-    Days7 = '7_DAYS',
+    Day1 = 24,
+    Days3 = 72,
+    Days7 = 168,
 }
 
 export enum Macro {
@@ -268,4 +268,9 @@ export enum TimeRange {
 export enum RuleHistoryStatus {
     SUCCESS = 1,
     FAILURE = 2,
+}
+
+export enum RuleState {
+    ENABLED = 'ENABLED',
+    PAUSED = 'PAUSED',
 }

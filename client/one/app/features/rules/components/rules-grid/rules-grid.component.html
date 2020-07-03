@@ -1,0 +1,11 @@
+<zem-smart-grid
+    class="zem-smart-grid"
+    [rowData]="rules"
+    [columnDefs]="columnDefs"
+    [context]="context"
+    [paginationOptions]="paginationOptions"
+    [paginationCount]="paginationCount"
+    (paginationChange)="paginationChange.emit($event)"
+    (gridReady)="onGridReady($event)"
+>
+</zem-smart-grid>

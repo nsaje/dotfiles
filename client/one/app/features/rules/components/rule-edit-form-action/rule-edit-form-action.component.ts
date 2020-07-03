@@ -23,6 +23,7 @@ import {
     EMAIL_MACROS,
     RULE_TARGET_TYPES,
     RULE_ACTIONS_OPTIONS,
+    RULE_ACTION_FREQUENCY_OPTIONS,
 } from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
 
@@ -119,7 +120,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.actionType || changes.targetType) {
-            this.selectedTargetAndActionType = this.prepareSelectedTArgetAndActionType(
+            this.selectedTargetAndActionType = this.prepareSelectedTargetAndActionType(
                 this.targetType,
                 this.actionType
             );
@@ -260,7 +261,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
                 const actionConfig = this.getActionConfig(action);
                 availableActions.push({
                     label: target.label + ' - ' + actionConfig.label,
-                    value: this.prepareSelectedTArgetAndActionType(
+                    value: this.prepareSelectedTargetAndActionType(
                         target.value,
                         actionConfig.type
                     ),
@@ -272,7 +273,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         return availableActions;
     }
 
-    private prepareSelectedTArgetAndActionType(
+    private prepareSelectedTargetAndActionType(
         targetType: RuleTargetType,
         actionType: RuleActionType
     ): string {
@@ -296,33 +297,13 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         value: number;
     }[] {
         return selectedActionConfig.frequencies.map(frequency => {
-            return {
-                value: this.getFrequencyValue(frequency),
-                label: this.getFrequencyLabel(frequency),
-            };
+            return (
+                RULE_ACTION_FREQUENCY_OPTIONS[frequency] || {
+                    label: null,
+                    value: null,
+                }
+            );
         });
-    }
-
-    private getFrequencyValue(frequency: RuleActionFrequency): number {
-        switch (frequency) {
-            case RuleActionFrequency.Day1:
-                return 24;
-            case RuleActionFrequency.Days3:
-                return 72;
-            case RuleActionFrequency.Days7:
-                return 168;
-        }
-    }
-
-    private getFrequencyLabel(frequency: RuleActionFrequency): string {
-        switch (frequency) {
-            case RuleActionFrequency.Day1:
-                return '1 day';
-            case RuleActionFrequency.Days3:
-                return '3 days';
-            case RuleActionFrequency.Days7:
-                return '7 days';
-        }
     }
 
     private getAvailablePublisherGroupsItems(

@@ -7,6 +7,8 @@ import {
     RuleConditionOperandGroup,
     TimeRange,
     Macro,
+    RuleState,
+    RuleNotificationType,
 } from '../../core/rules/rules.constants';
 import {DataType, Unit} from '../../app.constants';
 import {PaginationState} from '../../shared/components/smart-grid/types/pagination-state';
@@ -251,6 +253,47 @@ export const TIME_RANGES = [
         value: TimeRange.Lifetime,
     },
 ];
+
+export const RULE_ACTION_FREQUENCY_OPTIONS = {
+    [RuleActionFrequency.Day1]: {
+        label: 'Every day',
+        value: RuleActionFrequency.Day1,
+    },
+    [RuleActionFrequency.Days3]: {
+        label: 'Every 3 days',
+        value: RuleActionFrequency.Days3,
+    },
+    [RuleActionFrequency.Days7]: {
+        label: 'Every 7 days',
+        value: RuleActionFrequency.Days7,
+    },
+};
+
+export const RULE_STATE_OPTIONS = {
+    [RuleState.ENABLED]: {
+        label: 'Enabled',
+        value: RuleState.ENABLED,
+    },
+    [RuleState.PAUSED]: {
+        label: 'Paused',
+        value: RuleState.PAUSED,
+    },
+};
+
+export const RULE_NOTIFICATION_OPTIONS = {
+    [RuleNotificationType.None]: {
+        label: 'Never',
+        value: RuleNotificationType.None,
+    },
+    [RuleNotificationType.OnRuleRun]: {
+        label: 'Always',
+        value: RuleNotificationType.OnRuleRun,
+    },
+    [RuleNotificationType.OnRuleActionTriggered]: {
+        label: 'When action is performed',
+        value: RuleNotificationType.OnRuleActionTriggered,
+    },
+};
 
 export const RULE_CONDITION_OPERANDS_OPTIONS = {
     [RuleConditionOperandType.AbsoluteValue]: {
