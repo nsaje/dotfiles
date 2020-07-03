@@ -55,24 +55,34 @@ class PublisherGroupsEntriesView(K1APIView):
         if source_slug:
             entries = entries.filter(source__bidder_slug=source_slug)
 
-        return self.response_ok(
-            list(
-                entries[offset : offset + limit]
-                .annotate(source_slug=F("source__bidder_slug"), account_id=F("publisher_group__account_id"))
-                .values(
-                    "source_slug",
-                    "publisher_group_id",
-                    "include_subdomains",
-                    "outbrain_publisher_id",
-                    "outbrain_section_id",
-                    "outbrain_amplify_publisher_id",
-                    "outbrain_engage_publisher_id",
-                    "publisher",
-                    "placement",
-                    "account_id",
-                )
+        entry_values = list(
+            entries[offset : offset + limit]
+            .annotate(source_slug=F("source__bidder_slug"))
+            .values(
+                "source_slug",
+                "publisher_group_id",
+                "include_subdomains",
+                "outbrain_publisher_id",
+                "outbrain_section_id",
+                "outbrain_amplify_publisher_id",
+                "outbrain_engage_publisher_id",
+                "publisher",
+                "placement",
             )
         )
+
+        # Avoid join on publisher groups which consumes a lot of DB time
+        publisher_group_accounts = {
+            g["pk"]: g["account_id"]
+            for g in dash.models.PublisherGroup.objects.filter(
+                id__in={v["publisher_group_id"] for v in entry_values}
+            ).values("pk", "account_id")
+        }
+
+        for entry in entry_values:
+            entry["account_id"] = publisher_group_accounts[entry["publisher_group_id"]]
+
+        return self.response_ok(entry_values)
 
 
 class PublisherBidModifiersView(K1APIView):
