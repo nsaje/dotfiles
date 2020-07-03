@@ -322,7 +322,8 @@ angular
             if (
                 commonHelpers.isDefined(activeEntity) &&
                 commonHelpers.isDefined(entity) &&
-                activeEntity.id === entity.id
+                activeEntity.id === entity.id &&
+                activeEntity.type === entity.type
             ) {
                 return;
             }
