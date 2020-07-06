@@ -3,7 +3,7 @@ production data to increase developers' confindence that the system is working c
 run using readonly database users in order to avoid accidentally changing production data.
 
 A word of caution: although database access is restricted to readonly, REST API calls can still
-write data if the test user has write premissions. In order to avoid changing production data every
+write data if the test user has write premissions. In order to avoid changing production data, every
 user used in APT tests should be set up to only have write permissions to agencies and/or accounts
 created for this purpose.
 
