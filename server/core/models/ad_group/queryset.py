@@ -70,7 +70,7 @@ class AdGroupQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPerm
             date = utils.dates_helper.local_today()
 
         tomorrow_dt = date + datetime.timedelta(hours=24)
-        recent_dt = date - datetime.timedelta(hours=72)
+        recent_dt = date - datetime.timedelta(hours=24)
 
         return self.filter(
             (
