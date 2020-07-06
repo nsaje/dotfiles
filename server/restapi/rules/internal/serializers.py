@@ -130,6 +130,7 @@ class RuleHistorySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     status = restapi.serializers.fields.IntegerField(read_only=True)
     changes = restapi.serializers.fields.PlainCharField(read_only=True, allow_null=True)
     changes_text = rest_framework.serializers.JSONField(read_only=True, allow_null=True)
+    changes_formatted = restapi.serializers.fields.PlainCharField(source="get_formatted_changes", read_only=True)
     rule_id = restapi.serializers.fields.IdField(read_only=True)
     rule_name = restapi.serializers.fields.PlainCharField(source="rule.name", read_only=True)
     ad_group_id = restapi.serializers.fields.IdField(read_only=True)
