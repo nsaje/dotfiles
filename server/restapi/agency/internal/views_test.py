@@ -9,11 +9,6 @@ from zemauth.features.entity_permission import Permission
 
 
 class LegacyAgencyViewSetTest(RESTAPITestCase):
-    def setUp(self):
-        super().setUp()
-        self.user.account_set.remove(*self.user.account_set.all())
-        self.user.agency_set.remove(*self.user.agency_set.all())
-
     def test_agency_list(self):
         agency_read_access = self.mix_agency(self.user, permissions=[Permission.READ])
 

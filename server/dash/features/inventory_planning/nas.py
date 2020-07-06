@@ -1,3 +1,5 @@
+from zemauth.features.entity_permission import Permission
+
 NAS_MAPPING = {  # source id to a list of agency ids whose users have access to this source
     115: [196, 198],  # mediamond
     118: [220, 186],  # rcs
@@ -20,4 +22,9 @@ def should_show_nas_source(source, request):
         return False
     if request is None or request.user.has_perm("zemauth.can_see_all_nas_in_inventory_planning"):
         return True
-    return request.user.agency_set.filter(id__in=NAS_MAPPING[source.id]).exists()
+    if request.user.has_perm("zemauth.fea_use_entity_permission"):
+        return request.user.entitypermission_set.filter(
+            permission=Permission.READ, agency_id__in=NAS_MAPPING[source.id]
+        ).exists()
+    else:
+        return request.user.agency_set.filter(id__in=NAS_MAPPING[source.id]).exists()

@@ -2,13 +2,15 @@ import csv
 from io import StringIO
 
 import mock
-from django.test import TestCase
 
 import dash.constants
 import dash.models
 from dash import history_helpers
 from dash.features import geolocation
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 from . import exceptions
@@ -43,9 +45,9 @@ def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
 
 
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
-class TestBidModifierService(TestCase):
+class LegacyBidModifierServiceTestCase(BaseTestCase):
     def setUp(self):
-        self.user = magic_mixer.blend_user()
+        super().setUp()
         self.ad_group = magic_mixer.blend(dash.models.AdGroup)
         self.source = magic_mixer.blend(dash.models.Source, id=1, bidder_slug="some_slug")
         self.ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
@@ -452,7 +454,8 @@ class TestBidModifierService(TestCase):
         )
 
     def test_delete(self):
-        self.ad_group.campaign.account.users.add(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
@@ -481,7 +484,8 @@ class TestBidModifierService(TestCase):
             service.delete(self.ad_group, bid_modifiers_ids, user=self.user)
 
     def test_delete_user_access(self):
-        self.ad_group.campaign.account.users.add(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
@@ -499,7 +503,8 @@ class TestBidModifierService(TestCase):
         self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
 
     def test_delete_invalid_ids(self):
-        self.ad_group.campaign.account.users.add(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        self.ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account=account)
         bid_modifiers_ids = [
             service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
             service.set(
@@ -673,3 +678,8 @@ class TestBidModifierService(TestCase):
             error_entires = [row for row in csv.DictReader(StringIO(csv_error_content))]
 
             self.assertEqual(error_entires, [result_entires[idx]])
+
+
+@mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
+class BidModifierServiceTestCase(FutureBaseTestCase, LegacyBidModifierServiceTestCase):
+    pass

@@ -2,31 +2,33 @@ import datetime
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase
 
 import core.models
 import dash.constants
 import utils.exc
 import utils.test_helper
-import zemauth
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from .credit_line_item import CreditLineItem
 from .refund_line_item.model import RefundLineItem
 
 
-class TestCreditLineItemManager(TestCase):
+class LegacyTestCreditLineItemManager(BaseTestCase):
     def setUp(self):
-        self.user = magic_mixer.blend(zemauth.models.User)
-        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        super().setUp()
+        self.request = get_request_mock(self.user)
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
 
     def test_create(self):
-        request = magic_mixer.blend_request_user()
         start_date = datetime.date(2017, 1, 1)
         end_date = datetime.date(2017, 1, 2)
         item = CreditLineItem.objects.create(
-            request,
+            self.request,
             start_date,
             end_date,
             100,
@@ -42,10 +44,15 @@ class TestCreditLineItemManager(TestCase):
         self.assertEqual(item.service_fee, Decimal("0.11"))
 
 
-class TestCreditLineItemValidateLicenseServiceFee(TestCase):
+class TestCreditLineItemManager(FutureBaseTestCase, LegacyTestCreditLineItemManager):
+    pass
+
+
+class LegacyTestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user(permissions=["can_see_service_fee"])
-        self.account = magic_mixer.blend(core.models.Account, users=[self.request.user])
+        self.user = magic_mixer.blend_user(permissions=["can_see_service_fee"])
+        self.request = get_request_mock(self.user)
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.item = self._create_credit(
             Decimal("0.7"), Decimal("0.9"), datetime.date(2017, 1, 1), datetime.date(2017, 1, 31)
         )
@@ -112,10 +119,17 @@ class TestCreditLineItemValidateLicenseServiceFee(TestCase):
         self.assertEqual(Decimal("0.1"), self.item.service_fee)
 
 
-class TestCreditLineItemQuerySetFilterOverlapping(TestCase):
+class TestCreditLineItemValidateLicenseServiceFee(
+    FutureBaseTestCase, LegacyTestCreditLineItemValidateLicenseServiceFee
+):
+    pass
+
+
+class LegacyTestCreditLineItemQuerySetFilterOverlapping(BaseTestCase):
     def setUp(self):
-        request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[request.user])
+        self.user = magic_mixer.blend_user()
+        request = get_request_mock(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.item = CreditLineItem.objects.create(
             request,
             datetime.date(2017, 1, 1),
@@ -174,10 +188,17 @@ class TestCreditLineItemQuerySetFilterOverlapping(TestCase):
         )
 
 
-class TestCreditLineItemAmounts(TestCase):
+class TestCreditLineItemQuerySetFilterOverlapping(
+    FutureBaseTestCase, LegacyTestCreditLineItemQuerySetFilterOverlapping
+):
+    pass
+
+
+class LegacyTestCreditLineItemAmounts(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[self.request.user])
+        self.user = magic_mixer.blend_user()
+        self.request = get_request_mock(self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.base_amount = 1000
         self.item = CreditLineItem.objects.create(
             self.request,
@@ -200,14 +221,19 @@ class TestCreditLineItemAmounts(TestCase):
         self.assertEqual(self.item.get_available_amount(), self.base_amount + refund.amount)
 
 
-class TestCreditLineItemAgency(TestCase):
+class TestCreditLineItemAmounts(FutureBaseTestCase, LegacyTestCreditLineItemAmounts):
+    pass
+
+
+class LegacyTestCreditLineItemAgency(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
+        self.user = magic_mixer.blend_user()
+        self.request = get_request_mock(self.user)
 
     def test_update_valid_agency(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
-        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account, users=[self.request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         credit = magic_mixer.blend(
             CreditLineItem,
@@ -240,10 +266,10 @@ class TestCreditLineItemAgency(TestCase):
         self.assertEqual(credit.account, None)
 
     def test_update_invalid_agency(self):
-        agency_one = magic_mixer.blend(core.models.Agency, users=[self.request.user])
-        agency_two = magic_mixer.blend(core.models.Agency, users=[self.request.user])
-        account_one = magic_mixer.blend(core.models.Account, agency=agency_one, users=[self.request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account_one, users=[self.request.user])
+        agency_one = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        agency_two = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency_one)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account_one)
 
         credit = magic_mixer.blend(
             CreditLineItem,
@@ -274,14 +300,19 @@ class TestCreditLineItemAgency(TestCase):
             credit.update(self.request, agency=agency_two, account=None)
 
 
-class TestCreditLineItemAccount(TestCase):
+class TestCreditLineItemAgency(FutureBaseTestCase, LegacyTestCreditLineItemAgency):
+    pass
+
+
+class LegacyTestCreditLineItemAccount(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
+        self.user = magic_mixer.blend_user()
+        self.request = get_request_mock(self.user)
 
     def test_update_valid_account(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
-        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
-        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency)
+        account_two = magic_mixer.blend(core.models.Account, agency=agency)
 
         credit = magic_mixer.blend(
             CreditLineItem,
@@ -304,10 +335,10 @@ class TestCreditLineItemAccount(TestCase):
         self.assertEqual(credit.account, account_two)
 
     def test_update_invalid_account(self):
-        agency = magic_mixer.blend(core.models.Agency, users=[self.request.user])
-        account_one = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
-        account_two = magic_mixer.blend(core.models.Account, agency=agency, users=[self.request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account_one, users=[self.request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_one = magic_mixer.blend(core.models.Account, agency=agency)
+        account_two = magic_mixer.blend(core.models.Account, agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account_one)
 
         credit = magic_mixer.blend(
             CreditLineItem,
@@ -336,3 +367,7 @@ class TestCreditLineItemAccount(TestCase):
 
         with self.assertRaises(ValidationError):
             credit.update(self.request, agency=None, account=account_two)
+
+
+class TestCreditLineItemAccount(FutureBaseTestCase, LegacyTestCreditLineItemAccount):
+    pass

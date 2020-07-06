@@ -160,11 +160,18 @@ class ConversionPixel(DASHAPIBaseView):
 
 
 class AccountUsers(DASHAPIBaseView):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     def get(self, request, account_id):
+        if request.user.has_perm("zemauth.fea_use_entity_permission"):
+            raise exc.AuthorizationError()
         if not request.user.has_perm("zemauth.account_agency_access_permissions"):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.USER, account_id)
         agency_users = account.agency.users.all() if account.agency else []
 
         users = [self._get_user_dict(u) for u in account.users.all()]
@@ -178,10 +185,12 @@ class AccountUsers(DASHAPIBaseView):
         )
 
     def put(self, request, account_id):
+        if request.user.has_perm("zemauth.fea_use_entity_permission"):
+            raise exc.AuthorizationError()
         if not request.user.has_perm("zemauth.account_agency_access_permissions"):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.USER, account_id)
         resource = json.loads(request.body)
 
         form = forms.UserForm(resource)
@@ -248,10 +257,12 @@ class AccountUsers(DASHAPIBaseView):
         )
 
     def delete(self, request, account_id, user_id):
+        if request.user.has_perm("zemauth.fea_use_entity_permission"):
+            raise exc.AuthorizationError()
         if not request.user.has_perm("zemauth.account_agency_access_permissions"):
             raise exc.AuthorizationError()
 
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.USER, account_id)
         remove_from_all_accounts = request.GET.get("remove_from_all_accounts")
         try:
             user = ZemUser.objects.get(pk=user_id)
@@ -302,6 +313,11 @@ class AccountUsers(DASHAPIBaseView):
 
 
 class AccountUserAction(DASHAPIBaseView):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     ACTIVATE = "activate"
     PROMOTE = "promote"
     DOWNGRADE = "downgrade"
@@ -322,12 +338,15 @@ class AccountUserAction(DASHAPIBaseView):
         }
 
     def post(self, request, account_id, user_id, action):
+        if request.user.has_perm("zemauth.fea_use_entity_permission"):
+            raise exc.AuthorizationError()
+
         if action not in self.actions:
             raise Http404("Action does not exist")
 
         if not request.user.has_perm(self.permissions[action]):
             raise exc.AuthorizationError()
-        account = helpers.get_account(request.user, account_id)
+        account = zemauth.access.get_account(request.user, Permission.USER, account_id)
 
         try:
             user = ZemUser.objects.get(pk=user_id)

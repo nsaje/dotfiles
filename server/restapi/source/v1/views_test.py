@@ -7,9 +7,8 @@ from utils.magic_mixer import magic_mixer
 
 class SourceViewSetTest(RESTAPITestCase):
     def setUp(self):
-        super(SourceViewSetTest, self).setUp()
+        super().setUp()
         self.user.user_permissions.clear()
-        self.agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         self.sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         self.sources_not_released = magic_mixer.cycle(2).blend(core.models.Source, released=False, deprecated=False)
         self.sources_deprecated = magic_mixer.cycle(2).blend(core.models.Source, released=False, deprecated=True)

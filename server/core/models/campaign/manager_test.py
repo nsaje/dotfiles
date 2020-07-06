@@ -1,22 +1,26 @@
 import datetime
 import decimal
 
-from django.test import TestCase
 from mock import patch
 
 import core.models
 import dash.constants
 from utils import exc
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import exceptions
 from .model import Campaign
 
 
-class TestCampaignManager(TestCase):
+class LegacyCampaignManagerTestCase(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
-        self.account = magic_mixer.blend(core.models.Account, users=[self.request.user])
+        super().setUp()
+        self.request = get_request_mock(user=self.user)
+        self.account = self.mix_account(self.request.user, permissions=[Permission.READ, Permission.WRITE])
 
     @patch("automation.autopilot.recalculate_budgets_campaign")
     def test_create(self, mock_autopilot):
@@ -160,3 +164,7 @@ class TestCampaignManager(TestCase):
         self.assertFalse(cloned_campaign.campaigngoal_set.all().intersection(campaign.campaigngoal_set.all()))
         self.assertEqual(1, cloned_campaign.conversiongoal_set.count())
         self.assertFalse(cloned_campaign.conversiongoal_set.all().intersection(campaign.conversiongoal_set.all()))
+
+
+class CampaignManagerTestCase(FutureBaseTestCase, LegacyCampaignManagerTestCase):
+    pass

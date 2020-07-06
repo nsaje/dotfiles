@@ -70,7 +70,7 @@ class GetChangedContentAdsTestCase(TestCase):
         self.assertCountEqual([], changed_content_ads)
 
 
-class GetSelectedEntityTest(TestCase):
+class GetSelectedEntityTestCase(TestCase):
     fixtures = ["test_api"]
 
     def test_get_content_ads_all(self):
@@ -258,7 +258,7 @@ class GetSelectedEntityTest(TestCase):
         self.assertQuerysetEqual(content_ads, expected_ids, transform=lambda ad: ad.id, ordered=False)
 
 
-class AdGroupSourceTableEditableFieldsTest(TestCase):
+class AdGroupSourceTableEditableFieldsTestCase(TestCase):
     fixtures = ["test_api.yaml"]
 
     class DatetimeMock(datetime.datetime):
@@ -855,7 +855,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         )
 
 
-class SetAdGroupSourceTest(TestCase):
+class SetAdGroupSourceTestCase(TestCase):
 
     fixtures = ["test_api"]
 
@@ -905,7 +905,7 @@ class SetAdGroupSourceTest(TestCase):
         self.assertEqual(ad_group_source_settings.state, constants.AdGroupSourceSettingsState.INACTIVE)
 
 
-class PublisherHelpersTest(TestCase):
+class PublisherHelpersTestCase(TestCase):
     fixtures = ["test_api"]
 
     def test_publisher_exchange(self):
@@ -927,7 +927,12 @@ class PublisherHelpersTest(TestCase):
         self.assertFalse(publisher_helpers.is_publisher_domain("CNN Money (Turner U.S.)"))
 
 
-class UtilityHelpers(TestCase):
+class UtilityHelpersTestCase(TestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_agency.yaml", "test_facebook.yaml"]
 
     def test_get_user_agency(self):
@@ -992,7 +997,7 @@ class UtilityHelpers(TestCase):
         self.assertFalse(result)
 
 
-class ValidateAdGroupsStateTest(TestCase):
+class ValidateAdGroupsStateTestCase(TestCase):
     fixtures = ["test_views.yaml"]
 
     def test_ad_group_state_invalid(self):

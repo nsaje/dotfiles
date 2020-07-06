@@ -28,6 +28,7 @@ from utils import csv_utils
 from utils import metrics_compat
 from utils import threads
 from utils import zlogging
+from zemauth.features.entity_permission import Permission
 
 from . import constants
 from . import format_helper
@@ -345,7 +346,16 @@ class ReportJobExecutor(JobExecutor):
         csv_separator = None
         csv_decimal_separator = None
 
-        agency = job.user.agency_set.first()
+        if job.user.has_perm("zemauth.fea_use_entity_permission"):
+            entity_permission = (
+                job.user.entitypermission_set.filter(permission=Permission.READ, agency__isnull=False)
+                .select_related("agency")
+                .first()
+            )
+            agency = entity_permission.agency if entity_permission else None
+        else:
+            agency = job.user.agency_set.first()
+
         if agency:
             csv_separator = agency.default_csv_separator
             csv_decimal_separator = agency.default_csv_decimal_separator

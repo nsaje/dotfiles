@@ -1,14 +1,17 @@
 import datetime
 import decimal
 
-from django.test import TestCase
 from mock import patch
 
 import core.features.bcm
 import core.features.goals
 import core.models
 import dash.constants
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import exceptions
 from . import service
@@ -18,11 +21,12 @@ from . import service
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
-class CloneServiceTest(TestCase):
+class LegacyCloneServiceTest(BaseTestCase):
     def setUp(self):
-        self.request = magic_mixer.blend_request_user()
+        super().setUp()
+        self.request = get_request_mock(self.user)
 
-        account = magic_mixer.blend(core.models.Account, users=[self.request.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         icon = magic_mixer.blend(core.models.ImageAsset, width=200, height=200)
@@ -135,7 +139,6 @@ class CloneServiceTest(TestCase):
         self.assertNotEqual(self.conversion_goal, cloned_campaign.conversiongoal_set.get())
 
     def test_clone_skip_ad_group(self, mock_today, mock_insert_adgroup, mock_redirects, mock_autopilot):
-
         self.assertRaises(
             exceptions.CanNotCloneAds,
             service.clone,
@@ -194,3 +197,7 @@ class CloneServiceTest(TestCase):
 
         for contend_ad in cloned_campaign.adgroup_set.get().contentad_set.all():
             self.assertEqual(contend_ad.state, dash.constants.AdGroupSettingsState.INACTIVE)
+
+
+class CloneServiceTest(FutureBaseTestCase, LegacyCloneServiceTest):
+    pass

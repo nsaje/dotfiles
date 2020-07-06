@@ -1,20 +1,25 @@
-from django.test import TestCase
-
 import core.features.deals
 import core.models
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 from utils.exc import ValidationError
+from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 
-class InstanceTestCase(TestCase):
+class LegacyInstanceTestCase(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.request = get_request_mock(self.user)
+
     def test_create(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         deal_id = "DEAL_123"
         deal_name = "DEAL_NAME"
 
-        deal = core.features.deals.DirectDeal.objects.create(request, source, deal_id, deal_name, agency)
+        deal = core.features.deals.DirectDeal.objects.create(self.request, source, deal_id, deal_name, agency)
 
         self.assertEqual(deal.deal_id, deal_id)
         self.assertEqual(deal.agency_id, agency.id)
@@ -22,44 +27,40 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.name, deal_name)
 
     def test_create_with_account(self):
-        request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.models.Account, users=[request.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         deal_id = "DEAL_123"
         deal_name = "DEAL_NAME"
 
-        deal = core.features.deals.DirectDeal.objects.create(request, source, deal_id, deal_name, account=account)
+        deal = core.features.deals.DirectDeal.objects.create(self.request, source, deal_id, deal_name, account=account)
 
         self.assertEqual(deal.deal_id, deal_id)
         self.assertEqual(deal.account_id, account.id)
 
     def test_create_with_agency_and_account(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
-        account = magic_mixer.blend(core.models.Account, users=[request.user], agency=agency)
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = magic_mixer.blend(core.models.Account, agency=agency)
         source = magic_mixer.blend(core.models.Source)
         deal_id = "DEAL_123"
         deal_name = "DEAL_NAME"
         with self.assertRaises(ValidationError):
             core.features.deals.DirectDeal.objects.create(
-                request, source, deal_id, deal_name, agency=agency, account=account
+                self.request, source, deal_id, deal_name, agency=agency, account=account
             )
 
     def test_create_with_agency(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
         deal_id = "DEAL_123"
         deal_name = "DEAL_NAME"
 
-        deal = core.features.deals.DirectDeal.objects.create(request, source, deal_id, deal_name, agency=agency)
+        deal = core.features.deals.DirectDeal.objects.create(self.request, source, deal_id, deal_name, agency=agency)
 
         self.assertEqual(deal.deal_id, deal_id)
         self.assertEqual(deal.agency_id, agency.id)
 
     def test_update(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
 
         deal_id = "DEAL_123"
@@ -82,18 +83,17 @@ class InstanceTestCase(TestCase):
         updated_name = "DEAL 123 (UPDATED)"
         updated_description = "DEAL 123 DESCRIPTION (UPDATED)"
 
-        deal.update(request, deal_id=updated_deal_id, name=updated_name, description=updated_description)
+        deal.update(self.request, deal_id=updated_deal_id, name=updated_name, description=updated_description)
 
         self.assertEqual(deal.deal_id, updated_deal_id)
         self.assertEqual(deal.name, updated_name)
         self.assertEqual(deal.description, updated_description)
 
     def test_update_valid_account(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
-        account = magic_mixer.blend(core.models.Account, users=[request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account, users=[request.user])
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign, users=[request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         source = magic_mixer.blend(core.models.Source)
 
         deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
@@ -104,16 +104,15 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.agency, agency)
         self.assertEqual(deal.account, None)
 
-        deal.update(request, agency=None, account=account)
+        deal.update(self.request, agency=None, account=account)
 
         self.assertEqual(deal.agency, None)
         self.assertEqual(deal.account, account)
 
     def test_update_invalid_account(self):
-        request = magic_mixer.blend_request_user()
-        agency = magic_mixer.blend(core.models.Agency, users=[request.user])
-        account1 = magic_mixer.blend(core.models.Account, users=[request.user])
-        account2 = magic_mixer.blend(core.models.Account, users=[request.user])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account1 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account2 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
 
         deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
@@ -123,13 +122,12 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.account, None)
 
         with self.assertRaises(ValidationError):
-            deal.update(request, agency=None, account=account1)
+            deal.update(self.request, agency=None, account=account1)
 
     def test_update_invalid_account_campaign(self):
-        request = magic_mixer.blend_request_user()
-        account1 = magic_mixer.blend(core.models.Account, users=[request.user])
-        account2 = magic_mixer.blend(core.models.Account, users=[request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account1, users=[request.user])
+        account1 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account2 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account1)
         source = magic_mixer.blend(core.models.Source)
 
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account1, source=source)
@@ -139,14 +137,13 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.account, account1)
 
         with self.assertRaises(ValidationError):
-            deal.update(request, account=account2)
+            deal.update(self.request, account=account2)
 
     def test_update_invalid_account_adgroup(self):
-        request = magic_mixer.blend_request_user()
-        account1 = magic_mixer.blend(core.models.Account, users=[request.user])
-        account2 = magic_mixer.blend(core.models.Account, users=[request.user])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account1, users=[request.user])
-        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign, users=[request.user])
+        account1 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account2 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account1)
+        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         source = magic_mixer.blend(core.models.Source)
 
         deal = magic_mixer.blend(core.features.deals.DirectDeal, account=account1, source=source)
@@ -156,13 +153,12 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.account, account1)
 
         with self.assertRaises(ValidationError):
-            deal.update(request, account=account2)
+            deal.update(self.request, account=account2)
 
     def test_update_invalid_agency(self):
-        request = magic_mixer.blend_request_user()
-        agency1 = magic_mixer.blend(core.models.Agency, users=[request.user])
-        account1 = magic_mixer.blend(core.models.Account, agency=agency1, users=[request.user])
-        agency2 = magic_mixer.blend(core.models.Agency, users=[request.user])
+        agency1 = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account1 = magic_mixer.blend(core.models.Account, agency=agency1)
+        agency2 = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         source = magic_mixer.blend(core.models.Source)
 
         deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency1, source=source)
@@ -172,4 +168,8 @@ class InstanceTestCase(TestCase):
         self.assertEqual(deal.account, None)
 
         with self.assertRaises(ValidationError):
-            deal.update(request, agency=agency2, account=None)
+            deal.update(self.request, agency=agency2, account=None)
+
+
+class InstanceTestCase(FutureBaseTestCase, LegacyInstanceTestCase):
+    pass

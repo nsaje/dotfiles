@@ -3,18 +3,19 @@ import datetime
 import time
 from decimal import Decimal
 
-from django.test import TestCase
 from django.test import TransactionTestCase
 from mock import patch
 
 import core.models
 import dash.constants
-import zemauth
 from core.features.bcm.exceptions import BudgetAmountExceededCreditAmount
 from utils import dates_helper
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 from utils.exc import MultipleValidationError
 from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import exceptions
 from .budget_line_item import BudgetLineItem
@@ -24,10 +25,10 @@ TODAY = datetime.datetime(2015, 12, 1).date()
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
-class TestBudgetLineItemManager(TestCase):
+class LegacyTestBudgetLineItemManager(BaseTestCase):
     def setUp(self):
-        self.user = magic_mixer.blend(zemauth.models.User)
-        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        super().setUp()
+        self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.credit = magic_mixer.blend(
             CreditLineItem,
@@ -304,7 +305,12 @@ class TestBudgetLineItemManager(TestCase):
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
-class TestMinimizeAmountEndToday(TestCase):
+class TestBudgetLineItemManager(FutureBaseTestCase, LegacyTestBudgetLineItemManager):
+    pass
+
+
+@patch.object(dates_helper, "local_today", lambda: TODAY)
+class TestMinimizeAmountEndToday(FutureBaseTestCase):
     def setUp(self):
         self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account, real_time_campaign_stop=True)
@@ -417,8 +423,7 @@ class TestMinimizeAmountEndToday(TestCase):
 @patch.object(dates_helper, "local_today", lambda: TODAY)
 class TestBudgetLineItemManagerTransactional(TransactionTestCase):
     def test_create_race_condition(self):
-        self.user = magic_mixer.blend(zemauth.models.User)
-        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.credit = magic_mixer.blend(
             CreditLineItem,

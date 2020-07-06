@@ -144,6 +144,11 @@ def supply_dash_redirect(request):
 
 
 class User(DASHAPIBaseView):
+    """
+    @deprecated
+    TODO (msuber): move logic to RESTAPI user
+    """
+
     @metrics_compat.timer("dash.api")
     def get(self, request, user_id):
         response = {}

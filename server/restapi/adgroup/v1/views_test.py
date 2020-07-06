@@ -190,11 +190,6 @@ class LegacyAdGroupViewSetTest(RESTAPITestCase):
         expected["targeting"]["placements"] = expected["targeting"]["environments"]
         self.assertEqual(expected, adgroup)
 
-    def setUp(self):
-        super().setUp()
-        self.user.account_set.remove(*self.user.account_set.all())
-        self.user.agency_set.remove(*self.user.agency_set.all())
-
     def test_adgroups_get_cpc(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)

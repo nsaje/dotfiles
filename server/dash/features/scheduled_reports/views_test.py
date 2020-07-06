@@ -131,7 +131,7 @@ class LegacyScheduledReportsTestCase(DASHAPITestCase):
         self.user_1 = magic_mixer.blend(zemauth.models.User, is_active=True)
         self.user_2 = magic_mixer.blend(zemauth.models.User, is_active=True)
 
-        if self.user.has_perm("fea_use_entity_permission"):
+        if self.user.has_perm("zemauth.fea_use_entity_permission"):
             test_helper.add_entity_permissions(
                 self.user_1,
                 [

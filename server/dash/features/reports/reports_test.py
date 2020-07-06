@@ -37,8 +37,9 @@ TEST_FTP_REPORTS = {
 
 class LegacyReportsExecuteTestCase(DASHAPITestCase):
     def setUp(self):
+        super().setUp()
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
-        self.reportJob.user = magic_mixer.blend_user()
+        self.reportJob.user = self.user
         self.reportJob.save()
 
         influx_incr_patcher = mock.patch("utils.metrics_compat.incr")
@@ -130,7 +131,8 @@ class LegacyReportsExecuteTestCase(DASHAPITestCase):
 
     @mock.patch("utils.email_helper.send_async_report_fail")
     def test_send_fail(self, mock_send):
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.reportJob.user])
+        account = self.mix_account(self.reportJob.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.reportJob.query = {
             "options": {
                 "recipients": ["test@test.com"],
@@ -253,8 +255,12 @@ class LegacyReportsExecuteTestCase(DASHAPITestCase):
         self.assertNotEqual("test-report-path", self.reportJob.result)
 
     def test_get_csv_separator(self):
-        agency = magic_mixer.blend(core.models.Agency, default_csv_decimal_separator=",", default_csv_separator=";")
-        self.reportJob.user.agency_set.add(agency)
+        self.mix_agency(
+            self.reportJob.user,
+            permissions=[Permission.READ, Permission.WRITE],
+            default_csv_decimal_separator=",",
+            default_csv_separator=";",
+        )
 
         self.reportJob.query = {}
         self.reportJob.query["options"] = {}
@@ -271,9 +277,10 @@ class ReportsExecuteTestCase(FutureDASHAPITestCase, LegacyReportsExecuteTestCase
 
 class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
     def setUp(self):
+        super().setUp()
         magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
-        self.reportJob.user = magic_mixer.blend_user()
+        self.reportJob.user = self.user
         self.reportJob.save()
         utils.test_helper.add_permissions(self.reportJob.user, ["can_request_accounts_report_in_local_currencies"])
 
@@ -370,8 +377,8 @@ class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
             filters=[{"field": "Account Id", "operator": "IN", "values": ["1", "2"]}],
             all_accounts_in_local_currency=True,
         )
-        magic_mixer.blend(core.models.Account, currency="EUR", id=1, users=self.reportJob.user)
-        magic_mixer.blend(core.models.Account, currency="USD", id=2, users=self.reportJob.user)
+        self.mix_account(self.reportJob.user, permissions=[Permission.READ, Permission.WRITE], currency="EUR", id=1)
+        self.mix_account(self.reportJob.user, permissions=[Permission.READ, Permission.WRITE], currency="USD", id=2)
         mock_query.return_value = [
             {"account_id": 1, "etfm_cost": Decimal("12.3"), "local_etfm_cost": Decimal("15.4"), "clicks": 5},
             {"account_id": 2, "etfm_cost": Decimal("13.4"), "local_etfm_cost": Decimal("16.4"), "clicks": 8},

@@ -13,13 +13,6 @@ import zemauth.models
 from dash import constants
 from dash import models
 from dash.dashapi import data_helper
-from restapi.access import get_account  # noqa
-from restapi.access import get_ad_group  # noqa
-from restapi.access import get_agency  # noqa
-from restapi.access import get_campaign  # noqa
-from restapi.access import get_content_ad  # noqa
-from restapi.access import get_publisher_group  # noqa
-from restapi.access import get_upload_batch  # noqa
 from utils import columns
 from utils import exc
 from utils import zlogging
@@ -114,6 +107,10 @@ def get_additional_columns(additional_columns):
 
 
 def is_agency_manager(user, account):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
     if account.agency is None:
         return False
 

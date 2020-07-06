@@ -1136,7 +1136,12 @@ class ConversionPixelTestCase(FutureDASHAPITestCase, LegacyConversionPixelTestCa
     pass
 
 
-class UserActivationTest(TestCase):
+class UserActivationTestCase(DASHAPITestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_non_superuser.yaml"]
 
     def setUp(self):
@@ -1197,7 +1202,12 @@ class UserActivationTest(TestCase):
         self.assertFalse(decoded_response.get("success"), "Failed sending message")
 
 
-class AccountUsersTest(TestCase):
+class AccountUsersTestCase(DASHAPITestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_agency.yaml"]
 
     def _get_client_with_permissions(self, permissions_list):
@@ -1583,7 +1593,12 @@ class AccountUsersTest(TestCase):
         )
 
 
-class UserPromoteTest(TestCase):
+class UserPromoteTestCase(DASHAPITestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_agency.yaml"]
 
     def _get_client_with_permissions(self, permissions_list):
@@ -1654,7 +1669,12 @@ class UserPromoteTest(TestCase):
         self.assertNotIn(user, account.users.all())
 
 
-class UserDowngradeTest(TestCase):
+class UserDowngradeTestCase(DASHAPITestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_agency.yaml"]
 
     def _get_client_with_permissions(self, permissions_list):
@@ -1727,7 +1747,12 @@ class UserDowngradeTest(TestCase):
         self.assertNotIn(user, account.users.all())
 
 
-class UserEnableRESTAPIAccessTest(TestCase):
+class UserEnableRESTAPIAccessTestCase(DASHAPITestCase):
+    """
+    @deprecated
+    TODO (msuber): deleted after User Roles will be released.
+    """
+
     fixtures = ["test_views.yaml", "test_agency.yaml"]
 
     def _get_client_with_permissions(self, permissions_list):

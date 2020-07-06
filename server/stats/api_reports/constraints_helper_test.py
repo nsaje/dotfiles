@@ -1,21 +1,20 @@
 import datetime
 
-from django.test import TestCase
-
 import core.features.publisher_groups
 import core.models
 from utils import test_helper
+from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 
 from . import constraints_helper
 
 
-class TestReportsConstraints(TestCase):
+class LegacyReportsConstraintsTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        cls.user = magic_mixer.blend_user()
         cls.global_blacklist = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=1)
         magic_mixer.blend_source_w_defaults(), magic_mixer.blend_source_w_defaults()
 
@@ -23,7 +22,8 @@ class TestReportsConstraints(TestCase):
         sources = core.models.Source.objects.all()
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
-        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group__campaign__account__users=self.user)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group__campaign__account=account)
         magic_mixer.blend(core.models.ContentAd)  # someone else's content ad
 
         self.assertDictEqual(
@@ -51,7 +51,11 @@ class TestReportsConstraints(TestCase):
         sources = core.models.Source.objects.all()
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
-        accounts = magic_mixer.cycle(2).blend(core.models.Account, users=[self.user])
+
+        account_1 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        account_2 = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        accounts = [account_1, account_2]
+
         campaigns = magic_mixer.cycle(2).blend(core.models.Campaign, account=accounts[1])
         ad_groups = magic_mixer.cycle(2).blend(core.models.AdGroup, campaign=campaigns[1])
         content_ads = magic_mixer.cycle(2).blend(core.models.ContentAd, ad_group=ad_groups[1])
@@ -87,7 +91,8 @@ class TestReportsConstraints(TestCase):
         sources = core.models.Source.objects.all()
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         ad_group.settings.update(None, archived=True)
 
         self.assertDictEqual(
@@ -116,3 +121,7 @@ class TestReportsConstraints(TestCase):
                 "show_archived": False,
             },
         )
+
+
+class ReportsConstraintsTestCase(FutureBaseTestCase, LegacyReportsConstraintsTestCase):
+    pass
