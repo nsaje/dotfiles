@@ -371,4 +371,4 @@ RECAPTCHA_SECRET_KEY = Secret("plain::fake").get().decode("utf-8")  # noqa
 
 METRICS_PUSH_GATEWAY = "http://localhost:8000"
 
-LOGGING_FORMATTER = "json"
+LOGGING_FORMATTER = "readable"
