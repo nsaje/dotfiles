@@ -3,13 +3,37 @@ import datetime
 from rest_framework import serializers
 
 import dash.constants
+import prodops.helpers
 import stats.augmenter
 import stats.constants
 import utils.columns
+import utils.dates_helper
 import zemauth.access
 from zemauth.features.entity_permission import Permission
 
+from . import ReportJob
 from . import constants
+
+REPROCESS_TITLE_PREFIX = "[Updated]"
+REPROCESS_REASON = "We had some issues with data processing this morning. The issues have been resolved now and we are resending the report."
+
+
+def reprocess_report_jobs_for_today():
+    local_midnight = utils.dates_helper.get_midnight(utils.dates_helper.local_now())
+    reprocess_report_jobs_from(local_midnight)
+
+
+def reprocess_report_jobs_from(from_dt):
+    reports = list(
+        ReportJob.objects.filter(
+            scheduled_report__isnull=False, created_dt__gte=from_dt, status=constants.ReportJobStatus.DONE
+        )
+    )
+    for report in reports:
+        report.status = constants.ReportJobStatus.FAILED
+        report.save()
+
+    prodops.helpers.reprocess_report_jobs_async([r.id for r in reports], REPROCESS_TITLE_PREFIX, REPROCESS_REASON)
 
 
 def get_breakdown_from_fields(fields, level):
