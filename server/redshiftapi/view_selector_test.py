@@ -27,7 +27,7 @@ class ViewSelectorTest(TestCase):
         self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "content_ad_id"], False), "mv_contentad")
 
         self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "publisher_id"], True), "mv_adgroup_pubs")
-        self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "publisher_id", "dma"], True), "mv_master")
+        self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "publisher_id", "dma"], True), "mv_master_pubs")
         self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "publisher_id"], False), "mv_master")
         self.assertEqual(view_selector.get_best_view_base(["ad_group_id", "publisher_id", "dma"], False), "mv_master")
 

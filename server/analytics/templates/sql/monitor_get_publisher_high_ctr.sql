@@ -4,7 +4,7 @@ FROM
                            sum(clicks) AS clicks,
                            sum(case when source_id = 59 then clicks else 0 end) as adx_clicks,
                            ((sum(clicks) :: decimal / nullif(sum(impressions) :: decimal, 0)) * 100) :: decimal AS ctr
-   FROM mv_master
+   FROM mv_master_pubs
    GROUP BY publisher, date ) ctr_query
 WHERE date = '{{ date }}' AND (
     (clicks > {{ max_clicks }}

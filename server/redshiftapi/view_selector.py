@@ -38,7 +38,7 @@ PUBLISHER_VIEWS = [
     ["mv_account_pubs", ACCOUNT | PUBLISHER],
     ["mv_campaign_pubs", CAMPAIGN_N_ABOVE | PUBLISHER],
     ["mv_adgroup_pubs", AD_GROUP_N_ABOVE | PUBLISHER],
-    ["mv_master", AD_GROUP_N_ABOVE | PUBLISHER | ENVIRONMENT | DEVICE | GEO | DEMO | OTHER],
+    ["mv_master_pubs", AD_GROUP_N_ABOVE | PUBLISHER | ENVIRONMENT | DEVICE | GEO | DEMO | OTHER],
     ["mv_account_placement", ACCOUNT | PUBLISHER | PLACEMENT],
     ["mv_campaign_placement", CAMPAIGN_N_ABOVE | PUBLISHER | PLACEMENT],
     ["mv_adgroup_placement", AD_GROUP_N_ABOVE | PUBLISHER | PLACEMENT],

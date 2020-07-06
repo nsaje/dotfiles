@@ -15,7 +15,7 @@ logger = zlogging.getLogger(__name__)
 
 
 POSTGRES_KEEP_DAYS = 64
-SKIP_TABLES = ["mv_master", "mv_adgroup_placement"]  # not on postgres
+SKIP_TABLES = ["mv_master", "mv_master_pubs", "mv_adgroup_placement"]  # not on postgres
 
 
 class Command(Z1Command):
