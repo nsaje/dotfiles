@@ -3,7 +3,6 @@ from .mv_conversions import MVConversions
 from .mv_derived_view import AdGroupPlacementDerivedView
 from .mv_derived_view import ConversionsDerivedView
 from .mv_derived_view import MasterDerivedView
-from .mv_derived_view import MasterPublishersDerivedView
 from .mv_derived_view import TouchpointConversionsDerivedView
 from .mv_helpers_ad_group_structure import MVHelpersAdGroupStructure
 from .mv_helpers_campaign_factors import MVHelpersCampaignFactors
@@ -11,7 +10,6 @@ from .mv_helpers_currency_exchange_rates import MVHelpersCurrencyExchangeRates
 from .mv_helpers_normalized_stats import MVHelpersNormalizedStats
 from .mv_helpers_source import MVHelpersSource
 from .mv_master import MasterView
-from .mv_master_publishers import MasterPublishersView
 from .mv_touchpoint_conversions import MVTouchpointConversions
 
 AD_BREAKDOWN = ["date", "source_id", "account_id", "campaign_id", "ad_group_id", "content_ad_id"]
@@ -77,7 +75,6 @@ MATERIALIZED_VIEWS = [
     # Master view
     MVHelpersNormalizedStats,
     MasterView,
-    MasterPublishersView,
     MVConversions,
     # VIEW: Ad Group, TAB: Ads
     MasterDerivedView.create(
@@ -308,14 +305,14 @@ MATERIALIZED_VIEWS = [
         distkey="account_id",
     ),
     # View: Ad Group, Tab: Publishers
-    MasterPublishersDerivedView.create(
+    MasterDerivedView.create(
         table_name="mv_adgroup_pubs",
         breakdown=AD_GROUP_BREAKDOWN + ["publisher", "publisher_source_id", "external_id"],
         sortkey=AD_GROUP_BREAKDOWN + ["publisher_source_id"],
         distkey="ad_group_id",
     ),
     # View: Campaign, Tab: Publishers
-    MasterPublishersDerivedView.create(
+    MasterDerivedView.create(
         table_name="mv_campaign_pubs",
         breakdown=CAMPAIGN_BREAKDOWN + ["publisher", "publisher_source_id", "external_id"],
         sortkey=CAMPAIGN_BREAKDOWN + ["publisher_source_id"],
@@ -323,7 +320,7 @@ MATERIALIZED_VIEWS = [
     ),
     # View: Account: Tab: Publishers
     # View: All Accounts: Tab: Publishers
-    MasterPublishersDerivedView.create(
+    MasterDerivedView.create(
         table_name="mv_account_pubs",
         breakdown=ACCOUNT_BREAKDOWN + ["publisher", "publisher_source_id", "external_id"],
         sortkey=ACCOUNT_BREAKDOWN + ["publisher_source_id"],

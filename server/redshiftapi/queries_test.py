@@ -79,7 +79,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.dma AS dma,
             SUM(base_table.clicks) clicks,
             MAX(base_table.publisher_source_id) publisher_id
-        FROM mv_master_pubs base_table
+        FROM mv_master base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
         ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
@@ -747,7 +747,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
                         max(a.publisher_source_id) publisher_id
-                 FROM mv_master_pubs a
+                 FROM mv_master a
                  WHERE (a.date>=%s
                         AND a.date<=%s)
                  GROUP BY 1,
@@ -761,7 +761,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                         (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
                         (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                 FROM mv_master_pubs a
+                 FROM mv_master a
                  WHERE (a.date=%s)
                  GROUP BY 1,
                           2,
