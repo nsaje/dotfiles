@@ -11,7 +11,6 @@ from mock import patch
 import core.features.bcm.exceptions
 import utils.exc
 from dash import constants
-from dash import forms
 from dash import models
 from utils import converters
 from zemauth.models import User
@@ -24,7 +23,7 @@ create_budget = models.BudgetLineItem.objects.create_unsafe
 create_statement = models.BudgetDailyStatement.objects.create
 
 
-@patch("dash.forms.dates_helper.local_today", lambda: TODAY)
+@patch("utils.dates_helper.local_today", lambda: TODAY)
 class CreditsTestCase(TestCase):
     fixtures = ["test_bcm.yaml"]
 
@@ -648,88 +647,6 @@ class CreditsTestCase(TestCase):
         b.delete()
         c.save()
 
-    def test_form(self):
-        credit_form = forms.CreditLineItemForm(
-            {
-                "account": 2,
-                "start_date": str(TODAY - datetime.timedelta(10)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 100000,
-                "service_fee": 0.1,
-                "license_fee": 0.2,
-                "status": 1,
-                "currency": constants.Currency.USD,
-                "comment": "Test case",
-            }
-        )
-        self.assertFalse(credit_form.is_valid())
-        self.assertTrue(credit_form.errors)
-
-        credit_form = forms.CreditLineItemForm(
-            {
-                "account": 2,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 100000,
-                "service_fee": 0.1,
-                "license_fee": 0.2,
-                "status": 1,
-                "currency": constants.Currency.USD,
-                "comment": "Test case",
-            }
-        )
-        self.assertTrue(credit_form.is_valid())
-        self.assertFalse(credit_form.errors)
-
-        credit_form = forms.CreditLineItemForm(
-            {
-                "account": 2,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": -1000,
-                "service_fee": 0.1,
-                "license_fee": 0.2,
-                "status": 1,
-                "currency": constants.Currency.USD,
-                "comment": "Test case",
-            }
-        )
-        self.assertFalse(credit_form.is_valid())
-        self.assertTrue(credit_form.errors)
-
-        # Check if model validation is triggered
-        credit_form = forms.CreditLineItemForm(
-            {
-                "account": 2,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 1000,
-                "service_fee": 0.1,
-                "license_fee": 1.2,
-                "status": 1,
-                "currency": constants.Currency.USD,
-                "comment": "Test case",
-            }
-        )
-        self.assertFalse(credit_form.is_valid())
-        self.assertTrue(credit_form.errors)
-
-        credit_form = forms.CreditLineItemForm(
-            {
-                "account": 2,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 1000,
-                "service_fee": 1.1,
-                "license_fee": 0.2,
-                "status": 1,
-                "currency": constants.Currency.USD,
-                "comment": "Test case",
-            }
-        )
-        self.assertFalse(credit_form.is_valid())
-        self.assertTrue(credit_form.errors)
-
     def test_history(self):
         request = HttpRequest()
         request.user = User.objects.get(pk=1)
@@ -771,7 +688,7 @@ class CreditsTestCase(TestCase):
         self.assertEqual(history[2].snapshot["license_fee"], "0.1")
 
 
-@patch("dash.forms.dates_helper.local_today", lambda: TODAY)
+@patch("utils.dates_helper.local_today", lambda: TODAY)
 class BudgetsTestCase(TestCase):
     fixtures = ["test_bcm.yaml"]
 
@@ -1070,90 +987,6 @@ class BudgetsTestCase(TestCase):
 
         self.assertEqual(c.budgets.all().count(), 1)
 
-    def test_form(self):
-        c = create_credit(
-            account_id=2,
-            start_date=TODAY - datetime.timedelta(10),
-            end_date=TODAY + datetime.timedelta(10),
-            amount=1000,
-            license_fee=Decimal("0.456"),
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by_id=1,
-        )
-        budget_form = forms.BudgetLineItemForm(
-            {
-                "credit": c.id,
-                "start_date": str(TODAY - datetime.timedelta(10)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 100,
-                "status": 1,
-                "campaign": 2,
-                "comment": "Test case",
-            }
-        )
-
-        # Special case where form returns invalid date as None, so when full clean is called on budget_line_item
-        # the query for license fee and margin overlapping budgets fails. Validation is skipped in case of None dates.
-        self.assertFalse(budget_form.is_valid())
-        self.assertTrue(budget_form.errors)
-
-        budget_form = forms.BudgetLineItemForm(
-            {
-                "credit": c.id,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 100,
-                "status": 1,
-                "campaign": 2,
-                "comment": "Test case",
-            }
-        )
-        self.assertTrue(budget_form.is_valid())
-        self.assertFalse(budget_form.errors)
-
-        budget_form = forms.BudgetLineItemForm(
-            {
-                "credit": c.id,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": -100,
-                "status": 1,
-                "campaign": 2,
-                "comment": "Test case",
-            }
-        )
-        with self.assertRaises(utils.exc.ValidationError):
-            budget_form.is_valid()
-
-        budget_form = forms.BudgetLineItemForm(
-            {
-                "credit": c.id,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": -100,
-                "status": 1,
-                "campaign": 1,
-                "comment": "Test case",
-            }
-        )
-        with self.assertRaises(utils.exc.ValidationError):
-            budget_form.is_valid()
-
-        # Check if model validation is triggered
-        budget_form = forms.BudgetLineItemForm(
-            {
-                "credit": c.id,
-                "start_date": str(TODAY + datetime.timedelta(1)),
-                "end_date": str(TODAY + datetime.timedelta(10)),
-                "amount": 1100,
-                "status": 1,
-                "campaign": 2,
-                "comment": "Test case",
-            }
-        )
-        with self.assertRaises(utils.exc.MultipleValidationError):
-            budget_form.is_valid()
-
     def test_budget_status(self):
         c = create_credit(
             account_id=2,
@@ -1230,7 +1063,7 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(str(err.exception), "Canceled credits cannot have new budget items.")
 
 
-@patch("dash.forms.dates_helper.local_today", lambda: TODAY)
+@patch("utils.dates_helper.local_today", lambda: TODAY)
 class BudgetSpendTestCase(TestCase):
     fixtures = ["test_bcm.yaml"]
 
@@ -1569,7 +1402,7 @@ class BudgetReserveTestCase(TestCase):
             created_by_id=1,
         )
 
-        with patch("dash.forms.dates_helper.local_today", return_value=TODAY):
+        with patch("utils.dates_helper.local_today", return_value=TODAY):
             self.b = create_budget(
                 credit=self.c, amount=800, start_date=self.start_date, end_date=self.end_date, campaign_id=2
             )

@@ -1,5 +1,4 @@
 import django.views.defaults
-import drf_yasg
 import drf_yasg.views
 import oauth2_provider.views
 from django.conf import settings

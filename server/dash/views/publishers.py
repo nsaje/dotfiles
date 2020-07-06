@@ -7,6 +7,7 @@ from django.db.models import Q
 
 import core.features.publisher_groups
 import zemauth.access
+import zemauth.features.entity_permission.helpers
 from dash import forms
 from dash import models
 from dash.common.views_base import DASHAPIBaseView
@@ -181,8 +182,14 @@ class PublisherGroupsDownload(DASHAPIBaseView):
                 try:
                     zemauth.access.get_agency(request.user, Permission.READ, publisher_group.agency.id)
                 except exc.MissingDataError:
-                    accounts = core.models.Account.objects.filter(agency_id=publisher_group.agency.id).filter_by_user(
-                        request.user
+                    accounts_user_perm = core.models.Account.objects.filter(
+                        agency_id=publisher_group.agency.id
+                    ).filter_by_user(request.user)
+                    accounts_entity_perm = core.models.Account.objects.filter(
+                        agency_id=publisher_group.agency.id
+                    ).filter_by_entity_permission(request.user, Permission.READ)
+                    accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
+                        request.user, Permission.READ, accounts_user_perm, accounts_entity_perm
                     )
                     if accounts.count() < 1:
                         raise exc.MissingDataError("Publisher group does not exist")

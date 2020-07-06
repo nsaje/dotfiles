@@ -2,13 +2,11 @@
 # isort:skip_file
 import dash.features.bluekai.service
 import magic
-import decimal
 import mimetypes
 import re
 
 import unicodecsv
 import dateutil.parser
-import rfc3987
 from collections import OrderedDict
 from collections import Counter
 
@@ -31,22 +29,19 @@ from dash import constants
 from dash import models
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
-from utils import dates_helper
 from utils import validation_helper
 from zemauth.models import User as ZemUser
 from zemauth.features.entity_permission import Permission
 
 import stats.constants
 
-import restapi.serializers.targeting
-import restapi.adgroup.v1.serializers
 import dash.compatibility.forms
 
 MAX_ADS_PER_UPLOAD = 100
 
 
 class BaseApiForm(forms.Form):
-    def get_errors():
+    def get_errors(self):
         pass
 
 
@@ -118,21 +113,6 @@ class PublisherGroupsFormMixin(forms.Form):
         return [x.id for x in publisher_groups]
 
 
-class MulticurrencySettingsFormMixin(forms.Form):
-    def get_exchange_rate(self):
-        currency = self._get_currency()
-        return core.features.multicurrency.get_current_exchange_rate(currency)
-
-    def get_currency_symbol(self):
-        currency = self._get_currency()
-        return core.features.multicurrency.get_currency_symbol(currency)
-
-    def _get_currency(self):
-        if self.account:
-            return self.account.currency
-        return constants.Currency.USD
-
-
 class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     SETTINGS_FIELDS = ["notes", "bluekai_targeting", "redirect_pixel_urls", "redirect_javascript"]
     ADDITIONAL_TARGETING_FIELDS = [
@@ -191,262 +171,6 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         return self.cleaned_data.get("bluekai_targeting")
 
 
-class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMixin, forms.Form):
-    bidding_type = forms.TypedChoiceField(
-        choices=constants.BiddingType.get_choices(), coerce=int, empty_value=None, required=False
-    )
-    name = PlainCharField(max_length=256, error_messages={"required": "Please specify ad group name."})
-    state = forms.TypedChoiceField(choices=constants.AdGroupSettingsState.get_choices(), coerce=int, empty_value=None)
-    start_date = forms.DateField(error_messages={"required": "Please provide start date."})
-    end_date = forms.DateField(required=False)
-    cpc_cc = forms.DecimalField(decimal_places=4, required=False)
-    max_cpm = forms.DecimalField(decimal_places=4, required=False)
-    daily_budget_cc = forms.DecimalField(
-        min_value=10,
-        decimal_places=4,
-        required=False,
-        error_messages={"min_value": "Please provide budget of at least $10.00."},
-    )
-    target_devices = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.DevicesSerializer,
-        error_messages={"required": "Please select at least one target device."},
-    )
-    target_os = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.OSsSerializer, required=False
-    )
-    target_browsers = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.BrowsersSerializer, required=False
-    )
-    target_environments = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.EnvironmentsSerializer, required=False
-    )
-    target_regions = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.TargetRegionsSerializer, required=False
-    )
-    exclusion_target_regions = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.TargetRegionsSerializer, required=False
-    )
-    interest_targeting = forms.MultipleChoiceField(required=False, choices=constants.InterestCategory.get_choices())
-    exclusion_interest_targeting = forms.MultipleChoiceField(
-        required=False, choices=constants.InterestCategory.get_choices()
-    )
-    tracking_code = PlainCharField(required=False)
-
-    autopilot_state = forms.TypedChoiceField(
-        required=False, choices=constants.AdGroupSettingsAutopilotState.get_choices(), coerce=int, empty_value=None
-    )
-
-    autopilot_daily_budget = forms.DecimalField(decimal_places=4, required=False)
-
-    retargeting_ad_groups = forms.ModelMultipleChoiceField(
-        required=False, queryset=None, error_messages={"invalid_choice": "Invalid ad group selection."}
-    )
-
-    exclusion_retargeting_ad_groups = forms.ModelMultipleChoiceField(
-        required=False, queryset=None, error_messages={"invalid_choice": "Invalid ad group selection."}
-    )
-
-    audience_targeting = forms.ModelMultipleChoiceField(
-        required=False, queryset=None, error_messages={"invalid_choice": "Invalid audience selection."}
-    )
-
-    exclusion_audience_targeting = forms.ModelMultipleChoiceField(
-        required=False, queryset=None, error_messages={"invalid_choice": "Invalid audience selection."}
-    )
-
-    bluekai_targeting = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.AudienceSerializer, required=False
-    )
-
-    dayparting = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.adgroup.v1.serializers.AdGroupDaypartingSerializer, required=False
-    )
-
-    b1_sources_group_enabled = forms.BooleanField(required=False)
-
-    b1_sources_group_daily_budget = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_cpc_cc = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_cpm = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_state = forms.TypedChoiceField(
-        required=False, choices=constants.AdGroupSourceSettingsState.get_choices(), coerce=int, empty_value=None
-    )
-
-    delivery_type = forms.TypedChoiceField(
-        choices=constants.AdGroupDeliveryType.get_choices(), coerce=int, empty_value=None
-    )
-
-    click_capping_daily_ad_group_max_clicks = forms.IntegerField(required=False)
-    click_capping_daily_click_budget = forms.DecimalField(decimal_places=4, required=False)
-
-    frequency_capping = forms.IntegerField(required=False)
-    language_targeting_enabled = forms.BooleanField(required=False)
-
-    def __init__(self, ad_group, user, *args, **kwargs):
-        self.ad_group = ad_group
-        self.account = ad_group.campaign.account
-        self.user = user
-
-        super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
-
-        self.fields["retargeting_ad_groups"].queryset = models.AdGroup.objects.filter(
-            campaign__account=ad_group.campaign.account
-        ).filter_by_user(user)
-        self.fields["exclusion_retargeting_ad_groups"].queryset = models.AdGroup.objects.filter(
-            campaign__account=ad_group.campaign.account
-        ).filter_by_user(user)
-        self.fields["audience_targeting"].queryset = models.Audience.objects.filter(
-            pixel__account_id=ad_group.campaign.account.pk
-        )
-        self.fields["exclusion_audience_targeting"].queryset = models.Audience.objects.filter(
-            pixel__account_id=ad_group.campaign.account.pk
-        )
-        self.current_settings = self.ad_group.get_current_settings()
-
-    def clean(self):
-        cleaned_data = super(AdGroupSettingsForm, self).clean()
-
-        if self.ad_group.bidding_type == constants.BiddingType.CPC:
-            if "bidding_type" in cleaned_data and cleaned_data["bidding_type"] == constants.BiddingType.CPM:
-                if "max_cpm" in cleaned_data and cleaned_data["max_cpm"] is None:
-                    raise forms.ValidationError("CPM value is required for CPM bidding type")
-            else:
-                if "cpc_cc" in cleaned_data and cleaned_data["cpc_cc"] is None:
-                    raise forms.ValidationError("CPC value is required for CPC bidding type")
-        else:
-            if "bidding_type" in cleaned_data and cleaned_data["bidding_type"] == constants.BiddingType.CPC:
-                if "cpc_cc" in cleaned_data and cleaned_data["cpc_cc"] is None:
-                    raise forms.ValidationError("CPC value is required for CPC bidding type")
-            else:
-                if "max_cpm" in cleaned_data and cleaned_data["max_cpm"] is None:
-                    raise forms.ValidationError("CPM value is required for CPM bidding type")
-
-        return cleaned_data
-
-    def clean_cpc_cc(self):
-        cpc_cc = self.cleaned_data.get("cpc_cc")
-
-        if cpc_cc:
-            currency_symbol = self.get_currency_symbol()
-            min_cpc_cc = decimal.Decimal("0.005") * self.get_exchange_rate()
-            max_cpc_cc = decimal.Decimal("10") * self.get_exchange_rate()
-
-            if cpc_cc < min_cpc_cc:
-                raise forms.ValidationError(
-                    "Maximum CPC can't be lower than {}{:.3f}.".format(currency_symbol, min_cpc_cc)
-                )
-            elif cpc_cc > max_cpc_cc:
-                raise forms.ValidationError(
-                    "Maximum CPC can't be higher than {}{:.2f}.".format(currency_symbol, max_cpc_cc)
-                )
-
-        return cpc_cc
-
-    def clean_max_cpm(self):
-        max_cpm = self.cleaned_data.get("max_cpm")
-
-        if max_cpm:
-            currency_symbol = self.get_currency_symbol()
-            min_max_cpm = decimal.Decimal("0.05") * self.get_exchange_rate()
-            max_max_cpm = decimal.Decimal("25") * self.get_exchange_rate()
-
-            if max_cpm < min_max_cpm:
-                raise forms.ValidationError(
-                    "Maximum CPM can't be lower than {}{:.2f}.".format(currency_symbol, min_max_cpm)
-                )
-            elif max_cpm > max_max_cpm:
-                raise forms.ValidationError(
-                    "Maximum CPM can't be higher than {}{:.2f}.".format(currency_symbol, max_max_cpm)
-                )
-
-        return max_cpm
-
-    def clean_retargeting_ad_groups(self):
-        ad_groups = self.cleaned_data.get("retargeting_ad_groups")
-        return [ag.id for ag in ad_groups]
-
-    def clean_exclusion_retargeting_ad_groups(self):
-        ad_groups = self.cleaned_data.get("exclusion_retargeting_ad_groups")
-        return [ag.id for ag in ad_groups]
-
-    def clean_audience_targeting(self):
-        audiences = self.cleaned_data.get("audience_targeting")
-        return [x.id for x in audiences]
-
-    def clean_exclusion_audience_targeting(self):
-        audiences = self.cleaned_data.get("exclusion_audience_targeting")
-        return [x.id for x in audiences]
-
-    def clean_end_date(self):
-        state = self.cleaned_data.get("state")
-        end_date = self.cleaned_data.get("end_date")
-        start_date = self.cleaned_data.get("start_date")
-
-        if end_date:
-            if start_date and end_date < start_date:
-                raise forms.ValidationError("End date must not occur before start date.")
-
-            if end_date < dates_helper.local_today() and state == constants.AdGroupSettingsState.ACTIVE:
-                raise forms.ValidationError("End date cannot be set in the past.")
-
-        return end_date
-
-    def clean_tracking_code(self):
-        tracking_code = self.cleaned_data.get("tracking_code")
-
-        if tracking_code:
-            # This is a bit of a hack we're doing here but if we don't prepend 'http:' to
-            # the provided tracking code, then rfc3987 doesn't know how to
-            # parse it.
-            if not tracking_code.startswith("?"):
-                tracking_code = "?" + tracking_code
-
-            test_url = "http:{0}".format(tracking_code)
-            # We use { } for macros which rfc3987 doesn't allow so here we replace macros
-            # with a single world so that it can still be correctly validated.
-            test_url = re.sub("{[^}]+}", "MACRO", test_url)
-
-            try:
-                rfc3987.parse(test_url, rule="IRI")
-            except ValueError:
-                raise forms.ValidationError("Tracking code structure is not valid.")
-
-        return self.cleaned_data.get("tracking_code")
-
-    def clean_target_regions(self):
-        target_regions = self.cleaned_data.get("target_regions")
-        return target_regions
-
-    def clean_autopilot_state(self):
-        autopilot_state = self.cleaned_data.get("autopilot_state")
-        return autopilot_state
-
-    def clean_dayparting(self):
-        dayparting = self.cleaned_data.get("dayparting")
-        if not dayparting:
-            dayparting = {}
-        return dayparting
-
-
-class B1SourcesGroupSettingsForm(forms.Form):
-    b1_sources_group_daily_budget = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_cpc_cc = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_cpm = forms.DecimalField(decimal_places=4, required=False)
-
-    b1_sources_group_state = forms.TypedChoiceField(
-        required=False, choices=constants.AdGroupSourceSettingsState.get_choices(), coerce=int, empty_value=None
-    )
-
-    def __init__(self, ad_group_settings, *args, **kwargs):
-        self.ad_group_settings = ad_group_settings
-        self.bcm_modifiers = self.ad_group_settings.ad_group.campaign.get_bcm_modifiers()
-        super(B1SourcesGroupSettingsForm, self).__init__(*args, **kwargs)
-
-
 class AdGroupSourceSettingsForm(forms.Form):
     cpc_cc = forms.DecimalField(decimal_places=4, required=False)
     cpm = forms.DecimalField(decimal_places=4, required=False)
@@ -479,44 +203,6 @@ class ConversionPixelCreateForm(ConversionPixelForm):
 
     def __init__(self, *args, **kwargs):
         super(ConversionPixelCreateForm, self).__init__(*args, **kwargs)
-
-
-class CampaignGoalForm(forms.Form):
-    type = forms.TypedChoiceField(required=True, choices=constants.CampaignGoalKPI.get_choices(), coerce=int)
-    primary = forms.BooleanField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        self.campaign_id = kwargs.pop("campaign_id")
-        self.id = kwargs.pop("id") if "id" in kwargs else None
-        super(CampaignGoalForm, self).__init__(*args, **kwargs)
-
-    def clean_primary(self):
-        primary = self.cleaned_data.get("primary")
-        if not primary:
-            return False
-        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, primary=True)
-        if self.id:
-            goals.exclude(pk=self.id)
-        if goals.count():
-            raise forms.ValidationError("Only one goal can be primary")
-        return True
-
-    def clean_type(self):
-        goal_type = self.cleaned_data["type"]
-        if goal_type == constants.CampaignGoalKPI.CPA:
-            goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
-            if self.id:
-                goals.exclude(pk=self.id)
-            if goals.count() >= constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
-                raise forms.ValidationError("Max conversion goals per campaign exceeded")
-            return goal_type
-
-        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
-        if self.id:
-            goals.exclude(pk=self.id)
-        if goals.exists():
-            raise forms.ValidationError("Multiple goals of the same type not allowed")
-        return goal_type
 
 
 class CampaignAdminForm(forms.ModelForm, CustomFlagsFormMixin):
@@ -574,107 +260,6 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
         self.fields["ob_account_manager"].label_from_instance = lambda obj: "{} <{}>".format(
             obj.get_full_name(), obj.email or ""
         )
-
-
-class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
-    id = forms.IntegerField()
-    name = PlainCharField(max_length=256, error_messages={"required": "Please specify campaign name."})
-    campaign_goal = forms.TypedChoiceField(choices=constants.CampaignGoal.get_choices(), coerce=int, empty_value=None)
-    target_devices = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.DevicesSerializer,
-        error_messages={"required": "Please select at least one target device."},
-    )
-    target_os = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.OSsSerializer, required=False
-    )
-    target_environments = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.EnvironmentsSerializer, required=False
-    )
-
-    target_regions = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.TargetRegionsSerializer, required=False
-    )
-    exclusion_target_regions = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.serializers.targeting.TargetRegionsSerializer, required=False
-    )
-
-    campaign_manager = forms.IntegerField(required=False)
-
-    language = forms.TypedChoiceField(
-        choices=constants.Language.get_choices(),
-        error_messages={"required": "Please choose a language in which ads will be created."},
-    )
-
-    type = forms.TypedChoiceField(
-        coerce=int,
-        choices=constants.CampaignType.get_choices(),
-        error_messages={"required": "Please choose the type of the campaign."},
-    )
-
-    iab_category = forms.ChoiceField(choices=constants.IABCategory.get_choices(), required=False)
-
-    enable_ga_tracking = forms.NullBooleanField(required=False)
-
-    ga_tracking_type = forms.TypedChoiceField(
-        required=False, choices=constants.GATrackingType.get_choices(), coerce=int, empty_value=None
-    )
-
-    ga_property_id = PlainCharField(max_length=25, required=False)
-
-    enable_adobe_tracking = forms.NullBooleanField(required=False)
-
-    adobe_tracking_param = PlainCharField(max_length=10, required=False)
-
-    autopilot = forms.BooleanField(required=False)
-
-    frequency_capping = forms.IntegerField(required=False)
-
-    def __init__(self, campaign, *args, **kwargs):
-        self.campaign = campaign
-        self.account = campaign.account
-        super(CampaignSettingsForm, self).__init__(*args, **kwargs)
-
-    def clean_language(self):
-        language = self.cleaned_data.get("language")
-        if self.campaign.settings.language != language and self.campaign.adgroup_set.count() > 0:
-            raise forms.ValidationError("Cannot set language for campaign with ad groups")
-        return language
-
-    def clean_campaign_manager(self):
-        campaign_manager_id = self.cleaned_data.get("campaign_manager")
-        if campaign_manager_id is None:
-            return
-
-        try:
-            campaign_manager = ZemUser.objects.get(pk=campaign_manager_id)
-        except ZemUser.DoesNotExist:
-            raise forms.ValidationError("Invalid campaign manager.")
-
-        return campaign_manager
-
-    def clean_enable_ga_tracking(self):
-        # return True if the field is not set or set to True
-        return self.cleaned_data.get("enable_ga_tracking", True) is not False
-
-    def clean_ga_property_id(self):
-        property_id = self.cleaned_data.get("ga_property_id").strip()
-        tracking_type = self.cleaned_data.get("ga_tracking_type")
-        enable_ga_tracking = self.cleaned_data.get("enable_ga_tracking")
-
-        if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
-            return ""  # property ID should not be set when email type is selected
-
-        if not property_id:
-            raise forms.ValidationError("Web property ID is required.")
-
-        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
-            raise forms.ValidationError("Web property ID is not valid.")
-
-        return property_id
-
-    def clean_enable_adobe_tracking(self):
-        # return False if the field is not set or set to False
-        return self.cleaned_data.get("enable_adobe_tracking", False) or False
 
 
 class UserForm(forms.Form):
@@ -936,77 +521,6 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
         return data
 
 
-class CreditLineItemForm(forms.ModelForm):
-    def clean_start_date(self):
-        start_date = self.cleaned_data["start_date"]
-        if not self.instance.pk or start_date != self.instance.start_date:
-            today = dates_helper.local_today()
-            if start_date < today:
-                raise forms.ValidationError("Start date has to be in the future.")
-        return start_date
-
-    def clean_end_date(self):
-        end_date = self.cleaned_data["end_date"]
-        today = dates_helper.local_today()
-        if end_date < today:
-            raise forms.ValidationError("End date has to be greater or equal to today.")
-        return end_date
-
-    def save(self, commit=True, request=None, action_type=None):
-        m = super(CreditLineItemForm, self).save(commit=False)
-        if commit:
-            m.save(request=request, action_type=action_type)
-        return m
-
-    class Meta:
-        model = models.CreditLineItem
-        fields = [
-            "account",
-            "agency",
-            "start_date",
-            "end_date",
-            "amount",
-            "service_fee",
-            "license_fee",
-            "status",
-            "comment",
-            "currency",
-            "contract_id",
-            "contract_number",
-        ]
-
-
-class BudgetLineItemForm(forms.ModelForm):
-    credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
-    margin = forms.DecimalField(decimal_places=4, max_digits=5, required=False)
-
-    def clean_start_date(self):
-        start_date = self.cleaned_data["start_date"]
-        if not self.instance.pk or start_date != self.instance.start_date:
-            today = dates_helper.local_today()
-            if start_date < today:
-                raise forms.ValidationError("Start date has to be in the future.")
-        return start_date
-
-    def clean_end_date(self):
-        end_date = self.cleaned_data["end_date"]
-        if self.instance.pk or end_date != self.instance.end_date:
-            today = dates_helper.local_today()
-            if end_date < today:
-                raise forms.ValidationError("End date has to be in the future.")
-        return end_date
-
-    def save(self, commit=True, request=None, action_type=None):
-        m = super(BudgetLineItemForm, self).save(commit=False)
-        if commit:
-            m.save(request=request, action_type=action_type)
-        return m
-
-    class Meta:
-        model = models.BudgetLineItem
-        fields = ["campaign", "credit", "start_date", "end_date", "amount", "comment", "margin"]
-
-
 class MultiEmailField(forms.Field):
     def to_python(self, value):
         if not value:
@@ -1031,30 +545,6 @@ class MultiEmailField(forms.Field):
                 + ("es" if len(invalid_addresses) > 1 else "")
                 + "."
             )
-
-
-class ScheduleReportForm(forms.Form):
-    granularity = forms.TypedChoiceField(
-        required=True, choices=constants.ScheduledReportGranularity.get_choices(), coerce=int
-    )
-    report_name = PlainCharField(
-        required=True,
-        max_length=100,
-        error_messages={"max_length": "Report name is too long (%(show_value)d/%(limit_value)d)."},
-    )
-    frequency = forms.TypedChoiceField(
-        required=True, choices=constants.ScheduledReportSendingFrequency.get_choices(), coerce=int
-    )
-    day_of_week = forms.TypedChoiceField(
-        required=True, choices=constants.ScheduledReportTimePeriod.get_choices(), coerce=int
-    )
-    time_period = forms.TypedChoiceField(
-        required=True, choices=constants.ScheduledReportTimePeriod.get_choices(), coerce=int
-    )
-    recipient_emails = MultiEmailField(required=True)
-
-    def __init__(self, *args, **kwargs):
-        super(ScheduleReportForm, self).__init__(*args, **kwargs)
 
 
 class CreditLineItemAdminForm(forms.ModelForm):

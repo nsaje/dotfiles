@@ -221,7 +221,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["amount"], "900")
 
-    @mock.patch("dash.forms.dates_helper.local_today", lambda: datetime.datetime(2016, 1, 15).date())
+    @mock.patch("utils.dates_helper.local_today", lambda: datetime.datetime(2016, 1, 15).date())
     def test_campaigns_budgets_list(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.BUDGET_MARGIN], agency=agency)

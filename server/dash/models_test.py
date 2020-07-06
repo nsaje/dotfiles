@@ -594,7 +594,7 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertTrue(ag2.get_current_settings().archived)
         self.assertTrue(ag2.archived)
 
-    @patch("dash.forms.dates_helper.local_today", lambda: datetime.datetime(2015, 12, 1).date())
+    @patch("utils.dates_helper.local_today", lambda: datetime.datetime(2015, 12, 1).date())
     def test_archive_account(self):
         a1 = models.Account.objects.get(id=1)
         a2 = models.Account.objects.get(id=2)
@@ -730,16 +730,6 @@ class AdGroupTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
 
-    def test_filter_by_agency_manager(self):
-        qs = models.AdGroup.objects.all().filter_by_user(self.user)
-        oldcount = qs.count()
-        self.assertGreater(oldcount, 0)
-
-        agency = models.Agency.objects.get(pk=1)
-        agency.users.add(self.user)
-        qs = models.AdGroup.objects.all().filter_by_user(self.user)
-        self.assertEqual(oldcount + 1, qs.count())
-
     def test_filter_by_agencies(self):
         agencies = models.Agency.objects.filter(pk=1)
 
@@ -772,16 +762,6 @@ class CampaignTestCase(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
-
-    def test_filter_by_agency_manager(self):
-        qs = models.Campaign.objects.all().filter_by_user(self.user)
-        oldcount = qs.count()
-        self.assertGreater(oldcount, 0)
-
-        agency = models.Agency.objects.get(pk=1)
-        agency.users.add(self.user)
-        qs = models.Campaign.objects.all().filter_by_user(self.user)
-        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Campaign.objects.all().exclude_archived()
@@ -840,16 +820,6 @@ class AccountTestCase(TestCase):
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
-
-    def test_filter_by_agency_manager(self):
-        qs = models.Account.objects.all().filter_by_user(self.user)
-        oldcount = qs.count()
-        self.assertGreater(oldcount, 0)
-
-        agency = models.Agency.objects.get(pk=1)
-        agency.users.add(self.user)
-
-        self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()

@@ -239,7 +239,7 @@ class TestBudgetLineItemManager(TestCase):
 
         # move 10 days into the future
         new_today = TODAY + datetime.timedelta(days=10)
-        dash.forms.dates_helper.local_today = lambda: new_today
+        dates_helper.local_today = lambda: new_today
 
         destination_campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         cloned_item = BudgetLineItem.objects.clone(request, item, destination_campaign)
