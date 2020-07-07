@@ -99,16 +99,20 @@ def _log_all_paginated(
     user_permission_queryset: models.QuerySet,
     entity_permission_queryset: models.QuerySet,
 ):
-    rows_ids_by_user_permission = paginator.paginate_queryset(user_permission_queryset.values("id"), request)
-    rows_ids_by_entity_permission = paginator.paginate_queryset(entity_permission_queryset.values("id"), request)
+    rows_ids_by_user_permission = set(
+        [x.get("id") for x in paginator.paginate_queryset(user_permission_queryset.values("id"), request)]
+    )
+    rows_ids_by_entity_permission = set(
+        [x.get("id") for x in paginator.paginate_queryset(entity_permission_queryset.values("id"), request)]
+    )
 
     if rows_ids_by_user_permission != rows_ids_by_entity_permission:
         logger.warning(
             LOG_MESSAGE,
             user_email=request.user.email,
             permission=permission,
-            rows_ids_by_user_permission=[x.get("id") for x in rows_ids_by_user_permission],
-            rows_ids_by_entity_permission=[x.get("id") for x in rows_ids_by_entity_permission],
+            rows_ids_by_user_permission=rows_ids_by_user_permission,
+            rows_ids_by_entity_permission=rows_ids_by_entity_permission,
             user_permission_queryset_model_name=user_permission_queryset.model.__name__,
             entity_permission_queryset_model_name=entity_permission_queryset.model.__name__,
         )
