@@ -2,6 +2,12 @@
 
 <ng-container *ngIf="store.state$ | async as state">
     <div class="zem-panel zem-panel--with-padding zem-rules-view__panel">
+        <zem-rules-actions
+            class="zem-rules-actions zem-rules-view__item"
+            [value]="keyword"
+            (search)="searchRules($event)"
+        >
+        </zem-rules-actions>
         <zem-rules-grid
             class="zem-rules-grid"
             [rules]="state.entities"

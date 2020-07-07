@@ -11,6 +11,7 @@ import {RulesHistoriesGridComponent} from './components/rules-histories-grid/rul
 import {RulesHistoriesView} from './views/rules-histories/rules-histories.view';
 import {RulesView} from './views/rules/rules.view';
 import {RulesGridComponent} from './components/rules-grid/rules-grid.component';
+import {RulesActionsComponent} from './components/rules-actions/rules-actions.component';
 
 @NgModule({
     declarations: [
@@ -24,6 +25,7 @@ import {RulesGridComponent} from './components/rules-grid/rules-grid.component';
         RuleEditFormConditionModifierComponent,
         RulesHistoriesGridComponent,
         RulesHistoriesView,
+        RulesActionsComponent,
     ],
     imports: [SharedModule],
     exports: [RuleEditFormComponent],

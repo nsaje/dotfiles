@@ -22,6 +22,7 @@ describe('RulesLibraryStore', () => {
     let mockedRules: Rule[];
     let mockedAgencyId: string;
     let mockedAccountId: string;
+    let mockedKeyword: string;
     let mockedAccounts: Account[];
 
     beforeEach(() => {
@@ -62,6 +63,7 @@ describe('RulesLibraryStore', () => {
 
         mockedAgencyId = '71';
         mockedAccountId = '55';
+        mockedKeyword = 'bla';
 
         mockedAccounts = [mockHelpers.getMockedAccount()];
     });
@@ -79,7 +81,8 @@ describe('RulesLibraryStore', () => {
             mockedAgencyId,
             mockedAccountId,
             mockedPage,
-            mockedPageSize
+            mockedPageSize,
+            mockedKeyword
         );
         tick();
 
@@ -93,6 +96,7 @@ describe('RulesLibraryStore', () => {
             mockedAccountId,
             0,
             10,
+            mockedKeyword,
             null,
             (<any>store).requestStateUpdater
         );
@@ -106,7 +110,7 @@ describe('RulesLibraryStore', () => {
         rulesServiceStub.list.and
             .returnValue(of(mockedRules, asapScheduler))
             .calls.reset();
-        store.loadEntities(mockedPage, mockedPageSize);
+        store.loadEntities(mockedPage, mockedPageSize, mockedKeyword);
         tick();
 
         expect(store.state.entities).toEqual(mockedRules);
@@ -116,6 +120,7 @@ describe('RulesLibraryStore', () => {
             null,
             0,
             10,
+            mockedKeyword,
             null,
             (<any>store).requestStateUpdater
         );

@@ -12,6 +12,7 @@ import {RulesService} from '../../../../core/rules/services/rules.service';
 import {RulesEndpoint} from '../../../../core/rules/services/rules.endpoint';
 import {RulesStore} from '../../services/rules-store/rules.store';
 import {RulesGridComponent} from '../../components/rules-grid/rules-grid.component';
+import {RulesActionsComponent} from '../../components/rules-actions/rules-actions.component';
 
 describe('RulesView', () => {
     let component: RulesView;
@@ -26,7 +27,11 @@ describe('RulesView', () => {
         };
 
         TestBed.configureTestingModule({
-            declarations: [RulesView, RulesGridComponent],
+            declarations: [
+                RulesView,
+                RulesGridComponent,
+                RulesActionsComponent,
+            ],
             imports: [
                 FormsModule,
                 SharedModule,

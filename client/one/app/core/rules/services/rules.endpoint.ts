@@ -51,6 +51,7 @@ export class RulesEndpoint {
         accountId: string | null,
         offset: number | null,
         limit: number | null,
+        keyword: string | null,
         agencyOnly: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule[]> {
@@ -60,6 +61,7 @@ export class RulesEndpoint {
             limit: `${limit}`,
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
             ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
             ...(commonHelpers.isDefined(agencyOnly) && {
                 agencyOnly: `${agencyOnly}`,
             }),

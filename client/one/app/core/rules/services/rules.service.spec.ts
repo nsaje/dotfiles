@@ -84,6 +84,7 @@ describe('RulesService', () => {
     it('should list rules via endpoint', () => {
         const limit = 10;
         const offset = 0;
+        const keyword = '';
         const agencyOnly = true;
         rulesEndpointStub.list.and
             .returnValue(of(mockedRules, asapScheduler))
@@ -95,6 +96,7 @@ describe('RulesService', () => {
                 mockedAccountId,
                 offset,
                 limit,
+                keyword,
                 agencyOnly,
                 requestStateUpdater
             )
@@ -107,6 +109,7 @@ describe('RulesService', () => {
             mockedAccountId,
             offset,
             limit,
+            keyword,
             agencyOnly,
             requestStateUpdater
         );

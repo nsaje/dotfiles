@@ -35,11 +35,12 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         agencyId: string | null,
         accountId: string | null,
         page: number,
-        pageSize: number
+        pageSize: number,
+        keyword: string | null
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
             Promise.all([
-                this.loadRules(agencyId, accountId, page, pageSize),
+                this.loadRules(agencyId, accountId, page, pageSize, keyword),
                 this.loadAccounts(agencyId),
             ])
                 .then((values: [Rule[], Account[]]) => {
@@ -59,13 +60,18 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         });
     }
 
-    loadEntities(page: number, pageSize: number): Promise<void> {
+    loadEntities(
+        page: number,
+        pageSize: number,
+        keyword: string
+    ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadRules(
                 this.state.agencyId,
                 this.state.accountId,
                 page,
-                pageSize
+                pageSize,
+                keyword
             ).then(
                 (rules: Rule[]) => {
                     this.patchState(rules, 'entities');
@@ -86,7 +92,8 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         agencyId: string | null,
         accountId: string | null,
         page: number,
-        pageSize: number
+        pageSize: number,
+        keyword: string | null
     ): Promise<Rule[]> {
         return new Promise<Rule[]>((resolve, reject) => {
             const offset = this.getOffset(page, pageSize);
@@ -96,6 +103,7 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
                     accountId,
                     offset,
                     pageSize,
+                    keyword,
                     null,
                     this.requestStateUpdater
                 )

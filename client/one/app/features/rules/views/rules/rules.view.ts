@@ -76,6 +76,15 @@ export class RulesView implements OnInit, OnDestroy {
         });
     }
 
+    searchRules(keyword: string) {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {keyword: keyword},
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
+    }
+
     private updateInternalState(queryParams: any) {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;
@@ -93,12 +102,14 @@ export class RulesView implements OnInit, OnDestroy {
                 agencyId,
                 accountId,
                 this.paginationOptions.page,
-                this.paginationOptions.pageSize
+                this.paginationOptions.pageSize,
+                this.keyword
             );
         } else {
             this.store.loadEntities(
                 this.paginationOptions.page,
-                this.paginationOptions.pageSize
+                this.paginationOptions.pageSize,
+                this.keyword
             );
         }
     }

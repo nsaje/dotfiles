@@ -15,6 +15,7 @@ export class RulesService {
         accountId: string | null,
         offset: number | null,
         limit: number | null,
+        keyword: string | null,
         agencyOnly: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule[]> {
@@ -23,6 +24,7 @@ export class RulesService {
             accountId,
             offset,
             limit,
+            keyword,
             agencyOnly,
             requestStateUpdater
         );
