@@ -16,6 +16,7 @@ import restapi.serializers.alert
 import utils.exc
 import zemauth.access
 from dash import constants
+from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
 
@@ -52,6 +53,36 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         return self.response_ok(
             data=self.serializer(ad_group.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
+        )
+
+    def list(self, request):
+        qpe = serializers.AdGroupListQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        account_id = qpe.validated_data.get("account_id")
+        agency_id = qpe.validated_data.get("agency_id")
+
+        if account_id:
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            ad_group_qs = core.models.AdGroup.objects.filter(campaign__account=account)
+        elif agency_id:
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            ad_group_qs = core.models.AdGroup.objects.filter(campaign__account__agency=agency)
+        else:
+            raise utils.exc.ValidationError("Either agency id or account id must be provided.")
+
+        keyword = qpe.validated_data.get("keyword")
+        if keyword:
+            ad_group_qs = ad_group_qs.filter(name__icontains=keyword)
+
+        paginator = StandardPagination()
+
+        ad_group_qs = ad_group_qs.select_related("settings").order_by("pk")
+
+        ad_groups_paginated = paginator.paginate_queryset(ad_group_qs, request)
+        paginated_settings = [ad.settings for ad in ad_groups_paginated]
+        return paginator.get_paginated_response(
+            self.serializer(paginated_settings, many=True, context={"request": request}).data
         )
 
     def alerts(self, request, ad_group_id):
