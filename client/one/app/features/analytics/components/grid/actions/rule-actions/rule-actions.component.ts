@@ -5,13 +5,15 @@ import {
     ChangeDetectionStrategy,
     ViewChild,
     Input,
-    ChangeDetectorRef,
+    Inject,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {DropdownDirective} from '../../../../../../shared/components/dropdown/dropdown.directive';
 import {ModalComponent} from '../../../../../../shared/components/modal/modal.component';
-import {EntityType} from '../../../../../../app.constants';
+import {EntityType, RoutePathName} from '../../../../../../app.constants';
 import {RuleEditFormApi} from '../../../../../rules/components/rule-edit-form/types/rule-edit-form-api';
+import {Router} from '@angular/router';
+import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-rule-actions',
@@ -33,7 +35,10 @@ export class RuleActionsComponent {
 
     private ruleEditFormApi: RuleEditFormApi;
 
-    constructor(private changeDetectorRef: ChangeDetectorRef) {}
+    constructor(
+        private router: Router,
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+    ) {}
 
     openModal(): void {
         this.ruleActionsDropdown.close();
@@ -51,6 +56,24 @@ export class RuleActionsComponent {
             .catch(() => {
                 this.isSaveInProgress = false;
             });
+    }
+
+    navigateToRulesView(): void {
+        const activeAccount = this.zemNavigationNewService.getActiveAccount();
+
+        if (commonHelpers.isDefined(activeAccount)) {
+            this.router.navigate(
+                [RoutePathName.APP_BASE, RoutePathName.RULES],
+                {
+                    queryParams: {
+                        agencyId: activeAccount.data.agencyId,
+                        accountId: activeAccount.id,
+                    },
+                }
+            );
+        } else {
+            this.router.navigate([RoutePathName.APP_BASE, RoutePathName.RULES]);
+        }
     }
 
     cancel(): void {
