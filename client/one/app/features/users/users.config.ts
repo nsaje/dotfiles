@@ -19,6 +19,27 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
     ...DEFAULT_PAGINATION,
 };
 
+export const GENERAL_PERMISSIONS: EntityPermissionValue[] = [
+    'write',
+    'budget',
+    'user',
+];
+export const REPORTING_PERMISSIONS: (
+    | 'total_spend'
+    | EntityPermissionValue
+)[] = [
+    'total_spend',
+    'agency_spend_margin',
+    'media_cost_data_cost_licence_fee',
+];
+
+export const CONFIGURABLE_PERMISSIONS: EntityPermissionValue[] = [
+    ...GENERAL_PERMISSIONS,
+    ...(<EntityPermissionValue[]>(
+        REPORTING_PERMISSIONS.filter(p => p !== 'total_spend')
+    )),
+];
+
 export const ENTITY_PERMISSION_VALUE_TO_NAME: {
     [key in 'total_spend' | EntityPermissionValue]: string;
 } = {

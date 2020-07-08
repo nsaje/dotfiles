@@ -25,6 +25,8 @@ export class UsersActionsComponent implements OnInit, OnDestroy {
     isDisabled: boolean = false;
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    userCreate = new EventEmitter<void>();
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private searchDebouncer$: Subject<string> = new Subject<string>();

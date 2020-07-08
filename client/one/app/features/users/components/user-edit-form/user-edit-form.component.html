@@ -1,0 +1,29 @@
+<zem-text-form-group
+    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+    *ngIf="user.id === null"
+    [isDisabled]="isDisabled"
+    [label]="'Email'"
+    [value]="user.email"
+    [placeholder]="'Email'"
+    (valueChange)="onEmailChange($event)"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+    *ngIf="user.id !== null"
+    [isDisabled]="isDisabled"
+    [label]="'First name'"
+    [value]="user.firstName"
+    [placeholder]="'First name'"
+    (valueChange)="onFirstNameChange($event)"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+    *ngIf="user.id !== null"
+    [isDisabled]="isDisabled"
+    [label]="'Last name'"
+    [value]="user.lastName"
+    [placeholder]="'Last name'"
+    (valueChange)="onLastNameChange($event)"
+></zem-text-form-group>
+
+<ng-content></ng-content>

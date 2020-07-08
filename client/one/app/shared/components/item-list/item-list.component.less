@@ -1,17 +1,41 @@
 @import 'variables';
 
 .zem-item-list {
-    display: block;
-    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid @border-color--default;
+    border-radius: @border-radius--default;
     background-color: white;
+}
+
+.zem-item-list__list {
+    display: flex;
+    flex-direction: column;
+    padding: @spacing--small;
 }
 
 .zem-item-list__footer {
     background-color: @color--lightest-neutral;
     padding: @spacing--small;
-    border-top: 1px solid black;
+    border-top: 1px solid @border-color--default;
     height: 30px;
     box-sizing: content-box;
     display: flex;
     justify-content: space-between;
+}
+
+.zem-item-list__footer .zem-button:not(:last-child) {
+    margin-right: 8px;
+}
+
+.zem-item-list__link {
+    color: @color--secondary;
+    font-weight: 500;
+    align-self: center;
+}
+
+.zem-item-list__link:hover,
+.zem-item-list__link:active {
+    color: @color--secondary;
 }

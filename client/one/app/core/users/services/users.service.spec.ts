@@ -35,7 +35,7 @@ describe('UsersService', () => {
         mockedUserId = '456346';
         mockedUsers = [
             {
-                id: 10000000,
+                id: '10000000',
                 email: 'test.user@outbrain.com',
                 firstName: 'Test',
                 lastName: 'User',
@@ -47,7 +47,7 @@ describe('UsersService', () => {
                 ],
             },
             {
-                id: 10000001,
+                id: '10000001',
                 email: 'pat@ajeto.cz',
                 firstName: 'Pat',
                 entityPermissions: [
@@ -62,7 +62,7 @@ describe('UsersService', () => {
                 ],
             },
             {
-                id: 10000002,
+                id: '10000002',
                 email: 'mat@ajeto.cz',
                 firstName: 'Mat',
                 entityPermissions: [
@@ -162,7 +162,12 @@ describe('UsersService', () => {
             .calls.reset();
 
         service
-            .create(mockedCreateUsers, requestStateUpdater)
+            .create(
+                mockedCreateUsers,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
             .subscribe(user => {
                 expect(user).toEqual(mockedUsers);
             });
@@ -171,6 +176,8 @@ describe('UsersService', () => {
         expect(usersEndpointStub.create).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.create).toHaveBeenCalledWith(
             mockedCreateUsers,
+            mockedAgencyId,
+            mockedAccountId,
             requestStateUpdater
         );
     }));
@@ -180,12 +187,21 @@ describe('UsersService', () => {
             .returnValue(of(mockedUser, asapScheduler))
             .calls.reset();
 
-        service.get(mockedUserId, requestStateUpdater).subscribe(user => {
-            expect(user).toEqual(mockedUser);
-        });
+        service
+            .get(
+                mockedUserId,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
+            .subscribe(user => {
+                expect(user).toEqual(mockedUser);
+            });
         expect(usersEndpointStub.get).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.get).toHaveBeenCalledWith(
             mockedUserId,
+            mockedAgencyId,
+            mockedAccountId,
             requestStateUpdater
         );
     });
@@ -196,13 +212,22 @@ describe('UsersService', () => {
             .returnValue(of(mockedUser, asapScheduler))
             .calls.reset();
 
-        service.edit(mockedNewUser, requestStateUpdater).subscribe(newUser => {
-            expect(newUser).toEqual(mockedNewUser);
-        });
+        service
+            .edit(
+                mockedNewUser,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
+            .subscribe(newUser => {
+                expect(newUser).toEqual(mockedNewUser);
+            });
 
         expect(usersEndpointStub.edit).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.edit).toHaveBeenCalledWith(
             mockedNewUser,
+            mockedAgencyId,
+            mockedAccountId,
             requestStateUpdater
         );
     });
@@ -212,10 +237,19 @@ describe('UsersService', () => {
             .returnValue(of(null, asapScheduler))
             .calls.reset();
 
-        service.remove(mockedUserId, requestStateUpdater).subscribe(x => {});
+        service
+            .remove(
+                mockedUserId,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
+            .subscribe(x => {});
         expect(usersEndpointStub.remove).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.remove).toHaveBeenCalledWith(
             mockedUserId,
+            mockedAgencyId,
+            mockedAccountId,
             requestStateUpdater
         );
     });
@@ -225,10 +259,19 @@ describe('UsersService', () => {
             .returnValue(of(null, asapScheduler))
             .calls.reset();
 
-        service.validate(mockedUser, requestStateUpdater).subscribe(x => {});
+        service
+            .validate(
+                mockedUser,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
+            .subscribe(x => {});
         expect(usersEndpointStub.validate).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.validate).toHaveBeenCalledWith(
             mockedUser,
+            mockedAgencyId,
+            mockedAccountId,
             requestStateUpdater
         );
     });

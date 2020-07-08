@@ -1,4 +1,4 @@
-<div>
+<div class="zem-item-list__list">
     <div *ngFor="let item of items" (click)="clickItem($event, item)">
         <ng-container
             *ngTemplateOutlet="
@@ -7,21 +7,22 @@
             "
         ></ng-container>
     </div>
+    <a
+        class="zem-item-list__link"
+        *ngIf="multiple"
+        (click)="selectedItemsChange.emit(items)"
+        >Select all</a
+    >
 </div>
 <div class="zem-item-list__footer">
     <button
         class="zem-button zem-button--highlighted zem-button--with-icon zem-button--icon-only zem-button--add-icon"
+        [disabled]="isDisabled"
         (click)="addItemsClicked.emit()"
     ></button>
     <button
-        *ngIf="multiple"
         class="zem-button zem-button--highlighted"
-        (click)="selectedItemsChange.emit(items)"
-    >
-        Select all
-    </button>
-    <button
-        class="zem-button zem-button--highlighted"
+        [disabled]="isDisabled"
         (click)="removeItemsClicked.emit()"
     >
         Remove

@@ -18,8 +18,8 @@ class UserQueryParamsExpectations(
 
 
 class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    agency_id = rest_framework.serializers.CharField(required=False, allow_null=True)
-    account_id = rest_framework.serializers.CharField(required=False, allow_null=True)
+    agency_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
+    account_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     account_name = rest_framework.serializers.CharField(source="account.name", required=False)
     permission = rest_framework.serializers.CharField()
 
@@ -54,15 +54,25 @@ class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer
 
     def validate_agency_id(self, agency_id):
         if agency_id is not None:
-            request_agency_id = self.context["request"].query_params.get("agency_id")
+            query_params = UserQueryParamsExpectations(data=self.context["request"].query_params)
+            query_params.is_valid(raise_exception=True)
+            request_agency_id: int = query_params.validated_data.get("agency_id")
+            request_account_id: int = query_params.validated_data.get("account_id")
+            if request_account_id and not request_agency_id:
+                calling_user = self.context["request"].user
+                request_account = zemauth.access.get_account(calling_user, Permission.USER, request_account_id)
+                request_agency_id = request_account.agency.id
+
             if agency_id != request_agency_id:
-                raise ValidationError("Incorrect agency ID")
+                raise ValidationError("Incorrect agency ID in permission")
 
         return agency_id
 
     def validate_account_id(self, account_id):
-        request_agency_id = self.context["request"].query_params.get("agency_id")
-        request_account_id = self.context["request"].query_params.get("account_id")
+        query_params = UserQueryParamsExpectations(data=self.context["request"].query_params)
+        query_params.is_valid(raise_exception=True)
+        request_agency_id: int = query_params.validated_data.get("agency_id")
+        request_account_id: int = query_params.validated_data.get("account_id")
         calling_user = self.context["request"].user
 
         if request_account_id:
@@ -84,8 +94,8 @@ class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer
 class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     email = rest_framework.serializers.EmailField()
-    first_name = rest_framework.serializers.CharField(required=False)
-    last_name = rest_framework.serializers.CharField(required=False)
+    first_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
+    last_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     entity_permissions = EntityPermissionsSerializer(many=True)
 
 

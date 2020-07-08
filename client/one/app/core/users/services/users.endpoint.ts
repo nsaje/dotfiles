@@ -5,9 +5,9 @@ import {Observable, throwError} from 'rxjs';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
 import {User} from '../types/user';
-import * as commonHelpers from '../../../shared/helpers/common.helpers';
 import {USERS_CONFIG} from './users.config';
 import {replaceUrl} from '../../../shared/helpers/endpoint.helpers';
+import {isDefined} from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class UsersEndpoint {
@@ -27,10 +27,10 @@ export class UsersEndpoint {
         const params = {
             offset: `${offset}`,
             limit: `${limit}`,
-            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
-            ...(commonHelpers.isDefined(accountId) && {accountId}),
-            ...(commonHelpers.isDefined(keyword) && {keyword}),
-            ...(commonHelpers.isDefined(showInternal) && {
+            ...(isDefined(agencyId) && {agencyId}),
+            ...(isDefined(accountId) && {accountId}),
+            ...(isDefined(keyword) && {keyword}),
+            ...(isDefined(showInternal) && {
                 agencyOnly: `${showInternal}`,
             }),
         };
@@ -64,6 +64,8 @@ export class UsersEndpoint {
 
     create(
         users: User[],
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User[]> {
         const request = USERS_CONFIG.requests.users.create;
@@ -71,26 +73,32 @@ export class UsersEndpoint {
             inProgress: true,
         });
 
-        return this.http.post<ApiResponse<User[]>>(request.url, users).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http
+            .post<ApiResponse<User[]>>(request.url, {users}, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     validate(
         user: Partial<User>,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         const request = USERS_CONFIG.requests.users.validate;
@@ -98,25 +106,31 @@ export class UsersEndpoint {
             inProgress: true,
         });
 
-        return this.http.post<ApiResponse<void>>(request.url, user).pipe(
-            map(() => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http
+            .post<ApiResponse<void>>(request.url, user, {params})
+            .pipe(
+                map(() => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     get(
         userId: string,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User> {
         const request = replaceUrl(USERS_CONFIG.requests.users.get, {
@@ -127,26 +141,32 @@ export class UsersEndpoint {
             inProgress: true,
         });
 
-        return this.http.get<ApiResponse<User>>(`${request.url}`).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http
+            .get<ApiResponse<User>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     edit(
         user: Partial<User>,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User> {
         const request = replaceUrl(USERS_CONFIG.requests.users.edit, {
@@ -157,26 +177,32 @@ export class UsersEndpoint {
             inProgress: true,
         });
 
-        return this.http.put<ApiResponse<User>>(`${request.url}`, user).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http
+            .put<ApiResponse<User>>(request.url, user, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
     }
 
     remove(
         userId: string,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         const request = replaceUrl(USERS_CONFIG.requests.users.remove, {
@@ -187,20 +213,32 @@ export class UsersEndpoint {
             inProgress: true,
         });
 
-        return this.http.delete<ApiResponse<User>>(`${request.url}`).pipe(
-            map(() => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http
+            .delete<ApiResponse<User>>(request.url, {params})
+            .pipe(
+                map(() => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    private getScopeParams(agencyId: string, accountId: string): any {
+        return {
+            ...(isDefined(agencyId) &&
+                !isDefined(accountId) && {agencyId: agencyId}),
+            ...(isDefined(accountId) && {accountId}),
+        };
     }
 }

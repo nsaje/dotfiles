@@ -13,6 +13,7 @@ import {PaginationOptions} from '../../../../shared/components/smart-grid/types/
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
 import {
     COLUMN_ACCESS,
+    COLUMN_ACTIONS,
     COLUMN_EMAIL,
     COLUMN_NAME,
 } from './users-grid.component.config';
@@ -39,7 +40,12 @@ export class UsersGridComponent implements OnChanges {
         PaginationState
     >();
 
-    columnDefs: ColDef[] = [COLUMN_NAME, COLUMN_EMAIL, COLUMN_ACCESS];
+    columnDefs: ColDef[] = [
+        COLUMN_NAME,
+        COLUMN_EMAIL,
+        COLUMN_ACCESS,
+        COLUMN_ACTIONS,
+    ];
 
     private gridApi: GridApi;
 

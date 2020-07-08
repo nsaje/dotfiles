@@ -15,15 +15,15 @@ export const USERS_CONFIG = {
             },
             get: {
                 name: 'get',
-                url: `${usersApiUrl}/{userId}/`,
+                url: `${usersApiUrl}/{userId}`,
             },
             edit: {
                 name: 'edit',
-                url: `${usersApiUrl}/{userId}/`,
+                url: `${usersApiUrl}/{userId}`,
             },
             remove: {
                 name: 'remove',
-                url: `${usersApiUrl}/{userId}/`,
+                url: `${usersApiUrl}/{userId}`,
             },
             validate: {
                 name: 'validate',

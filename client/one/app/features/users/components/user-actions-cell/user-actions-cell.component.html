@@ -1,0 +1,16 @@
+<div class="zem-user-actions-cell">
+    <button
+        [ngClass]="
+            isReadOnlyUser
+                ? 'zem-button--magnifier-icon'
+                : 'zem-button--edit-icon'
+        "
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-user-actions-cell__item"
+        (click)="openEditUserModal()"
+    ></button>
+    <button
+        [disabled]="isReadOnlyUser"
+        class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-user-actions-cell__item"
+        (click)="removeUser()"
+    ></button>
+</div>

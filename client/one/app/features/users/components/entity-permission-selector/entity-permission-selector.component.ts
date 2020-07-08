@@ -14,6 +14,8 @@ import {EntityPermissionCheckboxItem} from './types/entity-permission-checkbox-i
 import {
     ENTITY_PERMISSION_VALUE_TO_DESCRIPTION,
     ENTITY_PERMISSION_VALUE_TO_NAME,
+    GENERAL_PERMISSIONS,
+    REPORTING_PERMISSIONS,
 } from '../../users.config';
 import {EntityPermissionSelection} from './types/entity-permission-selection';
 
@@ -38,14 +40,12 @@ export class EntityPermissionSelectorComponent implements OnChanges {
     formattedReportingOptions: CheckboxSliderItem<EntityPermissionValue>[];
 
     ngOnChanges(): void {
-        this.formattedOptions = ['write', 'budget', 'user'].map(
+        this.formattedOptions = GENERAL_PERMISSIONS.map(
             this.getItem.bind(this)
         );
-        this.formattedReportingOptions = [
-            'total_spend',
-            'agency_spend_margin',
-            'media_cost_data_cost_licence_fee',
-        ].map(this.getReportingItem.bind(this));
+        this.formattedReportingOptions = REPORTING_PERMISSIONS.map(
+            this.getReportingItem.bind(this)
+        );
     }
 
     toggleOption(option: EntityPermissionCheckboxItem) {

@@ -15,6 +15,8 @@ angular
         this.canAccessPlatformCosts = canAccessPlatformCosts;
         this.canAccessAgencyCosts = canAccessAgencyCosts;
         this.hasAgencyScope = hasAgencyScope;
+        this.canEditUsersOnAgency = canEditUsersOnAgency;
+        this.canEditUsersOnAllAccounts = canEditUsersOnAllAccounts;
 
         function hasPermission(permission) {
             // Can take string or array (legacy option), returns true if user has all of the permissions
@@ -31,6 +33,21 @@ angular
             return permissions.every(function(permission) {
                 return (
                     Object.keys(user.permissions || {}).indexOf(permission) >= 0
+                );
+            });
+        }
+
+        function hasEntityPermission(agencyId, accountId, permission) {
+            var user = zemUserService.current();
+            if (!user || !user.entityPermissions) {
+                return false;
+            }
+
+            return user.entityPermissions.some(function(ep) {
+                return (
+                    [agencyId, null].includes(ep.agencyId) &&
+                    [accountId, null].includes(ep.accountId) &&
+                    ep.permission === permission
                 );
             });
         }
@@ -106,5 +123,13 @@ angular
             }
             var user = zemUserService.current();
             return user.agencies.includes(Number(agencyId));
+        }
+
+        function canEditUsersOnAgency(agencyId) {
+            return hasEntityPermission(agencyId, null, 'user');
+        }
+
+        function canEditUsersOnAllAccounts() {
+            return hasEntityPermission(null, null, 'user');
         }
     });

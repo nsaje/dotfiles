@@ -7,12 +7,17 @@ import {
     OnDestroy,
     HostBinding,
     Inject,
+    ViewChild,
 } from '@angular/core';
-import {Subject} from 'rxjs';
-import {takeUntil, filter} from 'rxjs/operators';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
-import * as moment from 'moment';
-import {ActivatedRoute, ParamMap, Router} from '@angular/router';
+import {merge, Observable, Subject} from 'rxjs';
+import {
+    takeUntil,
+    filter,
+    map,
+    distinctUntilChanged,
+    tap,
+} from 'rxjs/operators';
+import {ActivatedRoute, Router} from '@angular/router';
 import {UsersStore} from '../services/users-store/users.store';
 import {PaginationOptions} from '../../../shared/components/smart-grid/types/pagination-options';
 import {isDefined} from '../../../shared/helpers/common.helpers';
@@ -22,6 +27,12 @@ import {
     DEFAULT_PAGINATION_OPTIONS,
     PAGINATION_URL_PARAMS,
 } from '../users.config';
+import {ModalComponent} from '../../../shared/components/modal/modal.component';
+import {FieldErrors} from '../../../shared/types/field-errors';
+import * as arrayHelpers from '../../../shared/helpers/array.helpers';
+import {User} from '../../../core/users/types/user';
+import {Account} from '../../../core/entities/types/account/account';
+import {ScopeSelectorState} from '../../../shared/components/scope-selector/scope-selector.constants';
 
 @Component({
     selector: 'zem-users-view',
@@ -32,13 +43,21 @@ import {
 export class UsersView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-users-view';
+    @ViewChild('editUserModal', {static: false})
+    editUserModal: ModalComponent;
 
     context: any;
 
     keyword: string;
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
+    canSaveActiveEntity: boolean = false;
 
-    private gridApi: GridApi;
+    availableAccounts: Account[] = [];
+    addAccountId: string;
+    isAddAccountVisible: boolean = false;
+
+    readonly ScopeSelectorState = ScopeSelectorState;
+
     private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
@@ -53,12 +72,21 @@ export class UsersView implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.subscribeToStoreStateUpdates();
         this.route.queryParams
             .pipe(takeUntil(this.ngUnsubscribe$))
             .pipe(filter(queryParams => isDefined(queryParams.agencyId)))
             .subscribe(queryParams => {
                 this.updateInternalState(queryParams);
             });
+
+        this.store.state$
+            .pipe(
+                map(state => state.activeEntity.entityAccounts),
+                distinctUntilChanged(),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(this.updateAvailableAccounts.bind(this));
     }
 
     ngOnDestroy() {
@@ -75,10 +103,6 @@ export class UsersView implements OnInit, OnDestroy {
         });
     }
 
-    onGridReady($event: DetailGridInfo) {
-        this.gridApi = $event.api;
-    }
-
     searchUsers(keyword: string) {
         this.router.navigate([], {
             relativeTo: this.route,
@@ -86,6 +110,57 @@ export class UsersView implements OnInit, OnDestroy {
             queryParamsHandling: 'merge',
             replaceUrl: true,
         });
+    }
+
+    removeUser(user: User) {
+        if (
+            confirm(
+                `Are you sure you wish to delete user ${user.firstName} ${user.lastName} from this agency?`
+            )
+        ) {
+            this.store.deleteEntity(user.id).then(() => {
+                this.store.loadEntities(
+                    this.paginationOptions.page,
+                    this.paginationOptions.pageSize,
+                    this.keyword
+                );
+            });
+        }
+    }
+
+    openEditUserModal(user: Partial<User>) {
+        this.clearAddAccountData();
+        this.store.setActiveEntity(user);
+        this.editUserModal.open();
+    }
+
+    saveUser() {
+        this.store.saveActiveEntity().then(() => {
+            this.editUserModal.close();
+            this.store.loadEntities(
+                this.paginationOptions.page,
+                this.paginationOptions.pageSize,
+                this.keyword
+            );
+        });
+    }
+
+    addAccountById($event: string) {
+        this.store.addActiveEntityAccount(
+            this.store.state.accounts.find(account => account.id === $event)
+        );
+        this.clearAddAccountData();
+    }
+
+    updateAvailableAccounts(entityAccounts: Account[]) {
+        this.availableAccounts = this.store.state.accounts.filter(
+            account => !entityAccounts.includes(account)
+        );
+    }
+
+    private clearAddAccountData() {
+        this.addAccountId = undefined;
+        this.isAddAccountVisible = false;
     }
 
     private updateInternalState(queryParams: any) {
@@ -96,10 +171,6 @@ export class UsersView implements OnInit, OnDestroy {
             ...this.paginationOptions,
             ...this.getPreselectedPagination(),
         };
-
-        if (isDefined(this.gridApi)) {
-            this.gridApi.showLoadingOverlay();
-        }
 
         if (
             agencyId !== this.store.state.agencyId ||
@@ -132,5 +203,25 @@ export class UsersView implements OnInit, OnDestroy {
             }
         });
         return pagination;
+    }
+
+    private subscribeToStoreStateUpdates() {
+        merge(this.createActiveEntityErrorUpdater$())
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe();
+    }
+
+    private createActiveEntityErrorUpdater$(): Observable<any> {
+        return this.store.state$.pipe(
+            map(state => state.activeEntity.fieldsErrors),
+            distinctUntilChanged(),
+            tap(fieldsErrors => {
+                this.canSaveActiveEntity = Object.values(
+                    fieldsErrors
+                ).every((fieldValue: FieldErrors) =>
+                    arrayHelpers.isEmpty(fieldValue)
+                );
+            })
+        );
     }
 }

@@ -155,4 +155,153 @@ describe('zemPermissions', function() {
             expect(zemPermissions.hasAgencyScope(5)).toBe(true);
         });
     });
+
+    describe('canEditUsersOnAgency:', function() {
+        it("should return false if the calling user is an internal user without 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'read',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(false);
+        });
+
+        it("should return true if the calling user is an internal user with 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(true);
+        });
+
+        it("should return false if the calling user is an agency manager without 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: '9',
+                    accountId: null,
+                    permission: 'read',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(false);
+        });
+
+        it("should return true if the calling user is an agency manager with 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: '9',
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: '9',
+                    accountId: null,
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(true);
+        });
+
+        it("should return false if the calling user is an agency manager with 'user' permission on the wrong agency", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: '8',
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: '8',
+                    accountId: null,
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(false);
+        });
+
+        it('should return false if the calling user is an account manager', function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: '8',
+                    permission: 'read',
+                },
+                {
+                    agencyId: null,
+                    accountId: '8',
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAgency('9')).toBe(false);
+        });
+    });
+
+    describe('canEditUsersOnAllAccounts:', function() {
+        it("should return false if the calling user is an internal user without 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'read',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAllAccounts()).toBe(false);
+        });
+
+        it("should return true if the calling user is an internal user with 'user' permission", function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: null,
+                    accountId: null,
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAllAccounts()).toBe(true);
+        });
+
+        it('should return false if the calling user is an agency manager', function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: '8',
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: '8',
+                    accountId: null,
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAllAccounts()).toBe(false);
+        });
+
+        it('should return false if the calling user is an account manager', function() {
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: null,
+                    accountId: '8',
+                    permission: 'read',
+                },
+                {
+                    agencyId: null,
+                    accountId: '8',
+                    permission: 'user',
+                },
+            ];
+            expect(zemPermissions.canEditUsersOnAllAccounts()).toBe(false);
+        });
+    });
 });

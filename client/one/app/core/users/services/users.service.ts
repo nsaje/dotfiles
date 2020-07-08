@@ -30,36 +30,71 @@ export class UsersService {
 
     create(
         users: User[],
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User[]> {
-        return this.endpoint.create(users, requestStateUpdater);
+        return this.endpoint.create(
+            users,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
     }
 
     edit(
         user: Partial<User>,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User> {
-        return this.endpoint.edit(user, requestStateUpdater);
+        return this.endpoint.edit(
+            user,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
     }
 
     validate(
         user: Partial<User>,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
-        return this.endpoint.validate(user, requestStateUpdater);
+        return this.endpoint.validate(
+            user,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
     }
 
     get(
         userId: string,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<User> {
-        return this.endpoint.get(userId, requestStateUpdater);
+        return this.endpoint.get(
+            userId,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
     }
 
     remove(
         userId: string,
+        agencyId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
-        return this.endpoint.remove(userId, requestStateUpdater);
+        return this.endpoint.remove(
+            userId,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
     }
 }

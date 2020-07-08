@@ -42,16 +42,16 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
 
     def _expected_permission_response(self, permission):
         if permission.agency_id is not None:
-            return {"agencyId": str(permission.agency_id), "accountId": "", "permission": str(permission.permission)}
+            return {"agencyId": str(permission.agency_id), "accountId": None, "permission": str(permission.permission)}
         elif permission.account_id is not None:
             return {
-                "agencyId": "",
+                "agencyId": None,
                 "accountId": str(permission.account_id),
                 "accountName": str(permission.account.name),
                 "permission": str(permission.permission),
             }
         else:
-            return {"agencyId": "", "accountId": "", "permission": str(permission.permission)}
+            return {"agencyId": None, "accountId": None, "permission": str(permission.permission)}
 
     def _find_by_id(self, id, data):
         return list(filter(lambda x: str(x["id"]) == str(id), data))[0]
@@ -202,9 +202,9 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
     def _call_put(self, requested_user, put_data, agency, account=None):
         query_params = {}
         if agency is not None:
-            query_params["agency_id"] = agency.id
+            query_params["agencyId"] = agency.id
         if account is not None:
-            query_params["account_id"] = account.id
+            query_params["accountId"] = account.id
 
         url = u"%s?%s" % (
             reverse("restapi.user.internal:user_details", kwargs={"user_id": requested_user.id}),
@@ -235,9 +235,9 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
     def _call_create(self, post_data, agency, account=None):
         query_params = {}
         if agency is not None:
-            query_params["agency_id"] = agency.id
+            query_params["agencyId"] = agency.id
         if account is not None:
-            query_params["account_id"] = account.id
+            query_params["accountId"] = account.id
 
         url = u"%s?%s" % (reverse("restapi.user.internal:user_list"), urlencode(query_params))
 
@@ -366,8 +366,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self.assertEqual(r.status_code, 200)
-        resp_json = self.assertResponseValid(r)
+        resp_json = self.assertResponseValid(r, status_code=201)
 
         self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
         self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
@@ -376,8 +375,8 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         self.assertCountEqual(
             resp_json["data"]["users"][0]["entityPermissions"],
             [
-                {"agencyId": str(agency.id), "accountId": "", "permission": Permission.READ},
-                {"agencyId": str(agency.id), "accountId": "", "permission": Permission.BUDGET},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET},
             ],
         )
 
@@ -399,8 +398,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self.assertEqual(r.status_code, 200)
-        resp_json = self.assertResponseValid(r)
+        resp_json = self.assertResponseValid(r, status_code=201)
 
         self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
         self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
@@ -410,13 +408,13 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             resp_json["data"]["users"][0]["entityPermissions"],
             [
                 {
-                    "agencyId": "",
+                    "agencyId": None,
                     "accountId": str(account.id),
                     "accountName": str(account.name),
                     "permission": Permission.READ,
                 },
                 {
-                    "agencyId": "",
+                    "agencyId": None,
                     "accountId": str(account.id),
                     "accountName": str(account.name),
                     "permission": Permission.USER,
@@ -512,8 +510,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self.assertEqual(r.status_code, 200)
-        resp_json = self.assertResponseValid(r)
+        resp_json = self.assertResponseValid(r, status_code=201)
 
         self.assertEqual(resp_json["data"]["users"][0]["email"], existing_user.email)
         self.assertEqual(resp_json["data"]["users"][0]["firstName"], existing_user.first_name)
@@ -521,7 +518,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self.assertCountEqual(
             resp_json["data"]["users"][0]["entityPermissions"],
-            [{"agencyId": str(agency.id), "accountId": "", "permission": Permission.READ}],
+            [{"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ}],
         )
 
     def test_create_no_agency(self):
@@ -542,14 +539,13 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self.assertEqual(r.status_code, 200)
-        resp_json = self.assertResponseValid(r)
+        resp_json = self.assertResponseValid(r, status_code=201)
 
         self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
 
         self.assertCountEqual(
             resp_json["data"]["users"][0]["entityPermissions"],
-            [{"agencyId": "", "accountId": "", "permission": Permission.READ}],
+            [{"agencyId": None, "accountId": None, "permission": Permission.READ}],
         )
 
     def test_create_wrong_agency(self):
@@ -561,7 +557,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        self._assert_validation_error(r, "Incorrect agency ID")
+        self._assert_validation_error(r, "Incorrect agency ID in permission")
 
     def test_create_wrong_account(self):
         calling_user: zemauth.models.User = self.user
@@ -573,6 +569,27 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         r = self._call_create(post_data, agency)
 
         self._assert_validation_error(r, "Account does not belong to the correct agency")
+
+    def test_create_multiple(self):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        post_data = {
+            "users": [
+                {
+                    "email": "new.user@outbrain.com",
+                    "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
+                },
+                {
+                    "email": "new.user2@outbrain.com",
+                    "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
+                },
+            ]
+        }
+
+        r = self._call_create(post_data, agency)
+
+        self.assertResponseValid(r, status_code=201)
 
     def _prepare_request(self, email, agency_id, account_id, permission):
         ep = {"permission": permission}

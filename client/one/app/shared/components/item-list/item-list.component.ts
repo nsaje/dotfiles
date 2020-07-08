@@ -24,6 +24,8 @@ export class ItemListComponent<T> {
     multiple: boolean = false;
     @Input()
     canSelectNone: boolean = false;
+    @Input()
+    isDisabled: boolean = false;
 
     @Output()
     selectedItemsChange: EventEmitter<T[]> = new EventEmitter<T[]>();

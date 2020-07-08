@@ -82,7 +82,7 @@ class UserViewSet(RESTAPIBaseViewSet):
         except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
             raise ValidationError(str(err))
 
-        return self.response_ok(serializers.CreateUserSerializer({"users": created_users}).data)
+        return self.response_ok(serializers.CreateUserSerializer({"users": created_users}).data, status=201)
 
     def get(self, request, user_id):
         account, agency, show_internal, keyword, calling_user = self._get_request_params(request)

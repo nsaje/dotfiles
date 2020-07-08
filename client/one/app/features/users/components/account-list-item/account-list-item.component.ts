@@ -5,6 +5,7 @@ import {
     ChangeDetectionStrategy,
     OnChanges,
 } from '@angular/core';
+import {Account} from '../../../../core/entities/types/account/account';
 
 @Component({
     selector: 'zem-account-list-item',
