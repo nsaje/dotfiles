@@ -49,6 +49,7 @@ export class UsersView implements OnInit, OnDestroy {
     context: any;
 
     keyword: string;
+    showInternal: boolean = false;
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
     canSaveActiveEntity: boolean = false;
 
@@ -106,7 +107,16 @@ export class UsersView implements OnInit, OnDestroy {
     searchUsers(keyword: string) {
         this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: {keyword: keyword},
+            queryParams: {keyword},
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
+    }
+
+    changeShowInternal(showInternal: boolean) {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {showInternal},
             queryParamsHandling: 'merge',
             replaceUrl: true,
         });
@@ -167,6 +177,7 @@ export class UsersView implements OnInit, OnDestroy {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;
         this.keyword = queryParams.keyword || null;
+        this.showInternal = queryParams?.showInternal === 'true' || null;
         this.paginationOptions = {
             ...this.paginationOptions,
             ...this.getPreselectedPagination(),
@@ -181,13 +192,15 @@ export class UsersView implements OnInit, OnDestroy {
                 accountId,
                 this.paginationOptions.page,
                 this.paginationOptions.pageSize,
-                this.keyword
+                this.keyword,
+                this.showInternal
             );
         } else {
             this.store.loadEntities(
                 this.paginationOptions.page,
                 this.paginationOptions.pageSize,
-                this.keyword
+                this.keyword,
+                this.showInternal
             );
         }
     }

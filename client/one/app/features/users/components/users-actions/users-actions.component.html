@@ -9,6 +9,14 @@
         (valueChange)="onSearchChange($event)"
     ></zem-text-input>
 </div>
+<zem-checkbox-input
+    *ngIf="isShowInternalVisible"
+    class="zem-checkbox-input zem-users-actions__show_internal"
+    [isChecked]="showInternal"
+    (toggle)="showInternalChange.emit($event)"
+>
+    Show internal users
+</zem-checkbox-input>
 <div class="zem-users-actions__buttons">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-users-actions__button"

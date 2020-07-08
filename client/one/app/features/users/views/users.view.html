@@ -5,9 +5,12 @@
         <zem-users-actions
             class="zem-users-actions zem-users-view__item"
             [value]="keyword"
+            [isShowInternalVisible]="state.hasAllAccountsScope"
+            [showInternal]="showInternal"
             [isDisabled]="!state.agencyId"
             (search)="searchUsers($event)"
             (userCreate)="openEditUserModal({})"
+            (showInternalChange)="changeShowInternal($event)"
         >
         </zem-users-actions>
         <zem-users-grid

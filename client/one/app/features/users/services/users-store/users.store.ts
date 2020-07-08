@@ -51,11 +51,19 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         accountId: string | null,
         page: number,
         pageSize: number,
-        keyword: string | null
+        keyword: string | null,
+        showInternal: boolean | null
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
             Promise.all([
-                this.loadUsers(agencyId, accountId, page, pageSize, keyword),
+                this.loadUsers(
+                    agencyId,
+                    accountId,
+                    page,
+                    pageSize,
+                    keyword,
+                    showInternal
+                ),
                 this.loadAccounts(agencyId),
             ])
                 .then((values: [User[], Account[]]) => {
@@ -79,7 +87,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     loadEntities(
         page: number,
         pageSize: number,
-        keyword: string | null = null
+        keyword: string | null = null,
+        showInternal: boolean | null = null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadUsers(
@@ -87,7 +96,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 this.state.accountId,
                 page,
                 pageSize,
-                keyword
+                keyword,
+                showInternal
             ).then(
                 (users: User[]) => {
                     this.patchState(users, 'entities');
@@ -422,7 +432,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         accountId: string | null,
         page: number,
         pageSize: number,
-        keyword: string | null = null
+        keyword: string | null = null,
+        showInternal: boolean | null = null
     ): Promise<User[]> {
         return new Promise<User[]>((resolve, reject) => {
             const offset = this.getOffset(page, pageSize);
@@ -433,7 +444,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                     offset,
                     pageSize,
                     keyword,
-                    null,
+                    showInternal,
                     this.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

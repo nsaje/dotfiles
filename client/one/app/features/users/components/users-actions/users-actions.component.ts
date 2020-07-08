@@ -22,11 +22,17 @@ export class UsersActionsComponent implements OnInit, OnDestroy {
     @Input()
     value: string;
     @Input()
+    isShowInternalVisible: boolean;
+    @Input()
+    showInternal: boolean;
+    @Input()
     isDisabled: boolean = false;
     @Output()
-    search = new EventEmitter<string>();
+    search: EventEmitter<string> = new EventEmitter<string>();
     @Output()
     userCreate = new EventEmitter<void>();
+    @Output()
+    showInternalChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private searchDebouncer$: Subject<string> = new Subject<string>();

@@ -31,7 +31,7 @@ export class UsersEndpoint {
             ...(isDefined(accountId) && {accountId}),
             ...(isDefined(keyword) && {keyword}),
             ...(isDefined(showInternal) && {
-                agencyOnly: `${showInternal}`,
+                showInternal: `${showInternal}`,
             }),
         };
 
