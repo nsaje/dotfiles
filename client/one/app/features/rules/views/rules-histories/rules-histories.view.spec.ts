@@ -12,6 +12,9 @@ import {ActivatedRoute} from '@angular/router';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
+import {RulesHistoriesFiltersComponent} from '../../components/rules-histories-filters/rules-histories-filters.component';
+import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
+import {AdGroupEndpoint} from '../../../../core/entities/services/ad-group/ad-group.endpoint';
 
 describe('RulesView', () => {
     let component: RulesHistoriesView;
@@ -26,7 +29,11 @@ describe('RulesView', () => {
         };
 
         TestBed.configureTestingModule({
-            declarations: [RulesHistoriesView, RulesHistoriesGridComponent],
+            declarations: [
+                RulesHistoriesView,
+                RulesHistoriesGridComponent,
+                RulesHistoriesFiltersComponent,
+            ],
             imports: [
                 FormsModule,
                 SharedModule,
@@ -36,6 +43,8 @@ describe('RulesView', () => {
                 RulesHistoriesStore,
                 RulesService,
                 RulesEndpoint,
+                AdGroupService,
+                AdGroupEndpoint,
                 {
                     provide: 'zemPermissions',
                     useValue: zemPermissionsStub,

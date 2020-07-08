@@ -1,11 +1,21 @@
-<h1 class="zem-main-container__view-title">Rules History</h1>
+<h1 class="zem-main-container__view-title">Automation Rules History</h1>
 
 <ng-container *ngIf="store.state$ | async as state">
     <div
         class="zem-panel zem-panel--with-padding zem-rules-histories-view__panel"
     >
+        <zem-rules-histories-filters
+            class="zem-rules-histories-filters zem-rules-histories-view__item"
+            [selectedFilters]="filters"
+            [rules]="store.state.rules"
+            [adGroups]="store.state.adGroups"
+            (searchRules)="store.searchRules($event)"
+            (searchAdGroups)="store.searchAdGroups($event)"
+            (filtersChange)="onFiltersChange($event)"
+        >
+        </zem-rules-histories-filters>
         <zem-rules-histories-grid
-            class="zem-rules-histories-grid"
+            class="zem-rules-histories-grid  zem-rules-histories-view__item"
             [rulesHistories]="state.entities"
             [context]="context"
             [isLoading]="state.requests.listHistories.inProgress"

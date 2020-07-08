@@ -8,6 +8,10 @@ const agencyApiUrl = `${APP_CONFIG.apiRestInternalUrl}/agencies`;
 export const ENTITY_CONFIG = {
     requests: {
         adGroup: {
+            list: {
+                name: 'list',
+                url: `${adGroupApiUrl}/`,
+            },
             get: {
                 name: 'get',
                 url: `${adGroupApiUrl}/`,

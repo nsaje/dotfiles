@@ -20,8 +20,11 @@ import {
     DEFAULT_PAGINATION,
     DEFAULT_PAGINATION_OPTIONS,
 } from '../../rules.config';
-import {RuleHistory} from '../../../../core/rules/types/rule-history';
-import {RuleHistoryStatus} from '../../../../core/rules/rules.constants';
+import {RuleHistoryFilterState} from '../../types/rule-history-filter-state';
+import {
+    convertStringToDate,
+    convertDateToString,
+} from '../../../../shared/helpers/date.helpers';
 
 @Component({
     selector: 'zem-rules-histories-view',
@@ -34,6 +37,13 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
     cssClass = 'zem-rules-histories-view';
 
     context: any;
+
+    filters: RuleHistoryFilterState = {
+        ruleId: null,
+        adGroupId: null,
+        startDate: null,
+        endDate: null,
+    };
 
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
 
@@ -72,24 +82,55 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
         });
     }
 
+    onFiltersChange($event: RuleHistoryFilterState) {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                ...$event,
+                startDate: convertDateToString($event.startDate),
+                endDate: convertDateToString($event.endDate),
+            },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
+    }
+
     private updateInternalState(queryParams: any) {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;
-
+        this.filters = {
+            ruleId: queryParams.ruleId || null,
+            adGroupId: queryParams.adGroupId || null,
+            startDate: convertStringToDate(queryParams.startDate) || null,
+            endDate: convertStringToDate(queryParams.endDate) || null,
+        };
         this.paginationOptions = {
             ...this.paginationOptions,
             ...this.getPreselectedPagination(),
         };
 
-        this.store.setStore(
-            agencyId,
-            accountId,
-            this.paginationOptions,
-            null,
-            null,
-            null,
-            null
-        );
+        if (
+            agencyId !== this.store.state.agencyId ||
+            accountId !== this.store.state.accountId
+        ) {
+            this.store.setStore(
+                agencyId,
+                accountId,
+                this.paginationOptions,
+                this.filters.ruleId,
+                this.filters.adGroupId,
+                this.filters.startDate,
+                this.filters.endDate
+            );
+        } else {
+            this.store.loadEntities(
+                this.paginationOptions,
+                this.filters.ruleId,
+                this.filters.adGroupId,
+                this.filters.startDate,
+                this.filters.endDate
+            );
+        }
     }
 
     private getPreselectedPagination(): {page: number; pageSize: number} {

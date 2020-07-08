@@ -7,7 +7,7 @@ export const RULES_CONFIG = {
         rules: {
             get: {
                 name: 'get',
-                url: `${rulesApiUrl}/{ruleId}/`,
+                url: `${rulesApiUrl}/{ruleId}`,
             },
             list: {
                 name: 'list',
@@ -19,7 +19,7 @@ export const RULES_CONFIG = {
             },
             edit: {
                 name: 'edit',
-                url: `${rulesApiUrl}/{ruleId}/`,
+                url: `${rulesApiUrl}/{ruleId}`,
             },
             listHistories: {
                 name: 'listHistories',

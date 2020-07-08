@@ -8,10 +8,60 @@ import {AdGroupWithExtras} from '../../types/ad-group/ad-group-with-extras';
 import {AdGroup} from '../../types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {AdGroupExtras} from '../../types/ad-group/ad-group-extras';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AdGroupEndpoint {
     constructor(private http: HttpClient) {}
+
+    list(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<AdGroup[]> {
+        const request = ENTITY_CONFIG.requests.adGroup.list;
+
+        const params = {
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(limit) && {
+                limit: `${limit}`,
+            }),
+            ...(commonHelpers.isDefined(offset) && {
+                offset: `${offset}`,
+            }),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<AdGroup[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
 
     defaults(
         campaignId: string,

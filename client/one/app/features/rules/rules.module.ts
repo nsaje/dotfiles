@@ -12,6 +12,7 @@ import {RulesHistoriesView} from './views/rules-histories/rules-histories.view';
 import {RulesView} from './views/rules/rules.view';
 import {RulesGridComponent} from './components/rules-grid/rules-grid.component';
 import {RulesActionsComponent} from './components/rules-actions/rules-actions.component';
+import {RulesHistoriesFiltersComponent} from './components/rules-histories-filters/rules-histories-filters.component';
 
 @NgModule({
     declarations: [
@@ -24,6 +25,7 @@ import {RulesActionsComponent} from './components/rules-actions/rules-actions.co
         RuleEditFormConditionComponent,
         RuleEditFormConditionModifierComponent,
         RulesHistoriesGridComponent,
+        RulesHistoriesFiltersComponent,
         RulesHistoriesView,
         RulesActionsComponent,
     ],

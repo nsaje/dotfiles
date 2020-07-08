@@ -7,3 +7,29 @@
 .zem-rules-histories-view__panel {
     margin-top: 22.5px;
 }
+
+.zem-rules-histories-view__item {
+    margin-bottom: @spacing--default;
+}
+
+.zem-rules-histories-view {
+    @media only screen and (min-width: 768px) {
+        .zem-rules-histories-filters {
+            display: flex;
+        }
+
+        .zem-rules-histories-filters__item {
+            margin-right: @spacing--default;
+            margin-bottom: 0;
+        }
+
+        .zem-rules-histories-filters__item:last-child {
+            margin-right: 0;
+        }
+
+        .zem-rules-histories-filters__select-input {
+            width: 20%;
+            min-width: 100px;
+        }
+    }
+}

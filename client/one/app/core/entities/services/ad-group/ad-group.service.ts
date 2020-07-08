@@ -16,6 +16,24 @@ export class AdGroupService {
         private entitiesUpdatesService: EntitiesUpdatesService
     ) {}
 
+    list(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<AdGroup[]> {
+        return this.endpoint.list(
+            agencyId,
+            accountId,
+            offset,
+            limit,
+            keyword,
+            requestStateUpdater
+        );
+    }
+
     defaults(
         campaignId: string,
         requestStateUpdater: RequestStateUpdater

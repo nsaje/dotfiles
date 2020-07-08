@@ -1,0 +1,35 @@
+<zem-select-input
+    class="zem-select-input zem-rules-histories-filters__item zem-rules-histories-filters__select-input"
+    placeholder="Filter by rule"
+    [items]="rules"
+    [bindLabel]="'name'"
+    [bindValue]="'id'"
+    [isSearchable]="true"
+    [value]="selectedFilters.ruleId"
+    (search)="searchRules.emit($event)"
+    (valueChange)="onRuleIdChange($event)"
+>
+</zem-select-input>
+<zem-select-input
+    class="zem-select-input zem-rules-histories-filters__item zem-rules-histories-filters__select-input"
+    placeholder="Filter by ad group"
+    [items]="adGroups"
+    [bindLabel]="'name'"
+    [bindValue]="'id'"
+    [isSearchable]="true"
+    [value]="selectedFilters.adGroupId"
+    (search)="searchAdGroups.emit($event)"
+    (valueChange)="onAdGroupIdChange($event)"
+>
+</zem-select-input>
+<zem-date-input
+    class="zem-date-input zem-rules-histories-filters__item"
+    [value]="selectedFilters.startDate"
+    (valueChange)="onStartDateChange($event)"
+></zem-date-input>
+<zem-date-input
+    class="zem-date-input zem-rules-histories-filters__item"
+    [value]="selectedFilters.endDate"
+    [minDate]="selectedFilters.startDate"
+    (valueChange)="onEndDateChange($event)"
+></zem-date-input>

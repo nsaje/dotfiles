@@ -22,6 +22,7 @@ describe('AdGroupService', () => {
 
     beforeEach(() => {
         adGroupEndpointStub = jasmine.createSpyObj(AdGroupEndpoint.name, [
+            'list',
             'defaults',
             'get',
             'validate',
@@ -74,6 +75,40 @@ describe('AdGroupService', () => {
         expect(adGroupEndpointStub.defaults).toHaveBeenCalledTimes(1);
         expect(adGroupEndpointStub.defaults).toHaveBeenCalledWith(
             mockedAdGroup.campaignId,
+            requestStateUpdater
+        );
+    });
+
+    it('should list ad groups via endpoint', () => {
+        const mockedAgencyId = '114';
+        const mockedAccountId = '92';
+        const mockedOffset = 0;
+        const mockedLimit = 20;
+        const mockedKeyword = 'keyword';
+
+        adGroupEndpointStub.list.and
+            .returnValue(of([mockedAdGroup], asapScheduler))
+            .calls.reset();
+
+        service
+            .list(
+                mockedAgencyId,
+                mockedAccountId,
+                mockedOffset,
+                mockedLimit,
+                mockedKeyword,
+                requestStateUpdater
+            )
+            .subscribe(adGroups => {
+                expect(adGroups).toEqual([mockedAdGroup]);
+            });
+        expect(adGroupEndpointStub.list).toHaveBeenCalledTimes(1);
+        expect(adGroupEndpointStub.list).toHaveBeenCalledWith(
+            mockedAgencyId,
+            mockedAccountId,
+            mockedOffset,
+            mockedLimit,
+            mockedKeyword,
             requestStateUpdater
         );
     });
