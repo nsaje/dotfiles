@@ -126,6 +126,6 @@ Fabric==2.4.0
 haikunator==2.1.0
 
 # devx
-ipython==7.0.1
-ipdb==0.12
+ipython==7.16.1
+ipdb==0.13.3
 yappi==1.0
