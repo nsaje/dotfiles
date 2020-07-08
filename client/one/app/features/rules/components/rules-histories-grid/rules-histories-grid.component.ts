@@ -15,6 +15,7 @@ import {
     COLUMN_RULE_NAME,
     COLUMN_AD_GROUP_NAME,
     COLUMN_CHANGES_FORMATTED,
+    COLUMN_CHANGES_FORMATTED_PREVIEW,
 } from './rules-histories-grid.component.config';
 import {RuleHistory} from '../../../../core/rules/types/rule-history';
 
@@ -43,6 +44,7 @@ export class RulesHistoriesGridComponent implements OnChanges {
         COLUMN_DATE_CREATE,
         COLUMN_RULE_NAME,
         COLUMN_AD_GROUP_NAME,
+        COLUMN_CHANGES_FORMATTED_PREVIEW,
         COLUMN_CHANGES_FORMATTED,
     ];
 
