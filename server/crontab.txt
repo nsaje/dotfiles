@@ -70,6 +70,6 @@
 50 3,4 * * *     /home/ubuntu/docker-manage-py.sh campaignstop_midnight_refresh --check-time
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
 30 6,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report
-0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
+#0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
 30 22 * * *      /home/ubuntu/docker-manage-py.sh clean_up_old_history_stacktraces
 30 20 * * *      /home/ubuntu/docker-manage-py.sh clean_up_old_celery_results
