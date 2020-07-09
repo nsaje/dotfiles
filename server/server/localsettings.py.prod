@@ -23,7 +23,7 @@ SECRET_KEY = (
 APT_MODE = False
 
 # Entities databases
-DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
+DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2", "read-replica-3"]
 
 # Stats databases
 STATS_DB_POSTGRES_MAX_DAYS = 62
