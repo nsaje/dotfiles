@@ -53,7 +53,7 @@ def _update_exchange_rate(currency, rate):
 
 def _update_accounts(currency):
     currency_accounts = core.models.Account.objects.filter(currency=currency)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
         executor.map(_update_account, currency_accounts.all())
 
 
