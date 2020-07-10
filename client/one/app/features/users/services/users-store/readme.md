@@ -119,6 +119,7 @@ The function's logic is as follows:
     - Then remove any accounts from the selection, which are not also a part of the `entityAccounts` array (A use case for this is when we remove a selected account from the list, we do not want it to be selected anymore)
   - After this, if the list of `selectedAccounts` is still empty (Either `initialize` is `true` or the above logic didn't return any accounts), use the default value for `selectedAccounts`, which is determined by the function `getDefaultSelectedAccounts` like this:
     - If the selected `scopeState` is not `ACCOUNT_SCOPE`, OR if the list of `entityAccounts` is empty, return an empty list
+    - Else if the user has the same permissions on all accounts, select all accounts in the list of `entityAccounts`
     - Else if an account is selected in the Management console sidebar and the current user has `user` permission on this account, select this account
     - Else select the first account in the list of `entityAccounts`
 
@@ -179,9 +180,12 @@ Then we use these `entityPermissions` to call `recalculateActiveEntityState`, wh
 Just call the `recalculateActiveEntityState` function without any user changes, but the `proposedSelectedAccounts` parameter set to the accounts we wish to select.
 
 ## Add an account (addActiveEntityAccount)
-If the account already exists in `entityPermissions`, return immediately.
+- If the account already exists in `entityPermissions`, return immediately.
+- Otherwise, if any accounts are selected, copy the current's selection's permissions and add them with this account's `accountId`.
+- Otherwise add a `read` permission for this account's `accountId` to the list of `entityPermissions`.
 
-Otherwise add a `read` permission for this account's `accountId` to the list of `entityPermissions` and call `recalculateActiveEntityState`.
+Prepare the `proposedSelectedAccounts` parameter so that the newly added account gets added to the current selection.
+Then call `recalculateActiveEntityState` with these `entityPermissions` and `proposedSelectedAccounts`.
 
 ## Remove account(s) (removeActiveEntityAccounts)
 Remove all `entityPermissions` which contain an `accountId` of any account that we wish to remove and call `recalculateActiveEntityState`.

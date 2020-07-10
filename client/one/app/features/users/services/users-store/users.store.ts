@@ -15,7 +15,13 @@ import {Account} from '../../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {isDefined, isNotEmpty} from '../../../../shared/helpers/common.helpers';
 import {EntityPermission} from '../../../../core/users/types/entity-permission';
-import {distinct, isEmpty} from '../../../../shared/helpers/array.helpers';
+import {
+    arraysContainSameElements,
+    distinct,
+    intersect,
+    isEmpty,
+    groupArray,
+} from '../../../../shared/helpers/array.helpers';
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
 import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {CONFIGURABLE_PERMISSIONS} from '../../users.config';
@@ -194,16 +200,38 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
             return; // Account has already been added
         }
 
-        const entityPermissions: EntityPermission[] = this.state.activeEntity.entity.entityPermissions.concat(
-            [
+        let newEntityPermissions: EntityPermission[];
+
+        if (isNotEmpty(this.state.activeEntity.selectedAccounts)) {
+            // If any accounts are selected, copy currently selected permissions to the new account
+            const currentlySelectedPermissions: EntityPermissionSelection = this.calculateSelectedEntityPermissions(
+                this.state.activeEntity.entity,
+                this.state.activeEntity.selectedAccounts
+            );
+            newEntityPermissions = Object.keys(currentlySelectedPermissions)
+                .filter(permission => currentlySelectedPermissions[permission])
+                .map(permission => ({
+                    accountId: account.id,
+                    permission: <EntityPermissionValue>permission,
+                }));
+        } else {
+            // Otherwise just add a read permission
+            newEntityPermissions = [
                 {
                     accountId: account.id,
                     permission: 'read',
                 },
-            ]
+            ];
+        }
+
+        const entityPermissions: EntityPermission[] = this.state.activeEntity.entity.entityPermissions.concat(
+            newEntityPermissions
         );
 
-        this.recalculateActiveEntityState({entityPermissions}, [account]);
+        this.recalculateActiveEntityState(
+            {entityPermissions},
+            this.state.activeEntity.selectedAccounts.concat(account)
+        );
         this.validateActiveEntity();
     }
 
@@ -603,6 +631,10 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         ) {
             return [];
         } else if (
+            this.userHasSamePermissionsOnAllAccounts(activeEntity.entity)
+        ) {
+            return [...activeEntity.entityAccounts];
+        } else if (
             this.userHasPermissionsOnCurrentAccount(activeEntity.entity)
         ) {
             const currentAccount: Account = activeEntity.entityAccounts.find(
@@ -616,13 +648,43 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }
     }
 
-    private userHasPermissionsOnCurrentAccount(user: User) {
+    private userHasPermissionsOnCurrentAccount(user: User): boolean {
         return (
             isDefined(this.state.accountId) &&
             user.entityPermissions.some(
                 ep => ep.accountId === this.state.accountId
             )
         );
+    }
+
+    private userHasSamePermissionsOnAllAccounts(user: User): boolean {
+        if (!this.isAccountManager(user)) {
+            return false;
+        }
+        const permissionsByAccount: EntityPermission[][] = groupArray(
+            user.entityPermissions,
+            ep => ep.accountId
+        );
+
+        return permissionsByAccount
+            .slice(1)
+            .every(eps =>
+                this.arePermissionsTheSame(permissionsByAccount[0], eps)
+            );
+    }
+
+    private arePermissionsTheSame(
+        epsA: EntityPermission[],
+        epsB: EntityPermission[]
+    ): boolean {
+        const permissionValuesA: EntityPermissionValue[] = (epsA || []).map(
+            ep => ep.permission
+        );
+        const permissionValuesB: EntityPermissionValue[] = (epsB || []).map(
+            ep => ep.permission
+        );
+
+        return arraysContainSameElements(permissionValuesA, permissionValuesB);
     }
 
     private calculateSelectedEntityPermissions(

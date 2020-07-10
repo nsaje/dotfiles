@@ -476,6 +476,16 @@ describe('UsersStore', () => {
 
         store.setActiveEntity(mockedAccountUser);
         store.addActiveEntityAccount(mockedAccounts[2]);
+
+        store.updateSelectedEntityPermissions({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: false,
+            media_cost_data_cost_licence_fee: false,
+        });
+
         store.setSelectedAccounts([mockedAccounts[0]]);
 
         expect(store.state.activeEntity.selectedAccounts).toEqual([
@@ -532,7 +542,7 @@ describe('UsersStore', () => {
         ]);
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
             read: true,
-            write: undefined,
+            write: true,
             user: undefined,
             budget: undefined,
             agency_spend_margin: false,
@@ -768,6 +778,11 @@ describe('UsersStore', () => {
         store.setState(mockedInitialState);
 
         store.setActiveEntity(mockedAccountUser);
+
+        expect(store.state.activeEntity.selectedAccounts).toEqual([
+            mockedAccounts[0],
+        ]);
+
         store.addActiveEntityAccount(mockedAccounts[2]);
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
@@ -799,6 +814,14 @@ describe('UsersStore', () => {
                 accountId: aThirdMockedAccountId,
                 permission: 'read',
             },
+            {
+                accountId: aThirdMockedAccountId,
+                permission: 'write',
+            },
+            {
+                accountId: aThirdMockedAccountId,
+                permission: 'user',
+            },
         ]);
 
         expect(store.state.activeEntity.entityAccounts).toEqual([
@@ -808,13 +831,14 @@ describe('UsersStore', () => {
         ]);
 
         expect(store.state.activeEntity.selectedAccounts).toEqual([
+            mockedAccounts[0],
             mockedAccounts[2],
         ]);
 
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
             read: true,
-            write: false,
-            user: false,
+            write: true,
+            user: true,
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
@@ -1010,5 +1034,46 @@ describe('UsersStore', () => {
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
+    }));
+
+    it('should select all accounts when loading a user who has the same permissions on all accounts', fakeAsync(() => {
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccountId,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccountId,
+                    permission: 'write',
+                },
+                {
+                    accountId: mockedAccountId,
+                    permission: 'user',
+                },
+                {
+                    accountId: anotherMockedAccountId,
+                    permission: 'read',
+                },
+                {
+                    accountId: anotherMockedAccountId,
+                    permission: 'write',
+                },
+                {
+                    accountId: anotherMockedAccountId,
+                    permission: 'user',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        expect(store.state.activeEntity.selectedAccounts).toEqual([
+            mockedAccounts[0],
+            mockedAccounts[1],
+        ]);
     }));
 });
