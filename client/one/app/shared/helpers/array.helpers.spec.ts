@@ -89,4 +89,66 @@ describe('ArrayHelpers', () => {
             'c',
         ]);
     });
+
+    it('should split an array of objects based on some property', () => {
+        const objects: {id: number; value: string}[] = [
+            {id: 1, value: 'one'},
+            {id: 2, value: 'prime'},
+            {id: 3, value: 'prime'},
+            {id: 4, value: 'even'},
+            {id: 5, value: 'prime'},
+            {id: 6, value: 'even'},
+            {id: 7, value: 'prime'},
+            {id: 8, value: 'even'},
+            {id: 9, value: 'odd'},
+        ];
+
+        expect(arrayHelpers.groupArray([], x => x.value)).toEqual([]);
+        expect(arrayHelpers.groupArray(objects, x => x.value)).toEqual([
+            [{id: 1, value: 'one'}],
+            [
+                {id: 2, value: 'prime'},
+                {id: 3, value: 'prime'},
+                {id: 5, value: 'prime'},
+                {id: 7, value: 'prime'},
+            ],
+            [
+                {id: 4, value: 'even'},
+                {id: 6, value: 'even'},
+                {id: 8, value: 'even'},
+            ],
+            [{id: 9, value: 'odd'}],
+        ]);
+    });
+
+    it('should check if two arrays contain the same elements, regardless of ordering', () => {
+        const a = 1;
+        const b = 'b';
+        const c = {what: 'ever'};
+
+        const array1 = [a, b, c];
+        const array2 = [b, c, a];
+
+        expect(
+            arrayHelpers.arraysContainSameElements(array1, array2)
+        ).toBeTrue();
+        expect(
+            arrayHelpers.arraysContainSameElements([1, 2, 3], [3, 1, 2])
+        ).toBeTrue();
+        expect(
+            arrayHelpers.arraysContainSameElements(
+                ['three', 'one', 'two'],
+                ['one', 'two', 'three']
+            )
+        ).toBeTrue();
+        expect(
+            arrayHelpers.arraysContainSameElements([1, 2, 3, 4], [3, 4, 5, 6])
+        ).toBeFalse();
+        expect(
+            arrayHelpers.arraysContainSameElements(
+                ['one', 'two'],
+                ['two', 'three']
+            )
+        ).toBeFalse();
+    });
 });

@@ -36,3 +36,18 @@ export function distinct<T>(values: T[]): T[] {
 export function isEqual(array1: any[], array2: any[]): boolean {
     return deepEqual(array1, array2);
 }
+
+export function groupArray<T, S>(array: T[], keyGetter: (item: T) => S): T[][] {
+    const keys: S[] = distinct(array.map(keyGetter));
+    return keys.map(key => array.filter(x => keyGetter(x) === key));
+}
+
+export function arraysContainSameElements<T>(
+    array1: T[],
+    array2: T[]
+): boolean {
+    return (
+        array2.length === array1.length &&
+        intersect(array1, array2).length === array1.length
+    );
+}
