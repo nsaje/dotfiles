@@ -1,5 +1,6 @@
 import rest_framework.permissions
 import rest_framework.serializers
+from rest_framework import permissions
 
 import restapi.common.views_base
 import zemauth.access
@@ -11,8 +12,13 @@ from zemauth.features.entity_permission import Permission
 from . import serializers
 
 
+class CanUseVideoAssetPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.has_perm("zemauth.fea_video_upload"))
+
+
 class VideoAssetBaseViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = rest_framework.permissions.IsAuthenticated
+    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseVideoAssetPermission)
 
 
 class VideoAssetListViewSet(VideoAssetBaseViewSet):
