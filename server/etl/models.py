@@ -206,10 +206,6 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         )
 
 
-class MVPublishers(MVMaster):
-    external_id = backtosql.Column("external_id", BREAKDOWN)
-
-
 class MVAdGroupPlacement(MVMaster):
     placement = backtosql.Column("placement", BREAKDOWN, null=True)
     placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)

@@ -84,7 +84,6 @@ PUBLISHER_FIELDS = {
     "source_name",
     "exchange",
     "domain",
-    "external_id",
     "domain_link",
     "blacklisted",
     "blacklisted_level",

@@ -40,7 +40,6 @@ _FIELD_MAPPING = {
     "url": ("URL",),
     "publisher_id": ("Publisher Id",),
     "publisher": ("Publisher",),
-    "external_id": ("External Id",),
     "blacklisted_level": ("Blacklisted Level",),
     "source": ("Media Source",),
     "source_id": ("Media Source Id", "Media Source ID", "Source ID"),

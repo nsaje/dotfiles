@@ -147,7 +147,6 @@ UNABLE_TO_SORT = (
     "total_fee_projection",
     "display_url",
     "url",
-    "external_id",
     "source_status",
     "pacing",
     "default_sales_representative",

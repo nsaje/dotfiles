@@ -517,12 +517,6 @@ angular
             },
 
             // Publisher
-            externalId: {
-                shown: false, // not shown (used internally)
-                name: 'External Id',
-                field: 'external_id',
-                type: zemGridConstants.gridColumnTypes.TEXT,
-            },
             domain: {
                 name: 'Publisher',
                 field: 'domain',
@@ -1899,11 +1893,7 @@ angular
 
         var SOURCE_GROUP = [COLUMNS.supplyDashUrl];
 
-        var PUBLISHER_GROUP = [
-            COLUMNS.externalId,
-            COLUMNS.domain,
-            COLUMNS.domainLink,
-        ];
+        var PUBLISHER_GROUP = [COLUMNS.domain, COLUMNS.domainLink];
 
         var CONTENT_GROUP = [
             COLUMNS.imageUrls,

@@ -86,7 +86,6 @@ class FilterTestCase(TestCase):
             "blacklisted",
             "blacklisted_level",
             "blacklisted_level_description",
-            "external_id",
             "source",
             "source_id",
             "source_name",

@@ -11,7 +11,6 @@ from .materialize import Materialize
 from .mv_adgroup_placement import MVAdGroupPlacement
 from .mv_conversions import MVConversions
 from .mv_master import MasterView
-from .mv_master_publishers import MasterPublishersView
 from .mv_touchpoint_conversions import MVTouchpointConversions
 
 logger = zlogging.getLogger(__name__)
@@ -112,15 +111,6 @@ class MasterDerivedView(Materialize):
         )
 
         return sql, constraints.get_params()
-
-
-class MasterPublishersDerivedView(MasterDerivedView):
-    SOURCE_VIEW = MasterPublishersView.TABLE_NAME
-    TEMPLATE = "etl/migrations/redshift/mv_publishers_master.sql"
-
-    @cached_property
-    def model(self):
-        return models.MVPublishers()
 
 
 class AdGroupPlacementDerivedView(MasterDerivedView):
