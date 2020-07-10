@@ -14,7 +14,7 @@ from zemauth.features.entity_permission import Permission
 class LegacyVideoAssetTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        test_helper.add_permissions(self.user, permissions=["fea_video_upload"])
+        test_helper.add_permissions(self.user)
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         patcher = mock.patch("boto3.client")
         self.boto3_get_client = patcher.start()
