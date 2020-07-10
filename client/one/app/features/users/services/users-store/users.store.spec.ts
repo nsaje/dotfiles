@@ -163,7 +163,7 @@ describe('UsersStore', () => {
     });
 
     it('should correctly initialize store', fakeAsync(() => {
-        store.setStore(mockedAgencyId, mockedAccountId, 1, 10, '');
+        store.setStore(mockedAgencyId, mockedAccountId, 1, 10, '', true);
         tick();
 
         expect(store.state.agencyId).toEqual(mockedAgencyId);
@@ -319,7 +319,7 @@ describe('UsersStore', () => {
             .calls.reset();
 
         store.setActiveEntity(multiUser);
-        store.createActiveEntity();
+        store.saveActiveEntity();
         tick();
 
         expect(usersServiceStub.create).toHaveBeenCalledTimes(1);
