@@ -17,7 +17,7 @@ angular
         var TRAFFIC_CATEGORY_NAME = 'Traffic Acquisition';
         var MRC50_CATEGORY_NAME = 'Viewability';
         var MRC100_CATEGORY_NAME = 'MRC100 Viewability';
-        var VAST4_CATEGORY_NAME = 'VAST4 Viewability';
+        var VAST4_CATEGORY_NAME = 'Video Viewability';
         var AUDIENCE_CATEGORY_NAME = 'Audience Metrics';
         var VIDEO_CATEGORY_NAME = 'Video Metrics';
         var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
@@ -494,7 +494,7 @@ angular
                 shortName: 'Avg. VCPM',
             },
             VAST4_MEASURABLE: {
-                name: 'VAST4 Measurable Impressions',
+                name: 'Video Measurable Impressions',
                 value: 'vast4_measurable',
                 type: TYPE_NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -502,7 +502,7 @@ angular
                 shortName: 'Measurable',
             },
             VAST4_VIEWABLE: {
-                name: 'VAST4 Viewable Impressions',
+                name: 'Video Viewable Impressions',
                 value: 'vast4_viewable',
                 type: TYPE_NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -510,7 +510,7 @@ angular
                 shortName: 'Viewable',
             },
             VAST4_NON_MEASURABLE: {
-                name: 'VAST4 Non-Measurable',
+                name: 'Video Non-Measurable',
                 value: 'vast4_non_measurable',
                 type: TYPE_NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -518,7 +518,7 @@ angular
                 shortName: 'Not-Measurable',
             },
             VAST4_NON_VIEWABLE: {
-                name: 'VAST4 Non-Viewable',
+                name: 'Video Non-Viewable',
                 value: 'vast4_non_viewable',
                 type: TYPE_NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -526,7 +526,7 @@ angular
                 shortName: 'Not-Viewable',
             },
             VAST4_MEASURABLE_PERCENT: {
-                name: '% VAST4 Measurable Impressions',
+                name: '% Video Measurable Impressions',
                 value: 'vast4_measurable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -535,7 +535,7 @@ angular
                 shortName: '% Measurable',
             },
             VAST4_VIEWABLE_PERCENT: {
-                name: '% VAST4 Viewable Impressions',
+                name: '% Video Viewable Impressions',
                 value: 'vast4_viewable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -544,7 +544,7 @@ angular
                 shortName: '% Viewable',
             },
             VAST4_VIEWABLE_DISTRIBUTION: {
-                name: 'VAST4 Impression Distribution (Viewable)',
+                name: 'Video Impression Distribution (Viewable)',
                 value: 'vast4_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -553,7 +553,7 @@ angular
                 shortName: 'Viewable Dist.',
             },
             VAST4_NON_MEASURABLE_DISTRIBUTION: {
-                name: 'VAST4 Impression Distribution (Not-Measurable)',
+                name: 'Video Impression Distribution (Not-Measurable)',
                 value: 'vast4_non_measurable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -562,7 +562,7 @@ angular
                 shortName: 'Not-Measurable Dist.',
             },
             VAST4_NON_VIEWABLE_DISTRIBUTION: {
-                name: 'VAST4 Impression Distribution (Not-Viewable)',
+                name: 'Video Impression Distribution (Not-Viewable)',
                 value: 'vast4_non_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -706,17 +706,17 @@ angular
                 isNewFeature: true,
             });
             categories.push({
-                name: VAST4_CATEGORY_NAME,
-                metrics: createMetrics(VAST4_VIEWABILITY_METRICS),
-                isNewFeature: true,
-            });
-            categories.push({
                 name: AUDIENCE_CATEGORY_NAME,
                 metrics: createMetrics(AUDIENCE_METRICS),
             });
             categories.push({
                 name: VIDEO_CATEGORY_NAME,
                 metrics: createMetrics(VIDEO_METRICS),
+            });
+            categories.push({
+                name: VAST4_CATEGORY_NAME,
+                metrics: createMetrics(VAST4_VIEWABILITY_METRICS),
+                isNewFeature: true,
             });
 
             return categories;

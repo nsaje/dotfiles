@@ -1431,7 +1431,7 @@ angular
                 fractionSize: 2,
                 shown: ['zemauth.can_see_mrc50_metrics'],
                 help:
-                    'Percentage of Not-Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
+                    'Percentage of Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
@@ -1554,7 +1554,7 @@ angular
                 shown: ['zemauth.can_see_mrc100_metrics'],
                 internal: 'zemauth.can_see_mrc100_metrics',
                 help:
-                    'Percentage of Not-Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
+                    'Percentage of Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
@@ -1600,7 +1600,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4Measurable: {
-                name: 'VAST4 Measurable Impressions',
+                name: 'Video Measurable Impressions',
                 field: 'vast4_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1611,7 +1611,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4Viewable: {
-                name: 'VAST4 Viewable Impressions',
+                name: 'Video Viewable Impressions',
                 field: 'vast4_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1622,7 +1622,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonMeasurable: {
-                name: 'VAST4 Not-Measurable',
+                name: 'Video Not-Measurable',
                 field: 'vast4_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1634,7 +1634,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonViewable: {
-                name: 'VAST4 Not-Viewable',
+                name: 'Video Not-Viewable',
                 field: 'vast4_non_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 shown: ['zemauth.can_see_vast4_metrics'],
@@ -1646,7 +1646,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4MeasurablePercent: {
-                name: '% VAST4 Measurable Impressions',
+                name: '% Video Measurable Impressions',
                 field: 'vast4_measurable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -1659,7 +1659,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4ViewablePercent: {
-                name: '% VAST4 Viewable Impressions',
+                name: '% Video Viewable Impressions',
                 field: 'vast4_viewable_percent',
                 type: 'percent',
                 fractionSize: 2,
@@ -1672,20 +1672,20 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4ViewableDistribution: {
-                name: 'VAST4 Impression Distribution (Viewable)',
+                name: 'Video Impression Distribution (Viewable)',
                 field: 'vast4_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
                 shown: ['zemauth.can_see_vast4_metrics'],
                 internal: 'zemauth.can_see_vast4_metrics',
                 help:
-                    'Percentage of Not-Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
+                    'Percentage of Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
                 totalRow: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonMeasurableDistribution: {
-                name: 'VAST4 Impression Distribution (Not-Measurable)',
+                name: 'Video Impression Distribution (Not-Measurable)',
                 field: 'vast4_non_measurable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -1698,7 +1698,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
             },
             vast4NonViewableDistribution: {
-                name: 'VAST4 Impression Distribution (Not-Viewable)',
+                name: 'Video Impression Distribution (Not-Viewable)',
                 field: 'vast4_non_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
@@ -2409,11 +2409,6 @@ angular
                 isNewFeature: true,
             },
             {
-                name: 'VAST4 Viewability',
-                columns: VAST4_VIEWABILITY_METRICS_GROUP,
-                isNewFeature: true,
-            },
-            {
                 name: 'Audience Metrics',
                 columns: AUDIENCE_METRICS_GROUP,
             },
@@ -2429,6 +2424,11 @@ angular
             {
                 name: 'Video Metrics',
                 columns: VIDEO_METRICS_GROUP,
+            },
+            {
+                name: 'Video Viewability',
+                columns: VAST4_VIEWABILITY_METRICS_GROUP,
+                isNewFeature: true,
             },
         ];
 
