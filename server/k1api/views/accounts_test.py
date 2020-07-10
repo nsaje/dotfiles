@@ -491,7 +491,7 @@ class AccountsBulkMarketerParametersViewTest(K1APIBaseTest):
         )
 
         # 1 query related to replica, 2 queries due to permissions checks, 1 for accounts, 1 for entity tags
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get(
                 reverse("k1api.accounts_bulk_marketer_parameters") + f"?account_ids={account_ids}"
             )
