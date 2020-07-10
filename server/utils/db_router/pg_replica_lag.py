@@ -4,6 +4,10 @@ from typing import Dict
 
 import django.db
 
+from utils import zlogging
+
+logger = zlogging.getLogger(__name__)
+
 
 @dataclass
 class CacheEntry:
@@ -29,6 +33,10 @@ def is_replica_healthy(db: str) -> bool:
 
 def _get_lag_from_db(db: str) -> float:
     with django.db.connections[db].cursor() as cursor:
+        cursor.execute("select inet_server_addr()")
+        row = cursor.fetchone()
+        db_ip = row[0] or "NA"
+        logger.info("Get lag from DB %s at IP %s", db, db_ip)
         cursor.execute("SELECT extract(epoch from now() - pg_last_xact_replay_timestamp()) AS slave_lag")
         row = cursor.fetchone()
     return row[0] or 0.0
