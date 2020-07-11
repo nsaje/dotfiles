@@ -239,9 +239,10 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_get_spend_method_one_entry(self, _):
         today = dates_helper.local_today()
-        adg_sources = [self.ad_group_source]
+        ad_groups_map = selection._get_ad_groups_map(self.campaign)
+        adg_sources = selection._get_adgroup_sources_qs(self.campaign)
         adg_source_spends = {(self.ad_group.id, self.source.id, today): 900.000}
-        returned_spend = selection._get_max_spend(adg_sources, adg_source_spends)
+        returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
@@ -249,9 +250,10 @@ class UpdateAlmostDepletedTestCase(TestCase):
     def test_get_spend_method_one_entry_with_settings_budget(self, _):
         today = dates_helper.local_today()
         self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=900.0000)
-        adg_sources = [self.ad_group_source]
+        ad_groups_map = selection._get_ad_groups_map(self.campaign)
+        adg_sources = selection._get_adgroup_sources_qs(self.campaign)
         adg_source_spends = {(self.ad_group.id, self.source.id, today): 800.000}
-        returned_spend = selection._get_max_spend(adg_sources, adg_source_spends)
+        returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 900.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
@@ -260,14 +262,15 @@ class UpdateAlmostDepletedTestCase(TestCase):
         source_type2 = magic_mixer.blend(core.models.source_type.SourceType)
         source2 = magic_mixer.blend(core.models.Source, type=source_type2)
         ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
-        adg_sources = [self.ad_group_source, ad_group_source2]
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
+        ad_groups_map = selection._get_ad_groups_map(self.campaign)
+        adg_sources = selection._get_adgroup_sources_qs(self.campaign)
         today = dates_helper.local_today()
         adg_source_spends = {
             (self.ad_group.id, self.source.id, today): 900.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = selection._get_max_spend(adg_sources, adg_source_spends)
+        returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
@@ -277,13 +280,14 @@ class UpdateAlmostDepletedTestCase(TestCase):
         source_type2 = magic_mixer.blend(core.models.source_type.SourceType, type=dash.constants.SourceType.B1)
         source2 = magic_mixer.blend(core.models.Source, type=source_type2)
         ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
-        adg_sources = [self.ad_group_source, ad_group_source2]
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
+        ad_groups_map = selection._get_ad_groups_map(self.campaign)
+        adg_sources = selection._get_adgroup_sources_qs(self.campaign)
         adg_source_spends = {
             (self.ad_group.id, self.source.id, today): 900.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = selection._get_max_spend(adg_sources, adg_source_spends)
+        returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1000.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_morning_est_now)
@@ -294,14 +298,15 @@ class UpdateAlmostDepletedTestCase(TestCase):
         source_type2 = magic_mixer.blend(core.models.source_type.SourceType, type=dash.constants.SourceType.B1)
         source2 = magic_mixer.blend(core.models.Source, type=source_type2)
         ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
-        adg_sources = [self.ad_group_source, ad_group_source2]
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
+        ad_groups_map = selection._get_ad_groups_map(self.campaign)
+        adg_sources = selection._get_adgroup_sources_qs(self.campaign)
         adg_source_spends = {
             (self.ad_group.id, self.source.id, today): 900.000,
             (self.ad_group.id, self.source.id, yesterday): 500.000,
             (ad_group2.id, source2.id, today): 100.000,
         }
-        returned_spend = selection._get_max_spend(adg_sources, adg_source_spends)
+        returned_spend = selection._get_max_spend(ad_groups_map, adg_sources, adg_source_spends)
         self.assertEqual(returned_spend, 1500.000)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)

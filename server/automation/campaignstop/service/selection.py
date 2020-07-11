@@ -1,5 +1,4 @@
 import concurrent.futures
-from functools import partial
 
 from django.db import transaction
 
@@ -75,9 +74,32 @@ def _get_max_campaign_spends(campaigns):
 
 def _calculate_max_campaign_spend(campaign):
     rt_data = _get_latest_real_time_data(campaign)
-    adg_source_spends = _etfm_spends(rt_data)
-    adg_sources = _get_adgroup_sources(campaign)
-    return _get_max_spend(adg_sources, adg_source_spends)
+    adg_source_spends = _get_rt_etfm_spends(rt_data)
+    ad_groups_map = _get_ad_groups_map(campaign)
+    adg_sources_qs = _get_adgroup_sources_qs(campaign)
+    return _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends)
+
+
+def _get_rt_etfm_spends(rt_data):
+    adg_source_spends = {}
+    for rtd in rt_data:
+        adg_source_spends[(rtd.ad_group_id, rtd.source_id, rtd.date)] = rtd.etfm_spend
+    return adg_source_spends
+
+
+def _get_ad_groups_map(campaign):
+    return {
+        ad_group["id"]: ad_group
+        for ad_group in campaign.adgroup_set.values(
+            "id",
+            "settings__state",
+            "settings__start_date",
+            "settings__end_date",
+            "settings__b1_sources_group_enabled",
+            "settings__b1_sources_group_state",
+            "settings__b1_sources_group_daily_budget",
+        )
+    }
 
 
 def _get_latest_real_time_data(campaign):
@@ -88,24 +110,17 @@ def _get_latest_real_time_data(campaign):
     )
 
 
-def _get_adgroup_sources(campaign):
-    return core.models.AdGroupSource.objects.filter(ad_group__campaign=campaign).select_related(
-        "settings", "ad_group__settings", "source__source_type"
+def _get_adgroup_sources_qs(campaign):
+    return core.models.AdGroupSource.objects.filter(ad_group__campaign=campaign).values(
+        "ad_group_id", "source_id", "settings__state", "settings__daily_budget_cc", "source__source_type__type"
     )
 
 
 def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
-        executor.map(
-            partial(_check_and_mark_campaign, campaign_daily_budgets, campaign_available_amount),
-            campaign_daily_budgets.keys(),
-        )
-
-
-def _check_and_mark_campaign(campaign_daily_budgets, campaign_available_amount, campaign):
-    campaign_daily_budget = campaign_daily_budgets[campaign]
-    available_amount = campaign_available_amount.get(campaign, 0)
-    _mark_campaign(campaign, campaign_daily_budget, available_amount)
+    for campaign in campaign_daily_budgets.keys():
+        campaign_daily_budget = campaign_daily_budgets[campaign]
+        available_amount = campaign_available_amount.get(campaign, 0)
+        _mark_campaign(campaign, campaign_daily_budget, available_amount)
 
 
 @transaction.atomic
@@ -129,69 +144,63 @@ def _mark_campaign(campaign, max_spend_today, available_budget_amount):
     )
 
 
-def _get_max_spend(adg_sources, adg_source_spends):
+def _get_max_spend(ad_groups_map, adg_sources_qs, adg_source_spends):
     b1_sources_group_spends = {}
     spend = 0
     today = dates_helper.local_today()
-    for adg_source in adg_sources:
-        todays_realtime_spend = adg_source_spends.get((adg_source.ad_group_id, adg_source.source_id, today), 0)
-        is_inactive_adg_source = adg_source.settings.state == dash.constants.AdGroupSettingsState.INACTIVE
-        ad_group = adg_source.ad_group
+    for adg_source in adg_sources_qs.iterator():
+        todays_realtime_spend = adg_source_spends.get((adg_source["ad_group_id"], adg_source["source_id"], today), 0)
+        is_inactive_adg_source = adg_source["settings__state"] == dash.constants.AdGroupSettingsState.INACTIVE
+        ad_group = ad_groups_map[adg_source["ad_group_id"]]
 
         if _in_critical_hours():
             yesterday = dates_helper.local_yesterday()
             yesterdays_realtime_spend = adg_source_spends.get(
-                (adg_source.ad_group_id, adg_source.source_id, yesterday), 0
+                (adg_source["ad_group_id"], adg_source["source_id"], yesterday), 0
             )
             spend += yesterdays_realtime_spend
 
-        is_b1_source_type = adg_source.source.source_type.type == dash.constants.SourceType.B1
-        if is_b1_source_type and ad_group.settings.b1_sources_group_enabled:
-            b1_sources_group_spends.setdefault(ad_group, 0)
-            b1_sources_group_spends[ad_group] += todays_realtime_spend
+        is_b1_source_type = adg_source["source__source_type__type"] == dash.constants.SourceType.B1
+        if is_b1_source_type and ad_group["settings__b1_sources_group_enabled"]:
+            b1_sources_group_spends.setdefault(ad_group["id"], 0)
+            b1_sources_group_spends[ad_group["id"]] += todays_realtime_spend
             if _in_critical_hours():
-                b1_sources_group_spends[ad_group] += yesterdays_realtime_spend
+                b1_sources_group_spends[ad_group["id"]] += yesterdays_realtime_spend
             continue
 
-        if not _is_active_setting(ad_group.settings) or is_inactive_adg_source:
+        if not _is_active_setting(ad_group) or is_inactive_adg_source:
             spend += todays_realtime_spend
             continue
 
-        settings_budget = adg_source.settings.daily_budget_cc or 0
+        settings_budget = adg_source["settings__daily_budget_cc"] or 0
         spend += max(settings_budget, todays_realtime_spend)
 
-    spend += _b1_spends(b1_sources_group_spends)
+    spend += _b1_spends(ad_groups_map, b1_sources_group_spends)
     return spend
 
 
-def _is_active_setting(ad_group_setting):
-    if ad_group_setting.state == dash.constants.AdGroupSettingsState.ACTIVE:
+def _b1_spends(ad_groups_map, b1_sources_group_spends):
+    spend = 0
+    for ad_group_id, b1_group_spend in b1_sources_group_spends.items():
+        ad_group = ad_groups_map[ad_group_id]
+        is_group_state_inactive = (
+            ad_group["settings__b1_sources_group_state"] == dash.constants.AdGroupSettingsState.INACTIVE
+        )
+        if not _is_active_setting(ad_group) or is_group_state_inactive:
+            spend += b1_group_spend
+            continue
+        group_daily_budget = ad_group["settings__b1_sources_group_daily_budget"]
+        spend += max(b1_group_spend, group_daily_budget)
+    return spend
+
+
+def _is_active_setting(ad_group):
+    if ad_group["settings__state"] == dash.constants.AdGroupSettingsState.ACTIVE:
         today = dates_helper.local_today()
-        start_date = ad_group_setting.start_date
-        end_date = ad_group_setting.end_date
+        start_date = ad_group["settings__start_date"]
+        end_date = ad_group["settings__end_date"]
         if end_date is None:
             return start_date <= today
         else:
             return start_date <= today <= end_date
     return False
-
-
-def _b1_spends(b1_sources_group_spends):
-    spend = 0
-    for ad_group, b1_group_spend in b1_sources_group_spends.items():
-        is_group_state_inactive = (
-            ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSettingsState.INACTIVE
-        )
-        if not _is_active_setting(ad_group.settings) or is_group_state_inactive:
-            spend += b1_group_spend
-            continue
-        group_daily_budget = ad_group.settings.b1_sources_group_daily_budget
-        spend += max(b1_group_spend, group_daily_budget)
-    return spend
-
-
-def _etfm_spends(rt_data):
-    adg_source_spends = {}
-    for rtd in rt_data:
-        adg_source_spends[(rtd.ad_group_id, rtd.source_id, rtd.date)] = rtd.etfm_spend
-    return adg_source_spends
