@@ -18,6 +18,7 @@ import {
     COLUMN_ACTION_FREQUENCY,
     COLUMN_NOTIFICATION,
     COLUMN_SCOPE,
+    COLUMN_ACTIONS,
 } from './rules-grid.component.config';
 
 @Component({
@@ -48,6 +49,7 @@ export class RulesGridComponent implements OnChanges {
         COLUMN_ACTION_FREQUENCY,
         COLUMN_NOTIFICATION,
         COLUMN_SCOPE,
+        COLUMN_ACTIONS,
     ];
 
     private gridApi: GridApi;

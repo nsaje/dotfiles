@@ -5,6 +5,7 @@ import core.features.publisher_groups
 import core.models
 import restapi.serializers.base
 import restapi.serializers.fields
+import restapi.serializers.serializers
 import zemauth.access
 from zemauth.features.entity_permission import Permission
 
@@ -12,7 +13,7 @@ from zemauth.features.entity_permission import Permission
 class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     type = restapi.serializers.fields.DashConstantField(automation.rules.MetricType, source="left_operand_type")
     window = restapi.serializers.fields.DashConstantField(
-        automation.rules.MetricWindow, source="left_operand_window", allow_null=True
+        automation.rules.MetricWindow, source="left_operand_window", allow_null=True, initial=None
     )
     modifier = rest_framework.serializers.FloatField(source="left_operand_modifier", allow_null=True)
 
@@ -67,6 +68,7 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         error_messages={"required": "Please specify a rule name.", "null": "Please specify a rule name."},
     )
     state = restapi.serializers.fields.DashConstantField(automation.rules.RuleState, read_only=True, required=False)
+    archived = rest_framework.fields.BooleanField(required=False)
 
     entities = RuleEntitiesSerializer(source="*")
 

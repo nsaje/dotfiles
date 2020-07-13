@@ -14,6 +14,7 @@ import {
     RuleState,
     RuleActionFrequency,
 } from '../../../../core/rules/rules.constants';
+import {RuleActionsCellComponent} from '../rule-actions-cell/rule-actions-cell.component';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -71,6 +72,15 @@ export const COLUMN_SCOPE: ColDef = {
             return `/v2/analytics/account/${item.accountId}`;
         },
     } as ItemScopeRendererParams<Rule>,
+};
+
+export const COLUMN_ACTIONS: ColDef = {
+    headerName: '',
+    cellRendererFramework: RuleActionsCellComponent,
+    pinned: 'right',
+    width: 75,
+    suppressSizeToFit: true,
+    resizable: false,
 };
 
 function notificationTypeFormatter(params: {

@@ -95,7 +95,7 @@ export class RulesEndpoint {
     }
 
     create(
-        rule: Rule,
+        rule: Partial<Rule>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         const request = RULES_CONFIG.requests.rules.create;
@@ -122,7 +122,7 @@ export class RulesEndpoint {
     }
 
     edit(
-        rule: Rule,
+        rule: Partial<Rule>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         const request = endpointHelpers.replaceUrl(

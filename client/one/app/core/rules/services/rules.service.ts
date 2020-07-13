@@ -40,6 +40,13 @@ export class RulesService {
         return this.edit(rule, requestStateUpdater);
     }
 
+    archive(
+        ruleId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule> {
+        return this.edit({id: ruleId, archived: true}, requestStateUpdater);
+    }
+
     get(
         ruleId: string,
         requestStateUpdater: RequestStateUpdater
@@ -79,7 +86,7 @@ export class RulesService {
     }
 
     private edit(
-        rule: Rule,
+        rule: Partial<Rule>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         return this.endpoint.edit(rule, requestStateUpdater);

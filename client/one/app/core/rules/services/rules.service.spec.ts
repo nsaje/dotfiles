@@ -168,6 +168,25 @@ describe('RulesService', () => {
         );
     });
 
+    it('should archive rule', fakeAsync(() => {
+        const mockedArchivedRule = {...mockedRule, archived: true};
+        rulesEndpointStub.edit.and
+            .returnValue(of(mockedArchivedRule, asapScheduler))
+            .calls.reset();
+
+        const mockedRuleId = mockedRule.id;
+        service.archive(mockedRuleId, requestStateUpdater).subscribe(rule => {
+            expect(rule).toEqual(mockedArchivedRule);
+        });
+        tick();
+
+        expect(rulesEndpointStub.edit).toHaveBeenCalledTimes(1);
+        expect(rulesEndpointStub.edit).toHaveBeenCalledWith(
+            {id: mockedRuleId, archived: true},
+            requestStateUpdater
+        );
+    }));
+
     it('should list rules histories via endpoint', () => {
         const limit = 10;
         const offset = 0;

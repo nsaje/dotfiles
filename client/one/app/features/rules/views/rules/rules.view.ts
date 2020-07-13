@@ -20,6 +20,7 @@ import {
     DEFAULT_PAGINATION,
     PAGINATION_URL_PARAMS,
 } from '../../rules.config';
+import {Rule} from '../../../../core/rules/types/rule';
 
 @Component({
     selector: 'zem-rules-view',
@@ -83,6 +84,18 @@ export class RulesView implements OnInit, OnDestroy {
             queryParamsHandling: 'merge',
             replaceUrl: true,
         });
+    }
+
+    removeRule(rule: Rule) {
+        if (confirm(`Are you sure you wish to delete rule ${rule.name}?`)) {
+            this.store.archiveEntity(rule.id).then(() => {
+                this.store.loadEntities(
+                    this.paginationOptions.page,
+                    this.paginationOptions.pageSize,
+                    this.keyword
+                );
+            });
+        }
     }
 
     private updateInternalState(queryParams: any) {

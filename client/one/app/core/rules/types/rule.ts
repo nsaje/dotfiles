@@ -29,4 +29,5 @@ export interface Rule {
     notificationType: RuleNotificationType;
     notificationRecipients: string[];
     state?: RuleState;
+    archived?: boolean;
 }

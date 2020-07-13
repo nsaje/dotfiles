@@ -80,6 +80,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         notification_recipients,
         publisher_group_id,
         conditions,
+        archived=False,
     ):
         agency = core.models.Agency.objects.get(id=agency_id) if agency_id else None
         account = core.models.Account.objects.get(id=account_id) if account_id else None
@@ -108,6 +109,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             "notificationRecipients": notification_recipients,
             "publisherGroupId": publisher_group_id,
             "conditions": [cls.rule_condition_repr(**condition) for condition in conditions],
+            "archived": archived,
         }
         if id is not None:
             representation["id"] = str(id)

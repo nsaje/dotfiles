@@ -83,6 +83,23 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
             );
         });
     }
+
+    archiveEntity(ruleId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.rulesService
+                .archive(ruleId, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();

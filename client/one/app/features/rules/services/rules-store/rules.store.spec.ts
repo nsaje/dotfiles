@@ -26,7 +26,10 @@ describe('RulesLibraryStore', () => {
     let mockedAccounts: Account[];
 
     beforeEach(() => {
-        rulesServiceStub = jasmine.createSpyObj(RulesService.name, ['list']);
+        rulesServiceStub = jasmine.createSpyObj(RulesService.name, [
+            'list',
+            'archive',
+        ]);
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
@@ -122,6 +125,23 @@ describe('RulesLibraryStore', () => {
             10,
             mockedKeyword,
             null,
+            (<any>store).requestStateUpdater
+        );
+    }));
+
+    it('should archive rule via service', fakeAsync(() => {
+        const mockedRule = mockedRules[0];
+        const mockedRuleId = mockedRule.id;
+
+        rulesServiceStub.archive.and
+            .returnValue(of({...mockedRule, archived: true}, asapScheduler))
+            .calls.reset();
+        store.archiveEntity(mockedRuleId);
+        tick();
+
+        expect(rulesServiceStub.archive).toHaveBeenCalledTimes(1);
+        expect(rulesServiceStub.archive).toHaveBeenCalledWith(
+            mockedRuleId,
             (<any>store).requestStateUpdater
         );
     }));
