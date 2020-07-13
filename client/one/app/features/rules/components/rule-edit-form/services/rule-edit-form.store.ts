@@ -275,19 +275,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Ctr],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpc],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpm],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Visits],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.UniqueUsers],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.NewUsers],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ReturningUsers],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.PercentNewUsers],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ClickDiscrepancy],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Pageviews],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.PageviewsPerVisit],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BouncedVisits],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.NonBouncedVisits],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BounceRate],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
-            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversion
             ],
@@ -341,6 +328,40 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 RuleConditionOperandType.DaysUntilCampaignBudgetEnd
             ],
         ];
+
+        if (
+            [
+                RuleTargetType.Ad,
+                RuleTargetType.AdGroupSource,
+                RuleTargetType.AdGroupPublisher,
+            ].includes(target)
+        ) {
+            conditions.push(
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Visits],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.UniqueUsers],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.NewUsers],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.ReturningUsers
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.PercentNewUsers
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.ClickDiscrepancy
+                ],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Pageviews],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.PageviewsPerVisit
+                ],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BouncedVisits],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.NonBouncedVisits
+                ],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BounceRate],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite]
+            );
+        }
 
         if (target === RuleTargetType.Ad) {
             conditions.push(
