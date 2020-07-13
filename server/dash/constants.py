@@ -2362,6 +2362,7 @@ class BrowserFamily(ConstantBase):
     OPERA = "OPERA"
     UC_BROWSER = "UC_BROWSER"
     IN_APP = "IN_APP"
+    EDGE = "EDGE"
 
     _VALUES = {
         OTHER: "Other",
@@ -2373,6 +2374,7 @@ class BrowserFamily(ConstantBase):
         OPERA: "Opera",
         UC_BROWSER: "UC Browser",
         IN_APP: "In App",
+        EDGE: "Edge",
     }
 
 
