@@ -101,8 +101,10 @@ class PublisherGroupsFormMixin(forms.Form):
             self.fields["whitelist_publisher_groups"].queryset = qs.filter_by_agency(self.agency)
             self.fields["blacklist_publisher_groups"].queryset = qs.filter_by_agency(self.agency)
         else:
-            self.fields["whitelist_publisher_groups"].queryset = qs
-            self.fields["blacklist_publisher_groups"].queryset = qs
+            self.fields["whitelist_publisher_groups"].widget = forms.HiddenInput()
+            self.fields["whitelist_publisher_groups"].queryset = qs.none()
+            self.fields["blacklist_publisher_groups"].widget = forms.HiddenInput()
+            self.fields["blacklist_publisher_groups"].queryset = qs.none()
 
     def clean_whitelist_publisher_groups(self):
         publisher_groups = self.cleaned_data.get("whitelist_publisher_groups") or []
@@ -227,8 +229,9 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get("initial", {})
-        if "instance" in kwargs:
-            self.agency = kwargs.get("instance")
+        instance = kwargs.get("instance")
+        if instance is not None:
+            self.agency = instance
             settings = self.agency.get_current_settings()
             for field in self.SETTINGS_FIELDS:
                 initial[field] = getattr(settings, field)

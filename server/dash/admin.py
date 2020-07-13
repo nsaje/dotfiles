@@ -448,6 +448,9 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     _accounts.short_description = "Accounts"
 
     def save_model(self, request, obj, form, change):
+        self._update_model(request, obj, form, change) if obj.id else obj.save(request)
+
+    def _update_model(self, request, obj, form, change):
         old_obj = models.Agency.objects.get(id=obj.id)
         fields_to_update = {
             k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
