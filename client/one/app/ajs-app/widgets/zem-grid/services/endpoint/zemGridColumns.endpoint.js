@@ -1076,6 +1076,18 @@ angular
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
             },
+            avgEtfmCostPerUniqueUser: {
+                name: 'Avg. Cost per Unique User',
+                field: 'avg_etfm_cost_per_unique_user',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                help:
+                    '<p>Cost per unique user. Calculated as (Total spend)/(Unique users)</p>',
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                shown: true,
+                costMode: constants.costMode.PUBLIC,
+            },
 
             // Postclick Engagement Metrics
             percentNewUsers: {
@@ -2007,6 +2019,7 @@ angular
             COLUMNS.avgEtfmCostPerPageview,
             COLUMNS.avgEtfmCostPerNonBouncedVisit,
             COLUMNS.avgEtfmCostPerMinute,
+            COLUMNS.avgEtfmCostPerUniqueUser,
         ];
 
         var PIXELS_GROUP = [COLUMNS.pixelsPlaceholder];

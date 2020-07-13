@@ -139,6 +139,8 @@ DEFAULT_STATS = set(
         "local_avg_etfm_cost_for_new_visitor",
         "avg_etfm_cost_per_visit",
         "local_avg_etfm_cost_per_visit",
+        "avg_etfm_cost_per_unique_user",
+        "local_avg_etfm_cost_per_unique_user",
         "video_start",
         "video_first_quartile",
         "video_midpoint",

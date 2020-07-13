@@ -386,6 +386,14 @@ class MVMaster(BreakdownsBase):
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
+    _context = {"divisor": "users", "divisor_modifier": converters.CURRENCY_TO_NANO}
+    avg_etfm_cost_per_unique_user = backtosql.TemplateColumn(
+        "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
+    )
+    local_avg_etfm_cost_per_unique_user = backtosql.TemplateColumn(
+        "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
+    )
+
     # Video
     video_start = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_start"}, AGGREGATE)
     video_first_quartile = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_first_quartile"}, AGGREGATE)

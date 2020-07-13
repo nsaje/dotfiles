@@ -83,6 +83,7 @@ _FIELD_MAPPING = {
     "avg_etfm_cost_per_non_bounced_visit": ("Avg. Cost per Non-Bounced Visit",),
     "avg_etfm_cost_per_pageview": ("Avg. Cost per Pageview",),
     "avg_etfm_cost_per_visit": ("Avg. Cost per Visit",),
+    "avg_etfm_cost_per_unique_user": ("Avg. Cost Per Unique User",),
     "avg_tos": ("Time on Site",),
     "at_cost": ("Actual Base Platform Spend",),
     "at_cost_refund": ("Actual Base Platform Spend Refund",),

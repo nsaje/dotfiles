@@ -154,6 +154,8 @@ class FilterTestCase(TestCase):
             "local_avg_etfm_cost_per_non_bounced_visit",
             "avg_etfm_cost_per_pageview",
             "local_avg_etfm_cost_per_pageview",
+            "avg_etfm_cost_per_unique_user",
+            "local_avg_etfm_cost_per_unique_user",
             "pixel_1_168",
             "pixel_1_2160",
             "pixel_1_24",
