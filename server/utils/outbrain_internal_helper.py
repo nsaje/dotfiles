@@ -8,8 +8,6 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
-COMMON_HEADERS = {"Host": "obproxy-ingress.zemanta.com"}
-
 NUM_RETRIES = 1
 TIMEOUT = 2
 
@@ -50,7 +48,6 @@ def _call_api(url, method="GET", **kwargs):
     if settings.K1_DEMO_MODE:
         return {}
     headers = kwargs.pop("headers", {})
-    headers.update(COMMON_HEADERS)
     headers["OB-TOKEN-V1"] = _get_api_token()
     try:
         r = requests.request(method=method, url=url, headers=headers, **kwargs, timeout=TIMEOUT)
@@ -77,7 +74,6 @@ def _get_api_token():
 
     credentials = _base64_encode_credentials(settings.OUTBRAIN_INTERNAL_USERNAME, settings.OUTBRAIN_INTERNAL_PASSWORD)
     headers = {"Authorization": "Basic {}".format(credentials.decode("utf-8"))}
-    headers.update(COMMON_HEADERS)
     r = requests.request(method="GET", url=settings.AMELIA_BASE_URL + URL_LOGIN, headers=headers, timeout=TIMEOUT)
 
     if r.status_code != 200:

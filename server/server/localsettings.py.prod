@@ -691,7 +691,7 @@ FTP_REPORTS = {
 
 
 AMELIA_INTEGRATION_ENABLED = True
-AMELIA_BASE_URL = "http://ec2-18-204-166-9.compute-1.amazonaws.com:8080/amelia.outbrain.com/Amelia/api/internal/v2"
+AMELIA_BASE_URL = "http://amelia.outbrain.com/Amelia/api/internal/v2"
 OUTBRAIN_INTERNAL_USERNAME = "Zemanta-One"
 OUTBRAIN_INTERNAL_PASSWORD = (
     Secret(
