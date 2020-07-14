@@ -1,6 +1,7 @@
 import {PaginationState} from '../../shared/components/smart-grid/types/pagination-state';
 import {PaginationOptions} from '../../shared/components/smart-grid/types/pagination-options';
 import {EntityPermissionValue} from '../../core/users/types/entity-permission-value';
+import {DisplayedEntityPermissionValue} from './types/displayed-entity-permission-value';
 
 export const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -24,10 +25,7 @@ export const GENERAL_PERMISSIONS: EntityPermissionValue[] = [
     'budget',
     'user',
 ];
-export const REPORTING_PERMISSIONS: (
-    | 'total_spend'
-    | EntityPermissionValue
-)[] = [
+export const REPORTING_PERMISSIONS: DisplayedEntityPermissionValue[] = [
     'total_spend',
     'agency_spend_margin',
     'media_cost_data_cost_licence_fee',
@@ -41,7 +39,7 @@ export const CONFIGURABLE_PERMISSIONS: EntityPermissionValue[] = [
 ];
 
 export const ENTITY_PERMISSION_VALUE_TO_NAME: {
-    [key in 'total_spend' | EntityPermissionValue]: string;
+    [key in DisplayedEntityPermissionValue]: string;
 } = {
     total_spend: 'Total spend',
     read: 'Read',
@@ -51,6 +49,14 @@ export const ENTITY_PERMISSION_VALUE_TO_NAME: {
     budget_margin: 'Manage budget margin',
     agency_spend_margin: 'Agency spend and margin',
     media_cost_data_cost_licence_fee: 'Media cost, data cost and licence fee',
+};
+
+export const ENTITY_PERMISSION_VALUE_TO_SHORT_NAME: {
+    [key in DisplayedEntityPermissionValue]: string;
+} = {
+    ...ENTITY_PERMISSION_VALUE_TO_NAME,
+    agency_spend_margin: 'Campaign margin',
+    media_cost_data_cost_licence_fee: 'Licence fee',
 };
 
 export const ENTITY_PERMISSION_VALUE_TO_DESCRIPTION: {

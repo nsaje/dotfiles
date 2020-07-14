@@ -18,6 +18,7 @@ import {
     REPORTING_PERMISSIONS,
 } from '../../users.config';
 import {EntityPermissionSelection} from './types/entity-permission-selection';
+import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permission-value';
 
 @Component({
     selector: 'zem-entity-permission-selector',
@@ -56,7 +57,7 @@ export class EntityPermissionSelectorComponent implements OnChanges {
     }
 
     toggleReportingOptions(
-        $event: CheckboxSliderItem<'total_spend' | EntityPermissionValue>[]
+        $event: CheckboxSliderItem<DisplayedEntityPermissionValue>[]
     ) {
         const newSelection: EntityPermissionSelection = {...this.selection};
         $event
@@ -83,8 +84,8 @@ export class EntityPermissionSelectorComponent implements OnChanges {
     }
 
     private getReportingItem(
-        permission: 'total_spend' | EntityPermissionValue
-    ): CheckboxSliderItem<'total_spend' | EntityPermissionValue> {
+        permission: DisplayedEntityPermissionValue
+    ): CheckboxSliderItem<DisplayedEntityPermissionValue> {
         const isPermissionSelected: boolean = this.isPermissionSelected(
             permission
         );
@@ -96,7 +97,7 @@ export class EntityPermissionSelectorComponent implements OnChanges {
     }
 
     private isPermissionSelected(
-        permission: 'total_spend' | EntityPermissionValue
+        permission: DisplayedEntityPermissionValue
     ): boolean | undefined {
         if (permission === 'total_spend') {
             return true; // This is not a real permission, but a dummy value
