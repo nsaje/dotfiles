@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+    server:
+        image: $ECR_BASE/z1-base:master
+        volumes:
+            - "./server/:/app/z1/"
+            - "./server/apt/.junit_xml/:/app/z1/apt/.junit_xml/"
+        working_dir: /app/z1/

@@ -24,6 +24,7 @@ endif
 # Exported because docker-compose.*.yml uses it
 export Z1_CLIENT_IMAGE
 export Z1_SERVER_IMAGE
+export ECR_BASE
 export ACCEPTANCE_IMAGE
 export TESTIM_TOKEN
 
@@ -90,15 +91,13 @@ test_acceptance:	## runs tests against a running server in a container
 	./scripts/docker_test_acceptance.sh
 
 test_apt:
+	mkdir -p server/apt/.junit_xml/
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
-	docker run \
-		   --rm \
-		   -u 1000 \
-		   -v $(PWD)/server/:/app/z1/ \
-		   -v $(PWD)/server/apt/.junit_xml/:/app/z1/apt/.junit_xml/ \
-		   -w /app/z1/ \
-		   $(ECR_BASE)/z1-base:master \
-		   bash -x ./run_apt.sh
+	docker-compose \
+			-f docker-compose.apt.yml \
+			run \
+			--rm \
+			server bash -x ./run_apt.sh
 
 test_e2e:	## runs e2e tests against a running app in a container
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
