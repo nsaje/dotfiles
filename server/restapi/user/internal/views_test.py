@@ -44,12 +44,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
         if permission.agency_id is not None:
             return {"agencyId": str(permission.agency_id), "accountId": None, "permission": str(permission.permission)}
         elif permission.account_id is not None:
-            return {
-                "agencyId": None,
-                "accountId": str(permission.account_id),
-                "accountName": str(permission.account.name),
-                "permission": str(permission.permission),
-            }
+            return {"agencyId": None, "accountId": str(permission.account_id), "permission": str(permission.permission)}
         else:
             return {"agencyId": None, "accountId": None, "permission": str(permission.permission)}
 
@@ -407,18 +402,8 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         self.assertCountEqual(
             resp_json["data"]["users"][0]["entityPermissions"],
             [
-                {
-                    "agencyId": None,
-                    "accountId": str(account.id),
-                    "accountName": str(account.name),
-                    "permission": Permission.READ,
-                },
-                {
-                    "agencyId": None,
-                    "accountId": str(account.id),
-                    "accountName": str(account.name),
-                    "permission": Permission.USER,
-                },
+                {"agencyId": None, "accountId": str(account.id), "permission": Permission.READ},
+                {"agencyId": None, "accountId": str(account.id), "permission": Permission.USER},
             ],
         )
 

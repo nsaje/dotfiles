@@ -20,7 +20,6 @@ class UserQueryParamsExpectations(
 class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     agency_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     account_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
-    account_name = rest_framework.serializers.CharField(source="account.name", required=False)
     permission = rest_framework.serializers.CharField()
 
     def to_internal_value(self, data):
