@@ -1,5 +1,4 @@
 from django.contrib.auth import models as auth_models
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
 
@@ -29,10 +28,6 @@ class UserMixin(object):
 
     def __str__(self):
         return self.email
-
-    def clean(self):
-        if not self.pk and self.__class__.objects.filter(email=self.email.lower).exists():
-            raise ValidationError({"email": "User with this e-mail already exists."})
 
     def get_all_permissions_with_access_levels(self):
         if not self.is_active or self.is_anonymous:
@@ -94,6 +89,7 @@ class UserMixin(object):
         if not updates:
             return
 
+        self.validate(updates)
         self._apply_updates_and_save(**updates)
 
     def _clean_updates(self, updates):

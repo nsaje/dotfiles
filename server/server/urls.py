@@ -81,6 +81,12 @@ urlpatterns += [
         {"template_name": "zemauth/set_password.html"},
         name="set_password",
     ),
+    url(
+        r"^welcome/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$",
+        zemauth.views.set_new_user,
+        {"template_name": "zemauth/set_new_user.html"},
+        name="welcome",
+    ),
     url(r"^admin$", AdminRedirectView.as_view(url="/admin/")),
     url(r"^admin/", admin.site.urls),
     url(r"^oauth2callback", zemauth.views.google_callback, name="zemauth.views.google_callback"),

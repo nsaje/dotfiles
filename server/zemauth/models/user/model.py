@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth import models as auth_models
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.fields import JSONField
 from django.core import validators as django_validators
 from django.db import models
@@ -14,10 +15,12 @@ from . import entity_permission
 from . import instance
 from . import manager
 from . import queryset
+from . import validation
 from . import validators
 
 
 class User(
+    validation.UserValidationMixin,
     instance.UserMixin,
     entity_permission.EntityPermissionMixin,
     auth_models.AbstractBaseUser,
@@ -58,6 +61,12 @@ class User(
         ),
     )
 
+    country = models.CharField(_("country"), max_length=2, null=True, blank=True)
+    company_type = models.IntegerField(_("company type"), null=True, blank=True)
+    job_title = models.CharField(_("job title"), max_length=256, null=True, blank=True)
+    start_year_of_experience = models.IntegerField(_("start year of experience"), null=True, blank=True)
+    programmatic_platforms = ArrayField(models.PositiveSmallIntegerField(), default=list, null=True, blank=True)
+
     is_test_user = models.BooleanField(
         default=False,
         help_text=_(
@@ -76,7 +85,15 @@ class User(
 
     objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 
-    _settings_fields = ["first_name", "last_name"]
+    _settings_fields = [
+        "first_name",
+        "last_name",
+        "country",
+        "company_type",
+        "job_title",
+        "start_year_of_experience",
+        "programmatic_platforms",
+    ]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

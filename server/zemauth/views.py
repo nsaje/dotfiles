@@ -45,7 +45,8 @@ class UserView(APIView):
 @metrics_compat.timer("auth.signin_response_time")
 @ratelimit(key=lambda g, r: ipware.ip.get_ip(r), rate="20/m", method="POST")
 def login(request, *args, **kwargs):
-    """Wraps login view and injects certain query string values into
+    """
+    Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
     """
 
@@ -76,45 +77,6 @@ def login(request, *args, **kwargs):
     return response
 
 
-def set_password(request, uidb64=None, token=None, template_name=None):
-    assert uidb64 is not None and token is not None  # checked by URLconf
-
-    try:
-        uid = urlsafe_base64_decode(uidb64)
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and auth_tokens.default_token_generator.check_token(user, token):
-        validlink = True
-        if request.method == "POST":
-            form = forms.SetPasswordForm(user, request.POST)
-            if form.is_valid():
-                form.save()
-
-                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
-                    # login user
-                    user = auth.authenticate(username=user.email, password=request.POST["new_password"])
-                    auth.login(request, user)
-
-                next_param = request.GET.get("next", "/")
-                redirect_to = next_param if is_safe_url(next_param, settings.ALLOWED_REDIRECT_HOSTS, True) else "/"
-                return HttpResponseRedirect(resolve_url(redirect_to))
-        else:
-            form = forms.SetPasswordForm(user)
-    else:
-        validlink = False
-        form = None
-    context = {
-        "form": form,
-        "validlink": validlink,
-        "new_user": not user.has_usable_password(),
-        "user_email": user.email,
-    }
-
-    return TemplateResponse(request, template_name, context)
-
-
 def password_reset(request, template_name=None):
     form = forms.PasswordResetForm()
     success = False
@@ -134,6 +96,76 @@ def password_reset(request, template_name=None):
                 pass
 
     context = {"form": form, "success": success}
+    return TemplateResponse(request, template_name, context)
+
+
+def set_password(request, uidb64=None, token=None, template_name=None):
+    assert uidb64 is not None and token is not None  # checked by URLconf
+
+    try:
+        uid = urlsafe_base64_decode(uidb64)
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and auth_tokens.default_token_generator.check_token(user, token):
+        valid_link = True
+        if request.method == "POST":
+            form = forms.SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+
+                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
+                    # login user
+                    user = auth.authenticate(username=user.email, password=request.POST["new_password"])
+                    auth.login(request, user)
+
+                next_param = request.GET.get("next", "/")
+                redirect_to = next_param if is_safe_url(next_param, settings.ALLOWED_REDIRECT_HOSTS, True) else "/"
+                return HttpResponseRedirect(resolve_url(redirect_to))
+        else:
+            form = forms.SetPasswordForm(user)
+    else:
+        valid_link = False
+        form = None
+
+    context = {"form": form, "valid_link": valid_link, "user_email": user.email}
+
+    return TemplateResponse(request, template_name, context)
+
+
+def set_new_user(request, uidb64=None, token=None, template_name=None):
+    assert uidb64 is not None and token is not None  # checked by URLconf
+
+    try:
+        uid = urlsafe_base64_decode(uidb64)
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and auth_tokens.default_token_generator.check_token(user, token):
+        valid_link = True
+        if request.method == "POST":
+            form = forms.SetNewUserForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+
+                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
+                    # login user
+                    user = auth.authenticate(username=user.email, password=request.POST["new_password"])
+                    auth.login(request, user)
+
+                next_param = request.GET.get("next", "/")
+                redirect_to = next_param if is_safe_url(next_param, settings.ALLOWED_REDIRECT_HOSTS, True) else "/"
+                return HttpResponseRedirect(resolve_url(redirect_to))
+        else:
+            form = forms.SetNewUserForm(user)
+    else:
+        valid_link = False
+        form = None
+
+    context = {"form": form, "valid_link": valid_link, "user_email": user.email}
+
     return TemplateResponse(request, template_name, context)
 
 

@@ -33,7 +33,6 @@ class UserManager(auth_models.BaseUserManager):
 
     def get_or_create_user_by_email(self, user_email):
         user = self.filter(email__iexact=user_email).first()
-
         if not user:
             user = self._create_user(user_email, None, False, False)
 
@@ -57,5 +56,5 @@ class UserManager(auth_models.BaseUserManager):
             **extra_fields
         )
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user

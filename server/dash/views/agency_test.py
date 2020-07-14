@@ -1182,7 +1182,7 @@ class UserActivationTestCase(DASHAPITestCase):
         self.assertEqual("Welcome to Zemanta!", sent_mail.subject, "Title must match activation mail")
         self.assertTrue(self.user.email in sent_mail.recipients())
 
-    @patch("utils.email_helper.send_email_to_new_user")  # , mock=Mock(side_effect=User.DoesNotExist))
+    @patch("utils.email_helper.send_new_user_email")  # , mock=Mock(side_effect=User.DoesNotExist))
     def test_send_mail_failure(self, mock):
         request = HttpRequest()
         request.user = User(id=1)

@@ -15,3 +15,19 @@ class MissingRequiredPermission(ValidationError):
 
 class EntityPermissionChangeNotAllowed(ValidationError):
     pass
+
+
+class EmailAlreadyExists(ValidationError):
+    pass
+
+
+class InvalidCountry(ValidationError):
+    pass
+
+
+class InvalidCompanyType(ValidationError):
+    pass
+
+
+class InvalidStartYearOfExperience(ValidationError):
+    pass

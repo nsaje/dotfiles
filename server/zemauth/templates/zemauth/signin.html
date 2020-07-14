@@ -17,52 +17,52 @@
 {% endblock %}
 
 {% block content %}
-{% get_whitelabel_info as wl %}
-<div class="page {{ wl.base }}">
-    <div class="container">
-        <div class="container__left" id="signin" data-gauth-url="{{ gauth_url }}">
-            {% if wl.base == "newscorp" %}
-            <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
-            {% else %}
-            <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
-            {% endif %}
-            <form id="signin_form" method="post" action="{% url 'signin' %}" novalidate>
-                {% csrf_token %}
-
-                <h1>Sign in</h1>
-                {{ form.username }}
-                {{ form.password }}
-
-                {% if ratelimited_error %}
-                <div class="message--error">{{ ratelimited_error }}</div>
-                {% elif form.errors %}
-                <div class="message--error">Your email and password didn't match. Please try again.</div>
+    {% get_whitelabel_info as wl %}
+    <div class="page {{ wl.base }}">
+        <div class="container">
+            <div class="container__left" id="signin" data-gauth-url="{{ gauth_url }}">
+                {% if wl.base == "newscorp" %}
+                    <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
+                {% else %}
+                    <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
                 {% endif %}
+                <form id="signin_form" method="post" action="{% url 'signin' %}" novalidate>
+                    {% csrf_token %}
 
-                {% if gauth_error %}
-                <div class="message--error">{{ gauth_error }}</div>
-                {% endif %}
+                    <h2>Sign in</h2>
+                    {{ form.username }}
+                    {{ form.password }}
 
-                <input class="button" id="id_signin_btn" type="submit" value="Sign In" />
-                <input type="hidden" name="next" value="{{ next }}" />
+                    {% if ratelimited_error %}
+                        <div class="message--error">{{ ratelimited_error }}</div>
+                    {% elif form.errors %}
+                        <div class="message--error">Your email and password didn't match. Please try again.</div>
+                    {% endif %}
 
-                <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
-            </form>
+                    {% if gauth_error %}
+                        <div class="message--error">{{ gauth_error }}</div>
+                    {% endif %}
+
+                    <input class="button" id="id_signin_btn" type="submit" value="Sign In" />
+                    <input type="hidden" name="next" value="{{ next }}" />
+
+                    <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
+                </form>
+            </div>
+            <div class="container__right" id="request_demo">
+                <h2>Request Zemanta One demo</h2>
+                <p>Content promotion can be overwhelming without the right technology and expertise. <strong>Zemanta makes it easier.</strong> Zemanta One provides direct access to 25+ networks and exchanges designed for content promotion (ie. Outbrain, Sharethrough) to drive traffic and audience. Key features include:</p>
+                <ul class="bullet--checkmark-icons">
+                    <li>Complete Transparency – Network media spend, data costs, CPCs</li>
+                    <li>One insertion order (IO) to manage budgets across 25+ networks and exchanges</li>
+                    <li>Web analytics integrations to measure post-click performance</li>
+                    <li>Real-time reporting and optimizations</li>
+                    <li>Massive scale over 250M US unique users</li>
+                </ul>
+                <a class="button" href="http://www.zemanta.com/request-demo" target="_blank">Request demo</a><br/>
+                <a class="link" href="mailto:help@zemanta.com?Subject=Sign%20In%20Page%20Issue">Contact Support</a>
+            </div>
         </div>
-        <div class="container__right" id="request_demo">
-            <h2>Request Zemanta One demo</h2>
-            <p>Content promotion can be overwhelming without the right technology and expertise. <strong>Zemanta makes it easier.</strong> Zemanta One provides direct access to 25+ networks and exchanges designed for content promotion (ie. Outbrain, Sharethrough) to drive traffic and audience. Key features include:</p>
-            <ul class="bullet--checkmark-icons">
-                <li>Complete Transparency – Network media spend, data costs, CPCs</li>
-                <li>One insertion order (IO) to manage budgets across 25+ networks and exchanges</li>
-                <li>Web analytics integrations to measure post-click performance</li>
-                <li>Real-time reporting and optimizations</li>
-                <li>Massive scale over 250M US unique users</li>
-            </ul>
-            <a class="button" href="http://www.zemanta.com/request-demo" target="_blank">Request demo</a><br/>
-            <a class="link" href="mailto:help@zemanta.com?Subject=Sign%20In%20Page%20Issue">Contact Support</a>
-        </div>
+        <div class="color-overlay"></div>
     </div>
-    <div class="color-overlay"></div>
-</div>
 {% endblock %}

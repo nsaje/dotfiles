@@ -362,13 +362,22 @@ def send_password_reset_email(user, request, next_param=""):
     )
 
 
-def send_email_to_new_user(user, request, agency=None):
-    args = {"user": user, "link_url": _generate_password_reset_url(user, request)}
+def send_new_user_email(user, request, agency=None):
+    args = {"user": user, "link_url": _generate_new_user_url(user, request)}
     send_official_email(
         agency_or_user=agency,
         recipient_list=[user.email],
         **params_from_template(dash.constants.EmailTemplateType.USER_NEW, **args),
     )
+
+
+def _generate_new_user_url(user, request):
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
+    token = default_token_generator.make_token(user)
+
+    url = request.build_absolute_uri(reverse("welcome", args=(encoded_id, token)))
+    url_parts = list(urlparse(url))
+    return urlunparse(url_parts).replace("http://", "https://")
 
 
 def _generate_password_reset_url(user, request, next_param=""):

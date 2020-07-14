@@ -227,7 +227,7 @@ class AccountUsers(DASHAPIBaseView):
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
             self._add_user_to_groups(user)
             hacks.apply_create_user_hacks(user, account)
-            email_helper.send_email_to_new_user(user, request, agency=account.agency)
+            email_helper.send_new_user_email(user, request, agency=account.agency)
 
             created = True
 
@@ -361,7 +361,7 @@ class AccountUserAction(DASHAPIBaseView):
         return self.create_api_response()
 
     def _activate(self, request, user, account):
-        email_helper.send_email_to_new_user(user, request)
+        email_helper.send_new_user_email(user, request)
 
         changes_text = "Resent activation mail {} ({})".format(user.get_full_name(), user.email)
         account.write_history(changes_text, user=request.user)

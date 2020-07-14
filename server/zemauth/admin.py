@@ -1,14 +1,17 @@
+from django import forms
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.auth import admin as authadmin
-from django.contrib.auth import forms
+from django.contrib.auth import forms as auth_forms
 from django.contrib.auth.models import Permission
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 import core.models
 import utils.exc
+import utils.forms
 import zemauth.features.entity_permission
+import zemauth.models.user.constants
 
 from . import models
 
@@ -24,7 +27,16 @@ class EntityPermissionUserInline(admin.TabularInline):
         return qs
 
 
-class UserCreationForm(forms.UserCreationForm):
+class ProgrammaticPlatformForm(forms.ModelForm):
+    programmatic_platforms = utils.forms.IntegerMultipleChoiceField(
+        choices=zemauth.models.user.constants.ProgrammaticPlatform.get_choices(),
+        label="Programmatic platforms",
+        required=False,
+        widget=forms.CheckboxSelectMultiple(),
+    )
+
+
+class UserCreationForm(auth_forms.UserCreationForm):
     username = None
 
     class Meta:
@@ -32,10 +44,22 @@ class UserCreationForm(forms.UserCreationForm):
         fields = ("email",)
 
 
-class UserChangeForm(forms.UserChangeForm):
-    class Meta(forms.UserChangeForm.Meta):
+class UserChangeForm(auth_forms.UserChangeForm, ProgrammaticPlatformForm):
+    class Meta(auth_forms.UserChangeForm.Meta):
         model = models.User
         field_classes = {"username": None}
+
+    country = utils.forms.EmptyChoiceField(
+        choices=zemauth.models.user.constants.Country.get_choices(), required=False, empty_label="---------"
+    )
+
+    company_type = utils.forms.IntegerEmptyChoiceField(
+        choices=zemauth.models.user.constants.CompanyType.get_choices(), required=False, empty_label="---------"
+    )
+
+    start_year_of_experience = utils.forms.IntegerEmptyChoiceField(
+        choices=zemauth.models.user.constants.Year.get_choices(), required=False, empty_label="---------"
+    )
 
 
 class UserAdmin(authadmin.UserAdmin):
@@ -44,7 +68,22 @@ class UserAdmin(authadmin.UserAdmin):
     search_fields = ("email", "username", "first_name", "last_name", "outbrain_user_id")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        (_("Personal info"), {"fields": ("username", "first_name", "last_name", "outbrain_user_id")}),
+        (
+            _("Personal info"),
+            {
+                "fields": (
+                    "username",
+                    "first_name",
+                    "last_name",
+                    "country",
+                    "company_type",
+                    "job_title",
+                    "start_year_of_experience",
+                    "programmatic_platforms",
+                    "outbrain_user_id",
+                )
+            },
+        ),
         (
             _("Permissions"),
             {"fields": ("is_active", "is_staff", "is_superuser", "is_test_user", "groups", "user_permissions")},

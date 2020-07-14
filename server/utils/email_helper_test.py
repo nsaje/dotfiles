@@ -209,6 +209,10 @@ class EmailHelperTestCase(TestCase):
         reset_url = email_helper._generate_password_reset_url(self.user, self.request)
         self.assertRegex(reset_url, r"https://testserver/set_password/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[0-9a-zA-Z]{20}/")
 
+    def test_generate_new_user_url(self):
+        reset_url = email_helper._generate_new_user_url(self.user, self.request)
+        self.assertRegex(reset_url, r"https://testserver/welcome/[a-zA-Z0-9]+-[a-zA-Z0-9]+-[0-9a-zA-Z]{20}/")
+
     def test_send_ad_group_notification_email(self):
         campaign_manager = User.objects.create_user("manager@user.com")
         account_manager = User.objects.create_user("accountmanager@user.com")
