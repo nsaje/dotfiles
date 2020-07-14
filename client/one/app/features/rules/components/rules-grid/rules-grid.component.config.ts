@@ -15,6 +15,9 @@ import {
     RuleActionFrequency,
 } from '../../../../core/rules/rules.constants';
 import {RuleActionsCellComponent} from '../rule-actions-cell/rule-actions-cell.component';
+import {SwitchButtonCellComponent} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
+import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/types/switch-button.renderer-params';
+import {RulesView} from '../../views/rules/rules.view';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -38,7 +41,13 @@ export const COLUMN_STATUS: ColDef = {
     width: 80,
     resizable: false,
     suppressSizeToFit: true,
-    valueFormatter: ruleStateFormatter,
+    cellRendererFramework: SwitchButtonCellComponent,
+    cellRendererParams: {
+        getSwitchValue: item => item.state === RuleState.ENABLED,
+        toggle: (componentParent: RulesView, item: Rule, value: boolean) => {
+            componentParent.onRuleStateToggle(item, value);
+        },
+    } as SwitchButtonRendererParams<Rule, RulesView>,
 };
 
 export const COLUMN_ACTION_FREQUENCY: ColDef = {

@@ -67,7 +67,7 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         max_length=127,
         error_messages={"required": "Please specify a rule name.", "null": "Please specify a rule name."},
     )
-    state = restapi.serializers.fields.DashConstantField(automation.rules.RuleState, read_only=True, required=False)
+    state = restapi.serializers.fields.DashConstantField(automation.rules.RuleState, required=False)
     archived = rest_framework.fields.BooleanField(required=False)
 
     entities = RuleEntitiesSerializer(source="*")

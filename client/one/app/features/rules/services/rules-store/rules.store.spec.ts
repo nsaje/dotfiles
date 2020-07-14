@@ -12,6 +12,7 @@ import {
     RuleActionFrequency,
     RuleNotificationType,
     TimeRange,
+    RuleState,
 } from '../../../../core/rules/rules.constants';
 
 describe('RulesLibraryStore', () => {
@@ -29,6 +30,8 @@ describe('RulesLibraryStore', () => {
         rulesServiceStub = jasmine.createSpyObj(RulesService.name, [
             'list',
             'archive',
+            'enable',
+            'pause',
         ]);
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
@@ -144,5 +147,51 @@ describe('RulesLibraryStore', () => {
             mockedRuleId,
             (<any>store).requestStateUpdater
         );
+    }));
+
+    it('should enable rule via service', fakeAsync(() => {
+        const mockedRule = mockedRules[0];
+        const mockedRuleId = mockedRule.id;
+
+        store.state.entities = [mockedRule];
+
+        rulesServiceStub.enable.and
+            .returnValue(
+                of({...mockedRule, state: RuleState.ENABLED}, asapScheduler)
+            )
+            .calls.reset();
+
+        store.enableRule(mockedRuleId);
+
+        tick();
+        expect(rulesServiceStub.enable).toHaveBeenCalledTimes(1);
+        expect(rulesServiceStub.enable).toHaveBeenCalledWith(
+            mockedRuleId,
+            (<any>store).requestStateUpdater
+        );
+        expect(store.state.entities[0].state).toEqual(RuleState.ENABLED);
+    }));
+
+    it('should pause rule via service', fakeAsync(() => {
+        const mockedRule = mockedRules[0];
+        const mockedRuleId = mockedRule.id;
+
+        store.state.entities = [mockedRule];
+
+        rulesServiceStub.pause.and
+            .returnValue(
+                of({...mockedRule, state: RuleState.PAUSED}, asapScheduler)
+            )
+            .calls.reset();
+
+        store.pauseRule(mockedRuleId);
+
+        tick();
+        expect(rulesServiceStub.pause).toHaveBeenCalledTimes(1);
+        expect(rulesServiceStub.pause).toHaveBeenCalledWith(
+            mockedRuleId,
+            (<any>store).requestStateUpdater
+        );
+        expect(store.state.entities[0].state).toEqual(RuleState.PAUSED);
     }));
 });

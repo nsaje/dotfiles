@@ -10,6 +10,7 @@ import {
     RuleActionFrequency,
     RuleNotificationType,
     RuleHistoryStatus,
+    RuleState,
 } from '../rules.constants';
 import {fakeAsync, tick} from '@angular/core/testing';
 import * as clone from 'clone';
@@ -183,6 +184,44 @@ describe('RulesService', () => {
         expect(rulesEndpointStub.edit).toHaveBeenCalledTimes(1);
         expect(rulesEndpointStub.edit).toHaveBeenCalledWith(
             {id: mockedRuleId, archived: true},
+            requestStateUpdater
+        );
+    }));
+
+    it('should enable rule', fakeAsync(() => {
+        const mockedEnabledRule = {...mockedRule, state: RuleState.ENABLED};
+        rulesEndpointStub.edit.and
+            .returnValue(of(mockedEnabledRule, asapScheduler))
+            .calls.reset();
+
+        const mockedRuleId = mockedRule.id;
+        service.enable(mockedRuleId, requestStateUpdater).subscribe(rule => {
+            expect(rule).toEqual(mockedEnabledRule);
+        });
+        tick();
+
+        expect(rulesEndpointStub.edit).toHaveBeenCalledTimes(1);
+        expect(rulesEndpointStub.edit).toHaveBeenCalledWith(
+            {id: mockedRuleId, state: RuleState.ENABLED},
+            requestStateUpdater
+        );
+    }));
+
+    it('should pause rule', fakeAsync(() => {
+        const mockedPausedRule = {...mockedRule, state: RuleState.PAUSED};
+        rulesEndpointStub.edit.and
+            .returnValue(of(mockedPausedRule, asapScheduler))
+            .calls.reset();
+
+        const mockedRuleId = mockedRule.id;
+        service.pause(mockedRuleId, requestStateUpdater).subscribe(rule => {
+            expect(rule).toEqual(mockedPausedRule);
+        });
+        tick();
+
+        expect(rulesEndpointStub.edit).toHaveBeenCalledTimes(1);
+        expect(rulesEndpointStub.edit).toHaveBeenCalledWith(
+            {id: mockedRuleId, state: RuleState.PAUSED},
             requestStateUpdater
         );
     }));

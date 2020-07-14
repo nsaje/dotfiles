@@ -1,7 +1,7 @@
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
-import {Subject} from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {RulesService} from '../../../../core/rules/services/rules.service';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
@@ -9,6 +9,8 @@ import {RulesStoreState} from './rules.store.state';
 import {takeUntil} from 'rxjs/operators';
 import {Account} from '../../../../core/entities/types/account/account';
 import {Rule} from '../../../../core/rules/types/rule';
+import {RuleState} from '../../../../core/rules/rules.constants';
+import * as clone from 'clone';
 
 @Injectable()
 export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
@@ -100,6 +102,24 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         });
     }
 
+    enableRule(ruleId: string): void {
+        this.rulesService
+            .enable(ruleId, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(savedChangedRule => {
+                this.updateRule(savedChangedRule);
+            });
+    }
+
+    pauseRule(ruleId: string): void {
+        this.rulesService
+            .pause(ruleId, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(savedChangedRule => {
+                this.updateRule(savedChangedRule);
+            });
+    }
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -154,5 +174,14 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
 
     private getOffset(page: number, pageSize: number): number {
         return (page - 1) * pageSize;
+    }
+
+    private updateRule(savedChangedRule: Rule): void {
+        const rules = clone(this.state.entities);
+        const index = rules.findIndex(rule => rule.id === savedChangedRule.id);
+        if (index !== -1) {
+            rules[index] = savedChangedRule;
+            this.patchState(rules, 'entities');
+        }
     }
 }

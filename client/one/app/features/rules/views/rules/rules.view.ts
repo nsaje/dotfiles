@@ -98,6 +98,14 @@ export class RulesView implements OnInit, OnDestroy {
         }
     }
 
+    onRuleStateToggle(rule: Rule, value: boolean): void {
+        if (value) {
+            this.store.enableRule(rule.id);
+        } else {
+            this.store.pauseRule(rule.id);
+        }
+    }
+
     private updateInternalState(queryParams: any) {
         const agencyId = queryParams.agencyId;
         const accountId = queryParams.accountId || null;

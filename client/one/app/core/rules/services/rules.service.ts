@@ -5,6 +5,7 @@ import {Observable} from 'rxjs/internal/Observable';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
 import {RuleHistory} from '../types/rule-history';
+import {RuleState} from '../rules.constants';
 
 @Injectable()
 export class RulesService {
@@ -45,6 +46,26 @@ export class RulesService {
         requestStateUpdater: RequestStateUpdater
     ): Observable<Rule> {
         return this.edit({id: ruleId, archived: true}, requestStateUpdater);
+    }
+
+    enable(
+        ruleId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule> {
+        return this.edit(
+            {id: ruleId, state: RuleState.ENABLED},
+            requestStateUpdater
+        );
+    }
+
+    pause(
+        ruleId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Rule> {
+        return this.edit(
+            {id: ruleId, state: RuleState.PAUSED},
+            requestStateUpdater
+        );
     }
 
     get(
