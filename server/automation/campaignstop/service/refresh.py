@@ -50,7 +50,7 @@ def _refresh_campaigns_realtime_data(campaigns):
 
 
 def _refresh_ad_groups_realtime_data(campaign):
-    ad_groups = campaign.adgroup_set.all().select_related("campaign__account__yahoo_account")
+    ad_groups = campaign.adgroup_set.all().select_related("campaign__account__yahoo_account").exclude_archived()
     for ad_group in ad_groups:
         try:
             stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=True)
@@ -107,7 +107,7 @@ def _should_refresh_campaign_realtime_data_for_yesterday(campaign):
 
 def _refresh_realtime_campaign_data_for_date(campaign, date):
     spends = (
-        RealTimeDataHistory.objects.filter(ad_group__in=campaign.adgroup_set.all(), date=date)
+        RealTimeDataHistory.objects.filter(ad_group__in=campaign.adgroup_set.all().exclude_archived(), date=date)
         .distinct("ad_group_id", "source_id")
         .order_by("ad_group_id", "source_id", "-created_dt")
         .values_list("etfm_spend", flat=True)
