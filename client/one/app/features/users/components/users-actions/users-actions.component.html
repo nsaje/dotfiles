@@ -11,8 +11,9 @@
 </div>
 <zem-checkbox-input
     *ngIf="isShowInternalVisible"
-    class="zem-checkbox-input zem-users-actions__show_internal"
+    class="zem-checkbox-input"
     [isChecked]="showInternal"
+    [zemInternalFeature]="true"
     (toggle)="showInternalChange.emit($event)"
 >
     Show internal users
