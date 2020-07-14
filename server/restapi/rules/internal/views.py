@@ -135,6 +135,12 @@ class RuleViewSet(RESTAPIBaseViewSet):
                     errors.setdefault("agency_id", []).append(str(e))
                 if isinstance(e, automation.rules.InvalidAccount):
                     errors.setdefault("account_id", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidIncludedAccounts):
+                    errors.setdefault("accounts_included", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidIncludedCampaigns):
+                    errors.setdefault("campaigns_included", []).append(str(e))
+                if isinstance(e, automation.rules.InvalidIncludedAdGroups):
+                    errors.setdefault("ad_groups_included", []).append(str(e))
             raise utils.exc.ValidationError(errors=errors)
 
 

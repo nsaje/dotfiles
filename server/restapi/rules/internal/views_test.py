@@ -91,9 +91,19 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             "agencyName": agency.name if agency else "",
             "accountId": account_id,
             "entities": {
-                "adGroup": {"included": ad_groups_included},
-                "campaign": {"included": campaigns_included},
-                "account": {"included": accounts_included},
+                "adGroups": {
+                    "included": [{"id": str(ag.id), "name": ag.settings.ad_group_name} for ag in ad_groups_included]
+                },
+                "campaigns": {
+                    "included": [
+                        {"id": str(campaign.id), "name": campaign.settings.name} for campaign in campaigns_included
+                    ]
+                },
+                "accounts": {
+                    "included": [
+                        {"id": str(account.id), "name": account.settings.name} for account in accounts_included
+                    ]
+                },
             },
             "accountName": account.settings.name if account else "",
             "targetType": automation.rules.TargetType.get_name(target_type),
@@ -156,9 +166,9 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             account_id=rule_db.account_id,
             name=rule_db.name,
             state=rule_db.state,
-            ad_groups_included=[ag.id for ag in rule_db.ad_groups_included.all()],
-            campaigns_included=[campaign.id for campaign in rule_db.campaigns_included.all()],
-            accounts_included=[acc.id for acc in rule_db.accounts_included.all()],
+            ad_groups_included=rule_db.ad_groups_included.all(),
+            campaigns_included=rule_db.campaigns_included.all(),
+            accounts_included=rule_db.accounts_included.all(),
             target_type=rule_db.target_type,
             action_type=rule_db.action_type,
             window=rule_db.window,
@@ -273,7 +283,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             name="New test rule",
             state=automation.rules.RuleState.ENABLED,
             agency_id=self.agency.id,
-            ad_groups_included=[self.ad_group.id],
+            ad_groups_included=[self.ad_group],
             campaigns_included=[],
             accounts_included=[],
             target_type=automation.rules.TargetType.PUBLISHER,
@@ -313,7 +323,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
             name="New test rule",
             state=automation.rules.RuleState.ENABLED,
             agency_id=self.agency.id,
-            ad_groups_included=[self.ad_group.id],
+            ad_groups_included=[self.ad_group],
             campaigns_included=[],
             accounts_included=[],
             target_type=automation.rules.TargetType.PUBLISHER,

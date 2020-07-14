@@ -18,11 +18,12 @@ import {RuleActionsCellComponent} from '../rule-actions-cell/rule-actions-cell.c
 import {SwitchButtonCellComponent} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
 import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/types/switch-button.renderer-params';
 import {RulesView} from '../../views/rules/rules.view';
+import {RuleRunsOnCellComponent} from '../rule-runs-on-cell/rule-runs-on-cell.component';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
     field: 'name',
-    width: 80,
+    width: 120,
     resizable: false,
     suppressSizeToFit: true,
 };
@@ -30,7 +31,7 @@ export const COLUMN_NAME: ColDef = {
 export const COLUMN_ACTION_TYPE: ColDef = {
     headerName: 'Action type',
     field: 'actionType',
-    width: 150,
+    width: 160,
     suppressSizeToFit: true,
     valueFormatter: actionTypeFormatter,
 };
@@ -62,10 +63,17 @@ export const COLUMN_ACTION_FREQUENCY: ColDef = {
 export const COLUMN_NOTIFICATION: ColDef = {
     headerName: 'Notification',
     field: 'notificationType',
-    width: 80,
+    width: 140,
     resizable: false,
     suppressSizeToFit: true,
     valueFormatter: notificationTypeFormatter,
+};
+
+export const COLUMN_RUNS_ON: ColDef = {
+    headerName: 'Runs on',
+    cellRendererFramework: RuleRunsOnCellComponent,
+    width: 200,
+    suppressSizeToFit: true,
 };
 
 export const COLUMN_SCOPE: ColDef = {

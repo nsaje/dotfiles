@@ -36,25 +36,64 @@ class RuleConditionSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     value = RuleConditionValueSerializer(source="*")
 
 
-class RuleEntitySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    def __init__(self, *args, level=None, queryset=None, **kwargs):
-        self.fields["included"] = rest_framework.serializers.SlugRelatedField(
-            source=level + "_included", queryset=queryset, required=False, many=True, slug_field="id"
-        )
-        # self.fields["excluded"] = rest_framework.serializers.SlugRelatedField(source=level + "_excluded", required=False, many=True, slug_field="id", read_only=True)
-        super().__init__(*args, **kwargs)
+class RuleAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(required=True)
+    name = rest_framework.serializers.CharField(source="settings.ad_group_name", allow_blank=True, required=False)
+
+
+class RuleCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(required=True)
+    name = rest_framework.serializers.CharField(source="settings.name", allow_blank=True, required=False)
+
+
+class RuleAccountSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(required=True)
+    name = rest_framework.serializers.CharField(source="settings.name", allow_blank=True, required=False)
+
+
+class RuleAdGroupsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    included = RuleAdGroupSerializer(source="ad_groups_included", many=True, read_only=True)
+
+    def to_internal_value(self, instance):
+        data = super().to_internal_value(instance)
+        ad_groups = [
+            zemauth.access.get_ad_group(self.context["request"].user, Permission.WRITE, ag.get("id"))
+            for ag in instance.get("included")
+        ]
+        data["ad_groups_included"] = ad_groups
+        return data
+
+
+class RuleCampaignsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    included = RuleCampaignSerializer(source="campaigns_included", many=True, read_only=True)
+
+    def to_internal_value(self, instance):
+        data = super().to_internal_value(instance)
+        campaigns = [
+            zemauth.access.get_campaign(self.context["request"].user, Permission.WRITE, campaign.get("id"))
+            for campaign in instance.get("included")
+        ]
+        data["campaigns_included"] = campaigns
+        return data
+
+
+class RuleAccountsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    included = RuleAccountSerializer(source="accounts_included", many=True, read_only=True)
+
+    def to_internal_value(self, instance):
+        data = super().to_internal_value(instance)
+        accounts = [
+            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, account.get("id"))
+            for account in instance.get("included")
+        ]
+        data["accounts_included"] = accounts
+        return data
 
 
 class RuleEntitiesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    ad_group = RuleEntitySerializer(
-        level="ad_groups", queryset=core.models.AdGroup.objects.all(), source="*", required=False
-    )
-    campaign = RuleEntitySerializer(
-        level="campaigns", queryset=core.models.Campaign.objects.all(), source="*", required=False
-    )
-    account = RuleEntitySerializer(
-        level="accounts", queryset=core.models.Account.objects.all(), source="*", required=False
-    )
+    ad_groups = RuleAdGroupsSerializer(source="*", required=False)
+    campaigns = RuleCampaignsSerializer(source="*", required=False)
+    accounts = RuleAccountsSerializer(source="*", required=False)
 
 
 class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

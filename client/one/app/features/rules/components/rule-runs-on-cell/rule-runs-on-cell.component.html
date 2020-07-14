@@ -1,0 +1,13 @@
+<div class="zem-rule-runs-on-cell">
+    <ng-container *ngIf="entityType">
+        <a
+            class="zem-rule-runs-on-cell__link"
+            *ngIf="entityLink"
+            [href]="entityLink"
+            title="{{ entityType }} ({{ entityName }})"
+            target="_blank"
+            >{{ entityType }} ({{ entityName }})</a
+        >
+    </ng-container>
+    <span class="zem-rule-runs-on-cell__text" *ngIf="!entityType">N/A</span>
+</div>

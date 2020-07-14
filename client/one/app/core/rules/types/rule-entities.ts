@@ -1,5 +1,7 @@
-import {RuleEntity} from './rule-entity';
+import {RuleEntityOptions} from './rule-entity-options';
 
 export interface RuleEntities {
-    adGroup?: RuleEntity;
+    adGroups?: RuleEntityOptions;
+    campaigns?: RuleEntityOptions;
+    accounts?: RuleEntityOptions;
 }

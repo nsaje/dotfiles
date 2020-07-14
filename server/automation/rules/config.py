@@ -61,36 +61,36 @@ VALID_ACTION_TYPES_FOR_TARGET = {
     ],
 }
 
-ADJUSTEMENT_ACTION_TYPE_PERCENTAGE = "percentage"
-ADJUSTEMENT_ACTION_TYPE_CURRENCY = "currency"
+ADJUSTMENT_ACTION_TYPE_PERCENTAGE = "percentage"
+ADJUSTMENT_ACTION_TYPE_CURRENCY = "currency"
 
-ADJUSTEMENT_ACTION_TYPES = {
+ADJUSTMENT_ACTION_TYPES = {
     constants.ActionType.INCREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
         min_limit=float(MODIFIER_MIN),
         max_limit=float(MODIFIER_MAX),
         min_step=0.01,
         max_step=1,
-        type=ADJUSTEMENT_ACTION_TYPE_PERCENTAGE,
+        type=ADJUSTMENT_ACTION_TYPE_PERCENTAGE,
     ),
     constants.ActionType.DECREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
         min_limit=float(MODIFIER_MIN),
         max_limit=float(MODIFIER_MAX),
         min_step=0.01,
         max_step=1,
-        type=ADJUSTEMENT_ACTION_TYPE_PERCENTAGE,
+        type=ADJUSTMENT_ACTION_TYPE_PERCENTAGE,
     ),
     # TODO: Separate limits for CPC and CPM
     constants.ActionType.INCREASE_BID: AdjustmentTypeConfiguration(
-        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTEMENT_ACTION_TYPE_CURRENCY
+        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
     ),
     constants.ActionType.DECREASE_BID: AdjustmentTypeConfiguration(
-        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTEMENT_ACTION_TYPE_CURRENCY
+        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
     ),
     constants.ActionType.INCREASE_BUDGET: AdjustmentTypeConfiguration(
-        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTEMENT_ACTION_TYPE_CURRENCY
+        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
     ),
     constants.ActionType.DECREASE_BUDGET: AdjustmentTypeConfiguration(
-        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTEMENT_ACTION_TYPE_CURRENCY
+        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
     ),
 }
 

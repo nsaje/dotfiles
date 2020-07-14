@@ -59,9 +59,9 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 accountId: null,
                 entities: {
                     ...this.state.rule.entities,
-                    adGroup: {
-                        ...this.state.rule.entities.adGroup,
-                        included: [adGroupId],
+                    adGroups: {
+                        ...this.state.rule.entities.adGroups,
+                        included: [{id: adGroupId}],
                     },
                 },
             },

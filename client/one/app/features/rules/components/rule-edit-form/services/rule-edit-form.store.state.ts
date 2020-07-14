@@ -25,7 +25,7 @@ export class RuleEditFormStoreState {
         accountId: null,
         name: null,
         entities: {
-            adGroup: {
+            adGroups: {
                 included: [],
             },
         },

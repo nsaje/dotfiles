@@ -82,8 +82,8 @@ describe('RulesLibraryStore', () => {
 
         const mockedNewRule = clone(mockedRule);
         mockedNewRule.entities = {
-            adGroup: {
-                included: [mockedAdGroupId],
+            adGroups: {
+                included: [{id: mockedAdGroupId}],
             },
         };
 

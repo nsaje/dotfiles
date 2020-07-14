@@ -76,13 +76,13 @@ class RuleValidationMixin:
 
     def _validate_change_step(self, changes, change_step):
         action_type = changes.get("action_type", self.action_type)
-        if action_type not in config.ADJUSTEMENT_ACTION_TYPES and change_step is not None:
+        if action_type not in config.ADJUSTMENT_ACTION_TYPES and change_step is not None:
             action_type_name = constants.ActionType.get_name(action_type)
             raise exceptions.InvalidChangeStep(
                 f"Change step not expected to be set for action type: {action_type_name}."
             )
-        if action_type in config.ADJUSTEMENT_ACTION_TYPES:
-            action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
+        if action_type in config.ADJUSTMENT_ACTION_TYPES:
+            action_type_config = config.ADJUSTMENT_ACTION_TYPES[action_type]
             sign = self._get_sign(action_type_config)
             if change_step is None:
                 raise exceptions.InvalidChangeStep("Please provide change step")
@@ -104,22 +104,22 @@ class RuleValidationMixin:
         return self._get_action_type_step_value(action_type_config.min_step, action_type_config.type)
 
     def _get_action_type_step_value(self, value, type_):
-        if type_ == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
+        if type_ == config.ADJUSTMENT_ACTION_TYPE_CURRENCY:
             return value
-        elif type_ == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
+        elif type_ == config.ADJUSTMENT_ACTION_TYPE_PERCENTAGE:
             return value * 100
         else:
             raise Exception("Unknown type")
 
     def _validate_change_limit(self, changes, change_limit):
         action_type = changes.get("action_type", self.action_type)
-        if action_type not in config.ADJUSTEMENT_ACTION_TYPES and change_limit is not None:
+        if action_type not in config.ADJUSTMENT_ACTION_TYPES and change_limit is not None:
             action_type_name = constants.ActionType.get_name(action_type)
             raise exceptions.InvalidChangeLimit(
                 f"Change limit not expected to be set for action type: {action_type_name}."
             )
-        if action_type in config.ADJUSTEMENT_ACTION_TYPES:
-            action_type_config = config.ADJUSTEMENT_ACTION_TYPES[action_type]
+        if action_type in config.ADJUSTMENT_ACTION_TYPES:
+            action_type_config = config.ADJUSTMENT_ACTION_TYPES[action_type]
             sign = self._get_sign(action_type_config)
             if change_limit is None:
                 raise exceptions.InvalidChangeLimit("Please provide change limit")
@@ -141,17 +141,17 @@ class RuleValidationMixin:
         return self._get_action_type_limit_value(action_type_config.min_limit, action_type_config.type)
 
     def _get_action_type_limit_value(self, value, type_):
-        if type_ == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
+        if type_ == config.ADJUSTMENT_ACTION_TYPE_CURRENCY:
             return value
-        elif type_ == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
+        elif type_ == config.ADJUSTMENT_ACTION_TYPE_PERCENTAGE:
             return (value - 1) * 100
         else:
             raise Exception("Unknown type")
 
     def _get_sign(self, action_type_config):
-        if action_type_config.type == config.ADJUSTEMENT_ACTION_TYPE_PERCENTAGE:
+        if action_type_config.type == config.ADJUSTMENT_ACTION_TYPE_PERCENTAGE:
             return "%"
-        if action_type_config.type == config.ADJUSTEMENT_ACTION_TYPE_CURRENCY:
+        if action_type_config.type == config.ADJUSTMENT_ACTION_TYPE_CURRENCY:
             return "$"
         return ""
 

@@ -1,3 +1,4 @@
 export interface RuleEntity {
-    included: string[];
+    id: string;
+    name?: string;
 }
