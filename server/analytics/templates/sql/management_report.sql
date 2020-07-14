@@ -68,8 +68,8 @@ FROM
         (SELECT acc.agency_id AS agency_id,
                 acc.id AS account_id,
                 stats.date AS date,
-                sum(stats.effective_cost_nano::decimal)/1e9 AS media,
-                sum(stats.effective_data_cost_nano::decimal)/1e9 AS DATA,
+                sum(stats.base_effective_cost_nano::decimal)/1e9 AS media,
+                sum(stats.base_effective_data_cost_nano::decimal)/1e9 AS DATA,
                 sum(stats.license_fee_nano::decimal)/1e9 AS fee
          FROM mv_account stats
          JOIN mv_rds_account acc ON acc.id = stats.account_id
