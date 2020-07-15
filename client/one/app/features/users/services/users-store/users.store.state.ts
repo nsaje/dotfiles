@@ -10,6 +10,7 @@ export class UsersStoreState {
     accountId: string = null;
     hasAgencyScope: boolean = null;
     hasAllAccountsScope: boolean = null;
+    canEditUsers: boolean = null;
     entities: User[] = [];
     activeEntity = {
         entity: {

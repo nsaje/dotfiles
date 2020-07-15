@@ -41,6 +41,7 @@ describe('UsersStore', () => {
         zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
             'canEditUsersOnAgency',
             'canEditUsersOnAllAccounts',
+            'canEditUsersOnEntity',
         ]);
 
         store = new UsersStore(
@@ -158,6 +159,9 @@ describe('UsersStore', () => {
             .returnValue(true)
             .calls.reset();
         zemPermissionsStub.canEditUsersOnAllAccounts.and
+            .returnValue(true)
+            .calls.reset();
+        zemPermissionsStub.canEditUsersOnEntity.and
             .returnValue(true)
             .calls.reset();
     });

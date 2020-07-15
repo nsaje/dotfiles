@@ -2,26 +2,34 @@
 
 <ng-container *ngIf="store.state$ | async as state">
     <div class="zem-panel zem-panel--with-padding zem-users-view__panel">
-        <zem-users-actions
-            class="zem-users-actions zem-users-view__item"
-            [value]="keyword"
-            [isShowInternalVisible]="state.hasAllAccountsScope"
-            [showInternal]="showInternal"
-            [isDisabled]="!state.agencyId"
-            (search)="searchUsers($event)"
-            (userCreate)="openEditUserModal({})"
-            (showInternalChange)="changeShowInternal($event)"
+        <div *ngIf="state.canEditUsers !== false">
+            <zem-users-actions
+                class="zem-users-actions zem-users-view__item"
+                [value]="keyword"
+                [isShowInternalVisible]="state.hasAllAccountsScope"
+                [showInternal]="showInternal"
+                [isDisabled]="!state.agencyId"
+                (search)="searchUsers($event)"
+                (userCreate)="openEditUserModal({})"
+                (showInternalChange)="changeShowInternal($event)"
+            >
+            </zem-users-actions>
+            <zem-users-grid
+                [users]="state.entities"
+                [context]="context"
+                [isLoading]="state.requests.list.inProgress"
+                [paginationOptions]="paginationOptions"
+                [paginationCount]="state.requests.list.count"
+                (paginationChange)="onPaginationChange($event)"
+            >
+            </zem-users-grid>
+        </div>
+        <div
+            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+            *ngIf="state.canEditUsers === false"
         >
-        </zem-users-actions>
-        <zem-users-grid
-            [users]="state.entities"
-            [context]="context"
-            [isLoading]="state.requests.list.inProgress"
-            [paginationOptions]="paginationOptions"
-            [paginationCount]="state.requests.list.count"
-            (paginationChange)="onPaginationChange($event)"
-        >
-        </zem-users-grid>
+            You do not have permission to manage users on this account
+        </div>
     </div>
     <zem-modal
         #editUserModal

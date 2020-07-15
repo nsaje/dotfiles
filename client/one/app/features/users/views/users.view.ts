@@ -164,7 +164,12 @@ export class UsersView implements OnInit, OnDestroy {
 
     updateAvailableAccounts(entityAccounts: Account[]) {
         this.availableAccounts = this.store.state.accounts.filter(
-            account => !entityAccounts.includes(account)
+            account =>
+                !entityAccounts.includes(account) &&
+                this.zemPermissions.canEditUsersOnEntity(
+                    this.store.state.agencyId,
+                    account.id
+                )
         );
     }
 

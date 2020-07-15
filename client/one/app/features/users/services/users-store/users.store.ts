@@ -60,34 +60,46 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         keyword: string | null,
         showInternal: boolean | null
     ): Promise<boolean> {
-        return new Promise<boolean>(resolve => {
-            Promise.all([
-                this.loadUsers(
-                    agencyId,
-                    accountId,
-                    page,
-                    pageSize,
-                    keyword,
-                    showInternal
-                ),
-                this.loadAccounts(agencyId),
-            ])
-                .then((values: [User[], Account[]]) => {
-                    this.setState({
-                        ...this.state,
-                        agencyId: agencyId,
-                        accountId: accountId,
-                        hasAgencyScope: this.zemPermissions.canEditUsersOnAgency(
-                            agencyId
-                        ),
-                        hasAllAccountsScope: this.zemPermissions.canEditUsersOnAllAccounts(),
-                        entities: values[0],
-                        accounts: values[1],
-                    });
-                    resolve(true);
-                })
-                .catch(() => resolve(false));
-        });
+        const canEditUsers: boolean = this.zemPermissions.canEditUsersOnEntity(
+            agencyId,
+            accountId
+        );
+        if (canEditUsers) {
+            return new Promise<boolean>(resolve => {
+                Promise.all([
+                    this.loadUsers(
+                        agencyId,
+                        accountId,
+                        page,
+                        pageSize,
+                        keyword,
+                        showInternal
+                    ),
+                    this.loadAccounts(agencyId),
+                ])
+                    .then((values: [User[], Account[]]) => {
+                        this.setState({
+                            ...this.state,
+                            agencyId: agencyId,
+                            accountId: accountId,
+                            hasAgencyScope: this.zemPermissions.canEditUsersOnAgency(
+                                agencyId
+                            ),
+                            hasAllAccountsScope: this.zemPermissions.canEditUsersOnAllAccounts(),
+                            canEditUsers,
+                            entities: values[0],
+                            accounts: values[1],
+                        });
+                        resolve(true);
+                    })
+                    .catch(() => resolve(false));
+            });
+        } else {
+            this.setState({...new UsersStoreState(), canEditUsers});
+            return new Promise<boolean>(resolve => {
+                resolve(false);
+            });
+        }
     }
 
     loadEntities(

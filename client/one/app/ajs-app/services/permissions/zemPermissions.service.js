@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../shared/helpers/common.helpers');
+
 angular
     .module('one.services')
     .service('zemPermissions', function(zemUserService) {
@@ -15,6 +17,7 @@ angular
         this.canAccessPlatformCosts = canAccessPlatformCosts;
         this.canAccessAgencyCosts = canAccessAgencyCosts;
         this.hasAgencyScope = hasAgencyScope;
+        this.canEditUsersOnEntity = canEditUsersOnEntity;
         this.canEditUsersOnAgency = canEditUsersOnAgency;
         this.canEditUsersOnAllAccounts = canEditUsersOnAllAccounts;
 
@@ -42,11 +45,17 @@ angular
             if (!user || !user.entityPermissions) {
                 return false;
             }
+            var parsedAgencyId = commonHelpers.isDefined(agencyId)
+                ? parseInt(agencyId, 10)
+                : null;
+            var parsedAccountId = commonHelpers.isDefined(accountId)
+                ? parseInt(accountId, 10)
+                : null;
 
             return user.entityPermissions.some(function(ep) {
                 return (
-                    [agencyId, null].includes(ep.agencyId) &&
-                    [accountId, null].includes(ep.accountId) &&
+                    [agencyId, parsedAgencyId, null].includes(ep.agencyId) &&
+                    [accountId, parsedAccountId, null].includes(ep.accountId) &&
                     ep.permission === permission
                 );
             });
@@ -123,6 +132,10 @@ angular
             }
             var user = zemUserService.current();
             return user.agencies.includes(Number(agencyId));
+        }
+
+        function canEditUsersOnEntity(agencyId, accountId) {
+            return hasEntityPermission(agencyId, accountId, 'user');
         }
 
         function canEditUsersOnAgency(agencyId) {
