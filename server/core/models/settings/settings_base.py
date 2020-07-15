@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
@@ -9,6 +7,7 @@ from django.db import transaction
 import core.features.history
 import core.signals
 from dash import constants
+from utils import dates_helper
 from utils.settings_fields import resolve_related_model_field_name
 
 from .update_object import UpdateObject
@@ -62,7 +61,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
             self._create_copy()
 
         self.created_by = user
-        self.created_dt = datetime.utcnow()
+        self.created_dt = dates_helper.utc_now()
         if update_fields is not None:
             update_fields.extend(["created_by", "created_dt"])
         if self.has_field("system_user"):

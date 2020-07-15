@@ -52,6 +52,50 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(dates_helper.utc_today(), campaign_history.date)
         self.assertEqual(self.data["stats"][0]["spend"], campaign_history.etfm_spend)
 
+    @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
+    def test_refresh_archived_adgroup_today(self, mock_get_realtime_data):
+        mock_get_realtime_data.return_value = self.data
+
+        self.ad_group.archive(None)
+
+        self.assertFalse(RealTimeDataHistory.objects.exists())
+        self.assertFalse(RealTimeCampaignDataHistory.objects.exists())
+
+        refresh.refresh_realtime_data()
+        self.assertEqual(1, RealTimeDataHistory.objects.count())
+        self.assertEqual(1, RealTimeCampaignDataHistory.objects.count())
+
+        history = RealTimeDataHistory.objects.get()
+        self.assertEqual(self.ad_group.id, history.ad_group_id)
+        self.assertEqual(self.source.id, history.source_id)
+        self.assertEqual(dates_helper.utc_today(), history.date)
+        self.assertEqual(self.data["stats"][0]["spend"], history.etfm_spend)
+
+        campaign_history = RealTimeCampaignDataHistory.objects.get()
+        self.assertEqual(self.campaign.id, campaign_history.campaign_id)
+        self.assertEqual(dates_helper.utc_today(), campaign_history.date)
+        self.assertEqual(self.data["stats"][0]["spend"], campaign_history.etfm_spend)
+
+    @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
+    def test_refresh_archived_adgroup_in_the_past(self, mock_get_realtime_data):
+        mock_get_realtime_data.return_value = self.data
+
+        with mock.patch("utils.dates_helper.utc_now") as mock_now:
+            mock_now.return_value = datetime.datetime(2000, 1, 1)
+            self.ad_group.archive(None)
+
+        self.assertFalse(RealTimeDataHistory.objects.exists())
+        self.assertFalse(RealTimeCampaignDataHistory.objects.exists())
+
+        refresh.refresh_realtime_data()
+        self.assertFalse(RealTimeDataHistory.objects.exists())
+
+        # empty campaign history
+        campaign_history = RealTimeCampaignDataHistory.objects.get()
+        self.assertEqual(self.campaign.id, campaign_history.campaign_id)
+        self.assertEqual(dates_helper.utc_today(), campaign_history.date)
+        self.assertEqual(0, campaign_history.etfm_spend)
+
     @mock.patch("automation.campaignstop.service.refresh.metrics_compat")
     @mock.patch("automation.campaignstop.service.refresh.logger")
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")

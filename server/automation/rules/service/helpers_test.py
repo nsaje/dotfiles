@@ -1,4 +1,3 @@
-import contextlib
 import datetime
 
 import mock
@@ -157,54 +156,54 @@ class GetTimeActiveTest(TestCase):
     def setUp(self):
         self.utc_dt_ad_group = datetime.datetime(2020, 5, 2, 22, 0, 0)
         self.utc_dt_first_settings = datetime.datetime(2020, 5, 2, 22, 0, 1)
-        with patch_settings_datetime(self.utc_dt_ad_group):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_ad_group):
             self.ad_group = magic_mixer.blend(core.models.AdGroup)
 
     def test_whole_day(self):
-        with patch_settings_datetime(self.utc_dt_first_settings):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_first_settings):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
 
         time_active = helpers._get_time_active_yesterday_per_ad_group_id([self.ad_group])
         self.assertEqual({self.ad_group.id: 24 * 60 * 60}, time_active)
 
     def test_inactive_start_of_day(self):
-        with patch_settings_datetime(self.utc_dt_first_settings):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_first_settings):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
 
         time_active = helpers._get_time_active_yesterday_per_ad_group_id([self.ad_group])
         self.assertEqual({}, time_active)
 
     def test_inactive_end_of_day(self):
-        with patch_settings_datetime(self.utc_dt_first_settings):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_first_settings):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(12)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(12)):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
 
         time_active = helpers._get_time_active_yesterday_per_ad_group_id([self.ad_group])
         self.assertEqual({self.ad_group.id: 12 * 60 * 60}, time_active)
 
     def test_paused_and_started_midday(self):
-        with patch_settings_datetime(self.utc_dt_first_settings):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_first_settings):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(12)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(12)):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(12, 30)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(12, 30)):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(17)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(17)):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(18, 40)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(18, 40)):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
 
         time_active = helpers._get_time_active_yesterday_per_ad_group_id([self.ad_group])
         self.assertEqual({self.ad_group.id: 130 * 60}, time_active)
 
     def test_multiple_ad_groups(self):
-        with patch_settings_datetime(self.utc_dt_first_settings):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self.utc_dt_first_settings):
             self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
 
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(11, 59)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(11, 59)):
             new_ad_group = magic_mixer.blend(core.models.AdGroup)
-        with patch_settings_datetime(self._get_yesterday_local_to_utc(12)):
+        with mock.patch("utils.dates_helper.utc_now", return_value=self._get_yesterday_local_to_utc(12)):
             new_ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
 
         time_active = helpers._get_time_active_yesterday_per_ad_group_id([new_ad_group, self.ad_group])
@@ -217,12 +216,3 @@ class GetTimeActiveTest(TestCase):
         )
         mock_utc_dt = dates_helper.local_to_utc_time(mock_local_dt).replace(tzinfo=None)
         return mock_utc_dt
-
-
-@contextlib.contextmanager
-def patch_settings_datetime(mocked_datetime):
-    with mock.patch(
-        "core.models.settings.settings_base.datetime",
-        type("_mockdatetime", (datetime.datetime,), {"utcnow": lambda: mocked_datetime}),
-    ) as datetime_mock:
-        yield (datetime_mock,)

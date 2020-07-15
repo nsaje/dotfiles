@@ -72,7 +72,7 @@ def days_after(date, days):
 
 
 def get_midnight(dt):
-    return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    return datetime.datetime.combine(dt, datetime.datetime.min.time())
 
 
 def local_midnight_to_utc_time():
