@@ -58,7 +58,7 @@ class RDSModelization(object):
         if not self.rds_data:
             self.rds_data = self._get_rds_queryset()
         columns = [self.PK] + list(self.FIELDS.keys())
-        for l in self.rds_data:
+        for l in self.rds_data.iterator():
             yield [l.get(col) for col in columns]
 
     def _load_csv_from_s3(self):
