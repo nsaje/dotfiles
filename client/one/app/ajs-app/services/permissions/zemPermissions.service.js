@@ -17,6 +17,7 @@ angular
         this.canAccessPlatformCosts = canAccessPlatformCosts;
         this.canAccessAgencyCosts = canAccessAgencyCosts;
         this.hasAgencyScope = hasAgencyScope;
+        this.canEditUsersOnEntity = canEditUsersOnEntity;
         this.canEditUsersOnAgency = canEditUsersOnAgency;
         this.canEditUsersOnAllAccounts = canEditUsersOnAllAccounts;
         this.getCurrentUserId = getCurrentUserId;
@@ -132,6 +133,10 @@ angular
             }
             var user = zemUserService.current();
             return user.agencies.includes(Number(agencyId));
+        }
+
+        function canEditUsersOnEntity(agencyId, accountId) {
+            return hasEntityPermission(agencyId, accountId, 'user');
         }
 
         function canEditUsersOnAgency(agencyId) {
