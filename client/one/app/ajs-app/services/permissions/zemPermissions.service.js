@@ -17,9 +17,9 @@ angular
         this.canAccessPlatformCosts = canAccessPlatformCosts;
         this.canAccessAgencyCosts = canAccessAgencyCosts;
         this.hasAgencyScope = hasAgencyScope;
-        this.canEditUsersOnEntity = canEditUsersOnEntity;
         this.canEditUsersOnAgency = canEditUsersOnAgency;
         this.canEditUsersOnAllAccounts = canEditUsersOnAllAccounts;
+        this.getCurrentUserId = getCurrentUserId;
 
         function hasPermission(permission) {
             // Can take string or array (legacy option), returns true if user has all of the permissions
@@ -134,15 +134,15 @@ angular
             return user.agencies.includes(Number(agencyId));
         }
 
-        function canEditUsersOnEntity(agencyId, accountId) {
-            return hasEntityPermission(agencyId, accountId, 'user');
-        }
-
         function canEditUsersOnAgency(agencyId) {
             return hasEntityPermission(agencyId, null, 'user');
         }
 
         function canEditUsersOnAllAccounts() {
             return hasEntityPermission(null, null, 'user');
+        }
+
+        function getCurrentUserId() {
+            return zemUserService.current().id;
         }
     });

@@ -63,17 +63,22 @@
                         <zem-scope-selector
                             class="zem-scope-selector zem-users-view__scope-selector"
                             [scopeState]="state.activeEntity.scopeState"
-                            [isAllAccountsScopeVisible]="true"
+                            [isAllAccountsScopeVisible]="
+                                state.hasAllAccountsScope
+                            "
                             [isAllAccountsScopeDisabled]="
                                 !state.hasAllAccountsScope ||
-                                state.activeEntity.isReadOnly
+                                state.activeEntity.isReadOnly ||
+                                state.activeEntity.isCurrentUser
                             "
                             [isAgencyScopeDisabled]="
                                 !state.hasAgencyScope ||
-                                state.activeEntity.isReadOnly
+                                state.activeEntity.isReadOnly ||
+                                state.activeEntity.isCurrentUser
                             "
                             [isAccountScopeDisabled]="
-                                state.activeEntity.isReadOnly
+                                state.activeEntity.isReadOnly ||
+                                state.activeEntity.isCurrentUser
                             "
                             (scopeStateChange)="
                                 store.setActiveEntityScope($event)
@@ -118,7 +123,10 @@
                         >
                             <zem-item-list
                                 class="zem-item-list zem-users-view__account-list"
-                                [isDisabled]="state.activeEntity.isReadOnly"
+                                [isDisabled]="
+                                    state.activeEntity.isReadOnly ||
+                                    state.activeEntity.isCurrentUser
+                                "
                                 [items]="
                                     store.state.activeEntity.entityAccounts
                                 "
@@ -161,7 +169,10 @@
                                 [appendTo]="'body'"
                                 [isClearable]="false"
                                 [isSearchable]="true"
-                                [isDisabled]="state.activeEntity.isReadOnly"
+                                [isDisabled]="
+                                    state.activeEntity.isReadOnly ||
+                                    state.activeEntity.isCurrentUser
+                                "
                                 (valueChange)="addAccountById($event)"
                             >
                             </zem-select-input>
@@ -170,6 +181,7 @@
                             class="zem-users-view__entity-permission-selector zem-entity-permission-selector"
                             [isDisabled]="
                                 state.activeEntity.isReadOnly ||
+                                state.activeEntity.isCurrentUser ||
                                 (state.activeEntity.scopeState ===
                                     ScopeSelectorState.ACCOUNT_SCOPE &&
                                     state.activeEntity.selectedAccounts

@@ -109,6 +109,10 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
 
     def set_entity_permissions(self, request, account, agency, new_entity_permissions):
         calling_user = request.user
+
+        if self.id == calling_user.id:
+            return  # We ignore entity permission changes when a user is editing himself
+
         self.validate_entity_permissions(new_entity_permissions)
 
         has_internal_permission = any(
@@ -129,19 +133,26 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
                     if calling_user.has_user_perm_on(permission["account"]):
                         EntityPermission.objects.create(self, permission["permission"], account=permission["account"])
                     else:
+                        self.invalidate_entity_permission_cache()
                         raise EntityPermissionChangeNotAllowed("No USER permission on account")
                 elif permission.get("agency"):
                     if calling_user.has_user_perm_on(permission["agency"]):
                         EntityPermission.objects.create(self, permission["permission"], agency=permission["agency"])
                     else:
+                        self.invalidate_entity_permission_cache()
                         raise EntityPermissionChangeNotAllowed("No USER permission on agency")
                 else:
                     if calling_user.has_perm_on_all_entities(Permission.USER):
                         EntityPermission.objects.create(self, permission["permission"])
                     else:
+                        self.invalidate_entity_permission_cache()
                         raise EntityPermissionChangeNotAllowed("No internal USER permission")
 
     def delete_entity_permissions(self, request, account, agency):
+        calling_user = request.user
+        if self.id == calling_user.id:
+            raise EntityPermissionChangeNotAllowed("User cannot delete his/her own permissions")
+
         entity_permissions = self.get_entity_permissions(request, account, agency)
         for entity_permission in entity_permissions:
             entity_permission.delete()

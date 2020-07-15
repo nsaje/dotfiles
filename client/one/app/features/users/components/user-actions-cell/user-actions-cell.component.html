@@ -9,7 +9,7 @@
         (click)="openEditUserModal()"
     ></button>
     <button
-        [disabled]="isReadOnlyUser"
+        [disabled]="isReadOnlyUser || isCurrentUser"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-button--danger zem-user-actions-cell__item"
         (click)="removeUser()"
     ></button>

@@ -11,6 +11,7 @@ export class UsersStoreState {
     hasAgencyScope: boolean = null;
     hasAllAccountsScope: boolean = null;
     canEditUsers: boolean = null;
+    currentUserId: string = null;
     entities: User[] = [];
     activeEntity = {
         entity: {
@@ -25,6 +26,7 @@ export class UsersStoreState {
         selectedAccounts: [] as Account[],
         selectedEntityPermissions: {} as EntityPermissionSelection,
         isReadOnly: null as boolean,
+        isCurrentUser: null as boolean,
         fieldsErrors: new UsersStoreFieldsErrorsState(),
     };
     accounts: Account[] = [];

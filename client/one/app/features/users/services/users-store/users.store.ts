@@ -87,6 +87,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                             ),
                             hasAllAccountsScope: this.zemPermissions.canEditUsersOnAllAccounts(),
                             canEditUsers,
+                            currentUserId: this.zemPermissions.getCurrentUserId(),
                             entities: values[0],
                             accounts: values[1],
                         });
@@ -380,6 +381,10 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }
     }
 
+    isCurrentUser(user: User): boolean {
+        return user.id === this.state.currentUserId;
+    }
+
     private editActiveEntity(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.usersService
@@ -554,6 +559,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 scopeState: this.calculateScopeState(patchedUser),
                 entityAccounts: this.calculateEntityAccounts(patchedUser),
                 isReadOnly: this.isUserReadOnly(patchedUser),
+                isCurrentUser: this.isCurrentUser(patchedUser),
             };
         }
 

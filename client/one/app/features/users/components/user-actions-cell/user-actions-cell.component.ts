@@ -12,12 +12,17 @@ export class UserActionsCellComponent implements ICellRendererAngularComp {
     params: UserRendererParams;
     user: User;
     isReadOnlyUser: boolean;
+    isCurrentUser: boolean;
 
     agInit(params: UserRendererParams) {
         this.params = params;
         this.user = params.data;
 
         this.isReadOnlyUser = this.params.context.componentParent.store.isUserReadOnly(
+            this.user
+        );
+
+        this.isCurrentUser = this.params.context.componentParent.store.isCurrentUser(
             this.user
         );
     }

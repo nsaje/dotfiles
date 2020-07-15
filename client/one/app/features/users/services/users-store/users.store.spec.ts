@@ -42,6 +42,7 @@ describe('UsersStore', () => {
             'canEditUsersOnAgency',
             'canEditUsersOnAllAccounts',
             'canEditUsersOnEntity',
+            'getCurrentUserId',
         ]);
 
         store = new UsersStore(
@@ -164,6 +165,7 @@ describe('UsersStore', () => {
         zemPermissionsStub.canEditUsersOnEntity.and
             .returnValue(true)
             .calls.reset();
+        zemPermissionsStub.getCurrentUserId.and.returnValue('42').calls.reset();
     });
 
     it('should correctly initialize store', fakeAsync(() => {

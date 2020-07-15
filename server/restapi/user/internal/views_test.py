@@ -263,7 +263,6 @@ class UserViewSetPutTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
-        self._fix_json_ids(user_json)
 
         user_json["firstName"] = "Test"
         user_json["lastName"] = "User"
@@ -285,7 +284,6 @@ class UserViewSetPutTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
-        self._fix_json_ids(user_json)
 
         user_json["entityPermissions"][0]["permission"] = Permission.READ
         user_json["entityPermissions"][1]["permission"] = Permission.USER
@@ -296,21 +294,51 @@ class UserViewSetPutTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
-        self._fix_json_ids(user_json)
 
         # After the change we need to see the same 3 permissions that we set
         self.assertCountEqual(
             user_json["entityPermissions"],
             [
-                {"agencyId": agency.id, "accountId": None, "permission": Permission.READ},
-                {"agencyId": agency.id, "accountId": None, "permission": Permission.USER},
-                {"agencyId": agency.id, "accountId": None, "permission": Permission.BUDGET_MARGIN},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.USER},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET_MARGIN},
             ],
         )
 
         # But in the database, the user still also needs to have all the permissions that we don't see
         # 3 permissions that we just set + 4 permissions on other agencies = 7 permissions in total
         self.assertEqual(len(list(requested_user.entitypermission_set.all())), 7)
+
+    def test_put_change_permissions_on_account_for_self(self):
+        # calling_user is account manager and is searching by account_id, requested user is the same as calling_user
+        user = self.user
+        agency = self.mix_agency()
+        account = self.mix_account(
+            user=user, permissions=[Permission.READ, Permission.USER, Permission.BUDGET_MARGIN], agency=agency
+        )
+
+        r = self._call_get(user, agency, account)
+        user_json = self.assertResponseValid(r)["data"]
+
+        user_json["entityPermissions"] = list(
+            filter(lambda x: x["permission"] != Permission.BUDGET_MARGIN, user_json["entityPermissions"])
+        )
+
+        r = self._call_put(user, user_json, agency, account)
+        self.assertResponseValid(r)
+
+        r = self._call_get(user, agency, account)
+        user_json = self.assertResponseValid(r)["data"]
+
+        # After the change we need to see the same permissions as before, because changing your own permissions is not possible
+        self.assertCountEqual(
+            user_json["entityPermissions"],
+            [
+                {"agencyId": None, "accountId": str(account.id), "permission": Permission.READ},
+                {"agencyId": None, "accountId": str(account.id), "permission": Permission.USER},
+                {"agencyId": None, "accountId": str(account.id), "permission": Permission.BUDGET_MARGIN},
+            ],
+        )
 
     def test_put_remove_permissions(self):
         # calling_user is agency manager and is searching by agency_id, requested user is agency manager
@@ -320,26 +348,12 @@ class UserViewSetPutTest(UserViewSetTestBase):
 
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
-        self._fix_json_ids(user_json)
 
         user_json["entityPermissions"] = []
 
         r = self._call_put(requested_user, user_json, agency)
 
         self._assert_validation_error(r, "All entities must have READ permission")
-
-    def _fix_json_ids(self, user_json):
-        for permission in user_json["entityPermissions"]:
-            if "agencyId" in permission:
-                if permission["agencyId"] == "":
-                    permission["agencyId"] = None
-                elif permission["agencyId"]:
-                    permission["agencyId"] = int(permission["agencyId"])
-            if "accountId" in permission:
-                if permission["accountId"] == "":
-                    permission["accountId"] = None
-                elif permission["accountId"]:
-                    permission["accountId"] = int(permission["accountId"])
 
 
 class UserViewSetCreateTest(UserViewSetTestBase):
@@ -662,6 +676,18 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
         r = self._call_delete(requested_user, agency)
 
         self._assert_error(r, 404, "MissingDataError", "Agency does not exist")
+
+    def test_delete_self(self):
+        # calling_user is account manager and is searching by account_id, requested user is the same as calling_user
+        user = self.user
+        agency = self.mix_agency()
+        account = self.mix_account(
+            user=user, permissions=[Permission.READ, Permission.USER, Permission.BUDGET_MARGIN], agency=agency
+        )
+
+        r = self._call_delete(user, agency, account)
+
+        self._assert_error(r, 400, "EntityPermissionChangeNotAllowed", "User cannot delete his/her own permissions")
 
 
 class UserViewSetListTest(UserViewSetTestBase):
