@@ -383,6 +383,45 @@ class TestMinimizeAmountEndToday(FutureBaseTestCase):
         self.assertEqual(budget.end_date, budget.start_date)
 
     @patch("automation.campaignstop.calculate_minimum_budget_amount")
+    def test_depleted(self, mock_min_amount):
+        t0 = dates_helper.local_today()
+        original_end_date = t0 + datetime.timedelta(days=5)
+        budget = BudgetLineItem.objects.create_unsafe(
+            campaign=self.campaign,
+            credit=self.credit,
+            start_date=t0 - datetime.timedelta(days=5),
+            end_date=original_end_date,
+            amount=100,
+            margin=Decimal("0.15"),
+            comment="test",
+        )
+        bds = core.features.bcm.BudgetDailyStatement(
+            date=t0,
+            budget=budget,
+            base_media_spend_nano=100e9,
+            base_data_spend_nano=0,
+            media_spend_nano=100e9,
+            data_spend_nano=0,
+            service_fee_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
+            local_base_media_spend_nano=100e9,
+            local_base_data_spend_nano=0,
+            local_media_spend_nano=100e9,
+            local_data_spend_nano=0,
+            local_service_fee_nano=0,
+            local_license_fee_nano=0,
+            local_margin_nano=0,
+        )
+        bds.save()
+        mock_min_amount.return_value = 0
+
+        budget.minimize_amount_and_end_today()
+
+        self.assertEqual(budget.amount, 100.0)
+        self.assertEqual(budget.end_date, original_end_date)
+
+    @patch("automation.campaignstop.calculate_minimum_budget_amount")
     def test_overspend(self, mock_min_amount):
         t0 = dates_helper.local_today()
         budget = BudgetLineItem.objects.create_unsafe(

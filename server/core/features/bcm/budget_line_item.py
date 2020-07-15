@@ -274,6 +274,9 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         if self.end_date < local_today:
             return
 
+        if self.state() not in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
+            return
+
         if self.campaign.real_time_campaign_stop:
             min_amount = automation.campaignstop.calculate_minimum_budget_amount(self)
             if min_amount < self.amount:
