@@ -1,29 +1,36 @@
 <zem-text-form-group
-    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
-    *ngIf="user.id === null"
-    [isDisabled]="isDisabled"
+    class="zem-text-form-group zem-user-edit-form__text-form-group"
+    [ngClass]="{'zem-user-edit-form__item': user.id}"
+    [isDisabled]="user.id"
     [label]="'Email'"
     [value]="user.email"
     [placeholder]="'Email'"
     (valueChange)="onEmailChange($event)"
 ></zem-text-form-group>
-<zem-text-form-group
-    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
-    *ngIf="user.id !== null"
-    [isDisabled]="isDisabled"
-    [label]="'First name'"
-    [value]="user.firstName"
-    [placeholder]="'First name'"
-    (valueChange)="onFirstNameChange($event)"
-></zem-text-form-group>
-<zem-text-form-group
-    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
-    *ngIf="user.id !== null"
-    [isDisabled]="isDisabled"
-    [label]="'Last name'"
-    [value]="user.lastName"
-    [placeholder]="'Last name'"
-    (valueChange)="onLastNameChange($event)"
-></zem-text-form-group>
+<div
+    *ngIf="!user.id"
+    class="zem-user-edit-form__item zem-user-edit-form__item--indented zem-user-edit-form__description"
+>
+    Comma separated list of user email addresses. Users will receive an
+    invitation email with instructions to login.
+</div>
+<ng-container *ngIf="user.id">
+    <zem-text-form-group
+        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+        [isDisabled]="isDisabled"
+        [label]="'First name'"
+        [value]="user.firstName"
+        [placeholder]="'First name'"
+        (valueChange)="onFirstNameChange($event)"
+    ></zem-text-form-group>
+    <zem-text-form-group
+        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+        [isDisabled]="isDisabled"
+        [label]="'Last name'"
+        [value]="user.lastName"
+        [placeholder]="'Last name'"
+        (valueChange)="onLastNameChange($event)"
+    ></zem-text-form-group>
+</ng-container>
 
 <ng-content></ng-content>
