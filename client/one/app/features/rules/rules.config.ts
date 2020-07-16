@@ -163,7 +163,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasLimit: true,
         limitLabel: 'Minimum bid modifier',
         limitDescription:
-            'Bid modifier will not decrease below this value. Please note that while the decrease by value is positive (since the operation itself is subtraction), this number should be negative if you would like to reduce the bid modifier below 0%.',
+            'Bid modifier will not decrease below this value. Please note that while the decrease by value is positive (since the operation itself is subtraction), the minimum bid modifier should be negative if you would like to reduce the bid modifier below 0%.',
     },
     [RuleActionType.IncreaseDailyBudget]: {
         label: 'Increase daily budget by',
