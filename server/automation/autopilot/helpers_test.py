@@ -19,27 +19,9 @@ class AutopilotHelpersTestCase(test.TestCase):
     def test_get_active_ad_groups_on_autopilot(self, mock_running_status, mock_running_status_by_sources):
         mock_running_status.return_value = constants.AdGroupRunningStatus.ACTIVE
         mock_running_status_by_sources.return_value = constants.AdGroupRunningStatus.ACTIVE
-        all_ap_adgs, all_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot()
-        cpc_ap_adgs, cpc_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot(autopilot_state=3)
-        budget_ap_adgs, budget_ap_adgs_settings = helpers.get_active_ad_groups_on_autopilot(autopilot_state=1)
+        all_ap_adgs = helpers.get_active_ad_groups_on_autopilot()
         self.assertEqual(len(all_ap_adgs), 3)
-        self.assertTrue(adg in all_ap_adgs for adg in cpc_ap_adgs + budget_ap_adgs)
-        for adg_settings in all_ap_adgs_settings:
-            self.assertEqual(adg_settings, adg_settings.ad_group.get_current_settings())
-            self.assertTrue(
-                adg_settings.autopilot_state
-                in [
-                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-                ]
-            )
-        for adg_settings in cpc_ap_adgs_settings:
-            self.assertEqual(adg_settings, adg_settings.ad_group.get_current_settings())
-            self.assertTrue(adg_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
-        for adg_settings in budget_ap_adgs_settings:
-            self.assertEqual(adg_settings, adg_settings.ad_group.get_current_settings())
-            self.assertTrue(adg_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
-        self.assertFalse(models.AdGroup.objects.get(id=2) in cpc_ap_adgs + budget_ap_adgs + all_ap_adgs)
+        self.assertFalse(models.AdGroup.objects.get(id=2) in all_ap_adgs)
 
     def test_update_ad_group_source_values_cpc(self):
         ag_source = models.AdGroupSource.objects.get(id=1)

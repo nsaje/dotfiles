@@ -114,21 +114,22 @@ def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), 
 
 def audit_autopilot_ad_groups():
     date = datetime.date.today()
-    ap_logs = automation.models.AutopilotLog.objects.filter(
-        created_dt__range=(
-            datetime.datetime.combine(date, datetime.time.min),
-            datetime.datetime.combine(date, datetime.time.max),
-        ),
-        is_autopilot_job_run=True,
-        ad_group__created_dt__lt=date,
+    ad_groups_ids_in_logs = set(
+        automation.models.AutopilotLog.objects.filter(
+            created_dt__range=(
+                datetime.datetime.combine(date, datetime.time.min),
+                datetime.datetime.combine(date, datetime.time.max),
+            ),
+            is_autopilot_job_run=True,
+            ad_group__created_dt__lt=date,
+        ).values_list("id", flat=True)
     )
-    ad_groups_in_logs = set(log.ad_group for log in ap_logs)
     ad_groups_ap_running = set(
-        ad
-        for ad in autopilot.helpers.get_active_ad_groups_on_autopilot()[0]
-        if ad.created_dt < datetime.datetime.combine(date, datetime.time.min)
+        autopilot.helpers.get_active_ad_groups_on_autopilot()
+        .filter(created_dt__lt=datetime.datetime.combine(date, datetime.time.min))
+        .values_list("id", flat=True)
     )
-    return ad_groups_ap_running - ad_groups_in_logs
+    return dash.models.AdGroup.objects.filter(id__in=ad_groups_ap_running - ad_groups_ids_in_logs)
 
 
 def audit_autopilot_cpc_changes(date=None, min_changes=25):

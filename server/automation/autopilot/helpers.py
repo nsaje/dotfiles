@@ -16,38 +16,12 @@ from . import settings
 logger = zlogging.getLogger(__name__)
 
 
-def get_active_ad_groups_on_autopilot(autopilot_state=None):
-    states = [autopilot_state]
-    if not autopilot_state:
-        states = [
-            dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-            dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-        ]
-
-    ad_groups_on_autopilot = []
-    ad_group_settings_on_autopilot = []
-    ad_group_settings = (
-        dash.models.AdGroupSettings.objects.all().group_current_settings().select_related("ad_group__campaign")
-    )
-    campaignstop_states = campaignstop.get_campaignstop_states(dash.models.Campaign.objects.all())
-
-    for ags in ad_group_settings:
-        if ags.autopilot_state in states:
-            ad_group = ags.ad_group
-            ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
-                ad_group_source__ad_group=ad_group
-            ).group_current_settings()
-
-            ad_group_running = ad_group.get_running_status(ags) == dash.constants.AdGroupRunningStatus.ACTIVE
-            sources_running = (
-                ad_group.get_running_status_by_sources_setting(ags, ad_groups_sources_settings)
-                == dash.constants.AdGroupRunningStatus.ACTIVE
-            )
-            campaign_active = campaignstop_states[ad_group.campaign.id]["allowed_to_run"]
-            if campaign_active and ad_group_running and sources_running:
-                ad_groups_on_autopilot.append(ad_group)
-                ad_group_settings_on_autopilot.append(ags)
-    return ad_groups_on_autopilot, ad_group_settings_on_autopilot
+def get_active_ad_groups_on_autopilot():
+    states = [
+        dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+    ]
+    return dash.models.AdGroup.objects.filter(settings__autopilot_state__in=states).filter_running()
 
 
 def get_processed_autopilot_ad_group_ids(from_date_time):
