@@ -105,34 +105,10 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "zemantaone-new.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
-        "PORT": 5439,
-    },
-    "stats-hot-new": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "k1",
-        "USER": "eins2",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy"  # noqa
-        )
-        .get()
-        .decode("utf-8"),
         "HOST": "zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
         "PORT": 5439,
     },
     "stats-cold-1": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "k1",
-        "USER": "eins2",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxVfiVeNgjFHmhgsLoCARCAU68r77GeEWk2Sp3ZD4In553dgo5e1YH6CdOfqT6pHw5klSLYu6pEDYWFq9UFErwAwY3cj1c67pKR5qtecEghHY9YYDnzag8J6cCkD/k2tUdzv8oy"  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "HOST": "zemantaone-cold-new.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
-        "PORT": 5439,
-    },
-    "stats-cold-new": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
         "USER": "eins2",
