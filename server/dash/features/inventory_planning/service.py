@@ -93,7 +93,8 @@ def get_by_device_type(request, filters):
 
 
 def get_by_media_source(request, filters):
-    data = redshiftapi.api_inventory.query(breakdown="source_id", constraints=filters)
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown="source_id", constraints=updated_filters)
     data = list(filter(_min_auctions_filter, data))
     sources_map = get_filtered_sources_map(request)
     _add_zero_rows(data, "source_id", sorted(sources_map.keys()))
