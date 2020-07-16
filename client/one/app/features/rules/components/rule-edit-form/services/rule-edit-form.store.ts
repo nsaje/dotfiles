@@ -332,6 +332,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         if (
             [
                 RuleTargetType.Ad,
+                RuleTargetType.AdGroup,
                 RuleTargetType.AdGroupSource,
                 RuleTargetType.AdGroupPublisher,
             ].includes(target)
