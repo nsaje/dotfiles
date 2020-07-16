@@ -1,4 +1,3 @@
-import re
 from decimal import Decimal
 
 from rest_framework.serializers import ValidationError
@@ -96,21 +95,25 @@ def get_entity_credits(z1_account_id):
     return core.features.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))
 
 
-def _parse_tags(tags):
-    entity_tags = []
-    regex = re.compile(constants.ENTITY_TAG_REGEX)
-    for tag in tags:
-        if not regex.match(tag):
-            continue
-        customer_type, region, country, client_type = re.split("-", tag)
-        entity_tags.extend([f"dmr/{customer_type}", f"dmr/{client_type}", f"dmr/{region}/{country}"])
-    return entity_tags
-
-
 def create_agency(request, validated_data):
     cs_representative = zemauth.models.User.objects.get(email=constants.DEFAULT_CS_REPRESENTATIVE)
     sales_representative = zemauth.models.User.objects.get(email=constants.DEFAULT_SALES_REPRESENTATIVE)
-    entity_tags = _parse_tags(validated_data.pop("entity_tags", []))
+    entity_tags = validated_data.pop("entity_tags", [])
+
+    client_type = validated_data.pop("client_type", None)
+    if client_type:
+        entity_tags.append(constants.ENTITY_TAGS_PREFIX + client_type)
+
+    client_size = validated_data.pop("client_size", None)
+    if client_size:
+        entity_tags.append(constants.ENTITY_TAGS_PREFIX + client_size)
+
+    region = validated_data.pop("region", None)
+    if region:
+        entity_tags.append(constants.ENTITY_TAGS_PREFIX + region.replace("-", "/"))
+        if region != constants.ENTITY_TAGS_US:
+            entity_tags.append(constants.ENTITY_TAGS_PREFIX + constants.ENTITY_TAGS_INTL)
+
     return core.models.Agency.objects.create(
         request,
         cs_representative=cs_representative,

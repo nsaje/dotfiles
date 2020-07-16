@@ -12,4 +12,7 @@ ACCOUNT_ID_PREFIX_CLIENT_DIRECT = "b"
 PF_SCHEDULE_UPFRONT = "upon execution of this agreement"  # flat
 PF_SCHEDULE_PCT_FEE = "monthly as used"  # %
 PF_SCHEDULE_FLAT_FEE = "monthly in installments"
-ENTITY_TAG_REGEX = "[\w]*-[\w]*-[\w]*-[\w]*"  # noqa
+
+ENTITY_TAGS_PREFIX = "dmr/"
+ENTITY_TAGS_US = "NA-US"
+ENTITY_TAGS_INTL = "Intl"

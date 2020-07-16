@@ -53,9 +53,13 @@ class AgencySerializer(serializers.ModelSerializer):
     cs_representative = UserSerializer(required=False, read_only=True)
     sales_representative = UserSerializer(required=False, read_only=True)
     default_account_type = serializers.IntegerField(default=constants.DEFAULT_ACCOUNT_TYPE)
-    tags = serviceapi.common.serializers.TagSerializer(required=False, many=True, source="entity_tags")
-    z1_account_id = serializers.CharField(required=False, source="get_salesforce_id")
+    tags = serviceapi.common.serializers.TagSerializer(required=False, many=True, read_only=True, source="entity_tags")
+    z1_account_id = serializers.CharField(required=False, read_only=True, source="get_salesforce_id")
     accounts = serializers.SerializerMethodField()
+
+    client_type = serializers.CharField(required=False, write_only=True)
+    client_size = serializers.CharField(required=False, write_only=True)
+    region = serializers.CharField(required=False, write_only=True)
 
     class Meta:
         depth = 1
@@ -69,6 +73,9 @@ class AgencySerializer(serializers.ModelSerializer):
             "sales_representative",
             "z1_account_id",
             "accounts",
+            "client_type",
+            "client_size",
+            "region",
         ]
 
     def get_accounts(self, instance):

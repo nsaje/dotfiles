@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     url(r"^salesforce/zemanta/agency/$", views.AgencyView.as_view(), name="service.salesforce.zemanta.agency"),
     url(
-        r"^salesforce/zemanta/agency/(?P<agency_id>\d+)$",
+        r"^salesforce/zemanta/agency/a?(?P<agency_id>\d+)$",
         views.AgencyView.as_view(),
         name="service.salesforce.zemanta.agency",
     ),

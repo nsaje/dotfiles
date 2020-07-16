@@ -31,7 +31,7 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
         self.assertEqual(client.cs_representative.email, constants.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(client.sales_representative.email, constants.DEFAULT_SALES_REPRESENTATIVE)
-        self.assertEqual(list(client.entity_tags.all()), ["some tags", "anOther"])
+        self.assertEqual(list(client.entity_tags.all()), ["anOther", "some tags"])
 
     def test_put_valid_account(self):
         data = {"salesforceAccountId": 1, "name": "Brand 1", "type": "brand", "currency": "EUR", "tags": ["accountTag"]}
@@ -545,7 +545,35 @@ class AgencyTestCase(TestCase):
             },
         )
 
-    def test_get_agency_invalid(self):
+    def test_get_agency_valid_sfid(self):
+        url = reverse("service.salesforce.zemanta.agency") + "a{}".format(self.agency.id)
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(
+            response.json(),
+            {
+                "data": {
+                    "id": 1,
+                    "name": "An Agency",
+                    "defaultAccountType": 4,
+                    "tags": ["tag1", "tag2"],
+                    "csRepresentative": "agency_cs_rep@zemanta.com",
+                    "salesRepresentative": "agency_sales_rep@zemanta.com",
+                    "z1_accountId": "a1",
+                    "accounts": [
+                        {"name": "Account1", "z1_accountId": "b1"},
+                        {"name": "ThisIsTheSecondAccount", "z1_accountId": "b2"},
+                    ],
+                }
+            },
+        )
+
+    def test_get_agency_invalid_sfid(self):
+        url = reverse("service.salesforce.zemanta.agency") + "b{}".format(self.agency.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_get_agency_missing(self):
         url = reverse("service.salesforce.zemanta.agency", kwargs={"agency_id": 1234})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
@@ -555,7 +583,7 @@ class AgencyTestCase(TestCase):
 
     def test_create_agency_defaults(self):
         url = reverse("service.salesforce.zemanta.agency")
-        payload = {"name": "new Agency", "tags": ["Agency-NA-US-Big6", "aTag", "anOther"]}
+        payload = {"name": "new Agency", "clientType": "Agency", "clientSize": "Big6", "region": "NA-US"}
         response = self.client.post(url, data=payload, format="json")
         self.assertEquals(response.status_code, 200)
         new_agency = core.models.Agency.objects.get(name="new Agency")
@@ -574,6 +602,29 @@ class AgencyTestCase(TestCase):
                 }
             },
         )
+
+    def test_create_agency_tags(self):
+        url = reverse("service.salesforce.zemanta.agency")
+
+        payload = {"name": "new Agency 1", "clientType": "Agency", "clientSize": "Indie", "region": "NA-US"}
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/Agency", "dmr/Indie", "dmr/NA/US"})
+
+        payload = {"name": "new Agency 2", "clientType": "Publisher", "region": "NA-US"}
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/Publisher", "dmr/NA/US"})
+
+        payload = {"name": "new Agency 3", "clientType": "PaaS", "region": "EU-IT"}
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/EU/IT", "dmr/Intl"})
+
+        payload = {"name": "new Agency 4", "clientType": "PaaS", "region": "APAC"}
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/APAC", "dmr/Intl"})
 
     def test_create_agency_invalid(self):
         url = reverse("service.salesforce.zemanta.agency")
