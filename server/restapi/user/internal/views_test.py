@@ -1210,7 +1210,7 @@ class UserViewSetResendEmail(UserViewSetTestBase):
         )
         self.assertEqual(r.status_code, 200)
 
-    def test_resend_email_user_doesnt_exist(self, mock_send):
+    def test_resend_email_no_access(self, mock_send):
         calling_user, requested_user = self._setup_test_users()
         agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
 
