@@ -147,6 +147,7 @@
     ></zem-date-input>
     <zem-select-input
         class="zem-rule-edit-form-condition__operand-select zem-select-input"
+        *ngIf="!isOnlyAbsoluteValue"
         [value]="ruleCondition.value.type"
         bindLabel="label"
         bindValue="type"

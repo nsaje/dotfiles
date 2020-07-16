@@ -23,6 +23,7 @@ import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-cond
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {RuleConditionError} from '../rule-edit-form/types/rule-condition-error';
+import {RULE_CONDITIONS_OPTIONS} from '../../rules.config';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -56,6 +57,8 @@ export class RuleEditFormConditionComponent implements OnChanges {
     selectedMetricConfig: RuleConditionOperandConfig;
     selectedValueConfig: RuleConditionOperandConfig;
 
+    isOnlyAbsoluteValue: boolean;
+
     RuleConditionOperandType = RuleConditionOperandType;
     Unit = Unit;
     DataType = DataType;
@@ -75,6 +78,9 @@ export class RuleEditFormConditionComponent implements OnChanges {
             this.selectedConditionConfig = this.getSelectedConditionConfig(
                 this.availableConditions,
                 this.ruleCondition.metric
+            );
+            this.isOnlyAbsoluteValue = this.getIsOnlyAbsoluteValue(
+                this.selectedConditionConfig
             );
             this.availableOperators = this.getAvailableOperators(
                 this.selectedConditionConfig
@@ -98,6 +104,10 @@ export class RuleEditFormConditionComponent implements OnChanges {
     }
 
     selectMetricType(metricType: RuleConditionOperandType) {
+        const isOnlyAbsoluteValueMetric = this.getIsOnlyAbsoluteValue(
+            RULE_CONDITIONS_OPTIONS[metricType]
+        );
+
         this.conditionChange.emit({
             target: this.ruleCondition,
             changes: {
@@ -108,7 +118,9 @@ export class RuleEditFormConditionComponent implements OnChanges {
                     window: null,
                 },
                 value: {
-                    type: null,
+                    type: isOnlyAbsoluteValueMetric
+                        ? RuleConditionOperandType.AbsoluteValue
+                        : null,
                     value: null,
                     window: null,
                 },
@@ -230,6 +242,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
         if (!selectedConditionConfig) {
             return null;
         }
+
         return (
             selectedConditionConfig.availableValueTypes.find(
                 availableOperand => {
@@ -366,5 +379,19 @@ export class RuleEditFormConditionComponent implements OnChanges {
             valueSignText = 'minus';
         }
         return `${label} ${valueSignText} ${value} day(s)`;
+    }
+
+    private getIsOnlyAbsoluteValue(
+        selectedConditionConfig: RuleConditionConfig
+    ): boolean {
+        if (!selectedConditionConfig) {
+            return true;
+        }
+
+        return (
+            selectedConditionConfig.availableValueTypes.length === 1 &&
+            selectedConditionConfig.availableValueTypes[0].type ===
+                RuleConditionOperandType.AbsoluteValue
+        );
     }
 }
