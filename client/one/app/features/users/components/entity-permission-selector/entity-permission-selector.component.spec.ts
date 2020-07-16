@@ -34,6 +34,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         };
 
         selectionChangeSpy = spyOn(
@@ -56,6 +57,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     });
 
@@ -68,6 +70,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         };
 
         selectionChangeSpy = spyOn(
@@ -90,6 +93,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     });
 
@@ -102,6 +106,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         };
 
         selectionChangeSpy = spyOn(
@@ -124,6 +129,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     });
 
@@ -136,6 +142,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: undefined,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         };
 
         selectionChangeSpy = spyOn(
@@ -169,6 +176,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     });
 
@@ -181,6 +189,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false,
         };
 
         selectionChangeSpy = spyOn(
@@ -214,6 +223,7 @@ describe('EntityPermissionSelectorComponent', () => {
             budget_margin: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     });
 });

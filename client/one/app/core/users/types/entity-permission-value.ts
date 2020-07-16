@@ -5,4 +5,5 @@ export type EntityPermissionValue =
     | 'budget'
     | 'budget_margin'
     | 'agency_spend_margin'
-    | 'media_cost_data_cost_licence_fee';
+    | 'media_cost_data_cost_licence_fee'
+    | 'base_costs_service_fee';

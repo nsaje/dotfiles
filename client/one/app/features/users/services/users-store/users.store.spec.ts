@@ -427,6 +427,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([
             mockedAccounts[0],
@@ -452,6 +453,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
@@ -472,6 +474,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
@@ -504,6 +507,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         store.setSelectedAccounts([mockedAccounts[1]]);
@@ -518,6 +522,7 @@ describe('UsersStore', () => {
             budget: true,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         store.setSelectedAccounts([mockedAccounts[0], mockedAccounts[1]]);
@@ -533,6 +538,7 @@ describe('UsersStore', () => {
             budget: undefined,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         store.setSelectedAccounts([
@@ -553,6 +559,7 @@ describe('UsersStore', () => {
             budget: undefined,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     }));
 
@@ -568,6 +575,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
@@ -577,6 +585,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
@@ -607,6 +616,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
@@ -616,6 +626,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
@@ -673,6 +684,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
@@ -682,6 +694,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
@@ -737,6 +750,7 @@ describe('UsersStore', () => {
             budget: undefined,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
@@ -746,6 +760,7 @@ describe('UsersStore', () => {
             budget: undefined,
             agency_spend_margin: true,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
@@ -848,6 +863,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     }));
 
@@ -927,6 +943,7 @@ describe('UsersStore', () => {
             budget: true,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
     }));
 
@@ -946,6 +963,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
@@ -967,6 +985,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
@@ -1002,6 +1021,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);
@@ -1037,6 +1057,7 @@ describe('UsersStore', () => {
             budget: false,
             agency_spend_margin: false,
             media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: false,
         });
         expect(store.state.activeEntity.entityAccounts).toEqual([]);
         expect(store.state.activeEntity.selectedAccounts).toEqual([]);

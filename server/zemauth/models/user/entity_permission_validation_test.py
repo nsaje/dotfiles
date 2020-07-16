@@ -89,3 +89,16 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         self.assertRaises(
             MissingRequiredPermission, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
         )
+
+    def test_validate_entity_permissions_no_media_cost(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+
+        entity_permissions = [
+            {"agency": agency, "permission": Permission.READ},
+            {"agency": agency, "permission": Permission.BASE_COSTS_SERVICE_FEE},
+        ]
+
+        self.assertRaises(
+            MissingRequiredPermission, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
+        )

@@ -29,6 +29,7 @@ export const REPORTING_PERMISSIONS: DisplayedEntityPermissionValue[] = [
     'total_spend',
     'agency_spend_margin',
     'media_cost_data_cost_licence_fee',
+    'base_costs_service_fee',
 ];
 
 export const CONFIGURABLE_PERMISSIONS: EntityPermissionValue[] = [
@@ -48,7 +49,8 @@ export const ENTITY_PERMISSION_VALUE_TO_NAME: {
     budget: 'Manage budget',
     budget_margin: 'Manage budget margin',
     agency_spend_margin: 'Agency spend and margin',
-    media_cost_data_cost_licence_fee: 'Media cost, data cost and licence fee',
+    media_cost_data_cost_licence_fee: 'Media cost, data cost and license fee',
+    base_costs_service_fee: 'Base media and data cost and service fee',
 };
 
 export const ENTITY_PERMISSION_VALUE_TO_SHORT_NAME: {
@@ -56,7 +58,8 @@ export const ENTITY_PERMISSION_VALUE_TO_SHORT_NAME: {
 } = {
     ...ENTITY_PERMISSION_VALUE_TO_NAME,
     agency_spend_margin: 'Campaign margin',
-    media_cost_data_cost_licence_fee: 'Licence fee',
+    media_cost_data_cost_licence_fee: 'License fee',
+    base_costs_service_fee: 'Service fee',
 };
 
 export const ENTITY_PERMISSION_VALUE_TO_DESCRIPTION: {
@@ -69,4 +72,5 @@ export const ENTITY_PERMISSION_VALUE_TO_DESCRIPTION: {
     budget_margin: '',
     agency_spend_margin: '',
     media_cost_data_cost_licence_fee: '',
+    base_costs_service_fee: '',
 };

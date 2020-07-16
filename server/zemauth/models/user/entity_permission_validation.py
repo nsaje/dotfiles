@@ -52,11 +52,10 @@ class EntityPermissionValidationMixin(object):
                 "If an entity has MEDIA_COST_DATA_COST_LICENCE_FEE permission, it must also have AGENCY_SPEND_MARGIN permission."
             )
 
-        # Uncomment this check after BASE_MEDIA_COST_DATA_COST_LICENCE_FEE permission is added to the codebase
-        """if (
-            Permission.BASE_MEDIA_COST_DATA_COST_LICENCE_FEE in permissions_for_entity
+        if (
+            Permission.BASE_COSTS_SERVICE_FEE in permissions_for_entity
             and Permission.MEDIA_COST_DATA_COST_LICENCE_FEE not in permissions_for_entity
         ):
             raise MissingRequiredPermission(
-                "If an entity has BASE_MEDIA_COST_DATA_COST_LICENCE_FEE permission, it must also have MEDIA_COST_DATA_COST_LICENCE_FEE permission."
-            )"""
+                "If an entity has BASE_COSTS_SERVICE_FEE permission, it must also have MEDIA_COST_DATA_COST_LICENCE_FEE permission."
+            )
