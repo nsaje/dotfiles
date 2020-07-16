@@ -11,26 +11,26 @@ import {LinkRendererParams} from '../../../../shared/components/smart-grid/compo
 export const COLUMN_DATE_CREATE: ColDef = {
     headerName: 'Run Date',
     field: 'createdDt',
-    maxWidth: 120,
-    minWidth: 120,
-    resizable: false,
+    maxWidth: 90,
+    minWidth: 90,
+    resizable: true,
     valueFormatter: dateTimeFormatter('MM/DD/YYYY'),
 };
 
 export const COLUMN_RULE_NAME: ColDef = {
     headerName: 'Rule Name',
     field: 'ruleName',
-    width: 250,
-    minWidth: 250,
-    resizable: false,
+    width: 220,
+    minWidth: 120,
+    resizable: true,
 };
 
 export const COLUMN_AD_GROUP_NAME: ColDef = {
     headerName: 'Ad Group Name',
     field: 'adGroupName',
-    width: 250,
-    minWidth: 250,
-    resizable: false,
+    width: 220,
+    minWidth: 120,
+    resizable: true,
     cellRendererFramework: LinkCellComponent,
     cellRendererParams: {
         getText: item => item.adGroupName,
@@ -44,7 +44,7 @@ export const COLUMN_CHANGES_FORMATTED_PREVIEW: ColDef = {
     field: 'changesFormatted',
     width: 350,
     minWidth: 350,
-    resizable: false,
+    resizable: true,
 };
 
 export const COLUMN_CHANGES_FORMATTED: ColDef = {
