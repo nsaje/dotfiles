@@ -1,3 +1,4 @@
+import mock
 from django.contrib.auth.models import Permission as DjangoPermission
 from django.urls import reverse
 from django.utils.http import urlencode
@@ -253,6 +254,21 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
         r = self.client.delete(url)
         return r
 
+    def _call_resend_email(self, requested_user, agency, account=None):
+        query_params = {}
+        if agency is not None:
+            query_params["agencyId"] = agency.id
+        if account is not None:
+            query_params["accountId"] = account.id
+
+        url = u"%s?%s" % (
+            reverse("restapi.user.internal:user_resendemail", kwargs={"user_id": requested_user.id}),
+            urlencode(query_params),
+        )
+
+        r = self.client.put(url, format="json")
+        return r
+
 
 class UserViewSetPutTest(UserViewSetTestBase):
     def test_put_change_name(self):
@@ -356,8 +372,9 @@ class UserViewSetPutTest(UserViewSetTestBase):
         self._assert_validation_error(r, "All entities must have READ permission")
 
 
+@mock.patch("utils.email_helper.send_official_email")
 class UserViewSetCreateTest(UserViewSetTestBase):
-    def test_create_on_agency(self):
+    def test_create_on_agency(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -374,9 +391,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         }
 
         r = self._call_create(post_data, agency)
-
         resp_json = self.assertResponseValid(r, status_code=201)
-
         self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
         self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
         self.assertEqual(resp_json["data"]["users"][0]["lastName"], "")
@@ -388,8 +403,9 @@ class UserViewSetCreateTest(UserViewSetTestBase):
                 {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET},
             ],
         )
+        self.assertTrue(mock_send.called)
 
-    def test_create_on_account(self):
+    def test_create_on_account(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -421,7 +437,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             ],
         )
 
-    def test_create_on_agency_and_account(self):
+    def test_create_on_agency_and_account(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -445,7 +461,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             r, "Setting both account and agency permissions on entities of the same agency is not allowed."
         )
 
-    def test_create_on_agency_and_account_together(self):
+    def test_create_on_agency_and_account_together(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -466,7 +482,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             r, "Setting both account and agency permissions on entities of the same agency is not allowed."
         )
 
-    def test_create_no_read_privilege(self):
+    def test_create_no_read_privilege(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -476,7 +492,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self._assert_validation_error(r, "All entities must have READ permission")
 
-    def test_create_on_account_without_read(self):
+    def test_create_on_account_without_read(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
         another_account = self.mix_account(agency=agency)
@@ -498,7 +514,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self._assert_validation_error(r, "All entities must have READ permission")
 
-    def test_create_existing(self):
+    def test_create_existing(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -520,7 +536,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             [{"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ}],
         )
 
-    def test_create_no_agency(self):
+    def test_create_no_agency(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -530,7 +546,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self._assert_validation_error(r, "Either agency id or account id must be provided for each entity permission.")
 
-    def test_create_internal(self):
+    def test_create_internal(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "internal_usr")
 
@@ -547,7 +563,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             [{"agencyId": None, "accountId": None, "permission": Permission.READ}],
         )
 
-    def test_create_wrong_agency(self):
+    def test_create_wrong_agency(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
         wrong_agency = self.mix_agency()
@@ -558,7 +574,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self._assert_validation_error(r, "Incorrect agency ID in permission")
 
-    def test_create_wrong_account(self):
+    def test_create_wrong_account(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
         wrong_account = self.mix_account(user=calling_user, permissions=[Permission.READ, Permission.USER])
@@ -569,7 +585,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         self._assert_validation_error(r, "Account does not belong to the correct agency")
 
-    def test_create_multiple(self):
+    def test_create_multiple(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
@@ -1172,3 +1188,31 @@ class UserViewSetGetTest(UserViewSetTestBase):
             )
 
         self.assertCountEqual(resp_user["entityPermissions"], expected_entity_permissions)
+
+
+@mock.patch("utils.email_helper.send_official_email")
+class UserViewSetResendEmail(UserViewSetTestBase):
+    def test_resend_email(self, mock_send):
+        calling_user: zemauth.models.User = self.user
+        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+
+        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
+        test_helper.add_entity_permissions(requested_user, [Permission.READ], agency)
+
+        r = self._call_resend_email(requested_user, agency)
+        mock_send.assert_called_with(
+            agency_or_user=None,
+            recipient_list=[requested_user.email],
+            additional_recipients=[],
+            subject="Welcome to Zemanta!",
+            tags=["USER_NEW"],
+            body=mock.ANY,
+        )
+        self.assertEqual(r.status_code, 200)
+
+    def test_resend_email_user_doesnt_exist(self, mock_send):
+        calling_user, requested_user = self._setup_test_users()
+        agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
+
+        r = self._call_resend_email(requested_user, agency)
+        self._assert_error(r, 400, "DoesNotExist", "User matching query does not exist.")

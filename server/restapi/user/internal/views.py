@@ -9,6 +9,7 @@ from core.models import Account
 from core.models import Agency
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
+from utils.email_helper import send_new_user_email
 from utils.exc import ValidationError
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User as ZemUser
@@ -76,11 +77,13 @@ class UserViewSet(RESTAPIBaseViewSet):
                     user.update(**user_data)
                     user.set_entity_permissions(request, account, agency, user_data.get("entity_permissions"))
                     self._augment_user(user, request, account, agency)
-
                     created_users.append(user)
 
         except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
             raise ValidationError(str(err))
+
+        for user in created_users:
+            send_new_user_email(user, request)
 
         return self.response_ok(serializers.CreateUserSerializer({"users": created_users}).data, status=201)
 
@@ -120,9 +123,15 @@ class UserViewSet(RESTAPIBaseViewSet):
         return rest_framework.response.Response(None, status=rest_framework.status.HTTP_204_NO_CONTENT)
 
     def resendemail(self, request, user_id):
+        account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
+        requested_user = zemauth.access.get_user(calling_user, user_id, account, agency, Permission.USER)
+
+        send_new_user_email(requested_user, request)
         return self.response_ok(None)
 
     def validate(self, request):
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
         return self.response_ok(None)
 
     def _get_request_params(self, request):
