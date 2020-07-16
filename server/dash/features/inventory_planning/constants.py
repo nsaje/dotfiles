@@ -20,3 +20,12 @@ class InventoryDeviceType(ConstantBase):
     TABLET = 5
 
     _VALUES = {PC: "Desktop", TV: "TV & SetTop Box", PHONE: "Mobile", TABLET: "Tablet"}
+
+
+class InventoryChannel(ConstantBase):
+    NATIVE = "native"
+    VIDEO = "video"
+    NATIVE_OR_VIDEO = "nativeorvideo"
+    DISPLAY = "display"
+
+    _VALUES = {NATIVE: "Native", VIDEO: "Video", NATIVE_OR_VIDEO: "Native or Video", DISPLAY: "Display"}

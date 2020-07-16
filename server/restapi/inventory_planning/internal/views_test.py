@@ -123,18 +123,22 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
             {"country": ["1", "2"], "publisher": ["3", "4"], "device_type": [5, 6], "source_id": [7, 8]},
         )
 
+    @mock.patch.object(dash.features.inventory_planning, "get_by_channel", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_media_source", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_device_type", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_publisher", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_summary", return_value={}, autospec=True)
-    def test_export_filters(self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source):
+    def test_export_filters(
+        self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source, mock_channel
+    ):
         mock_data = [
             {
                 "country": "a",
                 "publisher": "P1",
                 "device_type": 2,
                 "source_id": 123,
+                "channel": "native",
                 "name": "A",
                 "bid_reqs": 5,
                 "bids": 4,
@@ -148,6 +152,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
                 "publisher": "P2",
                 "device_type": 5,
                 "source_id": 123,
+                "channel": "display",
                 "name": "B",
                 "bid_reqs": 50,
                 "bids": 40,
@@ -162,6 +167,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
         mock_publisher.return_value = mock_data
         mock_device_type.return_value = mock_data
         mock_media_source.return_value = mock_data
+        mock_channel.return_value = mock_data
 
         r = self.client.post(
             reverse("restapi.inventory_planning.internal:inventory_planning_export"),
@@ -195,6 +201,10 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
             "A,10\r\n"
             "B,60\r\n"
             "\r\n"
+            "Channels\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
             "Publishers\r\n"
             "P1,10\r\n"
             "P2,60\r\n"
@@ -202,18 +212,22 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
         )
         self.assertEqual(expected_csv, response_csv)
 
+    @mock.patch.object(dash.features.inventory_planning, "get_by_channel", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_media_source", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_device_type", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_publisher", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)
     @mock.patch.object(dash.features.inventory_planning, "get_summary", return_value={}, autospec=True)
-    def test_export_no_filters(self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source):
+    def test_export_no_filters(
+        self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source, mock_channel
+    ):
         mock_data = [
             {
                 "country": "a",
                 "publisher": "P1",
                 "device_type": 2,
                 "source_id": 123,
+                "channel": "native",
                 "name": "A",
                 "bid_reqs": 5,
                 "bids": 4,
@@ -227,6 +241,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
                 "publisher": "P2",
                 "device_type": 5,
                 "source_id": 123,
+                "channel": "display",
                 "name": "B",
                 "bid_reqs": 50,
                 "bids": 40,
@@ -241,6 +256,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
         mock_publisher.return_value = mock_data
         mock_device_type.return_value = mock_data
         mock_media_source.return_value = mock_data
+        mock_channel.return_value = mock_data
 
         r = self.client.post(
             reverse("restapi.inventory_planning.internal:inventory_planning_export"), data={}, format="json"
@@ -256,6 +272,10 @@ class InventoryPlanningViewTest(restapi.common.views_base_test_case.RESTAPITestC
             "B,60\r\n"
             "\r\n"
             "Countries\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "Channels\r\n"
             "A,10\r\n"
             "B,60\r\n"
             "\r\n"

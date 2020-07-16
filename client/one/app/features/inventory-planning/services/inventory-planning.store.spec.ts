@@ -57,6 +57,18 @@ describe('InventoryPlanningStore', () => {
             auctionCount: 200000,
         },
     ];
+    const availableChannels = [
+        {
+            value: 'test traffic 1',
+            name: 'Test traffic 1',
+            auctionCount: 100000,
+        },
+        {
+            value: 'test traffic 2',
+            name: 'Test traffic 2',
+            auctionCount: 200000,
+        },
+    ];
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -79,6 +91,7 @@ describe('InventoryPlanningStore', () => {
                         'loadPublishers',
                         'loadDevices',
                         'loadSources',
+                        'loadChannels',
                     ]
                 );
 
@@ -107,6 +120,10 @@ describe('InventoryPlanningStore', () => {
                     of(availableSources).pipe(delay(0))
                 );
 
+                endpointSpy.loadChannels.and.returnValue(
+                    of(availableChannels).pipe(delay(0))
+                );
+
                 store = new InventoryPlanningStore(endpointSpy);
             }
         ));
@@ -127,12 +144,14 @@ describe('InventoryPlanningStore', () => {
                             publishers: availablePublishers,
                             devices: availableDevices,
                             sources: availableSources,
+                            channels: availableChannels,
                         },
                         selectedFilters: {
                             countries: [],
                             publishers: [],
                             devices: [],
                             sources: [],
+                            channels: [],
                         },
                     })
                 );
@@ -155,6 +174,7 @@ describe('InventoryPlanningStore', () => {
                         'loadPublishers',
                         'loadDevices',
                         'loadSources',
+                        'loadChannels',
                     ]
                 );
 
@@ -179,6 +199,8 @@ describe('InventoryPlanningStore', () => {
 
                 endpointSpy.loadSources.and.returnValue(of(availableSources));
 
+                endpointSpy.loadChannels.and.returnValue(of(availableChannels));
+
                 store = new InventoryPlanningStore(endpointSpy);
             }
         ));
@@ -189,6 +211,7 @@ describe('InventoryPlanningStore', () => {
                 {key: 'publishers', value: 'publisher 1'},
                 {key: 'devices', value: 'device 1'},
                 {key: 'sources', value: 'test source 1'},
+                {key: 'channels', value: 'test traffic 1'},
             ]);
             expect(endpointSpy.loadCountries).toHaveBeenCalledWith(
                 {
@@ -201,6 +224,9 @@ describe('InventoryPlanningStore', () => {
                     devices: [{name: '', value: 'device 1', auctionCount: -1}],
                     sources: [
                         {name: '', value: 'test source 1', auctionCount: -1},
+                    ],
+                    channels: [
+                        {name: '', value: 'test traffic 1', auctionCount: -1},
                     ],
                 },
                 jasmine.any(Function)
@@ -216,6 +242,7 @@ describe('InventoryPlanningStore', () => {
                     publishers: availablePublishers,
                     devices: availableDevices,
                     sources: availableSources,
+                    channels: availableChannels,
                 },
             });
             expect(store.state.selectedFilters.countries).toEqual([
@@ -266,6 +293,18 @@ describe('InventoryPlanningStore', () => {
                     auctionCount: 200000,
                 },
             ]);
+            expect(store.state.selectedFilters.channels).toEqual([
+                {
+                    value: 'test traffic 1',
+                    name: 'Test traffic 1',
+                    auctionCount: 100000,
+                },
+                {
+                    value: 'test traffic 2',
+                    name: 'Test traffic 2',
+                    auctionCount: 200000,
+                },
+            ]);
 
             store.toggleOption({key: 'countries', value: 'test country 1'});
             expect(store.state.selectedFilters.countries).toEqual([
@@ -299,6 +338,15 @@ describe('InventoryPlanningStore', () => {
                 {
                     value: 'test source 2',
                     name: 'Test source 2',
+                    auctionCount: 200000,
+                },
+            ]);
+
+            store.toggleOption({key: 'channels', value: 'test traffic 1'});
+            expect(store.state.selectedFilters.channels).toEqual([
+                {
+                    value: 'test traffic 2',
+                    name: 'Test traffic 2',
                     auctionCount: 200000,
                 },
             ]);
@@ -358,6 +406,20 @@ describe('InventoryPlanningStore', () => {
                     auctionCount: 100000,
                 },
             ]);
+
+            store.toggleOption({key: 'channels', value: 'test traffic 1'});
+            expect(store.state.selectedFilters.channels).toEqual([
+                {
+                    value: 'test traffic 2',
+                    name: 'Test traffic 2',
+                    auctionCount: 200000,
+                },
+                {
+                    value: 'test traffic 1',
+                    name: 'Test traffic 1',
+                    auctionCount: 100000,
+                },
+            ]);
         });
 
         it('should skip option with invalid key on toggle', () => {
@@ -374,7 +436,8 @@ describe('InventoryPlanningStore', () => {
                     countries: [],
                     publishers: [availablePublishers[0]],
                     devices: availableDevices,
-                    sources: availableSources,
+                    sources: [availableSources[0]],
+                    channels: [availableChannels[0]],
                 },
             });
             expect(store.state.selectedFilters.countries).toEqual([]);
@@ -395,6 +458,20 @@ describe('InventoryPlanningStore', () => {
                     value: 'test device 2',
                     name: 'Test device 2',
                     auctionCount: 20000,
+                },
+            ]);
+            expect(store.state.selectedFilters.sources).toEqual([
+                {
+                    value: 'test source 1',
+                    name: 'Test source 1',
+                    auctionCount: 100000,
+                },
+            ]);
+            expect(store.state.selectedFilters.channels).toEqual([
+                {
+                    value: 'test traffic 1',
+                    name: 'Test traffic 1',
+                    auctionCount: 100000,
                 },
             ]);
 
@@ -434,6 +511,7 @@ describe('InventoryPlanningStore', () => {
                 publishers: [],
                 devices: [],
                 sources: [],
+                channels: [],
             });
         });
 
@@ -449,6 +527,7 @@ describe('InventoryPlanningStore', () => {
                 publishers: [],
                 devices: [],
                 sources: [],
+                channels: [],
             });
         });
     });

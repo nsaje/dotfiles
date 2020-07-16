@@ -38,6 +38,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             publishers: [],
             devices: [],
             sources: [],
+            channels: [],
         };
 
         this.subscribeToFiltersUpdates();
@@ -52,6 +53,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             publishers: [],
             devices: [],
             sources: [],
+            channels: [],
         };
 
         preselectedOptions.forEach(option => {
@@ -79,6 +81,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             publishers: [],
             devices: [],
             sources: [],
+            channels: [],
         };
 
         options.forEach(option => {
@@ -128,6 +131,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
                     const publishersObservable = this.reloadPublishers(filters);
                     const devicesObservable = this.reloadDevices(filters);
                     const sourcesObservable = this.reloadSources(filters);
+                    const channelsObservable = this.reloadChannels(filters);
 
                     // forkJoin: When all observables complete, emit the last emitted value from each.
                     // https://www.learnrxjs.io/operators/combination/forkjoin.html
@@ -136,7 +140,8 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
                         countriesObservable,
                         publishersObservable,
                         devicesObservable,
-                        sourcesObservable
+                        sourcesObservable,
+                        channelsObservable
                     );
                 }),
                 retry(),
@@ -191,6 +196,16 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             .pipe(
                 tap((response: any) => {
                     this.handleBreakdownResponse('sources', response);
+                })
+            );
+    }
+
+    private reloadChannels(filters: Filters): Observable<FilterOption[]> {
+        return this.endpoint
+            .loadChannels(filters, this.requestStateUpdater)
+            .pipe(
+                tap((response: any) => {
+                    this.handleBreakdownResponse('channels', response);
                 })
             );
     }

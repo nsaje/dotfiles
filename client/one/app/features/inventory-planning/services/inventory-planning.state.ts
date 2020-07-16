@@ -9,18 +9,21 @@ export class InventoryPlanningState {
         publishers: {} as RequestState,
         devices: {} as RequestState,
         sources: {} as RequestState,
+        channels: {} as RequestState,
     };
     selectedFilters: Filters = {
         countries: [],
         publishers: [],
         devices: [],
         sources: [],
+        channels: [],
     };
     availableFilters: Filters = {
         countries: [],
         publishers: [],
         devices: [],
         sources: [],
+        channels: [],
     };
     inventory: Inventory = {
         auctionCount: null,

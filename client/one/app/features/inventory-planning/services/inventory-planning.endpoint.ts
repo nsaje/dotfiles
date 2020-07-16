@@ -230,6 +230,49 @@ export class InventoryPlanningEndpoint {
             );
     }
 
+    loadChannels(
+        selectedFilters: Filters,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<FilterOption[]> {
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadChannels;
+
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
+        );
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
+            .pipe(
+                map((response: ApiResponse<any>) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+
+                    return response.data;
+                }),
+                map(this.convertOptionsValueToString),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+
+                    return throwError(error);
+                })
+            );
+    }
+
     private convertOptionsValueToString(
         options: FilterOption[]
     ): FilterOption[] {

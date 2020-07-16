@@ -113,6 +113,14 @@ export class InventoryPlanningFilterComponent implements OnChanges {
                 selectedFilters.sources
             ),
         });
+        categories.push({
+            name: 'Channels',
+            key: 'channels',
+            items: this.getFilterCategoryItems(
+                availableFilters.channels,
+                selectedFilters.channels
+            ),
+        });
         return categories;
     }
 

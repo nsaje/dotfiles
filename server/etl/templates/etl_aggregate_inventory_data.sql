@@ -29,6 +29,7 @@ INSERT INTO mv_inventory (
           {% endfor %}
           ELSE NULL
         END as source_id,
+        channel,
         SUM(bid_reqs),
         SUM(bids),
         SUM(win_notices),
@@ -85,9 +86,9 @@ INSERT INTO mv_inventory (
               'livenetlife'
           ) OR NOT adstxt_status = 'HasAdstxt')
 
-    GROUP BY 1, 2, 3, 4
+    GROUP BY 1, 2, 3, 4, 5
 
-    ORDER BY 1, 2, 3, 4
+    ORDER BY 1, 2, 3, 4, 5
 );
 
 {% endautoescape %}

@@ -44,6 +44,12 @@ def _update_filters(request, filters):
     updated_filters = filters.copy()
     if "source_id" not in filters:
         updated_filters["source_id"] = list(get_filtered_sources_map(request).keys())
+    if "channel" in filters:
+        if (
+            constants.InventoryChannel.NATIVE in filters["channel"]
+            or constants.InventoryChannel.VIDEO in filters["channel"]
+        ):
+            filters["channel"].append(constants.InventoryChannel.NATIVE_OR_VIDEO)
     return updated_filters
 
 
@@ -97,8 +103,41 @@ def get_by_media_source(request, filters):
     return data
 
 
+def get_by_channel(request, filters):
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown="channel", constraints=updated_filters)
+    data = list(filter(_min_auctions_filter, data))
+    channels_map = dict(constants.InventoryChannel.get_choices())
+    del channels_map[constants.InventoryChannel.NATIVE_OR_VIDEO]
+    _add_zero_rows(data, "channel", sorted(channels_map.keys()))
+    data = _add_nativeorvideo_to_native_and_video(data)
+    data = list(filter(lambda item: item["channel"] in channels_map, data))
+    data = sorted(data, key=lambda item: item["slots"], reverse=True)
+    for item in data:
+        item["name"] = channels_map.get(item["channel"])
+    return data
+
+
+def _add_nativeorvideo_to_native_and_video(data):
+    native_row = None
+    video_row = None
+    nativeorvideo_row = None
+    for row in data:
+        if row["channel"] == constants.InventoryChannel.NATIVE:
+            native_row = row
+        if row["channel"] == constants.InventoryChannel.VIDEO:
+            video_row = row
+        if row["channel"] == constants.InventoryChannel.NATIVE_OR_VIDEO:
+            nativeorvideo_row = row
+    if nativeorvideo_row:
+        for field in ZERO_ROW.keys():
+            native_row[field] += nativeorvideo_row[field]
+            video_row[field] += nativeorvideo_row[field]
+    return data
+
+
 def _min_auctions_filter(item):
-    return item["bid_reqs"] >= MIN_AUCTIONS
+    return item["slots"] >= MIN_AUCTIONS
 
 
 def _add_zero_rows(data, field_name, all_keys):

@@ -3,6 +3,7 @@ from django.test import TestCase
 
 import redshiftapi.api_inventory
 
+from . import constants
 from . import service
 
 
@@ -20,18 +21,18 @@ class TestService(TestCase):
     def test_get_by_country(self, mock_countries_map):
         mock_countries_map.return_value = {"a": "Country A", "b": "Country B"}
         self.mock_query.return_value = [
-            {"country": "a", "bids": 1, "bid_reqs": 10000},
-            {"country": "b", "bids": 2, "bid_reqs": 10000},
-            {"country": "c", "bids": 3, "bid_reqs": 10000},
-            {"country": None, "bids": 4, "bid_reqs": 10000},
+            {"country": "a", "bids": 1, "slots": 10000},
+            {"country": "b", "bids": 2, "slots": 10000},
+            {"country": "c", "bids": 3, "slots": 10000},
+            {"country": None, "bids": 4, "slots": 10000},
         ]
         self.assertEqual(
             service.get_by_country(None, {}),
             [
-                {"country": "a", "name": "Country A", "bids": 1, "bid_reqs": 10000},
-                {"country": "b", "name": "Country B", "bids": 2, "bid_reqs": 10000},
-                {"country": "c", "name": "Not reported", "bids": 3, "bid_reqs": 10000},
-                {"country": None, "name": "Not reported", "bids": 4, "bid_reqs": 10000},
+                {"country": "a", "name": "Country A", "bids": 1, "slots": 10000},
+                {"country": "b", "name": "Country B", "bids": 2, "slots": 10000},
+                {"country": "c", "name": "Not reported", "bids": 3, "slots": 10000},
+                {"country": None, "name": "Not reported", "bids": 4, "slots": 10000},
             ],
         )
 
@@ -168,4 +169,107 @@ class TestService(TestCase):
                     "redirects": 0,
                 },
             ],
+        )
+
+    def test_get_by_channel(self):
+        self.mock_query.return_value = [
+            {
+                "channel": constants.InventoryChannel.NATIVE,
+                "bids": 1,
+                "bid_reqs": 10000,
+                "win_notices": 5,
+                "total_win_price": 10.0,
+                "slots": 20000,
+                "redirects": 100,
+            },
+            {
+                "channel": constants.InventoryChannel.NATIVE_OR_VIDEO,
+                "bids": 2,
+                "bid_reqs": 10000,
+                "win_notices": 5,
+                "total_win_price": 10.0,
+                "slots": 30000,
+                "redirects": 100,
+            },
+            {
+                "channel": constants.InventoryChannel.DISPLAY,
+                "bids": 2,
+                "bid_reqs": 10000,
+                "win_notices": 5,
+                "total_win_price": 10.0,
+                "slots": 20000,
+                "redirects": 100,
+            },
+        ]
+        self.assertEqual(
+            service.get_by_channel(None, {}),
+            [
+                {
+                    "channel": constants.InventoryChannel.NATIVE,
+                    "name": "Native",
+                    "bids": 3,
+                    "bid_reqs": 20000,
+                    "win_notices": 10,
+                    "total_win_price": 20.0,
+                    "slots": 50000,
+                    "redirects": 200,
+                },
+                {
+                    "channel": constants.InventoryChannel.VIDEO,
+                    "name": "Video",
+                    "bids": 2,
+                    "bid_reqs": 10000,
+                    "win_notices": 5,
+                    "total_win_price": 10.0,
+                    "slots": 30000,
+                    "redirects": 100,
+                },
+                {
+                    "channel": constants.InventoryChannel.DISPLAY,
+                    "name": "Display",
+                    "bids": 2,
+                    "bid_reqs": 10000,
+                    "win_notices": 5,
+                    "total_win_price": 10.0,
+                    "slots": 20000,
+                    "redirects": 100,
+                },
+            ],
+        )
+
+    def test_get_by_channel_query(self):
+        service.get_by_channel(None, {"channel": [constants.InventoryChannel.NATIVE]})
+        self.mock_query.assert_called_with(
+            breakdown="channel",
+            constraints={
+                "channel": [constants.InventoryChannel.NATIVE, constants.InventoryChannel.NATIVE_OR_VIDEO],
+                "source_id": [],
+            },
+        )
+
+        service.get_by_channel(None, {"channel": [constants.InventoryChannel.NATIVE, constants.InventoryChannel.VIDEO]})
+        self.mock_query.assert_called_with(
+            breakdown="channel",
+            constraints={
+                "channel": [
+                    constants.InventoryChannel.NATIVE,
+                    constants.InventoryChannel.VIDEO,
+                    constants.InventoryChannel.NATIVE_OR_VIDEO,
+                ],
+                "source_id": [],
+            },
+        )
+
+        service.get_by_channel(None, {"channel": [constants.InventoryChannel.VIDEO]})
+        self.mock_query.assert_called_with(
+            breakdown="channel",
+            constraints={
+                "channel": [constants.InventoryChannel.VIDEO, constants.InventoryChannel.NATIVE_OR_VIDEO],
+                "source_id": [],
+            },
+        )
+
+        service.get_by_channel(None, {"channel": [constants.InventoryChannel.DISPLAY]})
+        self.mock_query.assert_called_with(
+            breakdown="channel", constraints={"channel": [constants.InventoryChannel.DISPLAY], "source_id": []}
         )

@@ -9,7 +9,8 @@ COUNTRY = "country"
 PUBLISHER = "publisher"
 DEVICE_TYPE = "device_type"
 SOURCE_ID = "source_id"
-VALID_BREAKDOWNS = (None, COUNTRY, PUBLISHER, DEVICE_TYPE, SOURCE_ID)
+CHANNEL = "channel"
+VALID_BREAKDOWNS = (None, COUNTRY, PUBLISHER, DEVICE_TYPE, SOURCE_ID, CHANNEL)
 
 
 def query(breakdown=None, constraints=None):
@@ -28,7 +29,7 @@ def query(breakdown=None, constraints=None):
             "breakdown": [m.get_column(breakdown)] if breakdown else [],
             "aggregates": m.select_columns(group="aggregates"),
             "constraints": q,
-            "orders": [m.bid_reqs.as_order("-", nulls="last")],
+            "orders": [m.slots.as_order("-", nulls="last")],
         },
     )
     params = q.get_params()

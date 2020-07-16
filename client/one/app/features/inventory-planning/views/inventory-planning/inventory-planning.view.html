@@ -72,6 +72,15 @@
         (onToggle)="store.toggleOption({key: 'sources', value: $event})"
     >
     </zem-inventory-planning-breakdown>
+    <zem-inventory-planning-breakdown
+        class="zem-inventory-planning-breakdown"
+        breakdownName="Channel"
+        [options]="(store.state$ | async).availableFilters.channels"
+        [selected]="(store.state$ | async).selectedFilters.channels"
+        [isLoading]="(store.state$ | async).requests.channels.inProgress"
+        (onToggle)="store.toggleOption({key: 'channels', value: $event})"
+    >
+    </zem-inventory-planning-breakdown>
 </div>
 
 <div class="message message--info message--with-icon block m-b">

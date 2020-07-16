@@ -7,5 +7,6 @@ export function buildRequestPayload(selectedFilters: Filters): RequestPayload {
         publishers: selectedFilters.publishers.map((x: any) => x.value),
         devices: selectedFilters.devices.map((x: any) => x.value),
         sources: selectedFilters.sources.map((x: any) => x.value),
+        channels: selectedFilters.channels.map((x: any) => x.value),
     };
 }

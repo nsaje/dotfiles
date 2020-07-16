@@ -24,5 +24,9 @@ export const INVENTORY_PLANNING_CONFIG = {
             name: 'sources',
             url: `${apiUrl}/media-sources`,
         },
+        loadChannels: {
+            name: 'channels',
+            url: `${apiUrl}/channels`,
+        },
     },
 };

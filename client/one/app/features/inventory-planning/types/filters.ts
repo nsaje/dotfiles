@@ -5,4 +5,5 @@ export interface Filters {
     publishers: FilterOption[];
     devices: FilterOption[];
     sources: FilterOption[];
+    channels: FilterOption[];
 }

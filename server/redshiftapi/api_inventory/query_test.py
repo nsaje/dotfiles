@@ -25,7 +25,7 @@ SELECT
    sum(win_notices) win_notices
 FROM mv_inventory
 WHERE 1=1
-ORDER BY bid_reqs DESC NULLS LAST
+ORDER BY slots DESC NULLS LAST
 LIMIT 20000
         """
         expected_params = []
@@ -54,7 +54,7 @@ WHERE (
    AND publisher=ANY(%s)
 )
 GROUP BY 1
-ORDER BY bid_reqs DESC NULLS LAST
+ORDER BY slots DESC NULLS LAST
 LIMIT 20000
         """
         expected_params = [[1, 2], ["cnn.com", "bbc.co.uk"]]

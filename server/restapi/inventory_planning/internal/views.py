@@ -20,7 +20,9 @@ COUNTRIES = "countries"
 PUBLISHERS = "publishers"
 DEVICE_TYPES = "device-types"
 MEDIA_SOURCES = "media-sources"
-VALID_BREAKDOWNS = (SUMMARY, COUNTRIES, PUBLISHERS, DEVICE_TYPES, MEDIA_SOURCES)
+CHANNELS = "channels"
+
+VALID_BREAKDOWNS = (SUMMARY, COUNTRIES, PUBLISHERS, DEVICE_TYPES, MEDIA_SOURCES, CHANNELS)
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -81,6 +83,10 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
             data = dash.features.inventory_planning.get_by_media_source(request, filters)
             data = self._remap_breakdown(data, value_field="source_id")
 
+        elif breakdown == CHANNELS:
+            data = dash.features.inventory_planning.get_by_channel(request, filters)
+            data = self._remap_breakdown(data, value_field="channel")
+
         else:
             raise django.http.Http404
 
@@ -117,6 +123,7 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
         publishers_data = self._handle_breakdown(request, PUBLISHERS, filters)
         device_types_data = self._handle_breakdown(request, DEVICE_TYPES, filters)
         media_sources_data = self._handle_breakdown(request, MEDIA_SOURCES, filters)
+        channels_data = self._handle_breakdown(request, CHANNELS, filters)
 
         csv_data = []
 
@@ -125,6 +132,7 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
             publisher_filter = filters.get("publisher")
             device_filter = filters.get("device_type")
             source_filter = filters.get("source_id")
+            channels_filter = filters.get("channel")
 
             csv_data.append(("Active filters",))
 
@@ -147,9 +155,13 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
                 sources_map = dash.features.inventory_planning.get_filtered_sources_map(request)
                 csv_data = csv_utils.insert_csv_row(csv_data, "SSPs", [sources_map.get(s, s) for s in source_filter])
 
+            if channels_filter:
+                csv_data = csv_utils.insert_csv_row(csv_data, "Channels", channels_filter)
+
         csv_data = csv_utils.insert_csv_paragraph(csv_data, "Devices", device_types_data, "name", "auction_count")
         csv_data = csv_utils.insert_csv_paragraph(csv_data, "SSPs", media_sources_data, "name", "auction_count")
         csv_data = csv_utils.insert_csv_paragraph(csv_data, "Countries", countries_data, "name", "auction_count")
+        csv_data = csv_utils.insert_csv_paragraph(csv_data, "Channels", channels_data, "name", "auction_count")
         csv_data = csv_utils.insert_csv_paragraph(
             csv_data, "Publishers", publishers_data[:1000], "value", "auction_count"
         )

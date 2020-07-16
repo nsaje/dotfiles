@@ -20,7 +20,13 @@ import {PostAsGetRequestService} from '../../../../core/post-as-get-request/post
 import * as requestPayloadHelpers from '../../helpers/request-payload.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
-const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
+const FILTER_URL_PARAMS = [
+    'countries',
+    'publishers',
+    'devices',
+    'sources',
+    'channels',
+];
 
 @Component({
     selector: 'zem-inventory-planning-view',

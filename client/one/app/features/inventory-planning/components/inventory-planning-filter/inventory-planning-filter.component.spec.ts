@@ -30,6 +30,11 @@ describe('InventoryPlanningFilterComponent', () => {
         name: 'Option 5',
         auctionCount: 50000,
     };
+    const testOption6 = {
+        value: '6',
+        name: 'Option 6',
+        auctionCount: 60000,
+    };
 
     let fixture: ComponentFixture<InventoryPlanningFilterComponent>;
     let component: InventoryPlanningFilterComponent;
@@ -51,12 +56,14 @@ describe('InventoryPlanningFilterComponent', () => {
             publishers: [],
             devices: [],
             sources: [],
+            channels: [],
         };
         component.selectedFilters = {
             countries: [],
             publishers: [],
             devices: [],
             sources: [],
+            channels: [],
         };
         changes = {
             availableFilters: new SimpleChange(
@@ -76,6 +83,7 @@ describe('InventoryPlanningFilterComponent', () => {
             {name: 'Publishers', key: 'publishers', items: []},
             {name: 'Devices', key: 'devices', items: []},
             {name: 'Media Sources', key: 'sources', items: []},
+            {name: 'Channels', key: 'channels', items: []},
         ]);
         expect(component.categorizedSelectedOptions).toEqual([]);
 
@@ -84,12 +92,14 @@ describe('InventoryPlanningFilterComponent', () => {
             publishers: [testOption3],
             devices: [testOption4],
             sources: [testOption5],
+            channels: [testOption6],
         };
         component.selectedFilters = {
             countries: [testOption2],
             publishers: [testOption3],
             devices: [],
             sources: [],
+            channels: [],
         };
         changes = {
             availableFilters: new SimpleChange(
@@ -156,6 +166,18 @@ describe('InventoryPlanningFilterComponent', () => {
                         name: 'Option 5',
                         value: '5',
                         description: '50 K',
+                        selected: false,
+                    },
+                ],
+            },
+            {
+                name: 'Channels',
+                key: 'channels',
+                items: [
+                    {
+                        name: 'Option 6',
+                        value: '6',
+                        description: '60 K',
                         selected: false,
                     },
                 ],
