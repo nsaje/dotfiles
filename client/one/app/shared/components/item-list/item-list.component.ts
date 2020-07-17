@@ -29,13 +29,11 @@ export class ItemListComponent<T> {
 
     @Output()
     selectedItemsChange: EventEmitter<T[]> = new EventEmitter<T[]>();
-    @Output()
-    addItemsClicked: EventEmitter<void> = new EventEmitter<void>();
-    @Output()
-    removeItemsClicked: EventEmitter<void> = new EventEmitter<void>();
 
     @ContentChild('itemTemplate', {read: TemplateRef, static: false})
     itemTemplate: TemplateRef<any>;
+    @ContentChild('addItemTemplate', {read: TemplateRef, static: false})
+    addItemTemplate: TemplateRef<any>;
 
     clickItem(event: MouseEvent, item: T) {
         const doMultiSelect: boolean =

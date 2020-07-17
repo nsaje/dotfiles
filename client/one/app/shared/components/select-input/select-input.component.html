@@ -1,7 +1,10 @@
 <ng-select
     #zemSelect
     class="zem-ng-select"
-    [ngClass]="{'zem-ng-select--error': hasError}"
+    [ngClass]="{
+        'zem-ng-select--error': hasError,
+        'zem-ng-select--warning': isWarning
+    }"
     placeholder="{{ placeholder }}"
     bindLabel="{{ bindLabel }}"
     bindValue="{{ bindValue }}"

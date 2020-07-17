@@ -5,6 +5,9 @@
     }"
 >
     {{ account.id }}
+    <span class="zem-account-list-item__remove-button" (click)="remove.emit()"
+        >×</span
+    >
     <br />
     <a
         class="zem-account-list-item__link"

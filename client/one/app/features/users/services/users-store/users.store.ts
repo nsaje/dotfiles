@@ -205,6 +205,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     }
 
     addActiveEntityAccount(account: Account) {
+        if (!isDefined(account)) {
+            return;
+        }
         if (
             this.state.activeEntity.entity.entityPermissions.some(
                 ep => isDefined(ep.accountId) && ep.accountId === account.id

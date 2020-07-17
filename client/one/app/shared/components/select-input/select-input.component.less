@@ -66,6 +66,17 @@
     border-color: @color--danger;
 }
 
+.ng-select.zem-ng-select--warning .ng-select-container {
+    border-color: @color--primary;
+    box-shadow: inset 3px 3px 3px 0px fadeout(@color--primary, 95%);
+}
+
+.ng-select.zem-ng-select--warning.ng-select-single:not(.ng-select-disabled).ng-select.zem-ng-select.ng-select-single:not(.ng-select-opened)
+    > .ng-select-container:hover {
+    border: 1px solid darken(@color--primary, 5%);
+    box-shadow: 0px 0px 5px 0px fadeout(@color--primary, 25%);
+}
+
 .ng-dropdown-panel {
     background: white;
     border: 1px solid darken(@border-color--default, 20%) !important;

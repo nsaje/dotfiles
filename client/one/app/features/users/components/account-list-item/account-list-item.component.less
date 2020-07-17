@@ -13,6 +13,7 @@
     white-space: nowrap;
     overflow: hidden;
     padding: @spacing--small;
+    text-overflow: ellipsis;
 }
 
 .zem-account-list-item__item:hover {
@@ -39,4 +40,19 @@
 .zem-account-list-item__link:hover,
 .zem-account-list-item__link:active {
     color: @color--secondary;
+}
+
+.zem-account-list-item__remove-button {
+    float: right;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    font-size: 18px;
+    line-height: 10px;
+}
+
+.zem-account-list-item__remove-button:hover {
+    background-color: @color--danger;
+    box-shadow: 0px 0px 6px 0px fade(@color--danger, 40%);
+    color: white;
 }

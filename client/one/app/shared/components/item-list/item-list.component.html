@@ -9,22 +9,11 @@
     </div>
     <a
         class="zem-item-list__link"
-        *ngIf="multiple"
+        *ngIf="multiple && items.length > 0"
         (click)="selectedItemsChange.emit(items)"
         >Select all</a
     >
 </div>
 <div class="zem-item-list__footer">
-    <button
-        class="zem-button zem-button--highlighted zem-button--with-icon zem-button--icon-only zem-button--add-icon"
-        [disabled]="isDisabled"
-        (click)="addItemsClicked.emit()"
-    ></button>
-    <button
-        class="zem-button zem-button--highlighted"
-        [disabled]="isDisabled"
-        (click)="removeItemsClicked.emit()"
-    >
-        Remove
-    </button>
+    <ng-container *ngTemplateOutlet="addItemTemplate"></ng-container>
 </div>

@@ -53,9 +53,7 @@ export class UsersView implements OnInit, OnDestroy {
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
     canSaveActiveEntity: boolean = false;
 
-    availableAccounts: Account[] = [];
-    addAccountId: string;
-    isAddAccountVisible: boolean = false;
+    availableAccounts: Observable<Account[]>;
 
     readonly ScopeSelectorState = ScopeSelectorState;
 
@@ -81,13 +79,20 @@ export class UsersView implements OnInit, OnDestroy {
                 this.updateInternalState(queryParams);
             });
 
-        this.store.state$
-            .pipe(
-                map(state => state.activeEntity.entityAccounts),
-                distinctUntilChanged(),
-                takeUntil(this.ngUnsubscribe$)
-            )
-            .subscribe(this.updateAvailableAccounts.bind(this));
+        this.availableAccounts = this.store.state$.pipe(
+            map(state =>
+                state.accounts.filter(
+                    account =>
+                        !state.activeEntity.entityAccounts.includes(account) &&
+                        this.zemPermissions.canEditUsersOnEntity(
+                            state.agencyId,
+                            account.id
+                        )
+                )
+            ),
+            distinctUntilChanged(),
+            takeUntil(this.ngUnsubscribe$)
+        );
     }
 
     ngOnDestroy() {
@@ -139,7 +144,6 @@ export class UsersView implements OnInit, OnDestroy {
     }
 
     openEditUserModal(user: Partial<User>) {
-        this.clearAddAccountData();
         this.store.setActiveEntity(user);
         this.editUserModal.open();
     }
@@ -159,23 +163,6 @@ export class UsersView implements OnInit, OnDestroy {
         this.store.addActiveEntityAccount(
             this.store.state.accounts.find(account => account.id === $event)
         );
-        this.clearAddAccountData();
-    }
-
-    updateAvailableAccounts(entityAccounts: Account[]) {
-        this.availableAccounts = this.store.state.accounts.filter(
-            account =>
-                !entityAccounts.includes(account) &&
-                this.zemPermissions.canEditUsersOnEntity(
-                    this.store.state.agencyId,
-                    account.id
-                )
-        );
-    }
-
-    private clearAddAccountData() {
-        this.addAccountId = undefined;
-        this.isAddAccountVisible = false;
     }
 
     private updateInternalState(queryParams: any) {

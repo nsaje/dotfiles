@@ -48,6 +48,8 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     isMultiple: boolean = false;
     @Input()
+    isWarning: boolean = false;
+    @Input()
     groupByValue: string;
     @Input()
     orderByValue: string;

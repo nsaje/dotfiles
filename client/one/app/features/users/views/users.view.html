@@ -137,13 +137,6 @@
                                 (selectedItemsChange)="
                                     store.setSelectedAccounts($event)
                                 "
-                                (addItemsClicked)="isAddAccountVisible = true"
-                                (removeItemsClicked)="
-                                    store.removeActiveEntityAccounts(
-                                        store.state.activeEntity
-                                            .selectedAccounts
-                                    )
-                                "
                             >
                                 <ng-template
                                     #itemTemplate
@@ -154,28 +147,35 @@
                                         class="zem-account-list-item"
                                         [account]="item"
                                         [selected]="selected"
+                                        (remove)="
+                                            store.removeActiveEntityAccounts([
+                                                item
+                                            ])
+                                        "
                                     >
                                     </zem-account-list-item>
                                 </ng-template>
+                                <ng-template #addItemTemplate>
+                                    <zem-select-input
+                                        class="zem-select-input zem-users-view__add-account"
+                                        [items]="availableAccounts | async"
+                                        [placeholder]="'Add account'"
+                                        [clearSearchOnSelect]="true"
+                                        [bindLabel]="'name'"
+                                        [bindValue]="'id'"
+                                        [appendTo]="'body'"
+                                        [isClearable]="true"
+                                        [isSearchable]="true"
+                                        [isDisabled]="
+                                            state.activeEntity.isReadOnly ||
+                                            state.activeEntity.isCurrentUser
+                                        "
+                                        [isWarning]="true"
+                                        (valueChange)="addAccountById($event)"
+                                    >
+                                    </zem-select-input>
+                                </ng-template>
                             </zem-item-list>
-                            <zem-select-input
-                                *ngIf="isAddAccountVisible"
-                                class="zem-select-input zem-users-view__add-account"
-                                [items]="availableAccounts"
-                                [placeholder]="'Add account'"
-                                [value]="addAccountId"
-                                [bindLabel]="'name'"
-                                [bindValue]="'id'"
-                                [appendTo]="'body'"
-                                [isClearable]="false"
-                                [isSearchable]="true"
-                                [isDisabled]="
-                                    state.activeEntity.isReadOnly ||
-                                    state.activeEntity.isCurrentUser
-                                "
-                                (valueChange)="addAccountById($event)"
-                            >
-                            </zem-select-input>
                         </div>
                         <zem-entity-permission-selector
                             class="zem-users-view__entity-permission-selector zem-entity-permission-selector"

@@ -31,8 +31,10 @@
 }
 
 .zem-users-view__account-list {
-    margin-right: @spacing--small;
     flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    position: absolute;
 }
 
 .zem-users-view__modal .zem-buttons-panel {
@@ -40,10 +42,9 @@
 }
 
 .zem-users-view__accounts-section {
-    display: flex;
-    flex-direction: column;
     flex: 0 1 200px;
-    max-width: ~'min(50%, 200px)';
+    min-width: 130px;
+    position: relative;
 }
 
 .zem-users-view__entity-permission-selector {
@@ -51,7 +52,7 @@
 }
 
 .zem-users-view__add-account {
-    margin: 8px 8px 0 0;
+    width: 100%;
 }
 
 .zem-users-view__permissions-editor {

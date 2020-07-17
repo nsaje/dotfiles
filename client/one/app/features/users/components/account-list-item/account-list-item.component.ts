@@ -4,6 +4,8 @@ import {
     Component,
     ChangeDetectionStrategy,
     OnChanges,
+    Output,
+    EventEmitter,
 } from '@angular/core';
 import {Account} from '../../../../core/entities/types/account/account';
 
@@ -17,6 +19,8 @@ export class AccountListItemComponent implements OnChanges {
     account: Account;
     @Input()
     selected: boolean;
+    @Output()
+    remove: EventEmitter<void> = new EventEmitter<void>();
 
     accountUrl: string;
 
