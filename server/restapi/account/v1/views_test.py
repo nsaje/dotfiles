@@ -66,6 +66,15 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_accounts_list_pagination(self):
+        for i in range(10):
+            self.mix_account(self.user, permissions=[Permission.READ])
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"))
+        r_paginated = self.client.get(reverse("restapi.account.v1:accounts_list"), {"limit": 2, "offset": 5})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+        self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+
     def test_accounts_list_filter_by_agency_id(self):
         agency_one = self.mix_agency(user=self.user, permissions=[Permission.READ])
         magic_mixer.cycle(3).blend(core.models.Account, agency=agency_one)

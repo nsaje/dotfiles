@@ -89,6 +89,16 @@ class LegacyContentAdsTest(RESTAPITestCase):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_contentads_list_pagination(self):
+        magic_mixer.cycle(10).blend(core.models.ContentAd, ad_group=self.ad_group)
+        r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": self.ad_group.id})
+        r_paginated = self.client.get(
+            reverse("restapi.contentad.v1:contentads_list"), {"adGroupId": self.ad_group.id, "limit": 2, "offset": 5}
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
+        self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+
     def test_contentads_list_invalid_params(self):
         r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": "NON-NUMERIC"})
         resp_json = self.assertResponseError(r, "ValidationError")

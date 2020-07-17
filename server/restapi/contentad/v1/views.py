@@ -7,7 +7,9 @@ import dash.constants
 import dash.models
 import zemauth.access
 from dash.features import contentupload
+from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseView
+from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.contentad.v1 import serializers
 from utils import dates_helper
 from utils import exc
@@ -17,24 +19,28 @@ ACCOUNTS_CAN_EDIT_URL = [settings.HARDCODED_ACCOUNT_ID_OEN]
 ACCOUNTS_CAN_EDIT_BRAND_NAME = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
-class ContentAdViewList(RESTAPIBaseView):
-    def get(self, request):
+class ContentAdViewSet(RESTAPIBaseViewSet):
+    def get(self, request, content_ad_id):
+        content_ad = zemauth.access.get_content_ad(request.user, Permission.READ, content_ad_id)
+        serializer = serializers.ContentAdSerializer(content_ad, context={"request": request})
+        return self.response_ok(serializer.data)
+
+    def list(self, request):
         qpe = serializers.ContentAdQueryParams(data=request.query_params)
         qpe.is_valid(raise_exception=True)
         ad_group_id = qpe.validated_data.get("ad_group_id")
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
         content_ads = (
-            dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived().select_related("ad_group")
+            dash.models.ContentAd.objects.filter(ad_group=ad_group)
+            .exclude_archived()
+            .select_related("ad_group")
+            .order_by("pk")
         )
-        serializer = serializers.ContentAdSerializer(content_ads, many=True, context={"request": request})
-        return self.response_ok(serializer.data)
-
-
-class ContentAdViewDetails(RESTAPIBaseView):
-    def get(self, request, content_ad_id):
-        content_ad = zemauth.access.get_content_ad(request.user, Permission.READ, content_ad_id)
-        serializer = serializers.ContentAdSerializer(content_ad, context={"request": request})
-        return self.response_ok(serializer.data)
+        paginator = StandardPagination()
+        content_ads_paginated = paginator.paginate_queryset(content_ads, request)
+        return self.response_ok(
+            serializers.ContentAdSerializer(content_ads_paginated, many=True, context={"request": request}).data
+        )
 
     def put(self, request, content_ad_id):
         content_ad = zemauth.access.get_content_ad(request.user, Permission.WRITE, content_ad_id)

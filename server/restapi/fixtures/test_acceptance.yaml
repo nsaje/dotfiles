@@ -62,6 +62,7 @@
       - ['can_clone_campaigns', 'zemauth', 'user']
       - ["can_see_backend_hacks", "zemauth", "user"]
       - ["can_see_service_fee", "zemauth", "user"]
+      - ["can_use_placement_targeting", "zemauth", "user"]
 
 - model: oauth2_provider.application
   pk: 1
@@ -669,6 +670,7 @@
 -   fields:
         publisher_group: 156
         publisher: "example3.com"
+        placement: "placement_1234"
         source: 1
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'

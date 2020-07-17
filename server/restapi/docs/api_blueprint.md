@@ -729,7 +729,7 @@ Tracking | Property          | Type                                  | Descripti
 ga       |                   |                                       |
 &nbsp;   | enabled           | boolean                               | Google Analytics integration enabled
 &nbsp;   | type              | [GA Tracking Type](#ga-tracking-type) | Google Analytics tracking type
-&nbsp;   | webProperyId      | string                                | Google Analytics Web Property ID
+&nbsp;   | webPropertyId     | string                                | Google Analytics Web Property ID
 adobe    |                   |                                       |
 &nbsp;   | enabled           | boolean                               | Adobe Analytics integration enabled
 &nbsp;   | trackingParameter | string                                | Adobe Analytics tracking parameter
@@ -770,10 +770,20 @@ publisherGroups  |          |           |                                       
 
     + Attributes (CampaignResponse)
 
-### List campaigns [GET /rest/v1/campaigns/{?includeArchived}]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId,accountId,includeArchived}]
+
++ Parameters
+    + accountId: 168 (number, optional) - Optional account ID.
+    + campaignId: 608 (number, optional) - Optional campaign ID.
+    + includeArchived (bool, optional) - Set to true to retrieve archived ad groups.
+        + Default: false
+
+### List campaigns [GET /rest/v1/campaigns/{?includeArchived,onlyIds}]
 
 + Parameters
     + includeArchived (bool, optional) - Set to true to retrieve archived campaigns.
+        + Default: false
+    + onlyIds (bool, optional) - Set to true to retrieve only campaign IDs.
         + Default: false
 
 + Response 200 (application/json)
@@ -1160,9 +1170,8 @@ state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to ac
 archived     | bool                      | Is the Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore it.                                       | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                      | optional | optional
-startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
-biddingType  | `CPC` / `CPM`             | Bidding type. Set to `CPC` (use maxCpc) to focus on the clicks that your ad receives or `CPM` (use maxCpm) to focus on impressions.| optional | optional
-bid          | [money](#money)           | Bid value for this ad group. When ad group bid property is updated source bid values are calculated using the existing source bid modifiers. | required | required
+biddingType  | `CPC` / `CPM`             | Bidding type. Set to `CPC` to focus on the clicks that your ad receives or `CPM` to focus on impressions. Use the `bid` field to set the bid value. | optional | optional
+bid | [money](#money)           | Bid value for this ad group. When ad group bid property is updated, source bid values are calculated using the existing source bid modifiers. | required | required
 maxCpc (deprecated) | [money](#money)    | Maximum CPC for this ad group if autopilot is enabled and ad group's bid CPC value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
 maxCpm (deprecated) | [money](#money)    | Maximum CPM for this ad group if autopilot is enabled and ad group's bid CPM value if autopilot is inactive. This property exists due to backwards compatibility, please use "bid" instead. | optional | optional
 targeting    | [targeting](#targeting)   | targeting settings                                                                                                                 | optional | optional
@@ -1180,7 +1189,7 @@ clickCappingDailyAdGroupMaxClicks | number | Limit number of clicks you want to 
 Targeting        | Property | Property   | Type                                                                 | Description
 -----------------|----------|------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 devices          |          |            | array[[device](#device)]                                             | A list of device types to target. If none specified, content is served to all device types.
-environments     |          |            | array[[environment](#environment)]                                       | A list of environments to target. If none specified, content is served to all environments.
+environments     |          |            | array[[environment](#environment)]                                   | A list of environments to target. If none specified, content is served to all environments.
 os               |          |            | array[[operatingSystem](#os-targeting)]                              | A list of operating systems and their versions to target. If none specified, content is served to any operating system or version.
 geo              |          |            |
 &nbsp;           | included |            |                                                                      |
@@ -1537,15 +1546,15 @@ dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
 ## Bid Modifiers [/rest/v1/adgroups/{adGroupId}/bidmodifiers/]
 <a name="bid-modifiers"></a>
 
+Bid modifiers enable modifying the bidding price for an ad group according to the desired parameters. The modified CPC or CPM bid value is calculated in the following way: `modifiedBidValue = bidValue * modifier`. A bid request can match multiple bid modifiers with different types (for example `DEVICE`, `OPERATING_SYSTEM` and `COUNTRY`). In that case the modified bid value is calculated by multiplying all matching bid modifier values: `modifiedBidValue = bidValue * modifier1 * modifier2 * modifier3`. The allowed `modifier` values are limited to the interval between `0.01` and `11.0`.
+
 | Property   | Type   | Description                                                                                                                                                            | Create   | Update    |
-|-----------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|----------|
+|-----------|-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-----------|
 | id         | string | the id of bid modifier                                                                                                                                                 | N/A      | read only |
 | type       | string | the [type](#bid-modifier-types) of bid modifier                                                                                                                        | required | optional  |
 | sourceSlug | string | this value is always an empty string, except for the `PUBLISHER` and `PLACEMENT` type bid modifiers where it contains the source slug of the source it targets (for a given publisher) | optional | optional  |
 | target     | string | a string representing the target of bid modifier                                                                                                                       | required | optional  |
 | modifier   | number | a floating point factor for bidding price calculation                                                                                                                  | required | required  |
-
-Bid modifiers enable modifying the bidding price for an ad group according to the desired parameters. The modified CPC or CPM bid value is calculated in the following way: `modifiedBidValue = bidValue * modifier`. A bid request can match multiple bid modifiers with different types (for example `DEVICE`, `OPERATING_SYSTEM` and `COUNTRY`). In that case the modified bid value is calculated by multiplying all matching bid modifier values: `modifiedBidValue = bidValue * modifier1 * modifier2 * modifier3`. The allowed `modifier` values are limited to the interval between `0.01` and `11.0`.
 
 <a name="bid-modifier-types"></a>
 #### Bid Modifier Types
@@ -1553,8 +1562,10 @@ Bid modifiers enable modifying the bidding price for an ad group according to th
 The following bid modifier types are supported:
 
 | Type             | Description                                                               | Allowed Values                        |
-|-----------------|--------------------------------------------------------------------------|--------------------------------------|
+|-----------------|----------------------------------------------------------------------------|---------------------------------------|
+| AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
 | PUBLISHER        | Modifies the bidding price for a specific source at a specific publisher. | the domain name of the publisher      |
+| PLACEMENT        | Modifies the bidding price for a specific placement at a specific publisher and source combination.       | a string of the form `<publisher domain name>__<source id>__<placement id>` |
 | SOURCE           | Modifies the bidding price for a specific source.                         | the source slug      |
 | DEVICE           | Modifies the bidding price for a specific device type.                    | see [Device targeting](#device)       |
 | OPERATING_SYSTEM | Modifies the bidding price for a specific operating system.               | see [Operating system targeting](#os) |
@@ -1562,9 +1573,7 @@ The following bid modifier types are supported:
 | COUNTRY          | Modifies the bidding price for a specific country.                        | see [Country](#country)               |
 | STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
 | DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
-| AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
-| DAY_HOUR         | Modifies the bidding price for a specific day and hour combination.  | see [DAY HOUR](#day_hour) |
-| PLACEMENT        | Modifies the bidding price for a specific placement at a specific publisher and source combination.       | a string of the form `<publisher domain name>__<source id>__<placement id>` |
+| DAY_HOUR         | Modifies the bidding price for a specific day and hour combination.       | see [DAY HOUR](#day_hour)             |
 
 ### Get bid modifiers for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{?type}]
 
@@ -1748,6 +1757,32 @@ Only the `modifier` value can be changed for an existing Bid Modifier. It is not
 + Response 204 (application/json)
 
         {}
+
+## Realtime Statistics [/rest/v1/adgroups/{adGroupId}/realtimestats/]
+<a name="realtime-stats"></a>
+
+The realtime statistics endpoint shows the spend and clicks on a particular adgroup for the current day.
+It is important to note that while the data here is updated in realtime, the data in the rest of the dashboard (including reporting)
+is refreshed with about 4 hours of delay.
+
+| Property   | Type            | Description                                                                    
+|----------- |---------------- |-------------------------------------------------
+| spend      | [money](#money) | the amount of the budget already spent                  
+| clicks     | number          | 
+
+### Get realtime statistics for an ad group [GET /rest/v1/adgroups/{adGroupId}/realtimestats/]
+
++ Parameters
+    + adGroupId: 2040 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "spend": "1234.0000",
+                "clicks": 4321
+            }
+        }
 
 # Group Content Ad Management
 
@@ -2177,8 +2212,9 @@ Publishers are represented as publisher domain (or name) and source pairs in the
 
 Property     | Type                | Description
 -------------|---------------------|---------------------------------------------------------------|
-id           | string              | id of the publisher group
+id           | string              | ID of the publisher group
 name         | string              | name of the publisher group
+accountId    | string              | ID of the account this publisher group belongs to
 
 ### List publisher groups [GET /rest/v1/accounts/{accountId}/publishergroups/] ###
 
@@ -2268,13 +2304,13 @@ Publisher groups can be deleted when they are not referenced by any Ad Group.
 
 ## Publisher Groups Entries [/rest/v1/publishergroups/{publisherGroupId}/entries/] ##
 
-Property           | Type                | Description                                                           | Create         |
--------------------|---------------------|-----------------------------------------------------------------------|----------------|
-id                 | string              | id of the entry                                                       | N/A            |
-publisherGroupId   | string              | id of the publisher group                                             | required       |
-publisher          | string              | publisher's domain (or name), strict matching                         | required       |
-placement          | string              | the placement identifier string                                    | optional       |
-source             | string              | source identifier, if not set it refers to all sources                | optional       |
+Property           | Type                | Description                                                            | Create         |
+-------------------|---------------------|------------------------------------------------------------------------|----------------|
+id                 | string              | id of the entry                                                        | N/A            |
+publisherGroupId   | string              | id of the publisher group                                              | required       |
+publisher          | string              | publisher's domain (or name), strict matching                          | required       |
+placement          | string              | The placement identifier string. If not set, it refers to all placements. | optional       |
+source             | string              | Source identifier. If not set, it refers to all sources.                  | optional       |
 includeSubdomains  | boolean             | if true, the publisher's subdomains will also be included in the group | optional, defaults to true      |
 
 ### List publisher group entries [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{?offset,limit}] ###
@@ -2402,8 +2438,13 @@ This endpoint allows you to manage publisher status on different levels.
 
 Optionally, you can assign a bid modifier to a publisher and source combination to modify the bidding price. Publisher bid modifiers are currently only supported on `ADGROUP` level. In case `modifier` is specified, the `source` has to be specified as well or a validation error will be returned. *Note: this way of setting bid modifiers on publishers has been deprecated - please use [bid modifiers API](#bid-modifiers) instead.*
 
-*NOTE: Publisher bid modifiers are currently only supported on RTB sources*
-
+Property           | Type                | Description                                                               | Update         |
+-------------------|---------------------|---------------------------------------------------------------------------|----------------|
+name               | string              | publisher's domain (or name), strict matching                             | required       |
+placement          | string              | The placement identifier string. If not set, it refers to all placements. | optional       |
+source             | string              | Source identifier. If not set, it refers to all sources.                  | optional       |
+status             | [publisher status](#publishers-status) | status of the publisher                                | required       |
+level              | [publisher level](#publishers-level)   | level on which the publisher is managed                | required       |
 
 ### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
 
@@ -2416,21 +2457,24 @@ Optionally, you can assign a bid modifier to a publisher and source combination 
             "data": [
                 {
                     "name": "example.com/publisher1",
+                    "placement": "placement_1234",
+                    "source": "gumgum",
                     "status": "ENABLED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
+                    "level": "ADGROUP"
                 },
                 {
                     "name": "example.com/publisher2",
+                    "placement": null,
+                    "source": "gumgum",
                     "status": "ENABLED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
+                    "level": "ADGROUP"
                 },
                 {
                     "name": "example.com/publisher3",
+                    "placement": null,
+                    "source": null,
                     "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": null
+                    "level": "ADGROUP"
                 }
             ]
         }
@@ -2445,22 +2489,23 @@ Optionally, you can assign a bid modifier to a publisher and source combination 
         [
             {
                 "name": "example.com/publisher1",
+                "source": "gumgum",
                 "status": "BLACKLISTED",
-                "level": "ADGROUP",
-                "source": "gumgum"
+                "level": "ADGROUP"
             },
             {
                 "name": "example.com/publisher2",
+                "placement": "placement_1234",
+                "source": "gumgum",
                 "status": "BLACKLISTED",
-                "level": "ADGROUP",
-                "source": "gumgum"
+                "level": "ADGROUP"
             },
             {
                 "name": "example.com/publisher3",
-                "status": "ENABLED",
-                "level": "ADGROUP",
+                "placement": null,
                 "source": "gumgum",
-                "modifier": 0.8
+                "status": "ENABLED",
+                "level": "ADGROUP"
             }
         ]
 
@@ -2470,22 +2515,24 @@ Optionally, you can assign a bid modifier to a publisher and source combination 
             "data": [
                 {
                     "name": "example.com/publisher1",
+                    "placement": null,
+                    "source": "gumgum",
                     "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
+                    "level": "ADGROUP"
                 },
                 {
                     "name": "example.com/publisher2",
+                    "placement": "placement_1234",
+                    "source": "gumgum",
                     "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
+                    "level": "ADGROUP"
                 },
                 {
                     "name": "example.com/publisher3",
-                    "status": "ENABLED",
-                    "level": "ADGROUP",
+                    "placement": null,
                     "source": "gumgum",
-                    "modifier": 0.8
+                    "status": "ENABLED",
+                    "level": "ADGROUP"
                 }
             ]
         }
@@ -2527,6 +2574,20 @@ Supported fields: Account Id, Campaign Id, Ad Group Id, Content Ad Id, Media Sou
 }
 ```
 
+### Options
+Property                   | Type                | Default      |  Description                                                    
+---------------------------|---------------------|--------------|---------------------------------------------------------------
+showArchived               | bool                | false        | Set to true to include the data from the archived entities.                    
+showBlacklistedPublishers  | bool                | false        | Set to true to include the data from the blacklisted publishers and placements.
+includeTotals              | bool                | false        | Set to true to include the totals in the last row.            
+includeItemsWithNoSpend    | bool                | false        | Set to true to include the data of the entities (and/or delivery) with no spend.
+allAccountsInLocalCurrency | bool                | false        | Show all the money data in the currency of the parent account.
+showStatusDate             | bool                | false        | Add the current date to the status column name.
+recipients                 | array[string]       | []           | When the report is ready, the link to it will be sent to all the emails in the list.
+order                      | string              | -Media Spend | The field by which the report rows will be ordered. A `-` can be optionally added in front, denoting the descending order.
+csvSeparator               | string              | `,`          | The character that separates the csv columns. 
+csvDecimalSeparator        | string              | `.`          | The character that separates the integer and the fractional parts in decimal values.
+
 ### Fields
 #### Breakdown Fields
 When breakdown fields are specified, the report will be broken down by that field.
@@ -2541,12 +2602,12 @@ Delivery breakdown:
 - Media Source, Media Source Id
 - Publisher
 - Placement
+- Environment
+- Device
+- Operating System
 - Country
 - State / Region
 - DMA
-- Device
-- Environment
-- Operating System
 
 Time breakdown:
 - Day (e.g. 2017-03-30)
@@ -2574,6 +2635,8 @@ Time breakdown:
     - Placement Type
 
 #### Common Fields
+Any fields that can be viewed in the dashboard can be requested in a report.
+
 - Impressions
 - Clicks
 - CTR
@@ -2603,16 +2666,40 @@ Time breakdown:
 - Avg. Cost per Pageview
 - Avg. Cost per Non-Bounced Visit
 - Avg. Cost per Minute
+- Account Status
+- Campaign Status
+- Ad Group Status
+- Content Ad Status
+- Media Source Status
+- Publisher Status
+- Video Start
+- Video First Quartile
+- Video Midpoint
+- Video Third Quartile
+- Video Complete
+- Video Progress 3s
+- Avg. CPV
+- Avg. CPCV
+- Measurable Impressions
+- Viewable Impressions
+- Not-Measurable Impressions
+- Not-Viewable Impressions
+- % Measurable Impressions
+- % Viewable Impressions
+- Impression Distribution (Viewable)
+- Impression Distribution (Not-Measurable)
+- Impression Distribution (Not-Viewable)
+- Avg. VCPM
 
 #### Conversion Fields
-To get conversion data in the report, generate the column name by combining KPI, conversion goal, conversion window name and attribution type values in this order, separated by a space.
+To get conversion data in the report, generate the column name by combining KPI, conversion pixel, conversion window name and attribution type values in this order, separated by a space.
 
 To get the data for KPI other than conversion, the rest of the field needs to be in brackets (example below). It is also important to note that the only possible conversion window value for view attribution is 1 day.
 
-For example, if your conversion goal name is "MyGoal", the valid column names would be:
+For example, if your conversion pixel's name is "MyPixel", the valid column names would be:
 
-- to get conversion for 7 days click attribution: `My pixel 7 days - Click attr.`
-- to get CPA for 1 day view attribution: `CPA (My pixel 1 day - View attr.)`
+- to get conversion for 7 days click attribution: `MyPixel 7 days - Click attr.`
+- to get CPA for 1 day view attribution: `CPA (MyPixel 1 day - View attr.)`
 
 Possible values:
 - KPI: 
@@ -2644,6 +2731,9 @@ Possible values:
                 {"field": "Clicks"},
                 {"field": "Avg. CPC"}
             ],
+            "options": {
+                "showArchived": true
+            },
             "filters": [
                 {"field": "Date", "operator": "between", "from": "2016-10-01", "to": "2016-10-31"},
                 {"field": "Ad Group Id", "operator": "=", "value": "2040"}
@@ -2770,6 +2860,7 @@ Include traffic that meets the following conditions:
 
 <a name="languages"></a>
 ## Language
+
 - `ARABIC` - Arabic
 - `GERMAN` - German
 - `GREEK` - Greek
@@ -2793,6 +2884,7 @@ Include traffic that meets the following conditions:
 
 <a name="iab-categories"></a>
 ## IAB Category
+
 - `IAB1_1` - Books & Literature
 - `IAB1_2` - Celebrity Fan/Gossip
 - `IAB1_3` - Fine Art
@@ -3161,22 +3253,30 @@ Include traffic that meets the following conditions:
 - `IAB26_3` - Spyware/Malware
 - `IAB26_4` - CopyrightInfringement
 
+<a name="ga-tracking-type"></a>
+## GA Tracking Type
+
+- `EMAIL`
+- `API`
 
 ## Publishers
 
 <a name="publishers-status"></a>
 ### Status
+
 - `ENABLED`
 - `BLACKLISTED`
 
 <a name="publishers-level"></a>
 ### Level
-- `ADGROUP`
-- `CAMPAIGN`
+
 - `ACCOUNT`
+- `CAMPAIGN`
+- `ADGROUP`
 
 <a name="goal-type"></a>
 ## Campaign Goal KPIs
+
 - `TIME_ON_SITE` - Time on Site - Seconds
 - `MAX_BOUNCE_RATE` - Max Bounce Rate
 - `PAGES_PER_SESSION` - Pageviews per Visit
@@ -3191,19 +3291,33 @@ Include traffic that meets the following conditions:
 
 <a name="conversion-goal-type"></a>
 ### Conversion goal type
+
 - `PIXEL` - Conversion Pixel
 - `GA` - Google Analytics
 - `OMNITURE` - Adobe Analytics
 
 <a name="conversion-window"></a>
 ### Conversion window
+
 - `LEQ_1_DAY` - 1 day
 - `LEQ_7_DAYS` - 7 days
 - `LEQ_30_DAYS` - 30 days
 - `LEQ_90_DAYS` - 90 days
 
+<a name="image-crop"></a>
+## Image crop
+
+- `CENTER`
+- `FACES`
+- `ENTROPY`
+- `LEFT`
+- `RIGHT`
+- `TOP`
+- `BOTTOM`
+
 <a name="batch-status"></a>
 ## Content ad upload batch status
+
 - `DONE`
 - `FAILED`
 - `IN_PROGRESS`
@@ -3211,6 +3325,7 @@ Include traffic that meets the following conditions:
 
 <a name="video-upload-status"></a>
 ## Video upload status
+
 - `NOT_UPLOADED`
 - `PROCESSING`
 - `READY_FOR_USE`
@@ -3218,12 +3333,14 @@ Include traffic that meets the following conditions:
 
 <a name="video-upload-type"></a>
 ## Video upload type
+
 - `DIRECT_UPLOAD`
 - `VAST_UPLOAD`
 - `VAST_URL`
 
 <a name="delivery"></a>
 ## Delivery Type
+
 - `STANDARD` - Deliver ads throughout the day.
 - `ACCELERATED` - Deliver ads as soon as possible.
 
@@ -3251,6 +3368,18 @@ Include traffic that meets the following conditions:
 {% for key, value in constants.osv.items %}
 - `{{ key }}` - {{ value }}
 {% endfor %}
+
+<!-- <a name="browser"></a>
+## Browser targeting
+
+- `CHROME`
+- `FIREFOX`
+- `SAFARI`
+- `IE`
+- `SAMSUNG`
+- `OPERA`
+- `UC_BROWSER`
+- `IN_APP` -->
 
 <a name="interest-category"></a>
 ## Interest targeting
@@ -3294,6 +3423,7 @@ Include traffic that meets the following conditions:
 <a name="location-type"></a>
 Can be also found and listed under [geolocations](#geolocations)
 ### Location type
+
 - `COUNTRY`
 - `REGION`
 - `CITY`
@@ -3302,6 +3432,7 @@ Can be also found and listed under [geolocations](#geolocations)
 
 <a name="dma"></a>
 ### DMA
+
 - `669` - 669 Madison, WI
 - `762` - 762 Missoula, MT
 - `760` - 760 Twin Falls, ID

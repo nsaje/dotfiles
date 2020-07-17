@@ -8,6 +8,7 @@ import utils.exc
 import zemauth.access
 import zemauth.features.entity_permission.helpers
 from restapi.account.v1 import serializers
+from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission.constants import Permission
 
@@ -54,11 +55,14 @@ class AccountViewSet(RESTAPIBaseViewSet):
             queryset_user_perm = queryset_user_perm.exclude_archived()
             queryset_entity_perm = queryset_entity_perm.exclude_archived()
 
-        accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
-            request.user, Permission.READ, queryset_user_perm, queryset_entity_perm
+        paginator = StandardPagination()
+        accounts = zemauth.features.entity_permission.helpers.log_paginated_differences_and_get_queryset(
+            request, paginator, Permission.READ, queryset_user_perm, queryset_entity_perm
         )
+        accounts = accounts.order_by("pk")
+        accounts_paginated = paginator.paginate_queryset(accounts, request)
 
-        return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
+        return self.response_ok(self.serializer(accounts_paginated, many=True, context={"request": request}).data)
 
     def create(self, request):
         serializer = self.serializer(data=request.data, context={"request": request})

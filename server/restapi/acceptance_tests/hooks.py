@@ -43,6 +43,7 @@ def add_authorization_token(transaction):
 
 
 # TODO(nsaje): figure out how to mock this
+@hooks.before("Ad Group Management > Realtime Statistics > Get realtime statistics for an ad group")
 @hooks.before("Campaign Management > Campaigns > Get campaign performance")
 @hooks.before("Video Asset Management > Upload Video Assets > Step 1: Create a new video asset > Example 1")
 @hooks.before("Video Asset Management > Upload Video Assets > Step 1: Create a new video asset > Example 2")
