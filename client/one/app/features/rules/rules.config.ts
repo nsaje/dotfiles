@@ -201,7 +201,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limiteLabel: 'Maximum bid',
+        limitLabel: 'Maximum bid',
         limitDescription: 'Bid will not increase past this value.',
     },
     [RuleActionType.DecreaseBid]: {
@@ -215,7 +215,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limiteLabel: 'Minimum bid',
+        limitLabel: 'Minimum bid',
         limitDescription: 'Bid will not decrease past this value.',
     },
     [RuleActionType.IncreaseBidModifier]: {
@@ -231,7 +231,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.Percent,
         hasLimit: true,
-        limiteLabel: 'Maximum bid modifier',
+        limitLabel: 'Maximum bid modifier',
         limitDescription: 'Bid modifier will not increase past this value.',
     },
     [RuleActionType.DecreaseBidModifier]: {
@@ -260,7 +260,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limiteLabel: 'Maximum daily budget',
+        limitLabel: 'Maximum daily budget',
         limitDescription: 'Daily budget will not increase past this value.',
     },
     [RuleActionType.DecreaseDailyBudget]: {
@@ -274,7 +274,7 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limiteLabel: 'Minimum daily budget',
+        limitLabel: 'Minimum daily budget',
         limitDescription: 'Daily budget will not decrease past this value.',
     },
     [RuleActionType.TurnOff]: {
