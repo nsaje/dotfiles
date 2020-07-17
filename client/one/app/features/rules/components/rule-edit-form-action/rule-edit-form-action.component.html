@@ -13,29 +13,43 @@
     [appendTo]="'body'"
 ></zem-select-form-group>
 
-<zem-currency-form-group
-    class="zem-rule-edit-form__section-item zem-currency-form-group zem-rule-edit-form__currency-setting"
+<zem-content-form-group
+    class="zem-rule-edit-form__section-item zem-content-form-group zem-rule-edit-form__currency-setting"
     *ngIf="selectedActionConfig.hasValue"
     [label]="selectedActionConfig.valueLabel"
-    [value]="formatChangeStep(changeStep, actionType)"
     [helpMessage]="selectedActionConfig.description"
-    [currencySymbol]="getUnitText(selectedActionConfig.unit)"
-    [fractionSize]="2"
-    [errors]="changeStepErrors"
-    (valueChange)="updateChangeStep($event, actionType)"
-></zem-currency-form-group>
+>
+    <zem-currency-input
+        class="zem-form-group__content-item zem-form-group__input zem-currency-input"
+        [value]="formattedChangeStep"
+        [currencySymbol]="inputUnitSymbol"
+        [fractionSize]="2"
+        [hasError]="changeStepErrors && changeStepErrors.length > 0"
+        [zemPopover]="inputHelpText"
+        triggers="mouseenter:mouseleave"
+        placement="right"
+        (inputBlur)="updateChangeStep($event, actionType)"
+    ></zem-currency-input>
+</zem-content-form-group>
 
-<zem-currency-form-group
-    class="zem-rule-edit-form__section-item zem-currency-form-group zem-rule-edit-form__currency-setting"
+<zem-content-form-group
+    class="zem-rule-edit-form__section-item zem-content-form-group zem-rule-edit-form__currency-setting"
     *ngIf="selectedActionConfig.hasLimit"
     [label]="selectedActionConfig.limitLabel"
-    [value]="formatChangeLimit(changeLimit, actionType)"
     [helpMessage]="selectedActionConfig.limitDescription"
-    [currencySymbol]="getUnitText(selectedActionConfig.unit)"
-    [fractionSize]="2"
-    [errors]="changeLimitErrors"
-    (valueChange)="updateChangeLimit($event, actionType)"
-></zem-currency-form-group>
+>
+    <zem-currency-input
+        class="zem-form-group__content-item zem-form-group__input zem-currency-input"
+        [value]="formattedChangeLimit"
+        [currencySymbol]="inputUnitSymbol"
+        [fractionSize]="2"
+        [hasError]="changeLimitErrors && changeLimitErrors.length > 0"
+        [zemPopover]="inputHelpText"
+        triggers="mouseenter:mouseleave"
+        placement="right"
+        (inputBlur)="updateChangeLimit($event, actionType)"
+    ></zem-currency-input>
+</zem-content-form-group>
 
 <zem-select-form-group
     class="zem-rule-edit-form__section-item zem-select-form-group zem-rule-edit-form__select-setting"

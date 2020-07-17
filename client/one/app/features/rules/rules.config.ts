@@ -2004,3 +2004,6 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
     ],
     ...DEFAULT_PAGINATION,
 };
+
+export const RULE_CURRENCY_HELP_TEXT =
+    'The value is in the same currency as the account the rule runs on';

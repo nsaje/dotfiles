@@ -68,7 +68,7 @@
             selectedValueConfig.unit &&
             selectedValueConfig.dataType === DataType.Integer
         "
-        [prefix]="getUnitText(selectedValueConfig.unit)"
+        [prefix]="inputUnitSymbol"
         [hasError]="conditionErrors?.value?.value"
     >
         <zem-integer-input
@@ -111,7 +111,7 @@
             selectedValueConfig.unit &&
             selectedValueConfig.dataType === DataType.Decimal
         "
-        [prefix]="getUnitText(selectedValueConfig.unit)"
+        [prefix]="inputUnitSymbol"
         [hasError]="conditionErrors?.value?.value"
     >
         <zem-decimal-input
@@ -130,8 +130,11 @@
         "
         [value]="ruleCondition.value.value"
         [fractionSize]="selectedValueConfig.fractionSize"
-        [currencySymbol]="getUnitText(selectedValueConfig.unit)"
+        [currencySymbol]="inputUnitSymbol"
         [hasError]="conditionErrors?.value?.value"
+        [zemPopover]="RULE_CURRENCY_HELP_TEXT"
+        triggers="mouseenter:mouseleave"
+        placement="top"
         (inputBlur)="updateValueValue($event)"
     ></zem-currency-input>
     <zem-date-input

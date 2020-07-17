@@ -24,8 +24,10 @@ import {
     RULE_TARGET_TYPES,
     RULE_ACTIONS_OPTIONS,
     RULE_ACTION_FREQUENCY_OPTIONS,
+    RULE_CURRENCY_HELP_TEXT,
 } from '../../rules.config';
 import {PublisherGroup} from '../../../../core/publisher-groups/types/publisher-group';
+import {Unit} from '../../../../app.constants';
 
 @Component({
     selector: 'zem-rule-edit-form-action',
@@ -108,11 +110,14 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         actionType: RuleActionType;
         targetType: RuleTargetType;
     }[];
-    RuleActionType = RuleActionType;
-    EMAIL_MACROS = EMAIL_MACROS;
+    formattedChangeStep: number;
+    formattedChangeLimit: number;
+    inputUnitSymbol: string;
+    inputHelpText: string;
 
-    // TODO (automation-rules): Return correct currency symbol
-    getUnitText = unitsHelpers.getUnitText;
+    RuleActionType = RuleActionType;
+
+    EMAIL_MACROS = EMAIL_MACROS;
 
     ngOnInit(): void {
         this.availableTargetAndActionTypes = this.constructAvailableTargetAndActionTypes();
@@ -135,6 +140,23 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
                 this.availablePublisherGroups
             );
         }
+
+        this.formattedChangeStep = this.formatChangeStep(
+            this.changeStep,
+            this.actionType
+        );
+        this.formattedChangeLimit = this.formatChangeLimit(
+            this.changeLimit,
+            this.actionType
+        );
+        this.inputUnitSymbol =
+            this.selectedActionConfig.unit === Unit.CurrencySign
+                ? '¤'
+                : unitsHelpers.getUnitText(this.selectedActionConfig.unit);
+        this.inputHelpText =
+            this.selectedActionConfig.unit === Unit.CurrencySign
+                ? RULE_CURRENCY_HELP_TEXT
+                : null;
     }
 
     selectTargetAndActionType(targetActionType: string) {
@@ -207,7 +229,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         }
     }
 
-    formatChangeStep(changeStep: number, actionType: RuleActionType) {
+    private formatChangeStep(changeStep: number, actionType: RuleActionType) {
         if (
             changeStep &&
             (actionType === RuleActionType.IncreaseBidModifier ||
@@ -218,7 +240,7 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
         return changeStep;
     }
 
-    formatChangeLimit(changeLimit: number, actionType: RuleActionType) {
+    private formatChangeLimit(changeLimit: number, actionType: RuleActionType) {
         if (
             changeLimit &&
             (actionType === RuleActionType.IncreaseBidModifier ||

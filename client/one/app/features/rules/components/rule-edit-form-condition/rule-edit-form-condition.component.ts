@@ -23,7 +23,10 @@ import {RuleConditionOperandConfig} from '../../../../core/rules/types/rule-cond
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {RuleConditionError} from '../rule-edit-form/types/rule-condition-error';
-import {RULE_CONDITIONS_OPTIONS} from '../../rules.config';
+import {
+    RULE_CONDITIONS_OPTIONS,
+    RULE_CURRENCY_HELP_TEXT,
+} from '../../rules.config';
 
 @Component({
     selector: 'zem-rule-edit-form-condition',
@@ -56,6 +59,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
     selectedConditionConfig: RuleConditionConfig;
     selectedMetricConfig: RuleConditionOperandConfig;
     selectedValueConfig: RuleConditionOperandConfig;
+    inputUnitSymbol: string;
 
     isOnlyAbsoluteValue: boolean;
 
@@ -63,8 +67,7 @@ export class RuleEditFormConditionComponent implements OnChanges {
     Unit = Unit;
     DataType = DataType;
 
-    // TODO (automation-rules): Return correct currency symbol
-    getUnitText = unitsHelpers.getUnitText;
+    RULE_CURRENCY_HELP_TEXT = RULE_CURRENCY_HELP_TEXT;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.availableConditions) {
@@ -100,6 +103,11 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 this.selectedConditionConfig,
                 this.ruleCondition
             );
+
+            this.inputUnitSymbol =
+                this.selectedValueConfig?.unit === Unit.CurrencySign
+                    ? '¤'
+                    : unitsHelpers.getUnitText(this.selectedValueConfig?.unit);
         }
     }
 
