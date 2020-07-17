@@ -62,6 +62,8 @@ class RuleAdmin(admin.ModelAdmin):
         "name",
         "rule_actions",
         "ad_groups_included_ids",
+        "campaigns_included_ids",
+        "accounts_included_ids",
         "target_type",
         "action_type",
         "send_email_subject",
@@ -79,12 +81,22 @@ class RuleAdmin(admin.ModelAdmin):
         "modified_by",
     )
     raw_id_fields = ("created_by", "modified_by")
-    exclude = ("ad_groups_included",)
+    exclude = ("ad_groups_included", "campaigns_included", "accounts_included")
 
     def ad_groups_included_ids(self, obj=None):
         if obj is None:
             return []
         return list(obj.ad_groups_included.all().values_list("id", flat=True))
+
+    def campaigns_included_ids(self, obj=None):
+        if obj is None:
+            return []
+        return list(obj.campaigns_included.all().values_list("id", flat=True))
+
+    def accounts_included_ids(self, obj=None):
+        if obj is None:
+            return []
+        return list(obj.accounts_included.all().values_list("id", flat=True))
 
     def has_add_permission(self, request, obj=None):
         return False

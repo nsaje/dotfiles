@@ -5,6 +5,7 @@
     bindLabel="label"
     bindValue="value"
     [items]="availableTargetAndActionTypes"
+    groupByValue="group"
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="actionTypeErrors"
@@ -15,7 +16,7 @@
 <zem-currency-form-group
     class="zem-rule-edit-form__section-item zem-currency-form-group zem-rule-edit-form__currency-setting"
     *ngIf="selectedActionConfig.hasValue"
-    [label]="selectedActionConfig.label"
+    [label]="selectedActionConfig.valueLabel"
     [value]="formatChangeStep(changeStep, actionType)"
     [helpMessage]="selectedActionConfig.description"
     [currencySymbol]="getUnitText(selectedActionConfig.unit)"

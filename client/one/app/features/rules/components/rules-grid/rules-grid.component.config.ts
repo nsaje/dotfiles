@@ -2,6 +2,7 @@ import {ColDef} from 'ag-grid-community';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 import {Rule} from '../../../../core/rules/types/rule';
+import {RuleActionConfig} from '../../../../core/rules/types/rule-action-config';
 import {
     RULE_ACTION_FREQUENCY_OPTIONS,
     RULE_ACTIONS_OPTIONS,
@@ -135,7 +136,8 @@ function actionFrequencyFormatter(params: {
 }
 
 function actionTypeFormatter(params: {value: RuleActionType}): string {
-    return RULE_ACTIONS_OPTIONS[params.value]?.label || 'N/A';
+    const actionConfig: RuleActionConfig = RULE_ACTIONS_OPTIONS[params.value];
+    return actionConfig?.valueLabel || 'N/A';
 }
 
 function runsOnGetter(params: {data: Rule}): string {

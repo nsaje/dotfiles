@@ -2,9 +2,9 @@ import {RuleActionType, RuleActionFrequency} from '../rules.constants';
 import {Unit} from '../../../app.constants';
 
 export interface RuleActionConfig {
-    label: string;
     description?: string;
     type: RuleActionType;
+    valueLabel?: string;
     frequencies: RuleActionFrequency[];
     hasValue?: boolean;
     unit?: Unit;

@@ -247,20 +247,26 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     private constructAvailableTargetAndActionTypes(): {
         label: string;
         value: string;
+        valueLabel: string;
+        group: string;
         targetType: RuleTargetType;
         actionType: RuleActionType;
     }[] {
         const availableActions: {
             label: string;
             value: string;
+            valueLabel: string;
+            group: string;
             targetType: RuleTargetType;
             actionType: RuleActionType;
         }[] = [];
         RULE_TARGET_TYPES.forEach(target => {
             target.availableActions.forEach(action => {
-                const actionConfig = this.getActionConfig(action);
+                const actionConfig = this.getActionConfig(action.type);
                 availableActions.push({
-                    label: target.label + ' - ' + actionConfig.label,
+                    group: target.label,
+                    label: action.label,
+                    valueLabel: actionConfig.valueLabel,
                     value: this.prepareSelectedTargetAndActionType(
                         target.value,
                         actionConfig.type
@@ -283,7 +289,6 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     private getActionConfig(actionType: RuleActionType): RuleActionConfig {
         return (
             RULE_ACTIONS_OPTIONS[actionType] || {
-                label: null,
                 type: null,
                 frequencies: [],
             }

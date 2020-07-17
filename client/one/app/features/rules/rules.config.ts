@@ -19,95 +19,179 @@ export const RULE_TARGET_TYPES = [
         label: 'Ad',
         value: RuleTargetType.Ad,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
-            RuleActionType.TurnOff,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase ad bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease ad bid modifier',
+            },
+            {
+                type: RuleActionType.TurnOff,
+                label: 'Pause ad',
+            },
         ],
     },
     {
         label: 'Ad group',
         value: RuleTargetType.AdGroup,
         availableActions: [
-            RuleActionType.IncreaseBid,
-            RuleActionType.DecreaseBid,
-            RuleActionType.IncreaseDailyBudget,
-            RuleActionType.DecreaseDailyBudget,
-            RuleActionType.TurnOff,
-            RuleActionType.SendEmail,
+            {
+                type: RuleActionType.IncreaseBid,
+                label: 'Increase ad group bid',
+            },
+            {
+                type: RuleActionType.DecreaseBid,
+                label: 'Decrease ad group bid',
+            },
+            {
+                type: RuleActionType.IncreaseDailyBudget,
+                label: 'Increase ad group daily budget',
+            },
+            {
+                type: RuleActionType.DecreaseDailyBudget,
+                label: 'Decrease ad group daily budget',
+            },
+            {
+                type: RuleActionType.TurnOff,
+                label: 'Pause ad group',
+            },
+            {
+                type: RuleActionType.SendEmail,
+                label: 'Send email',
+            },
         ],
     },
     {
         label: 'Ad group / publishers',
         value: RuleTargetType.AdGroupPublisher,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
-            RuleActionType.Blacklist,
-            RuleActionType.AddToPublisherGroup,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase publisher bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease publisher bid modifier',
+            },
+            {
+                type: RuleActionType.Blacklist,
+                label: 'Blacklist publisher',
+            },
+            {
+                type: RuleActionType.AddToPublisherGroup,
+                label: 'Add publisher to publisher group',
+            },
         ],
     },
     {
         label: 'Ad group / devices',
         value: RuleTargetType.AdGroupDevice,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase device bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease device bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / countries',
         value: RuleTargetType.AdGroupCountry,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase country bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease country bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / regions',
         value: RuleTargetType.AdGroupRegion,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase region bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease region bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / DMAs',
         value: RuleTargetType.AdGroupDma,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase DMA bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease DMA bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / operating systems',
         value: RuleTargetType.AdGroupOs,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase operating system bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease operating system bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / environments',
         value: RuleTargetType.AdGroupEnvironment,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase environment bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease environment bid modifier',
+            },
         ],
     },
     {
         label: 'Ad group / media sources',
         value: RuleTargetType.AdGroupSource,
         availableActions: [
-            RuleActionType.IncreaseBidModifier,
-            RuleActionType.DecreaseBidModifier,
-            RuleActionType.TurnOff,
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase media source bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease media source bid modifier',
+            },
+            {
+                type: RuleActionType.TurnOff,
+                label: 'Pause media source',
+            },
         ],
     },
 ];
 
 export const RULE_ACTIONS_OPTIONS = {
     [RuleActionType.IncreaseBid]: {
-        label: 'Increase bid by',
+        valueLabel: 'Increase bid by',
         type: RuleActionType.IncreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -117,11 +201,11 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Maximum bid',
+        limitValueLabel: 'Maximum bid',
         limitDescription: 'Bid will not increase past this value.',
     },
     [RuleActionType.DecreaseBid]: {
-        label: 'Decrease bid by',
+        valueLabel: 'Decrease bid by',
         type: RuleActionType.DecreaseBid,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -131,11 +215,11 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Minimum bid',
+        limitValueLabel: 'Minimum bid',
         limitDescription: 'Bid will not decrease past this value.',
     },
     [RuleActionType.IncreaseBidModifier]: {
-        label: 'Increase bid modifier by',
+        valueLabel: 'Increase bid modifier by',
         description:
             'The number of percentage points by which the bid will increase or decrease whenever the rule is applied.',
         type: RuleActionType.IncreaseBidModifier,
@@ -147,11 +231,11 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.Percent,
         hasLimit: true,
-        limitLabel: 'Maximum bid modifier',
+        limitValueLabel: 'Maximum bid modifier',
         limitDescription: 'Bid modifier will not increase past this value.',
     },
     [RuleActionType.DecreaseBidModifier]: {
-        label: 'Decrease bid modifier by',
+        valueLabel: 'Decrease bid modifier by',
         type: RuleActionType.DecreaseBidModifier,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -166,7 +250,7 @@ export const RULE_ACTIONS_OPTIONS = {
             'Bid modifier will not decrease below this value. Please note that while the decrease by value is positive (since the operation itself is subtraction), the minimum bid modifier should be negative if you would like to reduce the bid modifier below 0%.',
     },
     [RuleActionType.IncreaseDailyBudget]: {
-        label: 'Increase daily budget by',
+        valueLabel: 'Increase daily budget by',
         type: RuleActionType.IncreaseDailyBudget,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -176,11 +260,11 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Maximum daily budget',
+        limitValueLabel: 'Maximum daily budget',
         limitDescription: 'Daily budget will not increase past this value.',
     },
     [RuleActionType.DecreaseDailyBudget]: {
-        label: 'Decrease daily budget by',
+        valueLabel: 'Decrease daily budget by',
         type: RuleActionType.DecreaseDailyBudget,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -190,11 +274,10 @@ export const RULE_ACTIONS_OPTIONS = {
         hasValue: true,
         unit: Unit.CurrencySign,
         hasLimit: true,
-        limitLabel: 'Minimum daily budget',
+        limitValueLabel: 'Minimum daily budget',
         limitDescription: 'Daily budget will not decrease past this value.',
     },
     [RuleActionType.TurnOff]: {
-        label: 'Turn off',
         type: RuleActionType.TurnOff,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -203,7 +286,6 @@ export const RULE_ACTIONS_OPTIONS = {
         ],
     },
     [RuleActionType.Blacklist]: {
-        label: 'Blacklist',
         type: RuleActionType.Blacklist,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -212,7 +294,6 @@ export const RULE_ACTIONS_OPTIONS = {
         ],
     },
     [RuleActionType.SendEmail]: {
-        label: 'Send email',
         type: RuleActionType.SendEmail,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -221,7 +302,6 @@ export const RULE_ACTIONS_OPTIONS = {
         ],
     },
     [RuleActionType.AddToPublisherGroup]: {
-        label: 'Add to publisher group',
         type: RuleActionType.AddToPublisherGroup,
         hasPublisherGroupSelector: true,
         frequencies: [
