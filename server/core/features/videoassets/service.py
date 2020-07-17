@@ -25,7 +25,7 @@ def initiate_asset_for_vast_upload(account):
 
 
 def create_asset_from_vast_url(account, vast_url):
-    duration, formats = parse_vast_from_url(vast_url)
+    duration, formats = _parse_vast_from_url(vast_url)
     video_asset = models.VideoAsset.objects.create(
         constants.VideoAssetType.VAST_URL,
         account=account,
@@ -37,7 +37,26 @@ def create_asset_from_vast_url(account, vast_url):
     return video_asset
 
 
-def parse_vast_from_url(vast_url):
+def update_asset_for_vast_upload(account, video_asset_id):
+    video_asset = models.VideoAsset.objects.get(account=account, id=video_asset_id)
+
+    if not (
+        video_asset.type == constants.VideoAssetType.VAST_UPLOAD
+        and video_asset.status == constants.VideoAssetStatus.NOT_UPLOADED
+    ):
+        return
+
+    duration, formats = _parse_vast_from_url(video_asset.get_vast_url(ready_for_use=False))
+
+    video_asset.status = constants.VideoAssetStatus.READY_FOR_USE
+    video_asset.duration = duration
+    video_asset.formats = formats
+    video_asset.save()
+
+    return video_asset
+
+
+def _parse_vast_from_url(vast_url):
     try:
         r = requests.get(vast_url)
     except requests.exceptions.RequestException:
@@ -73,7 +92,7 @@ def _parse_vast(data):
         if uri is None:
             raise ParseVastError("Missing VASTAdTagURI in Wrapper")
         try:
-            return parse_vast_from_url(uri.text)
+            return _parse_vast_from_url(uri.text)
         except ParseVastError as e:
             raise ParseVastError("In wrapper: " + str(e))
 

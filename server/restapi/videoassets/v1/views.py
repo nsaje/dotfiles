@@ -1,6 +1,5 @@
 import rest_framework.permissions
 import rest_framework.serializers
-from rest_framework import permissions
 
 import restapi.common.views_base
 import zemauth.access
@@ -12,13 +11,8 @@ from zemauth.features.entity_permission import Permission
 from . import serializers
 
 
-class CanUseVideoAssetPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.fea_video_upload"))
-
-
 class VideoAssetBaseViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = (rest_framework.permissions.IsAuthenticated, CanUseVideoAssetPermission)
+    permission_classes = [rest_framework.permissions.IsAuthenticated]
 
 
 class VideoAssetListViewSet(VideoAssetBaseViewSet):
@@ -67,17 +61,11 @@ class VideoAssetViewSet(VideoAssetBaseViewSet):
             and video_asset.status == constants.VideoAssetStatus.NOT_UPLOADED
             and data["status"] == constants.VideoAssetStatus.PROCESSING
         ):
-
             try:
-                duration, formats = service.parse_vast_from_url(video_asset.get_vast_url(ready_for_use=False))
-
-                video_asset.status = constants.VideoAssetStatus.READY_FOR_USE
-                video_asset.duration = duration
-                video_asset.formats = formats
-                video_asset.save()
-
+                video_asset = service.update_asset_for_vast_upload(account, videoasset_id)
                 serializer = serializers.VideoAssetSerializer(video_asset)
                 return self.response_ok(serializer.data)
+
             except service.ParseVastError as e:
                 video_asset.status = constants.VideoAssetStatus.PROCESSING_ERROR
                 serializer = serializers.VideoAssetSerializer(video_asset)

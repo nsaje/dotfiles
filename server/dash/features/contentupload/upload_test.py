@@ -8,6 +8,7 @@ from django.test import override_settings
 from mock import Mock
 from mock import patch
 
+import core.features.videoassets
 import utils.s3helpers
 import zemauth.models
 from dash import constants
@@ -406,6 +407,12 @@ class PersistBatchTestCase(TestCase):
 
         ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
         batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+        video_asset2 = magic_mixer.blend(
+            core.features.videoassets.models.VideoAsset,
+            account=ad_group.campaign.account,
+            id="12345678-abcd-1234-abcd-123abcd12345",
+            type=core.features.videoassets.constants.VideoAssetType.DIRECT_UPLOAD,
+        )
         candidate2 = magic_mixer.blend(
             models.ContentAdCandidate,
             batch=batch2,
@@ -432,7 +439,7 @@ class PersistBatchTestCase(TestCase):
             icon_file_size=candidate.icon_file_size,
             icon_url="https://test2.com",
             original_content_ad=None,
-            video_asset_id="12345678-abcd-1234-abcd-123abcd12345",
+            video_asset_id=video_asset2.id,
         )
 
         contentupload.upload.persist_batch(batch2)
@@ -480,6 +487,12 @@ class PersistBatchTestCase(TestCase):
 
         ad_group = magic_mixer.blend(models.AdGroup, campaign__type=constants.CampaignType.VIDEO)
         batch2 = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+        video_asset2 = magic_mixer.blend(
+            core.features.videoassets.models.VideoAsset,
+            account=ad_group.campaign.account,
+            id="12345678-abcd-1234-abcd-123abcd12345",
+            type=core.features.videoassets.constants.VideoAssetType.DIRECT_UPLOAD,
+        )
         candidate2 = magic_mixer.blend(
             models.ContentAdCandidate,
             batch=batch2,
@@ -507,7 +520,7 @@ class PersistBatchTestCase(TestCase):
             icon_file_size=candidate.icon_file_size,
             icon_url="https://test2.com",
             original_content_ad=None,
-            video_asset_id="12345678-abcd-1234-abcd-123abcd12345",
+            video_asset_id=video_asset2.id,
         )
 
         contentupload.upload.persist_batch(batch2)
@@ -906,21 +919,31 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     @patch("utils.lambda_helper.invoke_lambda", Mock())
     def test_valid_candidate(self):
         data = [valid_candidate]
+
         # prepare candidate
         request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
+        ad_group.campaign.type = constants.CampaignType.VIDEO
+        video_asset = magic_mixer.blend(
+            core.features.videoassets.models.VideoAsset,
+            account=account,
+            type=core.features.videoassets.constants.VideoAssetType.DIRECT_UPLOAD,
+        )
+        data[0]["video_asset_id"] = video_asset.id
+
         batch, candidates = contentupload.upload.insert_candidates(
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
         result = contentupload.upload.get_candidates_with_errors(request, candidates)
+
         self.assertEqual(
             [
                 {
                     "label": "test",
                     "url": "http://zemanta.com/test-content-ad",
                     "title": "test content ad",
-                    "type": constants.AdType.CONTENT,
+                    "type": constants.AdType.VIDEO,
                     "state": constants.ContentAdSourceState.ACTIVE,
                     "image_url": "http://zemanta.com/test-image.jpg",
                     "image_crop": "faces",
@@ -952,7 +975,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "icon_file_size": None,
                     "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
                     "id": candidates[0].id,
-                    "video_asset_id": None,
+                    "video_asset_id": str(video_asset.id),
                     "ad_tag": None,
                     "additional_data": {"a": 1},
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
@@ -971,11 +994,19 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
+        ad_group.campaign.type = constants.CampaignType.VIDEO
+        video_asset = magic_mixer.blend(
+            core.features.videoassets.models.VideoAsset,
+            account=account,
+            type=core.features.videoassets.constants.VideoAssetType.VAST_UPLOAD,
+        )
+        data[0]["video_asset_id"] = video_asset.id
+
         batch, candidates = contentupload.upload.insert_candidates(
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
-
         result = contentupload.upload.get_candidates_with_errors(request, candidates)
+
         self.assertEqual(
             [
                 {
@@ -990,7 +1021,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "description": "",
                     "call_to_action": "Read more",
                     "title": "",
-                    "type": constants.AdType.CONTENT,
+                    "type": constants.AdType.VIDEO,
                     "url": "ftp://zemanta.com/test-content-ad",
                     "errors": {
                         "image_crop": ["Choose a valid image crop"],
@@ -1004,6 +1035,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                         "brand_name": ["Missing brand name"],
                         "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                         "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+                        "video_asset_id": ["Invalid server response"],
                     },
                     "display_url": "zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com"
                     "zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com",
@@ -1026,7 +1058,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "icon_file_size": None,
                     "secondary_tracker_url": "http://example.com/px2.png",
                     "id": candidates[0].id,
-                    "video_asset_id": None,
+                    "video_asset_id": str(video_asset.id),
                     "ad_tag": None,
                     "additional_data": None,
                     "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,

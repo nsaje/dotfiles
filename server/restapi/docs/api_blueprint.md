@@ -710,14 +710,14 @@ Property  | Type                  | Description                                |
 id        | string                | the campaign's id                          | N/A      | read only
 accountId | string                | id of the account this campaign belongs to | required | read only
 name      | string                | the name of the campaign                   | required | optional
+type      | [Campaign Type](#campaign-types) | The type of the campaign (the default is `CONTENT`) | optional | read only
 iabCategory | [IAB category](#iab-categories) | IAB category of the campaign   | optional | optional
 language  | [Language](#languages) | Language of the ads in the campaign       | optional | read only
 archived  | bool                  | Is the Campaign archived? Set to `true` to archive a Campaign and to `false` to restore it. | optional | optional
 autopilot | bool                  | Autopilot Budget optimization. [Read more](http://www.zemanta.com/blog/new-way-achieve-stronger-campaign-performance/). | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
-targeting    | [targeting](#campaign-targeting)   | campaign targeting settings                                                                                                               | optional | optional
+targeting | [targeting](#campaign-targeting)   | campaign targeting settings   | optional | optional
 frequencyCapping | number | The maximum number of times ads from the campaign can be shown to a unique user in one day. | optional | optional
-
 
 <a name="tracking"></a>
 #### Tracking Settings
@@ -1749,7 +1749,7 @@ Only the `modifier` value can be changed for an existing Bid Modifier. It is not
 
         {}
 
-# Group Content Ad management
+# Group Content Ad Management
 
 ## Upload Content Ads [/rest/v1/contentads/batch/]
 
@@ -1781,6 +1781,7 @@ brandName    | string                    | the brand name of the Content Ad     
 description  | string                    | the description of the Content Ad                                                                                             | required | read only
 callToAction | string                    | call to action, most commonly `Read more`                                                                                     | required | read only
 trackerUrls  | array[string]             | tracker URLs                                                                                                                  | optional | read only
+videoAssetId | string                    | ID of the uploaded [video asset](#video-asset). Required on [video campaigns](#campaign-types).                               | optional | read only
 
 #### Upload Batch
 
@@ -1951,8 +1952,221 @@ and create new ones via the API.
         }
 
 
+# Group Video Asset Management
 
-# Group Publishers management
+## Upload Video Assets [/rest/v1/accounts/{accountId}/videoassets/]
+
+Video assets are uploaded on the account level and separately from the ads that will later use them.
+First you create a new video asset with a chosen method of upload. You can upload a video file or a VAST directly
+or you can provide a URL from which the VAST will be downloaded.
+
+When uploading a video file directly, you need to upload it to the provided upload URL and then poll
+for the status as the video is processed asynchronously. Should any errors occur, the upload URL can be reused.
+When the status changes to `READY_FOR_USE`, the `id` of the video asset can be used as a `videoAssetId`
+when creating ads for a video campaign.
+
+When uploading a VAST, the processing will trigger only when the first ad using this
+`videoAssetId` is uploaded.
+
+When uploading a VAST using `VAST_URL`, the VAST will be downloaded, processed and and ready for use immediately.
+
+<a name='video-asset'></a>
+#### Video Asset
+
+Property     | Type                                  | Description                       | DIRECT_UPLOAD CREATE | VAST_UPLOAD CREATE | VAST_URL CREATE
+-------------|---------------------------------------|-----------------------------------|----------------------|--------------------|------------------|
+name         | string                                | full name of the video file       | required             | N/A                | N/A
+status       | [upload status](#video-upload-status) | status of the uploaded video file | read only            | read only          | read only 
+vastUrl      | string                                | URL of the VAST XML               | N/A                  | N/A                | required      
+upload       | [upload](#video-upload)               | upload settings                   | required             | required           | required
+
+<a name="video-upload"></a>
+#### Video upload settings
+
+Property | Type                                | Description                                                                                  | DIRECT_UPLOAD CREATE | VAST_UPLOAD CREATE | VAST_URL CREATE
+---------|-------------------------------------|----------------------------------------------------------------------------------------------|----------------------|--------------------|------------------|
+type     | [upload type](#video-upload-type)   | Video upload type. The required fields and steps may differ depending on the selected type.  | required             | required           | required
+url      | string                              | URL where the video (`DIRECT_UPLOAD`) or VAST (`VAST_UPLOAD`) should be uploaded.            | read only            | read only          | N/A 
+
+### Step 1: Create a new video asset [POST /rest/v1/accounts/{accountId}/videoassets/]
+
+When uploading a video (`DIRECT_UPLOAD`) or a VAST (`VAST_UPLOAD`), the response will return a URL to which the video file (see example 1) or VAST (see example 2) has to be uploaded in the next step.
+
+When using the `VAST_URL` option, the VAST will be downloaded, processed and ready for use immediately (see example 3).
+
++ Parameters
+    + accountId: 186 (required)
+
++ Request (application/json)
+
+        {
+            "name": "test_video.mp4",
+            "upload": {
+                "type": "DIRECT_UPLOAD"
+            }
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "DIRECT_UPLOAD",
+                "status": "NOT_UPLOADED",
+                "statusMessage": "Video is not uploaded yet",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "test_video.mp4",
+                "upload": {
+                    "type": "DIRECT_UPLOAD",
+                    "url": "http://upload.com"
+                },
+                "previewUrl": null,
+                "vastUrl": null
+            }
+        }
+
++ Request (application/json)
+
+        {
+            "upload": {
+                "type": "VAST_UPLOAD"
+            }
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "VAST_UPLOAD",
+                "status": "NOT_UPLOADED",
+                "statusMessage": "Video is not uploaded yet",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "",
+                "upload": {
+                    "type": "VAST_UPLOAD",
+                    "url": "http://upload.com"
+                },
+                "previewUrl": null,
+                "vastUrl": null
+            }
+        }
+
++ Request (application/json)
+
+        {
+            "upload": {
+                "type": "VAST_URL"
+            },
+            "vastUrl": "http://upload.com/vast.xml"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "VAST_URL",
+                "status": "READY_FOR_USE",
+                "statusMessage": "Video is ready for use in creating ads",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "",
+                "previewUrl": "http://preview.com/",
+                "vastUrl": "http://upload.com/vast.xml"
+            }
+        }
+
+### Step 2: Upload the video file or VAST using the provided upload URL [GET /rest/v1/accounts/{accountId}/videoassets/{videoAssetId}]
+
+```
+curl -X PUT -H "Content-Type: application/octet-stream" -T "test_video.mp4" "http://upload.com"
+```
+```
+curl -X PUT -H "Content-Type: text/xml" -d @vast.xml "http://upload.com"
+
+```
+
++ Parameters
+    + accountId: 186 (required)
+    + videoAssetId: video_asset_id (required)
+
+### Step 3: Check the video asset upload status [GET /rest/v1/accounts/{accountId}/videoassets/{videoAssetId}]
+
+When uploading a video using `DIRECT_UPLOAD`, the video will be processed automatically and the above URL can be used to poll for the status of the video (see example 1).
+
+When using the `VAST_UPLOAD` option, the VAST will not be processed (see example 2) until the first ad using it is uploaded (see example 3).
+
++ Parameters
+    + accountId: 186 (required)
+    + videoAssetId: video_asset_id (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "DIRECT_UPLOAD",
+                "status": "READY_FOR_USE",
+                "statusMessage": "Video is ready for use in creating ads",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "test_video.mp4",
+                "previewUrl": "http://preview.com/",
+                "vastUrl": null
+            }
+        }
+
++ Parameters
+    + accountId: 186 (required)
+    + videoAssetId: video_asset_id (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "VAST_UPLOAD",
+                "status": "NOT_UPLOADED",
+                "statusMessage": "Video is not uploaded yet",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "",
+                "previewUrl": null,
+                "vastUrl": null
+            }
+        }
+
++ Parameters
+    + accountId: 186 (required)
+    + videoAssetId: video_asset_id (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "video_asset_id",
+                "account": "186",
+                "type": "VAST_UPLOAD",
+                "status": "READY_FOR_USE",
+                "statusMessage": "Video is ready for use in creating ads",
+                "errorCode": null,
+                "errorMessage": null,
+                "name": "",
+                "previewUrl": "http://preview.com/",
+                "vastUrl": "http://upload.com/vast/1234"
+            }
+        }
+
+
+# Group Publishers Management
 
 ## Publisher Groups [/rest/v1/accounts/{accountId}/publishergroups/] ##
 <a name='publisher-groups'></a>
@@ -1972,7 +2186,6 @@ name         | string              | name of the publisher group
     + accountId: 186 (required)
 
 + Response 200 (application/json)
-
 
         {
             "data": [
@@ -2547,6 +2760,14 @@ Include traffic that meets the following conditions:
 - `ACTIVE_CPC_BUDGET` - Optimize Bids and Daily Budgets
 - `INACTIVE` - Disabled
 
+<a name="campaign-types"></a>
+## Campaign type
+
+- `CONTENT` - Native Ad Campaign
+- `CONVERSION` - Native Conversion Marketing
+- `MOBILE` - Native Mobile App Advertising
+- `VIDEO` - Native Video Advertising
+
 <a name="languages"></a>
 ## Language
 - `ARABIC` - Arabic
@@ -2987,6 +3208,19 @@ Include traffic that meets the following conditions:
 - `FAILED`
 - `IN_PROGRESS`
 - `CANCELLED`
+
+<a name="video-upload-status"></a>
+## Video upload status
+- `NOT_UPLOADED`
+- `PROCESSING`
+- `READY_FOR_USE`
+- `PROCESSING_ERROR`
+
+<a name="video-upload-type"></a>
+## Video upload type
+- `DIRECT_UPLOAD`
+- `VAST_UPLOAD`
+- `VAST_URL`
 
 <a name="delivery"></a>
 ## Delivery Type

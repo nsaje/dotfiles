@@ -6,7 +6,6 @@ from core.features.videoassets import constants
 from core.features.videoassets import models
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -14,7 +13,6 @@ from zemauth.features.entity_permission import Permission
 class LegacyVideoAssetTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        test_helper.add_permissions(self.user, permissions=["fea_video_upload"])
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         patcher = mock.patch("boto3.client")
         self.boto3_get_client = patcher.start()
@@ -43,7 +41,7 @@ class LegacyVideoAssetTestCase(RESTAPITestCase):
         self.assertEqual(r["data"]["errorCode"], video_asset.error_code)
 
     @override_settings(VAST_URL="http://vasttest.com/{filename}")
-    @mock.patch("core.features.videoassets.service.parse_vast_from_url")
+    @mock.patch("core.features.videoassets.service._parse_vast_from_url")
     def test_put(self, mock_parse):
         mock_parse.return_value = 30, []
         video_asset = magic_mixer.blend(
@@ -111,7 +109,7 @@ class LegacyVideoAssetTestCase(RESTAPITestCase):
 
         mock_s3_client.generate_presigned_url.assert_called_once()
 
-    @mock.patch("core.features.videoassets.service.parse_vast_from_url")
+    @mock.patch("core.features.videoassets.service._parse_vast_from_url")
     def test_post_vast_url(self, mock_parse):
         mock_parse.return_value = 30, []
         data = {"name": "myvideo", "vast_url": "http://vasturl.com", "upload": {"type": "VAST_URL"}}
@@ -128,6 +126,23 @@ class LegacyVideoAssetTestCase(RESTAPITestCase):
         self.assertEqual(r["data"]["status"], "READY_FOR_USE")
 
         mock_parse.assert_called_once_with("http://vasturl.com")
+
+    def test_post_vast_url_missing(self):
+        data = {"name": "myvideo", "vast_url": "", "upload": {"type": "VAST_URL"}}
+        r = self.client.post(
+            reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),
+            data=data,
+            format="json",
+        )
+        r = self.assertResponseError(r, "ValidationError")
+
+        data = {"name": "myvideo", "upload": {"type": "VAST_URL"}}
+        r = self.client.post(
+            reverse("restapi.videoassets.v1:videoassets_list", kwargs=dict(account_id=self.account.id)),
+            data=data,
+            format="json",
+        )
+        r = self.assertResponseError(r, "ValidationError")
 
 
 class VideoAssetTestCase(FutureRESTAPITestCase, LegacyVideoAssetTestCase):

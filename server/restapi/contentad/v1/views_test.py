@@ -385,8 +385,8 @@ class LegacyTestBatchUpload(RESTAPITestCase):
     def test_video_batch_upload_success(self):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
         self.ad_group.campaign.save(None)
-        video_asset_1 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
-        video_asset_2 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        video_asset_1 = magic_mixer.blend(core.features.videoassets.models.VideoAsset, account=self.account)
+        video_asset_2 = magic_mixer.blend(core.features.videoassets.models.VideoAsset, account=self.account)
         ad1 = self._mock_content_ad("test1")
         ad2 = self._mock_content_ad("test2")
         ad1.update({"videoAssetId": str(video_asset_1.id)})

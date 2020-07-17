@@ -1,9 +1,11 @@
 import concurrent.futures
+from collections import defaultdict
 
 from django.conf import settings
 from django.db import transaction
 from django.template.defaultfilters import pluralize
 
+import core.features.videoassets
 from dash import constants
 from dash import forms
 from dash import image_helper
@@ -373,13 +375,23 @@ def cancel_upload(batch):
 
 def get_clean_candidates_and_errors(candidates):
     cleaned_candidates = []
-    errors = {}
+    errors = defaultdict(dict)
     campaign = candidates[0].ad_group.campaign if (candidates and candidates[0].ad_group) else None
+
     for candidate in candidates:
         form = _get_candidate_form(candidate)
         f = form(campaign, candidate.to_dict(), original_content_ad=candidate.original_content_ad)
         if not f.is_valid():
             errors[candidate.id] = f.errors
+
+        if f.cleaned_data.get("video_asset_id"):
+            try:
+                core.features.videoassets.service.update_asset_for_vast_upload(
+                    candidate.ad_group.campaign.account, f.cleaned_data["video_asset_id"]
+                )
+            except core.features.videoassets.service.ParseVastError as err:
+                errors[candidate.id]["video_asset_id"] = [str(err)]
+
         cleaned_candidates.append(f.cleaned_data)
     return cleaned_candidates, errors
 

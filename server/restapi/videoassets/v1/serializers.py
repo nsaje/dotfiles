@@ -45,3 +45,8 @@ class VideoAssetPostSerializer(serializers.Serializer):
     vast_url = restapi.serializers.fields.PlainCharField(required=False, allow_blank=True)
     status = restapi.serializers.fields.DashConstantField(constants.VideoAssetStatus, required=False)
     upload = UploadInfoSerializer(required=False)
+
+    def validate(self, data):
+        if data.get("upload", {}).get("type") == constants.VideoAssetType.VAST_URL and not data.get("vast_url"):
+            raise serializers.ValidationError({"vast_url": "This field is required."})
+        return data

@@ -44,5 +44,12 @@ def add_authorization_token(transaction):
 
 # TODO(nsaje): figure out how to mock this
 @hooks.before("Campaign Management > Campaigns > Get campaign performance")
+@hooks.before("Video Asset Management > Upload Video Assets > Step 1: Create a new video asset > Example 1")
+@hooks.before("Video Asset Management > Upload Video Assets > Step 1: Create a new video asset > Example 2")
+@hooks.before("Video Asset Management > Upload Video Assets > Step 1: Create a new video asset > Example 3")
+@hooks.before(
+    "Video Asset Management > Upload Video Assets > Step 2: Upload the video file or VAST using the provided upload URL"
+)
+@hooks.before("Video Asset Management > Upload Video Assets > Step 3: Check the video asset upload status")
 def skip_test(transaction):
     transaction["skip"] = True
