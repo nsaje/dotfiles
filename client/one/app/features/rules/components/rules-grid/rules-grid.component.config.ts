@@ -19,6 +19,12 @@ import {SwitchButtonCellComponent} from '../../../../shared/components/smart-gri
 import {SwitchButtonRendererParams} from '../../../../shared/components/smart-grid/components/cell/switch-button-cell/types/switch-button.renderer-params';
 import {RulesView} from '../../views/rules/rules.view';
 import {RuleRunsOnCellComponent} from '../rule-runs-on-cell/rule-runs-on-cell.component';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
+import {IconTooltipCellIcon} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {RuleEntity} from '../../../../core/rules/types/rule-entity';
+import {RuleEntities} from '../../../../core/rules/types/rule-entities';
+import {MappedRuleEntity} from '../../types/mapped-rule-entity';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -71,9 +77,25 @@ export const COLUMN_NOTIFICATION: ColDef = {
 
 export const COLUMN_RUNS_ON: ColDef = {
     headerName: 'Runs on',
-    cellRendererFramework: RuleRunsOnCellComponent,
     width: 200,
     suppressSizeToFit: true,
+    cellRendererFramework: RuleRunsOnCellComponent,
+    cellRendererParams: {
+        getEntities: (rule: Rule) => getMappedEntities(rule.entities),
+    },
+};
+
+export const COLUMN_RUNS_ON_TOOLTIP: ColDef = {
+    headerName: '',
+    maxWidth: 80,
+    minWidth: 80,
+    resizable: false,
+    valueGetter: runsOnGetter,
+    cellRendererFramework: IconTooltipCellComponent,
+    cellRendererParams: {
+        icon: IconTooltipCellIcon.Comment,
+        placement: 'left',
+    } as IconTooltipRendererParams,
 };
 
 export const COLUMN_SCOPE: ColDef = {
@@ -116,6 +138,40 @@ function actionTypeFormatter(params: {value: RuleActionType}): string {
     return RULE_ACTIONS_OPTIONS[params.value]?.label || 'N/A';
 }
 
-function ruleStateFormatter(params: {value: RuleState}): string {
-    return RULE_STATE_OPTIONS[params.value]?.label || 'N/A';
+function runsOnGetter(params: {data: Rule}): string {
+    return getMappedEntities(params.data.entities)
+        .map(entity => `${entity.type} (${entity.name})`)
+        .join(', ');
+}
+
+function getMappedEntities(entities: RuleEntities): MappedRuleEntity[] {
+    const mappedEntities = [];
+    mappedEntities.push(
+        ...mapEntities(entities.accounts?.included || [], 'Account', 'account')
+    );
+    mappedEntities.push(
+        ...mapEntities(
+            entities.campaigns?.included || [],
+            'Campaign',
+            'campaign'
+        )
+    );
+    mappedEntities.push(
+        ...mapEntities(entities.adGroups?.included || [], 'Ad Group', 'adgroup')
+    );
+    return mappedEntities;
+}
+
+function mapEntities(
+    entities: RuleEntity[],
+    entityTypeName: string,
+    entityTypeUrl: string
+): MappedRuleEntity[] {
+    return entities.map(entity => {
+        return {
+            type: entityTypeName,
+            name: entity.name,
+            link: `/v2/analytics/${entityTypeUrl}/${entity.id}`,
+        };
+    });
 }

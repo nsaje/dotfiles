@@ -1,13 +1,15 @@
 <div class="zem-rule-runs-on-cell">
-    <ng-container *ngIf="entityType">
+    <ng-container *ngFor="let entity of entities; let isLast = last">
         <a
             class="zem-rule-runs-on-cell__link"
-            *ngIf="entityLink"
-            [href]="entityLink"
-            title="{{ entityType }} ({{ entityName }})"
+            [href]="entity.link"
+            title="{{ entity.type }} ({{ entity.name }})"
             target="_blank"
-            >{{ entityType }} ({{ entityName }})</a
+            >{{ entity.type }} ({{ entity.name }})</a
         >
+        <ng-container *ngIf="!isLast">, </ng-container>
     </ng-container>
-    <span class="zem-rule-runs-on-cell__text" *ngIf="!entityType">N/A</span>
+    <span class="zem-rule-runs-on-cell__text" *ngIf="!entities.length"
+        >N/A</span
+    >
 </div>

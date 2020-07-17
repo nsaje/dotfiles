@@ -20,6 +20,7 @@ import {
     COLUMN_SCOPE,
     COLUMN_RUNS_ON,
     COLUMN_ACTIONS,
+    COLUMN_RUNS_ON_TOOLTIP,
 } from './rules-grid.component.config';
 
 @Component({
@@ -50,6 +51,7 @@ export class RulesGridComponent implements OnChanges {
         COLUMN_ACTION_FREQUENCY,
         COLUMN_NOTIFICATION,
         COLUMN_RUNS_ON,
+        COLUMN_RUNS_ON_TOOLTIP,
         COLUMN_SCOPE,
         COLUMN_ACTIONS,
     ];

@@ -39,7 +39,7 @@ export const COLUMN_AD_GROUP_NAME: ColDef = {
     } as LinkRendererParams<RuleHistory>,
 };
 
-export const COLUMN_CHANGES_FORMATTED_PREVIEW: ColDef = {
+export const COLUMN_CHANGES_FORMATTED: ColDef = {
     headerName: 'Actions Taken',
     field: 'changesFormatted',
     width: 350,
@@ -47,7 +47,7 @@ export const COLUMN_CHANGES_FORMATTED_PREVIEW: ColDef = {
     resizable: true,
 };
 
-export const COLUMN_CHANGES_FORMATTED: ColDef = {
+export const COLUMN_CHANGES_FORMATTED_TOOLTIP: ColDef = {
     headerName: '',
     field: 'changesFormatted',
     maxWidth: 80,
