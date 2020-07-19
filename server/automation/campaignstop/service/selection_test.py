@@ -200,27 +200,27 @@ class UpdateAlmostDepletedTestCase(TestCase):
         selection.mark_almost_depleted_campaigns()
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
-    # @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    # @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    # def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
-    #     inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
-    #     inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
-    #     self.ad_group.settings.update_unsafe(None, state=inactive_adg)
-    #     self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
+    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
+    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
+    def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
+        inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
+        inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        self.ad_group.settings.update_unsafe(None, state=inactive_adg)
+        self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
 
-    #     adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
-    #     self.assertEqual(adg_setting_state, inactive_adg)
-    #     adg_source_setting_state = (
-    #         AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
-    #     )
-    #     self.assertEqual(adg_source_setting_state, inactive_adg_source)
+        adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
+        self.assertEqual(adg_setting_state, inactive_adg)
+        adg_source_setting_state = (
+            AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
+        )
+        self.assertEqual(adg_source_setting_state, inactive_adg_source)
 
-    #     today = dates_helper.local_today()
-    #     RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=901.0)
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=901.0)
 
-    #     self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-    #     selection.mark_almost_depleted_campaigns()
-    #     self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        selection.mark_almost_depleted_campaigns()
+        self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
