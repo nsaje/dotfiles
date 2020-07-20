@@ -152,7 +152,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual(None, history.changes)
         self.assertEqual(
-            "Automation rule can't change the daily cap when campaign budget optimisation is turned on.",
+            "Automation rule can’t change the daily cap when campaign budget optimisation is turned on.",
             history.changes_text,
         )
 
