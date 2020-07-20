@@ -166,6 +166,9 @@ EMAIL_ACTION_STATS_MACROS = {
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,
+    constants.EmailActionMacro.CONVERSIONS,
+    constants.EmailActionMacro.CONVERSIONS_VIEW,
+    constants.EmailActionMacro.CONVERSIONS_TOTAL,
 }
 
 EMAIL_ACTION_MACROS_VALID_WINDOWS = {
@@ -219,6 +222,9 @@ FLOAT_OPERANDS = {
     constants.MetricType.AVG_COST_PER_CONVERSION,
     constants.MetricType.AVG_COST_PER_CONVERSION_VIEW,
     constants.MetricType.AVG_COST_PER_CONVERSION_TOTAL,
+    constants.MetricType.CONVERSIONS,
+    constants.MetricType.CONVERSIONS_VIEW,
+    constants.MetricType.CONVERSIONS_TOTAL,
     constants.MetricType.VIDEO_START,
     constants.MetricType.VIDEO_FIRST_QUARTILE,
     constants.MetricType.VIDEO_MIDPOINT,
@@ -296,6 +302,9 @@ VALID_OPERATORS = {
     constants.MetricType.AVG_COST_PER_CONVERSION: VALID_NUMBER_OPERATORS,
     constants.MetricType.AVG_COST_PER_CONVERSION_VIEW: VALID_NUMBER_OPERATORS,
     constants.MetricType.AVG_COST_PER_CONVERSION_TOTAL: VALID_NUMBER_OPERATORS,
+    constants.MetricType.CONVERSIONS: VALID_NUMBER_OPERATORS,
+    constants.MetricType.CONVERSIONS_VIEW: VALID_NUMBER_OPERATORS,
+    constants.MetricType.CONVERSIONS_TOTAL: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_START: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_FIRST_QUARTILE: VALID_NUMBER_OPERATORS,
     constants.MetricType.VIDEO_MIDPOINT: VALID_NUMBER_OPERATORS,

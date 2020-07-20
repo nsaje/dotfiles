@@ -275,6 +275,9 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Ctr],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpc],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpm],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Conversions],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ConversionsView],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ConversionsTotal],
             RULE_CONDITIONS_OPTIONS[
                 RuleConditionOperandType.AvgCostPerConversion
             ],

@@ -30,6 +30,9 @@ CURRENCY_MACROS = [
 ]
 PERCENT_MACROS = [constants.EmailActionMacro.PERCENT_NEW_USERS]
 CONVERSION_MACROS = [
+    constants.EmailActionMacro.CONVERSIONS,
+    constants.EmailActionMacro.CONVERSIONS_VIEW,
+    constants.EmailActionMacro.CONVERSIONS_TOTAL,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,

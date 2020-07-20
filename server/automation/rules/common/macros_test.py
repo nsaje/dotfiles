@@ -118,7 +118,10 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}
             AVG_COST_PER_CONVERSION_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_LAST_30_DAYS}
             AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS}
-            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS}"""
+            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS}
+            CONVERSIONS_LAST_30_DAYS: {CONVERSIONS_LAST_30_DAYS}
+            CONVERSIONS_VIEW_LAST_30_DAYS: {CONVERSIONS_VIEW_LAST_30_DAYS}
+            CONVERSIONS_TOTAL_LAST_30_DAYS: {CONVERSIONS_TOTAL_LAST_30_DAYS}"""
         )
         self.target_stats = {
             "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 20},
@@ -139,6 +142,9 @@ class ExpandTestCase(TestCase):
             "bounce_rate": {constants.MetricWindow.LAST_30_DAYS: 0.89},
             "total_seconds": {constants.MetricWindow.LAST_30_DAYS: 30200},
             "avg_tos": {constants.MetricWindow.LAST_30_DAYS: 25.2},
+            "conversions_click": {constants.MetricWindow.LAST_30_DAYS: 18},
+            "conversions_view": {constants.MetricWindow.LAST_30_DAYS: 29},
+            "conversions_total": {constants.MetricWindow.LAST_30_DAYS: 47},
             "local_avg_etfm_cost_per_visit": {constants.MetricWindow.LAST_30_DAYS: 0.33},
             "local_avg_etfm_cost_for_new_visitor": {constants.MetricWindow.LAST_30_DAYS: 0.55},
             "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
@@ -188,7 +194,10 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22
             AVG_COST_PER_CONVERSION_LAST_30_DAYS: $0.12
             AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: $0.23
-            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: $0.34"""
+            AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: $0.34
+            CONVERSIONS_LAST_30_DAYS: 18
+            CONVERSIONS_VIEW_LAST_30_DAYS: 29
+            CONVERSIONS_TOTAL_LAST_30_DAYS: 47"""
         )
         self.assertEqual(expected, expanded)
         self.assertTrue(all(macro in expanded for macro in constants.EmailActionMacro.get_all()))

@@ -184,6 +184,9 @@ class MetricType(ConstantBase):
     DAYS_UNTIL_CAMPAIGN_BUDGET_END = 64
     CAMPAIGN_BUDGET_MARGIN = 65
     CAMPAIGN_REMAINING_BUDGET = 66
+    CONVERSIONS = 67
+    CONVERSIONS_VIEW = 68
+    CONVERSIONS_TOTAL = 69
 
     _VALUES = {
         TOTAL_SPEND: "Total spend",
@@ -252,6 +255,9 @@ class MetricType(ConstantBase):
         DAYS_UNTIL_CAMPAIGN_BUDGET_END: "Days until budget end",
         CAMPAIGN_BUDGET_MARGIN: "Budget margin",
         CAMPAIGN_REMAINING_BUDGET: "Remaining budget",
+        CONVERSIONS: "Conversions (click)",
+        CONVERSIONS_VIEW: "Conversions (view)",
+        CONVERSIONS_TOTAL: "Conversions (total)",
     }
 
 
@@ -291,6 +297,9 @@ METRIC_STATS_MAPPING = {
     MetricType.VIDEO_COMPLETE: "video_complete",
     MetricType.AVG_CPV: "local_video_etfm_cpv",
     MetricType.AVG_CPCV: "local_video_etfm_cpcv",
+    MetricType.CONVERSIONS: "conversions_click",
+    MetricType.CONVERSIONS_VIEW: "conversions_view",
+    MetricType.CONVERSIONS_TOTAL: "conversions_total",
 }
 
 
@@ -337,6 +346,9 @@ CONTENT_AD_SETTINGS = {
 }
 
 CONVERSION_METRICS = {
+    MetricType.CONVERSIONS,
+    MetricType.CONVERSIONS_VIEW,
+    MetricType.CONVERSIONS_TOTAL,
     MetricType.AVG_COST_PER_CONVERSION,
     MetricType.AVG_COST_PER_CONVERSION_VIEW,
     MetricType.AVG_COST_PER_CONVERSION_TOTAL,
@@ -432,6 +444,9 @@ class EmailActionMacro(ConstantBase):
     NON_BOUNCED_VISITS = "NON_BOUNCED_VISITS"
     BOUNCE_RATE = "BOUNCE_RATE"
     TOTAL_SECONDS = "TOTAL_SECONDS"
+    CONVERSIONS = "CONVERSIONS"
+    CONVERSIONS_VIEW = "CONVERSIONS_VIEW"
+    CONVERSIONS_TOTAL = "CONVERSIONS_TOTAL"
     AVG_TIME_ON_SITE = "AVG_TIME_ON_SITE"
     AVG_COST_PER_VISIT = "AVG_COST_PER_VISIT"
     AVG_COST_PER_NEW_VISITOR = "AVG_COST_PER_NEW_VISITOR"
@@ -470,6 +485,9 @@ class EmailActionMacro(ConstantBase):
         NON_BOUNCED_VISITS: "Non-bounced visits",
         BOUNCE_RATE: "Bounce rate",
         TOTAL_SECONDS: "Total seconds",
+        CONVERSIONS: "Conversions",
+        CONVERSIONS_VIEW: "Conversions (view)",
+        CONVERSIONS_TOTAL: "Conversions (total)",
         AVG_TIME_ON_SITE: "Average time on site",
         AVG_COST_PER_VISIT: "Average cost per visit",
         AVG_COST_PER_NEW_VISITOR: "Average cost per new visitor",
@@ -500,6 +518,9 @@ EMAIL_MACRO_STATS_MAPPING = {
     EmailActionMacro.NON_BOUNCED_VISITS: "non_bounced_visits",
     EmailActionMacro.BOUNCE_RATE: "bounce_rate",
     EmailActionMacro.TOTAL_SECONDS: "total_seconds",
+    EmailActionMacro.CONVERSIONS: "conversions_click",
+    EmailActionMacro.CONVERSIONS_VIEW: "conversions_view",
+    EmailActionMacro.CONVERSIONS_TOTAL: "conversions_total",
     EmailActionMacro.AVG_TIME_ON_SITE: "avg_tos",
     EmailActionMacro.AVG_COST_PER_VISIT: "local_avg_etfm_cost_per_visit",
     EmailActionMacro.AVG_COST_PER_NEW_VISITOR: "local_avg_etfm_cost_for_new_visitor",
