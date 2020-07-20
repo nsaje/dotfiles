@@ -65,7 +65,7 @@ class ContentAdInstanceMixin(object):
 
     def _validate_update(self, changes):
         if self.archived or self.ad_group.is_archived():
-            raise utils.exc.ForbiddenError(
+            raise utils.exc.EntityArchivedError(
                 "Account, campaign, ad group and content ad must not be archived in order to update a content ad."
             )
 

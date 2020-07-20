@@ -13,7 +13,7 @@ import utils.email_helper
 from .. import Rule
 from .. import constants
 from ..common import macros
-from . import exceptions
+from . import helpers
 
 
 @dataclasses.dataclass
@@ -52,18 +52,14 @@ def adjust_autopilot_daily_budget(target: str, rule: Rule, ad_group: core.models
     if int(target) != ad_group.id:
         raise Exception("Invalid ad group autopilot budget adjustment target")
 
-    if ad_group.campaign.settings.autopilot:
-        raise exceptions.CampaignAutopilotActive("Campaign autopilot must not be active")
-
-    if ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-        raise exceptions.BudgetAutopilotInactive("Budget autopilot must be active")
-
     if rule.action_type == constants.ActionType.INCREASE_BUDGET:
         limiter, change = min, rule.change_step
     elif rule.action_type == constants.ActionType.DECREASE_BUDGET:
         limiter, change = max, -rule.change_step
     else:
         raise Exception("Invalid budget action type")
+
+    helpers.ensure_ad_group_valid(rule, ad_group)
 
     base_budget = ad_group.settings.local_autopilot_daily_budget
     budget = limiter(base_budget + Decimal(change), Decimal(rule.change_limit))
@@ -81,11 +77,7 @@ def adjust_bid_modifier(target: str, rule: Rule, ad_group: core.models.AdGroup, 
     else:
         raise Exception("Invalid bid modifier action type")
 
-    if rule.target_type == constants.TargetType.SOURCE and (
-        ad_group.campaign.settings.autopilot
-        or ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE
-    ):
-        raise exceptions.AutopilotActive("Campaign and ad group autopilot must not be active")
+    helpers.ensure_ad_group_valid(rule, ad_group)
 
     if rule.target_type == constants.TargetType.PUBLISHER:
         target, source_id = target.split("__")

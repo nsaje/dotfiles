@@ -12,7 +12,17 @@ import dash.constants
 import redshiftapi.api_breakdowns
 from utils import dates_helper
 
+from .. import constants
 from .. import models
+from . import exceptions
+
+
+def ensure_ad_group_valid(rule: models.Rule, ad_group: core.models.AdGroup):
+    if rule.action_type in [constants.ActionType.INCREASE_BUDGET, constants.ActionType.DECREASE_BUDGET]:
+        if ad_group.campaign.settings.autopilot:
+            raise exceptions.CampaignAutopilotActive("Campaign autopilot must not be active")
+        if ad_group.settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            raise exceptions.BudgetAutopilotInactive("Budget autopilot must be active")
 
 
 def get_rules_by_ad_group_map(

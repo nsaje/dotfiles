@@ -46,10 +46,10 @@ class CampaignSettingsMixin(object):
                 if not self.campaign.can_restore():
                     raise utils.exc.ForbiddenError("Campaign can not be restored.")
             else:
-                raise utils.exc.ForbiddenError("Campaign must not be archived in order to update it.")
+                raise utils.exc.EntityArchivedError("Campaign must not be archived in order to update it.")
 
         elif self.campaign.account.is_archived():
-            raise utils.exc.ForbiddenError("Account must not be archived in order to update a campaign.")
+            raise utils.exc.EntityArchivedError("Account must not be archived in order to update a campaign.")
 
     def _update_campaign(self, changes):
         if any(field in changes for field in ["name", "archived"]):

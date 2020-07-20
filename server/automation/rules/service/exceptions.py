@@ -1,13 +1,13 @@
 from utils.exc import ValidationError
 
 
-class CampaignAutopilotActive(ValidationError):
+class ApplyFailedBase(ValidationError):
     pass
 
 
-class BudgetAutopilotInactive(ValidationError):
+class CampaignAutopilotActive(ApplyFailedBase):
     pass
 
 
-class AutopilotActive(ValidationError):
+class BudgetAutopilotInactive(ApplyFailedBase):
     pass

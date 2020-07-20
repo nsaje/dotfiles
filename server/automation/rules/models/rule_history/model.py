@@ -22,5 +22,3 @@ class RuleHistory(common.RuleHistoryInstanceMixin, models.Model):
     changes_text = models.TextField(blank=False, null=False)
     changes = jsonfield.JSONField(blank=True, null=True, dump_kwargs=JSONFIELD_DUMP_KWARGS)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at", db_index=True)
-    # TODO: AUTOCAMP: structure yet to be finalized
-    # TODO: AUTOCAMP: add execution duration for monitoring purposes

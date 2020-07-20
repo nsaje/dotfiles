@@ -8,7 +8,7 @@ DEFAULT_TIME_ZONE = pytz.timezone(settings.DEFAULT_TIME_ZONE)
 
 # NOTE: this function can be mocked in tests to also change the return value
 # of every other function in this module that uses current time
-def utc_now():
+def utc_now() -> datetime.datetime:
     return datetime.datetime.utcnow()
 
 

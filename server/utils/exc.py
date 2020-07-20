@@ -62,6 +62,10 @@ class ForbiddenError(BaseError):
         self.http_status_code = 403
 
 
+class EntityArchivedError(ForbiddenError):
+    pass
+
+
 class InvalidBreakdownError(BaseError):
     pass
 

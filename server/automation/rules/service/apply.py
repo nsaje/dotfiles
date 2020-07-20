@@ -20,6 +20,8 @@ from .. import config
 from .. import constants
 from .. import models
 from . import actions
+from . import exceptions
+from . import helpers
 from .actions import ValueChangeData
 
 ACTION_TYPE_APPLY_FN_MAPPING = {
@@ -46,6 +48,7 @@ class ErrorData:
         return {self.target: {"message": str(self.exc), "stack_trace": self.stack_trace}}
 
 
+@transaction.atomic
 def apply_rule(
     rule: models.Rule,
     ad_group: core.models.AdGroup,
@@ -54,8 +57,10 @@ def apply_rule(
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
     campaign_budget: Dict[str, Any],
 ) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
-    changes, errors = [], []
 
+    helpers.ensure_ad_group_valid(rule, ad_group)
+
+    changes, errors = [], []
     for target, target_stats in ad_group_stats.items():
         if _is_on_cooldown(target, rule, ad_group):
             continue
@@ -64,16 +69,16 @@ def apply_rule(
             rule, ad_group, target, campaign_budget, ad_group_settings, content_ads_settings
         )
         try:
-            with transaction.atomic():
-                if _meets_all_conditions(rule, target_stats, settings_dict):
-                    try:
-                        update = _apply_action(target, rule, ad_group, target_stats)
-                        if update.has_changes():
-                            _write_trigger_history(target, rule, ad_group)
-                            changes.append(update)
-
-                    except utils.exc.ForbiddenError:
-                        continue
+            if _meets_all_conditions(rule, target_stats, settings_dict):
+                update = _apply_action(target, rule, ad_group, target_stats)
+                if update.has_changes():
+                    _write_trigger_history(target, rule, ad_group)
+                    changes.append(update)
+        except utils.exc.EntityArchivedError:
+            continue
+        except exceptions.ApplyFailedBase:
+            # NOTE: apply breaking exception
+            raise
         except Exception as e:
             error_data = ErrorData(target=target, exc=e, stack_trace=traceback.format_exc())
             errors.append(error_data)

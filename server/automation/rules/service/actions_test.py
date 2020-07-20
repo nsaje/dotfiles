@@ -243,29 +243,6 @@ class ActionsTest(TestCase):
         ):
             actions.adjust_bid_modifier("123", rule, ad_group)
 
-    def test_adjust_source_bid_modifier_autopilot_on(self):
-        campaign = magic_mixer.blend(core.models.Campaign)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.SOURCE, action_type=constants.ActionType.INCREASE_BID_MODIFIER
-        )
-
-        campaign.settings.update_unsafe(None, autopilot=True)
-        ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
-        with self.assertRaisesRegexp(exceptions.AutopilotActive, "Campaign and ad group autopilot must not be active"):
-            actions.adjust_bid_modifier("123", rule, ad_group)
-
-        campaign.settings.update_unsafe(None, autopilot=False)
-        ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
-        with self.assertRaisesRegexp(exceptions.AutopilotActive, "Campaign and ad group autopilot must not be active"):
-            actions.adjust_bid_modifier("123", rule, ad_group)
-
-        ad_group.settings.update_unsafe(
-            None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        )
-        with self.assertRaisesRegexp(exceptions.AutopilotActive, "Campaign and ad group autopilot must not be active"):
-            actions.adjust_bid_modifier("123", rule, ad_group)
-
     def test_adjust_source_bid_modifier_invalid_id(self):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update_unsafe(None, autopilot=False)
@@ -492,7 +469,7 @@ class ActionsTest(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update_unsafe(None, autopilot=True)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, action_type=constants.ActionType.INCREASE_BUDGET)
 
         ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
         with self.assertRaisesRegexp(exceptions.CampaignAutopilotActive, "Campaign autopilot must not be active"):
@@ -508,7 +485,7 @@ class ActionsTest(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, action_type=constants.ActionType.INCREASE_BUDGET)
 
         ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
         with self.assertRaisesRegexp(exceptions.BudgetAutopilotInactive, "Budget autopilot must be active"):

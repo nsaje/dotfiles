@@ -24,61 +24,35 @@ from .apply import ErrorData
 @mock.patch("automation.rules.service.helpers._remove_inactive_ad_groups", mock.MagicMock())
 class ExecuteRulesDailyRunTest(TestCase):
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @mock.patch("core.features.bid_modifiers.converters.TargetConverter.from_target")
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.fetch.stats._format")
-    @mock.patch("redshiftapi.api_rules.query")
-    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
-    def test_execute_rules_daily_run(self, mock_stats, mock_format, mock_apply, mock_from_target):
+    @mock.patch("automation.rules.service.fetch.query_stats")
+    def test_execute_rules_daily_run(self, mock_query_stats, mock_apply, mock_from_target):
         ad_groups = magic_mixer.cycle(10).blend(core.models.AdGroup, archived=False)
         for ag in ad_groups:
             ag.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [{"ad_group_id": 123}]
-        mock_format.return_value = {ag.id: {} for ag in ad_groups}
+        mock_query_stats.return_value = {ag.id: {} for ag in ad_groups}
         mock_apply.return_value = (
             [
                 ValueChangeData(target="pub1.com__12", old_value=1.0, new_value=2.0),
                 ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
             ],
-            [
-                ErrorData(
-                    target="error_target_1", exc=exceptions.CampaignAutopilotActive("test1"), stack_trace="traceback 1"
-                ),
-                ErrorData(
-                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
-                ),
-                ErrorData(
-                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
-                ),
-                ErrorData(
-                    target="error_target_4", exc=exceptions.BudgetAutopilotInactive("test4"), stack_trace="traceback 4"
-                ),
-                ErrorData(target="error_target_5", exc=exceptions.AutopilotActive("test5"), stack_trace="traceback 5"),
-                ErrorData(target="error_target_6", exc=exceptions.AutopilotActive("test6"), stack_trace="traceback 6"),
-                ErrorData(target="error_target_7", exc=Exception("test7"), stack_trace="traceback 7"),
-                ErrorData(target="error_target_8", exc=Exception("test8"), stack_trace="traceback 8"),
-            ],
+            [],
         )
+
         mock_from_target.return_value = "readable target"
 
-        ad_group_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:10]
-        )
-        ad_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:9])
-        publisher_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:8]
-        )
-        device_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:7])
-        country_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:6]
-        )
-        state_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:5])
-        dma_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:4])
-        os_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:3])
-        environment_rule = magic_mixer.blend(
-            Rule, target_type=constants.TargetType.ENVIRONMENT, ad_groups_included=ad_groups[:2]
-        )
-        source_rule = magic_mixer.blend(Rule, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:1])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.AD_GROUP, ad_groups_included=ad_groups[:10])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.AD, ad_groups_included=ad_groups[:9])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=ad_groups[:8])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.DEVICE, ad_groups_included=ad_groups[:7])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.COUNTRY, ad_groups_included=ad_groups[:6])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.STATE, ad_groups_included=ad_groups[:5])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.DMA, ad_groups_included=ad_groups[:4])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.OS, ad_groups_included=ad_groups[:3])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.ENVIRONMENT, ad_groups_included=ad_groups[:2])
+        magic_mixer.blend(Rule, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:1])
 
         magic_mixer.blend(
             Rule,
@@ -93,88 +67,23 @@ class ExecuteRulesDailyRunTest(TestCase):
         # daily job
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
-        # query stats
-        self.assertEqual(
-            [
-                mock.call(target_type, [mock.ANY] * (10 - i))
-                for i, target_type in enumerate(constants.TargetType.get_all())
-            ],
-            mock_stats.call_args_list,
-        )
-        for i in range(10):
-            self.assertCountEqual(ad_groups[: 10 - i], mock_stats.call_args_list[i][0][1])
+        all_rules = Rule.objects.filter(state=constants.RuleState.ENABLED)
 
+        expected_stats_calls = []
+        for rule in all_rules:
+            expected_stats_calls.append(
+                mock.call(rule.target_type, {ad_group: [rule] for ad_group in rule.ad_groups_included.all()})
+            )
         # format stats
-        self.assertEqual(
-            [mock.call(target_type, [{"ad_group_id": 123}]) for target_type in constants.TargetType.get_all()],
-            mock_format.call_args_list,
-        )
+        self.assertCountEqual(mock_query_stats.call_args_list, expected_stats_calls)
+
+        expected_num_applies = sum(rule.ad_groups_included.count() for rule in all_rules)
 
         # apply
-        self.assertEqual(sum(range(1, 11)), mock_apply.call_count)
+        self.assertEqual(expected_num_applies, mock_apply.call_count)
 
-        # history
-        self.assertEqual(sum(range(1, 11)) * 2, RuleHistory.objects.all().count())
-        self._test_history(ad_group_rule)
-        self._test_history(ad_rule)
-        self._test_history(publisher_rule)
-        self._test_history(device_rule)
-        self._test_history(country_rule)
-        self._test_history(state_rule)
-        self._test_history(dma_rule)
-        self._test_history(os_rule)
-        self._test_history(environment_rule)
-        self._test_history(source_rule)
-
-    def _test_history(self, rule):
-        rule_history = RuleHistory.objects.filter(rule=rule, status=constants.ApplyStatus.SUCCESS)
-        rule_fail_history = RuleHistory.objects.filter(rule=rule, status=constants.ApplyStatus.FAILURE)
-        self.assertTrue(rule_history.count() > 0)
-        self.assertTrue(rule_fail_history.count() > 0)
-        self.assertEqual(rule.ad_groups_included.count(), rule_history.count())
-        self.assertEqual(rule.ad_groups_included.count(), rule_fail_history.count())
-
-        for history in rule_history:
-            self.assertEqual(rule, history.rule)
-            self.assertTrue(history.ad_group in rule.ad_groups_included.all())
-            self.assertEqual(constants.ApplyStatus.SUCCESS, history.status)
-            self.assertEqual(
-                {
-                    "pub1.com__12": {"old_value": 1.0, "new_value": 2.0},
-                    "pub2.com__21": {"old_value": 2.0, "new_value": 1.0},
-                },
-                history.changes,
-            )
-            self.assertIn("Updated targets: ", history.changes_text)
-            self.assertTrue(
-                any(text in history.changes_text for text in ["readable target", "pub1.com__12", "pub2.com__21"])
-            )
-
-        for fail_history in rule_fail_history:
-            self.assertEqual(rule, fail_history.rule)
-            self.assertTrue(fail_history.ad_group in rule.ad_groups_included.all())
-            self.assertEqual(constants.ApplyStatus.FAILURE, fail_history.status)
-            self.assertEqual(
-                {
-                    "error_target_1": {"message": "test1", "stack_trace": "traceback 1"},
-                    "error_target_2": {"message": "test2", "stack_trace": "traceback 2"},
-                    "error_target_3": {"message": "test3", "stack_trace": "traceback 3"},
-                    "error_target_4": {"message": "test4", "stack_trace": "traceback 4"},
-                    "error_target_5": {"message": "test5", "stack_trace": "traceback 5"},
-                    "error_target_6": {"message": "test6", "stack_trace": "traceback 6"},
-                    "error_target_7": {"message": "test7", "stack_trace": "traceback 7"},
-                    "error_target_8": {"message": "test8", "stack_trace": "traceback 8"},
-                },
-                fail_history.changes,
-            )
-            self.assertEqual(
-                "To change the autopilot daily budget the campaign budget optimization must not be active. "
-                + "To change the autopilot daily budget the autopilot goal optimization must be active. "
-                + "To change the source bid modifier the campaign budget optimization and autopilot goal optimization must not be active; "
-                + "rule failed to make changes on 2 sources. "
-                + "An error has occurred.",
-                fail_history.changes_text,
-            )
+        # history - one per apply
+        self.assertEqual(expected_num_applies, RuleHistory.objects.all().count())
 
     @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
     @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
@@ -217,19 +126,14 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(expected_history_changes, latest_ad_group_history.changes)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
+    @mock.patch("automation.rules.service.fetch.stats._format", mock.MagicMock())
+    @mock.patch("redshiftapi.api_rules.query", mock.MagicMock())
     @mock.patch("automation.rules.service.service.apply_rule")
-    @mock.patch("automation.rules.service.fetch.stats._format")
-    @mock.patch("redshiftapi.api_rules.query")
     @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
-    def test_execute_rules_daily_run_fail(self, mock_stats, mock_format, mock_apply, mock_time):
+    def test_execute_rules_daily_run_known_error(self, mock_apply, mock_time):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
         ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        mock_stats.return_value = [{"ad_group_id": 123}]
-        mock_format.return_value = {ad_group.id: {}}
-        mock_apply.return_value = (
-            [],
-            [ErrorData(target="test", exc=Exception("error message"), stack_trace="traceback")],
-        )
+        mock_apply.side_effect = exceptions.CampaignAutopilotActive
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.PUBLISHER,
@@ -246,8 +150,41 @@ class ExecuteRulesDailyRunTest(TestCase):
         history = RuleHistory.objects.get()
         self.assertEqual(rule, history.rule)
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
-        self.assertEqual({"test": {"message": "error message", "stack_trace": "traceback"}}, history.changes)
+        self.assertEqual(None, history.changes)
+        self.assertEqual(
+            "In order to change the autopilot daily budget the campaign budget optimization must not be active.",
+            history.changes_text,
+        )
+        self.assertFalse(history.stack_trace)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
+    @mock.patch("automation.rules.service.fetch.stats._format", mock.MagicMock())
+    @mock.patch("redshiftapi.api_rules.query", mock.MagicMock())
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
+    def test_execute_rules_daily_run_unknown_error(self, mock_apply, mock_time):
+        ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+        mock_apply.side_effect = Exception
+        rule = magic_mixer.blend(
+            Rule,
+            target_type=constants.TargetType.PUBLISHER,
+            action_type=constants.ActionType.INCREASE_BID_MODIFIER,
+            ad_groups_included=[ad_group],
+        )
+
+        self.assertFalse(RuleHistory.objects.exists())
+        self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
+
+        service.execute_rules_daily_run()
+
+        self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
+        history = RuleHistory.objects.get()
+        self.assertEqual(rule, history.rule)
+        self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
+        self.assertEqual(None, history.changes)
         self.assertEqual("An error has occurred.", history.changes_text)
+        self.assertTrue(history.stack_trace)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
@@ -272,7 +209,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(10, mock_stats.call_count)
         self.assertEqual(10, mock_format.call_count)
         self.assertEqual(10, mock_apply.call_count)
-        self.assertFalse(RuleHistory.objects.exists())
+        self.assertTrue(RuleHistory.objects.exists())
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("redshiftapi.api_rules.query")
@@ -349,15 +286,12 @@ class NotificationEmailTestCase(TestCase):
 
         service.execute_rules_daily_run()
 
-        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
-        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
-
-        for call_args in mock_send_email.call_args_list:
-            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” performed actions on ad group Test ad group")
-            self.assertEqual(
-                call_args[1]["body"],
-                textwrap.dedent(
-                    f"""\
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” performed actions on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
                         Hi,
 
                         We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} with message:
@@ -366,8 +300,8 @@ class NotificationEmailTestCase(TestCase):
 
                         Yours truly,
                         Zemanta"""
-                ),
-            )
+            ),
+        )
 
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
@@ -381,26 +315,19 @@ class NotificationEmailTestCase(TestCase):
                 ValueChangeData(target="pub2.com__21", old_value=2.0, new_value=1.0),
             ],
             [
-                ErrorData(
-                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
-                ),
-                ErrorData(
-                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
-                ),
+                ErrorData(target="error_target_2", exc=Exception(), stack_trace="traceback 2"),
+                ErrorData(target="error_target_3", exc=Exception(), stack_trace="traceback 3"),
             ],
         )
 
         service.execute_rules_daily_run()
 
-        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
-        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
-
-        for call_args in mock_send_email.call_args_list:
-            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” performed actions on ad group Test ad group")
-            self.assertEqual(
-                call_args[1]["body"],
-                textwrap.dedent(
-                    f"""\
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” performed actions on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
                         Hi,
 
                         We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} with message:
@@ -409,12 +336,12 @@ class NotificationEmailTestCase(TestCase):
 
                         The following errors were encountered during rule execution:
 
-                        To change the autopilot daily budget the campaign budget optimization must not be active. To change the autopilot daily budget the autopilot goal optimization must be active.
+                        Error occurred while trying to update 2 targets.
 
                         Yours truly,
                         Zemanta"""
-                ),
-            )
+            ),
+        )
 
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
@@ -425,36 +352,83 @@ class NotificationEmailTestCase(TestCase):
         mock_apply.return_value = (
             [],
             [
-                ErrorData(
-                    target="error_target_2", exc=exceptions.CampaignAutopilotActive("test2"), stack_trace="traceback 2"
-                ),
-                ErrorData(
-                    target="error_target_3", exc=exceptions.BudgetAutopilotInactive("test3"), stack_trace="traceback 3"
-                ),
+                ErrorData(target="error_target_2", exc=Exception(), stack_trace="traceback 2"),
+                ErrorData(target="error_target_3", exc=Exception(), stack_trace="traceback 3"),
             ],
         )
 
         service.execute_rules_daily_run()
 
-        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
-        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
-
-        for call_args in mock_send_email.call_args_list:
-            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” encountered errors on ad group Test ad group")
-            self.assertEqual(
-                call_args[1]["body"],
-                textwrap.dedent(
-                    f"""\
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” encountered errors on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
                         Hi,
 
                         We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
 
-                        To change the autopilot daily budget the campaign budget optimization must not be active. To change the autopilot daily budget the autopilot goal optimization must be active.
+                        Error occurred while trying to update 2 targets.
 
                         Yours truly,
                         Zemanta"""
-                ),
-            )
+            ),
+        )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.fetch.stats._format")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_known_exception(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [{"ad_group_id": 123}]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.side_effect = exceptions.CampaignAutopilotActive()
+
+        service.execute_rules_daily_run()
+
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” encountered errors on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
+
+                        In order to change the autopilot daily budget the campaign budget optimization must not be active.
+
+                        Yours truly,
+                        Zemanta"""
+            ),
+        )
+
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.fetch.stats._format")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_rule_send_email_unknown_exception(self, mock_stats, mock_format, mock_apply, mock_send_email):
+        mock_stats.return_value = [{"ad_group_id": 123}]
+        mock_format.return_value = {self.ad_group.id: {}}
+        mock_apply.side_effect = Exception()
+
+        service.execute_rules_daily_run()
+
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” encountered errors on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
+                        Hi,
+
+                        We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
+
+                        An error has occurred.
+
+                        Yours truly,
+                        Zemanta"""
+            ),
+        )
 
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
@@ -466,23 +440,20 @@ class NotificationEmailTestCase(TestCase):
 
         service.execute_rules_daily_run()
 
-        self.assertEqual(["testuser1@zemanta.com"], mock_send_email.call_args_list[0][1]["recipient_list"])
-        self.assertEqual(["testuser2@zemanta.com"], mock_send_email.call_args_list[1][1]["recipient_list"])
-
-        for call_args in mock_send_email.call_args_list:
-            self.assertEqual(call_args[1]["subject"], "Rule “Test rule” ran on ad group Test ad group")
-            self.assertEqual(
-                call_args[1]["body"],
-                textwrap.dedent(
-                    f"""\
+        self._assert_email_sent_to_all_recipients_separately(
+            mock_send_email,
+            recipients=["testuser1@zemanta.com", "testuser2@zemanta.com"],
+            subject="Rule “Test rule” ran on ad group Test ad group",
+            body=textwrap.dedent(
+                f"""\
                         Hi,
 
                         We’re letting you know that your rule “Test rule” was successfully executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} without doing any changes.
 
                         Yours truly,
                         Zemanta"""
-                ),
-            )
+            ),
+        )
 
     @mock.patch("automation.rules.service.service.apply_rule")
     @mock.patch("automation.rules.service.fetch.stats._format")
@@ -498,6 +469,15 @@ class NotificationEmailTestCase(TestCase):
         service.execute_rules_daily_run()
 
         self.assertFalse(mock_send_email.called)
+
+    def _assert_email_sent_to_all_recipients_separately(self, mock_send_email, recipients, subject, body):
+        actual_recipients = []
+        for call_args in mock_send_email.call_args_list:
+            self.assertEqual(1, len(call_args[1]["recipient_list"]))
+            actual_recipients.extend(call_args[1]["recipient_list"])
+            self.assertEqual(call_args[1]["subject"], subject)
+            self.assertEqual(call_args[1]["body"], body)
+        self.assertCountEqual(recipients, actual_recipients)
 
 
 @mock.patch("automation.rules.service.service.apply_rule", return_value=([], []))
