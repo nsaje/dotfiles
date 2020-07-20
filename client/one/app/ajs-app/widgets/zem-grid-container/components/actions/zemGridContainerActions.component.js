@@ -218,8 +218,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 zemPermissions.hasPermission(
                     'zemauth.fea_can_create_automation_rules'
                 ) &&
-                ($ctrl.entity.type === constants.entityType.AD_GROUP ||
-                    $ctrl.entity.type === constants.entityType.CAMPAIGN)
+                $ctrl.entity.type === constants.entityType.AD_GROUP
             );
         }
     },
