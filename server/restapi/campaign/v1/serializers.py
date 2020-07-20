@@ -113,3 +113,4 @@ class CampaignQueryParams(
     account_id = restapi.serializers.fields.IdField(required=False)
     only_ids = rest_framework.serializers.BooleanField(default=False, required=False)
     include_archived = rest_framework.serializers.BooleanField(required=False)
+    exclude_inactive = rest_framework.serializers.BooleanField(default=False, required=False)

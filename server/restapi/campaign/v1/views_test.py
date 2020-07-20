@@ -8,6 +8,7 @@ import dash.models
 import restapi.serializers
 import utils.test_helper
 from automation import autopilot
+from automation import campaignstop
 from dash import constants
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
@@ -361,6 +362,21 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(5, len(resp_json["data"]))
         for item in resp_json["data"]:
             self.validate_against_db(item)
+
+    @mock.patch.object(campaignstop, "get_campaignstop_states")
+    def test_campaigns_list_exclude_inactive(self, mock_get_campaign_states):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        campaigns = magic_mixer.cycle(3).blend(dash.models.Campaign, account=account)
+        mock_get_campaign_states.return_value = {
+            campaigns[0].id: {"allowed_to_run": True},
+            campaigns[1].id: {"allowed_to_run": True},
+            campaigns[2].id: {"allowed_to_run": False},
+        }
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id, "excludeInactive": True}
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(set([x["id"] for x in resp_json["data"]]), set([str(x.id) for x in campaigns[:2]]))
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
