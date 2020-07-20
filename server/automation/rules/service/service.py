@@ -280,18 +280,14 @@ def _write_fail_history(
     rule: Rule, ad_group: core.models.AdGroup, *, exception: Exception, stack_trace: str = None
 ) -> RuleHistory:
     return RuleHistory.objects.create(
-        rule=rule,
-        ad_group=ad_group,
-        status=constants.ApplyStatus.FAILURE,
-        changes_text=_get_exception_text(exception),
-        stack_trace=stack_trace,
+        rule=rule, ad_group=ad_group, status=constants.ApplyStatus.FAILURE, changes_text=_get_exception_text(exception)
     )
 
 
 def _get_exception_text(exception: Exception) -> str:
     if isinstance(exception, exceptions.CampaignAutopilotActive):
-        return "Automation rule can't change the daily cap when campaign budget optimisation is turned on."
+        return "Automation rule can’t change the daily cap when campaign budget optimisation is turned on."
     elif isinstance(exception, exceptions.BudgetAutopilotInactive):
-        return "Automation rule can't change the daily cap when daily cap autopilot is turned off."
+        return "Automation rule can’t change the daily cap when daily cap autopilot is turned off."
     else:
         return "An error has occurred."

@@ -152,10 +152,9 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual(None, history.changes)
         self.assertEqual(
-            "In order to change the autopilot daily budget the campaign budget optimization must not be active.",
+            "Automation rule can't change the daily cap when campaign budget optimisation is turned on.",
             history.changes_text,
         )
-        self.assertFalse(history.stack_trace)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.fetch.stats._format", mock.MagicMock())
@@ -184,7 +183,6 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual(None, history.changes)
         self.assertEqual("An error has occurred.", history.changes_text)
-        self.assertTrue(history.stack_trace)
 
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.service.apply_rule")
@@ -396,7 +394,7 @@ class NotificationEmailTestCase(TestCase):
 
                         We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
 
-                        In order to change the autopilot daily budget the campaign budget optimization must not be active.
+                        Automation rule can’t change the daily cap when campaign budget optimisation is turned on.
 
                         Yours truly,
                         Zemanta"""
