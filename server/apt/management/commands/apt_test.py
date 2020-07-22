@@ -1,4 +1,5 @@
 import os
+import sys
 
 from django.conf import settings
 
@@ -23,4 +24,7 @@ class Command(Z1Command):
 
     def handle(self, *test_labels, **options):
         runner = apt.base.runner.APTTestRunner(output=os.path.join(settings.APT_TESTS_PATH, ".junit_xml"), **options)
-        runner.run_tests(test_labels)
+        failures = runner.run_tests(test_labels)
+
+        if failures:
+            sys.exit(1)

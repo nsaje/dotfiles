@@ -18,7 +18,7 @@ class FilterSuiteMixin:
             self._add_filtered_tests(suite, new_suite, fn_list)
             return new_suite
 
-        assert type(suite) == django.test.runner.ParallelTestSuite
+        assert isinstance(suite, django.test.runner.ParallelTestSuite)
         for subsuite in suite.subsuites:
             self._add_filtered_tests(subsuite, new_suite, fn_list)
         return self.parallel_test_suite(new_suite, self.parallel, self.failfast)

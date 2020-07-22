@@ -29,7 +29,21 @@ XML_RESULT_STRUCTURE = [
 ]
 
 
+def _init_worker(*args, **kwargs):
+    """
+    Django's ParallelTestSuite switches databases in this funcion: https://github.com/django/django/blob/80f92177eb2a175579f4a6907ef5a358863bddca/django/test/runner.py#L304
+    This step has to be skipped since we're not setting up test databases as a part of APT tests.
+    """
+    pass
+
+
+class APTParallelTestSuite(django.test.runner.ParallelTestSuite):
+    init_worker = _init_worker
+
+
 class APTTestRunner(FilterSuiteMixin, XMLTestRunner, django.test.runner.DiscoverRunner):
+    parallel_test_suite = APTParallelTestSuite
+
     @classmethod
     def add_arguments(cls, parser):
         super().add_arguments(parser)
