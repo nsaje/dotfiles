@@ -1,3 +1,4 @@
+import unittest
 from random import randint
 
 from secretcrypt import Secret
@@ -12,6 +13,7 @@ from ..common import z1_client
 API_URL = "https://one.zemanta.com/rest/v1/"
 
 
+@unittest.skip
 class APTSmokeTestCase(APTTestCase):
     @classmethod
     def setUpClass(cls):
