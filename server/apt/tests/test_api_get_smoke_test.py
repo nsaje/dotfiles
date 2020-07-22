@@ -13,7 +13,7 @@ from ..common import z1_client
 API_URL = "https://one.zemanta.com/rest/v1/"
 
 
-@unittest.skip
+@unittest.expectedFailure
 class APTSmokeTestCase(APTTestCase):
     @classmethod
     def setUpClass(cls):
