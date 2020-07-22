@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 import mock
 from django.test import TestCase
 
 import redshiftapi.api_inventory
 
 from . import constants
+from . import nas
 from . import service
 
 
@@ -272,4 +275,59 @@ class TestService(TestCase):
         service.get_by_channel(None, {"channel": [constants.InventoryChannel.DISPLAY]})
         self.mock_query.assert_called_with(
             breakdown="channel", constraints={"channel": [constants.InventoryChannel.DISPLAY], "source_id": []}
+        )
+
+
+class TestFilteredSourcesMap(TestCase):
+    def setUp(self):
+        @dataclass
+        class Source:
+            id: int
+            supports_video: bool
+            supports_display: bool
+            name: str = "name"
+            released: bool = True
+
+        self.native_source = Source(id=1, supports_video=False, supports_display=False)
+        self.video_source = Source(id=2, supports_video=True, supports_display=False)
+        self.display_source = Source(id=3, supports_video=False, supports_display=True)
+        self.unreleased_source = Source(id=4, supports_video=False, supports_display=False, released=False)
+        self.all_sources = [self.native_source, self.video_source, self.display_source, self.unreleased_source]
+
+    @mock.patch.object(nas, "should_show_nas_source", return_value=False)
+    @mock.patch.object(service, "_get_sources_cache")
+    def test_filtered_sources_channel(self, mock_sources, mock_nas):
+        mock_sources.return_value = self.all_sources
+        self.assertEqual(
+            service.get_filtered_sources_map(None, {"channel": [constants.InventoryChannel.VIDEO]}).keys(),
+            {self.video_source.id},
+        )
+        self.assertEqual(
+            service.get_filtered_sources_map(None, {"channel": [constants.InventoryChannel.DISPLAY]}).keys(),
+            {self.display_source.id},
+        )
+        self.assertEqual(
+            service.get_filtered_sources_map(
+                None, {"channel": [constants.InventoryChannel.VIDEO, constants.InventoryChannel.DISPLAY]}
+            ).keys(),
+            {self.video_source.id, self.display_source.id},
+        )
+
+    @mock.patch.object(nas, "should_show_nas_source", return_value=False)
+    @mock.patch.object(service, "_get_sources_cache")
+    def test_filtered_sources_unreleased(self, mock_sources, mock_nas):
+        mock_sources.return_value = self.all_sources
+        self.assertEqual(
+            service.get_filtered_sources_map(None, {}).keys(),
+            {self.native_source.id, self.video_source.id, self.display_source.id},
+        )
+
+    @mock.patch.object(nas, "should_show_nas_source")
+    @mock.patch.object(service, "_get_sources_cache")
+    def test_filtered_sources_unreleased_nas(self, mock_sources, mock_nas):
+        mock_nas.side_effect = lambda source, _: True if source == self.unreleased_source else False
+        mock_sources.return_value = self.all_sources
+        self.assertEqual(
+            service.get_filtered_sources_map(None, {}).keys(),
+            {self.native_source.id, self.video_source.id, self.display_source.id, self.unreleased_source.id},
         )

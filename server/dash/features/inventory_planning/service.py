@@ -31,19 +31,36 @@ def _get_sources_cache():
     return _sources_cache
 
 
-def get_filtered_sources_map(request):
+def get_filtered_sources_map(request, filters):
     sources_map = {
         source.id: source.name
         for source in _get_sources_cache()
         if (source.released or nas.should_show_nas_source(source, request))
+        and _source_supports_channel(source, filters)
     }
     return sources_map
+
+
+def _source_supports_channel(source, filters):
+    if "channel" not in filters:
+        return True
+
+    if constants.InventoryChannel.NATIVE in filters["channel"]:
+        return True
+
+    supports_filters = False
+    if constants.InventoryChannel.VIDEO in filters["channel"]:
+        supports_filters = supports_filters or source.supports_video
+    if constants.InventoryChannel.DISPLAY in filters["channel"]:
+        supports_filters = supports_filters or source.supports_display
+
+    return supports_filters
 
 
 def _update_filters(request, filters):
     updated_filters = filters.copy()
     if "source_id" not in filters:
-        updated_filters["source_id"] = list(get_filtered_sources_map(request).keys())
+        updated_filters["source_id"] = list(get_filtered_sources_map(request, filters).keys())
     if "channel" in filters:
         if (
             constants.InventoryChannel.NATIVE in filters["channel"]
@@ -96,7 +113,7 @@ def get_by_media_source(request, filters):
     updated_filters = _update_filters(request, filters)
     data = redshiftapi.api_inventory.query(breakdown="source_id", constraints=updated_filters)
     data = list(filter(_min_auctions_filter, data))
-    sources_map = get_filtered_sources_map(request)
+    sources_map = get_filtered_sources_map(request, filters)
     _add_zero_rows(data, "source_id", sorted(sources_map.keys()))
     data = list(filter(lambda item: item["source_id"] in sources_map, data))
     for item in data:

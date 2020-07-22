@@ -152,7 +152,7 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
                 )
 
             if source_filter:
-                sources_map = dash.features.inventory_planning.get_filtered_sources_map(request)
+                sources_map = dash.features.inventory_planning.get_filtered_sources_map(request, filters)
                 csv_data = csv_utils.insert_csv_row(csv_data, "SSPs", [sources_map.get(s, s) for s in source_filter])
 
             if channels_filter:
