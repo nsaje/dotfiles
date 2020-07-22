@@ -68,9 +68,9 @@ class APTTestRunner(FilterSuiteMixin, XMLTestRunner, django.test.runner.Discover
             for test in getattr(xml_result, description.attr_name):
                 if description.includesStackTrace:
                     test = test[0]
-                test_case, test_method = test.test_id.rsplit(".", 1)
-                metrics_compat.timing("apt_runner_suite_timing", test.elapsed_time, suite=test_case, test=test_method)
-                metrics_compat.gauge("apt_runner_suite_status", description.metric, suite=test_case, test=test_method)
+                _, test_case, test_method = test.test_id.rsplit(".", 2)
+                metrics_compat.timing("apt_runner_timing", test.elapsed_time, suite=test_case, test=test_method)
+                metrics_compat.gauge("apt_runner_status", description.metric, suite=test_case, test=test_method)
 
     def run_tests(self, *args, **kwargs):
         assert settings.APT_MODE, 'Not running in "apt" environment. Set CONF_ENV=apt to use it.'
