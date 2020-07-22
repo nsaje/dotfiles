@@ -31,7 +31,7 @@ XML_RESULT_STRUCTURE = [
 
 def _init_worker(*args, **kwargs):
     """
-    Django's ParallelTestSuite switches databases in this funcion: https://github.com/django/django/blob/80f92177eb2a175579f4a6907ef5a358863bddca/django/test/runner.py#L304
+    Django's ParallelTestSuite switches databases in this function: https://github.com/django/django/blob/80f92177eb2a175579f4a6907ef5a358863bddca/django/test/runner.py#L304
     This step has to be skipped since we're not setting up test databases as a part of APT tests.
     """
     pass
