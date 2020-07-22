@@ -14,8 +14,8 @@ from utils.magic_mixer import magic_mixer
 
 class CampaignDeliveryTestCase(test.TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.models.account.Account, name="Account")
-        self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account=self.account)
+        self.account = magic_mixer.blend(core.models.account.Account, name="Account", id=1)
+        self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account_id=1)
         self.campaign.settings.update(None, iab_category=dash.constants.IABCategory.IAB1_1, enable_ga_tracking=True)
 
         self.goal = core.features.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
@@ -25,7 +25,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         end_date = datetime.date.today() + datetime.timedelta(10)
         self.credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
-            account=self.account,
+            account_id=1,
             status=1,
             start_date=start_date,
             end_date=end_date,
@@ -133,7 +133,7 @@ class CampaignDeliveryTestCase(test.TestCase):
 
 class AdGroupDeliveryTestCase(test.TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.models.account.Account, name="Account")
+        self.account = magic_mixer.blend(core.models.account.Account, name="Account", id=1)
 
         self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account=self.account)
 

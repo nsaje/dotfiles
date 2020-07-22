@@ -14,8 +14,9 @@ def getPreviousBuildResult() {
     return ""
 }
 
-node('MASTER') {
-    try {
+node {
+  try {
+    node('master') {
         stage('Kill previous builds') {
             if (env.BRANCH_NAME != 'master') {
                 Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
@@ -36,15 +37,15 @@ node('MASTER') {
             env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
             sh 'mkdir -p ${CACHE_DIR}'
             env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-            env.AWS_DEFAULT_REGION = "us-east-1"
+            env.AWS_DEFAULT_REGION="us-east-1"
         }
 
         stage('Code checkout') {
             checkout scm
             // make sure we don't have leftovers from previous builds
             sh 'sudo git clean --force -d -x'
-            env.GIT_AUTHOR = sh(script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
-            env.GIT_COMMIT_MESSAGE = sh(script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
+            env.GIT_AUTHOR = sh (script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
+            env.GIT_COMMIT_MESSAGE = sh (script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
 
             // Remove old lingering containsers and volumes
             sh 'docker-compose kill; docker-compose rm -v -f'
@@ -62,40 +63,40 @@ node('MASTER') {
                 sh 'make login'
 
                 parallel(
-                        'Server lint': {
-                            sh 'make lint_server'
-                        },
-                        'Client lint': {
-                            sh 'make lint_client'
-                        },
-                        'Acceptance': {
-                            try {
-                                sh 'make test_acceptance'
-                            } finally {
-                                junit testResults: 'server/.junit_acceptance.xml', allowEmptyResults: true
-                            }
-                        },
-                        'Server test': {
-                            try {
-                                sh 'make test_server | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
-                            } finally {
-                                junit testResults: 'server/.junit_xml/*.xml', allowEmptyResults: true
-                            }
-                        },
-                        'Client test': {
-                            try {
-                                sh 'make test_client'
-                            } finally {
-                                junit testResults: 'client/test-results.xml', allowEmptyResults: true
-                            }
-                        },
-                        'Client build': {
-                            // Client artifacts
-                            sh 'make build_client'
-                            // webpack sometimes build empty z1 client
-                            sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
-                        },
-                        failFast: true  // if one of the parallel branches fails, fail the build right away
+                    'Server lint': {
+                        sh 'make lint_server'
+                    },
+                    'Client lint': {
+                        sh 'make lint_client'
+                    },
+                    'Acceptance': {
+                        try {
+                            sh 'make test_acceptance'
+                        } finally {
+                            junit testResults: 'server/.junit_acceptance.xml', allowEmptyResults: true
+                        }
+                    },
+                    'Server test': {
+                        try {
+                            sh 'make test_server | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+                        } finally {
+                            junit testResults: 'server/.junit_xml/*.xml', allowEmptyResults: true
+                        }
+                    },
+                    'Client test': {
+                        try {
+                            sh 'make test_client'
+                        } finally {
+                            junit testResults: 'client/test-results.xml', allowEmptyResults: true
+                        }
+                    },
+                    'Client build': {
+                        // Client artifacts
+                        sh 'make build_client'
+                        // webpack sometimes build empty z1 client
+                        sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
+                    },
+                    failFast: true  // if one of the parallel branches fails, fail the build right away
                 )
             }
         }
@@ -113,6 +114,10 @@ node('MASTER') {
             sh 'make push'
         }
 
+        stage('Cleanup workspace') {
+            sh 'docker-compose kill; docker-compose rm -v -f'
+        }
+
         stage('Notify success') {
             prevResult = getPreviousBuildResult()
             if (prevResult == 'FAILURE' && env.BRANCH_NAME == 'master') {
@@ -120,20 +125,17 @@ node('MASTER') {
             }
         }
 
-        stage('Trigger e2e') {
-            if (env.BRANCH_NAME == 'master') {
-                build job: 'z1-e2e', wait: false
-            }
-        }
-    } catch (e) {
-        prevResult = getPreviousBuildResult()
-        if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS' && env.BRANCH_NAME == 'master') {
-            slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
-        }
-        throw e
-    } finally {
-        stage('Cleanup workspace') {
-            sh 'docker-compose kill; docker-compose rm -v -f'
-        }
+        // stage('Trigger e2e') {
+        //     if (env.BRANCH_NAME == 'master') {
+        //         build job: 'z1-e2e', wait: false
+        //     }
+        // }
     }
+  } catch(e) {
+    prevResult = getPreviousBuildResult()
+    if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS' && env.BRANCH_NAME == 'master') {
+        slackSend channel: "#rnd-z1", color: "#D54C53", failOnError: true, message: "Build Failed - ${env.GIT_AUTHOR}: ${env.GIT_COMMIT_MESSAGE} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+    }
+    throw e
+  }
 }

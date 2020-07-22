@@ -717,7 +717,7 @@ class LegacyPublisherGroupConnectionsTest(RESTAPITestCase):
                 kwargs={
                     "publisher_group_id": self.publisher_group_2.id,
                     "location": core.features.publisher_groups.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
-                    "entity_id": self.ad_group.id + 1,
+                    "entity_id": self.campaign.id,
                 },
             ),
             format="json",

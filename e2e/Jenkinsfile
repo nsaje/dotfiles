@@ -1,63 +1,65 @@
 #!groovy
 import hudson.model.Run
 
-node('SLAVE') {
+node {
     try {
-        stage('Kill previous builds') {
-            Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+        node('master') {
+            stage('Kill previous builds') {
+                Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
 
-            while (previousBuild != null) {
-                if (previousBuild.isInProgress()) {
-                    echo ">> Aborting older build #${previousBuild.number}"
-                    previousBuild.doTerm()
+                while (previousBuild != null) {
+                    if (previousBuild.isInProgress()) {
+                        echo ">> Aborting older build #${previousBuild.number}"
+                        previousBuild.doTerm()
+                    }
+
+                    previousBuild = previousBuild.getPreviousBuildInProgress()
                 }
+            }
 
-                previousBuild = previousBuild.getPreviousBuildInProgress()
+            stage('Setup') {
+                sh 'export'
+                env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
+                sh 'mkdir -p ${CACHE_DIR}'
+                env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
+                env.AWS_DEFAULT_REGION="us-east-1"
+
+                def upstream = currentBuild.rawBuild.getCause(hudson.model.Cause$UpstreamCause)
+                if (upstream != null) {
+                    env.BUILD_NUMBER = upstream.getUpstreamBuild()
+                }
+            }
+
+            stage('Code checkout') {
+                checkout scm
+                // parse git branch name
+                env.BRANCH_NAME = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+                // make sure we don't have leftovers from previous builds
+                sh 'sudo git clean --force -d -x'
+                // remove old lingering containsers and volumes
+                sh 'docker-compose kill; docker-compose rm -v -f'
+            }
+
+            stage('Prepare containers') {
+                sh 'make pull_testim'
+                sh 'make rebuild_if_differ'
+                sh 'make build'
+            }
+
+            withCredentials([string(credentialsId: 'testim_token', variable: 'TESTIM_TOKEN')]) {
+                stage('Testim e2e tests') {
+                    sh 'make test_e2e'
+                }
+            }
+
+            stage('Cleanup workspace') {
+                sh 'docker-compose kill; docker-compose rm -v -f'
             }
         }
-
-        stage('Setup') {
-            sh 'export'
-            env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
-            sh 'mkdir -p ${CACHE_DIR}'
-            env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-            env.AWS_DEFAULT_REGION = "us-east-1"
-
-            def upstream = currentBuild.rawBuild.getCause(hudson.model.Cause$UpstreamCause)
-            if (upstream != null) {
-                env.BUILD_NUMBER = upstream.getUpstreamBuild()
-            }
-        }
-
-        stage('Code checkout') {
-            checkout scm
-            // parse git branch name
-            env.BRANCH_NAME = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
-            // make sure we don't have leftovers from previous builds
-            sh 'sudo git clean --force -d -x'
-            // remove old lingering containsers and volumes
-            sh 'docker-compose kill; docker-compose rm -v -f'
-        }
-
-        stage('Prepare containers') {
-            sh 'make pull_testim'
-            sh 'make rebuild_if_differ'
-            sh 'make build'
-        }
-
-        withCredentials([string(credentialsId: 'testim_token', variable: 'TESTIM_TOKEN')]) {
-            stage('Testim e2e tests') {
-                sh 'make test_e2e'
-            }
-        }
-    } catch (e) {
+    } catch(e) {
         // committer = sh (script: 'git show -s --pretty=%an | head -1', returnStdout: true).trim()
         // commit_message = sh (script: 'git show -s --pretty=%B | head -1', returnStdout: true).trim()
         // slackSend channel: "#rnd-z1", color: "#FF0000", failOnError: true, message: "(Testim E2E) Build Failed - ${committer}: ${commit_message} on ${env.JOB_BASE_NAME}/${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
         throw e
-    } finally {
-        stage('Cleanup workspace') {
-            sh 'docker-compose kill; docker-compose rm -v -f'
-        }
     }
 }

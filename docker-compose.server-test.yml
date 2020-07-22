@@ -7,9 +7,6 @@ services:
 
     server:
         image: $Z1_SERVER_IMAGE
-        environment:
-          - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-          - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
         volumes:
           - "./server/:/app/z1/"
           - "./server/.junit_xml/:/app/z1/.junit_xml/"
