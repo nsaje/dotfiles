@@ -9,6 +9,7 @@ import {Campaign} from '../../types/campaign/campaign';
 import {CampaignExtras} from '../../types/campaign/campaign-extras';
 import {map, catchError} from 'rxjs/operators';
 import {CampaignCloneSettings} from '../../types/campaign/campaign-clone-settings';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class CampaignEndpoint {
@@ -70,6 +71,55 @@ export class CampaignEndpoint {
                         campaign: response.data,
                         extras: response.extra,
                     };
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    list(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Campaign[]> {
+        const request = ENTITY_CONFIG.requests.campaign.list;
+
+        const params = {
+            ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(accountId) && {accountId}),
+            ...(commonHelpers.isDefined(limit) && {
+                limit: `${limit}`,
+            }),
+            ...(commonHelpers.isDefined(offset) && {
+                offset: `${offset}`,
+            }),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<Campaign[]>>(request.url, {params})
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    });
+                    return response.data;
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {

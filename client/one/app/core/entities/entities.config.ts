@@ -38,6 +38,10 @@ export const ENTITY_CONFIG = {
                 name: 'get',
                 url: `${campaignApiUrl}/`,
             },
+            list: {
+                name: 'list',
+                url: `${campaignApiUrl}/`,
+            },
             create: {
                 name: 'create',
                 url: `${campaignApiUrl}/`,

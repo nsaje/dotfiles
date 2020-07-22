@@ -49,3 +49,11 @@ class AccountSerializer(
 
     def get_default_icon_url(self, account):
         return account.settings.get_base_default_icon_url()
+
+
+class AccountListQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    keyword = restapi.serializers.fields.PlainCharField(required=False)
+    include_archived = serializers.BooleanField(required=False)

@@ -154,3 +154,11 @@ class CampaignInternalQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
 ):
     account_id = restapi.serializers.fields.IdField(required=True)
+
+
+class CampaignListQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
+    keyword = restapi.serializers.fields.PlainCharField(required=False)

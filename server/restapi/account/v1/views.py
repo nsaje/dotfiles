@@ -46,14 +46,22 @@ class AccountViewSet(RESTAPIBaseViewSet):
         queryset_user_perm = core.models.Account.objects.filter_by_user(request.user)
         queryset_entity_perm = core.models.Account.objects.filter_by_entity_permission(request.user, Permission.READ)
 
-        agency_id = request.GET.get("agencyId")
+        qpe = serializers.AccountListQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        agency_id = qpe.validated_data.get("agency_id")
         if agency_id:
             queryset_user_perm = queryset_user_perm.filter(agency_id=agency_id)
             queryset_entity_perm = queryset_entity_perm.filter(agency_id=agency_id)
 
-        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
+        if not utils.converters.x_to_bool(qpe.validated_data.get("include_archived")):
             queryset_user_perm = queryset_user_perm.exclude_archived()
             queryset_entity_perm = queryset_entity_perm.exclude_archived()
+
+        keyword = qpe.validated_data.get("keyword")
+        if keyword:
+            queryset_user_perm = queryset_user_perm.filter(settings__name__icontains=keyword)
+            queryset_entity_perm = queryset_entity_perm.filter(settings__name__icontains=keyword)
 
         paginator = StandardPagination()
         accounts = zemauth.features.entity_permission.helpers.log_paginated_differences_and_get_queryset(

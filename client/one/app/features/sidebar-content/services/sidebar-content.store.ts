@@ -135,7 +135,13 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
     private loadAccounts(agencyId: string | null): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
             this.accountService
-                .list(agencyId, this.accountsRequestStateUpdater)
+                .list(
+                    agencyId,
+                    null,
+                    null,
+                    null,
+                    this.accountsRequestStateUpdater
+                )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (accounts: Account[]) => {

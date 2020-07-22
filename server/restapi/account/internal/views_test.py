@@ -1220,6 +1220,35 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         )
         self.assertResponseError(r, "MissingDataError")
 
+    def test_list_agency_id(self):
+        agency_one = self.mix_agency(self.user, permissions=[Permission.READ])
+        agency_two = self.mix_agency(self.user, permissions=[Permission.READ])
+
+        accounts_one = magic_mixer.cycle(5).blend(core.models.Account, agency=agency_one)
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency_two)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_list"), data={"agency_id": agency_one.id})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_ids = sorted([x.get("id") for x in resp_json["data"]])
+        accounts_one_ids = sorted([str(x.id) for x in accounts_one])
+        self.assertEqual(resp_json_ids, accounts_one_ids)
+
+    def test_list_account_manager(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Account)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_list"))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_ids = sorted([x.get("id") for x in resp_json["data"]])
+        self.assertEqual(resp_json_ids, [str(account.id)])
+
+    def test_list_no_access(self):
+        magic_mixer.cycle(5).blend(core.models.Account)
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_list"))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["data"], [])
+
 
 class AccountViewSetTest(FutureRESTAPITestCase, LegacyAccountViewSetTest):
     pass

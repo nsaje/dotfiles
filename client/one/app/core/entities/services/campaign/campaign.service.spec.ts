@@ -29,6 +29,7 @@ describe('CampaignService', () => {
         campaignEndpointStub = jasmine.createSpyObj(CampaignEndpoint.name, [
             'defaults',
             'get',
+            'list',
             'validate',
             'create',
             'edit',
@@ -100,6 +101,40 @@ describe('CampaignService', () => {
         expect(campaignEndpointStub.get).toHaveBeenCalledTimes(1);
         expect(campaignEndpointStub.get).toHaveBeenCalledWith(
             mockedCampaign.id,
+            requestStateUpdater
+        );
+    });
+
+    it('should list campaigns via endpoint', () => {
+        const mockedAgencyId = '114';
+        const mockedAccountId = '92';
+        const mockedOffset = 0;
+        const mockedLimit = 20;
+        const mockedKeyword = 'keyword';
+
+        campaignEndpointStub.list.and
+            .returnValue(of([mockedCampaign], asapScheduler))
+            .calls.reset();
+
+        service
+            .list(
+                mockedAgencyId,
+                mockedAccountId,
+                mockedOffset,
+                mockedLimit,
+                mockedKeyword,
+                requestStateUpdater
+            )
+            .subscribe(adGroups => {
+                expect(adGroups).toEqual([mockedCampaign]);
+            });
+        expect(campaignEndpointStub.list).toHaveBeenCalledTimes(1);
+        expect(campaignEndpointStub.list).toHaveBeenCalledWith(
+            mockedAgencyId,
+            mockedAccountId,
+            mockedOffset,
+            mockedLimit,
+            mockedKeyword,
             requestStateUpdater
         );
     });

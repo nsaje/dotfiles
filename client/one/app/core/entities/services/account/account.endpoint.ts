@@ -80,6 +80,9 @@ export class AccountEndpoint {
 
     list(
         agencyId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Account[]> {
         const request = ENTITY_CONFIG.requests.account.list;
@@ -89,6 +92,13 @@ export class AccountEndpoint {
 
         const params = {
             ...(commonHelpers.isDefined(agencyId) && {agencyId}),
+            ...(commonHelpers.isDefined(limit) && {
+                limit: `${limit}`,
+            }),
+            ...(commonHelpers.isDefined(offset) && {
+                offset: `${offset}`,
+            }),
+            ...(commonHelpers.isDefined(keyword) && {keyword}),
         };
 
         return this.http

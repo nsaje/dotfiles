@@ -96,20 +96,33 @@ describe('AccountService', () => {
         );
     });
 
-    it('should list all accounts for user via endpoint', () => {
+    it('should list accounts via endpoint', () => {
         const mockedAgencyId = '1';
+        const mockedOffset = 0;
+        const mockedLimit = 20;
+        const mockedKeyword = 'keyword';
+
         accountEndpointStub.list.and
             .returnValue(of([mockedAccount], asapScheduler))
             .calls.reset();
 
         service
-            .list(mockedAgencyId, requestStateUpdater)
-            .subscribe(accounts => {
-                expect(accounts[0]).toEqual(mockedAccount);
+            .list(
+                mockedAgencyId,
+                mockedOffset,
+                mockedLimit,
+                mockedKeyword,
+                requestStateUpdater
+            )
+            .subscribe(adGroups => {
+                expect(adGroups).toEqual([mockedAccount]);
             });
         expect(accountEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(accountEndpointStub.list).toHaveBeenCalledWith(
             mockedAgencyId,
+            mockedOffset,
+            mockedLimit,
+            mockedKeyword,
             requestStateUpdater
         );
     });

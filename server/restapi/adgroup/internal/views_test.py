@@ -494,32 +494,6 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         )
         self.assertResponseError(r, "MissingDataError")
 
-    def test_adgroups_list_account_id(self):
-        account_one = self.mix_account(self.user, permissions=[Permission.READ])
-        account_two = self.mix_account(self.user, permissions=[Permission.READ])
-
-        ad_groups_one = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account=account_one)
-        magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account=account_two)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_list"), data={"account_id": account_one.id})
-        resp_json = self.assertResponseValid(r, data_type=list)
-        resp_json_ids = sorted([x.get("id") for x in resp_json["data"]])
-        ad_groups_one_ids = sorted([str(x.id) for x in ad_groups_one])
-        self.assertEqual(resp_json_ids, ad_groups_one_ids)
-
-    def test_adgroups_list_agency_id(self):
-        agency_one = self.mix_agency(self.user, permissions=[Permission.READ])
-        agency_two = self.mix_agency(self.user, permissions=[Permission.READ])
-
-        ad_groups_one = magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account__agency=agency_one)
-        magic_mixer.cycle(5).blend(core.models.AdGroup, campaign__account__agency=agency_two)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_list"), data={"agency_id": agency_one.id})
-        resp_json = self.assertResponseValid(r, data_type=list)
-        resp_json_ids = sorted([x.get("id") for x in resp_json["data"]])
-        ad_groups_one_ids = sorted([str(x.id) for x in ad_groups_one])
-        self.assertEqual(resp_json_ids, ad_groups_one_ids)
-
 
 class AdGroupViewSetTestCase(FutureRESTAPITestCase, LegacyAdGroupViewSetTestCase):
     pass

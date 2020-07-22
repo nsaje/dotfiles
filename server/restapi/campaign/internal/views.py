@@ -20,6 +20,7 @@ import restapi.campaign.v1.views
 import restapi.serializers.alert
 import utils.exc
 import zemauth.access
+from restapi.common.pagination import StandardPagination
 from zemauth.features.entity_permission import Permission
 
 from . import helpers
@@ -55,6 +56,36 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return self.response_ok(
             data=self.serializer(campaign.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
+        )
+
+    def list(self, request):
+        qpe = serializers.CampaignListQueryParams(data=request.query_params)
+        qpe.is_valid(raise_exception=True)
+
+        account_id = qpe.validated_data.get("account_id")
+        agency_id = qpe.validated_data.get("agency_id")
+
+        if account_id:
+            account = zemauth.access.get_account(request.user, Permission.READ, account_id)
+            campaigns_qs = core.models.Campaign.objects.filter(account=account)
+        elif agency_id:
+            agency = zemauth.access.get_agency(request.user, Permission.READ, agency_id)
+            campaigns_qs = core.models.Campaign.objects.filter(account__agency=agency)
+        else:
+            raise utils.exc.ValidationError("Either agency id or account id must be provided.")
+
+        keyword = qpe.validated_data.get("keyword")
+        if keyword:
+            campaigns_qs = campaigns_qs.filter(settings__name__icontains=keyword)
+
+        paginator = StandardPagination()
+
+        campaigns_qs = campaigns_qs.select_related("settings").order_by("pk")
+
+        campaigns_paginated = paginator.paginate_queryset(campaigns_qs, request)
+        paginated_settings = [ad.settings for ad in campaigns_paginated]
+        return paginator.get_paginated_response(
+            self.serializer(paginated_settings, many=True, context={"request": request}).data
         )
 
     def alerts(self, request, campaign_id):

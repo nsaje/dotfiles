@@ -31,6 +31,24 @@ export class CampaignService {
         return this.endpoint.get(id, requestStateUpdater);
     }
 
+    list(
+        agencyId: string | null,
+        accountId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Campaign[]> {
+        return this.endpoint.list(
+            agencyId,
+            accountId,
+            offset,
+            limit,
+            keyword,
+            requestStateUpdater
+        );
+    }
+
     validate(
         campaign: Partial<Campaign>,
         requestStateUpdater: RequestStateUpdater

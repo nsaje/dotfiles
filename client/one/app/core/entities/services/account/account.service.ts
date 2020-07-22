@@ -32,9 +32,18 @@ export class AccountService {
 
     list(
         agencyId: string | null,
+        offset: number,
+        limit: number,
+        keyword: string | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Account[]> {
-        return this.endpoint.list(agencyId, requestStateUpdater);
+        return this.endpoint.list(
+            agencyId,
+            offset,
+            limit,
+            keyword,
+            requestStateUpdater
+        );
     }
 
     validate(

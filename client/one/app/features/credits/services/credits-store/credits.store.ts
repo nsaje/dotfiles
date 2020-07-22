@@ -493,7 +493,13 @@ export class CreditsStore extends Store<CreditsStoreState>
     private loadAccounts(agencyId: string): Promise<Account[]> {
         return new Promise<Account[]>((resolve, reject) => {
             this.accountsService
-                .list(agencyId, this.accountsRequestStateUpdater)
+                .list(
+                    agencyId,
+                    null,
+                    null,
+                    null,
+                    this.accountsRequestStateUpdater
+                )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     accounts => {
