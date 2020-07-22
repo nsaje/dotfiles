@@ -1,18 +1,71 @@
+from dataclasses import dataclass
+
 import django.test.runner
 from django.conf import settings
 from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
+from utils import metrics_compat
+from utils import zlogging
 from utils.test_runner_mixin import FilterSuiteMixin
 
 from .test_case import APTTestCase
 
+logger = zlogging.getLogger(__name__)
+
+
+@dataclass
+class XmlResultSetDescription:
+    attr_name: str
+    metric: str
+    includesStackTrace: bool
+
+
+XML_RESULT_STRUCTURE = [
+    XmlResultSetDescription("successes", "success", False),
+    XmlResultSetDescription("failures", "failure", True),
+    XmlResultSetDescription("skipped", "skipped", True),
+    XmlResultSetDescription("expectedFailures", "expected-failure", True),
+    XmlResultSetDescription("unexpectedSuccesses", "unexpected-success", True),
+]
+
 
 class APTTestRunner(FilterSuiteMixin, XMLTestRunner, django.test.runner.DiscoverRunner):
+    @classmethod
+    def add_arguments(cls, parser):
+        super().add_arguments(parser)
+        parser.add_argument(
+            "--emit-metrics", action="store_true", dest="emit_metrics", default=False, help="Emit metrics"
+        )
+
+    def __init__(self, *args, emit_metrics=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.emit_metrics = emit_metrics
+        self.filter_functions.append(self._get_filter_apt_fn())
+
+    def run_suite(self, *args, **kwargs):
+        result = super().run_suite(*args, **kwargs)
+        if self.emit_metrics:
+            self._emit_metrics(result)
+        return result
+
+    def _emit_metrics(self, xml_result):
+        logger.info("Emitting metrics...")
+        for description in XML_RESULT_STRUCTURE:
+            for test in getattr(xml_result, description.attr_name):
+                if description.includesStackTrace:
+                    test = test[0]
+                test_case, test_method = test.test_id.rsplit(".", 1)
+                metrics_compat.timing(
+                    "apt_runner_test_status",
+                    test.elapsed_time,
+                    suite=test_case,
+                    test=test_method,
+                    status=description.metric,
+                )
+
     def run_tests(self, *args, **kwargs):
         assert settings.APT_MODE, 'Not running in "apt" environment. Set CONF_ENV=apt to use it.'
-
-        super().run_tests(*args, **kwargs)
-        self.filter_functions.append(self._get_filter_apt_fn())
+        return super().run_tests(*args, **kwargs)
 
     def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
         # set to location as default to narrow the search

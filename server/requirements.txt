@@ -153,7 +153,7 @@ typing-extensions==3.7.4
 ua-parser==0.8.0
 unicodecsv==0.14.1
 unidecode==1.0.23
-unittest-xml-reporting==2.2.0
+unittest-xml-reporting==3.0.2
 uritemplate==3.0.0
 urllib3==1.24.3
 uwsgi==2.0.17.1
