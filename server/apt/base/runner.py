@@ -21,11 +21,11 @@ class XmlResultSetDescription:
 
 
 XML_RESULT_STRUCTURE = [
-    XmlResultSetDescription("successes", "success", False),
-    XmlResultSetDescription("failures", "failure", True),
-    XmlResultSetDescription("skipped", "skipped", True),
-    XmlResultSetDescription("expectedFailures", "expected-failure", True),
-    XmlResultSetDescription("unexpectedSuccesses", "unexpected-success", True),
+    XmlResultSetDescription("successes", 0, False),
+    XmlResultSetDescription("failures", 1, True),
+    XmlResultSetDescription("skipped", 2, True),
+    XmlResultSetDescription("expectedFailures", 3, True),
+    XmlResultSetDescription("unexpectedSuccesses", 4, True),
 ]
 
 
@@ -69,13 +69,8 @@ class APTTestRunner(FilterSuiteMixin, XMLTestRunner, django.test.runner.Discover
                 if description.includesStackTrace:
                     test = test[0]
                 test_case, test_method = test.test_id.rsplit(".", 1)
-                metrics_compat.timing(
-                    "apt_runner_test_status",
-                    test.elapsed_time,
-                    suite=test_case,
-                    test=test_method,
-                    status=description.metric,
-                )
+                metrics_compat.timing("apt_runner_test_status", test.elapsed_time, suite=test_case, test=test_method)
+                metrics_compat.gauge("apt_runner_test_status", description.metric, suite=test_case, test=test_method)
 
     def run_tests(self, *args, **kwargs):
         assert settings.APT_MODE, 'Not running in "apt" environment. Set CONF_ENV=apt to use it.'
