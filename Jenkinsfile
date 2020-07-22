@@ -14,7 +14,7 @@ def getPreviousBuildResult() {
     return ""
 }
 
-node('SLAVE') {
+node('MASTER') {
     try {
         stage('Kill previous builds') {
             if (env.BRANCH_NAME != 'master') {
