@@ -41,6 +41,8 @@ class Command(Z1Command):
     def _vacuum(db_name):
         for table in refresh.get_all_views_table_names():
             vacuum_to = 99 if table in VACUUM_TO_99 else 95
+            if table == "mv_master" and db_name == settings.STATS_DB_COLD_CLUSTERS[0]:
+                continue  # HACK(nsaje): dont vacuum mv_master in cold cluster until we vacuum it manually, it just gets stuck
             maintenance.vacuum(table, to=vacuum_to, db_name=db_name)
             maintenance.analyze(table, db_name=db_name)
 
