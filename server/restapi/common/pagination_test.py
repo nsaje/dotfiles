@@ -38,6 +38,30 @@ class StandardPaginationTestCase(TestCase):
             {"count": 120, "next": "http://testserver/?limit=10&marker={}".format(accounts[-1].id), "data": accounts},
         )
 
+    def test_custom_default_limit(self):
+        account_qs = Account.objects.order_by("id")
+        request = Request(factory.get("/"))
+        pagination = StandardPagination(default_limit=105, max_limit=1000)
+        page = pagination.paginate_queryset(Account.objects.all(), request)
+        content = pagination.get_paginated_response(page).data
+        accounts = list(account_qs[:105])
+        self.assertDictEqual(
+            content,
+            {"count": 120, "next": "http://testserver/?limit=105&marker={}".format(accounts[-1].id), "data": accounts},
+        )
+
+    def test_custom_max_limit(self):
+        account_qs = Account.objects.order_by("id")
+        request = Request(factory.get("/", {"limit": 100}))
+        pagination = StandardPagination(max_limit=30, default_limit=50)
+        page = pagination.paginate_queryset(Account.objects.all(), request)
+        content = pagination.get_paginated_response(page).data
+        accounts = list(account_qs[:30])
+        self.assertDictEqual(
+            content,
+            {"count": 120, "next": "http://testserver/?limit=30&marker={}".format(accounts[-1].id), "data": accounts},
+        )
+
     def test_marker(self):
         account_qs = Account.objects.order_by("id")
         marker_id = account_qs[9].id

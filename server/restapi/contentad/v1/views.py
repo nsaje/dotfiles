@@ -36,7 +36,7 @@ class ContentAdViewSet(RESTAPIBaseViewSet):
             .select_related("ad_group")
             .order_by("pk")
         )
-        paginator = StandardPagination()
+        paginator = StandardPagination(default_limit=500)
         content_ads_paginated = paginator.paginate_queryset(content_ads, request)
         return self.response_ok(
             serializers.ContentAdSerializer(content_ads_paginated, many=True, context={"request": request}).data

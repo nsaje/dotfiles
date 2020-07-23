@@ -22,6 +22,12 @@ class StandardPagination(pagination.BasePagination):
     """
 
     selected_pagination = None
+    max_limit = None
+    default_limit = None
+
+    def __init__(self, max_limit=None, default_limit=None):
+        self.max_limit = max_limit
+        self.default_limit = default_limit
 
     def paginate_queryset(self, queryset, request, view=None):
         self.selected_pagination = self._select_pagination(request)
@@ -32,9 +38,9 @@ class StandardPagination(pagination.BasePagination):
 
     def _select_pagination(self, request):
         if "offset" in request.query_params:
-            return StandardLimitOffsetPagination()
+            return StandardLimitOffsetPagination(max_limit=self.max_limit, default_limit=self.default_limit)
 
-        return MarkerOffsetPagination()
+        return MarkerOffsetPagination(max_limit=self.max_limit, default_limit=self.default_limit)
 
 
 class StandardLimitOffsetPagination(pagination.LimitOffsetPagination):
@@ -44,6 +50,10 @@ class StandardLimitOffsetPagination(pagination.LimitOffsetPagination):
 
     max_limit = 1000
     default_limit = 100
+
+    def __init__(self, max_limit=None, default_limit=None):
+        self.max_limit = max_limit or self.max_limit
+        self.default_limit = default_limit or self.default_limit
 
     def get_paginated_response(self, data):
         if "data" in data:
@@ -70,6 +80,10 @@ class MarkerOffsetPagination(pagination.BasePagination):
     default_limit = 100
     limit_query_param = "limit"
     marker_query_param = "marker"
+
+    def __init__(self, max_limit=None, default_limit=None):
+        self.max_limit = max_limit or self.max_limit
+        self.default_limit = default_limit or self.default_limit
 
     def paginate_queryset(self, queryset, request, view=None):
         self.limit = self.get_limit(request)

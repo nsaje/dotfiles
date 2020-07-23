@@ -83,9 +83,10 @@ class LegacyContentAdsTest(RESTAPITestCase):
         self.assertEqual(expected, cad)
 
     def test_contentads_list(self):
-        magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.ad_group)
+        magic_mixer.cycle(501).blend(core.models.ContentAd, ad_group=self.ad_group)
         r = self.client.get(reverse("restapi.contentad.v1:contentads_list"), data={"adGroupId": self.ad_group.id})
         resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(500, len(resp_json["data"]))
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
