@@ -25,9 +25,13 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
         budgets_data_by_campaign_id[campaign.id] = helpers.map_keys_from_constant_to_qs_string_representation(
             {
                 constants.MetricType.CAMPAIGN_BUDGET_START_DATE: start_date,
-                constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: (local_today - start_date).days,
+                constants.MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: (local_today - start_date).days
+                if start_date
+                else None,
                 constants.MetricType.CAMPAIGN_BUDGET_END_DATE: end_date,
-                constants.MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: (end_date - local_today).days,
+                constants.MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: (end_date - local_today).days
+                if end_date
+                else None,
                 constants.MetricType.CAMPAIGN_REMAINING_BUDGET: remaining_budget,
                 constants.MetricType.CAMPAIGN_BUDGET_MARGIN: margin,
             }

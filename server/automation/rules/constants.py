@@ -332,7 +332,7 @@ METRIC_SETTINGS_MAPPING = {
     MetricType.CAMPAIGN_BUDGET_START_DATE: "campaign_budget_start_date",
     MetricType.DAYS_SINCE_CAMPAIGN_BUDGET_START: "days_since_campaign_budget_start",
     MetricType.CAMPAIGN_BUDGET_END_DATE: "campaign_budget_end_date",
-    MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: "days_since_campaign_budget_end_date",
+    MetricType.DAYS_UNTIL_CAMPAIGN_BUDGET_END: "days_until_campaign_budget_end_date",
     MetricType.CAMPAIGN_BUDGET_MARGIN: "campaign_budget_margin",
     MetricType.CAMPAIGN_REMAINING_BUDGET: "campaign_remaining_budget",
 }
