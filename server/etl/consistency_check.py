@@ -23,9 +23,9 @@ def consistency_check(date_from, date_to):
     master_counts = get_counts(mv_master, date_from, date_to, db_name=settings.STATS_DB_HOT_CLUSTER)
 
     for view in derived_views:
+        if date_from.date() <= datetime.date(2020, 7, 7) and view.TABLE_NAME.endswith("_pubs"):
+            continue  # HACK(nsaje): dont check pubs tables before that date since they werent consistent with mv_master before mv_master_pubs removal
         for db_name in [settings.STATS_DB_HOT_CLUSTER] + settings.STATS_DB_COLD_CLUSTERS + settings.STATS_DB_POSTGRES:
-            if date_from <= datetime.date(2020, 7, 7) and view.TABLE_NAME.endswith("_pubs"):
-                continue  # HACK(nsaje): dont check pubs tables before that date since they werent consistent with mv_master before mv_master_pubs removal
             check_counts(master_counts, view, date_from, date_to, db_name)
 
     logger.info("Consistency check finished")
