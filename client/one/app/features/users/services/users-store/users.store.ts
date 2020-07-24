@@ -18,7 +18,6 @@ import {EntityPermission} from '../../../../core/users/types/entity-permission';
 import {
     arraysContainSameElements,
     distinct,
-    intersect,
     isEmpty,
     groupArray,
 } from '../../../../shared/helpers/array.helpers';

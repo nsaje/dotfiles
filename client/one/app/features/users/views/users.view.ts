@@ -140,6 +140,8 @@ export class UsersView implements OnInit, OnDestroy {
                     this.keyword
                 );
             });
+
+            this.editUserModal.close();
         }
     }
 

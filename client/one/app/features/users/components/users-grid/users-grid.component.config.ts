@@ -112,7 +112,7 @@ function getReportingPermissionsText(
 function getPermissionTooltip(user: User, componentParent: UsersView): string {
     const accountId: string = componentParent.store.state.accountId;
     if (isAccountManager(user) && !isDefined(accountId)) {
-        return 'This user has access to one or more agency\'s accounts. Click on the "Account" link in the left column to get a list of all users accounts.';
+        return 'This user has access to one or more agency\'s accounts. To review user\'s permissions, select one of the user\'s accounts in the account selector on the left side of the screen.';
     } else {
         return undefined;
     }

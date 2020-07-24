@@ -54,12 +54,10 @@
                     [user]="store.state.activeEntity.entity"
                     (userChange)="store.changeActiveEntity($event)"
                 >
-                    <div
-                        class="zem-users-view__item zem-users-view__scope-selector-container"
-                    >
-                        <label class="zem-users-view__scope-selector-title">
-                            Access level
-                        </label>
+                    <div class="zem-users-view__scope-selector-container">
+                        <label class="zem-users-view__scope-selector-label"
+                            >Access<br />Level</label
+                        >
                         <zem-scope-selector
                             class="zem-scope-selector zem-users-view__scope-selector"
                             [scopeState]="state.activeEntity.scopeState"
@@ -229,6 +227,18 @@
                     (click)="editUserModal.close()"
                 >
                     Cancel
+                </button>
+                <button
+                    class="zem-button zem-button--outlined zem-button--danger zem-button--with-icon zem-button--remove-icon zem-users-view__remove_button"
+                    *ngIf="state.activeEntity.entity.id"
+                    [disabled]="
+                        state.activeEntity.isReadOnly ||
+                        state.requests.edit.inProgress ||
+                        state.requests.create.inProgress
+                    "
+                    (click)="removeUser(state.activeEntity.entity)"
+                >
+                    Remove user
                 </button>
             </div>
         </ng-container>

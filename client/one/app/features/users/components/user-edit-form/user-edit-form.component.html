@@ -1,6 +1,6 @@
 <zem-text-form-group
-    class="zem-text-form-group zem-user-edit-form__text-form-group"
-    [ngClass]="{'zem-user-edit-form__item': user.id}"
+    class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+    [ngClass]="{'zem-user-edit-form__text-form-group--medium': user.id}"
     [isDisabled]="user.id"
     [label]="'Email'"
     [value]="user.email"
@@ -16,7 +16,7 @@
 </div>
 <ng-container *ngIf="user.id">
     <zem-text-form-group
-        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group zem-user-edit-form__text-form-group--narrow"
         [isDisabled]="isDisabled"
         [label]="'First name'"
         [value]="user.firstName"
@@ -24,7 +24,7 @@
         (valueChange)="onFirstNameChange($event)"
     ></zem-text-form-group>
     <zem-text-form-group
-        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group"
+        class="zem-text-form-group zem-user-edit-form__item zem-user-edit-form__text-form-group zem-user-edit-form__text-form-group--narrow"
         [isDisabled]="isDisabled"
         [label]="'Last name'"
         [value]="user.lastName"

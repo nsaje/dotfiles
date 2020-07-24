@@ -7,6 +7,7 @@
 .zem-user-edit-form__item {
     display: block;
     margin-bottom: @zem-form-group__items-spacing--default;
+    padding-left: @spacing--default;
 }
 
 .zem-user-edit-form__item:last-child {
@@ -14,7 +15,19 @@
 }
 
 .zem-user-edit-form__text-form-group .zem-form-group__label {
-    flex: 0 0 150px;
+    flex: 0 0 var(--label-width);
+}
+
+.zem-user-edit-form__text-form-group .zem-form-group__content {
+    flex: 1 1 120px;
+}
+
+.zem-user-edit-form__text-form-group--narrow {
+    max-width: var(--accounts-width);
+}
+
+.zem-user-edit-form__text-form-group--medium {
+    max-width: 450px;
 }
 
 .zem-user-edit-form__description {
@@ -26,7 +39,11 @@
 }
 
 .zem-user-edit-form__item--indented::before {
-    content: '';
-    display: block;
-    flex: 0 0 150px;
+    display: none;
+
+    @media only screen and (min-width: 500px) {
+        content: '';
+        display: block;
+        flex: 0 0 var(--label-width);
+    }
 }

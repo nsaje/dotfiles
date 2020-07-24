@@ -2,6 +2,9 @@
 
 .zem-users-view {
     display: block;
+    --label-width: 137px;
+    --accounts-width: 300px;
+    --modal-window-width: 820px;
 }
 
 .zem-users-view__panel {
@@ -20,6 +23,19 @@
     border: 1px solid @border-color--default;
     border-radius: @border-radius--default;
     padding: @spacing--small;
+    display: flex;
+    align-items: center;
+    margin: @spacing--small 0;
+}
+
+.zem-users-view__scope-selector-label {
+    text-align: center;
+    display: none;
+
+    @media only screen and (min-width: 500px) {
+        display: block;
+        flex: 0 0 var(--label-width);
+    }
 }
 
 .zem-users-view__scope-selector .zem-scope-selector-card {
@@ -41,14 +57,29 @@
     margin: 0;
 }
 
+.zem-users-view__modal .zem-modal__content-container {
+    max-width: var(--modal-window-width);
+    width: var(--modal-window-width);
+}
+
+.zem-users-view__modal .zem-modal__backdrop {
+    display: flex;
+    align-items: center;
+
+    @media only screen and (min-height: 800px) {
+        padding: @spacing--default;
+    }
+}
+
 .zem-users-view__accounts-section {
-    flex: 0 1 200px;
+    flex: 0 1 var(--accounts-width);
     min-width: 130px;
     position: relative;
+    margin-right: @spacing--small;
 }
 
 .zem-users-view__entity-permission-selector {
-    flex: 1 1 370px;
+    flex: 1 1 480px;
 }
 
 .zem-users-view__add-account {
@@ -58,4 +89,8 @@
 .zem-users-view__permissions-editor {
     display: flex;
     flex-direction: row;
+}
+
+.zem-users-view__remove_button {
+    margin-left: auto;
 }
