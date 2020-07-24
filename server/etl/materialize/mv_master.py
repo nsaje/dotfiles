@@ -59,9 +59,17 @@ class MasterView(Materialize):
             yield row
 
     def prepare_insert_traffic_data_query(self, date):
-        sql = backtosql.generate_sql("etl_insert_mv_master_stats.sql", {"account_id": self.account_id})
+        params = helpers.get_local_date_context(date)
 
-        return sql, self._add_account_id_param({"date": date})
+        sql = backtosql.generate_sql(
+            "etl_insert_mv_master_stats.sql",
+            {"account_id": self.account_id, "valid_environments": dash.constants.Environment.get_all()},
+        )
+
+        params = self._add_account_id_param(params)
+        params = self._add_ad_group_id_param(params)
+
+        return sql, params
 
     def prefetch(self):
         if self.account_id:
@@ -81,7 +89,6 @@ class MasterView(Materialize):
         }
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
         self.outbrain = helpers.get_outbrain()
-        self.yahoo = helpers.get_yahoo()
 
     def get_postclickstats(self, cursor, date):
 
@@ -121,9 +128,7 @@ class MasterView(Materialize):
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
                 publisher = row.publisher
-                if source.id == self.yahoo.id:
-                    publisher = "all publishers"
-                elif publisher and source.id != self.outbrain.id:
+                if publisher and source.id != self.outbrain.id:
                     publisher = publisher.lower()
 
                 yield (

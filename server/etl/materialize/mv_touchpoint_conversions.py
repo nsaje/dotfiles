@@ -40,10 +40,8 @@ class MVTouchpointConversions(Materialize):
 
     def prepare_insert_query(self):
         outbrain = helpers.get_outbrain()
-        yahoo = helpers.get_yahoo()
         sql = backtosql.generate_sql(
-            "etl_insert_mv_touchpointconversions.sql",
-            {"account_id": self.account_id, "outbrain_id": outbrain.id, "yahoo_id": yahoo.id},
+            "etl_insert_mv_touchpointconversions.sql", {"account_id": self.account_id, "outbrain_id": outbrain.id}
         )
 
         return sql, self._add_account_id_param({"date_from": self.date_from, "date_to": self.date_to})

@@ -39,15 +39,13 @@ Because of this table create scripts reside in `etl/templates` and are named `et
    This produces table `mvh_adgroup_structure`.
 3. write `MVHelpersSource` that provides mapping between source slug and source id
    This produces table `mvh_source`.
-4. create materialized view clean `stats` table `MVHelpersNormalizedStats` in which we perform steps
-   steps B and E. This happens with the sql statement `templates/etl_insert_mvh_clean_stats.sql`. This
-   produces the table `mvh_clean_stats`
 
 #### 2. Join data to mv_master ####
 
 View that takes care of the joining is `MVMaster` and creates the `mv_master` table.
 
-We join helper materialized views into `mv_master` as seen in `etl/templates/etl_insert_mv_master_stats`.
+We join helper materialized views and results from a subquery in which we perform steps B and E into `mv_master`
+as seen in `etl/templates/etl_insert_mv_master_stats`.
 Than we add postclick data to it in python - this data is small enough that this step does not have a
 big performance hit.
 

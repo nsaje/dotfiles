@@ -11,16 +11,14 @@ INSERT INTO mv_touchpointconversions (
         a.content_ad_id as content_ad_id,
 
         CASE WHEN a.source_id = {{ outbrain_id }} THEN a.publisher
-             WHEN a.source_id = {{ yahoo_id }} THEN 'all publishers'
              ELSE LOWER(a.publisher)
         END AS publisher,
         CASE WHEN a.source_id = {{ outbrain_id }} THEN COALESCE(a.publisher, '') || '__{{ outbrain_id }}'
-             WHEN a.source_id = {{ yahoo_id }} THEN 'all publishers__{{ yahoo_id }}'
              ELSE LOWER(COALESCE(a.publisher, '')) || '__' || a.source_id
         END AS publisher_source_id,
 
         -- IMPORTANT: the delivery dimensions cleanup should be kept in sync with how it is
-        -- cleaned in etl_insert_mvh_clean_stats
+        -- cleaned in etl_insert_mv_master_stats
         CASE WHEN a.device_type = 1 THEN 4  -- convert legacy OpenRTB `mobile` to `phone`
              WHEN a.device_type = 6 THEN 3
              WHEN a.device_type = 7 THEN 3

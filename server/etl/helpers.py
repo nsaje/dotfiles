@@ -148,7 +148,3 @@ def get_ad_group_ids_or_none(account_id):
 
 def get_outbrain():
     return dash.models.Source.objects.get(name__iexact="outbrain")
-
-
-def get_yahoo():
-    return dash.models.Source.objects.get(name__iexact="yahoo")

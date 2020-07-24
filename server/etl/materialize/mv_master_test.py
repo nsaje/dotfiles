@@ -54,7 +54,16 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
                     {"date": datetime.date(2016, 7, 1)},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 1)}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-01",
+                        "tzdate_from": "2016-07-01",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-02",
+                        "tzhour_to": 4,
+                    },
+                ),
                 mock.call(
                     backtosql.SQLMatcher(
                         """
@@ -99,7 +108,16 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
                     {"date": datetime.date(2016, 7, 2)},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 2)}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-02",
+                        "tzdate_from": "2016-07-02",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-03",
+                        "tzhour_to": 4,
+                    },
+                ),
                 mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2)}),
                 mock.call(
                     mock.ANY,
@@ -113,7 +131,16 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
                     {"date": datetime.date(2016, 7, 3)},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 3)}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-03",
+                        "tzdate_from": "2016-07-03",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-04",
+                        "tzhour_to": 4,
+                    },
+                ),
                 mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3)}),
                 mock.call(
                     mock.ANY,
@@ -826,7 +853,18 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
                     {"date": datetime.date(2016, 7, 1), "account_id": account_id},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 1), "account_id": account_id}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-01",
+                        "tzdate_from": "2016-07-01",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-02",
+                        "tzhour_to": 4,
+                        "account_id": 1,
+                        "ad_group_id": test_helper.ListMatcher([1, 3, 4]),
+                    },
+                ),
                 mock.call(
                     backtosql.SQLMatcher(
                         """
@@ -871,7 +909,18 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
                     {"date": datetime.date(2016, 7, 2), "account_id": account_id},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 2), "account_id": account_id}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-02",
+                        "tzdate_from": "2016-07-02",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-03",
+                        "tzhour_to": 4,
+                        "account_id": 1,
+                        "ad_group_id": test_helper.ListMatcher([1, 3, 4]),
+                    },
+                ),
                 mock.call(
                     mock.ANY, {"date": datetime.date(2016, 7, 2), "ad_group_id": test_helper.ListMatcher([1, 3, 4])}
                 ),
@@ -887,7 +936,18 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
                     {"date": datetime.date(2016, 7, 3), "account_id": account_id},
                 ),
-                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 3), "account_id": account_id}),
+                mock.call(
+                    insert_into_master_sql,
+                    {
+                        "date": "2016-07-03",
+                        "tzdate_from": "2016-07-03",
+                        "tzhour_from": 4,
+                        "tzdate_to": "2016-07-04",
+                        "tzhour_to": 4,
+                        "account_id": 1,
+                        "ad_group_id": test_helper.ListMatcher([1, 3, 4]),
+                    },
+                ),
                 mock.call(
                     mock.ANY, {"date": datetime.date(2016, 7, 3), "ad_group_id": test_helper.ListMatcher([1, 3, 4])}
                 ),
