@@ -1,5 +1,5 @@
 <h1 class="zem-main-container__view-title">
-    {{ showNewLabels ? 'Publishers & Placements' : 'Publisher groups' }}
+    {{ showNewLabels ? 'Publishers & placements' : 'Publisher groups' }}
 </h1>
 <ng-container *ngIf="store.state$ | async as state">
     <div
@@ -9,7 +9,7 @@
             <div class="zem-publisher-groups-view__description">
                 {{
                     showNewLabels
-                        ? 'Publishers & Placements allow you to upload lists of publishers or placements and blacklist or whitelist them in account, campaign or ad group settings.'
+                        ? 'Publishers & placements allow you to upload lists of publishers or placements and blacklist or whitelist them in account, campaign or ad group settings.'
                         : 'Publisher groups allow you to upload lists of publishers and blacklist or whitelist them in account, campaign or ad group settings.'
                 }}
             </div>
@@ -51,7 +51,7 @@
                 >
                     {{
                         showNewLabels
-                            ? 'System Publisher & Placements lists'
+                            ? 'System Publisher & placements lists'
                             : 'System Publisher Groups'
                     }}
                 </div>

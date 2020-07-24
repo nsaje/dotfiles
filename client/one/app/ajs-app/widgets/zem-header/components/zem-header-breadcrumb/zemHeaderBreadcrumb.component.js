@@ -204,7 +204,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 );
                 return {
                     typeName: 'Management Console',
-                    name: canUserSeeNewPublisherGroupsView ? 'Publishers & Placements' : 'Publisher Groups',
+                    name: canUserSeeNewPublisherGroupsView ? 'Publishers & placements' : 'Publisher Groups',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.RULES)) {
@@ -214,7 +214,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 ];
                 return {
                     typeName: 'Management Console',
-                    name: 'Automation Rules',
+                    name: 'Automation rules',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.USERS)) {

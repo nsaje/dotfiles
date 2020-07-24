@@ -71,7 +71,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             displayValue: this.zemPermissions.hasPermission(
                 'zemauth.can_see_new_publisher_library'
             )
-                ? 'Publishers & Placements'
+                ? 'Publishers & placements'
                 : 'Publisher Groups',
             icon: ListGroupItemIcon.PublisherGroups,
             isVisible: () => {
@@ -87,7 +87,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         },
         {
             value: RoutePathName.RULES,
-            displayValue: 'Automation Rules',
+            displayValue: 'Automation rules',
             icon: ListGroupItemIcon.AutomationRules,
             isVisible: () => {
                 return this.zemPermissions.hasPermission(

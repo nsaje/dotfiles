@@ -92,7 +92,7 @@ angular
             },
             {
                 text: canUserSeeNewPublisherGroupsView
-                    ? 'Publishers & Placements'
+                    ? 'Publishers & placements'
                     : 'Publisher Groups',
                 callback: navigateToPublisherGroupsView,
                 isAvailable: isPublisherGroupsViewAvailable,
@@ -102,7 +102,7 @@ angular
                 isNewFeature: canUserSeeNewPublisherGroupsView,
             },
             {
-                text: 'Automation Rules',
+                text: 'Automation rules',
                 callback: navigateToRulesView,
                 isAvailable: isRulesViewAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
