@@ -53,12 +53,14 @@ class DCronJobAdmin(admin.ModelAdmin):
     duration.short_description = "Duration"
 
     def logs(self, obj):
-        log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(command_name=obj.command_name)
+        log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(
+            command_name=obj.command_name.replace("_", "")
+        )
         return mark_safe('<a href="%s">%s</a>' % (log_viewer_link, "Logs"))
 
     def live_logs(self, obj):
         log_viewer_link = settings.DCRON.get("log_viewer_link_live", "{command_name},{host}").format(
-            command_name=obj.command_name, host=obj.host
+            command_name=obj.command_name.replace("_", ""), host=obj.host
         )
         return mark_safe('<a href="%s">%s</a>' % (log_viewer_link, "Current execution logs"))
 
