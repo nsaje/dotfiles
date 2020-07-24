@@ -27,7 +27,7 @@ class Command(Z1Command):
                 slack.publish(
                     f"Rules daily job run failed... Check {kibana_link} for details.",
                     channel="zem-proj-automated-rules",
-                    msg_type=":fire:",
+                    msg_type=":exclamation:",
                     username="Automation rules",
                 )
             raise
