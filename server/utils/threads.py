@@ -59,12 +59,13 @@ class RealAsyncFunction(Thread):
     results = thread.result
     """
 
-    def __init__(self, func):
+    def __init__(self, func, log_exception=True):
         super(AsyncFunction, self).__init__()
         self.func = func
         self._result = None
         self._exception = None
         self._request_context = utils.request_context.get_dict()
+        self._log_exception = log_exception
 
     def get_result(self):
         if self._exception:
@@ -78,7 +79,8 @@ class RealAsyncFunction(Thread):
             self._result = self.func()
         except Exception as e:
             self._exception = e
-            logger.exception(e)
+            if self._log_exception:
+                logger.exception(e)
         finally:
             connection.close()
 
