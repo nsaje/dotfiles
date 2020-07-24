@@ -88,6 +88,13 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
             x.permission == permission and x.agency is None and x.account is None for x in self._entity_permission_cache
         )
 
+    def has_greater_or_equal_permission(self, entity_permission: EntityPermission) -> bool:
+        if entity_permission.agency is None and entity_permission.account is None:
+            return self.has_perm_on_all_entities(entity_permission.permission)
+        else:
+            entity = entity_permission.agency or entity_permission.account
+            return self._has_perm_on(entity_permission.permission, entity)
+
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 

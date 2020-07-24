@@ -11,7 +11,9 @@ from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils.email_helper import send_new_user_email
 from utils.exc import ValidationError
+from zemauth.features.entity_permission import EntityPermission
 from zemauth.features.entity_permission import Permission
+from zemauth.features.entity_permission.constants import REPORTING_PERMISSIONS
 from zemauth.models import User as ZemUser
 from zemauth.models.user.exceptions import MissingReadPermission
 from zemauth.models.user.exceptions import MissingRequiredPermission
@@ -147,9 +149,42 @@ class UserViewSet(RESTAPIBaseViewSet):
 
         return account, agency, show_internal, keyword, calling_user
 
-    @staticmethod
-    def _augment_user(requested_user: ZemUser, request, account: Account, agency: Agency):
-        requested_user.entity_permissions = requested_user.get_entity_permissions(request, account, agency)
+    @classmethod
+    def _augment_user(cls, requested_user: ZemUser, request, account: Account, agency: Agency):
+        entity_permissions = requested_user.get_entity_permissions(request, account, agency)
+        requested_user_reporting_permissions = requested_user.entitypermission_set.filter(
+            permission__in=REPORTING_PERMISSIONS
+        )
+        for entity_permission in entity_permissions:
+            cls._augment_entity_permission(entity_permission, requested_user_reporting_permissions, request)
+        requested_user.entity_permissions = entity_permissions
+
+    @classmethod
+    def _augment_entity_permission(
+        cls, entity_permission: EntityPermission, requested_user_reporting_permissions, request
+    ):
+        calling_user: ZemUser = request.user
+        if not calling_user.has_greater_or_equal_permission(entity_permission) or (
+            entity_permission.is_reporting_permission()
+            and cls._user_has_hidden_reporting_permissions(
+                calling_user, requested_user_reporting_permissions, entity_permission
+            )
+        ):
+            entity_permission.readonly = True
+
+    @classmethod
+    def _user_has_hidden_reporting_permissions(
+        cls, calling_user: ZemUser, requested_user_reporting_permissions, entity_permission: EntityPermission
+    ) -> bool:
+        return any(
+            filter(
+                lambda ep: (
+                    ep.agency_id == entity_permission.agency_id and ep.account_id == entity_permission.account_id
+                )
+                and not calling_user.has_greater_or_equal_permission(ep),
+                requested_user_reporting_permissions,
+            )
+        )
 
     @staticmethod
     def _get_account_and_agency(calling_user, account_id, agency_id):

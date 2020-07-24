@@ -23,3 +23,10 @@ class Permission(ConstantBase):
         BASE_COSTS_SERVICE_FEE: "View base media cost, base data cost and service fee.",
         RESTAPI: "RESTAPI access",
     }
+
+
+REPORTING_PERMISSIONS = [
+    Permission.AGENCY_SPEND_MARGIN,
+    Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    Permission.BASE_COSTS_SERVICE_FEE,
+]

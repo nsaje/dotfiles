@@ -21,6 +21,7 @@ class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer
     agency_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     account_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     permission = rest_framework.serializers.CharField()
+    readonly = rest_framework.serializers.BooleanField(required=False)
 
     def to_internal_value(self, data):
         value = super().to_internal_value(data)

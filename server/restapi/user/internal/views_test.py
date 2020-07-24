@@ -43,11 +43,24 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
 
     def _expected_permission_response(self, permission):
         if permission.agency_id is not None:
-            return {"agencyId": str(permission.agency_id), "accountId": None, "permission": str(permission.permission)}
+            expected_response = {
+                "agencyId": str(permission.agency_id),
+                "accountId": None,
+                "permission": str(permission.permission),
+            }
         elif permission.account_id is not None:
-            return {"agencyId": None, "accountId": str(permission.account_id), "permission": str(permission.permission)}
+            expected_response = {
+                "agencyId": None,
+                "accountId": str(permission.account_id),
+                "permission": str(permission.permission),
+            }
         else:
-            return {"agencyId": None, "accountId": None, "permission": str(permission.permission)}
+            expected_response = {"agencyId": None, "accountId": None, "permission": str(permission.permission)}
+
+        if hasattr(permission, "assert_readonly") and permission.assert_readonly:
+            expected_response["readonly"] = True
+
+        return expected_response
 
     def _find_by_id(self, id, data):
         return list(filter(lambda x: str(x["id"]) == str(id), data))[0]
@@ -71,6 +84,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
             account=None,
             permission=Permission.BUDGET,
         )
+        permissions[1].assert_readonly = True  # Because calling_user hasn't got BUDGET permission
 
         return agency, permissions
 
@@ -96,6 +110,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
             account=None,
             permission=Permission.BUDGET,
         )
+        permissions[1].assert_readonly = True  # Because calling_user hasn't got BUDGET permission
 
         permissions.extend(self._prepare_hidden_agency_data(requested_user))
 
@@ -125,6 +140,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
             account=account,
             permission=Permission.BUDGET_MARGIN,
         )
+        permissions[1].assert_readonly = True  # Because calling_user hasn't got BUDGET_MARGIN permission
 
         hidden_account = self.mix_account(agency=agency)
         permissions[2] = magic_mixer.blend(
@@ -141,6 +157,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
             account=hidden_account,
             permission=Permission.AGENCY_SPEND_MARGIN,
         )
+        permissions[3].assert_readonly = True  # Because calling_user hasn't got AGENCY_SPEND_MARGIN permission
 
         permissions.extend(self._prepare_hidden_agency_data(requested_user))
 
@@ -301,6 +318,9 @@ class UserViewSetPutTest(UserViewSetTestBase):
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
 
+        # Add BUDGET_MARGIN permission to calling_user, so we can test if he can set it
+        test_helper.add_entity_permissions(calling_user, [Permission.BUDGET_MARGIN], agency)
+
         user_json["entityPermissions"][0]["permission"] = Permission.READ
         user_json["entityPermissions"][1]["permission"] = Permission.USER
         user_json["entityPermissions"].append({"agencyId": agency.id, "permission": Permission.BUDGET_MARGIN})
@@ -400,7 +420,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             resp_json["data"]["users"][0]["entityPermissions"],
             [
                 {"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ},
-                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET, "readonly": True},
             ],
         )
         self.assertTrue(mock_send.called)
@@ -876,9 +896,13 @@ class UserViewSetListTest(UserViewSetTestBase):
         permissions[0] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=agency_mgr, agency=agency, account=None, permission=Permission.READ
         )
+        if caller_role == "account_mgr":
+            permissions[0].assert_readonly = True  # Because calling_user has a lower access level than requested_user
         permissions[1] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=agency_mgr, agency=agency, account=None, permission=Permission.USER
         )
+        if caller_role == "account_mgr":
+            permissions[1].assert_readonly = True  # Because calling_user has a lower access level than requested_user
 
         another_agency = self.mix_agency()
         # These 2 permissions should not be visible to anybody, because they are on a different agency
@@ -909,6 +933,7 @@ class UserViewSetListTest(UserViewSetTestBase):
             account=account,
             permission=Permission.AGENCY_SPEND_MARGIN,
         )
+        permissions[5].assert_readonly = True  # Because calling_user hasn't got AGENCY_SPEND_MARGIN permission
 
         another_account = self.mix_account(agency=agency)
         # These 2 permissions should be visible to internal users and agency managers, but not to the account manager who has no access to this account
@@ -926,6 +951,7 @@ class UserViewSetListTest(UserViewSetTestBase):
             account=another_account,
             permission=Permission.BUDGET_MARGIN,
         )
+        permissions[7].assert_readonly = True  # Because calling_user hasn't got BUDGET_MARGIN permission
 
         internal_usr = magic_mixer.blend(zemauth.models.User)
         # These 2 permissions should only be visible to internal users IF the show_internal query parameter is set to True
