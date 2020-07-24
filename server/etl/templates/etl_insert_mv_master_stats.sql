@@ -159,7 +159,6 @@ INSERT INTO mv_master (
 
                         ad_group_id,
                         content_ad_id,
-                        -- no outbrain publishers here
                         LOWER(publisher) as publisher,
 
                         CASE WHEN device_type = 1 THEN 4  -- convert legacy OpenRTB `mobile` to `phone`

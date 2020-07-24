@@ -149,18 +149,6 @@
     model: dash.sourcetype
     pk: 2
 
--   fields:
-        type: 'outbrain'
-        available_actions: [19, 20]
-    model: dash.sourcetype
-    pk: 3
-
--   fields:
-        type: 'yahoo'
-        available_actions: [19, 20]
-    model: dash.sourcetype
-    pk: 4
-
 # sources
 
 -   fields:
@@ -193,10 +181,10 @@
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
-        name: Outbrain
-        bidder_slug: 'outbrain'
+        name: TestSource
+        bidder_slug: 'testsource'
         source_type: 2
-        tracking_slug: 'outbrain'
+        tracking_slug: 'testsource'
         maintenance: false
         deprecated: false
         supports_retargeting: true
@@ -206,10 +194,10 @@
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
-        name: Yahoo
-        bidder_slug: 'yahoo'
+        name: TestSource2
+        bidder_slug: 'testsource2'
         source_type: 2
-        tracking_slug: 'yahoo'
+        tracking_slug: 'testsource2'
         maintenance: false
         deprecated: false
         supports_retargeting: true

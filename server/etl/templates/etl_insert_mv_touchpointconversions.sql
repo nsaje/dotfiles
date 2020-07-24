@@ -10,12 +10,8 @@ INSERT INTO mv_touchpointconversions (
         a.ad_group_id as ad_group_id,
         a.content_ad_id as content_ad_id,
 
-        CASE WHEN a.source_id = {{ outbrain_id }} THEN a.publisher
-             ELSE LOWER(a.publisher)
-        END AS publisher,
-        CASE WHEN a.source_id = {{ outbrain_id }} THEN COALESCE(a.publisher, '') || '__{{ outbrain_id }}'
-             ELSE LOWER(COALESCE(a.publisher, '')) || '__' || a.source_id
-        END AS publisher_source_id,
+        LOWER(a.publisher) AS publisher,
+        LOWER(COALESCE(a.publisher, '')) || '__' || a.source_id AS publisher_source_id,
 
         -- IMPORTANT: the delivery dimensions cleanup should be kept in sync with how it is
         -- cleaned in etl_insert_mv_master_stats

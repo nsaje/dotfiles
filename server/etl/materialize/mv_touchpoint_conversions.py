@@ -1,5 +1,4 @@
 import backtosql
-from etl import helpers
 from etl import redshift
 from redshiftapi import db
 from utils import zlogging
@@ -39,9 +38,6 @@ class MVTouchpointConversions(Materialize):
                 c.execute(sql, params)
 
     def prepare_insert_query(self):
-        outbrain = helpers.get_outbrain()
-        sql = backtosql.generate_sql(
-            "etl_insert_mv_touchpointconversions.sql", {"account_id": self.account_id, "outbrain_id": outbrain.id}
-        )
+        sql = backtosql.generate_sql("etl_insert_mv_touchpointconversions.sql", {"account_id": self.account_id})
 
         return sql, self._add_account_id_param({"date_from": self.date_from, "date_to": self.date_to})

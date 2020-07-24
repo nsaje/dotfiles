@@ -574,11 +574,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date = datetime.date(2016, 5, 1)
 
         mock_get_postclickstats_query_results.return_value = [
-            PostclickstatsResults(1, "gaapi", 1, "outbrain", "Bla.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(1, "gaapi", 1, "testsource", "Bla.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
             # this one should be left out as its from lower priority postclick source
-            PostclickstatsResults(1, "ga_mail", 2, "outbrain", "beer.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(1, "ga_mail", 2, "testsource", "beer.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
             PostclickstatsResults(3, "gaapi", 3, "adblade", "Nesto.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
-            PostclickstatsResults(2, "omniture", 4, "outbrain", "Trol", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(2, "omniture", 4, "testsource", "Trol", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
         ]
 
         mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
@@ -597,8 +597,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         1,
                         1,
                         1,
-                        "Bla.com",
-                        "Bla.com__3",
+                        "bla.com",
+                        "bla.com__3",
                         constants.DeviceType.UNKNOWN,
                         None,
                         None,
@@ -665,8 +665,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         2,
                         2,
                         4,
-                        "Trol",
-                        "Trol__3",
+                        "trol",
+                        "trol__3",
                         constants.DeviceType.UNKNOWN,
                         None,
                         None,

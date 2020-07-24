@@ -21,9 +21,6 @@ class MasterView(Materialize):
     """
     Represents breakdown by all dimensions available. It containts traffic, postclick, conversions
     and tochpoint conversions data.
-
-    NOTE: It excludes outbrain publishers as those are currently not linked to content ads and so
-    breakdown by publisher and content ad is not possible for them.
     """
 
     TABLE_NAME = "mv_master"
@@ -88,7 +85,6 @@ class MasterView(Materialize):
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()
         }
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
-        self.outbrain = helpers.get_outbrain()
 
     def get_postclickstats(self, cursor, date):
 
@@ -128,7 +124,7 @@ class MasterView(Materialize):
                 returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
 
                 publisher = row.publisher
-                if publisher and source.id != self.outbrain.id:
+                if publisher and source.id:
                     publisher = publisher.lower()
 
                 yield (

@@ -29,8 +29,8 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
                 """\
             1\tadblade\tadblade\r
             2\tadiant\tadiant\r
-            3\toutbrain\toutbrain\r
-            4\tyahoo\tyahoo\r
+            3\ttestsource\ttestsource\r
+            4\ttestsource2\ttestsource2\r
             """
             ),
         )

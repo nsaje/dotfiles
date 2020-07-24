@@ -144,7 +144,3 @@ def get_ad_group_ids_or_none(account_id):
         return None
 
     return list(dash.models.AdGroup.objects.filter(campaign__account_id=account_id).values_list("pk", flat=True))
-
-
-def get_outbrain():
-    return dash.models.Source.objects.get(name__iexact="outbrain")
