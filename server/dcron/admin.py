@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
@@ -23,6 +24,7 @@ class DCronJobAdmin(admin.ModelAdmin):
         "duration",
         "live_logs",
         "logs",
+        "history",
         "executed_dt",
         "completed_dt",
         "colored_alert",
@@ -59,6 +61,12 @@ class DCronJobAdmin(admin.ModelAdmin):
             command_name=obj.command_name, host=obj.host
         )
         return mark_safe('<a href="%s">%s</a>' % (log_viewer_link, "Current execution logs"))
+
+    def history(self, obj):
+        return format_html(
+            '<a href="{}">History entries</a>',
+            reverse("admin:dcron_dcronjobhistory_changelist") + "?command_name=" + obj.command_name,
+        )
 
     def enabled(self, obj):
         return obj.dcronjobsettings.enabled
@@ -110,6 +118,7 @@ class DCronJobSettingsAdmin(admin.ModelAdmin):
 class DCronJobHistoryAdmin(admin.ModelAdmin):
     list_display = (
         "command_name",
+        "command_definition",
         "colored_status",
         "host",
         "duration",
@@ -120,6 +129,11 @@ class DCronJobHistoryAdmin(admin.ModelAdmin):
     search_fields = ("command_name",)
     list_filter = ("command_name",)
     readonly_fields = ("command_name", "status", "host", "executed_dt", "completed_dt", "expected_max_duration")
+
+    def command_definition(self, obj):
+        return format_html(
+            '<a href="{}">Definition</a>', reverse("admin:dcron_dcronjob_changelist") + "?q=" + obj.command_name
+        )
 
     def has_add_permission(self, request, obj=None):
         return False
