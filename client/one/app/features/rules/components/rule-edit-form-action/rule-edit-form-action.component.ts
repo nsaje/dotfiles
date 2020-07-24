@@ -73,6 +73,8 @@ export class RuleEditFormActionComponent implements OnChanges, OnInit {
     sendEmailBodyErrors: FieldErrors;
     @Input()
     publisherGroupIdErrors: FieldErrors;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     targetActionChange = new EventEmitter<{
         targetType: RuleTargetType;

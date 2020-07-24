@@ -46,6 +46,7 @@ describe('DealsLibraryStore', () => {
         zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
             'hasAgencyScope',
         ]);
+
         store = new DealsStore(
             dealsServiceStub,
             sourcesServiceStub,

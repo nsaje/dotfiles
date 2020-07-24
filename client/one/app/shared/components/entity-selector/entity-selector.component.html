@@ -1,0 +1,32 @@
+<zem-select-list
+    class="zem-select-list zem-entity-selector__list"
+    [selectedItems]="selectedGroupedEntities"
+    [availableItems]="filteredAvaialableEntities"
+    [selectBindValue]="'id'"
+    [selectBindLabel]="'name'"
+    [selectPlaceholder]="'Add account, campaign, ad group'"
+    [selectGroupByValue]="'type'"
+    [appendTo]="appendTo"
+    (itemSelect)="addEntity.emit($event)"
+    (search)="onSearchEntities($event)"
+    (open)="entitySelectorOpen.emit()"
+>
+    <ng-template #selectGroupTemplate let-item="item">
+        {{ entityTypeNames[item.type] }}
+    </ng-template>
+    <ng-template #itemTemplate let-item="item" let-index="index">
+        <div class="zem-entity-selector__list-title">
+            {{ entityTypeNames[item.type] }}
+        </div>
+        <div
+            *ngFor="let entity of item.entities"
+            class="zem-entity-selector__list-item"
+        >
+            <span>{{ entity.name }}</span>
+            <button
+                class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
+                (click)="removeEntity.emit(entity)"
+            ></button>
+        </div>
+    </ng-template>
+</zem-select-list>

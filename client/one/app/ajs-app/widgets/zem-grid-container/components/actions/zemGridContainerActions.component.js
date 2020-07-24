@@ -17,6 +17,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.constants = constants;
         $ctrl.selectedRows = [];
         $ctrl.level = undefined;
+        $ctrl.agencyId = undefined;
         $ctrl.accountId = undefined;
         $ctrl.campaignId = undefined;
         $ctrl.adGroupId = undefined;
@@ -48,6 +49,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 constants.entityType.AD_GROUP
             );
 
+            $ctrl.agencyId = account
+                ? (account.data || {}).agencyId
+                : undefined;
             $ctrl.accountId = account ? account.id : undefined;
             $ctrl.campaignId = campaign ? campaign.id : undefined;
             $ctrl.adGroupId = adGroup ? adGroup.id : undefined;

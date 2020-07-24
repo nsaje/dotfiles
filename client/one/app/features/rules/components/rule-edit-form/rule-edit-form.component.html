@@ -1,34 +1,11 @@
 <ng-container *ngIf="store.state$ | async as state">
     <div class="zem-rule-edit-form__section">
-        <div class="zem-rule-edit-form__section-header">
-            <div class="zem-rule-edit-form__section-title">
-                Run rule on:
-                <span class="zem-rule-edit-form__section-title--underline">{{
-                    title
-                }}</span>
-            </div>
-            <div
-                class="zem-rule-edit-form__section-header-actions"
-                [hidden]="true"
-            >
-                <button
-                    class="button button--outline button--small button--with-icon button--only-icon edit-icon"
-                ></button>
-            </div>
-        </div>
-
-        <div class="zem-rule-edit-form__section-description">
-            Determines the set of accounts, campaigns or ad groups on which the
-            rule will run.<br />
-            Only active entities are considered.
-        </div>
-    </div>
-    <div class="zem-rule-edit-form__section">
         <zem-text-form-group
             class="zem-rule-edit-form__section-item zem-text-form-group zem-rule-edit-form__text-setting"
             label="Rule name"
             [value]="state.rule.name"
             [errors]="state.fieldsErrors?.name"
+            [isDisabled]="state.isReadOnly"
             (valueChange)="store.setRuleName($event)"
         >
         </zem-text-form-group>
@@ -37,8 +14,34 @@
     <hr />
 
     <div class="zem-rule-edit-form__section">
+        <div class="zem-rule-edit-form__section-header">
+            <div class="zem-rule-edit-form__section-title">
+                Run rule on
+            </div>
+        </div>
+        <div class="zem-rule-edit-form__section-description">
+            Determines the set of accounts, campaigns or ad groups on which the
+            rule will run.<br />
+            Only active entities are considered.
+        </div>
+        <zem-entity-selector
+            class="zem-rule-edit-form-entity-selector"
+            [appendTo]="'body'"
+            [selectedEntities]="selectedRuleEntities"
+            [availableEntities]="state.availableEntities"
+            (searchEntities)="store.searchEntities($event)"
+            (addEntity)="store.addRuleEntity($event)"
+            (removeEntity)="store.removeRuleEntity($event)"
+            (entitySelectorOpen)="store.clearAvailableEntities()"
+        >
+        </zem-entity-selector>
+    </div>
+
+    <hr />
+
+    <div class="zem-rule-edit-form__section">
         <div class="zem-rule-edit-form__section-title">
-            Set action for your rule:
+            Set action for your rule
         </div>
         <zem-rule-edit-form-action
             class="zem-rule-edit-form__section-item zem-rule-edit-form-action"
@@ -62,6 +65,7 @@
             [sendEmailSubjectErrors]="state.fieldsErrors?.sendEmailSubject"
             [sendEmailBodyErrors]="state.fieldsErrors?.sendEmailBody"
             [publisherGroupIdErrors]="state.fieldsErrors?.publisherGroupId"
+            [isDisabled]="state.isReadOnly"
             (targetActionChange)="store.setRuleTargetAction($event)"
             (actionFrequencyChange)="store.setRuleActionFrequency($event)"
             (changeStepChange)="store.setRuleChangeStep($event)"
@@ -84,7 +88,7 @@
                 hasConditionsErrors()
             "
         >
-            Conditions:
+            Conditions
         </div>
         <div class="zem-rule-edit-form__section-description">
             All of the following conditions must match.
@@ -94,6 +98,7 @@
             [ruleConditions]="state.rule.conditions"
             [availableConditions]="state.availableConditions"
             [ruleConditionsErrors]="state.fieldsErrors?.conditions"
+            [isDisabled]="state.isReadOnly"
             (ruleConditionAdd)="store.addCondition($event)"
             (ruleConditionChange)="store.updateCondition($event)"
             (ruleConditionRemove)="store.removeCondition($event)"
@@ -109,6 +114,7 @@
             [items]="availableTimeRanges"
             [isSearchable]="false"
             [isClearable]="false"
+            [isDisabled]="state.isReadOnly"
             (valueChange)="store.setRuleTimeRange($event)"
             [appendTo]="'body'"
         ></zem-select-form-group>
@@ -120,7 +126,7 @@
         class="zem-rule-edit-form__section"
         *ngIf="state.rule.actionType !== RuleActionType.SendEmail"
     >
-        <div class="zem-rule-edit-form__section-title">Notification:</div>
+        <div class="zem-rule-edit-form__section-title">Notification</div>
         <zem-rule-edit-form-notification
             class="zem-rule-edit-form__section-item zem-rule-edit-form-notification"
             [notificationType]="state.rule.notificationType"
@@ -129,6 +135,7 @@
             [notificationRecipientsErrors]="
                 state.fieldsErrors?.notificationRecipients
             "
+            [isDisabled]="state.isReadOnly"
             (notificationTypeChange)="store.setRuleNotificationType($event)"
             (notificationRecipientsChange)="
                 store.setRuleNotificationRecipients($event)
@@ -136,4 +143,69 @@
         >
         </zem-rule-edit-form-notification>
     </div>
+
+    <hr />
+
+    <zem-expandable-section
+        class="zem-expandable-section zem-rule-edit-form__expandable-section"
+        [expandedByDefault]="false"
+        [expandLabel]="'Show advanced settings'"
+        [collapseLabel]="'Hide advanced settings'"
+    >
+        <div class="zem-rule-edit-form__section">
+            <div class="zem-rule-edit-form__section-header">
+                <label>
+                    Scope selector
+                    <zem-help-popover
+                        class="zem-help-popover"
+                        content="Use scope to control where your rule can be used."
+                        placement="bottom"
+                    ></zem-help-popover>
+                </label>
+            </div>
+            <zem-scope-selector
+                class="zem-scope-selector"
+                [scopeState]="state.scopeState"
+                [agencyErrors]="state.fieldsErrors?.agencyId"
+                [accountErrors]="state.fieldsErrors?.accountId"
+                [isAgencyScopeDisabled]="
+                    !state.hasAgencyScope || state.isReadOnly
+                "
+                [isAccountScopeDisabled]="state.isReadOnly"
+                (scopeStateChange)="store.setRuleScope($event)"
+            >
+                <ng-template #agencyScopeHeaderTemplate>
+                    <strong>Agency</strong><br />
+                    <span class="zem-radio-input__deemphasized-label-text"
+                        >You will be able to use the rule on the entire agency
+                        and all accounts, campaigns and ad groups.</span
+                    >
+                </ng-template>
+                <ng-template #accountScopeHeaderTemplate>
+                    <strong>Account</strong><br />
+                    <span class="zem-radio-input__deemphasized-label-text"
+                        >You will be able to use the rule on the selected
+                        account and all campaigns and ad groups belonging to the
+                        selected account.</span
+                    >
+                </ng-template>
+                <ng-template #accountScopeContentTemplate>
+                    <zem-select-input
+                        class="zem-select-input"
+                        [items]="state.accounts"
+                        [placeholder]="'Select account'"
+                        [value]="state.rule.accountId"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [appendTo]="'body'"
+                        [isClearable]="false"
+                        [isSearchable]="true"
+                        [isDisabled]="state.isReadOnly"
+                        (valueChange)="store.setRuleAccount($event)"
+                    >
+                    </zem-select-input>
+                </ng-template>
+            </zem-scope-selector>
+        </div>
+    </zem-expandable-section>
 </ng-container>

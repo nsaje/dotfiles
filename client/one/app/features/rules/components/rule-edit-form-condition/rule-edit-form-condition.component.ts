@@ -40,6 +40,8 @@ export class RuleEditFormConditionComponent implements OnChanges {
     availableConditions: RuleConditionConfig[];
     @Input()
     conditionErrors: RuleConditionError;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     conditionChange = new EventEmitter<ChangeEvent<RuleCondition>>();
     @Output()

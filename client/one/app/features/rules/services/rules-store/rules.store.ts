@@ -120,6 +120,10 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
             });
     }
 
+    setActiveEntity(rule: Partial<Rule>) {
+        this.patchState(rule, 'activeEntity');
+    }
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();

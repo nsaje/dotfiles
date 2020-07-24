@@ -33,7 +33,10 @@
     <zem-rule-actions
         ng-if="$ctrl.areRuleActionsVisible()"
         class="zem-rule-actions button-bar-item"
+        [agency-id]="$ctrl.agencyId"
+        [account-id]="$ctrl.accountId"
         [entity-id]="$ctrl.entity.id"
+        [entity-name]="$ctrl.entity.name"
         [entity-type]="$ctrl.entity.type"
     ></zem-rule-actions>
 

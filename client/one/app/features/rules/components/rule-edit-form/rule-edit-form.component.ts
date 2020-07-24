@@ -5,16 +5,20 @@ import {
     ChangeDetectionStrategy,
     OnInit,
     Input,
-    Inject,
     Output,
     EventEmitter,
     AfterViewInit,
+    OnChanges,
 } from '@angular/core';
 import {RuleEditFormStore} from './services/rule-edit-form.store';
 import {EntityType} from '../../../../app.constants';
 import {RuleActionType} from '../../../../core/rules/rules.constants';
 import {RULE_TARGET_TYPES, TIME_RANGES} from '../../rules.config';
 import {RuleEditFormApi} from './types/rule-edit-form-api';
+import {Rule} from '../../../../core/rules/types/rule';
+import {EntitySelectorItem} from '../../../../shared/components/entity-selector/types/entity-selector-item';
+import {map, distinctUntilChanged, takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
     selector: 'zem-rule-edit-form',
@@ -24,11 +28,17 @@ import {RuleEditFormApi} from './types/rule-edit-form-api';
 })
 export class RuleEditFormComponent implements OnInit, AfterViewInit {
     @Input()
+    agencyId: string | null = null;
+    @Input()
+    accountId: string | null = null;
+    @Input()
     entityId: string;
+    @Input()
+    entityName: string;
     @Input()
     entityType: EntityType;
     @Input()
-    agencyId: string;
+    rule: Partial<Rule>;
     @Output()
     componentReady = new EventEmitter<RuleEditFormApi>();
 
@@ -37,17 +47,31 @@ export class RuleEditFormComponent implements OnInit, AfterViewInit {
     availableTargetTypes = RULE_TARGET_TYPES;
     availableTimeRanges = TIME_RANGES;
 
-    constructor(
-        public store: RuleEditFormStore,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
-    ) {}
+    selectedRuleEntities: EntitySelectorItem[] = [];
+
+    private ngUnsubscribe$: Subject<void> = new Subject();
+
+    constructor(public store: RuleEditFormStore) {}
 
     ngOnInit(): void {
-        // TODO (automation-rules): Remove when entity selector gets implemented
-        const activeAccount = this.zemNavigationNewService.getActiveAccount();
-        const agencyId = (activeAccount.data || {}).agencyId;
-        this.title = this.getTitle(this.entityId, this.entityType);
-        this.store.initStore(agencyId, this.entityId);
+        this.store.initStore(
+            this.agencyId,
+            this.accountId,
+            this.rule,
+            this.entityId,
+            this.entityName,
+            this.entityType
+        );
+
+        this.store.state$
+            .pipe(
+                map(state => state.rule.entities),
+                distinctUntilChanged(),
+                takeUntil(this.ngUnsubscribe$)
+            )
+            .subscribe(() => {
+                this.selectedRuleEntities = this.store.getRuleEntitySelectorItems();
+            });
     }
 
     ngAfterViewInit(): void {
@@ -66,14 +90,5 @@ export class RuleEditFormComponent implements OnInit, AfterViewInit {
             this.store.state.fieldsErrors.conditions &&
             this.store.state.fieldsErrors.conditions.length > 0
         );
-    }
-
-    private getTitle(entityId: string, entityType: EntityType): string {
-        if (entityType === EntityType.CAMPAIGN) {
-            return `All ad groups of campaign ${entityId}`;
-        } else if (entityType === EntityType.AD_GROUP) {
-            return `Ad group ${entityId}`;
-        }
-        return 'NOT SUPPORTED';
     }
 }

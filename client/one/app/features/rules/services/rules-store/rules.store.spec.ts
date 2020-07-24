@@ -194,4 +194,10 @@ describe('RulesLibraryStore', () => {
         );
         expect(store.state.entities[0].state).toEqual(RuleState.PAUSED);
     }));
+
+    it('should correctly set activeEntity', () => {
+        store.setActiveEntity(mockedRules[0]);
+
+        expect(store.state.activeEntity).toEqual(mockedRules[0]);
+    });
 });

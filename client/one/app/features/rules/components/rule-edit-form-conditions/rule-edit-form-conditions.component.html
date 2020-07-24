@@ -8,6 +8,7 @@
     [ruleCondition]="ruleCondition"
     [availableConditions]="availableConditions"
     [conditionErrors]="perConditionErrors[i]"
+    [isDisabled]="isDisabled"
     (conditionChange)="onConditionChange($event)"
     (conditionRemove)="onConditionRemove($event)"
 >
@@ -15,7 +16,7 @@
 <div class="zem-rule-edit-form__section-item">
     <button
         class=" button button--highlight button--with-icon add-icon zem-rule-edit-form__conditions-button"
-        [disabled]="availableConditions.length === 0"
+        [disabled]="availableConditions.length === 0 || isDisabled"
         (click)="addCondition()"
     >
         Add condition

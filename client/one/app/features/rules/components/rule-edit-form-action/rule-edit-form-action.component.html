@@ -8,6 +8,7 @@
     groupByValue="group"
     [isSearchable]="false"
     [isClearable]="false"
+    [isDisabled]="isDisabled"
     [errors]="actionTypeErrors"
     (valueChange)="selectTargetAndActionType($event)"
     [appendTo]="'body'"
@@ -26,6 +27,7 @@
         [fractionSize]="2"
         [hasError]="changeStepErrors && changeStepErrors.length > 0"
         [zemPopover]="inputHelpText"
+        [isDisabled]="isDisabled"
         triggers="mouseenter:mouseleave"
         placement="right"
         (inputBlur)="updateChangeStep($event, actionType)"
@@ -45,6 +47,7 @@
         [fractionSize]="2"
         [hasError]="changeLimitErrors && changeLimitErrors.length > 0"
         [zemPopover]="inputHelpText"
+        [isDisabled]="isDisabled"
         triggers="mouseenter:mouseleave"
         placement="right"
         (inputBlur)="updateChangeLimit($event, actionType)"
@@ -64,6 +67,7 @@
     [isSearchable]="true"
     [isClearable]="false"
     [errors]="publisherGroupIdErrors"
+    [isDisabled]="isDisabled"
     (valueChange)="updatePublisherGroup($event)"
     (search)="publisherGroupsSearch.emit($event)"
     (open)="publisherGroupsOpen.emit()"
@@ -85,6 +89,7 @@
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="actionFrequencyErrors"
+    [isDisabled]="isDisabled"
     (valueChange)="selectActionFrequency($event)"
     [appendTo]="'body'"
 ></zem-select-form-group>
@@ -102,6 +107,7 @@
                 (inputFocus)="setShouldAppendMacroToSubject(true)"
                 (valueChange)="updateSendEmailSubject($event)"
                 [errors]="sendEmailSubjectErrors"
+                [isDisabled]="isDisabled"
             ></zem-textarea-form-group>
             <zem-textarea-form-group
                 class="zem-rule-edit-form__section-item zem-textarea-form-group"
@@ -111,6 +117,7 @@
                 (valueChange)="updateSendEmailBody($event)"
                 (inputFocus)="setShouldAppendMacroToSubject(false)"
                 [errors]="sendEmailBodyErrors"
+                [isDisabled]="isDisabled"
             ></zem-textarea-form-group>
             <zem-text-form-group
                 class="zem-rule-edit-form__section-item zem-textarea-form-group"
@@ -118,6 +125,7 @@
                 [value]="sendEmailRecipients"
                 (valueChange)="updateSendEmailRecipients($event)"
                 [errors]="sendEmailRecipientsErrors"
+                [isDisabled]="isDisabled"
             ></zem-text-form-group>
             <div
                 class="zem-rule-edit-form__section-description zem-rule-edit-form__section-item"
@@ -135,6 +143,7 @@
                 [items]="EMAIL_MACROS"
                 [isSearchable]="false"
                 [isClearable]="true"
+                [isDisabled]="isDisabled"
                 (valueChange)="selectMacro($event)"
                 [appendTo]="'body'"
             ></zem-select-form-group>

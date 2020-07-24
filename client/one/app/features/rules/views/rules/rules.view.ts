@@ -7,6 +7,7 @@ import {
     OnDestroy,
     HostBinding,
     Inject,
+    ViewChild,
 } from '@angular/core';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {Subject} from 'rxjs';
@@ -21,6 +22,8 @@ import {
     PAGINATION_URL_PARAMS,
 } from '../../rules.config';
 import {Rule} from '../../../../core/rules/types/rule';
+import {ModalComponent} from '../../../../shared/components/modal/modal.component';
+import {RuleEditFormApi} from '../../components/rule-edit-form/types/rule-edit-form-api';
 
 @Component({
     selector: 'zem-rules-view',
@@ -31,13 +34,18 @@ import {Rule} from '../../../../core/rules/types/rule';
 export class RulesView implements OnInit, OnDestroy {
     @HostBinding('class')
     cssClass = 'zem-rules-view';
+    @ViewChild('editRuleModal', {static: false})
+    editRuleModal: ModalComponent;
 
     context: any;
 
     keyword: string;
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
 
+    isRuleSaveInProgress: boolean = false;
+
     private ngUnsubscribe$: Subject<void> = new Subject();
+    private ruleEditFormApi: RuleEditFormApi;
 
     constructor(
         public store: RulesStore,
@@ -104,6 +112,40 @@ export class RulesView implements OnInit, OnDestroy {
         } else {
             this.store.pauseRule(rule.id);
         }
+    }
+
+    saveRule(): void {
+        this.isRuleSaveInProgress = true;
+        this.ruleEditFormApi
+            .executeSave()
+            .then(() => {
+                this.store.loadEntities(
+                    this.paginationOptions.page,
+                    this.paginationOptions.pageSize,
+                    this.keyword
+                );
+                this.isRuleSaveInProgress = false;
+                this.editRuleModal.close();
+            })
+            .catch(() => {
+                this.isRuleSaveInProgress = false;
+            });
+    }
+
+    onRuleEditFormReady(ruleEditFormApi: RuleEditFormApi) {
+        this.ruleEditFormApi = ruleEditFormApi;
+    }
+
+    openEditRuleModal(rule: Partial<Rule>) {
+        if (commonHelpers.isDefined(rule.id)) {
+            this.store.setActiveEntity(rule);
+        }
+        this.editRuleModal.open();
+    }
+
+    closeEditRuleModal() {
+        this.store.setActiveEntity({});
+        this.editRuleModal.close();
     }
 
     private updateInternalState(queryParams: any) {

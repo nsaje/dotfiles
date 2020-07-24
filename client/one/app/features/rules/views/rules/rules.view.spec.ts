@@ -13,6 +13,12 @@ import {RulesEndpoint} from '../../../../core/rules/services/rules.endpoint';
 import {RulesStore} from '../../services/rules-store/rules.store';
 import {RulesGridComponent} from '../../components/rules-grid/rules-grid.component';
 import {RulesActionsComponent} from '../../components/rules-actions/rules-actions.component';
+import {RuleEditFormComponent} from '../../components/rule-edit-form/rule-edit-form.component';
+import {RuleEditFormActionComponent} from '../../components/rule-edit-form-action/rule-edit-form-action.component';
+import {RuleEditFormConditionComponent} from '../../components/rule-edit-form-condition/rule-edit-form-condition.component';
+import {RuleEditFormConditionModifierComponent} from '../../components/rule-edit-form-condition-modifier/rule-edit-form-condition-modifier.component';
+import {RuleEditFormNotificationComponent} from '../../components/rule-edit-form-notification/rule-edit-form-notification.component';
+import {RuleEditFormConditionsComponent} from '../../components/rule-edit-form-conditions/rule-edit-form-conditions.component';
 
 describe('RulesView', () => {
     let component: RulesView;
@@ -31,6 +37,12 @@ describe('RulesView', () => {
                 RulesView,
                 RulesGridComponent,
                 RulesActionsComponent,
+                RuleEditFormComponent,
+                RuleEditFormActionComponent,
+                RuleEditFormConditionComponent,
+                RuleEditFormConditionModifierComponent,
+                RuleEditFormNotificationComponent,
+                RuleEditFormConditionsComponent,
             ],
             imports: [
                 FormsModule,

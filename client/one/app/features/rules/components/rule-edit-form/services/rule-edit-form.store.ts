@@ -9,17 +9,13 @@ import {
     RuleActionFrequency,
 } from '../../../../../core/rules/rules.constants';
 import {RuleCondition} from '../../../../../core/rules/types/rule-condition';
-import {RuleActionConfig} from '../../../../../core/rules/types/rule-action-config';
-import {
-    RULE_ACTIONS_OPTIONS,
-    RULE_CONDITIONS_OPTIONS,
-} from '../../../rules.config';
+import {RULE_CONDITIONS_OPTIONS, ENTITY_TYPE_TEXT} from '../../../rules.config';
 import {PublisherGroupsService} from '../../../../../core/publisher-groups/services/publisher-groups.service';
 import {RulesService} from '../../../../../core/rules/services/rules.service';
 import {RuleConditionConfig} from '../../../../../core/rules/types/rule-condition-config';
 import * as storeHelpers from '../../../../../shared/helpers/store.helpers';
 import {RequestStateUpdater} from '../../../../../shared/types/request-state-updater';
-import {Injectable, OnDestroy} from '@angular/core';
+import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {ChangeEvent} from '../../../../../shared/types/change-event';
@@ -27,6 +23,18 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {RulesEditFormStoreFieldsErrorsState} from './rule-edit-form.fields-errors-state';
 import {PublisherGroup} from '../../../../../core/publisher-groups/types/publisher-group';
 import * as commonHelpers from '../../../../../shared/helpers/common.helpers';
+import {Rule} from '../../../../../core/rules/types/rule';
+import {AccountService} from '../../../../../core/entities/services/account/account.service';
+import {Account} from '../../../../../core/entities/types/account/account';
+import {ScopeSelectorState} from '../../../../../shared/components/scope-selector/scope-selector.constants';
+import {RuleEntity} from '../../../../../core/rules/types/rule-entity';
+import {AdGroupService} from '../../../../../core/entities/services/ad-group/ad-group.service';
+import {CampaignService} from '../../../../../core/entities/services/campaign/campaign.service';
+import {AdGroup} from '../../../../../core/entities/types/ad-group/ad-group';
+import {Campaign} from '../../../../../core/entities/types/campaign/campaign';
+import * as clone from 'clone';
+import {EntityType} from '../../../../../app.constants';
+import {EntitySelectorItem} from '../../../../../shared/components/entity-selector/types/entity-selector-item';
 
 @Injectable()
 export class RuleEditFormStore extends Store<RuleEditFormStoreState>
@@ -34,10 +42,17 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
     private publisherGroupsRequestStateUpdater: RequestStateUpdater;
+    private accountsRequestStateUpdater: RequestStateUpdater;
+    private campaignsRequestStateUpdater: RequestStateUpdater;
+    private adGroupsRequestStateUpdater: RequestStateUpdater;
 
     constructor(
         private rulesService: RulesService,
-        private publisherGroupsService: PublisherGroupsService
+        private publisherGroupsService: PublisherGroupsService,
+        private accountService: AccountService,
+        private campaignService: CampaignService,
+        private adGroupService: AdGroupService,
+        @Inject('zemPermissions') private zemPermissions: any
     ) {
         super(new RuleEditFormStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -47,45 +62,83 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
             this,
             'publisherGroupsRequests'
         );
+        this.accountsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'accountsRequests'
+        );
+        this.campaignsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'campaignsRequests'
+        );
+        this.adGroupsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
+            this,
+            'adGroupsRequests'
+        );
     }
 
-    initStore(agencyId: string, adGroupId: string) {
-        this.setState({
-            ...this.state,
-            agencyId: agencyId,
-            rule: {
-                ...this.state.rule,
-                agencyId: agencyId,
-                accountId: null,
-                entities: {
-                    ...this.state.rule.entities,
-                    adGroups: {
-                        ...this.state.rule.entities.adGroups,
-                        included: [{id: adGroupId}],
-                    },
-                },
-            },
-        });
-    }
+    initStore(
+        agencyId: string | null,
+        accountId: string | null,
+        rule: Partial<Rule>,
+        entityId: string,
+        entityName: string,
+        entityType: EntityType
+    ) {
+        const hasAgencyScope = this.zemPermissions.hasAgencyScope(agencyId);
 
-    saveEntity(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.rulesService
-                .save(this.state.rule, this.requestStateUpdater)
-                .pipe(takeUntil(this.ngUnsubscribe$))
-                .subscribe(
-                    () => {
-                        resolve();
+        this.loadAccounts(agencyId).then(accounts => {
+            if (commonHelpers.isDefined(rule.id)) {
+                this.setState({
+                    ...this.state,
+                    agencyId: agencyId,
+                    accountId: accountId,
+                    isReadOnly: this.isRuleReadOnly(rule, hasAgencyScope),
+                    hasAgencyScope: hasAgencyScope,
+                    scopeState: rule.agencyId
+                        ? ScopeSelectorState.AGENCY_SCOPE
+                        : ScopeSelectorState.ACCOUNT_SCOPE,
+                    availableConditions: rule.targetType
+                        ? this.getConditionsForTarget(rule.targetType)
+                        : null,
+                    rule: {
+                        ...this.state.rule,
+                        ...rule,
                     },
-                    (error: HttpErrorResponse) => {
-                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new RulesEditFormStoreFieldsErrorsState(),
-                            error
-                        );
-                        this.patchState(fieldsErrors, 'fieldsErrors');
-                        reject();
-                    }
-                );
+                    accounts: accounts,
+                });
+            } else {
+                let entities = {...this.state.rule.entities};
+
+                const ruleEntityType = ENTITY_TYPE_TEXT[entityType];
+                if (ruleEntityType) {
+                    entities = {
+                        ...this.state.rule.entities,
+                        [ruleEntityType]: {
+                            included: [{id: entityId, name: entityName}],
+                        },
+                    };
+                }
+
+                this.setState({
+                    ...this.state,
+                    agencyId: agencyId,
+                    accountId: accountId,
+                    hasAgencyScope: hasAgencyScope,
+                    isReadOnly: false,
+                    scopeState:
+                        agencyId && hasAgencyScope
+                            ? ScopeSelectorState.AGENCY_SCOPE
+                            : ScopeSelectorState.ACCOUNT_SCOPE,
+                    rule: {
+                        ...this.state.rule,
+                        agencyId: agencyId && hasAgencyScope,
+                        accountId:
+                            agencyId && hasAgencyScope ? null : accountId,
+                        entities: entities,
+                    },
+                    accounts: accounts,
+                });
+            }
         });
     }
 
@@ -237,6 +290,31 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         this.patchState(recipientsList, 'rule', 'notificationRecipients');
     }
 
+    setRuleScope(scopeState: ScopeSelectorState) {
+        this.setState({
+            ...this.state,
+            scopeState: scopeState,
+            rule: {
+                ...this.state.rule,
+                agencyId:
+                    scopeState === ScopeSelectorState.AGENCY_SCOPE
+                        ? this.state.agencyId
+                        : null,
+                accountId:
+                    scopeState === ScopeSelectorState.ACCOUNT_SCOPE
+                        ? commonHelpers.getValueOrDefault(
+                              this.state.accountId,
+                              this.state.accounts[0].id
+                          )
+                        : null,
+            },
+        });
+    }
+
+    setRuleAccount(accountId: string) {
+        this.patchState(accountId, 'rule', 'accountId');
+    }
+
     loadAvailablePublisherGroups(keyword: string | null) {
         return new Promise<void>((resolve, reject) => {
             const isKeywordDefined = commonHelpers.isDefined(keyword);
@@ -263,6 +341,205 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     }
                 );
         });
+    }
+
+    getRuleEntitySelectorItems(): EntitySelectorItem[] {
+        const entities: EntitySelectorItem[] = [];
+        [EntityType.ACCOUNT, EntityType.CAMPAIGN, EntityType.AD_GROUP].forEach(
+            entityType => {
+                const ruleEntityType = ENTITY_TYPE_TEXT[entityType];
+                entities.push(
+                    ...(
+                        this.state.rule.entities[ruleEntityType]?.included || []
+                    ).map((ruleEntity: RuleEntity) => {
+                        return {
+                            id: ruleEntity.id,
+                            name: ruleEntity.name,
+                            type: entityType,
+                        };
+                    })
+                );
+            }
+        );
+        return entities;
+    }
+
+    searchEntities(keyword: string): void {
+        keyword = keyword ? keyword.trim() : null; // TODO katrca: is this necessary? also, if keyword is null, do we even need to call the BE?
+        Promise.all([
+            this.loadAccounts(this.state.agencyId, keyword),
+            this.loadCampaigns(
+                this.state.agencyId,
+                this.state.accountId,
+                keyword
+            ),
+            this.loadAdGroups(
+                this.state.agencyId,
+                this.state.accountId,
+                keyword
+            ),
+        ]).then((values: [Account[], Campaign[], AdGroup[]]) => {
+            const entityItems: EntitySelectorItem[] = [];
+            [
+                EntityType.ACCOUNT,
+                EntityType.CAMPAIGN,
+                EntityType.AD_GROUP,
+            ].forEach((entityType, index) => {
+                entityItems.push(
+                    ...(values[index] as Array<
+                        Account | Campaign | AdGroup
+                    >).map(entity => {
+                        return {
+                            id: entity.id,
+                            name: entity.name,
+                            type: entityType,
+                        };
+                    })
+                );
+            });
+            this.patchState(entityItems, 'availableEntities');
+        });
+    }
+
+    clearAvailableEntities() {
+        this.patchState([], 'availableEntities');
+    }
+
+    addRuleEntity(entitySelectorItem: EntitySelectorItem): void {
+        const ruleEntity: RuleEntity = {
+            id: entitySelectorItem.id,
+            name: entitySelectorItem.name,
+        };
+
+        const entities = clone(this.state.rule.entities);
+        const ruleEntityType = ENTITY_TYPE_TEXT[entitySelectorItem.type];
+        entities[ruleEntityType].included.push(ruleEntity);
+
+        this.patchState(entities, 'rule', 'entities');
+    }
+
+    removeRuleEntity(entitySelectorItem: EntitySelectorItem): void {
+        const entities = clone(this.state.rule.entities);
+        const ruleEntityType = ENTITY_TYPE_TEXT[entitySelectorItem.type];
+        const entityRemoveIndex = entities[ruleEntityType].included.findIndex(
+            (entity: RuleEntity) => entity.id === entitySelectorItem.id
+        );
+        if (entityRemoveIndex !== -1) {
+            entities[ruleEntityType].included.splice(entityRemoveIndex, 1);
+            this.patchState(entities, 'rule', 'entities');
+        }
+        this.patchState(entities, 'rule', 'entities');
+    }
+
+    saveEntity(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.rulesService
+                .save(this.state.rule, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    (error: HttpErrorResponse) => {
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new RulesEditFormStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.patchState(fieldsErrors, 'fieldsErrors');
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private loadAccounts(
+        agencyId: string,
+        keyword: string | null = null
+    ): Promise<Account[]> {
+        return new Promise<Account[]>((resolve, reject) => {
+            this.accountService
+                .list(
+                    agencyId,
+                    null,
+                    null,
+                    keyword,
+                    this.accountsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (accounts: Account[]) => {
+                        resolve(accounts);
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private loadCampaigns(
+        agencyId: string,
+        accountId: string,
+        keyword: string | null
+    ): Promise<Campaign[]> {
+        return new Promise<Campaign[]>((resolve, reject) => {
+            this.campaignService
+                .list(
+                    agencyId,
+                    accountId,
+                    null,
+                    null,
+                    keyword,
+                    this.campaignsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (campaigns: Campaign[]) => {
+                        resolve(campaigns);
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private loadAdGroups(
+        agencyId: string,
+        accountId: string,
+        keyword: string | null
+    ): Promise<AdGroup[]> {
+        return new Promise<AdGroup[]>((resolve, reject) => {
+            this.adGroupService
+                .list(
+                    agencyId,
+                    accountId,
+                    null,
+                    null,
+                    keyword,
+                    this.adGroupsRequestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (adGroups: AdGroup[]) => {
+                        resolve(adGroups);
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
+    }
+
+    private isRuleReadOnly(
+        rule: Partial<Rule>,
+        hasAgencyScope: boolean
+    ): boolean {
+        if (!hasAgencyScope && rule.agencyId) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private getConditionsForTarget(

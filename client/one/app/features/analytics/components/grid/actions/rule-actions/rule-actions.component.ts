@@ -5,7 +5,6 @@ import {
     ChangeDetectionStrategy,
     ViewChild,
     Input,
-    Inject,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {DropdownDirective} from '../../../../../../shared/components/dropdown/dropdown.directive';
@@ -13,7 +12,6 @@ import {ModalComponent} from '../../../../../../shared/components/modal/modal.co
 import {EntityType, RoutePathName} from '../../../../../../app.constants';
 import {RuleEditFormApi} from '../../../../../rules/components/rule-edit-form/types/rule-edit-form-api';
 import {Router} from '@angular/router';
-import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-rule-actions',
@@ -22,7 +20,13 @@ import * as commonHelpers from '../../../../../../shared/helpers/common.helpers'
 })
 export class RuleActionsComponent {
     @Input()
+    agencyId: string;
+    @Input()
+    accountId: string;
+    @Input()
     entityId: string;
+    @Input()
+    entityName: string;
     @Input()
     entityType: EntityType;
 
@@ -35,10 +39,7 @@ export class RuleActionsComponent {
 
     private ruleEditFormApi: RuleEditFormApi;
 
-    constructor(
-        private router: Router,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
-    ) {}
+    constructor(private router: Router) {}
 
     openModal(): void {
         this.ruleActionsDropdown.close();
@@ -59,25 +60,12 @@ export class RuleActionsComponent {
     }
 
     navigateToRulesView(): void {
-        const activeAccount = this.zemNavigationNewService.getActiveAccount();
-
-        if (commonHelpers.isDefined(activeAccount)) {
-            this.router.navigate(
-                [RoutePathName.APP_BASE, RoutePathName.RULES],
-                {
-                    queryParams: {
-                        agencyId: activeAccount.data.agencyId,
-                        accountId: activeAccount.id,
-                    },
-                }
-            );
-        } else {
-            this.router.navigate([RoutePathName.APP_BASE, RoutePathName.RULES]);
-        }
-    }
-
-    cancel(): void {
-        this.ruleModal.close();
+        this.router.navigate([RoutePathName.APP_BASE, RoutePathName.RULES], {
+            queryParams: {
+                agencyId: this.agencyId,
+                accountId: this.accountId,
+            },
+        });
     }
 
     onRuleEditFormReady($event: RuleEditFormApi) {

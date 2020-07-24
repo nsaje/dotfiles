@@ -33,6 +33,8 @@ export class RuleEditFormConditionModifierComponent implements OnChanges {
     valueModifier: RuleConditionOperandValueModifier;
     @Input()
     modifierErrors: FieldErrors[];
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
     @Output()

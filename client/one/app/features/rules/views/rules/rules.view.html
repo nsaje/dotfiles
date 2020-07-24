@@ -5,7 +5,9 @@
         <zem-rules-actions
             class="zem-rules-actions zem-rules-view__item"
             [value]="keyword"
+            [isDisabled]="!state.agencyId"
             (search)="searchRules($event)"
+            (ruleCreate)="openEditRuleModal({})"
         >
         </zem-rules-actions>
         <zem-rules-grid
@@ -18,4 +20,52 @@
             (paginationChange)="onPaginationChange($event)"
         ></zem-rules-grid>
     </div>
+
+    <zem-modal
+        #editRuleModal
+        class="zem-modal zem-rules-view__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="editRuleModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">
+                    {{ !state.activeEntity.id ? 'Add new rule' : 'Edit rule' }}
+                </div>
+            </div>
+            <div class="zem-modal__body">
+                <zem-rule-edit-form
+                    class="zem-rule-edit-form"
+                    [agencyId]="state.agencyId"
+                    [accountId]="state.accountId"
+                    [rule]="state.activeEntity"
+                    (componentReady)="onRuleEditFormReady($event)"
+                >
+                </zem-rule-edit-form>
+            </div>
+            <div class="zem-modal__footer buttons-panel">
+                <button
+                    *ngIf="isRuleSaveInProgress"
+                    class="button button--highlight button--disabled"
+                    disabled
+                >
+                    <span class="loader loader--white"></span>
+                </button>
+                <button
+                    *ngIf="!isRuleSaveInProgress"
+                    class="button button--highlight button--with-icon check-icon"
+                    (click)="saveRule()"
+                >
+                    Save
+                </button>
+                <button
+                    class="button button--outline"
+                    [disabled]="isRuleSaveInProgress"
+                    (click)="closeEditRuleModal()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
 </ng-container>

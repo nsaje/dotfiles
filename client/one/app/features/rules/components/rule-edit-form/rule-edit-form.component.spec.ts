@@ -11,21 +11,23 @@ import {RulesService} from '../../../../core/rules/services/rules.service';
 import {RulesEndpoint} from '../../../../core/rules/services/rules.endpoint';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
 import {PublisherGroupsEndpoint} from '../../../../core/publisher-groups/services/publisher-groups.endpoint';
+import {AccountService} from '../../../../core/entities/services/account/account.service';
+import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
+import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
+import {noop} from 'rxjs';
+import {CampaignService} from '../../../../core/entities/services/campaign/campaign.service';
+import {CampaignEndpoint} from '../../../../core/entities/services/campaign/campaign.endpoint';
+import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
+import {AdGroupEndpoint} from '../../../../core/entities/services/ad-group/ad-group.endpoint';
 
 describe('RuleEditFormComponent', () => {
     let component: RuleEditFormComponent;
     let fixture: ComponentFixture<RuleEditFormComponent>;
-    let zemNavigationServiceStub: any;
+    let zemPermissionsStub: any;
 
     beforeEach(() => {
-        zemNavigationServiceStub = {
-            getActiveAccount: () => {
-                return {
-                    data: {
-                        agencyId: '123',
-                    },
-                };
-            },
+        zemPermissionsStub = {
+            hasAgencyScope: () => noop,
         };
         TestBed.configureTestingModule({
             declarations: [
@@ -42,9 +44,16 @@ describe('RuleEditFormComponent', () => {
                 PublisherGroupsEndpoint,
                 RulesService,
                 RulesEndpoint,
+                AccountService,
+                AccountEndpoint,
+                CampaignService,
+                CampaignEndpoint,
+                AdGroupService,
+                AdGroupEndpoint,
+                EntitiesUpdatesService,
                 {
-                    provide: 'zemNavigationNewService',
-                    useValue: zemNavigationServiceStub,
+                    provide: 'zemPermissions',
+                    useValue: zemPermissionsStub,
                 },
             ],
         });

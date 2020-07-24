@@ -15,6 +15,7 @@
             [value]="value"
             fractionSize="2"
             [hasError]="modifierErrors"
+            [isDisabled]="isDisabled"
             (inputBlur)="updateValue($event)"
         ></zem-decimal-input>
     </zem-prefixed-input>
@@ -42,12 +43,14 @@
         [items]="availableValueSigns"
         [isSearchable]="false"
         [isClearable]="false"
+        [isDisabled]="isDisabled"
         [hasError]="modifierErrors"
         (valueChange)="updateValue(value, $event)"
     ></zem-select-input>
     <zem-integer-input
         class="zem-integer-input zem-rule-edit-form-condition-modifier__value-modifier-item"
         [value]="value"
+        [isDisabled]="isDisabled"
         (inputBlur)="updateValue($event, valueSign)"
     ></zem-integer-input>
     <span class="zem-rule-edit-form-condition-modifier__value-modifier-item">
@@ -62,6 +65,7 @@
         *ngFor="let availableTimeRange of availableTimeRanges"
         [groupModel]="timeRange"
         [value]="availableTimeRange.value"
+        [isDisabled]="isDisabled"
         (select)="timeRangeChange.emit($event)"
     >
         {{ availableTimeRange.label }}

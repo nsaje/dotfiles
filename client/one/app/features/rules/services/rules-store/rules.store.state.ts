@@ -7,6 +7,7 @@ export class RulesStoreState {
     agencyId: string = null;
     accountId: string = null;
     hasAgencyScope: boolean = null;
+    activeEntity: Partial<Rule> = {};
     entities: Rule[] = [];
     fieldsErrors: RulesStoreFieldsErrorsState[] = [];
     accounts: Account[] = [];

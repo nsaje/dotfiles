@@ -34,7 +34,11 @@
         <div class="zem-modal__body">
             <zem-rule-edit-form
                 class="zem-rule-edit-form"
+                [agencyId]="agencyId"
+                [accountId]="accountId"
+                [rule]="{}"
                 [entityId]="entityId"
+                [entityName]="entityName"
                 [entityType]="entityType"
                 (componentReady)="onRuleEditFormReady($event)"
             ></zem-rule-edit-form>
@@ -57,7 +61,7 @@
             <button
                 class="button button--outline"
                 [disabled]="isSaveInProgress"
-                (click)="cancel()"
+                (click)="ruleModal.close()"
             >
                 Cancel
             </button>

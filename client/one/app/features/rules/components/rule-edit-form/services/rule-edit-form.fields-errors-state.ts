@@ -3,6 +3,8 @@ import {RuleConditionError} from '../types/rule-condition-error';
 
 export class RulesEditFormStoreFieldsErrorsState {
     id: FieldErrors = [];
+    agencyId: FieldErrors = [];
+    accountId: FieldErrors = [];
     name: FieldErrors = [];
     targetType: FieldErrors = [];
     actionType: FieldErrors = [];
@@ -13,4 +15,7 @@ export class RulesEditFormStoreFieldsErrorsState {
     conditions: RuleConditionError[] | string[];
     notificationType: FieldErrors = [];
     notificationRecipients: FieldErrors = [];
+    sendEmailRecipients: FieldErrors = [];
+    sendEmailSubject: FieldErrors = [];
+    sendEmailBody: FieldErrors = [];
 }

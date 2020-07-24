@@ -27,6 +27,10 @@ export class RuleActionsCellComponent implements ICellRendererAngularComp {
         this.params.context.componentParent.removeRule(this.rule);
     }
 
+    openEditRuleModal() {
+        this.params.context.componentParent.openEditRuleModal(this.rule);
+    }
+
     refresh(): boolean {
         return false;
     }

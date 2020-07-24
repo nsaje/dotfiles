@@ -9,6 +9,7 @@
         [hasError]="conditionErrors?.metric?.type"
         groupByValue="group"
         [isClearable]="false"
+        [isDisabled]="isDisabled"
         (valueChange)="selectMetricType($event)"
         [appendTo]="'body'"
     ></zem-select-input>
@@ -21,6 +22,7 @@
             [hasTimeRangeModifier]="selectedMetricConfig.hasTimeRangeModifier"
             [valueModifier]="selectedMetricConfig.valueModifier"
             [modifierErrors]="conditionErrors?.metric?.type"
+            [isDisabled]="isDisabled"
             (valueChange)="updateMetricModifier($event)"
             (timeRangeChange)="updateMetricWindow($event)"
         >
@@ -40,7 +42,7 @@
     bindLabel="label"
     bindValue="operator"
     [items]="availableOperators"
-    [isDisabled]="availableOperators.length === 0"
+    [isDisabled]="availableOperators.length === 0 || isDisabled"
     [isSearchable]="false"
     [isClearable]="false"
     [hasError]="conditionErrors?.operator"
@@ -58,6 +60,7 @@
         "
         [value]="ruleCondition.value.value"
         [hasError]="conditionErrors?.value?.value"
+        [isDisabled]="isDisabled"
         (inputBlur)="updateValueValue($event)"
     ></zem-integer-input>
     <zem-prefixed-input
@@ -74,6 +77,7 @@
         <zem-integer-input
             class="zem-decimal-input"
             [value]="ruleCondition.value.value"
+            [isDisabled]="isDisabled"
             (inputBlur)="updateValueValue($event)"
         ></zem-integer-input>
     </zem-prefixed-input>
@@ -88,6 +92,7 @@
         [value]="ruleCondition.value.value"
         [hasError]="conditionErrors?.value?.value"
         [fractionSize]="selectedValueConfig.fractionSize"
+        [isDisabled]="isDisabled"
         (inputBlur)="updateValueValue($event)"
     ></zem-decimal-input>
     <!-- TODO (automation-rules): Use zem-text-input component -->
@@ -101,6 +106,7 @@
             selectedValueConfig.dataType === DataType.String
         "
         [ngModel]="ruleCondition.value.value"
+        [disabled]="isDisabled"
         (blur)="updateValueValue(valueStringValue.value)"
     />
     <zem-prefixed-input
@@ -118,6 +124,7 @@
             class="zem-decimal-input"
             [value]="ruleCondition.value.value"
             [fractionSize]="selectedValueConfig.fractionSize"
+            [isDisabled]="isDisabled"
             (inputBlur)="updateValueValue($event)"
         ></zem-decimal-input>
     </zem-prefixed-input>
@@ -133,6 +140,7 @@
         [currencySymbol]="inputUnitSymbol"
         [hasError]="conditionErrors?.value?.value"
         [zemPopover]="RULE_CURRENCY_HELP_TEXT"
+        [isDisabled]="isDisabled"
         triggers="mouseenter:mouseleave"
         placement="top"
         (inputBlur)="updateValueValue($event)"
@@ -146,6 +154,7 @@
         "
         [value]="ruleCondition.value.value"
         [hasError]="conditionErrors?.value?.value"
+        [isDisabled]="isDisabled"
         (valueChange)="updateValueValue($event)"
     ></zem-date-input>
     <zem-select-input
@@ -159,6 +168,7 @@
         [isSearchable]="false"
         groupByValue="group"
         [isClearable]="false"
+        [isDisabled]="isDisabled"
         [hasError]="conditionErrors?.value?.type"
         (valueChange)="selectValueType($event)"
     ></zem-select-input>
@@ -171,6 +181,7 @@
             [hasTimeRangeModifier]="selectedValueConfig.hasTimeRangeModifier"
             [valueModifier]="selectedValueConfig.valueModifier"
             [modifierErrors]="conditionErrors?.value?.value"
+            [isDisabled]="isDisabled"
             (valueChange)="updateValueValue($event)"
             (timeRangeChange)="updateValueWindow($event)"
         >
@@ -179,7 +190,7 @@
     <button
         class="zem-rule-edit-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="valuePopoverTemplate"
-        [disabled]="!areModifiersAvailable(selectedValueConfig)"
+        [disabled]="!areModifiersAvailable(selectedValueConfig) || isDisabled"
         [autoClose]="'outside'"
         placement="bottom"
     ></button>

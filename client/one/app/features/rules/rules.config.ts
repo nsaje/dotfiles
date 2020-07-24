@@ -10,7 +10,7 @@ import {
     RuleState,
     RuleNotificationType,
 } from '../../core/rules/rules.constants';
-import {DataType, Unit} from '../../app.constants';
+import {DataType, Unit, EntityType} from '../../app.constants';
 import {PaginationState} from '../../shared/components/smart-grid/types/pagination-state';
 import {PaginationOptions} from '../../shared/components/smart-grid/types/pagination-options';
 
@@ -2079,3 +2079,9 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
 
 export const RULE_CURRENCY_HELP_TEXT =
     'The value is in the same currency as the account the rule runs on';
+
+export const ENTITY_TYPE_TEXT = {
+    [EntityType.ACCOUNT]: 'accounts',
+    [EntityType.CAMPAIGN]: 'campaigns',
+    [EntityType.AD_GROUP]: 'adGroups',
+};

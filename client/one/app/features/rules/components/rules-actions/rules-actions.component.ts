@@ -21,8 +21,12 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 export class RulesActionsComponent implements OnInit, OnDestroy {
     @Input()
     value: string;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     search = new EventEmitter<string>();
+    @Output()
+    ruleCreate = new EventEmitter<void>();
 
     private ngUnsubscribe$: Subject<void> = new Subject();
     private searchDebouncer$: Subject<string> = new Subject<string>();

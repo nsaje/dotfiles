@@ -24,6 +24,8 @@ export class RuleEditFormNotificationComponent {
     notificationTypeErrors: FieldErrors;
     @Input()
     notificationRecipientsErrors: FieldErrors;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     notificationTypeChange = new EventEmitter<RuleNotificationType>();
     @Output()

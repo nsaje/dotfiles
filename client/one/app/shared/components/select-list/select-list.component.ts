@@ -35,6 +35,8 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     searchFn: Function;
     @Input('selectGroupByValue')
     groupByValue: string;
+    @Input()
+    appendTo: 'body';
     @Output()
     itemSelect = new EventEmitter<any>();
     @Output()
