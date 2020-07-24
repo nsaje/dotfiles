@@ -7,6 +7,8 @@ from typing import Sequence
 from typing import Union
 
 from django.conf import settings
+from django.db.models import Exists
+from django.db.models import OuterRef
 
 import core.features.bid_modifiers.constants
 import core.features.goals
@@ -52,8 +54,16 @@ def execute_rules_daily_run() -> None:
         return
 
     for target_type in constants.TargetType.get_all():
-        rules = Rule.objects.filter(state=constants.RuleState.ENABLED, target_type=target_type).prefetch_related(
-            "ad_groups_included", "conditions"
+        rules = (
+            Rule.objects.annotate(
+                rule_history_exists_today=Exists(
+                    RuleHistory.objects.filter(
+                        rule_id=OuterRef("id"), created_dt__gte=dates_helper.local_midnight_to_utc_time()
+                    )
+                )
+            )
+            .filter(rule_history_exists_today=False, state=constants.RuleState.ENABLED, target_type=target_type)
+            .prefetch_related("ad_groups_included", "conditions")
         )
 
         rules_map = helpers.get_rules_by_ad_group_map(rules, exclude_inactive_yesterday=True)

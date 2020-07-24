@@ -125,6 +125,26 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(expected_history_text, latest_rule_history.changes_text)
         self.assertEqual(expected_history_changes, latest_ad_group_history.changes)
 
+    @mock.patch("utils.dates_helper.utc_now", mock.MagicMock(return_value=datetime.datetime(2019, 1, 1, 0, 0, 0)))
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
+    @mock.patch("automation.rules.service.service.apply_rule")
+    @mock.patch("automation.rules.service.fetch.stats._format")
+    @mock.patch("redshiftapi.api_rules.query")
+    def test_execute_daily_run_dont_run_twice(self, mock_stats, mock_format, mock_apply):
+        ad_group = magic_mixer.blend(core.models.AdGroup, archived=False)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+
+        publisher_rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.PUBLISHER, ad_groups_included=[ad_group]
+        )
+        magic_mixer.blend(RuleHistory, rule=publisher_rule)
+        self.assertEqual(1, RuleHistory.objects.count())
+
+        service.execute_rules_daily_run()
+
+        self.assertFalse(mock_apply.called)
+        self.assertEqual(1, RuleHistory.objects.count())
+
     @mock.patch("utils.dates_helper.utc_now", return_value=datetime.datetime(2019, 1, 1, 0, 0, 0))
     @mock.patch("automation.rules.service.fetch.stats._format", mock.MagicMock())
     @mock.patch("redshiftapi.api_rules.query", mock.MagicMock())
