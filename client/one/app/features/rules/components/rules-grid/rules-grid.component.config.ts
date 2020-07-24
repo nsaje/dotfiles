@@ -31,7 +31,7 @@ export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
     field: 'name',
     width: 120,
-    resizable: false,
+    resizable: true,
     suppressSizeToFit: true,
 };
 
@@ -46,7 +46,7 @@ export const COLUMN_ACTION_TYPE: ColDef = {
 export const COLUMN_STATUS: ColDef = {
     headerName: 'Status',
     field: 'state',
-    width: 80,
+    width: 60,
     resizable: false,
     suppressSizeToFit: true,
     cellRendererFramework: SwitchButtonCellComponent,
@@ -62,7 +62,7 @@ export const COLUMN_ACTION_FREQUENCY: ColDef = {
     headerName: 'Action frequency',
     field: 'actionFrequency',
     width: 110,
-    resizable: false,
+    resizable: true,
     suppressSizeToFit: true,
     valueFormatter: actionFrequencyFormatter,
 };
@@ -71,7 +71,7 @@ export const COLUMN_NOTIFICATION: ColDef = {
     headerName: 'Notification',
     field: 'notificationType',
     width: 140,
-    resizable: false,
+    resizable: true,
     suppressSizeToFit: true,
     valueFormatter: notificationTypeFormatter,
 };
@@ -80,6 +80,7 @@ export const COLUMN_RUNS_ON: ColDef = {
     headerName: 'Runs on',
     width: 200,
     suppressSizeToFit: true,
+    resizable: true,
     cellRendererFramework: RuleRunsOnCellComponent,
     cellRendererParams: {
         getEntities: (rule: Rule) => getMappedEntities(rule.entities),
@@ -90,7 +91,7 @@ export const COLUMN_RUNS_ON_TOOLTIP: ColDef = {
     headerName: '',
     maxWidth: 80,
     minWidth: 80,
-    resizable: false,
+    resizable: true,
     valueGetter: runsOnGetter,
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
@@ -120,7 +121,7 @@ export const COLUMN_ACTIONS: ColDef = {
     pinned: 'right',
     width: 75,
     suppressSizeToFit: true,
-    resizable: false,
+    resizable: true,
 };
 
 function notificationTypeFormatter(params: {

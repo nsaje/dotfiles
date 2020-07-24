@@ -45,9 +45,9 @@ export class RulesGridComponent implements OnChanges {
     >();
 
     columnDefs: ColDef[] = [
+        COLUMN_STATUS,
         COLUMN_NAME,
         COLUMN_ACTION_TYPE,
-        COLUMN_STATUS,
         COLUMN_ACTION_FREQUENCY,
         COLUMN_NOTIFICATION,
         COLUMN_RUNS_ON,
