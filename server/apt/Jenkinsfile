@@ -1,9 +1,23 @@
 #!groovy
 import hudson.model.Run
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
 
-node('master') {
-    stage('Kill previous builds') {
-        if (env.BRANCH_NAME != 'master') {
+def getPreviousBuildResult() {
+    Run previousBuild = currentBuild.rawBuild.getPreviousBuild()
+    while (previousBuild != null) {
+        String result = previousBuild.result.toString()
+        if (result == 'SUCCESS' || result == 'FAILURE') {
+            return result
+        }
+        previousBuild = previousBuild.getPreviousBuild()
+    }
+    return ""
+}
+
+node {
+  try {
+    node('master') {
+        stage('Kill previous builds') {
             Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
 
             while (previousBuild != null) {
@@ -15,34 +29,48 @@ node('master') {
                 previousBuild = previousBuild.getPreviousBuildInProgress()
             }
         }
-    }
 
-    stage('Setup') {
-        sh 'export' // for debug purposes
-        env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
-        sh 'mkdir -p ${CACHE_DIR}'
-        env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-        env.AWS_DEFAULT_REGION="us-east-1"
-    }
+        stage('Setup') {
+            sh 'export' // for debug purposes
+            env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
+            sh 'mkdir -p ${CACHE_DIR}'
+            env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
+            env.AWS_DEFAULT_REGION="us-east-1"
+        }
 
-    stage('Code checkout') {
-        checkout scm
-        // make sure we don't have leftovers from previous builds
-        sh 'sudo git clean --force -d -x'
-    }
+        stage('Code checkout') {
+            checkout scm
+            // make sure we don't have leftovers from previous builds
+            sh 'sudo git clean --force -d -x'
+        }
 
-    stage('Prepare containers') {
-        sh 'make pull'
-    }
+        stage('Prepare containers') {
+            sh 'make pull'
+        }
 
-    stage('APT tests') {
-        // login to ECR
-        sh 'make login'
+        stage('APT tests') {
+            // login to ECR
+            sh 'make login'
 
-        try {
-            sh 'make test_apt | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
-        } finally {
-            junit testResults: 'server/apt/.junit_xml/*.xml', allowEmptyResults: true
+            try {
+                sh 'make test_apt | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+            } finally {
+                junit testResults: 'server/apt/.junit_xml/*.xml', allowEmptyResults: true
+            }
+        }
+
+        stage('Notify success') {
+            prevResult = getPreviousBuildResult()
+            if (prevResult == 'FAILURE') {
+                slackSend channel: "#rnd-z1-alerts-aux", color: "#8CC04F", failOnError: true, message: "APT Build Fixed (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+            }
         }
     }
+  } catch(e) {
+    prevResult = getPreviousBuildResult()
+    if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS') {
+        slackSend channel: "#rnd-z1-alerts-aux", color: "#D54C53", failOnError: true, message: "APT Build Failed (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+    }
+    throw e
+  }
 }
