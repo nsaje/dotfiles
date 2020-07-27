@@ -46,7 +46,7 @@ export class RuleEditFormStoreState {
         sendEmailBody: null,
         publisherGroupId: null,
         conditions: [],
-        window: TimeRange.Lifetime,
+        window: TimeRange.LastSixtyDays,
         notificationType: RuleNotificationType.None,
         notificationRecipients: [],
     };

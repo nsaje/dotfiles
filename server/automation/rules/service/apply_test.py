@@ -248,7 +248,7 @@ class ApplyTest(TestCase):
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
-            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_window=constants.MetricWindow.LAST_60_DAYS,
             left_operand_type=constants.MetricType.TOTAL_SPEND,
             operator=constants.Operator.LESS_THAN,
             right_operand_window=constants.MetricWindow.LAST_DAY,
@@ -258,37 +258,37 @@ class ApplyTest(TestCase):
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LIFETIME: 10.0},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
-            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LIFETIME: None},
+            "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: None},
         }
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
 
@@ -318,7 +318,7 @@ class ApplyTest(TestCase):
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
-            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_window=constants.MetricWindow.LAST_60_DAYS,
             left_operand_type=constants.MetricType.TOTAL_SPEND,
             operator=constants.Operator.LESS_THAN,
             right_operand_window=None,
@@ -326,7 +326,9 @@ class ApplyTest(TestCase):
             right_operand_value="11.0",
         )
 
-        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
+        }
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
     def test_stats_cpa_metrics_missing(self):
@@ -336,7 +338,7 @@ class ApplyTest(TestCase):
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
-            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_window=constants.MetricWindow.LAST_60_DAYS,
             left_operand_type=constants.MetricType.AVG_COST_PER_CONVERSION,
             operator=constants.Operator.LESS_THAN,
             right_operand_window=None,
@@ -344,7 +346,9 @@ class ApplyTest(TestCase):
             right_operand_value="11.0",
         )
 
-        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
+        }
         with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
             apply._meets_all_conditions(rule, stats, {})
 
@@ -363,7 +367,9 @@ class ApplyTest(TestCase):
             right_operand_value="5.0",
         )
 
-        stats = {"local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        stats = {
+            "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
+        }
         self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
     def test_stats_window_avg_data_missing(self):
@@ -381,7 +387,9 @@ class ApplyTest(TestCase):
             right_operand_value="5.0",
         )
 
-        stats = {"local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LIFETIME: 10.0}}
+        stats = {
+            "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
+        }
 
         # should evaluate to False since avg data is unknown and thus not comparable
         self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
@@ -402,7 +410,7 @@ class ApplyTest(TestCase):
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
-            left_operand_window=constants.MetricWindow.LIFETIME,
+            left_operand_window=constants.MetricWindow.LAST_60_DAYS,
             left_operand_type=constants.MetricType.TOTAL_SPEND,
             operator=constants.Operator.CONTAINS,
             right_operand_window=constants.MetricWindow.LAST_DAY,

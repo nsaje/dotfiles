@@ -12,7 +12,7 @@ from .. import exceptions
 
 EMAIL_CONTAINS_NESTED_MACRO_REGEX = re.compile(r"{[^}]*{")
 EMAIL_EXTRACT_MACROS_REGEX = re.compile(r"{([^}]*)}")
-EMAIL_MACRO_SPLIT_WINDOW_REGEX = re.compile(r"(.*)_(LAST_(?:\d+_)?DAYS?|LIFETIME)$")
+EMAIL_MACRO_SPLIT_WINDOW_REGEX = re.compile(r"(.*)_(LAST_(?:\d+_)?DAYS?)$")
 
 CURRENCY_MACROS = [
     constants.EmailActionMacro.TOTAL_SPEND,

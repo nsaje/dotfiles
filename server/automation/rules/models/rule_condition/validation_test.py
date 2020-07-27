@@ -68,7 +68,7 @@ class RuleConditionValidationTest(TestCase):
             self.rule_condition.clean({"left_operand_type": 999})
 
     def test_validate_left_operand_window(self):
-        self.rule_condition.clean({"left_operand_window": constants.MetricWindow.LIFETIME})
+        self.rule_condition.clean({"left_operand_window": constants.MetricWindow.LAST_60_DAYS})
         self.rule_condition.clean({"left_operand_window": None})
         with self._assert_multiple_validation_error([exceptions.InvalidLeftOperandWindow]):
             self.rule_condition.clean({"left_operand_window": 999})
@@ -105,7 +105,7 @@ class RuleConditionValidationTest(TestCase):
     def test_validate_right_operand_window(self):
         self.rule_condition.clean({"right_operand_window": None})
         with self._assert_multiple_validation_error([exceptions.InvalidRightOperandWindow]):
-            self.rule_condition.clean({"right_operand_window": constants.MetricWindow.LIFETIME})
+            self.rule_condition.clean({"right_operand_window": constants.MetricWindow.LAST_60_DAYS})
 
     def test_validate_right_operand_value(self):
         self.rule_condition.clean({"right_operand_value": 500})

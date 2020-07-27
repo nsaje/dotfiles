@@ -106,14 +106,14 @@ class MetricWindow(ConstantBase):
     LAST_3_DAYS = 2
     LAST_7_DAYS = 3
     LAST_30_DAYS = 4
-    LIFETIME = 5
+    LAST_60_DAYS = 5
 
     _VALUES = {
         LAST_DAY: "Last day",
         LAST_3_DAYS: "Last 3 days",
         LAST_7_DAYS: "Last week",
         LAST_30_DAYS: "Last month",
-        LIFETIME: "Lifetime",
+        LAST_60_DAYS: "Last 60 days",
     }
 
 

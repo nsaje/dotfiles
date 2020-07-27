@@ -176,7 +176,7 @@ EMAIL_ACTION_MACROS_VALID_WINDOWS = {
     constants.MetricWindow.LAST_3_DAYS,
     constants.MetricWindow.LAST_7_DAYS,
     constants.MetricWindow.LAST_30_DAYS,
-    constants.MetricWindow.LIFETIME,
+    constants.MetricWindow.LAST_60_DAYS,
 }
 
 INT_OPERANDS = {

@@ -52,7 +52,9 @@ class Rule(instance.RuleInstanceMixin, validation.RuleValidationMixin, models.Mo
 
     action_type = models.IntegerField(choices=constants.ActionType.get_choices())
     cooldown = models.IntegerField()
-    window = models.IntegerField(choices=constants.MetricWindow.get_choices(), default=constants.MetricWindow.LIFETIME)
+    window = models.IntegerField(
+        choices=constants.MetricWindow.get_choices(), default=constants.MetricWindow.LAST_60_DAYS
+    )
 
     change_step = models.FloatField(null=True, blank=True)
     change_limit = models.FloatField(null=True, blank=True)

@@ -555,7 +555,7 @@ class FormatTest(TestCase):
                 "ad_group_id": 123,
                 "source_id": 12,
                 "publisher": "pub2.com",
-                "window_key": constants.MetricWindow.LIFETIME,
+                "window_key": constants.MetricWindow.LAST_60_DAYS,
                 "etfm_cpc": None,
                 "etfm_cpm": 0.8,
             },
@@ -624,8 +624,8 @@ class FormatTest(TestCase):
                         "etfm_cpm": {constants.MetricWindow.LAST_3_DAYS: 0.7, constants.MetricWindow.LAST_30_DAYS: 0.1},
                     },
                     "pub2.com__12": {
-                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
+                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LAST_60_DAYS: None},
+                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LAST_60_DAYS: 0.8},
                     },
                 },
                 321: {
@@ -648,7 +648,7 @@ class FormatTest(TestCase):
             {"ad_group_id": 123, "window_key": constants.MetricWindow.LAST_3_DAYS, "etfm_cpc": 0.5, "etfm_cpm": 0.7},
             {"ad_group_id": 123, "window_key": constants.MetricWindow.LAST_30_DAYS, "etfm_cpc": 0.3, "etfm_cpm": 0.1},
             {"ad_group_id": 111, "window_key": constants.MetricWindow.LAST_DAY, "etfm_cpc": 0.5, "etfm_cpm": 0.2},
-            {"ad_group_id": 111, "window_key": constants.MetricWindow.LIFETIME, "etfm_cpc": None, "etfm_cpm": 0.8},
+            {"ad_group_id": 111, "window_key": constants.MetricWindow.LAST_60_DAYS, "etfm_cpc": None, "etfm_cpm": 0.8},
             {"ad_group_id": 321, "window_key": constants.MetricWindow.LAST_3_DAYS, "etfm_cpc": 0.1, "etfm_cpm": 0.2},
             {"ad_group_id": 222, "window_key": constants.MetricWindow.LAST_DAY, "etfm_cpc": 0.2, "etfm_cpm": 0.1},
             {"ad_group_id": None, "window_key": constants.MetricWindow.LAST_3_DAYS, "etfm_cpc": 0.7, "etfm_cpm": 0.9},
@@ -665,8 +665,8 @@ class FormatTest(TestCase):
                 },
                 111: {
                     "111": {
-                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
+                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LAST_60_DAYS: None},
+                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LAST_60_DAYS: 0.8},
                     }
                 },
                 321: {
@@ -729,7 +729,7 @@ class FormatTest(TestCase):
             {
                 "ad_group_id": 111,
                 mv_column: 12,
-                "window_key": constants.MetricWindow.LIFETIME,
+                "window_key": constants.MetricWindow.LAST_60_DAYS,
                 "etfm_cpc": None,
                 "etfm_cpm": 0.8,
             },
@@ -782,8 +782,8 @@ class FormatTest(TestCase):
                 },
                 111: {
                     "12": {
-                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LIFETIME: None},
-                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LIFETIME: 0.8},
+                        "etfm_cpc": {constants.MetricWindow.LAST_DAY: 0.5, constants.MetricWindow.LAST_60_DAYS: None},
+                        "etfm_cpm": {constants.MetricWindow.LAST_DAY: 0.2, constants.MetricWindow.LAST_60_DAYS: 0.8},
                     }
                 },
                 321: {

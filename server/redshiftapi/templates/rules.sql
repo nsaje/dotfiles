@@ -55,14 +55,14 @@
         {{ target_type_group_columns }}
 ) UNION ALL (
     SELECT
-        {{ lifetime_key }} as window_key,
+        {{ last_60_days_key }} as window_key,
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}
     FROM
         {{ target_type_table }}
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
-        AND date >= '{{ lifetime_date_from|date:"Y-m-d" }}'
+        AND date >= '{{ last_60_days_date_from|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}
