@@ -58,7 +58,6 @@
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
 0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
-0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_publisher_high_ctr --slack
 0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack
 0 15 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 15 * * *       /home/ubuntu/docker-manage-py.sh send_daily_management_report
