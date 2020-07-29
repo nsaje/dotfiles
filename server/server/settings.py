@@ -87,8 +87,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "server.middleware.logging_middleware.zem_logging_middleware",
-    "server.middleware.metrics_middleware.zem_metrics_middleware",
 ]
 
 ROOT_URLCONF = "server.urls"

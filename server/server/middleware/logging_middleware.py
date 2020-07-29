@@ -1,27 +1,30 @@
-import time
-
-import ipware.ip
-
-import utils.request_context
 from utils import zlogging
 
-from . import common
-
 logger = zlogging.getLogger("zem.request")
+
+log_format_started = "STARTED {method} {full_path} elb={elb} traefik={traefik}"
+log_format_completed = "COMPLETED {method} {full_path} elb={elb} traefik={traefik} {status_code}"
 
 
 def zem_logging_middleware(get_response):
     def middleware(request):
-        t0 = time.time()
-        response = get_response(request)
-        params = dict(
-            trace_id=utils.request_context.get("trace_id"),
-            request_time_seconds=time.time() - t0,
-            ip=ipware.ip.get_ip(request),
+        elb = request.META.get("HTTP_X_AMZN_TRACE_ID", "-")
+        traefik = request.META.get("HTTP_X_TRAEFIK_REQID", "-")
+        logger.info(
+            log_format_started.format(
+                method=request.method, full_path=request.get_full_path(), elb=elb, traefik=traefik
+            )
         )
-        params.update(common.extract_request_params(request))
-        params.update(common.extract_response_params(response))
-        logger.info("HTTP Access", **params)
+        response = get_response(request)
+        logger.info(
+            log_format_completed.format(
+                method=request.method,
+                full_path=request.get_full_path(),
+                elb=elb,
+                traefik=traefik,
+                status_code=response.status_code,
+            )
+        )
         return response
 
     return middleware

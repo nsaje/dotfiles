@@ -1,6 +1,8 @@
 import re
+import time
 from collections import OrderedDict
 
+import ipware.ip
 import rest_framework.renderers
 from django.utils.decorators import classonlymethod
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
@@ -10,10 +12,20 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
 
 import utils.rest_common.authentication
+from swinfra import metrics
+from utils import influx_helper
 from utils import json_helper
+from utils import metrics_compat
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
+# fmt: off
+REQUEST_TIMER = metrics.new_histogram(
+    "restapi_request_histogram",
+    labelnames=("endpoint", "path", "method", "status", "user"),
+    buckets=(.005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5, 10.0, 20.0, 30.0, 40.0, 50.0, float("inf")),
+)
+# fmt: on
 
 
 def camelize(data):
@@ -59,9 +71,41 @@ class RESTAPIBaseView(APIView):
     def get_serializer_context(self):
         return {"request": self.request, "format": self.format_kwarg, "view": self}
 
-    def dispatch(self, request, *args, **kwargs):
-        request.handler_class_name = self.__class__.__name__
-        return super(RESTAPIBaseView, self).dispatch(request, *args, **kwargs)
+    def initialize_request(self, request, *args, **kwargs):
+        drf_request = super(RESTAPIBaseView, self).initialize_request(request, *args, **kwargs)
+        drf_request.method = request.method
+        drf_request.start_time = time.time()
+        return drf_request
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        drf_response = super(RESTAPIBaseView, self).finalize_response(request, response, *args, **kwargs)
+        user = getattr(request, "user", None)
+        user_email = getattr(user, "email", "unknown")
+        metrics_compat.timing(
+            "restapi.request",
+            (time.time() - request.start_time),
+            endpoint=self.__class__.__name__,
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email,
+        )
+        REQUEST_TIMER.labels(
+            endpoint=self.__class__.__name__,
+            path=influx_helper.clean_path(request.path),
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email,
+        ).observe(time.time() - request.start_time)
+        logger.debug(
+            "REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}".format(
+                endpoint=self.__class__.__name__,
+                method=request.method,
+                status=str(response.status_code),
+                user=user_email,
+                ip=ipware.ip.get_ip(request),
+            )
+        )
+        return drf_response
 
     @staticmethod
     def response_ok(data, extra=None, errors=None, **kwargs):

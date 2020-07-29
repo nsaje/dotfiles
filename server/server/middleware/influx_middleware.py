@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.db import connections
 
+from utils import influx_helper
 from utils import metrics_compat
 from utils import zlogging
-
-from . import common
 
 logger = zlogging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ def queries_to_influx(get_response):
                     except KeyError:
                         queries_per_verb["OTHER"] += 1
 
-            path = common.clean_path(request.path)
+            path = influx_helper.clean_path(request.path)
 
             if total_queries > 0:
                 metrics_compat.timing(

@@ -1,3 +1,5 @@
+import time
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -5,7 +7,12 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 from rest_framework.views import APIView
 
+from utils import influx_helper
+from utils import metrics_compat
+from utils import zlogging
 from utils.rest_common import authentication
+
+logger = zlogging.getLogger(__name__)
 
 
 class K1APIView(APIView):
@@ -18,8 +25,17 @@ class K1APIView(APIView):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        request.handler_class_name = self.__class__.__name__
-        return super(K1APIView, self).dispatch(request, *args, **kwargs)
+        start_time = time.time()
+        response = super(K1APIView, self).dispatch(request, *args, **kwargs)
+        metrics_compat.timing(
+            "k1api.request",
+            (time.time() - start_time),
+            endpoint=self.__class__.__name__,
+            path=influx_helper.clean_path(request.path),
+            method=request.method,
+            status=str(response.status_code),
+        )
+        return response
 
     @staticmethod
     def response_ok(content):
