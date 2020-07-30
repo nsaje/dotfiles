@@ -279,19 +279,11 @@ export const RULE_ACTIONS_OPTIONS = {
     },
     [RuleActionType.TurnOff]: {
         type: RuleActionType.TurnOff,
-        frequencies: [
-            RuleActionFrequency.Day1,
-            RuleActionFrequency.Days3,
-            RuleActionFrequency.Days7,
-        ],
+        frequencies: [] as RuleActionFrequency[],
     },
     [RuleActionType.Blacklist]: {
         type: RuleActionType.Blacklist,
-        frequencies: [
-            RuleActionFrequency.Day1,
-            RuleActionFrequency.Days3,
-            RuleActionFrequency.Days7,
-        ],
+        frequencies: [] as RuleActionFrequency[],
     },
     [RuleActionType.SendEmail]: {
         type: RuleActionType.SendEmail,
@@ -304,11 +296,7 @@ export const RULE_ACTIONS_OPTIONS = {
     [RuleActionType.AddToPublisherGroup]: {
         type: RuleActionType.AddToPublisherGroup,
         hasPublisherGroupSelector: true,
-        frequencies: [
-            RuleActionFrequency.Day1,
-            RuleActionFrequency.Days3,
-            RuleActionFrequency.Days7,
-        ],
+        frequencies: [] as RuleActionFrequency[],
     },
 };
 

@@ -154,6 +154,18 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         const availableConditions = this.getConditionsForTarget(
             targetActionType.targetType
         );
+
+        let actionFrequency = null;
+        if (
+            [
+                RuleActionType.TurnOff,
+                RuleActionType.Blacklist,
+                RuleActionType.AddToPublisherGroup,
+            ].includes(targetActionType.actionType)
+        ) {
+            actionFrequency = RuleActionFrequency.Days7;
+        }
+
         this.setState({
             ...this.state,
             availableConditions: availableConditions,
@@ -161,7 +173,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 ...this.state.rule,
                 targetType: targetActionType.targetType,
                 actionType: targetActionType.actionType,
-                actionFrequency: null,
+                actionFrequency: actionFrequency,
                 changeStep: null,
                 changeLimit: null,
                 sendEmailRecipients: [],
