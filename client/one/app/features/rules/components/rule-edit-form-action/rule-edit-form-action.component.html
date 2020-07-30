@@ -81,6 +81,7 @@
     bindLabel="label"
     bindValue="value"
     [isDisabled]="
+        isDisabled ||
         !actionType ||
         !availableActionFrequencies ||
         !availableActionFrequencies.length
@@ -89,7 +90,6 @@
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="actionFrequencyErrors"
-    [isDisabled]="isDisabled"
     (valueChange)="selectActionFrequency($event)"
     [appendTo]="'body'"
 ></zem-select-form-group>
