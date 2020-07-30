@@ -1,4 +1,6 @@
-<div class="zem-rule-edit-form-condition__operand-container">
+<div
+    class="zem-rule-edit-form-condition__operand-container zem-rule-edit-form-condition__operand-container--left"
+>
     <zem-select-input
         class="zem-rule-edit-form-condition__operand-select zem-select-input"
         [value]="ruleCondition.metric.type"
@@ -49,7 +51,9 @@
     (valueChange)="selectOperator($event)"
     [appendTo]="'body'"
 ></zem-select-input>
-<div class="zem-rule-edit-form-condition__operand-container">
+<div
+    class="zem-rule-edit-form-condition__operand-container zem-rule-edit-form-condition__operand-container--right"
+>
     <zem-integer-input
         class="zem-decimal-input zem-rule-edit-form-condition__absolute-value-input"
         *ngIf="

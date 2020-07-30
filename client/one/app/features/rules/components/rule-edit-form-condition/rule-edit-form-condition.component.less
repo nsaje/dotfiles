@@ -2,7 +2,6 @@
 
 .zem-rule-edit-form-condition {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     border: 1px solid @color--lighter-neutral;
     border-radius: 4px;
@@ -11,27 +10,33 @@
 .zem-rule-edit-form-condition__operand-container {
     display: flex;
     align-items: center;
-    flex: 1 0 360px;
     margin: @zem-form-group__items-spacing--default / 2;
 }
 
+.zem-rule-edit-form-condition__operand-container--left {
+    flex: 0 0 330px;
+}
+
+.zem-rule-edit-form-condition__operand-container--right {
+    flex: 0 0 175px;
+}
+
 .zem-rule-edit-form-condition__operand-select {
-    flex: 1 0 200px;
+    flex: 0 0 290px;
     margin-right: 2px;
 }
 
 .zem-rule-edit-form-condition__modifiers-toggle {
     flex: 0;
-    margin: 0 !important;
 }
 
 .zem-rule-edit-form-condition__absolute-value-input {
-    flex: 0 1 140px;
+    flex: 0 0 135px;
     margin-right: 2px;
 }
 
 .zem-rule-edit-form-condition__operator {
-    flex: 1 0 120px;
+    flex: 0 0 120px;
     margin: @zem-form-group__items-spacing--default / 2;
 }
 
