@@ -23,7 +23,6 @@ from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.common.views_base_test_case import FutureDASHAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -309,58 +308,6 @@ class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
 
 
 class AdGroupSourceSettingsTestCase(FutureDASHAPITestCase, LegacyAdGroupSourceSettingsTestCase):
-    pass
-
-
-class LegacyAdGroupRestoreTestCase(DASHAPITestCase):
-    fixtures = ["test_models.yaml", "test_views.yaml"]
-
-    class MockSettingsWriter(object):
-        def __init__(self, init):
-            pass
-
-        def set(self, resource, request):
-            pass
-
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.get(pk=2)
-        test_helper.add_permissions(self.user, ["archive_restore_entity"])
-        self.client.login(username=self.user.email, password="secret")
-
-    def _post_restore_ad_group(self, ad_group_id):
-        return self.client.post(
-            reverse("ad_group_restore", kwargs={"ad_group_id": ad_group_id}),
-            data=json.dumps({}),
-            content_type="application/json",
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-            follow=True,
-        )
-
-    def test_basic_restore(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_settings = ad_group.get_current_settings()
-
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
-            new_ad_group_settings = ad_group_settings.copy_settings()
-            new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
-            new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(days=1)
-            new_ad_group_settings.archived = True
-            new_ad_group_settings.save(None)
-
-        ad_group.archived = True
-        ad_group.save(None)
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertTrue(ad_group.is_archived())
-
-        self._post_restore_ad_group(1)
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertFalse(ad_group.is_archived())
-
-
-class AdGroupRestoreTestCase(FutureDASHAPITestCase, LegacyAdGroupRestoreTestCase):
     pass
 
 

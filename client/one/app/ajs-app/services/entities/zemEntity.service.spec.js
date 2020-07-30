@@ -136,9 +136,9 @@ describe('zemEntityService', function() {
             3
         );
 
-        $httpBackend.expect('POST', '/api/accounts/1/archive/');
-        $httpBackend.expect('POST', '/api/campaigns/2/restore/');
-        $httpBackend.expect('POST', '/api/ad_groups/3/settings/state/');
+        $httpBackend.expect('PUT', '/rest/internal/accounts/1');
+        $httpBackend.expect('PUT', '/rest/internal/campaigns/2');
+        $httpBackend.expect('PUT', '/rest/internal/adgroups/3');
         $httpBackend.flush();
     });
 

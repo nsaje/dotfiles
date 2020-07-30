@@ -17,6 +17,7 @@ describe('zemEntityActionsService', function() {
         );
 
         $httpBackend.whenPOST(/.*/).respond(200, {});
+        $httpBackend.whenPUT(/.*/).respond(200, {});
     }));
 
     afterEach(function() {

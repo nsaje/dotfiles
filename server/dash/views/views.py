@@ -192,29 +192,6 @@ class User(DASHAPIBaseView):
         }
 
 
-class AccountRestore(DASHAPIBaseView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, account_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-
-        account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
-        account.restore(request)
-        return self.create_api_response({})
-
-
-class CampaignRestore(DASHAPIBaseView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-
-        campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
-        campaign.restore(request)
-
-        return self.create_api_response({})
-
-
 class AdGroupOverview(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
@@ -312,18 +289,6 @@ class AdGroupOverview(DASHAPIBaseView):
         no_ad_groups_or_budgets = budgets_start_date is None
 
         return start_date, end_date, no_ad_groups_or_budgets
-
-
-class AdGroupRestore(DASHAPIBaseView):
-    @metrics_compat.timer("dash.api")
-    def post(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.AuthorizationError()
-
-        ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
-        ad_group.restore(request)
-
-        return self.create_api_response({})
 
 
 class CampaignOverview(DASHAPIBaseView):

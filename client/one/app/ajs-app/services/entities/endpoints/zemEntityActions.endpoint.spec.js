@@ -10,7 +10,7 @@ describe('zemEntityActionsEndpoint', function() {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityActionsEndpoint = $injector.get('zemEntityActionsEndpoint');
 
-        $httpBackend.whenPOST(/.*/).respond(200, {});
+        $httpBackend.whenPUT(/.*/).respond(200, {});
     }));
 
     afterEach(function() {
@@ -24,10 +24,10 @@ describe('zemEntityActionsEndpoint', function() {
         zemEntityActionsEndpoint.archive(constants.entityType.AD_GROUP, 3);
         zemEntityActionsEndpoint.restore(constants.entityType.ACCOUNT, 4);
 
-        $httpBackend.expect('POST', '/api/accounts/1/settings/state/');
-        $httpBackend.expect('POST', '/api/campaigns/2/settings/state/');
-        $httpBackend.expect('POST', '/api/ad_groups/3/archive/');
-        $httpBackend.expect('POST', '/api/accounts/4/restore/');
+        $httpBackend.expect('PUT', '/rest/internal/accounts/1');
+        $httpBackend.expect('PUT', '/rest/internal/campaigns/2');
+        $httpBackend.expect('PUT', '/rest/internal/adgroups/3');
+        $httpBackend.expect('PUT', '/rest/internal/accounts/4');
         $httpBackend.flush();
     });
 });
