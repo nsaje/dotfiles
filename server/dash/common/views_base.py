@@ -1,26 +1,15 @@
 import json
-import time
 
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
 from django.views.generic import View
 
-from swinfra import metrics
 from utils import exc
-from utils import influx_helper
 from utils import json_helper
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
-
-# fmt: off
-REQUEST_TIMER = metrics.new_histogram(
-    "dash_request",
-    labelnames=("endpoint", "path", "method", "status"),
-    buckets=(.005, .01, .025, .05, .075, .1, .25, .5, .75, 1.0, 2.5, 5.0, 7.5, 10.0, 20.0, 30.0, 40.0, 50.0, float("inf")),
-)
-# fmt: on
 
 
 class DASHAPIBaseView(View):
@@ -102,24 +91,13 @@ class DASHAPIBaseView(View):
         return self.create_api_response(error_data, success=False, status_code=status_code)
 
     def dispatch(self, request, *args, **kwargs):
-        start_time = time.time()
-        status = None
         request.is_api_request = False
+        request.handler_class_name = self.__class__.__name__
         try:
             response = super(DASHAPIBaseView, self).dispatch(request, *args, **kwargs)
-            status = response.status_code
             return response
         except Http404:
-            status = 404
             raise  # django's default 404, will use template found in templates/404.html
         except Exception as e:
             response = self.get_exception_response(request, e)
-            status = response.status_code
             return response
-        finally:
-            REQUEST_TIMER.labels(
-                endpoint=self.__class__.__name__,
-                path=influx_helper.clean_path(request.path),
-                method=request.method,
-                status=str(status),
-            ).observe(time.time() - start_time)
