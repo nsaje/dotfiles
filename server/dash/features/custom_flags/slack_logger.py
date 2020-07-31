@@ -17,13 +17,14 @@ class SlackLoggerMixin(object):
             if cf_id in orignal_flags.keys() and orignal_flags[cf_id] != cf_value:
                 messages.append(
                     "Custom flag *{cf}* value has been changed from *{old_value}* to *{new_value}* on {entity_link}"
-                    " ({type}). -- {modified_by}".format(
+                    " ({type} {entity_id}). -- {modified_by}".format(
                         cf=cf_id,
                         old_value=orignal_flags[cf_id],
                         new_value=cf_value,
                         entity_link=self.entity_admin_url_builder(updated_entity, anchor_tag=updated_entity.name),
                         type=original_entity.__class__.__name__,
                         modified_by="Modified by: {}".format(user) if user else "",
+                        entity_id=updated_entity.id,
                     )
                 )
 
