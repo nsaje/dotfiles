@@ -30,20 +30,7 @@ class RuleViewSet(RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        agency = (
-            zemauth.access.get_agency(request.user, Permission.WRITE, data.get("agency_id"))
-            if data.get("agency_id")
-            else None
-        )
-        account = (
-            zemauth.access.get_account(request.user, Permission.WRITE, data.get("account_id"))
-            if data.get("account_id")
-            else None
-        )
-
-        rule = self._wrap_validation_exceptions(
-            automation.rules.Rule.objects.create, request, agency=agency, account=account, **data
-        )
+        rule = self._wrap_validation_exceptions(automation.rules.Rule.objects.create, request, **data)
         serializer = serializers.RuleSerializer(rule)
         return self.response_ok(serializer.data, status=201)
 

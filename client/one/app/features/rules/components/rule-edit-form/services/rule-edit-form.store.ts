@@ -131,7 +131,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                             : ScopeSelectorState.ACCOUNT_SCOPE,
                     rule: {
                         ...this.state.rule,
-                        agencyId: agencyId && hasAgencyScope,
+                        agencyId: !hasAgencyScope ? null : agencyId,
                         accountId:
                             agencyId && hasAgencyScope ? null : accountId,
                         entities: entities,

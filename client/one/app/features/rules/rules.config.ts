@@ -278,14 +278,17 @@ export const RULE_ACTIONS_OPTIONS = {
         limitDescription: 'Daily budget will not decrease past this value.',
     },
     [RuleActionType.TurnOff]: {
+        valueLabel: 'Pause',
         type: RuleActionType.TurnOff,
         frequencies: [] as RuleActionFrequency[],
     },
     [RuleActionType.Blacklist]: {
+        valueLabel: 'Blacklist publisher',
         type: RuleActionType.Blacklist,
         frequencies: [] as RuleActionFrequency[],
     },
     [RuleActionType.SendEmail]: {
+        valueLabel: 'Send email',
         type: RuleActionType.SendEmail,
         frequencies: [
             RuleActionFrequency.Day1,
@@ -294,6 +297,7 @@ export const RULE_ACTIONS_OPTIONS = {
         ],
     },
     [RuleActionType.AddToPublisherGroup]: {
+        valueLabel: 'Add to publisher group',
         type: RuleActionType.AddToPublisherGroup,
         hasPublisherGroupSelector: true,
         frequencies: [] as RuleActionFrequency[],

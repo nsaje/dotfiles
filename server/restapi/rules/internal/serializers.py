@@ -155,6 +155,22 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             zemauth.access.get_publisher_group(user, Permission.WRITE, publisher_group.id)
         return publisher_group
 
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
+
+        value["agency"] = (
+            zemauth.access.get_agency(self.context["request"].user, Permission.WRITE, value.get("agency_id"))
+            if value.get("agency_id")
+            else None
+        )
+        value["account"] = (
+            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, value.get("account_id"))
+            if value.get("account_id")
+            else None
+        )
+
+        return value
+
 
 class RuleQueryParams(
     restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin

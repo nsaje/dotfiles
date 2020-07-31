@@ -326,7 +326,7 @@ class RuleValidationMixin:
             return
 
         accounts_included = changes.get("accounts_included", self.accounts_included.all().only("id"))
-        if any(account_id != account.id for account_id in accounts_included):
+        if any(account_included.id != account.id for account_included in accounts_included):
             raise exceptions.InvalidAccount("Rule already runs on accounts not belonging to the selected account.")
 
         campaigns_included = changes.get("campaigns_included", self.campaigns_included.all().only("account_id"))
@@ -347,11 +347,11 @@ class RuleValidationMixin:
         account = changes.get("account", self.account)
 
         if agency:
-            if any(account.agency_id != agency.id for account in accounts_included):
+            if any(account_included.agency_id != agency.id for account_included in accounts_included):
                 raise exceptions.InvalidIncludedAccounts("Included accounts have to belong of the rule's agency")
 
         if account:
-            if any(account_id != account.id for account_id in accounts_included):
+            if any(account_included.id != account.id for account_included in accounts_included):
                 raise exceptions.InvalidIncludedAccounts(
                     "Included accounts have to belong to an account of the rule's agency"
                 )

@@ -366,7 +366,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
     def test_put(self):
         response = self.client.put(
             reverse("restapi.rules.internal:rules_details", kwargs={"rule_id": self.rule.id}),
-            data={"changeStep": "0.02"},
+            data={"agencyId": self.agency.id, "changeStep": "0.02"},
             format="json",
         )
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK)
