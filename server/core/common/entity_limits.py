@@ -20,7 +20,7 @@ DEFAULT_LIMITS = {
 ACCOUNT_EXCEPTIONS = defaultdict(
     dict,
     {
-        "Campaign": {settings.HARDCODED_ACCOUNT_ID_OEN: 2000000, 2323: 600},  # OEN
+        "Campaign": {settings.HARDCODED_ACCOUNT_ID_OEN: 3000000, 2323: 600},  # OEN
         "AdGroup": {
             settings.HARDCODED_ACCOUNT_ID_INPOWERED_1: 1000,
             settings.HARDCODED_ACCOUNT_ID_INPOWERED_2: 1000,
@@ -35,7 +35,7 @@ ACCOUNT_EXCEPTIONS = defaultdict(
             settings.HARDCODED_ACCOUNT_ID_OEN: 100000,
             950: 20000,  # MatchesFashion
         },
-        "PublisherGroup": {settings.HARDCODED_ACCOUNT_ID_OEN: 2000000},  # OEN
+        "PublisherGroup": {settings.HARDCODED_ACCOUNT_ID_OEN: 3000000},  # OEN
         "BudgetLineItem": {settings.HARDCODED_ACCOUNT_ID_OEN: 1000},  # OEN
         "ConversionPixel": {4300: 25},  # GroupM/MAIF
     },
