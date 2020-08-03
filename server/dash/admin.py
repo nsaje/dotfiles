@@ -505,31 +505,6 @@ class AccountUserInline(admin.TabularInline):
         return self.name
 
 
-class CampaignInline(admin.TabularInline):
-    verbose_name = "Campaign"
-    verbose_name_plural = "Campaigns"
-    model = models.Campaign
-    extra = 0
-    max_num = 0
-    can_delete = False
-    exclude = ("users", "groups", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings", "entity_tags")
-    ordering = ("-created_dt",)
-    readonly_fields = (
-        "name",
-        "type",
-        "real_time_campaign_stop",
-        "default_whitelist",
-        "default_blacklist",
-        "settings",
-        "_entity_tags",
-        "admin_link",
-    )
-    autocomplete_fields = ("account",)
-
-    def _entity_tags(self, obj):
-        return ", ".join(str(e) for e in obj.entity_tags.all())
-
-
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
     search_fields = ("name", "id")
@@ -556,7 +531,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     )
     exclude = ("users", "settings")
     filter_horizontal = ("allowed_sources",)
-    inlines = (AccountUserInline, CampaignInline, DirectDealConnectionAccountInline)
+    inlines = (AccountUserInline, DirectDealConnectionAccountInline)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(AccountAdmin, self).get_form(request, obj=obj, **kwargs)
@@ -1840,7 +1815,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
                 lvl: getattr(obj, lvl)
                 for lvl in ("agency", "account", "campaign", "ad_group", "source")
                 if getattr(obj, lvl) is not None
-            }
+            },
         )
         obj.save()
 
