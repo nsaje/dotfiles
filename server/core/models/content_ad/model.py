@@ -216,6 +216,7 @@ class ContentAd(
             "ad_tag",
         )
         candidate = {
+            "original_content_ad_id": self.id,
             "primary_tracker_url": self.tracker_urls[0] if self.tracker_urls else None,
             "secondary_tracker_url": self.tracker_urls[1] if self.tracker_urls and len(self.tracker_urls) > 1 else None,
         }

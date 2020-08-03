@@ -28,6 +28,13 @@ class Clone(TestCase):
         self.source_content_ads = magic_mixer.cycle(5).blend(
             core.models.ContentAd, ad_group=self.source_ad_group, icon=icon
         )
+        magic_mixer.cycle(3).blend(
+            core.features.bid_modifiers.models.BidModifier,
+            ad_group=self.source_ad_group,
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target=(str(ad.id) for ad in self.source_content_ads[:3]),
+            modifier=1.2,
+        )
         self.request = magic_mixer.blend_request_user()
 
     @patch("utils.sspd_client.sync_batch", autospec=True)
@@ -36,10 +43,15 @@ class Clone(TestCase):
         batch = service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
         cloned_ads = core.models.ContentAd.objects.filter(batch=batch)
-        self.assertCountEqual(
-            [x.to_cloned_candidate_dict() for x in self.source_content_ads],
-            [x.to_cloned_candidate_dict() for x in cloned_ads],
-        )
+
+        source_ads_dicts = [x.to_cloned_candidate_dict() for x in self.source_content_ads]
+        cloned_ads_dicts = [x.to_cloned_candidate_dict() for x in cloned_ads]
+
+        for i in range(len(source_ads_dicts)):
+            del source_ads_dicts[i]["original_content_ad_id"]
+            del cloned_ads_dicts[i]["original_content_ad_id"]
+
+        self.assertCountEqual(source_ads_dicts, cloned_ads_dicts)
         source_icon = self.source_content_ads[0].icon
         cloned_icon = cloned_ads[0].icon
         self.assertEqual(source_icon.image_id, cloned_icon.image_id)
@@ -58,6 +70,15 @@ class Clone(TestCase):
             [content_ad.state for content_ad in self.source_content_ads],
             [cloned_content_ad.state for cloned_content_ad in cloned_ads],
         )
+
+        bid_modifiers = core.features.bid_modifiers.BidModifier.objects.filter(
+            ad_group=self.ad_group,
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target__in=[str(ad.id) for ad in cloned_ads],
+        )
+        self.assertEqual(3, len(bid_modifiers))
+        for bid_modifier in bid_modifiers:
+            self.assertEqual(1.2, bid_modifier.modifier)
 
     def test_clone_state_override(self, _):
 

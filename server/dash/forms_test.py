@@ -541,6 +541,16 @@ class ContentAdFormTestCase(TestCase):
         self.assertIsNone(f.cleaned_data["icon_width"])
         self.assertIsNone(f.cleaned_data["icon_height"])
         self.assertIsNone(f.cleaned_data["icon_file_size"])
+        self.assertIsNone(f.cleaned_data["original_content_ad_id"])
+
+    def test_original_content_ad(self):
+        data = self._get_valid_data()
+        data["state"] = constants.ContentAdSourceState.INACTIVE
+        original_content_ad = magic_mixer.blend(models.ContentAd, state=constants.ContentAdSourceState.ACTIVE)
+        f = forms.ContentAdForm(self.campaign, data, original_content_ad=original_content_ad)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(original_content_ad.id, f.cleaned_data["original_content_ad_id"])
+        self.assertEqual(constants.ContentAdSourceState.ACTIVE, f.cleaned_data["state"])
 
     def test_image_status_pending_start(self):
         data = self._get_valid_data()
@@ -997,6 +1007,16 @@ class ImageAdFormTestCase(TestCase):
     def test_form(self):
         f = forms.ImageAdForm(self.campaign, self._get_valid_data())
         self.assertTrue(f.is_valid())
+        self.assertIsNone(f.cleaned_data["original_content_ad_id"])
+
+    def test_original_content_ad(self):
+        data = self._get_valid_data()
+        data["state"] = constants.ContentAdSourceState.INACTIVE
+        original_content_ad = magic_mixer.blend(models.ContentAd, state=constants.ContentAdSourceState.ACTIVE)
+        f = forms.ImageAdForm(self.campaign, data, original_content_ad=original_content_ad)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(original_content_ad.id, f.cleaned_data["original_content_ad_id"])
+        self.assertEqual(constants.ContentAdSourceState.ACTIVE, f.cleaned_data["state"])
 
     def test_image_status_pending_start(self):
         data = self._get_valid_data()
@@ -1322,6 +1342,16 @@ class AdTagFormTestCase(TestCase):
         f = forms.AdTagForm(self.campaign, self._get_valid_data())
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["image_status"], constants.AsyncUploadJobStatus.OK)
+        self.assertIsNone(f.cleaned_data["original_content_ad_id"])
+
+    def test_original_content_ad(self):
+        data = self._get_valid_data()
+        data["state"] = constants.ContentAdSourceState.INACTIVE
+        original_content_ad = magic_mixer.blend(models.ContentAd, state=constants.ContentAdSourceState.ACTIVE)
+        f = forms.AdTagForm(self.campaign, data, original_content_ad=original_content_ad)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(original_content_ad.id, f.cleaned_data["original_content_ad_id"])
+        self.assertEqual(constants.ContentAdSourceState.ACTIVE, f.cleaned_data["state"])
 
     def test_missing_ad_tag(self):
         data = self._get_valid_data()

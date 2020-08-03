@@ -529,6 +529,69 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate2.state, content_ad2.state)
         self.assertEqual(1, models.ImageAsset.objects.all().count())
 
+    @override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
+    @patch("utils.sspd_client.sync_batch", Mock())
+    @patch("utils.redirector_helper.insert_redirects")
+    @patch.object(utils.s3helpers.S3Helper, "put")
+    def test_valid_cloned_candidates_bid_modifier(self, mock_s3helper_put, mock_insert_redirects):
+        def redirector_response(content_ads, clickthrough_resolve):
+            return {
+                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
+                for content_ad in content_ads
+            }
+
+        mock_insert_redirects.side_effect = redirector_response
+
+        source_ad_group = magic_mixer.blend(models.AdGroup)
+        source_content_ad = magic_mixer.blend(models.ContentAd, ad_group=source_ad_group)
+        magic_mixer.blend(
+            core.features.bid_modifiers.models.BidModifier,
+            ad_group=source_ad_group,
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target=str(source_content_ad.id),
+            modifier=1.5,
+        )
+
+        ad_group = magic_mixer.blend(models.AdGroup)
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+        magic_mixer.blend(
+            models.ContentAdCandidate,
+            batch=batch,
+            ad_group=ad_group,
+            url_status=constants.AsyncUploadJobStatus.OK,
+            image_status=constants.AsyncUploadJobStatus.OK,
+            icon_status=constants.AsyncUploadJobStatus.OK,
+            url="http://url.com",
+            title="test",
+            image_url="https://image.url",
+            display_url="https://display.url",
+            brand_name="test",
+            description="test",
+            image_id="image",
+            image_hash="hash",
+            image_width=300,
+            image_height=300,
+            image_file_size=1000,
+            icon_id="icon",
+            icon_hash="iconhash",
+            icon_width=150,
+            icon_height=150,
+            icon_file_size=1000,
+            icon_url="https://test.com",
+            video_asset_id=None,
+            original_content_ad=source_content_ad,
+        )
+
+        contentupload.upload.persist_batch(batch)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+        self.assertEqual(1, batch.contentad_set.count())
+
+        content_ad = batch.contentad_set.get()
+        bid_modifier = core.features.bid_modifiers.BidModifier.objects.get(
+            ad_group=ad_group, type=core.features.bid_modifiers.constants.BidModifierType.AD, target=str(content_ad.id)
+        )
+        self.assertEqual(1.5, bid_modifier.modifier)
+
     @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
     def test_valid_display_ad_candidates(self, mock_s3helper_put, mock_insert_redirects):

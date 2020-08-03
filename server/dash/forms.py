@@ -834,6 +834,7 @@ class ContentAdForm(ContentAdCandidateForm):
     state = forms.TypedChoiceField(
         choices=dash.constants.ContentAdSourceState.get_choices(), coerce=int, required=False, empty_value=None
     )
+    original_content_ad_id = forms.IntegerField(required=False)
 
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
@@ -1092,6 +1093,7 @@ class ContentAdForm(ContentAdCandidateForm):
             self.add_error("secondary_tracker_url", secondary_tracker_url_error_msg)
 
         if self.original_content_ad:
+            cleaned_data["original_content_ad_id"] = self.original_content_ad.id
             cleaned_data["state"] = self.original_content_ad.state
 
         return cleaned_data

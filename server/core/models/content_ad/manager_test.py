@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test import override_settings
 from mock import patch
 
+import core.features.bid_modifiers
 import core.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
@@ -172,6 +173,9 @@ class CreateContentAd(TestCase):
             origin_url="test.com",
         )
         candidates = [x.to_candidate_dict() for x in magic_mixer.cycle(3).blend(core.models.ContentAd, icon=icon)]
+        for c in candidates:
+            c["original_content_ad_id"] = None
+
         content_ads = core.models.ContentAd.objects.bulk_create_from_candidates(candidates, batch)
 
         self.assertEqual(len(content_ads), 3)
@@ -207,8 +211,16 @@ class CreateContentAd(TestCase):
             file_size=1234,
             origin_url="test.com",
         )
+        source_ad_group = magic_mixer.blend(core.models.AdGroup)
         source_content_ads = magic_mixer.cycle(3).blend(
-            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE, icon=icon
+            core.models.ContentAd, ad_group=source_ad_group, state=constants.ContentAdSourceState.INACTIVE, icon=icon
+        )
+        magic_mixer.cycle(2).blend(
+            core.features.bid_modifiers.models.BidModifier,
+            ad_group=source_ad_group,
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target=(str(ad.id) for ad in source_content_ads[:2]),
+            modifier=1.7,
         )
 
         content_ads = core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
@@ -228,6 +240,16 @@ class CreateContentAd(TestCase):
             self.assertEqual(200, content_ad.icon.height)
             self.assertEqual(1234, content_ad.icon.file_size)
             self.assertEqual("test.com", content_ad.icon.origin_url)
+
+        # check bid modifiers
+        bid_modifiers = core.features.bid_modifiers.BidModifier.objects.filter(
+            ad_group=batch.ad_group,
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target__in=[str(ad.id) for ad in content_ads],
+        )
+        self.assertEqual(2, len(bid_modifiers))
+        for bid_modifier in bid_modifiers:
+            self.assertEqual(1.7, bid_modifier.modifier)
 
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)

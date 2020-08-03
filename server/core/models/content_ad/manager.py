@@ -86,8 +86,31 @@ class ContentAdManager(models.Manager):
         sources = core.models.Source.objects.filter(id__in=ad_group_sources.values_list("source_id", flat=True))
 
         content_ads = []
+        bid_modifiers = core.features.bid_modifiers.BidModifier.objects.filter(
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            target__in=[str(c["original_content_ad_id"]) for c in candidate_dicts if c["original_content_ad_id"]],
+        )
+        modifiers_map = {int(bm.target): bm.modifier for bm in bid_modifiers}
+        new_modifiers_data = []
+
         for candidate in candidate_dicts:
-            content_ads.append(self._create(batch, sources, **candidate))
+            content_ad = self._create(batch, sources, **candidate)
+            modifier = modifiers_map.get(candidate["original_content_ad_id"])
+            if modifier:
+                new_modifiers_data.append(
+                    core.features.bid_modifiers.service.BidModifierData(
+                        type=core.features.bid_modifiers.constants.BidModifierType.AD,
+                        target=str(content_ad.id),
+                        source=None,
+                        modifier=modifier,
+                    )
+                )
+            content_ads.append(content_ad)
+
+        if new_modifiers_data:
+            core.features.bid_modifiers.service.set_bulk(
+                batch.ad_group, new_modifiers_data, write_history=False, propagate_to_k1=False
+            )
 
         self.insert_redirects(content_ads, clickthrough_resolve=r1_resolve)
 
