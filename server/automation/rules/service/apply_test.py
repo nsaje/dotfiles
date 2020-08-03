@@ -154,7 +154,7 @@ class ApplyTest(TestCase):
 
     def test_apply_content_ad_rule_budget_settings(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        ad = magic_mixer.blend(core.models.ContentAd)
+        ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
         rule = magic_mixer.blend(
             Rule,
             target_type=constants.TargetType.AD,

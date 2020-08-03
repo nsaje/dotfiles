@@ -58,6 +58,10 @@ def set(
     skip_source_settings_update=False,
     skip_validation=False,
 ):
+    if modifier_type == constants.BidModifierType.AD:
+        if not core.models.ContentAd.objects.filter(ad_group=ad_group, id=target).exists():
+            raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not part of this ad group")
+
     instance, created = _set(
         ad_group,
         modifier_type,
@@ -78,6 +82,11 @@ def set(
 def set_bulk(
     ad_group, bid_modifiers_to_set: Sequence[BidModifierData], user=None, write_history=True, propagate_to_k1=True
 ):
+    target_ad_ids = {bm.target for bm in bid_modifiers_to_set if bm.type == constants.BidModifierType.AD}
+    if target_ad_ids:
+        if core.models.ContentAd.objects.filter(ad_group=ad_group, id__in=target_ad_ids).count() != len(target_ad_ids):
+            raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not part of this ad group")
+
     instances = []
     for bid_modifier_data in bid_modifiers_to_set:
         instance, _ = _set(

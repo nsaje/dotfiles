@@ -36,3 +36,7 @@ class InvalidBidModifierFile(Exception):
 
 class BidModifierDeleteInvalidIds(Exception):
     pass
+
+
+class BidModifierTargetAdGroupMismatch(Exception):
+    pass

@@ -51,6 +51,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
         self.ad_group = magic_mixer.blend(dash.models.AdGroup)
         self.source = magic_mixer.blend(dash.models.Source, id=1, bidder_slug="some_slug")
         self.ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        self.content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
 
     def test_get(self):
         service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)
@@ -63,7 +64,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
-        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
+        service.set(self.ad_group, constants.BidModifierType.AD, str(self.content_ad.id), None, 1.1)
         service.set(self.ad_group, constants.BidModifierType.DAY_HOUR, dash.constants.DayHour.FRIDAY_10, None, 1.2)
         self.assertEqual(
             service.get(self.ad_group),
@@ -101,7 +102,12 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "100", "source": None, "modifier": 0.6},
-                {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
+                {
+                    "type": constants.BidModifierType.AD,
+                    "target": str(self.content_ad.id),
+                    "source": None,
+                    "modifier": 1.1,
+                },
                 {
                     "type": constants.BidModifierType.DAY_HOUR,
                     "target": str(dash.constants.DayHour.FRIDAY_10),
@@ -122,7 +128,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
-        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
+        service.set(self.ad_group, constants.BidModifierType.AD, str(self.content_ad.id), None, 1.1)
         self.assertEqual(
             service.get(self.ad_group, include_types=[constants.BidModifierType.DEVICE, constants.BidModifierType.DMA]),
             [
@@ -147,7 +153,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
-        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
+        service.set(self.ad_group, constants.BidModifierType.AD, str(self.content_ad.id), None, 1.1)
         self.assertEqual(
             service.get(
                 self.ad_group,
@@ -173,7 +179,12 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "100", "source": None, "modifier": 0.6},
-                {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
+                {
+                    "type": constants.BidModifierType.AD,
+                    "target": str(self.content_ad.id),
+                    "source": None,
+                    "modifier": 1.1,
+                },
             ],
         )
 
@@ -250,6 +261,12 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
                 self.ad_group, constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, self.source, 0.5
             )
 
+    def test_set_invalid_ad(self):
+        content_ad = magic_mixer.blend(dash.models.ContentAd)
+
+        with self.assertRaises(exceptions.BidModifierTargetAdGroupMismatch):
+            service.set(self.ad_group, constants.BidModifierType.AD, content_ad.id, None, 0.5)
+
     def test_set_bulk(self):
         bms_to_set = [
             service.BidModifierData(constants.BidModifierType.DEVICE, dash.constants.DeviceType.DESKTOP, None, 0.5),
@@ -294,6 +311,18 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
                 },
             ],
         )
+
+    def test_set_bulk_invalid_ad(self):
+        valid_content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+        invalid_content_ad = magic_mixer.blend(dash.models.ContentAd)
+
+        bms_to_set = [service.BidModifierData(constants.BidModifierType.AD, str(valid_content_ad.id), None, 0.5)]
+        service.set_bulk(self.ad_group, bms_to_set)
+        self.assertEqual(dash.models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 1)
+
+        bms_to_set.append(service.BidModifierData(constants.BidModifierType.AD, str(invalid_content_ad.id), None, 0.6))
+        with self.assertRaises(exceptions.BidModifierTargetAdGroupMismatch):
+            service.set_bulk(self.ad_group, bms_to_set)
 
     def test_clean_entries(self):
         entries = [
@@ -410,7 +439,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
             {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
             {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
             {"type": constants.BidModifierType.DMA, "target": "100", "source": None, "modifier": 0.6},
-            {"type": constants.BidModifierType.AD, "target": "100", "source": None, "modifier": 1.1},
+            {"type": constants.BidModifierType.AD, "target": str(self.content_ad.id), "source": None, "modifier": 1.1},
         ]
         service.set_from_cleaned_entries(self.ad_group, cleaned_entries)
         self.assertEqual(
@@ -449,7 +478,12 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "100", "source": None, "modifier": 0.6},
-                {"type": constants.BidModifierType.AD, "target": "100", "source": None, "modifier": 1.1},
+                {
+                    "type": constants.BidModifierType.AD,
+                    "target": str(self.content_ad.id),
+                    "source": None,
+                    "modifier": 1.1,
+                },
             ],
         )
 

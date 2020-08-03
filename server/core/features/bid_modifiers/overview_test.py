@@ -44,6 +44,8 @@ class BaseOverviewTestCase(TestCase):
         self.content_ad_1 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
         self.content_ad_2 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
         self.content_ad_3 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
+        self.other_content_ad_1 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.other_ad_group)
+        self.other_content_ad_2 = magic_mixer.blend(dash.models.ContentAd, ad_group=self.other_ad_group)
 
         self.ag_test_publisher_1, _ = bid_modifiers.set(
             self.ad_group, bid_modifiers.BidModifierType.PUBLISHER, "test_publisher_1", self.source_1, 0.53
@@ -206,10 +208,10 @@ class BaseOverviewTestCase(TestCase):
         )
 
         self.oag_test_ad_1, _ = bid_modifiers.set(
-            self.other_ad_group, bid_modifiers.BidModifierType.AD, "test_ad_1", None, 10.21
+            self.other_ad_group, bid_modifiers.BidModifierType.AD, str(self.other_content_ad_1.id), None, 10.21
         )
         self.oag_test_ad_2, _ = bid_modifiers.set(
-            self.other_ad_group, bid_modifiers.BidModifierType.AD, "test_ad_2", None, 0.016
+            self.other_ad_group, bid_modifiers.BidModifierType.AD, str(self.other_content_ad_2.id), None, 0.016
         )
 
 

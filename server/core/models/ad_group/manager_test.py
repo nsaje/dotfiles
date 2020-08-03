@@ -9,7 +9,6 @@ import core.models.settings
 import dash.constants
 import dash.history_helpers
 import utils.exc
-from core.features import bid_modifiers
 from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -250,17 +249,35 @@ class AdGroupClone(TestCase):
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
         source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
         source = magic_mixer.blend(core.models.Source, bidder_slug="slug")
-        magic_mixer.cycle(5).blend(
-            core.features.bid_modifiers.BidModifier,
-            modifier=2.9,
-            ad_group=source_ad_group,
-            source=source,
-            type=bid_modifiers.BidModifierType.PUBLISHER,
-        )
+
+        for modifier_type in core.features.bid_modifiers.constants.BidModifierType.get_all():
+            magic_mixer.blend(
+                core.features.bid_modifiers.BidModifier,
+                modifier=2.9,
+                ad_group=source_ad_group,
+                source=source
+                if modifier_type
+                in (
+                    core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
+                    core.features.bid_modifiers.constants.BidModifierType.PLACEMENT,
+                )
+                else None,
+                type=modifier_type,
+                target="9000",
+            )
+
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
 
         ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
-        self.assertEqual(source_ad_group.bidmodifier_set.count(), ad_group.bidmodifier_set.count())
-        self.assertEqual(5, ad_group.bidmodifier_set.filter(source=source).count())
-        self.assertEqual(5, ad_group.bidmodifier_set.filter(ad_group=ad_group).count())
+        self.assertEqual(source_ad_group.bidmodifier_set.count() - 1, ad_group.bidmodifier_set.count())
+        self.assertEqual(10, ad_group.bidmodifier_set.count())
+        self.assertTrue(
+            1,
+            source_ad_group.bidmodifier_set.filter(
+                type=core.features.bid_modifiers.constants.BidModifierType.AD
+            ).count(),
+        )
+        self.assertFalse(
+            ad_group.bidmodifier_set.filter(type=core.features.bid_modifiers.constants.BidModifierType.AD).exists()
+        )

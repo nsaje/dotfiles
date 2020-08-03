@@ -35,7 +35,7 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCa
         self.ep = magic_mixer.blend(
             geolocation.Geolocation, key="765", type=constants.LocationType.DMA, name="765 El Paso, TX"
         )
-        self.ad = magic_mixer.blend(core.models.ContentAd)
+        self.ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
 
     def test_upload_and_download_modifiers(self):
         csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")

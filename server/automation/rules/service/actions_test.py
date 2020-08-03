@@ -23,7 +23,7 @@ class ActionsTest(TestCase):
         campaign.settings.update_unsafe(None, autopilot=False)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(None, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
-        ad = magic_mixer.blend(core.models.ContentAd)
+        ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
         source = magic_mixer.blend(core.models.Source)
         magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=source)
         magic_mixer.blend(dash.features.geolocation.Geolocation, key="USA", type="co")
