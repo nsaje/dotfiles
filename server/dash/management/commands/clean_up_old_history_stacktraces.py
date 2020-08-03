@@ -8,7 +8,7 @@ from utils.command_helpers import Z1Command
 logger = zlogging.getLogger(__name__)
 
 
-HISTORY_DATA_KEEP_DAYS = 30
+HISTORY_DATA_KEEP_DAYS = 14
 
 
 class Command(Z1Command):
