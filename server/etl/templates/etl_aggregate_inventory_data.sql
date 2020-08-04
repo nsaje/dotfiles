@@ -29,7 +29,7 @@ INSERT INTO mv_inventory (
           {% endfor %}
           ELSE NULL
         END as source_id,
-        channel,
+        traffic_type as channel,
         SUM(bid_reqs),
         SUM(bids),
         SUM(win_notices),
