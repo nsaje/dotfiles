@@ -132,10 +132,6 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             value = lc_helper.format_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY, places=2, curr=currency_symbol
             )
-        elif prop_name == "flat_fee_cc":
-            value = lc_helper.format_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY, places=2, curr=currency_symbol
-            )
         elif prop_name == "margin" and value is not None:
             value = "{}%".format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
         elif prop_name == "comment":

@@ -616,7 +616,6 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["currency"], dash.constants.Currency.get_name(dash.constants.Currency.EUR))
         self.assertEqual(resp_json["data"]["serviceFee"], "10")
         self.assertEqual(resp_json["data"]["licenseFee"], "30")
-        self.assertIsNotNone(resp_json["data"]["flatFee"])
         self.assertEqual(resp_json["data"]["comment"], "Extra credit")
         self.assertEqual(resp_json["data"]["isAvailable"], True)
         self.assertEqual(resp_json["data"]["numOfBudgets"], 0)

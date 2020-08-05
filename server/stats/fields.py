@@ -103,16 +103,6 @@ OTHER_DASH_FIELDS = {
     "status_per_source",
 }
 
-PROJECTION_FIELDS = {
-    "allocated_budgets",
-    "pacing",
-    "flat_fee",
-    "total_fee",
-    "spend_projection",
-    "license_fee_projection",
-    "total_fee_projection",
-}
-
 # content ad fields
 DIMENSION_FIELDS |= set(CONTENT_ADS_FIELDS)
 

@@ -60,10 +60,6 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
         max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
     )
 
-    flat_fee = rest_framework.serializers.DecimalField(
-        source="get_flat_fee", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
-    )
-
     amount = rest_framework.serializers.IntegerField()
 
     contract_id = restapi.serializers.fields.PlainCharField(

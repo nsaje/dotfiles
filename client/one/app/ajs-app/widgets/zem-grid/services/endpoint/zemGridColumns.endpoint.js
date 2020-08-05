@@ -686,36 +686,6 @@ angular
                 shown: 'zemauth.can_view_platform_cost_breakdown',
                 supportsRefunds: true,
             },
-            flatFee: {
-                name: 'Recognized Flat Fee',
-                field: 'flat_fee',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Zemanta One fixed usage platform cost.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_flat_fees',
-                shown: [
-                    'zemauth.can_view_flat_fees',
-                    'zemauth.can_view_platform_cost_breakdown',
-                    'zemauth.can_see_projections',
-                ],
-            },
-            totalFee: {
-                name: 'Total Fee',
-                field: 'total_fee',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Sum of License Fee and Recognized Flat Fee.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_flat_fees',
-                shown: [
-                    'zemauth.can_view_flat_fees',
-                    'zemauth.can_view_platform_cost_breakdown',
-                    'zemauth.can_see_projections',
-                ],
-            },
             margin: {
                 name: 'Margin',
                 field: 'margin',
@@ -883,83 +853,6 @@ angular
                     'The number of clicks divided by the number of impressions.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            },
-
-            // Projection metrics
-            allocatedBudgets: {
-                name: 'Media budgets',
-                field: 'allocated_budgets',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help:
-                    'The ideal media budget available for selected date range.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_projections',
-                shown: [
-                    'zemauth.can_see_projections',
-                    'zemauth.can_view_platform_cost_breakdown_derived',
-                ],
-            },
-            pacing: {
-                name: 'Pacing',
-                field: 'pacing',
-                type: zemGridConstants.gridColumnTypes.PERCENT,
-                totalRow: true,
-                help:
-                    'Media spend divided by ideal media budget for selected date range.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: [
-                    'zemauth.can_view_platform_cost_breakdown_derived',
-                    'zemauth.can_see_projections',
-                ],
-            },
-            spendProjection: {
-                name: 'Spend Projection',
-                field: 'spend_projection',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help:
-                    'Predicted media and data spend by the end of ' +
-                    'selected date range based on the spend in the previous days.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: [
-                    'zemauth.can_view_platform_cost_breakdown_derived',
-                    'zemauth.can_see_projections',
-                ],
-            },
-            licenseFeeProjection: {
-                name: 'License Fee Projection',
-                field: 'license_fee_projection',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help:
-                    'Predicted license fee by the end of selected date range based on the ' +
-                    'license fee in the previous days.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: [
-                    'zemauth.can_view_platform_cost_breakdown',
-                    'zemauth.can_see_projections',
-                ],
-            },
-            totalFeeProjection: {
-                name: 'Total Fee Projection',
-                field: 'total_fee_projection',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help:
-                    'Predicted total fee by the end of selected date range based on the ' +
-                    'license fee in the previous days and recognized flat fee.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                shown: [
-                    'zemauth.can_view_platform_cost_breakdown',
-                    'zemauth.can_view_flat_fees',
-                    'zemauth.can_see_projections',
-                ], // eslint-disable-line max-len
             },
 
             // Optimisation metrics
@@ -1871,9 +1764,6 @@ angular
         var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
             COLUMNS.imageUrls,
             COLUMNS.yesterdayEtfmCost,
-            COLUMNS.allocatedBudgets,
-            COLUMNS.pacing,
-            COLUMNS.spendProjection,
             COLUMNS.clicks,
             COLUMNS.etfmCpc,
         ]);
@@ -1935,22 +1825,12 @@ angular
             COLUMNS.eDataCost,
             COLUMNS.serviceFee,
             COLUMNS.licenseFee,
-            COLUMNS.flatFee,
-            COLUMNS.totalFee,
             COLUMNS.margin,
             COLUMNS.atCost,
             COLUMNS.btCost,
             COLUMNS.etCost,
             COLUMNS.etfCost,
             COLUMNS.etfmCost,
-        ];
-
-        var PROJECTIONS_GROUP = [
-            COLUMNS.allocatedBudgets,
-            COLUMNS.pacing,
-            COLUMNS.spendProjection,
-            COLUMNS.licenseFeeProjection,
-            COLUMNS.totalFeeProjection,
         ];
 
         var TRAFFIC_ACQUISITION_GROUP = [
@@ -2039,7 +1919,6 @@ angular
 
         var METRICS_GROUP = [].concat(
             COSTS_GROUP,
-            PROJECTIONS_GROUP,
             TRAFFIC_ACQUISITION_GROUP,
             MRC50_VIEWABILITY_METRICS_GROUP,
             MRC100_VIEWABILITY_METRICS_GROUP,
@@ -2100,18 +1979,6 @@ angular
             constants.breakdown.PUBLISHER,
             constants.breakdown.PLACEMENT,
         ]);
-
-        // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE
-        // breakdown are only shown on ALL_ACCOUNTS level
-        configureLevelExceptions(PROJECTIONS_GROUP, [
-            constants.level.ALL_ACCOUNTS,
-            constants.level.ACCOUNTS,
-        ]);
-        configureCustomException(PROJECTIONS_GROUP, {
-            level: constants.level.ACCOUNTS,
-            breakdown: constants.breakdown.MEDIA_SOURCE,
-            shown: false,
-        }); // eslint-disable-line max-len
 
         // Exceptions (content ad amplify live preview - only visible on ad group content ad tab)
         COLUMNS.amplifyLivePreview.exceptions.levels = [
@@ -2247,15 +2114,6 @@ angular
             shown: false,
         }); // eslint-disable-line max-len
 
-        // Exceptions (total fee and recognized flat fee - only shown on ALL_ACCOUNTS level)
-        COLUMNS.totalFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
-        COLUMNS.flatFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
-
-        // Exceptions (total fee projection - only shown on ALL_ACCOUNTS level)
-        COLUMNS.totalFeeProjection.exceptions.levels = [
-            constants.level.ALL_ACCOUNTS,
-        ];
-
         // Exceptions (supply dash url - only shown on AD_GROUPS level on base row level)
         COLUMNS.supplyDashUrl.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
@@ -2366,18 +2224,6 @@ angular
             });
         }
 
-        function configureLevelExceptions(columns, levels) {
-            columns.forEach(function(column) {
-                column.exceptions.levels = levels;
-            });
-        }
-
-        function configureCustomException(columns, customException) {
-            columns.forEach(function(column) {
-                column.exceptions.custom.push(customException);
-            });
-        }
-
         // ///////////////////////////////////////////////////////////////////////////////////////////////////
         //  COLUMN CATEGORIES
         //
@@ -2402,10 +2248,6 @@ angular
             {
                 name: 'Costs',
                 columns: COSTS_GROUP,
-            },
-            {
-                name: 'Projections',
-                columns: PROJECTIONS_GROUP,
             },
             {
                 name: 'Traffic Acquisition',

@@ -98,9 +98,6 @@
         end_date: '2015-11-30'
         amount: 100000
         license_fee: 0.2
-        flat_fee_cc: 1000000.0
-        flat_fee_start_date: '2015-10-01'
-        flat_fee_end_date: '2015-11-30'
         status: 1
         comment: 'Agency credit'
     model: dash.creditlineitem

@@ -92,9 +92,7 @@ class CreditLineSerializer(serializers.Serializer):
     end_date = serializers.DateField()
     description = restapi.serializers.fields.PlainCharField()
     special_terms = restapi.serializers.fields.PlainCharField(required=False, default="")
-    pf_schedule = serializers.ChoiceField(
-        [constants.PF_SCHEDULE_FLAT_FEE, constants.PF_SCHEDULE_PCT_FEE, constants.PF_SCHEDULE_UPFRONT]
-    )
+    pf_schedule = serializers.ChoiceField([constants.PF_SCHEDULE_PCT_FEE])
     amount_at_signing = serializers.DecimalField(max_digits=8, decimal_places=2, rounding=decimal.ROUND_HALF_DOWN)
 
     pct_of_budget = serializers.DecimalField(
@@ -116,13 +114,6 @@ class CreditLineSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"pct_of_budget": "Field required when pf_schedule is {}".format(fee_type)}
             )
-        if (
-            fee_type in (constants.PF_SCHEDULE_FLAT_FEE, constants.PF_SCHEDULE_UPFRONT)
-            and not data["calc_variable_fee"]
-        ):
-            raise serializers.ValidationError(
-                {"calc_variable_fee": "Field required when pf_schedule is {}".format(fee_type)}
-            )
         return data
 
 
@@ -138,9 +129,6 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     license_fee = restapi.serializers.fields.BlankDecimalField(
         max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
     )
-    flat_fee_cc = serializers.IntegerField()
-    flat_fee_start_date = restapi.serializers.fields.BlankDateField()
-    flat_fee_end_date = restapi.serializers.fields.BlankDateField()
     contract_id = restapi.serializers.fields.NullPlainCharField()
     contract_number = restapi.serializers.fields.PlainCharField()
     status = restapi.serializers.fields.DashConstantField(

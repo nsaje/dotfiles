@@ -17,7 +17,6 @@ import utils.demo_anonymizer
 import utils.slack
 import utils.string_helper
 from dash import constants
-from utils import converters
 from utils import dates_helper
 from utils import lc_helper
 
@@ -36,17 +35,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     class Meta:
         app_label = "dash"
 
-    history_fields = [
-        "start_date",
-        "end_date",
-        "amount",
-        "license_fee",
-        "flat_fee_cc",
-        "flat_fee_start_date",
-        "flat_fee_end_date",
-        "status",
-        "comment",
-    ]
+    history_fields = ["start_date", "end_date", "amount", "license_fee", "status", "comment"]
 
     _settings_fields = [
         "account",
@@ -74,10 +63,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     amount = models.IntegerField()
     license_fee = models.DecimalField(decimal_places=4, max_digits=5, default=Decimal("0.2000"))
     service_fee = models.DecimalField(decimal_places=4, max_digits=5, default=Decimal("0.0000"))
-
-    flat_fee_cc = models.IntegerField(default=0, verbose_name="Flat fee (cc)")
-    flat_fee_start_date = models.DateField(blank=True, null=True)
-    flat_fee_end_date = models.DateField(blank=True, null=True)
 
     # Salesforce integration
     contract_id = models.CharField(max_length=256, blank=True, null=True, verbose_name="SalesForce Contract ID")
@@ -125,22 +110,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def get_overlap(self, start_date, end_date):
         return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
 
-    def get_monthly_flat_fee(self):
-        months = dates_helper.count_months(self.flat_fee_start_date, self.flat_fee_end_date) + 1
-        return self.flat_fee() / Decimal(months)
-
-    def get_flat_fee(self):
-        return self.get_flat_fee_on_date_range(self.start_date, self.end_date)
-
-    def get_flat_fee_on_date_range(self, start_date, end_date):
-        if not (self.flat_fee_start_date and self.flat_fee_end_date):
-            return Decimal("0.0")
-        overlap = dates_helper.get_overlap(self.flat_fee_start_date, self.flat_fee_end_date, start_date, end_date)
-        if not all(overlap):
-            return Decimal("0.0")
-        effective_months = dates_helper.count_months(*overlap) + 1
-        return min(self.get_monthly_flat_fee() * effective_months, self.flat_fee())
-
     def get_number_of_budgets(self):
         return len(self.budgets.all())
 
@@ -183,9 +152,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             "amount": "Amount",
             "license_fee": "License Fee",
             "service_fee": "Service Fee",
-            "flat_fee_cc": "Flat Fee (cc)",
-            "flat_fee_start_date": "Flat Fee Start Date",
-            "flat_fee_end_date": "Flat Fee End Date",
             "status": "Status",
             "comment": "Comment",
         }
@@ -197,17 +163,9 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             value = lc_helper.format_currency(value, places=2, curr=currency_symbol)
         elif prop_name in ["license_fee", "service_fee"] and value is not None:
             value = "{}%".format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
-        elif prop_name == "flat_fee_cc":
-            value = lc_helper.format_currency(
-                Decimal(value) * converters.CC_TO_DECIMAL_CURRENCY, places=2, curr=currency_symbol
-            )
         elif prop_name == "status":
             value = constants.CreditLineItemStatus.get_text(value)
         elif prop_name == "comment":
-            value = value or ""
-        elif prop_name == "flat_fee_start_date":
-            value = value or ""
-        elif prop_name == "flat_fee_end_date":
             value = value or ""
         return value
 
@@ -258,11 +216,8 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
 
-    def flat_fee(self):
-        return Decimal(self.flat_fee_cc) * converters.CC_TO_DECIMAL_CURRENCY
-
     def effective_amount(self):
-        return Decimal(self.amount) - self.flat_fee() + self.get_refunds_amount()
+        return Decimal(self.amount).quantize(Decimal(".0001")) + self.get_refunds_amount()
 
     def get_available_amount(self):
         return self.effective_amount() - self.get_allocated_amount()
@@ -307,7 +262,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             self.validate_service_fee,
             self.validate_status,
             self.validate_amount,
-            self.validate_flat_fee_cc,
             self.validate_account_id,
             self.validate_agency_id,
         )
@@ -323,18 +277,6 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
 
         if self.has_changed("end_date") and self.end_date < min_end_date:
             raise ValidationError({"end_date": ["End date minimum is depending on budgets."]})
-
-    def validate_flat_fee_cc(self):
-        if not self.flat_fee_cc:
-            return
-        delta = self.effective_amount() - self.get_allocated_amount()
-        if delta < 0:
-            raise ValidationError(
-                "Flat fee exceeds the available credit amount by {currency_symbol}{amount}.".format(
-                    currency_symbol=core.features.multicurrency.get_currency_symbol(self.currency),
-                    amount=-delta.quantize(Decimal("1.00")),
-                )
-            )
 
     def validate_amount(self):
         if not self.amount:

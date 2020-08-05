@@ -12,7 +12,6 @@ import core.features.entity_status
 import core.features.multicurrency
 import stats.constants
 import stats.helpers
-from analytics.projections import BudgetProjections
 from core.features import bid_modifiers
 from dash import constants
 from dash import models
@@ -191,31 +190,6 @@ class AccountsLoader(Loader):
         return core.features.entity_status.get_accounts_statuses_cached(self.objs_ids)
 
     @cached_property
-    def _projections(self):
-        return BudgetProjections(
-            self.start_date,
-            self.end_date,
-            "account",
-            accounts=self.objs_qs,
-            campaign_id__in=models.Campaign.objects.filter(account_id__in=self.objs_ids),
-        )
-
-    @cached_property
-    def projections_map(self):
-        if not self.user.has_perm("zemauth.can_see_projections"):
-            return {}
-        projections_dict = {}
-        for account_id in self.objs_ids:
-            projections_dict[account_id] = self._projections.row(account_id)
-        return projections_dict
-
-    @cached_property
-    def projections_totals(self):
-        if not self.user.has_perm("zemauth.can_see_projections"):
-            return None
-        return self._projections.total()
-
-    @cached_property
     def refunds_map(self):
         refunds_map = {}
         for refund in self._refunds:
@@ -329,25 +303,6 @@ class CampaignsLoader(Loader):
                 status_map[campaign_id] = state
 
         return status_map
-
-    @cached_property
-    def _projections(self):
-        return BudgetProjections(self.start_date, self.end_date, "campaign", campaign_id__in=self.objs_ids)
-
-    @cached_property
-    def projections_map(self):
-        if not self.user.has_perm("zemauth.can_see_projections"):
-            return {}
-        projections_dict = {}
-        for campaign_id in self.objs_ids:
-            projections_dict[campaign_id] = self._projections.row(campaign_id)
-        return projections_dict
-
-    @cached_property
-    def projections_totals(self):
-        if not self.user.has_perm("zemauth.can_see_projections"):
-            return None
-        return self._projections.total()
 
     @cached_property
     def refunds_totals(self):

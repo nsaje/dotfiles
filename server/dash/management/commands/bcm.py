@@ -47,7 +47,6 @@ UPDATABLE_FIELDS = {
     # CREDIT ONLY
     "service_fee": str,
     "license_fee": str,
-    "flat_fee_cc": int,
     # BUDGET ONLY
     "credit_id": int,
     "margin": str,
@@ -467,7 +466,7 @@ class Command(BaseCommand):
 
     def _print_credit(self, credit):
         self._print(
-            " - #{} {}{}, {} - {} (${}, service fee {}%, license fee {}%, flat ${})".format(
+            " - #{} {}{}, {} - {} (${}, service fee {}%, license fee {}%)".format(
                 credit.pk,
                 credit.agency or credit.account,
                 " (agency)" if credit.agency else "",
@@ -476,6 +475,5 @@ class Command(BaseCommand):
                 credit.amount,
                 credit.service_fee,
                 credit.license_fee,
-                utils.converters.CC_TO_DECIMAL_CURRENCY * credit.flat_fee_cc,
             )
         )

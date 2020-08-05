@@ -71,13 +71,6 @@ ACCOUNT_1 = {
     "ob_account_manager": None,
     "agency": "",
     "account_type": "Activated",
-    "pacing": None,
-    "allocated_budgets": Decimal("0"),
-    "spend_projection": Decimal("0"),
-    "license_fee_projection": Decimal("0"),
-    "flat_fee": 0,
-    "total_fee": 0,
-    "total_fee_projection": Decimal("0"),
     "sspd_url": settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=1),
 }
 
@@ -89,10 +82,6 @@ CAMPAIGN_1 = {
     "name": "test campaign 1",
     "status": 1,
     "campaign_manager": "supertestuser@test.com",
-    "pacing": None,
-    "allocated_budgets": None,
-    "spend_projection": None,
-    "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
     "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
 }
@@ -104,10 +93,6 @@ CAMPAIGN_2 = {
     "name": "test campaign 2",
     "status": 2,
     "campaign_manager": "mad.max@zemanta.com",
-    "pacing": None,
-    "allocated_budgets": None,
-    "spend_projection": None,
-    "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
     "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
 }

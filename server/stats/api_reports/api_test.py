@@ -91,7 +91,7 @@ class ApiReportsTest(TestCase):
 
     def test_extract_order(self):
         self.assertEqual(api_reports.extract_order("-clicks"), "-clicks")
-        self.assertEqual(api_reports.extract_order("pacing"), "e_media_cost")
+        self.assertEqual(api_reports.extract_order("bid_cpc"), "e_media_cost")
 
 
 class CampaignGoalTest(TestCase):

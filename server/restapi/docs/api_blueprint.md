@@ -2615,9 +2615,6 @@ Time breakdown:
 - Month (e.g. Month 3/2017)
 
 #### Entity Specific Fields
-- Account:
-    - Total Fee
-    - Recognized Flat Fee
 - Content Ad:
     - URL
     - Display URL

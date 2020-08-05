@@ -7,7 +7,6 @@ angular
             'zemauth.can_view_platform_cost_breakdown_derived',
             'zemauth.can_view_platform_cost_breakdown',
             'zemauth.can_view_agency_margin',
-            'zemauth.can_view_flat_fees',
         ];
 
         this.hasPermission = hasPermission;

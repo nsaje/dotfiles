@@ -151,10 +151,8 @@ class User(
             ("can_set_ad_group_max_cpc", "Can set ad group max cpc"),
             ("can_set_ad_group_max_cpm", "Can set ad group max CPM"),
             ("can_view_retargeting_settings", "Can view retargeting settings"),
-            ("can_view_flat_fees", "[IGNORED if not BCMv2] Can view flat fees in All accounts/accounts table"),
             ("can_control_ad_group_state_in_table", "Can control ad group state in Campaign / Ad Groups table"),
             ("can_see_campaign_goals", "Can see and manage campaign goals"),
-            ("can_see_projections", "Can see projections"),
             (
                 "can_see_managers_in_accounts_table",
                 "Can see Account Manager and Sales Representative in accounts table.",

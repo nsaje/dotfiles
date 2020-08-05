@@ -1,5 +1,4 @@
 import datetime
-from decimal import Decimal
 
 from django.conf import settings
 from django.core import mail
@@ -337,64 +336,6 @@ Zemanta
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, ["asd@gmail.com"])
-
-    def test_send_pacing_email_low(self):
-        account = magic_mixer.blend(dash_models.Account, name="Test account")
-
-        campaign = dash_models.Campaign(name="Test campaign", account=account, id=55)
-        campaign.save(self.request)
-
-        email_helper.send_pacing_notification_email(
-            campaign,
-            ["prodops@outbrain.com"],
-            Decimal("15.123456"),
-            "low",
-            {"ideal_daily_media_spend": Decimal("123.45678")},
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Your campaign is underpacing")
-        self.assertEqual(
-            mail.outbox[0].body,
-            """Hi, campaign manager,
-
-your campaign Test campaign (Test account) is underpacing with a rate of 15.12%.
-
-Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/v2/analytics/campaign/55 to get a list of all active ad groups.
-
-Yours truly,
-Zemanta""",
-        )
-        self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, ["prodops@outbrain.com"])
-
-    def test_send_pacing_email_high(self):
-        account = magic_mixer.blend(dash_models.Account, name="Test account")
-
-        campaign = dash_models.Campaign(name="Test campaign", account=account, id=55)
-        campaign.save(self.request)
-
-        email_helper.send_pacing_notification_email(
-            campaign,
-            ["prodops@outbrain.com"],
-            Decimal("155.123456"),
-            "high",
-            {"ideal_daily_media_spend": Decimal("123.45678")},
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Your campaign is overpacing")
-        self.assertEqual(
-            mail.outbox[0].body,
-            """Hi, campaign manager,
-
-your campaign Test campaign (Test account) is overpacing with a rate of 155.12%.
-
-Please consider adjusting daily spend caps on ad group source settings. Visit https://one.zemanta.com/v2/analytics/campaign/55 to get a list of all active ad groups.
-
-Yours truly,
-Zemanta""",
-        )
-        self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, ["prodops@outbrain.com"])
 
     @patch("utils.email_helper.send_account_notification_email")
     def test_send_obj_notification_email_account(self, mock_email):

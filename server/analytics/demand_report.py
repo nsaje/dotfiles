@@ -578,12 +578,7 @@ def _get_account_data(account_ids=None, date=None):
                 output_field=FloatField(),
             )
         )
-        .annotate(
-            credit_amount=ExpressionWrapper(
-                Coalesce("amount", 0) - converters.CC_TO_DECIMAL_CURRENCY * Coalesce("flat_fee_cc", 0),
-                output_field=FloatField(),
-            )
-        )
+        .annotate(credit_amount=ExpressionWrapper(Coalesce("amount", 0), output_field=FloatField()))
         .annotate(
             remaining_credit=Func(Coalesce("credit_amount", 0.0), function="SUM")
             - Func(Coalesce("budget_amount", 0.0), function="SUM")

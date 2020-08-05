@@ -38,7 +38,7 @@ class FilterTestCase(TestCase):
             self.campaign_goal_values[0].campaign_goal,
         )
 
-        self.public_fields_legacy = {"total_fee_projection", "total_fee", "flat_fee", "margin", "local_margin"}
+        self.public_fields_legacy = {"margin", "local_margin"}
 
         self.public_fields_no_extra_costs = self.public_fields_legacy | {
             "id",
@@ -206,9 +206,6 @@ class FilterTestCase(TestCase):
             "local_service_fee",
             "license_fee",
             "local_license_fee",
-            "license_fee_projection",
-            "pacing",
-            "spend_projection",
         }
 
     def _mock_constraints(self):
@@ -257,9 +254,6 @@ class FilterTestCase(TestCase):
                 "local_service_fee",
                 "license_fee",
                 "local_license_fee",
-                "license_fee_projection",
-                "pacing",
-                "spend_projection",
                 "b_data_cost",
                 "local_b_data_cost",
                 "b_media_cost",
@@ -348,14 +342,6 @@ class FilterTestCase(TestCase):
                 "conversion_rate_per_conversion_goal_5",
             ],
         )
-
-    def test_filter_columns_by_permission_projections(self):
-        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))
-        user = magic_mixer.blend_user(["can_see_projections", "can_view_flat_fees"])
-
-        permission_filter.filter_columns_by_permission(user, rows, self.goals)
-
-        self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["allocated_budgets"])
 
     def test_filter_columns_by_permission_agency(self):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals))

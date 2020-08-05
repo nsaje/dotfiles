@@ -4,12 +4,7 @@ from django.db import transaction
 
 import core.models
 
-SUPERUSER_EXCLUDED_PERMISSIONS = (
-    "disable_public_rcs",
-    "disable_public_newscorp",
-    "disable_budget_management",
-    "can_see_projections",
-)
+SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_public_rcs", "disable_public_newscorp", "disable_budget_management")
 
 
 class UserMixin(object):

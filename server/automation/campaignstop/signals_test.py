@@ -25,7 +25,6 @@ class NotifyBudgetsTest(TestCase):
             end_date=dates_helper.local_today(),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=1000,
-            flat_fee_cc=0,
             license_fee=decimal.Decimal("0.3333"),
         )
         self.budget = magic_mixer.blend(

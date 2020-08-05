@@ -54,7 +54,6 @@ class RealtimestatsServiceTest(TestCase):
             end_date=today,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
-            flat_fee_cc=0,
             service_fee=decimal.Decimal("0.1111"),
             license_fee=decimal.Decimal("0.3333"),
         )

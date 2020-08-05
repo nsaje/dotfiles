@@ -1175,9 +1175,6 @@ class HistoryTest(TestCase):
             , Amount set to "$100.00"
             , License Fee set to "20.00%"
             , Service Fee set to "10.00%"
-            , Flat Fee (cc) set to "$0.00"
-            , Flat Fee Start Date set to ""
-            , Flat Fee End Date set to ""
             , Status set to "Signed"
             , Comment set to ""
             """.format(

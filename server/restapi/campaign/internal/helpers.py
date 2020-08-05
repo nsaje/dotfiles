@@ -93,7 +93,7 @@ def get_budgets_overview(user, campaign, budget_items, credit_items):
     for item in credit_items:
         if item.status != dash.constants.CreditLineItemStatus.SIGNED or item.is_past():
             continue
-        data["unallocated_credit"] += Decimal(item.amount - item.flat_fee() - item.get_allocated_amount())
+        data["unallocated_credit"] += Decimal(item.amount - item.get_allocated_amount())
 
     for item in budget_items:
         if item.state() == dash.constants.BudgetLineItemState.PENDING:

@@ -236,9 +236,6 @@ class CreateCreditTestCase(TestCase):
                         "amount": 500.0,
                         "comment": "Some description",
                         "startDate": "2017-05-10",
-                        "flatFeeCc": 0,
-                        "flatFeeEndDate": None,
-                        "flatFeeStartDate": None,
                         "licenseFee": 0.1,
                         "endDate": "2017-06-20",
                         "status": 1,
@@ -281,104 +278,7 @@ class CreateCreditTestCase(TestCase):
                         "amount": 500.0,
                         "comment": "Some description",
                         "startDate": "2017-05-10",
-                        "flatFeeCc": 0,
-                        "flatFeeEndDate": None,
-                        "flatFeeStartDate": None,
                         "licenseFee": 0.1,
-                        "endDate": "2017-06-20",
-                        "status": 1,
-                    },
-                }
-            },
-        )
-        mock_slack.assert_called_with(
-            1,
-            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
-                credit_id=cli.pk,
-                agency_id=self.account.agency_id,
-                account_id=self.account.id,
-                account_name=self.account.get_long_name(),
-            ),
-        )
-
-    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
-    def test_flat_fee_upfront(self, mock_slack):
-        url = reverse("service.salesforce.credit")
-        data = {
-            "amountAtSigning": "500.0",
-            "billingContract": "contract",
-            "contractNumber": "00",
-            "description": "Some description",
-            "endDate": "2017-06-20",
-            "startDate": "2017-05-10",
-            "pfSchedule": "upon execution of this agreement",
-            "salesforceAccountId": "123",
-            "salesforceContractId": "111",
-            "z1_accountId": "b1",
-            "calc_variable_fee": "100.0",
-        }
-        r = self.client.put(url, data=data, format="json")
-        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
-        self.assertEqual(
-            r.json(),
-            {
-                "data": {
-                    "z1_cliId": cli.pk,
-                    "z1_data": {
-                        "amount": 500.0,
-                        "comment": "Some description",
-                        "endDate": "2017-06-20",
-                        "flatFeeCc": 1_000_000,
-                        "flatFeeEndDate": "2017-05-10",
-                        "flatFeeStartDate": "2017-05-10",
-                        "licenseFee": 0.0,
-                        "startDate": "2017-05-10",
-                        "status": 1,
-                    },
-                }
-            },
-        )
-        mock_slack.assert_called_with(
-            1,
-            "New credit #{credit_id} added on account <https://one.zemanta.com/v2/credits?agencyId={agency_id}&accountId={account_id}|{account_name}> with amount $500 and end date 2017-06-20.".format(
-                credit_id=cli.pk,
-                agency_id=self.account.agency_id,
-                account_id=self.account.id,
-                account_name=self.account.get_long_name(),
-            ),
-        )
-
-    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
-    def test_flat_fee(self, mock_slack):
-        url = reverse("service.salesforce.credit")
-        data = {
-            "amountAtSigning": "500.0",
-            "billingContract": "contract",
-            "contractNumber": "00",
-            "description": "Some description",
-            "startDate": "2017-05-10",
-            "endDate": "2017-06-20",
-            "pfSchedule": "monthly in installments",
-            "salesforceAccountId": "123",
-            "salesforceContractId": "111",
-            "z1_accountId": "b1",
-            "calc_variable_fee": "100.0",
-        }
-        r = self.client.put(url, data=data, format="json")
-        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
-        self.assertEqual(
-            r.json(),
-            {
-                "data": {
-                    "z1_cliId": cli.pk,
-                    "z1_data": {
-                        "amount": 500.0,
-                        "comment": "Some description",
-                        "startDate": "2017-05-10",
-                        "flatFeeCc": 1_000_000,
-                        "flatFeeEndDate": "2017-06-20",
-                        "flatFeeStartDate": "2017-05-10",
-                        "licenseFee": 0.0,
                         "endDate": "2017-06-20",
                         "status": 1,
                     },
@@ -433,9 +333,6 @@ class CreditsListTestCase(TestCase):
                         "createdDt": credit.created_dt.isoformat(),
                         "currency": "USD",
                         "endDate": "2018-12-31",
-                        "flatFeeCc": 0,
-                        "flatFeeEndDate": None,
-                        "flatFeeStartDate": None,
                         "licenseFee": "0.2000",
                         "modifiedDt": credit.modified_dt.isoformat(),
                         "refund": False,
@@ -476,9 +373,6 @@ class CreditsListTestCase(TestCase):
                         "createdDt": credit.created_dt.isoformat(),
                         "currency": "USD",
                         "endDate": "2018-12-31",
-                        "flatFeeCc": 0,
-                        "flatFeeEndDate": None,
-                        "flatFeeStartDate": None,
                         "licenseFee": "0.2000",
                         "modifiedDt": credit.modified_dt.isoformat(),
                         "refund": False,

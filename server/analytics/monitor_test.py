@@ -1,15 +1,11 @@
 import datetime
-from decimal import Decimal
 
 import mock
 from django.test import TestCase
 
-import dash.constants
-import utils.dates_helper
 from analytics import monitor
 from dash.models import BudgetDailyStatement
 from dash.models import BudgetLineItem
-from utils import converters
 
 
 def _create_daily_statement(date, budget, base_media_nano, base_data_nano=0, margin_nano=0):
@@ -61,56 +57,6 @@ class AuditSpendPatternsTest(TestCase):
         self.assertEqual(alarms[0][0], datetime.date(2015, 11, 22))
         alarms = monitor.audit_spend_patterns(datetime.date(2015, 11, 23))
         self.assertEqual(alarms[0][0], datetime.date(2015, 11, 23))
-
-
-class TestAuditSpendPatterns(TestCase):
-    fixtures = ["test_projections"]
-
-    def setUp(self):
-        self.today = datetime.date(2015, 11, 15)
-
-    def _create_statement(self, budget, date, base_media=500, base_data=0, margin=0):
-        _create_daily_statement(
-            date,
-            budget,
-            base_media * converters.CURRENCY_TO_NANO,
-            base_data_nano=base_data * converters.CURRENCY_TO_NANO,
-            margin_nano=margin * converters.CURRENCY_TO_NANO,
-        )
-
-    def _create_batch_statements(self, budgets, start_date, end_date=None, base_media=500):
-        for date in utils.dates_helper.date_range(start_date, end_date or self.today):
-            for budget in budgets:
-                if budget.state(date) != dash.constants.BudgetLineItemState.ACTIVE:
-                    continue
-                self._create_statement(budget, date, base_media=base_media)
-
-    def test_normal_pacing(self):
-        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
-
-        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date)
-        alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
-        self.assertFalse(alarms)
-
-    def test_high_pacing(self):
-        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
-
-        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, base_media=10000)
-        alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
-
-        self.assertTrue(alarms)
-        self.assertEqual(
-            [row[:3] for row in alarms], [(1, Decimal("780.5859"), "high"), (2, Decimal("1206.7395"), "high")]
-        )
-
-    def test_low_pacing(self):
-        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 12)
-
-        self._create_batch_statements(dash.models.BudgetLineItem.objects.all(), start_date, end_date, base_media=10)
-        alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
-
-        self.assertTrue(alarms)
-        self.assertEqual([row[:3] for row in alarms], [(1, Decimal("8.5864"), "low"), (2, Decimal("13.2741"), "low")])
 
 
 class AuditSpendIntegrity(TestCase):

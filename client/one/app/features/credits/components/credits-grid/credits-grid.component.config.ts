@@ -124,17 +124,6 @@ export const COLUMN_SERVICE_FEE: ColDef = {
     },
 };
 
-export const COLUMN_FLAT_FEE: ColDef = {
-    headerName: 'Flat fee',
-    field: 'flatFee',
-    width: 80,
-    minWidth: 80,
-    resizable: false,
-    valueFormatter: params => {
-        return getValueInCurrency(params.value, params.data.currency);
-    },
-};
-
 export const COLUMN_AMOUNT: ColDef = {
     headerName: 'Credit Amount',
     field: 'total',

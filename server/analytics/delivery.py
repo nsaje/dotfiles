@@ -7,7 +7,6 @@ from django.db.models import Prefetch
 
 import analytics.constants
 import analytics.helpers
-import analytics.projections
 import analytics.statements
 import dash.campaign_goals
 import dash.constants

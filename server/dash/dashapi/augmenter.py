@@ -102,7 +102,6 @@ def augment_account(row, loader, is_base_level=False):
             row,
         )
 
-        projections = loader.projections_map.get(account_id)
         refunds = loader.refunds_map.get(account_id)
 
         if loader.include_entity_tags:
@@ -116,21 +115,7 @@ def augment_account(row, loader, is_base_level=False):
             row.update({"account_tags": tag_helpers.entity_tag_query_set_to_string(account.entity_tags.all())})
 
     else:
-        projections = loader.projections_totals
         refunds = loader.refunds_totals
-
-    if projections is not None:
-        row.update(
-            {
-                "pacing": projections.get("pacing"),
-                "allocated_budgets": projections.get("allocated_media_budget"),
-                "spend_projection": projections.get("media_spend_projection"),
-                "license_fee_projection": projections.get("license_fee_projection"),
-                "flat_fee": projections.get("flat_fee"),
-                "total_fee": projections.get("total_fee"),
-                "total_fee_projection": projections.get("total_fee_projection"),
-            }
-        )
 
     if refunds:
         row.update(refunds)
@@ -171,24 +156,11 @@ def augment_campaign(row, loader, is_base_level=False):
         settings = loader.settings_map[campaign_id]
         copy_fields_if_exists(["status", "archived", "campaign_manager"], settings, row)
 
-        projections = loader.projections_map.get(campaign_id)
-
         if loader.include_entity_tags:
             row.update({"campaign_tags": tag_helpers.entity_tag_query_set_to_string(campaign.entity_tags.all())})
 
     else:
-        projections = loader.projections_totals
         refunds = loader.refunds_totals
-
-    if projections is not None:
-        row.update(
-            {
-                "pacing": projections.get("pacing"),
-                "allocated_budgets": projections.get("allocated_media_budget"),
-                "spend_projection": projections.get("media_spend_projection"),
-                "license_fee_projection": projections.get("license_fee_projection"),
-            }
-        )
 
     if refunds:
         row.update(refunds)

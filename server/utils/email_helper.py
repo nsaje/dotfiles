@@ -3,7 +3,6 @@ import html
 from utils import zlogging
 import traceback
 import re
-from decimal import Decimal
 from django.db.models import Q
 from django.conf import settings
 from django.urls import reverse
@@ -238,21 +237,6 @@ def email_manager_list(campaign):
     if campaign_manager is not None:
         ret.add(campaign_manager.email)
     return sorted(ret)
-
-
-def send_pacing_notification_email(campaign, emails, pacing, alert, projections):
-    send_official_email(
-        agency_or_user=campaign.account.agency,
-        recipient_list=emails,
-        **params_from_template(
-            dash.constants.EmailTemplateType.PACING_NOTIFICATION,
-            campaign=campaign,
-            account=campaign.account,
-            pacing=pacing.quantize(Decimal(".01")),
-            alert=alert == "low" and "underpacing" or "overpacing",
-            daily_ideal=projections["ideal_daily_media_spend"].quantize(Decimal(".01")),
-        ),
-    )
 
 
 def send_obj_changes_notification_email(obj, request, changes_text):

@@ -6,7 +6,6 @@ from django.db.models import F
 from django.db.models import Sum
 
 import analytics.helpers
-import analytics.projections
 import automation.models
 import backtosql
 import dash.constants
@@ -92,24 +91,6 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
         if d.day == 1 and change < first_in_month_threshold or d.day != 1 and change < threshold
     ]
     return alarming_dates
-
-
-def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), **constraints):
-    # fixme tfischer 05/11/18: Paused until account types are properly marked. INPW is considered activated.
-    if date is None:
-        date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
-
-    monthly_proj = analytics.projections.CurrentMonthBudgetProjections("campaign", date=date, **constraints)
-    alarms = []
-    for campaign_id in list(monthly_proj.keys()):
-        pacing = monthly_proj.row(campaign_id)["pacing"]
-        if pacing is None:
-            continue
-        if pacing > max_pacing:
-            alarms.append((campaign_id, pacing, "high", monthly_proj.row(campaign_id)))
-        if pacing < min_pacing:
-            alarms.append((campaign_id, pacing, "low", monthly_proj.row(campaign_id)))
-    return alarms
 
 
 def audit_autopilot_ad_groups():

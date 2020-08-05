@@ -506,7 +506,6 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
         self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
-
         self.assertEqual(
             resp_json["extra"],
             {

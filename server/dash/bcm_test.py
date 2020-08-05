@@ -112,202 +112,6 @@ class CreditsTestCase(TestCase):
         self.assertEqual(c.get_overlap(d(2016, 3, 10), d(2016, 3, 20)), (d(2016, 3, 10), d(2016, 3, 20)))
         self.assertEqual(c.get_overlap(d(2016, 1, 10), d(2016, 4, 20)), (d(2016, 3, 1), d(2016, 3, 31)))
 
-    def test_monthly_flat_fee(self):
-        def create_simple_credit(
-            start_date,
-            end_date,
-            amount=2000,
-            flat_fee_cc=900000,
-            service_fee=Decimal("0.123"),
-            license_fee=Decimal("0.456"),
-        ):
-            return create_credit(
-                account_id=2,
-                start_date=start_date,
-                end_date=end_date,
-                flat_fee_start_date=start_date,
-                flat_fee_end_date=end_date,
-                amount=amount,
-                flat_fee_cc=flat_fee_cc,
-                service_fee=service_fee,
-                license_fee=license_fee,
-                status=constants.CreditLineItemStatus.SIGNED,
-                created_by_id=1,
-            )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 3, 1), datetime.date(2016, 3, 31)).get_monthly_flat_fee(),
-            Decimal("90.000"),
-        )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 2, 1), datetime.date(2016, 3, 10)).get_monthly_flat_fee(),
-            Decimal("45.000"),
-        )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 2, 1), datetime.date(2016, 2, 10)).get_monthly_flat_fee(),
-            Decimal("90.000"),
-        )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 3, 1), datetime.date(2016, 5, 31)).get_monthly_flat_fee(),
-            Decimal("30.000"),
-        )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 4, 1), datetime.date(2016, 6, 30)).get_monthly_flat_fee(),
-            Decimal("30.000"),
-        )
-
-        self.assertEqual(
-            create_simple_credit(datetime.date(2016, 1, 1), datetime.date(2016, 3, 31)).get_monthly_flat_fee(),
-            Decimal("30.000"),
-        )
-
-        self.assertEqual(
-            create_credit(
-                account_id=2,
-                start_date=datetime.date(2016, 2, 10),
-                end_date=datetime.date(2016, 5, 20),
-                flat_fee_start_date=datetime.date(2016, 3, 1),
-                flat_fee_end_date=datetime.date(2016, 5, 1),
-                amount=2000,
-                flat_fee_cc=900000,
-                service_fee=Decimal("0.123"),
-                license_fee=Decimal("0.456"),
-                status=constants.CreditLineItemStatus.SIGNED,
-                created_by_id=1,
-            ).get_monthly_flat_fee(),
-            Decimal("30.000"),
-        )
-
-    def test_get_flat_fee_on_date_range_full_month(self):
-        d = datetime.date
-        full_month_credit = create_credit(
-            account_id=2,
-            start_date=d(2016, 2, 1),
-            end_date=d(2016, 2, 29),
-            flat_fee_start_date=d(2016, 2, 1),
-            flat_fee_end_date=d(2016, 2, 29),
-            amount=2000,
-            flat_fee_cc=900000,
-            service_fee=Decimal("0.123"),
-            license_fee=Decimal("0.456"),
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by_id=1,
-        )
-
-        self.assertEqual(
-            full_month_credit.get_flat_fee_on_date_range(d(2016, 1, 30), d(2016, 1, 31)), Decimal("0.0000")
-        )
-        self.assertEqual(
-            full_month_credit.get_flat_fee_on_date_range(d(2016, 1, 30), d(2016, 3, 31)), Decimal("90.0000")
-        )
-        self.assertEqual(
-            full_month_credit.get_flat_fee_on_date_range(d(2016, 2, 1), d(2016, 2, 29)), Decimal("90.0000")
-        )
-        self.assertEqual(
-            full_month_credit.get_flat_fee_on_date_range(d(2016, 2, 10), d(2016, 2, 20)), Decimal("90.0000")
-        )
-        self.assertEqual(
-            full_month_credit.get_flat_fee_on_date_range(d(2016, 2, 10), d(2016, 2, 20)), Decimal("90.0000")
-        )
-
-    def test_get_flat_fee_on_date_range_half_month(self):
-        d = datetime.date
-        half_month_credit = create_credit(
-            account_id=2,
-            start_date=d(2016, 2, 10),
-            end_date=d(2016, 2, 25),
-            flat_fee_start_date=d(2016, 2, 10),
-            flat_fee_end_date=d(2016, 2, 25),
-            amount=2000,
-            flat_fee_cc=900000,
-            service_fee=Decimal("0.123"),
-            license_fee=Decimal("0.456"),
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by_id=1,
-        )
-        self.assertEqual(half_month_credit.get_flat_fee_on_date_range(d(2016, 1, 1), d(2016, 1, 31)), Decimal("0.0000"))
-        self.assertEqual(
-            half_month_credit.get_flat_fee_on_date_range(d(2016, 2, 1), d(2016, 2, 29)), Decimal("90.0000")
-        )
-        self.assertEqual(half_month_credit.get_flat_fee_on_date_range(d(2016, 3, 1), d(2016, 3, 31)), Decimal("0.0000"))
-
-    def test_get_flat_fee_on_date_range_yearly_credit(self):
-        d = datetime.date
-        yearly_credit = create_credit(
-            account_id=2,
-            start_date=d(2015, 2, 13),
-            end_date=d(2016, 2, 13),
-            flat_fee_start_date=d(2015, 3, 1),
-            flat_fee_end_date=d(2016, 2, 1),
-            amount=2000,
-            flat_fee_cc=1200000,
-            service_fee=Decimal("0.123"),
-            license_fee=Decimal("0.456"),
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by_id=1,
-        )
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 1, 1), d(2015, 1, 31)), Decimal("0.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 2, 1), d(2015, 2, 28)), Decimal("0.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 3, 1), d(2015, 3, 31)), Decimal("10.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 4, 1), d(2015, 4, 30)), Decimal("10.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 1, 1), d(2015, 4, 30)), Decimal("20.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2014, 1, 1), d(2015, 4, 30)), Decimal("20.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2014, 1, 1), d(2016, 4, 30)), Decimal("120.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 3, 1), d(2015, 10, 31)), Decimal("80.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2015, 1, 1), d(2015, 10, 31)), Decimal("80.0000"))
-        self.assertEqual(yearly_credit.get_flat_fee_on_date_range(d(2016, 1, 1), d(2016, 1, 31)), Decimal("10.0000"))
-
-    def test_get_flat_fee_on_date_range_general_credit(self):
-        d = datetime.date
-        general_credit = create_credit(
-            account_id=2,
-            start_date=d(2016, 1, 10),
-            end_date=d(2016, 5, 31),
-            flat_fee_start_date=d(2016, 1, 10),
-            flat_fee_end_date=d(2016, 5, 31),
-            amount=2000,
-            flat_fee_cc=900000,
-            service_fee=Decimal("0.123"),
-            license_fee=Decimal("0.456"),
-            status=constants.CreditLineItemStatus.SIGNED,
-            created_by_id=1,
-        )
-        flat_fee = 0
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2015, 12, 1), d(2015, 12, 31))
-        self.assertEqual(amount, Decimal("0.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 1, 1), d(2016, 1, 31))
-        self.assertEqual(amount, Decimal("18.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 2, 1), d(2016, 2, 29))
-        self.assertEqual(amount, Decimal("18.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 3, 1), d(2016, 3, 31))
-        self.assertEqual(amount, Decimal("18.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 4, 1), d(2016, 4, 30))
-        self.assertEqual(amount, Decimal("18.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 5, 1), d(2016, 5, 31))
-        self.assertEqual(amount, Decimal("18.0000"))
-        flat_fee += amount
-
-        amount = general_credit.get_flat_fee_on_date_range(d(2016, 6, 1), d(2016, 6, 30))
-        self.assertEqual(amount, Decimal("0.0000"))
-        flat_fee += amount
-
-        self.assertEqual(flat_fee, Decimal("90.0000"))
-
     def test_campaign_credit(self):
         request = HttpRequest()
         request.user = User.objects.get(pk=1)
@@ -809,8 +613,7 @@ class BudgetsTestCase(TestCase):
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(10),
-            amount=1200,
-            flat_fee_cc=2000000,
+            amount=1000,
             license_fee=Decimal("0.456"),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
@@ -859,11 +662,6 @@ class BudgetsTestCase(TestCase):
             campaign_id=2,
         )
         self.assertEqual(c.get_allocated_amount(), 1000)
-
-        c.flat_fee_cc = 3000000
-        with self.assertRaises(ValidationError) as err:
-            # Cannot add flat fee if there is no room
-            c.save()
 
     def test_editing_inactive(self):
         b = models.BudgetLineItem.objects.get(pk=1)
@@ -1819,7 +1617,7 @@ class BCMCommandTestCase(TestCase):
     def test_list_credit(self):
         self.assertEqual(
             self._call_command("bcm", "list", "credits", str(self.c.pk)),
-            """ - #{} test account 2, 2015-11-30 - 2015-12-02 ($1000, service fee 0.2000%, license fee 0.1000%, flat $0.0000)
+            """ - #{} test account 2, 2015-11-30 - 2015-12-02 ($1000, service fee 0.2000%, license fee 0.1000%)
 """.format(
                 self.c.pk
             ),
@@ -1953,13 +1751,6 @@ class BCMCommandTestCase(TestCase):
         err = io.StringIO()
         with self.assertRaises(SystemExit):
             self._call_command(
-                "bcm", "update", "budgets", str(self.b1.pk), "--flat_fee_cc", "1500", "--no-confirm", stderr=err
-            )
-        self.assertEqual(err.getvalue(), "Wrong fields.\n")
-
-        err = io.StringIO()
-        with self.assertRaises(SystemExit):
-            self._call_command(
                 "bcm", "update", "budgets", str(self.b1.pk), "--license_fee", "0.20", "--no-confirm", stderr=err
             )
         self.assertEqual(err.getvalue(), "Wrong fields.\n")
@@ -1990,11 +1781,6 @@ class BCMCommandTestCase(TestCase):
         self.assertEqual(self.c.license_fee, Decimal("0.3"))
         self.assertIn("WARNING: Daily statements", msg.getvalue())
 
-    def test_update_credit_flat_fee(self):
-        self._call_command("bcm", "update", "credits", str(self.c.pk), "--flat_fee_cc", "1234", "--no-confirm")
-        self.c.refresh_from_db()
-        self.assertEqual(self.c.flat_fee_cc, 1234)
-
     def test_update_credit_with_nonexisting_fields(self):
         err = io.StringIO()
         with self.assertRaises(SystemExit):
@@ -2010,15 +1796,6 @@ class BCMCommandTestCase(TestCase):
             self._call_command("bcm", "update", "credits", str(self.c.pk), "--amount", "50", "--no-confirm", stderr=err)
         self.c.refresh_from_db()
         self.assertEqual(self.c.amount, 1000)
-        self.assertEqual(err.getvalue(), "Validation failed.\n")
-
-    def test_update_credit_with_too_large_flat_fee(self):
-        err = io.StringIO()
-        with self.assertRaises(SystemExit):
-            self._call_command(
-                "bcm", "update", "credits", str(self.c.pk), "--flat_fee_cc", "15000000", "--no-confirm", stderr=err
-            )
-        self.c.refresh_from_db()
         self.assertEqual(err.getvalue(), "Validation failed.\n")
 
     def test_update_credit_with_too_early_end_date(self):

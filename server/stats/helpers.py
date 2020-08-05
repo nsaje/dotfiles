@@ -396,9 +396,6 @@ def should_query_dashapi_first(order, target_dimension):
     if order_field in fields.OTHER_DASH_FIELDS:
         return True
 
-    if order_field in fields.PROJECTION_FIELDS:
-        return True
-
     return False
 
 

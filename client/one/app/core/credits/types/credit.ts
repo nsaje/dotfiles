@@ -17,7 +17,6 @@ export interface Credit {
     accountName?: string | null;
     agencyId?: string | null;
     agencyName?: string | null;
-    flatFee?: string;
     amount: number;
     contractId: string | null;
     contractNumber: string | null;

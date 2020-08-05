@@ -279,13 +279,11 @@ def calculate_available_campaign_budget(campaign):
 
 def calculate_allocated_and_available_credit(account):
     credits = _retrieve_active_creditlineitems(account)
-    credit_total = credits.aggregate(
-        amount_sum=Sum("amount"), flat_fee_sum=converters.CC_TO_DECIMAL_CURRENCY * Sum("flat_fee_cc")
-    )
+    credit_total = credits.aggregate(amount_sum=Sum("amount"))
     budget_total = dash.models.BudgetLineItem.objects.filter(credit__in=credits).aggregate(
         amount_sum=Sum("amount"), freed_sum=converters.CC_TO_DECIMAL_CURRENCY * Sum("freed_cc")
     )
-    assigned = (credit_total["amount_sum"] or 0) - (credit_total["flat_fee_sum"] or 0)
+    assigned = credit_total["amount_sum"] or 0
     allocated = (budget_total["amount_sum"] or 0) - (budget_total["freed_sum"] or 0)
 
     return allocated, (assigned or 0) - allocated

@@ -18,12 +18,6 @@ FORMAT_4_DECIMALS = [
     "service_fee",
     "license_fee",
     "margin",
-    "total_fee",
-    "flat_fee",
-    "allocated_budgets",
-    "spend_projection",
-    "license_fee_projection",
-    "total_fee_projection",
     "avg_tos",
     "ctr",
     "at_cost",
@@ -46,7 +40,7 @@ FORMAT_4_DECIMALS = [
     "etfm_mrc100_vcpm",
     "etfm_vast4_vcpm",
 ]
-FORMAT_DIVIDE_100 = ["percent_new_users", "bounce_rate", "ctr", "click_discrepancy", "pacing"]
+FORMAT_DIVIDE_100 = ["percent_new_users", "bounce_rate", "ctr", "click_discrepancy"]
 FORMAT_EMPTY_TO_0 = [
     "media_cost",
     "b_media_cost",
@@ -69,8 +63,6 @@ FORMAT_EMPTY_TO_0 = [
     "clicks",
     "impressions",
     "ctr",
-    "total_fee",
-    "flat_fee",
 ]
 FORMAT_HASH = ["image_hash"]
 

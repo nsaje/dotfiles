@@ -64,7 +64,7 @@ Dash API
 
 -   Loaders hold the data, augmenter makes from from data in loaders.
 
--   There is one case (I think projections) where data is loaded based
+-   There was one case where data was loaded based
     on whether user has the right permission. This goes against the
     way the module is designed - it should load all data, if there is
     performance issue, the performance issue should be resolved and

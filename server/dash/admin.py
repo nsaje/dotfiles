@@ -1238,7 +1238,6 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
         "end_date",
         "currency",
         "amount",
-        "flat_fee_cc",
         "status",
         "license_fee",
         "refund",

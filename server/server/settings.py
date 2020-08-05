@@ -430,7 +430,6 @@ DCRON = {
         "audit_credits": dcron_constants.Ownership.PRODOPS,
         "audit_hacks": dcron_constants.Ownership.PRODOPS,
         "audit_overspend": dcron_constants.Ownership.PRODOPS,
-        "audit_pacing": dcron_constants.Ownership.PRODOPS,
         "audit_publisher_high_ctr": dcron_constants.Ownership.PRODOPS,
         "audit_spend_patterns": dcron_constants.Ownership.PRODOPS,
         "daily_audit": dcron_constants.Ownership.PRODOPS,

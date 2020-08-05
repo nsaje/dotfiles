@@ -54,7 +54,6 @@ class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSer
 class CreditSerializer(restapi.credit.internal.serializers.CreditSerializer):
     def __init__(self, *args, **kwargs):
         super(CreditSerializer, self).__init__(*args, **kwargs)
-        self.fields.pop("flat_fee")
         self.fields.pop("num_of_budgets")
 
 

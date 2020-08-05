@@ -7,8 +7,6 @@ import core.features.multicurrency
 import core.models.account
 import core.models.outbrain_account
 import dash.constants
-import utils.converters
-import utils.exc
 import zemauth.models
 
 from . import constants
@@ -45,15 +43,7 @@ def create_credit_line_item(request, data):
     )
     cli.update(**_get_client_lookup(data["z1_account_id"]))
 
-    if data["pf_schedule"] == constants.PF_SCHEDULE_FLAT_FEE:
-        cli["flat_fee_start_date"] = start_date
-        cli["flat_fee_end_date"] = end_date
-        cli["flat_fee_cc"] = int(utils.converters.CURRENCY_TO_CC * data["calc_variable_fee"])
-    elif data["pf_schedule"] == constants.PF_SCHEDULE_UPFRONT:
-        cli["flat_fee_start_date"] = start_date
-        cli["flat_fee_end_date"] = start_date
-        cli["flat_fee_cc"] = int(utils.converters.CURRENCY_TO_CC * data["calc_variable_fee"])
-    elif data["pf_schedule"] == constants.PF_SCHEDULE_PCT_FEE:
+    if data["pf_schedule"] == constants.PF_SCHEDULE_PCT_FEE:
         cli["license_fee"] = data["pct_of_budget"]
 
     item = core.features.bcm.credit_line_item.CreditLineItem.objects.create(

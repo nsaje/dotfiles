@@ -929,7 +929,6 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
             end_date=dates_helper.local_today(),
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=decimal.Decimal("1000.0"),
-            flat_fee_cc=0,
             license_fee=decimal.Decimal("0.2"),
         )
 
