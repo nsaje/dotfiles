@@ -729,7 +729,7 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
     @mock.patch("utils.slack.publish")
     def test_put_default_icon_fail(self, mock_slack_publish, mock_external_validation, mock_s3_upload, _):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
-        account = self.mix_account(agency=agency, name="Generic account")
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
 
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
@@ -1064,7 +1064,7 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
     @mock.patch("utils.slack.publish")
     def test_put_allowed_sources_error(self, mock_slack_publish, mock_get_non_removable_sources_ids):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
-        account = self.mix_account(agency=agency, name="Generic account")
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
         account.settings.update_unsafe(
             None,
             name=account.name,
@@ -1117,7 +1117,7 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
 
     def test_put_deals_error(self):
         agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
-        account = self.mix_account(agency=agency, name="Generic account")
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account")
 
         account.settings.update_unsafe(
             None,

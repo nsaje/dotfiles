@@ -5,8 +5,6 @@ import rest_framework.serializers
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
-import zemauth.access
-from zemauth.features.entity_permission import Permission
 
 
 class DirectDealConnectionAccountSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -54,22 +52,6 @@ class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         read_only=True, source="get_number_of_connected_campaigns"
     )
     num_of_adgroups = rest_framework.serializers.IntegerField(read_only=True, source="get_number_of_connected_adgroups")
-
-    def to_internal_value(self, data):
-        value = super().to_internal_value(data)
-
-        value["agency"] = (
-            zemauth.access.get_agency(self.context["request"].user, Permission.READ, value.get("agency_id"))
-            if value.get("agency_id")
-            else None
-        )
-        value["account"] = (
-            zemauth.access.get_account(self.context["request"].user, Permission.READ, value.get("account_id"))
-            if value.get("account_id")
-            else None
-        )
-
-        return value
 
 
 class DirectDealQueryParams(

@@ -162,7 +162,14 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         for item in data:
             if item.get("id") is not None:
                 try:
-                    new_deals.append(zemauth.access.get_direct_deal(request.user, Permission.READ, item.get("id")))
+                    deal = core.features.deals.DirectDeal.objects.filter(pk=item.get("id")).first()
+                    if not deal:
+                        raise utils.exc.MissingDataError("Deal does not exist")
+                    if deal.agency_id and ad_group.campaign.account.agency_id != deal.agency_id:
+                        raise utils.exc.MissingDataError("Deal does not exist")
+                    if deal.account_id and ad_group.campaign.account_id != deal.account_id:
+                        raise utils.exc.MissingDataError("Deal does not exist")
+                    new_deals.append(deal)
                     errors.append(None)
                 except utils.exc.MissingDataError as err:
                     errors.append({"id": [str(err)]})

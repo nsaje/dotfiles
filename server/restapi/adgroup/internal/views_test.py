@@ -296,8 +296,8 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)
 
     def test_put_deals(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
-        account = magic_mixer.blend(core.models.Account, agency=agency)
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
 

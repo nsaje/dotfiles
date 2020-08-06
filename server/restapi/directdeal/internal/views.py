@@ -84,6 +84,17 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        agency_id = data.get("agency_id")
+        data["agency"] = (
+            zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+        )
+
+        account_id = data.get("account_id")
+        data["account"] = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
+
         deal = zemauth.access.get_direct_deal(request.user, Permission.WRITE, deal_id)
         deal.update(request, **data)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
@@ -97,6 +108,16 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        agency_id = data.get("agency_id")
+        data["agency"] = (
+            zemauth.access.get_agency(request.user, Permission.WRITE, agency_id) if agency_id is not None else None
+        )
+
+        account_id = data.get("account_id")
+        data["account"] = (
+            zemauth.access.get_account(request.user, Permission.WRITE, account_id) if account_id is not None else None
+        )
 
         with transaction.atomic():
             new_deal = core.features.deals.DirectDeal.objects.create(
