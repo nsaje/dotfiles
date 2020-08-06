@@ -2030,6 +2030,37 @@ class MaxAutopilotBidTestCase(TestCase):
         self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("15.0"))
 
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_max_autopilot_bid_to_unlimited(self, mock_autopilot):
+        self._init_ad_group(constants.BiddingType.CPC)
+        self.ad_group.settings.update(
+            None,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+            max_autopilot_bid=decimal.Decimal("10.0"),
+        )
+
+        bid_modifier_1 = magic_mixer.blend(
+            models.BidModifier,
+            ad_group=self.ad_group,
+            type=bid_modifiers.BidModifierType.SOURCE,
+            modifier=0.3,
+            target=bid_modifiers.TargetConverter._to_source_target(self.ad_group_source_1.source.bidder_slug),
+        )
+        self.ad_group.settings.update(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC, max_autopilot_bid=None
+        )
+
+        self.ad_group_source_1.refresh_from_db()
+        self.ad_group_source_2.refresh_from_db()
+
+        bid_modifier_1.refresh_from_db()
+        self.assertEqual(bid_modifier_1.modifier, 0.3)
+
+        self.assertEqual(self.ad_group.settings.max_autopilot_bid, None)
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("10.0"))
+        self.assertEqual(self.ad_group_source_1.settings.cpc_cc, decimal.Decimal("3.0"))
+        self.assertEqual(self.ad_group_source_2.settings.cpc_cc, decimal.Decimal("10.0"))
+
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_disable_autopilot_cpm(self, mock_autopilot):
         self._init_ad_group(constants.BiddingType.CPM)
         self.ad_group.settings.update(
