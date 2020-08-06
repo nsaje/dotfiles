@@ -159,7 +159,7 @@ class TestSupplyReportsService(TestCase):
         service.send_supply_reports()
 
         mock_get_source_stats_from_query.assert_called_once_with(month_start_str, yesterday_str)
-        mock_get_publisher_stats.assert_called_once_with(recipient, yesterday)
+        mock_get_publisher_stats.assert_called_once_with(recipient, yesterday_str)
         mock_send_supply_report_email.assert_has_calls(
             [
                 mock.call("example.a@source.one", yesterday, 0, 0, "Subject", None, None, None, None),

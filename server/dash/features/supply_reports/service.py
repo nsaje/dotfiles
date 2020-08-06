@@ -94,7 +94,7 @@ def send_supply_reports(recipient_ids=[], dry_run=False, skip_already_sent=False
             publisher_report = None
             if recipient.publishers_report:
                 if stats_id not in publisher_stats:
-                    publisher_stats[stats_id] = _get_publisher_stats(recipient, yesterday)
+                    publisher_stats[stats_id] = _get_publisher_stats(recipient, yesterday_str)
 
                 if publisher_stats[stats_id]:
                     publisher_report = _create_csv(
