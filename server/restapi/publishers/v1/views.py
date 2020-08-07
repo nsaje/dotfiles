@@ -124,12 +124,15 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                 core.features.publisher_groups.service.unlist_publishers(request, [cleaned_entry], entity)
 
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
+                # TODO: BID MODIFIERS: DEPRECATED; need to make a plan to remove this completely
                 if entry.get("source") is not None and "modifier" in entry:
                     try:
                         core.features.bid_modifiers.set(
                             ad_group,
                             core.features.bid_modifiers.BidModifierType.PUBLISHER,
-                            entry["name"],
+                            core.features.bid_modifiers.ApiConverter.to_target(
+                                core.features.bid_modifiers.BidModifierType.PUBLISHER, entry["name"]
+                            ),
                             entry["source"],
                             entry.get("modifier"),
                             user=request.user,

@@ -284,7 +284,7 @@ class LegacyPublisherBlacklistTest(restapi.common.views_base_test_case.RESTAPITe
         test_put = [
             {
                 "level": "ADGROUP",
-                "name": "testpub1",
+                "name": "tEsTpUB1",
                 "source": self.source.bidder_slug,
                 "status": "ENABLED",
                 "modifier": 0.5,
