@@ -672,8 +672,8 @@ def calculate_budgets_flight_dates_for_date_range(campaign, start_date, end_date
         if budgets_end_date < budget.start_date:
             # Non-overlapping budgets
             today = utils.dates_helper.local_today()
-            if budgets_start_date <= today and budgets_end_date >= today:
-                # Use flight dates of currently active budgets
+            if budgets_end_date >= today:
+                # Use flight dates of currently active or upcoming budgets
                 return budgets_start_date, budgets_end_date
             else:
                 # Proceed finding flight dates of budgets that will be active next

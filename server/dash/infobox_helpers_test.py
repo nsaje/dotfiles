@@ -360,6 +360,78 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         self.assertEqual(start_date, datetime.date(2018, 1, 12))
         self.assertEqual(end_date, datetime.date(2018, 1, 13))
 
+    @mock.patch("utils.dates_helper.local_today")
+    def test_calculate_budgets_flight_dates_for_date_range_upcoming(self, mock_local_today):
+        campaign = magic_mixer.blend(dash.models.Campaign)
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=campaign.account,
+            start_date=datetime.date(2018, 1, 1),
+            end_date=datetime.date(2118, 1, 1),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=100000,
+            license_fee=decimal.Decimal("0.1"),
+        )
+        magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date(2018, 1, 4),
+            end_date=datetime.date(2018, 1, 8),
+            amount=100,
+        )
+        magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date(2018, 1, 8),
+            end_date=datetime.date(2018, 1, 12),
+            amount=100,
+        )
+        magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date(2018, 1, 16),
+            end_date=datetime.date(2018, 1, 20),
+            amount=100,
+        )
+
+        mock_local_today.return_value = datetime.date(2018, 1, 1)
+        start_date, end_date = dash.infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, datetime.date(2017, 12, 15), datetime.date(2018, 1, 30)
+        )
+        self.assertEqual(start_date, datetime.date(2018, 1, 4))
+        self.assertEqual(end_date, datetime.date(2018, 1, 12))
+
+        mock_local_today.return_value = datetime.date(2018, 1, 9)
+        start_date, end_date = dash.infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, datetime.date(2017, 12, 15), datetime.date(2018, 1, 30)
+        )
+        self.assertEqual(start_date, datetime.date(2018, 1, 4))
+        self.assertEqual(end_date, datetime.date(2018, 1, 12))
+
+        mock_local_today.return_value = datetime.date(2018, 1, 15)
+        start_date, end_date = dash.infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, datetime.date(2017, 12, 15), datetime.date(2018, 1, 30)
+        )
+        self.assertEqual(start_date, datetime.date(2018, 1, 16))
+        self.assertEqual(end_date, datetime.date(2018, 1, 20))
+
+        mock_local_today.return_value = datetime.date(2018, 1, 17)
+        start_date, end_date = dash.infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, datetime.date(2017, 12, 15), datetime.date(2018, 1, 30)
+        )
+        self.assertEqual(start_date, datetime.date(2018, 1, 16))
+        self.assertEqual(end_date, datetime.date(2018, 1, 20))
+
+        mock_local_today.return_value = datetime.date(2018, 1, 24)
+        start_date, end_date = dash.infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, datetime.date(2017, 12, 15), datetime.date(2018, 1, 30)
+        )
+        self.assertEqual(start_date, datetime.date(2018, 1, 16))
+        self.assertEqual(end_date, datetime.date(2018, 1, 20))
+
 
 class InfoBoxAccountHelpersTestCase(BaseTestCase):
     fixtures = ["test_models.yaml"]
