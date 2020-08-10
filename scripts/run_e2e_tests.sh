@@ -61,6 +61,9 @@ testim \
     --name "Deals Library (Internal User)" \
     --name "Deals Library (Agency Manager)" \
     --name "Deals Library (Account Manager)" \
+    --name "Automations Rules (Account Manager)" \
+    --name "Automations Rules (Agency Manager)" \
+    --name "Automations Rules (Internal User)" \
     --token "$TESTIM_TOKEN" \
     --project "$TESTIM_PROJECT" \
     --host "$GRID_HOST" \
