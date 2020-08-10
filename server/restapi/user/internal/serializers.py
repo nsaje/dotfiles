@@ -97,7 +97,3 @@ class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     first_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     last_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     entity_permissions = EntityPermissionsSerializer(many=True)
-
-
-class CreateUserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    users = UserSerializer(many=True, allow_empty=False)

@@ -14,7 +14,7 @@ from zemauth.features.entity_permission import Permission
 class UserViewSetTestBase(FutureRESTAPITestCase):
     def _setup_test_users(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
         return calling_user, requested_user
 
     def _prepare_callers_permissions(self, calling_user, caller_role):
@@ -398,26 +398,24 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [
-                        {"agencyId": agency.id, "permission": Permission.READ},
-                        {"agencyId": agency.id, "permission": Permission.BUDGET},
-                    ],
-                }
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [
+                    {"agencyId": agency.id, "permission": Permission.READ},
+                    {"agencyId": agency.id, "permission": Permission.BUDGET},
+                ],
+            }
+        ]
 
         r = self._call_create(post_data, agency)
-        resp_json = self.assertResponseValid(r, status_code=201)
-        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
-        self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
-        self.assertEqual(resp_json["data"]["users"][0]["lastName"], "")
+        resp_json = self.assertResponseValid(r, status_code=201, data_type=list)
+        self.assertEqual(resp_json["data"][0]["email"], "new.user@outbrain.com")
+        self.assertEqual(resp_json["data"][0]["firstName"], "")
+        self.assertEqual(resp_json["data"][0]["lastName"], "")
 
         self.assertCountEqual(
-            resp_json["data"]["users"][0]["entityPermissions"],
+            resp_json["data"][0]["entityPermissions"],
             [
                 {"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ},
                 {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET, "readonly": True},
@@ -429,28 +427,26 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [
-                        {"accountId": account.id, "permission": Permission.READ},
-                        {"accountId": account.id, "permission": Permission.USER},
-                    ],
-                }
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [
+                    {"accountId": account.id, "permission": Permission.READ},
+                    {"accountId": account.id, "permission": Permission.USER},
+                ],
+            }
+        ]
 
         r = self._call_create(post_data, agency)
 
-        resp_json = self.assertResponseValid(r, status_code=201)
+        resp_json = self.assertResponseValid(r, status_code=201, data_type=list)
 
-        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
-        self.assertEqual(resp_json["data"]["users"][0]["firstName"], "")
-        self.assertEqual(resp_json["data"]["users"][0]["lastName"], "")
+        self.assertEqual(resp_json["data"][0]["email"], "new.user@outbrain.com")
+        self.assertEqual(resp_json["data"][0]["firstName"], "")
+        self.assertEqual(resp_json["data"][0]["lastName"], "")
 
         self.assertCountEqual(
-            resp_json["data"]["users"][0]["entityPermissions"],
+            resp_json["data"][0]["entityPermissions"],
             [
                 {"agencyId": None, "accountId": str(account.id), "permission": Permission.READ},
                 {"agencyId": None, "accountId": str(account.id), "permission": Permission.USER},
@@ -461,19 +457,17 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [
-                        {"agencyId": agency.id, "permission": Permission.READ},
-                        {"agencyId": agency.id, "permission": Permission.BUDGET},
-                        {"accountId": account.id, "permission": Permission.READ},
-                        {"accountId": account.id, "permission": Permission.USER},
-                    ],
-                }
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [
+                    {"agencyId": agency.id, "permission": Permission.READ},
+                    {"agencyId": agency.id, "permission": Permission.BUDGET},
+                    {"accountId": account.id, "permission": Permission.READ},
+                    {"accountId": account.id, "permission": Permission.USER},
+                ],
+            }
+        ]
 
         r = self._call_create(post_data, agency)
 
@@ -485,16 +479,12 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [
-                        {"agencyId": agency.id, "accountId": account.id, "permission": Permission.READ}
-                    ],
-                }
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [{"agencyId": agency.id, "accountId": account.id, "permission": Permission.READ}],
+            }
+        ]
 
         r = self._call_create(post_data, agency)
 
@@ -517,18 +507,16 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
         another_account = self.mix_account(agency=agency)
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [
-                        {"accountId": account.id, "permission": Permission.READ},
-                        {"accountId": account.id, "permission": Permission.USER},
-                        {"accountId": another_account.id, "permission": Permission.USER},
-                    ],
-                }
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [
+                    {"accountId": account.id, "permission": Permission.READ},
+                    {"accountId": account.id, "permission": Permission.USER},
+                    {"accountId": another_account.id, "permission": Permission.USER},
+                ],
+            }
+        ]
 
         r = self._call_create(post_data, agency)
 
@@ -539,20 +527,21 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
         existing_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
+        test_helper.add_permissions(existing_user, ["fea_use_entity_permission"])
         test_helper.add_entity_permissions(existing_user, [Permission.READ], agency)
 
         post_data = self._prepare_request(existing_user.email, agency.id, None, Permission.READ)
 
         r = self._call_create(post_data, agency)
 
-        resp_json = self.assertResponseValid(r, status_code=201)
+        resp_json = self.assertResponseValid(r, status_code=201, data_type=list)
 
-        self.assertEqual(resp_json["data"]["users"][0]["email"], existing_user.email)
-        self.assertEqual(resp_json["data"]["users"][0]["firstName"], existing_user.first_name)
-        self.assertEqual(resp_json["data"]["users"][0]["lastName"], existing_user.last_name)
+        self.assertEqual(resp_json["data"][0]["email"], existing_user.email)
+        self.assertEqual(resp_json["data"][0]["firstName"], existing_user.first_name)
+        self.assertEqual(resp_json["data"][0]["lastName"], existing_user.last_name)
 
         self.assertCountEqual(
-            resp_json["data"]["users"][0]["entityPermissions"],
+            resp_json["data"][0]["entityPermissions"],
             [{"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ}],
         )
 
@@ -574,12 +563,12 @@ class UserViewSetCreateTest(UserViewSetTestBase):
 
         r = self._call_create(post_data, agency)
 
-        resp_json = self.assertResponseValid(r, status_code=201)
+        resp_json = self.assertResponseValid(r, status_code=201, data_type=list)
 
-        self.assertEqual(resp_json["data"]["users"][0]["email"], "new.user@outbrain.com")
+        self.assertEqual(resp_json["data"][0]["email"], "new.user@outbrain.com")
 
         self.assertCountEqual(
-            resp_json["data"]["users"][0]["entityPermissions"],
+            resp_json["data"][0]["entityPermissions"],
             [{"agencyId": None, "accountId": None, "permission": Permission.READ}],
         )
 
@@ -609,22 +598,20 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
 
-        post_data = {
-            "users": [
-                {
-                    "email": "new.user@outbrain.com",
-                    "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
-                },
-                {
-                    "email": "new.user2@outbrain.com",
-                    "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
-                },
-            ]
-        }
+        post_data = [
+            {
+                "email": "new.user@outbrain.com",
+                "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
+            },
+            {
+                "email": "new.user2@outbrain.com",
+                "entityPermissions": [{"permission": Permission.READ, "accountId": account.id}],
+            },
+        ]
 
         r = self._call_create(post_data, agency)
 
-        self.assertResponseValid(r, status_code=201)
+        self.assertResponseValid(r, status_code=201, data_type=list)
 
     def _prepare_request(self, email, agency_id, account_id, permission):
         ep = {"permission": permission}
@@ -633,14 +620,14 @@ class UserViewSetCreateTest(UserViewSetTestBase):
         if account_id is not None:
             ep["accountId"] = account_id
 
-        post_data = {"users": [{"email": email, "entityPermissions": [ep]}]}
+        post_data = [{"email": email, "entityPermissions": [ep]}]
         return post_data
 
 
 class UserViewSetDeleteTest(UserViewSetTestBase):
     def test_delete_account_manager_by_agency_manager_by_agency_id(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -656,7 +643,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_account_manager_by_agency_manager_by_account_id(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "agency_mgr"
@@ -673,7 +660,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_account_manager_by_account_manager(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
 
         account, agency, permissions = self._prepare_account_manager_test_case(
             calling_user, requested_user, "account_mgr"
@@ -689,7 +676,7 @@ class UserViewSetDeleteTest(UserViewSetTestBase):
 
     def test_delete_agency_manager_by_agency_manager(self):
         calling_user: zemauth.models.User = self.user
-        requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
+        requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
 
@@ -762,24 +749,28 @@ class UserViewSetListTest(UserViewSetTestBase):
         account, agency, users, permissions = self._prepare_test_case(calling_user, "agency_mgr")
 
         user2 = magic_mixer.blend(zemauth.models.User, first_name="test", last_name="test", email="test.test@test.com")
+        test_helper.add_permissions(user2, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user2, agency=agency, account=None, permission=Permission.READ
         )
         user3 = magic_mixer.blend(
             zemauth.models.User, first_name="test", last_name="test", email="kdfjzhgks.test@test.com"
         )
+        test_helper.add_permissions(user3, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user3, agency=agency, account=None, permission=Permission.READ
         )
         user4 = magic_mixer.blend(
             zemauth.models.User, first_name="test", last_name="Kdfjzhgks", email="test4.test@test.com"
         )
+        test_helper.add_permissions(user4, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user4, agency=agency, account=None, permission=Permission.READ
         )
         user5 = magic_mixer.blend(
             zemauth.models.User, first_name="Kdfjzhgks", last_name="test", email="test5.test@test.com"
         )
+        test_helper.add_permissions(user5, ["fea_use_entity_permission"])
         magic_mixer.blend(
             zemauth.models.EntityPermission, user=user5, agency=agency, account=None, permission=Permission.READ
         )
@@ -891,7 +882,7 @@ class UserViewSetListTest(UserViewSetTestBase):
 
         permissions = [None] * 10
 
-        agency_mgr = magic_mixer.blend(zemauth.models.User)
+        agency_mgr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
         # These 2 permissions should be visible to everybody
         permissions[0] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=agency_mgr, agency=agency, account=None, permission=Permission.READ
@@ -921,7 +912,7 @@ class UserViewSetListTest(UserViewSetTestBase):
             permission=Permission.BUDGET,
         )
 
-        account_mgr = magic_mixer.blend(zemauth.models.User)
+        account_mgr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
         # These 2 permissions should be visible to everybody
         permissions[4] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=account_mgr, agency=None, account=account, permission=Permission.READ
@@ -953,7 +944,7 @@ class UserViewSetListTest(UserViewSetTestBase):
         )
         permissions[7].assert_readonly = True  # Because calling_user hasn't got BUDGET_MARGIN permission
 
-        internal_usr = magic_mixer.blend(zemauth.models.User)
+        internal_usr = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
         # These 2 permissions should only be visible to internal users IF the show_internal query parameter is set to True
         permissions[8] = magic_mixer.blend(
             zemauth.models.EntityPermission, user=internal_usr, agency=None, account=None, permission=Permission.READ
@@ -1053,7 +1044,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
         agency, permissions = self._prepare_internal_user_test_case(calling_user, requested_user, "agency_mgr")
 
         r = self._call_get(requested_user, agency)
-        self._assert_error(r, 400, "DoesNotExist", "User matching query does not exist.")
+        self._assert_error(r, 404, "MissingDataError", "User does not exist")
 
     def test_get_internal_user_by_internal_user(self):
         # calling_user is internal user and is searching by agency_id, requested user is internal user
@@ -1224,6 +1215,7 @@ class UserViewSetResendEmail(UserViewSetTestBase):
 
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
         test_helper.add_entity_permissions(requested_user, [Permission.READ], agency)
+        test_helper.add_permissions(requested_user, ["fea_use_entity_permission"])
 
         r = self._call_resend_email(requested_user, agency)
         mock_send.assert_called_with(
@@ -1241,4 +1233,4 @@ class UserViewSetResendEmail(UserViewSetTestBase):
         agency = self.mix_agency(user=calling_user, permissions=[Permission.READ, Permission.USER])
 
         r = self._call_resend_email(requested_user, agency)
-        self._assert_error(r, 400, "DoesNotExist", "User matching query does not exist.")
+        self._assert_error(r, 404, "MissingDataError", "User does not exist")

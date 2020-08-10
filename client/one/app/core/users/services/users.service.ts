@@ -57,7 +57,7 @@ export class UsersService {
     }
 
     validate(
-        user: Partial<User>,
+        user: Partial<User> | Partial<User>[],
         agencyId: string,
         accountId: string,
         requestStateUpdater: RequestStateUpdater

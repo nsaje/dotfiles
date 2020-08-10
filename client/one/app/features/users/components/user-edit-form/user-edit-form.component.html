@@ -5,6 +5,7 @@
     [label]="'Email'"
     [value]="user.email"
     [placeholder]="'Email'"
+    [errors]="userErrors?.email"
     (valueChange)="onEmailChange($event)"
 ></zem-text-form-group>
 <div
@@ -21,6 +22,7 @@
         [label]="'First name'"
         [value]="user.firstName"
         [placeholder]="'First name'"
+        [errors]="userErrors?.firstName"
         (valueChange)="onFirstNameChange($event)"
     ></zem-text-form-group>
     <zem-text-form-group
@@ -29,6 +31,7 @@
         [label]="'Last name'"
         [value]="user.lastName"
         [placeholder]="'Last name'"
+        [errors]="userErrors?.lastName"
         (valueChange)="onLastNameChange($event)"
     ></zem-text-form-group>
 </ng-container>

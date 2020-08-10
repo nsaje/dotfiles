@@ -22,18 +22,22 @@ export function getStoreRequestStateUpdater(
     };
 }
 
-// TODO (jurebajt): Extend to work with field errors in string[][] format
 export function getStoreFieldsErrorsState<T>(
     initialFieldsErrorsState: T,
     errorResponse: Partial<HttpErrorResponse> = {}
 ): T {
     if (
+        !isBadRequestHttpStatusCode(errorResponse.status) ||
         !commonHelpers.isDefined(errorResponse.error) ||
         !commonHelpers.isDefined(errorResponse.error.details)
     ) {
         return initialFieldsErrorsState;
     }
     return deepmerge(initialFieldsErrorsState, errorResponse.error.details);
+}
+
+function isBadRequestHttpStatusCode(httpStatus: number): boolean {
+    return commonHelpers.isDefined(httpStatus) && httpStatus === 400;
 }
 
 export function getNewStateWithoutNull<T>(state: T): Partial<T> {

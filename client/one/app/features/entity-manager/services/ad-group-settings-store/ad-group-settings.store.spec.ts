@@ -168,6 +168,7 @@ describe('AdGroupSettingsStore', () => {
         serviceStub.validate.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify ad group name.']},
@@ -291,6 +292,7 @@ describe('AdGroupSettingsStore', () => {
         serviceStub.save.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify ad group name.']},
@@ -1360,6 +1362,7 @@ describe('AdGroupSettingsStore', () => {
         bidModifiersServiceStub.importFromFile.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {
@@ -1427,6 +1430,7 @@ describe('AdGroupSettingsStore', () => {
         bidModifiersServiceStub.validateImportFile.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {

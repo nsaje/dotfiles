@@ -1,15 +1,18 @@
 import rest_framework.response
 import rest_framework.status
+from django.contrib.auth import models as auth_models
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import permissions
 
+import prodops.hacks
 import zemauth.access
 from core.models import Account
 from core.models import Agency
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils.email_helper import send_new_user_email
+from utils.exc import MissingDataError
 from utils.exc import ValidationError
 from zemauth.features.entity_permission import EntityPermission
 from zemauth.features.entity_permission import Permission
@@ -36,6 +39,17 @@ class UserViewSet(RESTAPIBaseViewSet):
 
         all_users = ZemUser.objects.order_by("first_name", "last_name")
 
+        """
+        TODO (msuber): deleted after User Roles will be released.
+        Show only users (agency managers, account managers) who have
+        fea_use_entity_permission permission.
+        """
+        all_users = all_users.filter(
+            Q(groups__permissions__codename="fea_use_entity_permission")
+            | Q(user_permissions__codename="fea_use_entity_permission")
+            | Q(is_superuser=True)
+        )
+
         if account is not None:
             users = all_users.filter_by_account(account)
         elif agency is not None:
@@ -56,38 +70,25 @@ class UserViewSet(RESTAPIBaseViewSet):
             )
 
         paginator = StandardPagination()
-        paginated_users = paginator.paginate_queryset(users, request)
+        paginated_users = paginator.paginate_queryset(users.distinct(), request)
         for requested_user in paginated_users:
             self._augment_user(requested_user, request, account, agency)
 
         return paginator.get_paginated_response(self.serializer(paginated_users, many=True).data)
 
     def create(self, request):
-        account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
-
-        serializer = serializers.CreateUserSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer(
+            data=request.data, many=isinstance(request.data, list), context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
-
         changes = serializer.validated_data
 
-        created_users = []
+        if isinstance(changes, list):
+            data = self._create_multiple(request, changes)
+        else:
+            data = self._create_single(request, changes)
 
-        try:
-            with transaction.atomic():
-                for user_data in changes.get("users"):
-                    user = ZemUser.objects.get_or_create_user_by_email(user_data["email"])
-                    user.update(**user_data)
-                    user.set_entity_permissions(request, account, agency, user_data.get("entity_permissions"))
-                    self._augment_user(user, request, account, agency)
-                    created_users.append(user)
-
-        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
-            raise ValidationError(str(err))
-
-        for user in created_users:
-            send_new_user_email(user, request)
-
-        return self.response_ok(serializers.CreateUserSerializer({"users": created_users}).data, status=201)
+        return self.response_ok(self.serializer(data, many=isinstance(data, list)).data, status=201)
 
     def get(self, request, user_id):
         account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
@@ -132,7 +133,9 @@ class UserViewSet(RESTAPIBaseViewSet):
         return self.response_ok(None)
 
     def validate(self, request):
-        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(
+            data=request.data, partial=True, many=isinstance(request.data, list), context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         return self.response_ok(None)
 
@@ -148,6 +151,57 @@ class UserViewSet(RESTAPIBaseViewSet):
         account, agency = self._get_account_and_agency(calling_user, account_id, agency_id)
 
         return account, agency, show_internal, keyword, calling_user
+
+    def _create_multiple(self, request, changes):
+        account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
+        created_users = []
+        users = []
+
+        try:
+            with transaction.atomic():
+                for user_data in changes:
+                    user, created = self._handle_user(request, agency, account, user_data)
+                    users.append(user)
+                    if created:
+                        created_users.append(user)
+        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
+            raise ValidationError(str(err))
+
+        for user in created_users:
+            send_new_user_email(user, request)
+
+        return users
+
+    def _create_single(self, request, changes):
+        account, agency, show_internal, keyword, calling_user = self._get_request_params(request)
+
+        try:
+            with transaction.atomic():
+                user, created = self._handle_user(request, agency, account, changes)
+        except (MixedPermissionLevels, MissingReadPermission, MissingRequiredPermission) as err:
+            raise ValidationError(str(err))
+
+        if created:
+            send_new_user_email(user, request)
+
+        return user
+
+    def _handle_user(self, request, agency, account, changes):
+        created = False
+
+        user = ZemUser.objects.filter(email__iexact=changes["email"]).first()
+        if not user:
+            user = ZemUser.objects.create_user(changes["email"])
+            self._add_user_to_groups(user)
+            prodops.hacks.apply_create_user_hacks(user, agency)
+            created = True
+        elif not user.has_perm("zemauth.fea_use_entity_permission"):
+            raise MissingDataError("User does not exist")
+        user.update(**changes)
+        user.set_entity_permissions(request, account, agency, changes.get("entity_permissions"))
+        self._augment_user(user, request, account, agency)
+
+        return user, created
 
     @classmethod
     def _augment_user(cls, requested_user: ZemUser, request, account: Account, agency: Agency):
@@ -197,3 +251,13 @@ class UserViewSet(RESTAPIBaseViewSet):
         else:
             raise ValidationError("Either agency id or account id must be provided.")
         return account, agency
+
+    @staticmethod
+    def _add_user_to_groups(user):
+        # TODO (msuber): deleted adding permissions after User Roles will be released.
+        user.user_permissions.add(auth_models.Permission.objects.get(codename="fea_use_entity_permission"))
+        user.user_permissions.add(auth_models.Permission.objects.get(codename="can_see_user_management"))
+        perm = auth_models.Permission.objects.get(codename="this_is_public_group")
+        group = auth_models.Group.objects.filter(permissions=perm).first()
+        if group is not None:
+            group.user_set.add(user)

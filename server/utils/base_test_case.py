@@ -1,4 +1,3 @@
-from django.contrib.auth.models import ContentType
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 
@@ -31,16 +30,7 @@ class FutureBaseTestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.content_type = magic_mixer.blend(ContentType, app_label="zemauth")
-        cls.permission = magic_mixer.blend(
-            Permission, codename="fea_use_entity_permission", content_type=cls.content_type
-        )
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        super().tearDownClass()
-        cls.permission.delete()
-        cls.content_type.delete()
+        cls.permission = Permission.objects.get(codename="fea_use_entity_permission")
 
     def setUp(self):
         super().setUp()

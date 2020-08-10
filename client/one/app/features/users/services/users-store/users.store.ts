@@ -20,10 +20,12 @@ import {
     distinct,
     isEmpty,
     groupArray,
+    arrayToObject,
 } from '../../../../shared/helpers/array.helpers';
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
 import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {CONFIGURABLE_PERMISSIONS} from '../../users.config';
+import * as deepmerge from 'deepmerge';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -142,7 +144,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         );
         this.usersService
             .validate(
-                entity,
+                !isDefined(entity.id) && isDefined(entity.email)
+                    ? this.splitUsersByEmail(entity)
+                    : entity,
                 this.state.agencyId,
                 this.state.accountId,
                 this.requestStateUpdater
@@ -157,9 +161,11 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                     );
                 },
                 (error: HttpErrorResponse) => {
-                    const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                        new UsersStoreFieldsErrorsState(),
-                        error
+                    const fieldsErrors = arrayToObject(
+                        storeHelpers.getStoreFieldsErrorsState(
+                            new UsersStoreFieldsErrorsState(),
+                            error
+                        )
                     );
                     this.patchState(
                         fieldsErrors,
@@ -426,7 +432,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         return new Promise<void>((resolve, reject) => {
             this.usersService
                 .create(
-                    this.splitUsersByEmail(this.state.activeEntity.entity),
+                    this.splitUsersByEmail(
+                        this.state.activeEntity.entity
+                    ) as User[],
                     this.state.agencyId,
                     this.state.accountId,
                     this.requestStateUpdater
@@ -437,9 +445,11 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                         resolve();
                     },
                     (error: HttpErrorResponse) => {
-                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                            new UsersStoreFieldsErrorsState(),
-                            error
+                        const fieldsErrors = arrayToObject(
+                            storeHelpers.getStoreFieldsErrorsState(
+                                new UsersStoreFieldsErrorsState(),
+                                error
+                            )
                         );
                         this.patchState(
                             fieldsErrors,
@@ -452,7 +462,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         });
     }
 
-    private splitUsersByEmail(user: User): User[] {
+    private splitUsersByEmail(
+        user: User | Partial<User>
+    ): User[] | Partial<User>[] {
         const splitEmails: string[] = user.email.split(',').map(x => x.trim());
         return splitEmails.map(email => ({
             ...user,

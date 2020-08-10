@@ -36,15 +36,19 @@ export class ExceptionHandlerService {
 
     private shouldShowErrorMessage(exception: HttpException) {
         return (
-            isDefined(exception.status) &&
-            this.isServerHttpErrorCode(exception.status) &&
+            (this.isServerErrorHttpStatusCode(exception.status) ||
+                this.isNotFoundHttpStatusCode(exception.status)) &&
             this.shouldShowErrorForHttpMethod(exception.method) &&
             this.shouldShowErrorForUrl(exception.url)
         );
     }
 
-    private isServerHttpErrorCode(httpStatus: number): boolean {
-        return httpStatus >= 500 && httpStatus <= 599;
+    private isServerErrorHttpStatusCode(httpStatus: number): boolean {
+        return isDefined(httpStatus) && httpStatus >= 500 && httpStatus <= 599;
+    }
+
+    private isNotFoundHttpStatusCode(httpStatus: number): boolean {
+        return isDefined(httpStatus) && httpStatus === 404;
     }
 
     private shouldShowErrorForHttpMethod(httpMethod: string): boolean {

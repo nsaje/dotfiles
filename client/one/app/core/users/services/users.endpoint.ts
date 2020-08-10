@@ -76,7 +76,7 @@ export class UsersEndpoint {
         const params = this.getScopeParams(agencyId, accountId);
 
         return this.http
-            .post<ApiResponse<User[]>>(request.url, {users}, {params})
+            .post<ApiResponse<User[]>>(request.url, users, {params})
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -96,7 +96,7 @@ export class UsersEndpoint {
     }
 
     validate(
-        user: Partial<User>,
+        user: Partial<User> | Partial<User>[],
         agencyId: string,
         accountId: string,
         requestStateUpdater: RequestStateUpdater

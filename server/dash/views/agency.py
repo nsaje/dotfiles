@@ -172,10 +172,33 @@ class AccountUsers(DASHAPIBaseView):
             raise exc.AuthorizationError()
 
         account = zemauth.access.get_account(request.user, Permission.USER, account_id)
-        agency_users = account.agency.users.all() if account.agency else []
 
-        users = [self._get_user_dict(u) for u in account.users.all()]
+        """
+        Show only users (agency managers, account managers) who not have
+        fea_use_entity_permission permission.
+        """
+
+        agency_users = (
+            account.agency.users.exclude(
+                Q(groups__permissions__codename="fea_use_entity_permission")
+                | Q(user_permissions__codename="fea_use_entity_permission")
+            )
+            .all()
+            .distinct()
+            if account.agency
+            else []
+        )
         agency_managers = [self._get_user_dict(u, agency_managers=True) for u in agency_users]
+
+        account_users = (
+            account.users.exclude(
+                Q(groups__permissions__codename="fea_use_entity_permission")
+                | Q(user_permissions__codename="fea_use_entity_permission")
+            )
+            .all()
+            .distinct()
+        )
+        users = [self._get_user_dict(u) for u in account_users]
 
         if request.user.has_perm("zemauth.can_see_agency_managers_under_access_permissions"):
             users = agency_managers + users
@@ -209,16 +232,25 @@ class AccountUsers(DASHAPIBaseView):
         try:
 
             user = ZemUser.objects.get(email__iexact=email)
+            if user.has_perm("zemauth.fea_use_entity_permission"):
+                raise exc.ValidationError(
+                    pretty_message=(
+                        "The user with e-mail {} is configured to work with entity permissions. "
+                        "Please contact technical support if you want to make changes."
+                    ).format(user.email)
+                )
 
             if (first_name == user.first_name and last_name == user.last_name) or (not first_name and not last_name):
                 created = False
             else:
                 self._raise_validation_error(
                     form.errors,
-                    message='The user with e-mail {} is already registred as "{}". '
-                    "Please contact technical support if you want to change the user's "
-                    "name or leave first and last names blank if you just want to add "
-                    "access to the account for this user.".format(user.email, user.get_full_name()),
+                    message=(
+                        "The user with e-mail {} is already registred as {}. "
+                        "Please contact technical support if you want to change the user's "
+                        "name or leave first and last names blank if you just want to add "
+                        "access to the account for this user."
+                    ).format(user.email, user.get_full_name()),
                 )
         except ZemUser.DoesNotExist:
             if not is_valid:
@@ -226,7 +258,7 @@ class AccountUsers(DASHAPIBaseView):
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
             self._add_user_to_groups(user)
-            hacks.apply_create_user_hacks(user, account)
+            hacks.apply_create_user_hacks(user, account.agency)
             email_helper.send_new_user_email(user, request, agency=account.agency)
 
             created = True
@@ -264,8 +296,16 @@ class AccountUsers(DASHAPIBaseView):
 
         account = zemauth.access.get_account(request.user, Permission.USER, account_id)
         remove_from_all_accounts = request.GET.get("remove_from_all_accounts")
+
         try:
             user = ZemUser.objects.get(pk=user_id)
+            if user.has_perm("zemauth.fea_use_entity_permission"):
+                raise exc.ValidationError(
+                    pretty_message=(
+                        "The user with e-mail {} is configured to work with entity permissions. "
+                        "Please contact technical support if you want to make changes."
+                    ).format(user.email)
+                )
         except ZemUser.DoesNotExist:
             raise exc.MissingDataError()
 
@@ -346,12 +386,21 @@ class AccountUserAction(DASHAPIBaseView):
 
         if not request.user.has_perm(self.permissions[action]):
             raise exc.AuthorizationError()
+
         account = zemauth.access.get_account(request.user, Permission.USER, account_id)
 
         try:
             user = ZemUser.objects.get(pk=user_id)
+            if user.has_perm("zemauth.fea_use_entity_permission"):
+                raise exc.ValidationError(
+                    pretty_message=(
+                        "The user with e-mail {} is configured to work with entity permissions. "
+                        "Please contact technical support if you want to make changes."
+                    ).format(user.email)
+                )
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(pretty_message="Cannot {action} nonexisting user.".format(action=action))
+
         if user not in account.users.all() and (not account.is_agency() or user not in account.agency.users.all()):
             raise exc.AuthorizationError()
 

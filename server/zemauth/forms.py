@@ -98,7 +98,9 @@ class SetNewUserForm(SetPasswordForm):
         choices=YearsOfExperience.get_choices(), empty_label="Select years of experience..."
     )
     programmatic_platforms = utils.forms.IntegerMultipleChoiceField(
-        choices=zemauth.models.user.constants.ProgrammaticPlatform.get_choices(), widget=forms.CheckboxSelectMultiple()
+        choices=zemauth.models.user.constants.ProgrammaticPlatform.get_choices(),
+        widget=forms.CheckboxSelectMultiple(),
+        required=False,
     )
 
     def __init__(self, user, *args, **kwargs):

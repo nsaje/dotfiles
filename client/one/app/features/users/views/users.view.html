@@ -51,7 +51,8 @@
                 <zem-user-edit-form
                     class="zem-users-view__item zem-user-edit-form"
                     [isDisabled]="state.activeEntity.isReadOnly"
-                    [user]="store.state.activeEntity.entity"
+                    [user]="state.activeEntity.entity"
+                    [userErrors]="state.activeEntity.fieldsErrors"
                     (userChange)="store.changeActiveEntity($event)"
                 >
                     <div class="zem-users-view__scope-selector-container">

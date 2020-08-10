@@ -48,6 +48,7 @@ describe('BidModifierImportFormStore', () => {
         serviceStub.importFromFile.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Error message',
                     error: {
                         details: {

@@ -243,9 +243,13 @@ angular
             if (
                 !zemPermissions.hasPermission(
                     'zemauth.account_agency_access_permissions'
+                ) ||
+                zemPermissions.hasPermission(
+                    'zemauth.fea_use_entity_permission'
                 )
-            )
+            ) {
                 return false;
+            }
             return commonHelpers.isDefined(
                 zemNavigationNewService.getActiveAccount()
             );
@@ -309,8 +313,13 @@ angular
         }
 
         function isUsersViewAvailable() {
-            return zemPermissions.hasPermission(
-                'zemauth.can_see_user_management'
+            return (
+                zemPermissions.hasPermission(
+                    'zemauth.can_see_user_management'
+                ) &&
+                zemPermissions.hasPermission(
+                    'zemauth.fea_use_entity_permission'
+                )
             );
         }
 

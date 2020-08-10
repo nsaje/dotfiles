@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.db import models
+from django.db.models import Q
 from django.db.models import QuerySet
 
 import automation.rules
@@ -246,24 +247,37 @@ def get_user(
     agency: core.models.Agency = None,
     permission: str = Permission.READ,
 ) -> zemauth.models.User:
-    user_qs: QuerySet = zemauth.models.User.objects
-    requested_user_qs: QuerySet = None
+    try:
+        user_qs: QuerySet = zemauth.models.User.objects
+        requested_user_qs: QuerySet = None
 
-    if account is not None:
-        requested_user_qs = user_qs.filter_by_account(account)
-    elif agency is not None:
-        requested_user_qs = user_qs.filter_by_agency_and_related_accounts(agency)
-    elif not calling_user.has_perm_on_all_entities(permission):
-        raise utils.exc.ValidationError("Agency or account must be specified")
+        """
+        TODO (msuber): deleted after User Roles will be released.
+        Show only users who have fea_use_entity_permission permission.
+        """
+        user_qs = user_qs.filter(
+            Q(groups__permissions__codename="fea_use_entity_permission")
+            | Q(user_permissions__codename="fea_use_entity_permission")
+            | Q(is_superuser=True)
+        )
 
-    if calling_user.has_perm_on_all_entities(permission):
-        if requested_user_qs:
-            requested_user_qs |= user_qs.filter_by_internal()
-        else:
-            requested_user_qs = user_qs.all()
+        if account is not None:
+            requested_user_qs = user_qs.filter_by_account(account)
+        elif agency is not None:
+            requested_user_qs = user_qs.filter_by_agency_and_related_accounts(agency)
+        elif not calling_user.has_perm_on_all_entities(permission):
+            raise utils.exc.ValidationError("Agency or account must be specified")
 
-    requested_user: zemauth.models.User = requested_user_qs.get(pk=user_id)
-    return requested_user
+        if calling_user.has_perm_on_all_entities(permission):
+            if requested_user_qs:
+                requested_user_qs |= user_qs.filter_by_internal()
+            else:
+                requested_user_qs = user_qs.all()
+
+        requested_user: zemauth.models.User = requested_user_qs.get(pk=user_id)
+        return requested_user
+    except zemauth.models.User.DoesNotExist:
+        raise utils.exc.MissingDataError("User does not exist")
 
 
 def _get_model_queryset(user: zemauth.models.User, permission: str, model: models.Model) -> models.QuerySet:

@@ -1,5 +1,4 @@
 import mock
-from django.contrib.auth.models import ContentType
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from rest_framework import pagination
@@ -23,22 +22,11 @@ class LogDifferencesPaginator(pagination.BasePagination):
 
 
 class HelpersTestCase(TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.content_type = magic_mixer.blend(ContentType, app_label="zemauth")
-        cls.permission = magic_mixer.blend(
-            Permission, codename="fea_use_entity_permission", content_type=cls.content_type
-        )
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.permission.delete()
-        cls.content_type.delete()
-
     def setUp(self) -> None:
         super().setUp()
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
+        self.permission = Permission.objects.get(codename="fea_use_entity_permission")
 
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
     def test_query_all_for_agency_manager(self, mock_logger):

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
 
-import zemauth
-from utils.magic_mixer import magic_mixer
+from django.test import TestCase
 
 from .model import User
 
@@ -57,14 +55,3 @@ class UserManagerTestCase(TestCase):
         self.assertFalse(user.has_usable_password())
 
         self.assertRaises(TypeError, User.objects.create_superuser, email=email_lowercase)
-
-    def test_create_user_by_email(self):
-        email = "test.user@zemanta.com"
-        user = User.objects.get_or_create_user_by_email(email)
-        self.assertEqual(user.email, "test.user@zemanta.com")
-
-    def test_get_user_by_email(self):
-        user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="test.user@zemanta.com")
-        email = "test.user@zemanta.com"
-        user_from_method = User.objects.get_or_create_user_by_email(email)
-        self.assertEqual(user_from_method, user)

@@ -131,6 +131,7 @@ describe('AccountSettingsStore', () => {
         accountServiceStub.validate.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify account name.']},
@@ -215,6 +216,7 @@ describe('AccountSettingsStore', () => {
         accountServiceStub.save.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify account name.']},

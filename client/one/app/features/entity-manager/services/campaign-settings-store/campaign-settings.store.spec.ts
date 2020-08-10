@@ -189,6 +189,7 @@ describe('CampaignSettingsStore', () => {
         campaignServiceStub.validate.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify campaign name.']},
@@ -273,6 +274,7 @@ describe('CampaignSettingsStore', () => {
         campaignServiceStub.save.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {name: ['Please specify campaign name.']},
@@ -602,6 +604,7 @@ describe('CampaignSettingsStore', () => {
         conversionPixelsServiceStub.create.and
             .returnValue(
                 throwError({
+                    status: 400,
                     message: 'Validation error',
                     error: {
                         details: {

@@ -51,3 +51,20 @@ export function arraysContainSameElements<T>(
         intersect(array1, array2).length === array1.length
     );
 }
+
+export function arrayToObject<T>(value: T | T[]): T {
+    if (Array.isArray(value)) {
+        if (isEmpty(value)) {
+            return {} as T;
+        }
+        return value.reduce((obj, item) => {
+            Object.keys(item).forEach(prop => {
+                if (commonHelpers.isDefined(item[prop])) {
+                    obj[prop] = item[prop];
+                }
+            }, {});
+            return obj;
+        });
+    }
+    return value;
+}

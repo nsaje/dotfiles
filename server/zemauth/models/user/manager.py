@@ -31,13 +31,6 @@ class UserManager(auth_models.BaseUserManager):
 
         return self.filter(reduce(operator.or_, query_list)).distinct()
 
-    def get_or_create_user_by_email(self, user_email):
-        user = self.filter(email__iexact=user_email).first()
-        if not user:
-            user = self._create_user(user_email, None, False, False)
-
-        return user
-
     def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
         """
         Creates and saves a User with the given email and password.

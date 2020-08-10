@@ -151,4 +151,31 @@ describe('ArrayHelpers', () => {
             )
         ).toBeFalse();
     });
+
+    it('should correctly reduce array to object', () => {
+        expect(arrayHelpers.arrayToObject(null)).toEqual(null);
+        expect(arrayHelpers.arrayToObject(undefined)).toEqual(undefined);
+        expect(arrayHelpers.arrayToObject({})).toEqual({});
+        expect(arrayHelpers.arrayToObject([])).toEqual({});
+        expect(
+            arrayHelpers.arrayToObject({email: ['Enter a valid email address']})
+        ).toEqual({
+            email: ['Enter a valid email address'],
+        });
+        expect(
+            arrayHelpers.arrayToObject([
+                {},
+                {email: ['Enter a valid email address']},
+                {},
+                {
+                    email: ['Enter a valid email address'],
+                    address: ['Enter a valid address'],
+                },
+                {},
+            ])
+        ).toEqual({
+            email: ['Enter a valid email address'],
+            address: ['Enter a valid address'],
+        });
+    });
 });
