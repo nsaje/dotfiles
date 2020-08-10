@@ -36,6 +36,7 @@ class OverviewSetting(object):
         section_start=None,
         internal=False,
         warning=None,
+        flag=None,
     ):
         self.name = name
         self.value = value
@@ -50,12 +51,17 @@ class OverviewSetting(object):
         self.tooltip = tooltip
         self.section_start = section_start
         self.value_class = None
+        self.children = []
+        self.flag = flag
 
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
         ret.details_content = details_description
         return ret
+
+    def add_child(self, child):
+        self.children.append(child)
 
     def as_dict(self):
         ret = {}

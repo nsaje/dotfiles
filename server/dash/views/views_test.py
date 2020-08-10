@@ -728,9 +728,11 @@ class LegacyCampaignOverviewTestCase(DASHAPITestCase):
         self.assertEqual("$100.00", budget_setting["value"])
         self.assertEqual("$100.00 remaining", budget_setting["description"])
 
-        pacing_setting = self._get_setting(settings, "pacing")
-        self.assertEqual("$0.00", pacing_setting["value"])
-        self.assertEqual("0.00% on plan", pacing_setting["description"])
+        pacing_settings = self._get_setting(settings, "pacing")
+        self.assertEqual(len(pacing_settings["children"]), 3)
+        for pacing_setting in pacing_settings["children"]:
+            self.assertEqual("$0.00", pacing_setting["value"])
+            self.assertEqual("0.00% on plan", pacing_setting["description"])
 
 
 class CampaignOverviewTestCase(FutureDASHAPITestCase, LegacyCampaignOverviewTestCase):

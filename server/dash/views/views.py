@@ -377,24 +377,24 @@ class CampaignOverview(DASHAPIBaseView):
         campaign_pacing = dash.features.campaign_pacing.CampaignPacing(campaign)
         pacing_data = campaign_pacing.data
 
+        yesterday_data_flag = "Complete" if campaign_pacing.yesterday_data_complete else "Partial"
+        settings.append(infobox_helpers.OverviewSetting("Yesterday data:", flag=yesterday_data_flag).as_dict())
+
         currency = campaign.account.currency
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
-        daily_cap = infobox_helpers.calculate_daily_campaign_cap(campaign)
-        yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(campaign) or 0
-        settings.append(infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_cap, currency).as_dict())
-
+        pacing_settings = infobox_helpers.OverviewSetting("Campaign pacing:")
         for window, data in pacing_data.items():
-            # TODO: PACING: This needs to be updated to generate all 3 options when changing front end.
-            # Do not forget to add a marker for "yesterday's data complete" flag.
-            if window == dash.features.campaign_pacing.service.PACING_WINDOW_7_DAYS:
-                settings.append(
-                    infobox_helpers.OverviewSetting(
-                        "Campaign pacing:",
-                        lc_helper.format_currency(data.attributed_spend, curr=currency_symbol),
-                        description="{:.2f}% on plan".format(data.pacing or 0),
-                    ).as_dict()
-                )
+            pacing_settings.add_child(
+                infobox_helpers.OverviewSetting(
+                    "Yesterday:"
+                    if window == dash.features.campaign_pacing.service.PACING_WINDOW_1_DAY
+                    else f"Last {window} days:",
+                    lc_helper.format_currency(data.attributed_spend, curr=currency_symbol),
+                    description="{:.2f}% on plan".format(data.pacing or 0),
+                ).as_dict()
+            )
+        settings.append(pacing_settings.as_dict())
 
         if user.has_perm("zemauth.campaign_goal_performance"):
             settings.extend(infobox_helpers.get_primary_campaign_goal(user, campaign, start_date, end_date, currency))

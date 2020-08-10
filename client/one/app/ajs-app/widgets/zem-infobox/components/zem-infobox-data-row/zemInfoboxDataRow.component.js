@@ -1,3 +1,5 @@
+require('./zemInfoboxDataRow.component.less');
+
 angular.module('one.widgets').component('zemInfoboxDataRow', {
     bindings: {
         row: '<',

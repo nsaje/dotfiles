@@ -280,6 +280,7 @@ class CampaignGoalsTestCase(TestCase):
                     "value": "10.00 Time on Site - Seconds",
                     "icon": constants.Emoticon.SAD,
                     "description": "planned 60.00",
+                    "children": [],
                 }
             ],
         )
@@ -322,6 +323,7 @@ class CampaignGoalsTestCase(TestCase):
                     "value": "10.00 Time on Site - Seconds",
                     "icon": constants.Emoticon.SAD,
                     "description": "planned 60.00",
+                    "children": [],
                 }
             ],
         )

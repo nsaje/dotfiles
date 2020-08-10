@@ -1,4 +1,9 @@
-<div class="zem-infobox-data-row__value-label">
+<div
+    class="zem-infobox-data-row__value-label"
+    ng-class="{
+        'zem-infobox-data-row__value-label--one-line': $ctrl.row.flag,
+    }"
+>
     {{ $ctrl.row.name }}
     <zem-help-popover
         ng-if="$ctrl.row.tooltip"
@@ -18,6 +23,17 @@
               'performance-emoticon--sad': $ctrl.row.icon === $ctrl.constants.emoticon.SAD,
           }"
     >
+    </span>
+    <span ng-if="$ctrl.row.flag" class="zem-infobox-data-row__flag">
+        <i
+            class="zem-infobox-data-row__flag-text"
+            ng-class="{
+                'zem-infobox-data-row__flag--warning': $ctrl.row.flag === 'Partial',
+                'zem-infobox-data-row__flag--success': $ctrl.row.flag === 'Complete',
+            }"
+        >
+            {{ $ctrl.row.flag }}
+        </i>
     </span>
     <span
         class="zem-infobox-data-row__value-and-details"
@@ -53,4 +69,12 @@
     >
         ({{ $ctrl.row.description }})
     </span>
+
+    <zem-infobox-data-row
+        ng-repeat="child in $ctrl.row.children"
+        class="zem-infobox-data-row zem-infobox-data-row__child"
+        row="child"
+        is-internal="{{ child.internal }}"
+    >
+    </zem-infobox-data-row>
 </div>
