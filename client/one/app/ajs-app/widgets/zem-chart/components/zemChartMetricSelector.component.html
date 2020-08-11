@@ -53,10 +53,7 @@
                         class="dropdown-menu__subsubcategory"
                         ng-repeat="subsubcategory in subcategory.subcategories"
                     >
-                        <div
-                            class="dropdown-menu__subsubcategory-name"
-                            ng-if="$ctrl.hasPermission('zemauth.can_see_viewthrough_conversions')"
-                        >
+                        <div class="dropdown-menu__subsubcategory-name">
                             {{ subsubcategory.name }}
                         </div>
                         <ul class="dropdown-menu__subsubcategory-items">

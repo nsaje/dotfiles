@@ -169,7 +169,7 @@ angular
                 value: 'click_discrepancy',
                 type: 'percent',
                 fractionSize: 2,
-                shown: 'zemauth.aggregate_postclick_acquisition',
+                shown: true,
             },
             PERCENT_NEW_USERS: {
                 name: '% New Users',
@@ -333,28 +333,28 @@ angular
                 name: 'Measurable Impressions',
                 value: 'mrc50_measurable',
                 type: TYPE_NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Measurable',
             },
             MRC50_VIEWABLE: {
                 name: 'Viewable Impressions',
                 value: 'mrc50_viewable',
                 type: TYPE_NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Viewable',
             },
             MRC50_NON_MEASURABLE: {
                 name: 'Not-Measurable Impr.',
                 value: 'mrc50_non_measurable',
                 type: TYPE_NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Not-Measurable',
             },
             MRC50_NON_VIEWABLE: {
                 name: 'Not-Viewable Impressions',
                 value: 'mrc50_non_viewable',
                 type: TYPE_NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Not-Viewable',
             },
             MRC50_MEASURABLE_PERCENT: {
@@ -362,7 +362,7 @@ angular
                 value: 'mrc50_measurable_percent',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: '% Measurable',
             },
             MRC50_VIEWABLE_PERCENT: {
@@ -370,7 +370,7 @@ angular
                 value: 'mrc50_viewable_percent',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: '% Viewable',
             },
             MRC50_VIEWABLE_DISTRIBUTION: {
@@ -378,7 +378,7 @@ angular
                 value: 'mrc50_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Viewable Dist.',
             },
             MRC50_NON_MEASURABLE_DISTRIBUTION: {
@@ -386,7 +386,7 @@ angular
                 value: 'mrc50_non_measurable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Not-Measurable Dist.',
             },
             MRC50_NON_VIEWABLE_DISTRIBUTION: {
@@ -394,7 +394,7 @@ angular
                 value: 'mrc50_non_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 shortName: 'Not-Viewable Dist.',
             },
             ETFM_MRC50_VCPM: {
@@ -402,7 +402,7 @@ angular
                 value: 'etfm_mrc50_vcpm',
                 type: TYPE_CURRENCY,
                 fractionSize: 3,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 shortName: 'Avg. VCPM',
             },
@@ -777,28 +777,19 @@ angular
                     pixel,
                     options.conversionWindows,
                     '',
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_viewthrough_conversions'
-                    )
-                        ? ' - Click attr.'
-                        : '',
+                    ' - Click attr.',
                     'Click attr.:'
                 );
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_viewthrough_conversions'
-                    )
-                ) {
-                    generatePixelCategories(
-                        pixelSubCategory,
-                        pixelGoalSubCategory,
-                        pixel,
-                        options.conversionWindowsViewthrough,
-                        '_view',
-                        ' - View attr.',
-                        'View attr.:'
-                    );
-                }
+                generatePixelCategories(
+                    pixelSubCategory,
+                    pixelGoalSubCategory,
+                    pixel,
+                    options.conversionWindowsViewthrough,
+                    '_view',
+                    ' - View attr.',
+                    'View attr.:'
+                );
+
                 pixelSubcategories.push(pixelSubCategory, pixelGoalSubCategory);
             });
 

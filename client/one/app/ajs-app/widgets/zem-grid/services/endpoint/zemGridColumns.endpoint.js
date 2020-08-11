@@ -18,14 +18,8 @@ angular
         //
         var COLUMNS = {
             agencyId: {
-                internal: [
-                    'zemauth.can_see_id_columns_in_table',
-                    'zemauth.can_view_account_agency_information',
-                ],
-                shown: [
-                    'zemauth.can_see_id_columns_in_table',
-                    'zemauth.can_view_account_agency_information',
-                ],
+                internal: 'zemauth.can_see_id_columns_in_table',
+                shown: 'zemauth.can_see_id_columns_in_table',
                 order: false,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Agency ID',
@@ -196,8 +190,8 @@ angular
                 help: 'Agency to which this account belongs.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_view_account_agency_information',
-                shown: 'zemauth.can_view_account_agency_information',
+                internal: false,
+                shown: true,
             },
             defaultAccountManager: {
                 name: 'Account Manager',
@@ -311,8 +305,8 @@ angular
                 totalRow: false,
                 order: false,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_campaign_type_in_breakdowns',
-                shown: 'zemauth.can_see_campaign_type_in_breakdowns',
+                internal: false,
+                shown: true,
             },
 
             // Media source
@@ -568,9 +562,7 @@ angular
                         ],
                     },
                     {
-                        permissions: [
-                            'zemauth.can_use_publisher_bid_modifiers_in_ui',
-                        ],
+                        permissions: [],
                         breakdowns: [constants.breakdown.PUBLISHER],
                     },
                     {
@@ -986,8 +978,8 @@ angular
                 name: '% New Users',
                 field: 'percent_new_users',
                 type: zemGridConstants.gridColumnTypes.PERCENT,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help:
                     'An estimate of first time visits during the selected date range.',
                 totalRow: true,
@@ -998,8 +990,8 @@ angular
                 name: 'Bounce Rate',
                 field: 'bounce_rate',
                 type: zemGridConstants.gridColumnTypes.PERCENT,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help:
                     'Percentage of visits that resulted in only one page view.',
                 totalRow: true,
@@ -1011,8 +1003,8 @@ angular
                 field: 'pv_per_visit',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
                 fractionSize: 2,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help: 'Average number of pageviews per visit.',
                 totalRow: true,
                 order: true,
@@ -1022,8 +1014,8 @@ angular
                 name: 'Time on Site',
                 field: 'avg_tos',
                 type: zemGridConstants.gridColumnTypes.SECONDS,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help:
                     'Average time spent on site in seconds during the selected date range.',
                 totalRow: true,
@@ -1036,8 +1028,8 @@ angular
                 name: 'Visits',
                 field: 'visits',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help:
                     'Total number of sessions within a date range. A session is the period of time in which a user ' +
                     'is actively engaged with your site.',
@@ -1085,8 +1077,8 @@ angular
                 name: 'Click Discrepancy',
                 field: 'click_discrepancy',
                 type: zemGridConstants.gridColumnTypes.PERCENT,
-                shown: 'zemauth.aggregate_postclick_acquisition',
-                internal: 'zemauth.aggregate_postclick_acquisition',
+                shown: true,
+                internal: false,
                 help:
                     'Clicks detected only by media source as a percentage of total clicks.',
                 totalRow: true,
@@ -1097,8 +1089,8 @@ angular
                 name: 'Pageviews',
                 field: 'pageviews',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: 'zemauth.aggregate_postclick_engagement',
-                internal: 'zemauth.aggregate_postclick_engagement',
+                shown: true,
+                internal: false,
                 help:
                     'Total number of pageviews made during the selected date range. A pageview is a view of ' +
                     'a single page. Repeated views are counted.',
@@ -1265,7 +1257,7 @@ angular
                 name: 'Measurable Impressions',
                 field: 'mrc50_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help: 'Impressions for which we measured viewability.',
                 totalRow: true,
                 order: true,
@@ -1275,7 +1267,7 @@ angular
                 name: 'Viewable Impressions',
                 field: 'mrc50_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Number of impressions that were viewed by a person. Impression is counted as viewed when 50% of the ad is in view for 1 second.',
                 totalRow: true,
@@ -1286,7 +1278,7 @@ angular
                 name: 'Not-Measurable Impr.',
                 field: 'mrc50_non_measurable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Impressions for which we couldn’t measure viewability. Calculated as Impressions - Measurable Impressions.',
                 totalRow: true,
@@ -1297,7 +1289,7 @@ angular
                 name: 'Not-Viewable Impressions',
                 field: 'mrc50_non_viewable',
                 type: zemGridConstants.gridColumnTypes.NUMBER,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Number of impressions that were not viewed by a person. Calculated as Measurable Impressions - Viewable Impressions',
                 totalRow: true,
@@ -1309,7 +1301,7 @@ angular
                 field: 'mrc50_measurable_percent',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Percentage of impressions that were measurable. Calculated as 100 * Measurable impressions / Impressions.',
                 totalRow: true,
@@ -1321,7 +1313,7 @@ angular
                 field: 'mrc50_viewable_percent',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Percentage of viewable impressions out of all measurable impressions. Calculated as 100 * Viewable Impressions / Measurable Impressions.',
                 totalRow: true,
@@ -1333,7 +1325,7 @@ angular
                 field: 'mrc50_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Percentage of Viewable impressions out of all impressions. Calculated as 100 * Viewable Impressions / Impressions.',
                 totalRow: true,
@@ -1345,7 +1337,7 @@ angular
                 field: 'mrc50_non_measurable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Percentage of Not-Measurable impressions out of all impressions. Calculated as 100 * Not-Measurable Impressions / Impressions.',
                 totalRow: true,
@@ -1357,7 +1349,7 @@ angular
                 field: 'mrc50_non_viewable_distribution',
                 type: 'percent',
                 fractionSize: 2,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 help:
                     'Percentage of Not-Viewable impressions out of all impressions. Calculated as 100 * Not-Viewable Impressions / Impressions.',
                 totalRow: true,
@@ -1369,7 +1361,7 @@ angular
                 field: 'etfm_mrc50_vcpm',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 fractionSize: 3,
-                shown: ['zemauth.can_see_mrc50_metrics'],
+                shown: true,
                 costMode: constants.costMode.PUBLIC,
                 help:
                     'Average cost per thousand viewed impressions. Calculated as 1000 * Total.',
@@ -2414,7 +2406,7 @@ angular
                         type: column.type,
                         totalRow: column.totalRow,
                         order: false,
-                        internal: 'zemauth.can_see_credit_refunds',
+                        internal: false,
                         shown: false,
                         costMode: column.costMode,
                         isRefund: true,
@@ -2507,20 +2499,14 @@ angular
                     ' - Click attr.',
                     'Click attribution'
                 );
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_viewthrough_conversions'
-                    )
-                ) {
-                    addPixelColumns(
-                        pixelSubcategory,
-                        newColumns,
-                        options.conversionWindowsViewthrough,
-                        '_view',
-                        ' - View attr.',
-                        'View attribution'
-                    );
-                }
+                addPixelColumns(
+                    pixelSubcategory,
+                    newColumns,
+                    options.conversionWindowsViewthrough,
+                    '_view',
+                    ' - View attr.',
+                    'View attribution'
+                );
                 category.subcategories.push(pixelSubcategory);
             });
             checkPermissions(newColumns);

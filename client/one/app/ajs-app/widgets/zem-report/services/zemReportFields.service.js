@@ -48,12 +48,7 @@ angular
             gridFields
         ) {
             var fields = angular.copy(ALWAYS_FIELDS[gridLevel]);
-            if (
-                zemPermissions.hasPermission(
-                    'zemauth.can_view_account_agency_information'
-                ) &&
-                fields.indexOf('Account') >= 0
-            ) {
+            if (fields.indexOf('Account') >= 0) {
                 fields.unshift('Agency');
             }
 

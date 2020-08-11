@@ -187,11 +187,8 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function arePublisherAndPlacementBidModifierActionsVisible() {
             return (
-                zemPermissions.hasPermission(
-                    'zemauth.can_use_publisher_bid_modifiers_in_ui'
-                ) &&
-                ($ctrl.breakdown === constants.breakdown.PUBLISHER ||
-                    $ctrl.breakdown === constants.breakdown.PLACEMENT)
+                $ctrl.breakdown === constants.breakdown.PUBLISHER ||
+                $ctrl.breakdown === constants.breakdown.PLACEMENT
             );
         }
 

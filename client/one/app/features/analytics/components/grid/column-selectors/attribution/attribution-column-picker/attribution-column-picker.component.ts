@@ -64,20 +64,14 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
         const pixelsHaveRoas = this.pixelColumns[0].columns.some(
             column => column.data.performance === 'ROAS'
         );
-        if (
-            this.zemPermissions.hasPermission(
-                'zemauth.can_see_viewthrough_conversions'
-            )
-        ) {
-            this.METRICS_OPTIONS_VIEW.push(
-                {attribution: 'View attribution', performance: 'Conversions'},
-                {
-                    attribution: 'View attribution',
-                    performance: 'Conversion rate',
-                },
-                {attribution: 'View attribution', performance: 'CPA'}
-            );
-        }
+        this.METRICS_OPTIONS_VIEW.push(
+            {attribution: 'View attribution', performance: 'Conversions'},
+            {
+                attribution: 'View attribution',
+                performance: 'Conversion rate',
+            },
+            {attribution: 'View attribution', performance: 'CPA'}
+        );
         if (
             this.zemPermissions.hasPermission('zemauth.fea_can_see_roas') &&
             pixelsHaveRoas
