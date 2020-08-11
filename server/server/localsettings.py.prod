@@ -392,8 +392,8 @@ CACHES = {
         "TIMEOUT": 60,  # 1 min
     },
     "entity_permission_cache": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "entity_permission_cache",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://docker-z1-redis.6keury.0001.use1.cache.amazonaws.com:6379/5",
         "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
     },
 }
