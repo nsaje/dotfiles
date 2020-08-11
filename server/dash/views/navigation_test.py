@@ -90,7 +90,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 }
             },
         )
@@ -108,7 +107,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 }
             },
         )
@@ -135,7 +133,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -159,7 +156,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": True,
@@ -196,7 +192,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -229,7 +224,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 },
                 "campaign": {
                     "archived": False,
@@ -271,7 +265,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": 1,
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 }
             },
         )
@@ -289,7 +282,6 @@ class LegacyNavigationDataViewTestCase(DASHAPITestCase):
                     "agencyId": None,
                     "agency": None,
                     "currency": constants.Currency.USD,
-                    "usesBCMv2": True,
                 }
             },
         )
@@ -353,7 +345,6 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
                 "agency": "Test Agency",
                 "currency": constants.Currency.USD,
                 "name": "test account 1",
-                "usesBCMv2": True,
             }
         ]
 
@@ -400,7 +391,6 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
                     "agency": "Test Agency",
                     "currency": constants.Currency.USD,
                     "name": "test account 1",
-                    "usesBCMv2": True,
                 }
             ],
             response["data"],
@@ -460,7 +450,6 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
                 "agency": "Test Agency",
                 "currency": constants.Currency.USD,
                 "name": "test account 1",
-                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)
@@ -489,7 +478,6 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
                 "agencyId": None,
                 "agency": None,
                 "currency": constants.Currency.USD,
-                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)
@@ -510,7 +498,6 @@ class LegacyNavigationTreeViewTestCase(DASHAPITestCase):
                 "agencyId": None,
                 "agency": None,
                 "currency": constants.Currency.USD,
-                "usesBCMv2": True,
             }
         ]
         self.assertCountEqual(response["data"], expected_response)

@@ -20,17 +20,6 @@ logger = zlogging.getLogger(__name__)
 ACCOUNTS_EXCLUDED_FROM_SEARCH = [settings.HARDCODED_ACCOUNT_ID_OEN]
 
 
-# TODO: SERVICE FEE: remove when cleaning front end bcmv2
-class UsesBCMV2View(DASHAPIBaseView):
-    def get(self, request):
-        """
-        Returns true if user has all accounts to which he has access to migrated to the new
-        margins system.
-        """
-
-        return self.create_api_response({"usesBCMv2": True})
-
-
 class NavigationDataView(DASHAPIBaseView):
     def get(self, request, level_, id_):
         filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))

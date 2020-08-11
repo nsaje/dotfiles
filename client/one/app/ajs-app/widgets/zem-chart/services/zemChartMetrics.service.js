@@ -724,50 +724,16 @@ angular
 
         function checkPermissions(metrics) {
             // Go through all the metrics and convert permissions to boolean when needed
-
-            var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
-            var newCostModes = [
-                constants.costMode.PLATFORM,
-                constants.costMode.PUBLIC,
-                constants.costMode.ANY,
-            ];
-            var hasPermission = function(permission) {
-                return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
-            };
-            var isPermissionInternal = function(permission) {
-                return zemPermissions.isPermissionInternalBCMv2(
-                    permission,
-                    usesBCMv2
-                );
-            };
-
             metrics.forEach(function(metric) {
                 metric.internal = zemUtils.convertPermission(
                     metric.internal,
-                    isPermissionInternal
+                    zemPermissions.isPermissionInternal
                 );
 
-                var shown = zemUtils.convertPermission(
+                metric.shown = zemUtils.convertPermission(
                     metric.shown,
-                    hasPermission
+                    zemPermissions.hasPermission
                 );
-                if (shown) {
-                    if (
-                        usesBCMv2 &&
-                        metric.costMode === constants.costMode.LEGACY
-                    ) {
-                        // don't show old metrics in BCMv2 accounts
-                        shown = false;
-                    } else if (
-                        !usesBCMv2 &&
-                        newCostModes.indexOf(metric.costMode) >= 0
-                    ) {
-                        // don't show new metrics in non-BCMv2 accounts
-                        shown = false;
-                    }
-                }
-
-                metric.shown = shown;
             });
         }
 

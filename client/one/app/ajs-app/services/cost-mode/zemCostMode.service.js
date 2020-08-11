@@ -1,10 +1,6 @@
 angular
     .module('one.services')
-    .service('zemCostModeService', function(
-        zemPubSubService,
-        zemPermissions,
-        zemNavigationNewService
-    ) {
+    .service('zemCostModeService', function(zemPubSubService, zemPermissions) {
         // eslint-disable-line max-len
         var TOGGLABLE_COST_MODES = [
             constants.costMode.PUBLIC,
@@ -59,13 +55,8 @@ angular
         }
 
         function isToggleAllowed() {
-            var activeAccount = zemNavigationNewService.getActiveAccount();
-            return (
-                zemPermissions.hasPermission(
-                    'zemauth.can_switch_between_cost_breakdowns'
-                ) &&
-                activeAccount &&
-                activeAccount.data.usesBCMv2
+            return zemPermissions.hasPermission(
+                'zemauth.can_switch_between_cost_breakdowns'
             );
         }
 

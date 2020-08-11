@@ -8,19 +8,12 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
         onMetricChanged: '&',
     },
     template: require('./zemChartMetricSelector.component.html'),
-    controller: function(
-        zemCostModeService,
-        zemNavigationNewService,
-        zemPermissions
-    ) {
+    controller: function(zemCostModeService, zemPermissions) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.$onInit = function() {
             zemCostModeService.onCostModeUpdate(function() {
-                $ctrl.categories = getCategories($ctrl.metricOptions);
-            });
-            zemNavigationNewService.onUsesBCMv2Update(function() {
                 $ctrl.categories = getCategories($ctrl.metricOptions);
             });
         };

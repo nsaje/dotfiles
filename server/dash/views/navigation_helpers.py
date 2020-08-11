@@ -63,7 +63,6 @@ def get_account_dict(account, account_settings=None, with_settings=True):
             "agencyId": account["agency__id"],
             "agency": account["agency__name"],
             "currency": account["currency"],
-            "usesBCMv2": True,  # TODO: BCM2: Clean when taking care of front end
         }
 
     account_dict = {
@@ -73,6 +72,5 @@ def get_account_dict(account, account_settings=None, with_settings=True):
         "agencyId": account["agency__id"],
         "agency": account["agency__name"],
         "currency": account["currency"],
-        "usesBCMv2": True,  # TODO: BCM2: Clean when taking care of front end
     }
     return account_dict

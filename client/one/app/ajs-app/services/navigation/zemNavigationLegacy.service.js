@@ -423,8 +423,6 @@ angular
 
             getAccountsAccess: getAccountsAccess,
 
-            getUsesBCMv2: zemNavigationLegacyEndpoint.getUsesBCMv2,
-
             init: init,
             reload: reload,
             reloadAccount: reloadAccount,

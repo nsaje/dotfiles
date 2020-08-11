@@ -3,7 +3,6 @@ angular
     .factory('zemGridEndpointColumns', function(
         zemPermissions,
         zemGridConstants,
-        zemNavigationNewService,
         zemUtils
     ) {
         // eslint-disable-line max-len
@@ -2293,23 +2292,6 @@ angular
 
         function checkPermissions(columns, breakdown) {
             // Go trough all columns and convert permissions to boolean, when needed
-
-            var usesBCMv2 = true;
-            var newCostModes = [
-                constants.costMode.PLATFORM,
-                constants.costMode.PUBLIC,
-                constants.costMode.ANY,
-            ];
-            var hasPermission = function(permission) {
-                return zemPermissions.hasPermissionBCMv2(permission, usesBCMv2);
-            };
-            var isPermissionInternal = function(permission) {
-                return zemPermissions.isPermissionInternalBCMv2(
-                    permission,
-                    usesBCMv2
-                );
-            };
-
             columns.forEach(function(column) {
                 var columnPermissions = column.shown;
                 if (column.shown instanceof Array) {
@@ -2327,30 +2309,13 @@ angular
 
                 column.internal = zemUtils.convertPermission(
                     column.internal,
-                    isPermissionInternal
+                    zemPermissions.isPermissionInternal
                 );
 
-                var shown = zemUtils.convertPermission(
+                column.shown = zemUtils.convertPermission(
                     columnPermissions,
-                    hasPermission
+                    zemPermissions.hasPermission
                 );
-                if (shown) {
-                    if (
-                        usesBCMv2 &&
-                        column.costMode === constants.costMode.LEGACY
-                    ) {
-                        // don't show old columns in BCMv2 accounts
-                        shown = false;
-                    } else if (
-                        !usesBCMv2 &&
-                        newCostModes.indexOf(column.costMode) >= 0
-                    ) {
-                        // don't show new columns in non-BCMv2 accounts
-                        shown = false;
-                    }
-                }
-
-                column.shown = shown;
             });
         }
 

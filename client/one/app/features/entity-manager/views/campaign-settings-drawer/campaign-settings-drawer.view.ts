@@ -49,8 +49,7 @@ export class CampaignSettingsDrawerView
         public store: CampaignSettingsStore,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemPermissions') public zemPermissions: any,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+        @Inject('zemPermissions') public zemPermissions: any
     ) {}
 
     ngOnInit() {
@@ -133,15 +132,11 @@ export class CampaignSettingsDrawerView
     }
 
     canAccessPlatformCosts(): boolean {
-        return this.zemPermissions.canAccessPlatformCosts(
-            this.zemNavigationNewService.getActiveAccount()
-        );
+        return this.zemPermissions.canAccessPlatformCosts();
     }
 
     canAccessAgencyCosts(): boolean {
-        return this.zemPermissions.canAccessAgencyCosts(
-            this.zemNavigationNewService.getActiveAccount()
-        );
+        return this.zemPermissions.canAccessAgencyCosts();
     }
 
     canSeeServiceFee(): boolean {

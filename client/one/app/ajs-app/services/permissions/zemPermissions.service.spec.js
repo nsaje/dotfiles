@@ -61,66 +61,6 @@ describe('zemPermissions', function() {
         });
     });
 
-    describe('hasPermissionBCMv2:', function() {
-        it('should return false if called without specifying permission', function() {
-            expect(zemPermissions.hasPermissionBCMv2()).toBe(false);
-        });
-
-        it('should return true if user has the specified permission', function() {
-            expect(zemPermissions.hasPermissionBCMv2('permission')).toBe(true);
-        });
-
-        it('should return true if user has all the specified permissions', function() {
-            expect(
-                zemPermissions.hasPermissionBCMv2([
-                    'permission',
-                    'anotherPermission',
-                ])
-            ).toBe(true);
-        });
-
-        it('should return false if user does not have the specified permission', function() {
-            expect(
-                zemPermissions.hasPermissionBCMv2('unavailablePermission')
-            ).toBe(false);
-        });
-
-        it('should return false if user does not have all the specified permissions', function() {
-            expect(
-                zemPermissions.hasPermissionBCMv2([
-                    'permission',
-                    'unavailablePermission',
-                ])
-            ).toBe(false);
-        });
-
-        it('should return true if user does not have platform_cost_breakdown permission but we are in non-bcm-v2 mode', function() {
-            // eslint-disable-line max-len
-            mockedUser.permissions[
-                'zemauth.can_view_platform_cost_breakdown'
-            ] = false;
-            expect(
-                zemPermissions.hasPermissionBCMv2(
-                    'zemauth.can_view_platform_cost_breakdown',
-                    false
-                )
-            ).toBe(true);
-        });
-
-        it('should return false if user does not have platform_cost_breakdown permission and we are in bcm-v2 mode', function() {
-            // eslint-disable-line max-len
-            mockedUser.permissions[
-                'zemauth.can_view_platform_cost_breakdown'
-            ] = false;
-            expect(
-                zemPermissions.hasPermissionBCMv2(
-                    'zemauth.can_view_platform_cost_breakdown',
-                    true
-                )
-            ).toBe(true);
-        });
-    });
-
     describe('isPermissionInternal:', function() {
         it('should return false if called without specifying permission', function() {
             expect(zemPermissions.isPermissionInternal()).toBe(false);

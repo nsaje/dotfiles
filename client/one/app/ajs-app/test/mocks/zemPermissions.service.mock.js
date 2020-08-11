@@ -2,9 +2,7 @@ angular
     .module('one.mocks.zemPermissions', [])
     .service('zemPermissions', function() {
         this.hasPermission = hasPermission;
-        this.hasPermissionBCMv2 = hasPermission;
         this.isPermissionInternal = isPermissionInternal;
-        this.isPermissionInternalBCMv2 = isPermissionInternal;
         this.setMockedPermissions = setMockedPermissions;
         this.setMockedInternalPermissions = setMockedInternalPermissions;
         this.hasAgencyScope = hasAgencyScope;

@@ -11,7 +11,6 @@ angular
         this.getCampaign = getCampaign;
         this.getAccount = getAccount;
         this.getAccountsAccess = getAccountsAccess;
-        this.getUsesBCMv2 = getUsesBCMv2;
 
         function getAdGroup(id) {
             return get('ad_groups/' + id);
@@ -48,30 +47,6 @@ angular
                         resource = data.data;
                     }
                     deferred.resolve(convertFromApi(resource));
-                })
-                .error(function(data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        }
-
-        function getUsesBCMv2() {
-            // TODO: BCM2: clean up front end
-            var deferred = $q.defer();
-            var url = '/api/usesbcmv2/';
-            var config = {
-                params: {},
-            };
-
-            $http
-                .get(url, config)
-                .success(function(data) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data;
-                    }
-                    deferred.resolve(resource || []);
                 })
                 .error(function(data) {
                     deferred.reject(data);
