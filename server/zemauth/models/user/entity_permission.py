@@ -80,6 +80,12 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
     def has_rest_api_perm_on(self, entity: Entity) -> bool:
         return self._has_perm_on(zemauth.features.entity_permission.Permission.RESTAPI, entity)
 
+    def has_perm_on(self, permission: str, entity: Entity) -> bool:
+        if permission is None or permission not in zemauth.features.entity_permission.Permission.get_all():
+            return False
+
+        return self._has_perm_on(permission, entity)
+
     def has_perm_on_all_entities(self, permission: str) -> bool:
         if permission is None or permission not in zemauth.features.entity_permission.Permission.get_all():
             return False

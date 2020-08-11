@@ -1,3 +1,6 @@
+import concurrent.futures
+from collections import defaultdict
+
 import dash.campaign_goals
 import dash.models
 from dash.constants import CampaignGoalKPI
@@ -8,8 +11,10 @@ from stats.constants import StructureDimension
 from stats.constants import is_extended_delivery_dimension
 from stats.constants import is_top_level_delivery_dimension
 from utils import exc
+from zemauth.features.entity_permission import Permission
 
 FIELD_PERMISSION_MAPPING = {
+    # costs
     "media_cost": ("zemauth.can_view_actual_costs",),
     "local_media_cost": ("zemauth.can_view_actual_costs",),
     "b_media_cost": ("zemauth.can_see_service_fee",),
@@ -38,7 +43,9 @@ FIELD_PERMISSION_MAPPING = {
     "local_margin": ("zemauth.can_view_agency_margin",),
     "yesterday_at_cost": ("zemauth.can_view_actual_costs",),
     "local_yesterday_at_cost": ("zemauth.can_view_actual_costs",),
-    "service_fee_refund": ("zemauth.can_see_credit_refunds", "zemauth.can_see_service_fee"),
+    # refunds
+    "service_fee_refund": ("zemauth.can_see_service_fee",),
+    # other
     "default_account_manager": ("zemauth.can_see_managers_in_accounts_table",),
     "default_sales_representative": ("zemauth.can_see_managers_in_accounts_table",),
     "default_cs_representative": ("zemauth.can_see_managers_in_accounts_table",),
@@ -47,35 +54,14 @@ FIELD_PERMISSION_MAPPING = {
     "campaign_manager": ("zemauth.can_see_managers_in_campaigns_table",),
     "account_type": ("zemauth.can_see_account_type",),
     "salesforce_url": ("zemauth.can_see_salesforce_url",),
-    "agency": ("zemauth.can_view_account_agency_information",),
-    "agency_id": ("zemauth.can_view_account_agency_information",),
-    "etfm_performance": ("zemauth.campaign_goal_performance"),
-    "styles": ("zemauth.campaign_goal_performance",),
-    "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
     "sspd_url": ("zemauth.can_see_sspd_url",),
-    "campaign_type": ("zemauth.can_see_campaign_type_in_breakdowns",),
     # entity tags
     "agency_tags": ("zemauth.can_include_tags_in_reports",),
     "account_tags": ("zemauth.can_include_tags_in_reports",),
     "campaign_tags": ("zemauth.can_include_tags_in_reports",),
     "ad_group_tags": ("zemauth.can_include_tags_in_reports",),
     "source_tags": ("zemauth.can_include_tags_in_reports",),
-    # placement fields
-    "placement_id": ("zemauth.can_use_placement_targeting",),
-    "placement": ("zemauth.can_use_placement_targeting",),
-    "placement_type": ("zemauth.can_use_placement_targeting",),
     # viewability fields
-    "mrc50_measurable": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_viewable": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_non_measurable": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_non_viewable": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_measurable_percent": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_viewable_percent": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_viewable_distribution": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_non_measurable_distribution": ("zemauth.can_see_mrc50_metrics",),
-    "mrc50_non_viewable_distribution": ("zemauth.can_see_mrc50_metrics",),
-    "etfm_mrc50_vcpm": ("zemauth.can_see_mrc50_metrics",),
-    "local_etfm_mrc50_vcpm": ("zemauth.can_see_mrc50_metrics",),
     "mrc100_measurable": ("zemauth.can_see_mrc100_metrics",),
     "mrc100_viewable": ("zemauth.can_see_mrc100_metrics",),
     "mrc100_non_measurable": ("zemauth.can_see_mrc100_metrics",),
@@ -100,11 +86,57 @@ FIELD_PERMISSION_MAPPING = {
     "local_etfm_vast4_vcpm": ("zemauth.can_see_vast4_metrics",),
 }
 
+FIELD_ENTITY_PERMISSION_MAPPING = {
+    # AGENCY_SPEND_MARGIN
+    "margin": Permission.AGENCY_SPEND_MARGIN,
+    "local_margin": Permission.AGENCY_SPEND_MARGIN,
+    "etf_cost": Permission.AGENCY_SPEND_MARGIN,
+    "local_etf_cost": Permission.AGENCY_SPEND_MARGIN,
+    # MEDIA_COST_DATA_COST_LICENCE_FEE
+    "e_media_cost": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    "local_e_media_cost": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    "e_data_cost": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    "local_e_data_cost": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    "license_fee": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    "local_license_fee": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    # BASE_COSTS_SERVICE_FEE
+    "b_media_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "local_b_media_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "b_data_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "local_b_data_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "bt_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "local_bt_cost": Permission.BASE_COSTS_SERVICE_FEE,
+    "service_fee": Permission.BASE_COSTS_SERVICE_FEE,
+    "local_service_fee": Permission.BASE_COSTS_SERVICE_FEE,
+    "service_fee_refund": Permission.BASE_COSTS_SERVICE_FEE,
+}
 
-def filter_columns_by_permission(user, rows, goals):
+
+def filter_columns_by_permission(user, constraints, rows, goals):
+    constraints = _extract_constraints(constraints)
     fields_to_keep = _get_fields_to_keep(user, goals)
-    _remove_fields(rows, fields_to_keep)
+
+    if user.has_perm("zemauth.fea_use_entity_permission"):
+        entity_permission_cache = _build_entity_permission_cache(user, constraints)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [
+                executor.submit(_entity_permission_fields_cleanup, entity_permission_cache, row, fields_to_keep)
+                for row in rows
+            ]
+            concurrent.futures.wait(futures)
+    else:
+        _remove_fields(rows, fields_to_keep)
+
     _custom_cleanup(user, rows)
+
+
+def _extract_constraints(constraints):
+    new_constraints = {}
+    if "account" in constraints:
+        new_constraints["accounts"] = [constraints["account"]]
+    elif "allowed_accounts" in constraints:
+        new_constraints["accounts"] = list(constraints["allowed_accounts"])
+    return new_constraints
 
 
 def _get_fields_to_keep(user, goals):
@@ -113,32 +145,62 @@ def _get_fields_to_keep(user, goals):
     fields_to_keep |= fields.HELPER_FIELDS
     fields_to_keep |= fields.PUBLISHER_FIELDS
     fields_to_keep |= fields.DEFAULT_STATS
+    fields_to_keep |= fields.COST_FIELDS
+    fields_to_keep |= fields.OTHER_DASH_FIELDS
+    fields_to_keep |= fields.CAMPAIGN_GOAL_PERFORMANCE_FIELDS
+    fields_to_keep |= fields.ENTITY_TAGS_FIELDS
+    fields_to_keep |= fields.PLACEMENT_FIELDS
+    fields_to_keep |= fields.VIEWABILITY_FIELDS
+    fields_to_keep |= fields.POSTCLICK_ACQUISITION_FIELDS
+    fields_to_keep |= fields.REFUND_FIELDS
+    fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
 
-    if user.has_perm("zemauth.content_ads_postclick_acquisition") or user.has_perm(
-        "zemauth.aggregate_postclick_acquisition"
-    ):
-        fields_to_keep |= fields.POSTCLICK_ACQUISITION_FIELDS
+    _add_dynamic_fields(user, goals, fields_to_keep)
+    _user_permission_fields_cleanup(user, fields_to_keep)
 
-    if user.has_perm("zemauth.can_see_credit_refunds"):
-        fields_to_keep |= fields.REFUND_FIELDS
+    return fields_to_keep
 
-    if user.has_perm("zemauth.aggregate_postclick_engagement"):
-        fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
 
-    for field, permissions in FIELD_PERMISSION_MAPPING.items():
-        if not permissions or user.has_perms(permissions):
-            fields_to_keep.add(field)
-        if permissions and not user.has_perms(permissions) and field in fields_to_keep:
-            fields_to_keep.remove(field)
-
-    # add allowed dynamically generated goals fields
+def _add_dynamic_fields(user, goals, fields_to_keep):
     fields_to_keep |= _get_allowed_campaign_goals_fields(
         user, goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals
     )
     fields_to_keep |= _get_allowed_conversion_goals_fields(user, goals.conversion_goals)
     fields_to_keep |= _get_allowed_pixels_fields(user, goals.pixels)
 
-    return fields_to_keep
+
+def _user_permission_fields_cleanup(user, fields_to_keep):
+    for field, permissions in FIELD_PERMISSION_MAPPING.items():
+        if not permissions or user.has_perms(permissions):
+            fields_to_keep.add(field)
+        if permissions and not user.has_perms(permissions):
+            fields_to_keep.discard(field)
+
+
+def _build_entity_permission_cache(user, constraints):
+    entity_permission_cache = defaultdict(dict)
+    accounts = constraints.get("accounts")
+    for account in accounts:
+        for field, permission in FIELD_ENTITY_PERMISSION_MAPPING.items():
+            entity_permission_cache[account.id][field] = user.has_perm_on(permission, account)
+    return entity_permission_cache
+
+
+def _entity_permission_fields_cleanup(entity_permission_cache, row, fields_to_keep):
+    fields_to_keep_per_row = fields_to_keep.copy()
+    account_id = row.get("account_id")
+    for field in FIELD_ENTITY_PERMISSION_MAPPING.keys():
+        if _has_entity_permission_on_field(field, entity_permission_cache, account_id):
+            fields_to_keep_per_row.add(field)
+        else:
+            fields_to_keep_per_row.discard(field)
+    _remove_fields([row], fields_to_keep_per_row)
+
+
+def _has_entity_permission_on_field(field, entity_permission_cache, account_id):
+    if not account_id:
+        return all(value.get(field, False) for value in entity_permission_cache.values())
+    return entity_permission_cache[account_id].get(field, False)
 
 
 def _remove_fields(rows, fields_to_keep):
@@ -154,7 +216,6 @@ def _custom_cleanup(user, rows):
     """
 
     remove_content_ad_source_status = not user.has_perm("zemauth.can_see_media_source_status_on_submission_popover")
-
     if remove_content_ad_source_status:
         for row in rows:
             if row.get("status_per_source"):
@@ -169,11 +230,7 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
     """
 
     allowed_fields = set()
-    included_campaign_goals = []
-
-    if user.has_perm("zemauth.campaign_goal_optimization"):
-        included_campaign_goals = [x.campaign_goal.type for x in campaign_goal_values]
-
+    included_campaign_goals = [x.campaign_goal.type for x in campaign_goal_values]
     for goal in included_campaign_goals:
         relevant_fields = dash.campaign_goals.RELEVANT_GOAL_ETFM_FIELDS_MAP.get(goal, [])
         allowed_fields |= set(relevant_fields)
@@ -186,9 +243,7 @@ def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_value
             "local_avg_etfm_cost_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
         )
 
-    if user.has_perm("zemauth.campaign_goal_performance"):
-        allowed_fields |= set("etfm_performance_" + x.get_view_key() for x in campaign_goals)
-
+    allowed_fields |= set("etfm_performance_" + x.get_view_key() for x in campaign_goals)
     return allowed_fields
 
 
@@ -198,14 +253,9 @@ def _get_allowed_conversion_goals_fields(user, conversion_goals):
     proper permissions.
     """
 
-    if user.has_perm("zemauth.can_see_redshift_postclick_statistics"):
-        allowed_fields = set(cg.get_view_key(conversion_goals) for cg in conversion_goals)
-        allowed_fields |= set(
-            "conversion_rate_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
-        )
-        return allowed_fields
-
-    return set()
+    allowed_fields = set(cg.get_view_key(conversion_goals) for cg in conversion_goals)
+    allowed_fields |= set("conversion_rate_per_{}".format(cg.get_view_key(conversion_goals)) for cg in conversion_goals)
+    return allowed_fields
 
 
 def _get_allowed_pixels_fields(user, pixels):
@@ -217,10 +267,9 @@ def _get_allowed_pixels_fields(user, pixels):
     view_conversion_windows = dash.constants.ConversionWindowsViewthrough.get_all()
 
     allowed_pixel_fields = _generate_allowed_pixel_fields(user, pixels, click_conversion_windows)
-    if user.has_perm("zemauth.can_see_viewthrough_conversions"):
-        allowed_pixel_fields = allowed_pixel_fields.union(
-            _generate_allowed_pixel_fields(user, pixels, view_conversion_windows, suffix="_view")
-        )
+    allowed_pixel_fields = allowed_pixel_fields.union(
+        _generate_allowed_pixel_fields(user, pixels, view_conversion_windows, suffix="_view")
+    )
 
     return allowed_pixel_fields
 

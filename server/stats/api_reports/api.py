@@ -53,7 +53,7 @@ def query(
             if "placement_type" in row:
                 augmenter.augment_placement_type(row)
 
-    permission_filter.filter_columns_by_permission(user, rows, goals)
+    permission_filter.filter_columns_by_permission(user, constraints, rows, goals)
 
     return rows
 
@@ -66,7 +66,7 @@ def totals(user, breakdown, constraints, goals, level):
     assert len(rows) == 1
 
     dash.dashapi.api_reports.annotate_totals(rows[0], user, breakdown, constraints, level)
-    permission_filter.filter_columns_by_permission(user, rows, goals)
+    permission_filter.filter_columns_by_permission(user, constraints, rows, goals)
 
     return rows[0]
 

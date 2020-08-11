@@ -51,6 +51,7 @@ CONTENT_ADS_FIELDS = {
     "amplify_promoted_link_id",
     "amplify_live_preview_link",
     "sspd_url",
+    "bid_modifier",
 }
 
 SOURCE_FIELDS = {
@@ -95,13 +96,20 @@ OTHER_DASH_FIELDS = {
     "default_account_manager",
     "default_sales_representative",
     "default_cs_representative",
+    "ob_sales_representative",
+    "ob_account_manager",
     "campaign_manager",
     "account_type",
+    "campaign_type",
+    "salesforce_url",
     "agency",
+    "agency_id",
     "archived",
     "maintenance",
     "status_per_source",
 }
+
+CAMPAIGN_GOAL_PERFORMANCE_FIELDS = {"etfm_performance", "styles"}
 
 # content ad fields
 DIMENSION_FIELDS |= set(CONTENT_ADS_FIELDS)
@@ -168,6 +176,39 @@ REFUND_FIELDS = set(
 
 HELPER_FIELDS = set(["campaign_has_available_budget", "status_per_source"])
 
+COST_FIELDS = {
+    "media_cost",
+    "local_media_cost",
+    "data_cost",
+    "local_data_cost",
+    "b_media_cost",
+    "local_b_media_cost",
+    "b_data_cost",
+    "local_b_data_cost",
+    "e_media_cost",
+    "local_e_media_cost",
+    "e_data_cost",
+    "local_e_data_cost",
+    "etfm_cost",
+    "local_etfm_cost",
+    "service_fee",
+    "local_service_fee",
+    "license_fee",
+    "local_license_fee",
+    "margin",
+    "local_margin",
+    "at_cost",
+    "local_at_cost",
+    "bt_cost",
+    "local_bt_cost",
+    "et_cost",
+    "local_et_cost",
+    "etf_cost",
+    "local_etf_cost",
+    "yesterday_at_cost",
+    "local_yesterday_at_cost",
+}
+
 TRAFFIC_FIELDS = [
     "clicks",
     "impressions",
@@ -208,7 +249,9 @@ TRAFFIC_FIELDS = [
     "video_etfm_cpcv",
     "local_video_etfm_cpcv",
 ]
+
 POSTCLICK_ACQUISITION_FIELDS = {"click_discrepancy"}
+
 POSTCLICK_ENGAGEMENT_FIELDS = {
     "percent_new_users",
     "pv_per_visit",
@@ -224,4 +267,44 @@ POSTCLICK_ENGAGEMENT_FIELDS = {
     "new_users",
     "pageviews",
     "visits",
+}
+
+ENTITY_TAGS_FIELDS = {"agency_tags", "account_tags", "campaign_tags", "ad_group_tags", "source_tags"}
+
+PLACEMENT_FIELDS = {"placement_id", "placement", "placement_type"}
+
+VIEWABILITY_FIELDS = {
+    "mrc50_measurable",
+    "mrc50_viewable",
+    "mrc50_non_measurable",
+    "mrc50_non_viewable",
+    "mrc50_measurable_percent",
+    "mrc50_viewable_percent",
+    "mrc50_viewable_distribution",
+    "mrc50_non_measurable_distribution",
+    "mrc50_non_viewable_distribution",
+    "etfm_mrc50_vcpm",
+    "local_etfm_mrc50_vcpm",
+    "mrc100_measurable",
+    "mrc100_viewable",
+    "mrc100_non_measurable",
+    "mrc100_non_viewable",
+    "mrc100_measurable_percent",
+    "mrc100_viewable_percent",
+    "mrc100_viewable_distribution",
+    "mrc100_non_measurable_distribution",
+    "mrc100_non_viewable_distribution",
+    "etfm_mrc100_vcpm",
+    "local_etfm_mrc100_vcpm",
+    "vast4_measurable",
+    "vast4_viewable",
+    "vast4_non_measurable",
+    "vast4_non_viewable",
+    "vast4_measurable_percent",
+    "vast4_viewable_percent",
+    "vast4_viewable_distribution",
+    "vast4_non_measurable_distribution",
+    "vast4_non_viewable_distribution",
+    "etfm_vast4_vcpm",
+    "local_etfm_vast4_vcpm",
 }

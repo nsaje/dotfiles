@@ -102,7 +102,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     augmenter.augment(breakdown, rows)
     augmenter.cleanup(rows, target_dimension, constraints)
 
-    permission_filter.filter_columns_by_permission(user, rows, goals)
+    permission_filter.filter_columns_by_permission(user, constraints, rows, goals)
 
     return rows
 
@@ -128,6 +128,6 @@ def totals(user, level, breakdown, constraints, goals):
     for k, v in list(dash_total_row.items()):
         stats_rows[0][k] = v
 
-    permission_filter.filter_columns_by_permission(user, stats_rows, goals)
+    permission_filter.filter_columns_by_permission(user, constraints, stats_rows, goals)
 
     return stats_rows[0]

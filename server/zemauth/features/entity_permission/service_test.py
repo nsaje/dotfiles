@@ -136,7 +136,7 @@ class EntityPermissionServiceTestCase(TestCase):
         refresh_entity_permissions_for_user(user)
         entity_permissions = list(user.entitypermission_set.all())
 
-        self.assertEqual(len(entity_permissions), 8)
+        self.assertEqual(len(entity_permissions), 9)
         for entity_permission in entity_permissions:
             self.assertIsNone(entity_permission.agency_id)
             self.assertIsNone(entity_permission.account_id)
@@ -150,4 +150,5 @@ class EntityPermissionServiceTestCase(TestCase):
         self.assertIn(Permission.BUDGET_MARGIN, permissions)
         self.assertIn(Permission.AGENCY_SPEND_MARGIN, permissions)
         self.assertIn(Permission.MEDIA_COST_DATA_COST_LICENCE_FEE, permissions)
+        self.assertIn(Permission.BASE_COSTS_SERVICE_FEE, permissions)
         self.assertIn(Permission.RESTAPI, permissions)

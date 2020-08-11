@@ -76,6 +76,7 @@ def _handle_internal_user(user):
     _add_entity_permission(user, None, None, Permission.BUDGET_MARGIN)
     _add_entity_permission(user, None, None, Permission.AGENCY_SPEND_MARGIN)
     _add_entity_permission(user, None, None, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE)
+    _add_entity_permission(user, None, None, Permission.BASE_COSTS_SERVICE_FEE)
     _add_entity_permission(user, None, None, Permission.RESTAPI)
 
 

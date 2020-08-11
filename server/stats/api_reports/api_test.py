@@ -6,10 +6,10 @@ from mock import patch
 import dash.models
 from core.features import bid_modifiers
 from dash import publisher_helpers
-from dash.common.views_base_test_case import DASHAPITestCase
-from dash.common.views_base_test_case import FutureDASHAPITestCase
 from stats import api_reports
 from stats.api_reports import constraints_helper
+from stats.common.base_test_case import FutureStatsTestCase
+from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from zemauth.models import User
 
@@ -186,7 +186,7 @@ class CampaignGoalTest(TestCase):
         )
 
 
-class LegacyPlacementBreakdownQueryTestCase(DASHAPITestCase):
+class LegacyPlacementBreakdownQueryTestCase(StatsTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def setUp(self):
@@ -515,5 +515,5 @@ class LegacyPlacementBreakdownQueryTestCase(DASHAPITestCase):
         )
 
 
-class PlacementBreakdownQueryTestCase(FutureDASHAPITestCase, LegacyPlacementBreakdownQueryTestCase):
+class PlacementBreakdownQueryTestCase(FutureStatsTestCase, LegacyPlacementBreakdownQueryTestCase):
     pass

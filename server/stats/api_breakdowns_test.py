@@ -10,25 +10,37 @@ from dash import models
 from dash import publisher_helpers
 from stats import api_breakdowns
 from stats import constants
+from stats.common.base_test_case import FutureStatsTestCase
+from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from utils import threads
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-class ApiBreakdownQueryTest(TestCase):
+class LegacyApiBreakdownQueryTest(StatsTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
+    permissions = [
+        "can_view_account_agency_information",
+        "can_see_sspd_url",
+        "can_view_platform_cost_breakdown",
+        "can_see_campaign_type_in_breakdowns",
+        "can_see_managers_in_campaigns_table",
+    ]
+
+    def setUp(self):
+        super().setUp()
+        self.maxDiff = None
 
     @mock.patch("redshiftapi.api_breakdowns.query_structure_with_stats")
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_query_rs_first(self, mock_rs_query, mock_str_w_stats):
-
         mock_rs_query.return_value = [{"clicks": 1, "campaign_id": 1}]
 
         mock_str_w_stats.return_value = []
 
-        user = User.objects.get(pk=1)
         breakdown = ["campaign_id"]
         constraints = {
             "show_archived": True,
@@ -45,7 +57,7 @@ class ApiBreakdownQueryTest(TestCase):
         limit = 2
 
         result = api_breakdowns.query(
-            dash.constants.Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit
+            dash.constants.Level.ACCOUNTS, self.user, breakdown, constraints, goals, parents, order, offset, limit
         )
 
         mock_rs_query.assert_called_with(
@@ -102,10 +114,8 @@ class ApiBreakdownQueryTest(TestCase):
 
     @mock.patch("redshiftapi.api_breakdowns.query_stats_for_rows")
     def test_query_dash_first(self, mock_rs_query):
-
         mock_rs_query.return_value = [{"clicks": 1, "campaign_id": 1}, {"clicks": 2, "campaign_id": 2}]
 
-        user = User.objects.get(pk=1)
         breakdown = ["campaign_id"]
         constraints = {
             "show_archived": True,
@@ -122,7 +132,7 @@ class ApiBreakdownQueryTest(TestCase):
         limit = 10
 
         result = api_breakdowns.query(
-            dash.constants.Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit
+            dash.constants.Level.ACCOUNTS, self.user, breakdown, constraints, goals, parents, order, offset, limit
         )
 
         self.assertEqual(
@@ -179,10 +189,23 @@ class ApiBreakdownQueryTest(TestCase):
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
+class ApiBreakdownQueryTest(FutureStatsTestCase, LegacyApiBreakdownQueryTest):
+    def setUp(self):
+        super().setUp()
+        account = models.Account.objects.get(pk=1)
+        test_helper.add_entity_permissions(
+            self.user,
+            [Permission.READ, Permission.AGENCY_SPEND_MARGIN, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE],
+            account,
+        )
+
+
+@mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
 class PlacementBreakdownQueryTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
-    def _convert_to_placement_entries(self):
+    @staticmethod
+    def _convert_to_placement_entries():
         # convert existing PublisherGroupEntry objects into placement ones
         for i in range(1, 6):
             models.PublisherGroupEntry.objects.filter(publisher_group_id=i).update(placement="plac{}".format(i))
