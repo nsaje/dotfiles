@@ -88,6 +88,18 @@ describe('ArrayHelpers', () => {
             'b',
             'c',
         ]);
+        expect(arrayHelpers.distinct([{a: 1}, {b: 2}, {c: 3}])).toEqual([
+            {a: 1},
+            {b: 2},
+            {c: 3},
+        ]);
+        expect(arrayHelpers.distinct([{a: 1}, {b: 2}, {a: 1}])).toEqual([
+            {a: 1},
+            {b: 2},
+        ]);
+        expect(
+            arrayHelpers.distinct([{a: 1}, {b: 2}, {a: 1}, {c: 3}])
+        ).toEqual([{a: 1}, {b: 2}, {c: 3}]);
     });
 
     it('should split an array of objects based on some property', () => {
