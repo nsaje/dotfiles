@@ -5,9 +5,9 @@ import core.models
 import zemauth.features.entity_permission
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.features.entity_permission import EntityPermissionChangeNotAllowed
 from zemauth.features.entity_permission import Permission
 
-from .exceptions import EntityPermissionChangeNotAllowed
 from .model import User
 
 
@@ -47,7 +47,7 @@ class EntityPermissionMixinTestCase(TestCase):
         request = type("", (), {})()
         request.user = calling_user
         agency = magic_mixer.blend(core.models.Agency)
-        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER, Permission.BUDGET], agency)
         another_agency = magic_mixer.blend(core.models.Agency)
 
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
@@ -110,7 +110,7 @@ class EntityPermissionMixinTestCase(TestCase):
         calling_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
         request = type("", (), {})()
         request.user = calling_user
-        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER], None)
+        test_helper.add_entity_permissions(calling_user, [Permission.READ, Permission.USER, Permission.BUDGET], None)
         agency = magic_mixer.blend(core.models.Agency)
         another_agency = magic_mixer.blend(core.models.Agency)
 

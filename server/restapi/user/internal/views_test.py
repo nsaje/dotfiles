@@ -120,6 +120,7 @@ class UserViewSetTestBase(FutureRESTAPITestCase):
         # output permissions:
         # [0],[1]: permissions on the same account
         # [2],[3]: permissions on the same agency, but on a different account
+        # [3] is not visible because it is a reporting permission
         # [4],[5]: permissions on a different agency
         # [6],[7]: permissions on an account in a different agency
         account, agency = self._prepare_callers_permissions(calling_user, caller_role)
@@ -314,12 +315,11 @@ class UserViewSetPutTest(UserViewSetTestBase):
         calling_user, requested_user = self._setup_test_users()
 
         agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
+        test_helper.add_entity_permissions(calling_user, [Permission.BUDGET_MARGIN], agency)
+        test_helper.add_entity_permissions(calling_user, [Permission.BUDGET], agency)
 
         r = self._call_get(requested_user, agency)
         user_json = self.assertResponseValid(r)["data"]
-
-        # Add BUDGET_MARGIN permission to calling_user, so we can test if he can set it
-        test_helper.add_entity_permissions(calling_user, [Permission.BUDGET_MARGIN], agency)
 
         user_json["entityPermissions"][0]["permission"] = Permission.READ
         user_json["entityPermissions"][1]["permission"] = Permission.USER
@@ -345,58 +345,13 @@ class UserViewSetPutTest(UserViewSetTestBase):
         # 3 permissions that we just set + 4 permissions on other agencies = 7 permissions in total
         self.assertEqual(len(list(requested_user.entitypermission_set.all())), 7)
 
-    def test_put_change_permissions_on_account_for_self(self):
-        # calling_user is account manager and is searching by account_id, requested user is the same as calling_user
-        user = self.user
-        agency = self.mix_agency()
-        account = self.mix_account(
-            user=user, permissions=[Permission.READ, Permission.USER, Permission.BUDGET_MARGIN], agency=agency
-        )
-
-        r = self._call_get(user, agency, account)
-        user_json = self.assertResponseValid(r)["data"]
-
-        user_json["entityPermissions"] = list(
-            filter(lambda x: x["permission"] != Permission.BUDGET_MARGIN, user_json["entityPermissions"])
-        )
-
-        r = self._call_put(user, user_json, agency, account)
-        self.assertResponseValid(r)
-
-        r = self._call_get(user, agency, account)
-        user_json = self.assertResponseValid(r)["data"]
-
-        # After the change we need to see the same permissions as before, because changing your own permissions is not possible
-        self.assertCountEqual(
-            user_json["entityPermissions"],
-            [
-                {"agencyId": None, "accountId": str(account.id), "permission": Permission.READ},
-                {"agencyId": None, "accountId": str(account.id), "permission": Permission.USER},
-                {"agencyId": None, "accountId": str(account.id), "permission": Permission.BUDGET_MARGIN},
-            ],
-        )
-
-    def test_put_remove_permissions(self):
-        # calling_user is agency manager and is searching by agency_id, requested user is agency manager
-        calling_user, requested_user = self._setup_test_users()
-
-        agency, permissions = self._prepare_agency_manager_test_case(calling_user, requested_user, "agency_mgr")
-
-        r = self._call_get(requested_user, agency)
-        user_json = self.assertResponseValid(r)["data"]
-
-        user_json["entityPermissions"] = []
-
-        r = self._call_put(requested_user, user_json, agency)
-
-        self._assert_validation_error(r, "All entities must have READ permission")
-
 
 @mock.patch("utils.email_helper.send_official_email")
 class UserViewSetCreateTest(UserViewSetTestBase):
     def test_create_on_agency(self, mock_send):
         calling_user: zemauth.models.User = self.user
         account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
+        test_helper.add_entity_permissions(calling_user, [Permission.BUDGET], agency)
 
         post_data = [
             {
@@ -418,7 +373,7 @@ class UserViewSetCreateTest(UserViewSetTestBase):
             resp_json["data"][0]["entityPermissions"],
             [
                 {"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ},
-                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET, "readonly": True},
+                {"agencyId": str(agency.id), "accountId": None, "permission": Permission.BUDGET},
             ],
         )
         self.assertTrue(mock_send.called)
@@ -451,98 +406,6 @@ class UserViewSetCreateTest(UserViewSetTestBase):
                 {"agencyId": None, "accountId": str(account.id), "permission": Permission.READ},
                 {"agencyId": None, "accountId": str(account.id), "permission": Permission.USER},
             ],
-        )
-
-    def test_create_on_agency_and_account(self, mock_send):
-        calling_user: zemauth.models.User = self.user
-        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
-
-        post_data = [
-            {
-                "email": "new.user@outbrain.com",
-                "entityPermissions": [
-                    {"agencyId": agency.id, "permission": Permission.READ},
-                    {"agencyId": agency.id, "permission": Permission.BUDGET},
-                    {"accountId": account.id, "permission": Permission.READ},
-                    {"accountId": account.id, "permission": Permission.USER},
-                ],
-            }
-        ]
-
-        r = self._call_create(post_data, agency)
-
-        self._assert_validation_error(
-            r, "Setting both account and agency permissions on entities of the same agency is not allowed."
-        )
-
-    def test_create_on_agency_and_account_together(self, mock_send):
-        calling_user: zemauth.models.User = self.user
-        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
-
-        post_data = [
-            {
-                "email": "new.user@outbrain.com",
-                "entityPermissions": [{"agencyId": agency.id, "accountId": account.id, "permission": Permission.READ}],
-            }
-        ]
-
-        r = self._call_create(post_data, agency)
-
-        self._assert_validation_error(
-            r, "Setting both account and agency permissions on entities of the same agency is not allowed."
-        )
-
-    def test_create_no_read_privilege(self, mock_send):
-        calling_user: zemauth.models.User = self.user
-        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
-
-        post_data = self._prepare_request("new.user@outbrain.com", agency.id, None, Permission.USER)
-
-        r = self._call_create(post_data, agency)
-
-        self._assert_validation_error(r, "All entities must have READ permission")
-
-    def test_create_on_account_without_read(self, mock_send):
-        calling_user: zemauth.models.User = self.user
-        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
-        another_account = self.mix_account(agency=agency)
-
-        post_data = [
-            {
-                "email": "new.user@outbrain.com",
-                "entityPermissions": [
-                    {"accountId": account.id, "permission": Permission.READ},
-                    {"accountId": account.id, "permission": Permission.USER},
-                    {"accountId": another_account.id, "permission": Permission.USER},
-                ],
-            }
-        ]
-
-        r = self._call_create(post_data, agency)
-
-        self._assert_validation_error(r, "All entities must have READ permission")
-
-    def test_create_existing(self, mock_send):
-        calling_user: zemauth.models.User = self.user
-        account, agency = self._prepare_callers_permissions(calling_user, "agency_mgr")
-
-        existing_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User, email="existing.user@outbrain.com")
-        test_helper.add_permissions(existing_user, ["fea_use_entity_permission"])
-        test_helper.add_entity_permissions(existing_user, [Permission.READ], agency)
-
-        post_data = self._prepare_request(existing_user.email, agency.id, None, Permission.READ)
-
-        r = self._call_create(post_data, agency)
-
-        resp_json = self.assertResponseValid(r, status_code=201, data_type=list)
-
-        self.assertEqual(resp_json["data"][0]["email"], existing_user.email)
-        self.assertEqual(resp_json["data"][0]["firstName"], existing_user.first_name)
-        self.assertEqual(resp_json["data"][0]["lastName"], existing_user.last_name)
-
-        self.assertCountEqual(
-            resp_json["data"][0]["entityPermissions"],
-            [{"agencyId": str(agency.id), "accountId": None, "permission": Permission.READ}],
         )
 
     def test_create_no_agency(self, mock_send):
@@ -980,10 +843,7 @@ class UserViewSetListTest(UserViewSetTestBase):
         self.assertEqual(account_mgr_response["firstName"], account_mgr.first_name)
         self.assertEqual(account_mgr_response["lastName"], account_mgr.last_name)
 
-        expected_entity_permissions = [
-            self._expected_permission_response(permissions[4]),
-            self._expected_permission_response(permissions[5]),
-        ]
+        expected_entity_permissions = [self._expected_permission_response(permissions[4])]
         if self._sees_whole_agency(caller_role):
             expected_entity_permissions.extend(
                 [self._expected_permission_response(permissions[6]), self._expected_permission_response(permissions[7])]
@@ -1200,9 +1060,7 @@ class UserViewSetGetTest(UserViewSetTestBase):
             self._expected_permission_response(permissions[1]),
         ]
         if self._sees_whole_agency(caller_role):
-            expected_entity_permissions.extend(
-                [self._expected_permission_response(permissions[2]), self._expected_permission_response(permissions[3])]
-            )
+            expected_entity_permissions.extend([self._expected_permission_response(permissions[2])])
 
         self.assertCountEqual(resp_user["entityPermissions"], expected_entity_permissions)
 

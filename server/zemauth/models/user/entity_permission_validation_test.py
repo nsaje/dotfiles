@@ -15,8 +15,8 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
         entity_permissions = [
-            {"agency": agency, "permission": Permission.READ},
-            {"agency": agency, "permission": Permission.BUDGET},
+            self._blend_entity_permission(None, agency, Permission.READ),
+            self._blend_entity_permission(None, agency, Permission.BUDGET),
         ]
 
         requested_user.validate_entity_permissions(entity_permissions)
@@ -26,8 +26,8 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
         entity_permissions = [
-            {"account": account, "permission": Permission.READ},
-            {"account": account, "permission": Permission.BUDGET},
+            self._blend_entity_permission(account, None, Permission.READ),
+            self._blend_entity_permission(account, None, Permission.BUDGET),
         ]
 
         requested_user.validate_entity_permissions(entity_permissions)
@@ -38,8 +38,8 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
         entity_permissions = [
-            {"account": account, "permission": Permission.READ},
-            {"agency": agency, "permission": Permission.READ},
+            self._blend_entity_permission(account, None, Permission.READ),
+            self._blend_entity_permission(None, agency, Permission.BUDGET),
         ]
 
         self.assertRaises(
@@ -50,7 +50,10 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
-        entity_permissions = [{"permission": Permission.READ}, {"agency": agency, "permission": Permission.READ}]
+        entity_permissions = [
+            self._blend_entity_permission(None, None, Permission.READ),
+            self._blend_entity_permission(None, agency, Permission.READ),
+        ]
 
         self.assertRaises(
             MixedPermissionLevels, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
@@ -61,7 +64,7 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         account = magic_mixer.blend(core.models.Account)
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
-        entity_permissions = [{"account": account, "agency": agency, "permission": Permission.READ}]
+        entity_permissions = [self._blend_entity_permission(account, agency, Permission.READ)]
 
         self.assertRaises(
             MixedPermissionLevels, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
@@ -71,7 +74,7 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
-        entity_permissions = [{"agency": agency, "permission": Permission.BUDGET}]
+        entity_permissions = [self._blend_entity_permission(None, agency, Permission.BUDGET)]
 
         self.assertRaises(
             MissingReadPermission, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
@@ -82,8 +85,8 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
         entity_permissions = [
-            {"agency": agency, "permission": Permission.READ},
-            {"agency": agency, "permission": Permission.MEDIA_COST_DATA_COST_LICENCE_FEE},
+            self._blend_entity_permission(None, agency, Permission.READ),
+            self._blend_entity_permission(None, agency, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE),
         ]
 
         self.assertRaises(
@@ -95,10 +98,13 @@ class EntityPermissionValidationMixinTestCase(TestCase):
         requested_user: zemauth.models.User = magic_mixer.blend(zemauth.models.User)
 
         entity_permissions = [
-            {"agency": agency, "permission": Permission.READ},
-            {"agency": agency, "permission": Permission.BASE_COSTS_SERVICE_FEE},
+            self._blend_entity_permission(None, agency, Permission.READ),
+            self._blend_entity_permission(None, agency, Permission.BASE_COSTS_SERVICE_FEE),
         ]
 
         self.assertRaises(
             MissingRequiredPermission, requested_user.validate_entity_permissions, entity_permissions=entity_permissions
         )
+
+    def _blend_entity_permission(self, account, agency, permission):
+        return zemauth.models.EntityPermission(account=account, agency=agency, permission=permission)

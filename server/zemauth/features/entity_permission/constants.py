@@ -30,3 +30,10 @@ REPORTING_PERMISSIONS = [
     Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
     Permission.BASE_COSTS_SERVICE_FEE,
 ]
+
+
+class AccessLevel(ConstantBase):
+    NONE = 0
+    ACCOUNT_MANAGER = 1
+    AGENCY_MANAGER = 2
+    INTERNAL_USER = 3

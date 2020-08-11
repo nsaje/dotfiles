@@ -13,9 +13,9 @@ import zemauth.features.entity_permission
 from utils import cache_helper
 from utils import zlogging
 from zemauth.features.entity_permission import EntityPermission
+from zemauth.features.entity_permission import EntityPermissionChangeNotAllowed
 from zemauth.features.entity_permission import Permission
 from zemauth.models.user.entity_permission_validation import EntityPermissionValidationMixin
-from zemauth.models.user.exceptions import EntityPermissionChangeNotAllowed
 
 if TYPE_CHECKING:
     Entity = Union[core.models.Agency, core.models.Account, core.models.Campaign, core.models.AdGroup]
@@ -104,69 +104,44 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
     def refresh_entity_permissions(self):
         zemauth.features.entity_permission.refresh_entity_permissions_for_user(self)
 
-    def get_entity_permissions(self, request, account, agency) -> Iterable[EntityPermission]:
+    def get_entity_permissions(
+        self, request, account, agency, show_hidden_reporting_permissions=False
+    ) -> Iterable[EntityPermission]:
         calling_user = request.user
         if account is None and agency is None and calling_user.has_perm_on_all_entities(Permission.USER):
-            return self._entity_permission_cache
+            entity_permissions = self._entity_permission_cache
+        else:
+            requested_agency = account.agency if account else agency
 
-        requested_agency = account.agency if account else agency
+            accounts_qs = zemauth.access.get_accounts(calling_user, Permission.USER)
+            accounts = list(accounts_qs.filter(agency=requested_agency))
 
-        accounts_qs = zemauth.access.get_accounts(calling_user, Permission.USER)
-        accounts = list(accounts_qs.filter(agency=requested_agency))
+            entity_permissions = [
+                x
+                for x in self._entity_permission_cache
+                if (x.account in accounts) or (x.agency == requested_agency) or (x.agency is None and x.account is None)
+            ]
 
-        return [
-            x
-            for x in self._entity_permission_cache
-            if (x.account in accounts) or (x.agency == requested_agency) or (x.agency is None and x.account is None)
-        ]
+        if show_hidden_reporting_permissions:
+            return entity_permissions
+        else:
+            return [
+                x
+                for x in entity_permissions
+                if not x.is_reporting_permission() or calling_user.has_greater_or_equal_permission(x)
+            ]
 
     def set_entity_permissions(self, request, account, agency, new_entity_permissions):
-        calling_user = request.user
-
-        if self.id == calling_user.id:
-            return  # We ignore entity permission changes when a user is editing himself
-
-        self.validate_entity_permissions(new_entity_permissions)
-
-        has_internal_permission = any(
-            filter(
-                lambda permission: not permission.get("account") and not permission.get("agency"),
-                new_entity_permissions,
-            )
+        zemauth.features.entity_permission.set_entity_permissions_on_user(
+            self, request, account, agency, new_entity_permissions
         )
-
-        if has_internal_permission and calling_user.has_perm_on_all_entities(Permission.USER):
-            self.delete_entity_permissions(request, None, None)
-        else:
-            self.delete_entity_permissions(request, account, agency)
-
-        if new_entity_permissions is not None:
-            for permission in new_entity_permissions:
-                if permission.get("account"):
-                    if calling_user.has_user_perm_on(permission["account"]):
-                        EntityPermission.objects.create(self, permission["permission"], account=permission["account"])
-                    else:
-                        self.invalidate_entity_permission_cache()
-                        raise EntityPermissionChangeNotAllowed("No USER permission on account")
-                elif permission.get("agency"):
-                    if calling_user.has_user_perm_on(permission["agency"]):
-                        EntityPermission.objects.create(self, permission["permission"], agency=permission["agency"])
-                    else:
-                        self.invalidate_entity_permission_cache()
-                        raise EntityPermissionChangeNotAllowed("No USER permission on agency")
-                else:
-                    if calling_user.has_perm_on_all_entities(Permission.USER):
-                        EntityPermission.objects.create(self, permission["permission"])
-                    else:
-                        self.invalidate_entity_permission_cache()
-                        raise EntityPermissionChangeNotAllowed("No internal USER permission")
 
     def delete_entity_permissions(self, request, account, agency):
         calling_user = request.user
         if self.id == calling_user.id:
             raise EntityPermissionChangeNotAllowed("User cannot delete his/her own permissions")
 
-        entity_permissions = self.get_entity_permissions(request, account, agency)
+        entity_permissions = self.get_entity_permissions(request, account, agency, True)
         for entity_permission in entity_permissions:
             entity_permission.delete()
 
