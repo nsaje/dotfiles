@@ -18,6 +18,7 @@ import {
     COLUMN_NAME,
     COLUMN_PERMISSIONS,
     COLUMN_REPORTS,
+    COLUMN_STATUS,
 } from './users-grid.component.config';
 import {UsersView} from '../../views/users.view';
 
@@ -45,6 +46,7 @@ export class UsersGridComponent implements OnChanges {
     columnDefs: ColDef[] = [
         COLUMN_NAME,
         COLUMN_EMAIL,
+        COLUMN_STATUS,
         COLUMN_ACCESS,
         COLUMN_PERMISSIONS,
         COLUMN_REPORTS,

@@ -782,6 +782,11 @@ export enum AlertType {
     DANGER = 'DANGER',
 }
 
+export enum UserStatus {
+    INVITATION_PENDING = 'INVITATION_PENDING',
+    ACTIVE = 'ACTIVE',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,

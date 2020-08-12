@@ -59,3 +59,10 @@ class ProgrammaticPlatform(ConstantBase):
         OTHER: "Other",
         NA: "N/A",
     }
+
+
+class Status(ConstantBase):
+    INVITATION_PENDING = 1
+    ACTIVE = 2
+
+    _VALUES = {INVITATION_PENDING: "Invitation Pending", ACTIVE: "Active"}

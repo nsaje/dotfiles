@@ -2,6 +2,7 @@ import {PaginationState} from '../../shared/components/smart-grid/types/paginati
 import {PaginationOptions} from '../../shared/components/smart-grid/types/pagination-options';
 import {EntityPermissionValue} from '../../core/users/types/entity-permission-value';
 import {DisplayedEntityPermissionValue} from './types/displayed-entity-permission-value';
+import {UserStatus} from '../../app.constants';
 
 export const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -73,4 +74,11 @@ export const ENTITY_PERMISSION_VALUE_TO_DESCRIPTION: {
     agency_spend_margin: '',
     media_cost_data_cost_licence_fee: '',
     base_costs_service_fee: '',
+};
+
+export const STATUS_VALUE_TO_NAME: {
+    [key in UserStatus]: string;
+} = {
+    [UserStatus.INVITATION_PENDING]: 'Invitation Pending',
+    [UserStatus.ACTIVE]: 'Active',
 };

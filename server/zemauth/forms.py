@@ -113,7 +113,7 @@ class SetNewUserForm(SetPasswordForm):
 
     def save(self):
         self.user.set_password(self.cleaned_data["new_password"])
-        self.user.update(**self.cleaned_data)
+        self.user.update(**self.cleaned_data, status=zemauth.models.user.constants.Status.ACTIVE)
         return self.user
 
     @staticmethod

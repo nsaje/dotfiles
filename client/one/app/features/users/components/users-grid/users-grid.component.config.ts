@@ -5,12 +5,17 @@ import {User} from '../../../../core/users/types/user';
 import {InfoCellComponent} from '../../../../shared/components/smart-grid/components/cell/info-cell/info-cell.component';
 import {InfoCellRendererParams} from '../../../../shared/components/smart-grid/components/cell/info-cell/types/info-cell.renderer-params';
 import {UsersView} from '../../views/users.view';
-import {GENERAL_PERMISSIONS, REPORTING_PERMISSIONS} from '../../users.config';
+import {
+    GENERAL_PERMISSIONS,
+    REPORTING_PERMISSIONS,
+    STATUS_VALUE_TO_NAME,
+} from '../../users.config';
 import {UserActionsCellComponent} from '../user-actions-cell/user-actions-cell.component';
 import {
     getPermissionsText,
     isAccountManager,
 } from './helpers/users-grid.helpers';
+import {UserStatus} from '../../../../app.constants';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -24,6 +29,14 @@ export const COLUMN_EMAIL: ColDef = {
     field: 'email',
     width: 180,
     minWidth: 180,
+};
+
+export const COLUMN_STATUS: ColDef = {
+    headerName: 'Status',
+    field: 'status',
+    valueFormatter: statusFormatter,
+    width: 120,
+    minWidth: 120,
 };
 
 export const COLUMN_ACCESS: ColDef = {
@@ -68,6 +81,10 @@ export const COLUMN_ACTIONS: ColDef = {
     minWidth: 75,
     resizable: false,
 };
+
+function statusFormatter(params: {value: UserStatus}): string {
+    return STATUS_VALUE_TO_NAME[params.value] || 'N/A';
+}
 
 function accessFormatter(params: {value: EntityPermission[]}): string {
     const value: EntityPermission[] = params.value;

@@ -107,3 +107,8 @@ class InstanceTestCase(TestCase):
         self.assertEqual(user.start_year_of_experience, year)
         with self.assertRaises(exceptions.InvalidStartYearOfExperience):
             user.update(start_year_of_experience=constants.START_YEAR - 1)
+
+    def test_update_status(self):
+        user = magic_mixer.blend_user()
+        user.update(status=constants.Status.ACTIVE)
+        self.assertEqual(user.status, constants.Status.ACTIVE)

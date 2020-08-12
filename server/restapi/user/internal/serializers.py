@@ -4,6 +4,7 @@ import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
 import zemauth.access
+import zemauth.models.user.constants
 from utils.exc import ValidationError
 from zemauth.features.entity_permission import Permission
 
@@ -97,3 +98,4 @@ class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     first_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     last_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     entity_permissions = EntityPermissionsSerializer(many=True)
+    status = restapi.serializers.fields.DashConstantField(zemauth.models.user.constants.Status, read_only=True)

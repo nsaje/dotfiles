@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 import utils.demo_anonymizer
 from core.models import Source
 
+from . import constants
 from . import entity_permission
 from . import instance
 from . import manager
@@ -83,6 +84,8 @@ class User(
     sspd_sources_markets = JSONField(null=True, blank=True, validators=[validators.validate_sspd_sources_markets])
     outbrain_user_id = models.CharField(null=True, blank=True, max_length=30, help_text="Outbrain ID")
 
+    status = models.IntegerField(default=constants.Status.INVITATION_PENDING, choices=constants.Status.get_choices())
+
     objects = manager.UserManager.from_queryset(queryset.UserQuerySet)()
 
     _settings_fields = [
@@ -93,6 +96,7 @@ class User(
         "job_title",
         "start_year_of_experience",
         "programmatic_platforms",
+        "status",
     ]
 
     USERNAME_FIELD = "email"
