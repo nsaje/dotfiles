@@ -49,7 +49,7 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.ad_group = magic_mixer.blend(dash.models.AdGroup)
-        self.source = magic_mixer.blend(dash.models.Source, id=1, bidder_slug="some_slug")
+        self.source = magic_mixer.blend(dash.models.Source, bidder_slug="some_slug")
         self.ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
         self.content_ad = magic_mixer.blend(dash.models.ContentAd, ad_group=self.ad_group)
 
@@ -561,13 +561,22 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
         magic_mixer.blend(
             geolocation.Geolocation, key="765", type=dash.constants.LocationType.DMA, name="765 El Paso, TX"
         )
-        magic_mixer.blend(dash.models.ContentAd, id="1")
+        magic_mixer.blend(dash.models.ContentAd)
 
         for modifier_type in constants.BidModifierType.get_all():
             input_csv_file = service.make_csv_example_file(modifier_type)
 
             entries, _ = service.parse_csv_file_entries(input_csv_file)
             cleaned_entries, has_error = service.clean_entries(entries)
+            if modifier_type in [
+                constants.BidModifierType.AD,
+                constants.BidModifierType.SOURCE,
+                constants.BidModifierType.PLACEMENT,
+            ]:
+                # these types have hardcoded ids and cannot be imported
+                self.assertTrue(input_csv_file)
+                continue
+
             self.assertFalse(has_error)
 
             # Because clean_entries changes 1.0 modifier value to None

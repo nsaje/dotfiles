@@ -16,19 +16,19 @@ from utils.magic_mixer import magic_mixer
 
 class PublisherAugmenterTest(TestCase):
     def setUp(self):
-        ad_group = magic_mixer.blend(models.AdGroup, id=1)
-        source = magic_mixer.blend(models.Source, id=1)
-        add_non_publisher_bid_modifiers(ad_group=ad_group, source=source)
+        ad_group = magic_mixer.blend(models.AdGroup)
+        self.source = magic_mixer.blend(models.Source)
+        add_non_publisher_bid_modifiers(ad_group=ad_group, source=self.source)
         self.bid_modifier = magic_mixer.blend(
             bid_modifiers.BidModifier,
             ad_group=ad_group,
-            source=source,
-            source_slug=source.bidder_slug,
+            source=self.source,
+            source_slug=self.source.bidder_slug,
             target="pub1.com",
             modifier=0.5,
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
-        ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source, ad_group=ad_group)
+        ad_group_source = magic_mixer.blend(models.AdGroupSource, source=self.source, ad_group=ad_group)
         ad_group_source.settings.update(None, cpc_cc=Decimal("1.5"), cpm=Decimal("2.5"), skip_validation=True)
         user = magic_mixer.blend_user()
 
@@ -45,7 +45,7 @@ class PublisherAugmenterTest(TestCase):
         self.report_augmenter = augmenter.get_report_augmenter_for_dimension("publisher_id", None)
 
     def test_augmenter_bid_modifiers(self):
-        row = {"publisher_id": "pub1.com__1", "source_id": 1}
+        row = {"publisher_id": f"pub1.com__{self.source.id}", "source_id": self.source.id}
         self.augmenter([row], self.bid_modifier_loader)
         self.assertDictEqual(
             row["bid_modifier"],
@@ -59,7 +59,7 @@ class PublisherAugmenterTest(TestCase):
         )
 
     def test_report_augmenter_bid_modifiers(self):
-        row = {"publisher_id": "pub1.com__1", "source_id": 1}
+        row = {"publisher_id": f"pub1.com__{self.source.id}", "source_id": self.source.id}
         self.report_augmenter([row], self.bid_modifier_loader)
         self.assertEqual(row["bid_modifier"], 0.5)
 
@@ -68,7 +68,7 @@ class PlacementAugmenterTest(TestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
 
-        self.source = magic_mixer.blend(models.Source, id=1, name="Some Source", bidder_slug="somesource")
+        self.source = magic_mixer.blend(models.Source, name="Some Source", bidder_slug="somesource")
 
         self.pg = magic_mixer.blend(models.PublisherGroup)
 
@@ -113,15 +113,15 @@ class PlacementAugmenterTest(TestCase):
     def test_augment_placement(self):
         rows = [
             {
-                "placement_id": "pub1.com__1__someplacement",
+                "placement_id": f"pub1.com__{self.source.id}__someplacement",
                 "publisher": "pub1.com",
-                "source_id": 1,
+                "source_id": self.source.id,
                 "placement": "someplacement",
             },
             {
-                "placement_id": "sub.pub1.com__1__someplacement",
+                "placement_id": f"sub.pub1.com__{self.source.id}__someplacement",
                 "publisher": "sub.pub1.com",
-                "source_id": 1,
+                "source_id": self.source.id,
                 "placement": "someplacement",
             },
         ]
@@ -132,9 +132,9 @@ class PlacementAugmenterTest(TestCase):
             rows,
             [
                 {
-                    "placement_id": "pub1.com__1__someplacement",
+                    "placement_id": f"pub1.com__{self.source.id}__someplacement",
                     "publisher": "pub1.com",
-                    "source_id": 1,
+                    "source_id": self.source.id,
                     "placement": "someplacement",
                     "name": "someplacement",
                     "source_name": "Some Source",
@@ -146,9 +146,9 @@ class PlacementAugmenterTest(TestCase):
                     "blacklisted": "Active",
                 },
                 {
-                    "placement_id": "sub.pub1.com__1__someplacement",
+                    "placement_id": f"sub.pub1.com__{self.source.id}__someplacement",
                     "publisher": "sub.pub1.com",
-                    "source_id": 1,
+                    "source_id": self.source.id,
                     "placement": "someplacement",
                     "name": "someplacement",
                     "source_name": "Some Source",
@@ -165,9 +165,9 @@ class PlacementAugmenterTest(TestCase):
 
 class DeliveryAugmenterTest(TestCase):
     def setUp(self):
-        ad_group = magic_mixer.blend(models.AdGroup, id=1)
+        ad_group = magic_mixer.blend(models.AdGroup)
         ad_group.settings.update_unsafe(None, cpc=Decimal("3.0"))
-        source = magic_mixer.blend(models.Source, id=1)
+        source = magic_mixer.blend(models.Source)
         add_non_publisher_bid_modifiers(
             omit_types={bid_modifiers.BidModifierType.SOURCE}, ad_group=ad_group, source=source
         )
