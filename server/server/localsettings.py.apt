@@ -344,12 +344,12 @@ AMELIA_BASE_URL = "http://amelia.outbrain.com/Amelia/api/internal/v2"
 OUTBRAIN_INTERNAL_USERNAME = "Zemanta-One"
 OUTBRAIN_INTERNAL_PASSWORD = Secret("plain::fake").get().decode("utf-8")  # noqa
 
-SSPD_ACCOUNT_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?accountId={id}"
-SSPD_CAMPAIGN_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?campaignId={id}"
-SSPD_AD_GROUP_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?adGroupId={id}"
-SSPD_CONTENT_AD_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?contentAdId={id}"
+SSPD_ACCOUNT_REDIRECT_URL = "https://ssp.zemanta.com/SspdOen/ad-review?accountId={id}"
+SSPD_CAMPAIGN_REDIRECT_URL = "https://ssp.zemanta.com/SspdOen/ad-review?campaignId={id}"
+SSPD_AD_GROUP_REDIRECT_URL = "https://ssp.zemanta.com/SspdOen/ad-review?adGroupId={id}"
+SSPD_CONTENT_AD_REDIRECT_URL = "https://ssp.zemanta.com/SspdOen/ad-review?contentAdId={id}"
 
-SSPD_BASE_URL = "https://ssp.zemanta.com"
+SSPD_BASE_URL = "https://ssp.zemanta.com/SspdOen"
 SSPD_AUTH_SECRET = ""
 
 
