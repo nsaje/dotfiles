@@ -68,6 +68,14 @@ export class CanActivateEntityGuard implements CanActivate {
                         return resolve(false);
                     }
                     return resolve(true);
+                })
+                .catch(() => {
+                    this.router.navigate([
+                        RoutePathName.APP_BASE,
+                        RoutePathName.ANALYTICS,
+                        LevelParam.ACCOUNTS,
+                    ]);
+                    return resolve(false);
                 });
         });
     }
