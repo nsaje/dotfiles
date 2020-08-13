@@ -14,9 +14,8 @@ def getPreviousBuildResult() {
     return ""
 }
 
-node {
-  try {
-    node('master') {
+node('SLAVE') {
+    try {
         stage('Kill previous builds') {
             Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
 
@@ -35,7 +34,7 @@ node {
             env.CACHE_DIR = "${WORKSPACE}/../_CACHE/${JOB_NAME}"
             sh 'mkdir -p ${CACHE_DIR}'
             env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-            env.AWS_DEFAULT_REGION="us-east-1"
+            env.AWS_DEFAULT_REGION = "us-east-1"
         }
 
         stage('Code checkout') {
@@ -65,12 +64,15 @@ node {
                 slackSend channel: "#rnd-z1-alerts-aux", color: "#8CC04F", failOnError: true, message: "APT Build Fixed (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
             }
         }
+    } catch (e) {
+        prevResult = getPreviousBuildResult()
+        if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS') {
+            slackSend channel: "#rnd-z1-alerts-aux", color: "#D54C53", failOnError: true, message: "APT Build Failed (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
+        }
+        throw e
+    } finally {
+        stage('Cleanup workspace') {
+            sh 'docker-compose kill; docker-compose rm -v -f'
+        }
     }
-  } catch(e) {
-    prevResult = getPreviousBuildResult()
-    if (!(e instanceof FlowInterruptedException) && prevResult == 'SUCCESS') {
-        slackSend channel: "#rnd-z1-alerts-aux", color: "#D54C53", failOnError: true, message: "APT Build Failed (<${env.BUILD_URL}|Open Classic> | <${env.BUILD_URL}display/redirect|Open Blue Ocean>)"
-    }
-    throw e
-  }
 }
