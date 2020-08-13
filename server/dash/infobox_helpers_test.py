@@ -182,13 +182,6 @@ class InfoBoxHelpersTestCase(BaseTestCase):
 
         self.assertEqual(60, dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date))
 
-    @mock.patch("redshiftapi.api_breakdowns.query")
-    def test_get_yesterday_campaign_spend(self, mock_query):
-        campaign = dash.models.Campaign.objects.get(pk=1)
-
-        mock_query.return_value = [{"campaign_id": "1", "local_yesterday_etfm_cost": 140}]
-        self.assertEqual({"yesterday_etfm_cost": 140}, dash.infobox_helpers.get_yesterday_campaign_spend(campaign))
-
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.datetime(year=2014, month=6, day=4))
     def test_calculate_daily_campaign_cap(self, mock_local_today):
         ags = dash.models.AdGroupSource.objects.get(id=2)

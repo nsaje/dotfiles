@@ -195,11 +195,6 @@ def get_yesterday_adgroup_spend(ad_group):
     return _get_yesterday_spend("ad_group_id", constraints)
 
 
-def get_yesterday_campaign_spend(campaign):
-    constraints = {"campaign_id": [campaign.id]}
-    return _get_yesterday_spend("campaign_id", constraints)
-
-
 def get_yesterday_account_spend(account):
     constraints = {"account_id": [account.id]}
     return _get_yesterday_spend("account_id", constraints)
