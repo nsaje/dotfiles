@@ -205,16 +205,12 @@ class UpdateAlmostDepletedTestCase(TestCase):
     def test_user_turns_on_ad_group_and_has_ad_group_source_off(self, _):
         inactive_adg = dash.constants.AdGroupSettingsState.INACTIVE
         inactive_adg_source = dash.constants.AdGroupSourceSettingsState.INACTIVE
-        self.ad_group.settings.update_unsafe(None, state=inactive_adg)
-        self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
 
-        # todo: matijav 12.08.2020 temporary disabled
-        # adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
-        # self.assertEqual(adg_setting_state, inactive_adg)
-        # adg_source_setting_state = (
-        #     AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
-        # )
-        # self.assertEqual(adg_source_setting_state, inactive_adg_source)
+        self.ad_group.settings.update_unsafe(None, state=inactive_adg)
+        self.assertEqual(self.ad_group.settings.state, inactive_adg)
+
+        self.ad_group_source.settings.update_unsafe(None, state=inactive_adg_source)
+        self.assertEqual(self.ad_group_source.settings.state, inactive_adg_source)
 
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=901.0)
