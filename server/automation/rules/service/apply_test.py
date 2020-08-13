@@ -13,6 +13,7 @@ from .. import RuleCondition
 from .. import RuleTriggerHistory
 from .. import constants
 from . import apply
+from . import exceptions
 from .actions import ValueChangeData
 
 
@@ -77,6 +78,16 @@ class ApplyTest(TestCase):
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertFalse(RuleTriggerHistory.objects.exists())
+
+    @mock.patch("automation.rules.service.apply._meets_all_conditions")
+    @mock.patch("automation.rules.service.apply._is_on_cooldown")
+    def test_apply_rule_archived(self, cooldown_mock, conditions_mock):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, archived=True)
+        stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
+
+        with self.assertRaises(exceptions.RuleArchived):
+            apply.apply_rule(rule, ad_group, stats, {}, {}, {})
 
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
     @mock.patch("automation.rules.service.apply._is_on_cooldown")

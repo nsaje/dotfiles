@@ -63,6 +63,7 @@ def execute_rules_daily_run() -> None:
                 )
             )
             .filter(rule_history_exists_today=False, state=constants.RuleState.ENABLED, target_type=target_type)
+            .exclude_archived()
             .prefetch_related("ad_groups_included", "conditions")
         )
 
@@ -97,6 +98,8 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rul
                     campaign_budgets_map.get(ad_group.campaign_id, {}),
                 )
                 _write_history(rule, ad_group, changes, errors)
+            except exceptions.RuleArchived:
+                continue
             except exceptions.ApplyFailedBase as e:
                 exception = e
                 _write_fail_history(rule, ad_group, exception=e)

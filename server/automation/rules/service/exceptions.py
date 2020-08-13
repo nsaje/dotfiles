@@ -11,3 +11,7 @@ class CampaignAutopilotActive(ApplyFailedBase):
 
 class BudgetAutopilotInactive(ApplyFailedBase):
     pass
+
+
+class RuleArchived(ApplyFailedBase):
+    pass

@@ -58,10 +58,14 @@ def apply_rule(
     campaign_budget: Dict[str, Any],
 ) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
 
+    if rule.archived:
+        raise exceptions.RuleArchived("Archived rule can not be executed.")
+
     helpers.ensure_ad_group_valid(rule, ad_group)
 
     changes, errors = [], []
     for target, target_stats in ad_group_stats.items():
+
         if _is_on_cooldown(target, rule, ad_group):
             continue
 

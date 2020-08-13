@@ -60,6 +60,10 @@ class ExecuteRulesDailyRunTest(TestCase):
             target_type=constants.TargetType.PUBLISHER,
             ad_groups_included=ad_groups,
         )
+        magic_mixer.blend(
+            Rule, target_type=constants.TargetType.SOURCE, ad_groups_included=ad_groups[:1], archived=True
+        )
+
         self.assertFalse(automation.models.RulesDailyJobLog.objects.exists())
 
         service.execute_rules_daily_run()
@@ -67,7 +71,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         # daily job
         self.assertTrue(automation.models.RulesDailyJobLog.objects.exists())
 
-        all_rules = Rule.objects.filter(state=constants.RuleState.ENABLED)
+        all_rules = Rule.objects.filter(state=constants.RuleState.ENABLED).exclude_archived()
 
         expected_stats_calls = []
         for rule in all_rules:
