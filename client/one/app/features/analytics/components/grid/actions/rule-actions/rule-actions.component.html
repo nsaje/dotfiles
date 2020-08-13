@@ -3,8 +3,12 @@
     class="zem-dropdown zem-dropdown--no-mobile-style"
     #ruleActionsDropdown="zemDropdown"
 >
-    <button class="button button--dropdown-toggle-icon" zemDropdownToggle>
-        Rules
+    <button
+        class="button button--dropdown-toggle-icon"
+        [zemNewFeature]="true"
+        zemDropdownToggle
+    >
+        Automation rules
     </button>
     <div class="zem-dropdown__content">
         <ul class="zem-rule-actions__list">
