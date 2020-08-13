@@ -383,7 +383,14 @@ class CampaignOverview(DASHAPIBaseView):
         currency = campaign.account.currency
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
-        pacing_settings = infobox_helpers.OverviewSetting("Campaign pacing:")
+        pacing_info_text = """
+            <p>Campaign spend (in blue) displays the total spend on campaign during the specified period.</p>
+            <p>Campaign pacing (expressed as % in brackets) is the quotient between campaign total spend and
+             the total available budget during pacing period. Only budget available in the pacing period is considered.
+             If the campaign budget period extends into the future, the amount of total available budget is proportional
+             to the days that fall within the pacing period.</p>
+        """
+        pacing_settings = infobox_helpers.OverviewSetting("Campaign pacing:", tooltip=pacing_info_text)
         for window, data in pacing_data.items():
             pacing_settings.add_child(
                 infobox_helpers.OverviewSetting(
