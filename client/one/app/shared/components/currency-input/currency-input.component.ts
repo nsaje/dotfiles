@@ -14,7 +14,6 @@ import * as commonHelpers from '../../helpers/common.helpers';
 import * as stringHelpers from '../../helpers/string.helpers';
 import * as numericHelpers from '../../helpers/numeric.helpers';
 import * as currencyHelpers from '../../helpers/currency.helpers';
-import {Currency} from '../../../app.constants';
 
 @Component({
     selector: 'zem-currency-input',

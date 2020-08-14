@@ -96,7 +96,7 @@ class RuleConditionValidationTest(TestCase):
 
     def test_validate_right_operand_type(self):
         self.rule_condition.clean({"right_operand_type": constants.ValueType.TOTAL_SPEND})
-        self.assertFalse(constants.ValueType.TOTAL_SPEND_DAILY_AVG in config.VALID_RIGTH_OPERAND_TYPES)
+        self.assertFalse(constants.ValueType.TOTAL_SPEND_DAILY_AVG in config.VALID_RIGHT_OPERAND_TYPES)
         with self._assert_multiple_validation_error([exceptions.InvalidRightOperandType]):
             self.rule_condition.clean({"right_operand_type": constants.ValueType.TOTAL_SPEND_DAILY_AVG})
         with self._assert_multiple_validation_error([exceptions.InvalidRightOperandType]):

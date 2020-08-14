@@ -12,7 +12,7 @@ from . import helpers
 def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[str, Any]]:
     local_today = dates_helper.local_today()  # NOTE: using local today since budget dates are in local timezone
     campaigns = core.models.Campaign.objects.filter(adgroup__in=ad_groups)
-    budgets_by_campaign_id = _fetch_bugets(campaigns)
+    budgets_by_campaign_id = _fetch_budgets(campaigns)
 
     budgets_data_by_campaign_id = {}
     for campaign in core.models.Campaign.objects.filter(adgroup__in=ad_groups):
@@ -40,7 +40,7 @@ def prepare_budgets(ad_groups: Sequence[core.models.AdGroup]) -> Dict[int, Dict[
     return budgets_data_by_campaign_id
 
 
-def _fetch_bugets(campaigns):
+def _fetch_budgets(campaigns):
     budgets_by_campaign_id = {}
     for budget in core.features.bcm.BudgetLineItem.objects.filter(campaign__in=campaigns):
         budgets_by_campaign_id.setdefault(budget.campaign_id, [])

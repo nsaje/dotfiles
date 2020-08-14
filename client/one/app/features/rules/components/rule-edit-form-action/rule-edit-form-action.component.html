@@ -52,6 +52,12 @@
         placement="right"
         (inputBlur)="updateChangeLimit($event, actionType)"
     ></zem-currency-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of changeLimitErrors"
+    >
+        {{ error }}
+    </div>
 </zem-content-form-group>
 
 <zem-select-form-group

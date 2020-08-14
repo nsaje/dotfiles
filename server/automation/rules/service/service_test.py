@@ -176,7 +176,7 @@ class ExecuteRulesDailyRunTest(TestCase):
         self.assertEqual(constants.ApplyStatus.FAILURE, history.status)
         self.assertEqual(None, history.changes)
         self.assertEqual(
-            "Automation rule can’t change the daily cap when campaign budget optimisation is turned on.",
+            "Automation rule can’t change the daily cap when campaign budget optimization is turned on.",
             history.changes_text,
         )
 
@@ -418,7 +418,7 @@ class NotificationEmailTestCase(TestCase):
 
                         We’re letting you know that your rule “Test rule” was executed on your ad group https://one.zemanta.com/v2/analytics/adgroup/{self.ad_group.id} and encountered the following errors:
 
-                        Automation rule can’t change the daily cap when campaign budget optimisation is turned on.
+                        Automation rule can’t change the daily cap when campaign budget optimization is turned on.
 
                         Yours truly,
                         Zemanta"""

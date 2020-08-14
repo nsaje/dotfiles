@@ -59,7 +59,7 @@ def _prepare_ad_group_settings_annotations(*, include_campaign_goals: bool, incl
         constants.MetricType.AD_GROUP_DELIVERY_TYPE: F("settings__delivery_type"),
     }
     if include_campaign_goals:
-        metric_mappings.update(_constuct_campaign_goals_annotations())
+        metric_mappings.update(_construct_campaign_goals_annotations())
     if include_ad_group_daily_cap:
         metric_mappings.update(_construct_ad_group_daily_cap_annotations())
     annotate_mappings = helpers.map_keys_from_constant_to_qs_string_representation(metric_mappings)
@@ -84,7 +84,7 @@ def _construct_ad_group_daily_cap_annotations():
     }
 
 
-def _constuct_campaign_goals_annotations():
+def _construct_campaign_goals_annotations():
     # NOTE: possible optimization - store primary goal fk on campaign itself
     campaign_goals_subquery = core.features.goals.CampaignGoal.objects.filter(
         campaign_id=OuterRef("campaign_id"), primary=True

@@ -299,7 +299,7 @@ def _write_fail_history(
 
 def _get_exception_text(exception: Exception) -> str:
     if isinstance(exception, exceptions.CampaignAutopilotActive):
-        return "Automation rule can’t change the daily cap when campaign budget optimisation is turned on."
+        return "Automation rule can’t change the daily cap when campaign budget optimization is turned on."
     elif isinstance(exception, exceptions.BudgetAutopilotInactive):
         return "Automation rule can’t change the daily cap when daily cap autopilot is turned off."
     else:
