@@ -1,5 +1,4 @@
 import {User} from '../../../../../core/users/types/user';
-import {UsersView} from '../../../views/users.view';
 import {DisplayedEntityPermissionValue} from '../../../types/displayed-entity-permission-value';
 import {EntityPermission} from '../../../../../core/users/types/entity-permission';
 import {
@@ -14,9 +13,13 @@ export function getPermissionsText(
     accountId: string,
     permissionsInColumn: DisplayedEntityPermissionValue[]
 ): string {
-    const filteredPermissions: EntityPermission[] = (
-        user.entityPermissions || []
-    ).filter(ep => permissionsInColumn.includes(ep.permission));
+    const filteredPermissions: EntityPermission[] = permissionsInColumn
+        .map(permission =>
+            (user.entityPermissions || []).filter(
+                ep => ep.permission === permission
+            )
+        )
+        .flat();
 
     if (isAccountManager(user) && !isDefined(accountId)) {
         return 'N/A';
