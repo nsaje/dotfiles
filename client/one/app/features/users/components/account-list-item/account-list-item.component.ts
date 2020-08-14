@@ -19,6 +19,8 @@ export class AccountListItemComponent implements OnChanges {
     account: Account;
     @Input()
     selected: boolean;
+    @Input()
+    canRemove: boolean = true;
     @Output()
     remove: EventEmitter<void> = new EventEmitter<void>();
 

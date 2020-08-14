@@ -5,7 +5,10 @@
     }"
 >
     {{ account.id }}
-    <span class="zem-account-list-item__remove-button" (click)="remove.emit()"
+    <span
+        class="zem-account-list-item__remove-button"
+        *ngIf="canRemove"
+        (click)="remove.emit()"
         >×</span
     >
     <br />

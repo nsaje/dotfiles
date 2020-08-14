@@ -146,6 +146,10 @@
                                         class="zem-account-list-item"
                                         [account]="item"
                                         [selected]="selected"
+                                        [canRemove]="
+                                            !state.activeEntity.isReadOnly &&
+                                            !state.activeEntity.isCurrentUser
+                                        "
                                         (remove)="
                                             store.removeActiveEntityAccounts([
                                                 item
@@ -234,6 +238,7 @@
                     *ngIf="state.activeEntity.entity.id"
                     [disabled]="
                         state.activeEntity.isReadOnly ||
+                        state.activeEntity.isCurrentUser ||
                         state.requests.edit.inProgress ||
                         state.requests.create.inProgress
                     "
