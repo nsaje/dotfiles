@@ -101,16 +101,22 @@ node('SLAVE') {
         }
 
         stage('Collect artifacts') {
-            sh 'make collect_server_static'
-            sh './scripts/push_static_to_s3.sh'
-            // restapi docs
-            sh './server/restapi/docs/build-docker.sh "build-${BRANCH_NAME}.${BUILD_NUMBER}.html" && ./scripts/push_docs_to_s3.sh ./server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html'
-            // files needed for deploy
-            sh './scripts/push_artifact_to_s3.sh "docker-compose.prod.yml"'
-            sh './scripts/push_artifact_to_s3.sh "docker-compose.demo.yml"'
-            sh './scripts/push_artifact_to_s3.sh "docker/docker-manage-py.sh"'
-            // Server
-            sh 'make push'
+            parallel(
+                    'Collect static': {
+                        sh 'make collect_server_static'
+                        sh './scripts/push_static_to_s3.sh'
+                    },
+                    'Restapi docs': {
+                        sh './server/restapi/docs/build-docker.sh "build-${BRANCH_NAME}.${BUILD_NUMBER}.html" && ./scripts/push_docs_to_s3.sh ./server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html'
+                    },
+                    'Artifacts': {
+                        sh './scripts/push_artifact_to_s3.sh "docker-compose.prod.yml"'
+                        sh './scripts/push_artifact_to_s3.sh "docker-compose.demo.yml"'
+                        sh './scripts/push_artifact_to_s3.sh "docker/docker-manage-py.sh"'
+                        // Server
+                        sh 'make push'
+                    }
+            )
         }
 
         stage('Notify success') {
