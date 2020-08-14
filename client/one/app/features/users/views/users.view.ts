@@ -20,7 +20,7 @@ import {
 import {ActivatedRoute, Router} from '@angular/router';
 import {UsersStore} from '../services/users-store/users.store';
 import {PaginationOptions} from '../../../shared/components/smart-grid/types/pagination-options';
-import {isDefined} from '../../../shared/helpers/common.helpers';
+import {isDefined, isNotEmpty} from '../../../shared/helpers/common.helpers';
 import {PaginationState} from '../../../shared/components/smart-grid/types/pagination-state';
 import {
     DEFAULT_PAGINATION,
@@ -142,6 +142,20 @@ export class UsersView implements OnInit, OnDestroy {
             });
 
             this.editUserModal.close();
+        }
+    }
+
+    resendEmail(user: User) {
+        const userDescription: string =
+            isNotEmpty(user.firstName) || isNotEmpty(user.lastName)
+                ? user.firstName + ' ' + user.lastName
+                : user.email;
+        if (
+            confirm(
+                `Are you sure you wish to resend an invitation link to user ${userDescription}?`
+            )
+        ) {
+            this.store.resendEmail(user.id);
         }
     }
 

@@ -35,6 +35,10 @@ export class UserActionsCellComponent implements ICellRendererAngularComp {
         this.params.context.componentParent.openEditUserModal(this.user);
     }
 
+    resendEmail() {
+        this.params.context.componentParent.resendEmail(this.user);
+    }
+
     refresh(): boolean {
         return false;
     }

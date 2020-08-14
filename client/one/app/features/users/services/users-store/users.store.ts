@@ -197,6 +197,27 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         });
     }
 
+    resendEmail(userId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.usersService
+                .resendEmail(
+                    userId,
+                    this.state.agencyId,
+                    this.state.accountId,
+                    this.requestStateUpdater
+                )
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    () => {
+                        resolve();
+                    },
+                    error => {
+                        reject();
+                    }
+                );
+        });
+    }
+
     setActiveEntity(entity: Partial<User>): void {
         const userPatches: Partial<User> = {
             ...entity,

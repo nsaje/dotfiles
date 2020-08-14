@@ -29,6 +29,10 @@ export const USERS_CONFIG = {
                 name: 'validate',
                 url: `${usersApiUrl}/validate/`,
             },
+            resendEmail: {
+                name: 'resendEmail',
+                url: `${usersApiUrl}/{userId}/resendemail/`,
+            },
         },
     },
 };

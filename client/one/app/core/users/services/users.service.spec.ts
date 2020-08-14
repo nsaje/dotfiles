@@ -26,6 +26,7 @@ describe('UsersService', () => {
             'get',
             'edit',
             'remove',
+            'resendEmail',
         ]);
         service = new UsersService(usersEndpointStub);
         requestStateUpdater = (requestName, requestState) => {};
@@ -270,6 +271,28 @@ describe('UsersService', () => {
         expect(usersEndpointStub.validate).toHaveBeenCalledTimes(1);
         expect(usersEndpointStub.validate).toHaveBeenCalledWith(
             mockedUser,
+            mockedAgencyId,
+            mockedAccountId,
+            requestStateUpdater
+        );
+    });
+
+    it('should resend email user via endpoint', () => {
+        usersEndpointStub.resendEmail.and
+            .returnValue(of(null, asapScheduler))
+            .calls.reset();
+
+        service
+            .resendEmail(
+                mockedUserId,
+                mockedAgencyId,
+                mockedAccountId,
+                requestStateUpdater
+            )
+            .subscribe(x => {});
+        expect(usersEndpointStub.resendEmail).toHaveBeenCalledTimes(1);
+        expect(usersEndpointStub.resendEmail).toHaveBeenCalledWith(
+            mockedUserId,
             mockedAgencyId,
             mockedAccountId,
             requestStateUpdater

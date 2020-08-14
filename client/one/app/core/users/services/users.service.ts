@@ -97,4 +97,18 @@ export class UsersService {
             requestStateUpdater
         );
     }
+
+    resendEmail(
+        userId: string,
+        agencyId: string,
+        accountId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.resendEmail(
+            userId,
+            agencyId,
+            accountId,
+            requestStateUpdater
+        );
+    }
 }

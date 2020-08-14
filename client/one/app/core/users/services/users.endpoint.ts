@@ -234,6 +234,39 @@ export class UsersEndpoint {
             );
     }
 
+    resendEmail(
+        userId: string,
+        agencyId: string,
+        accountId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = replaceUrl(USERS_CONFIG.requests.users.resendEmail, {
+            userId: userId,
+        });
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        const params = this.getScopeParams(agencyId, accountId);
+
+        return this.http.put<ApiResponse<void>>(request.url, {}, {params}).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
     private getScopeParams(agencyId: string, accountId: string): any {
         return {
             ...(isDefined(agencyId) &&

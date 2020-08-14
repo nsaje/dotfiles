@@ -77,8 +77,8 @@ export const COLUMN_ACTIONS: ColDef = {
     headerName: '',
     cellRendererFramework: UserActionsCellComponent,
     pinned: 'right',
-    maxWidth: 75,
-    minWidth: 75,
+    maxWidth: 105,
+    minWidth: 105,
     resizable: false,
 };
 

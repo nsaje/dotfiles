@@ -210,6 +210,14 @@
     background-image: url('images/add-white.svg');
 }
 
+.zem-button--send-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/send-sec.svg');
+}
+
+.zem-button--highlighted.zem-button--send-icon:not(.zem-button--loading)::before {
+    background-image: url('images/send-white.svg');
+}
+
 .zem-button--remove-icon:not(.zem-button--loading)::before {
     background-image: url('@{images-folder}/remove-sec.svg');
 }
