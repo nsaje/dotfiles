@@ -9,7 +9,9 @@
     </div>
     <a
         class="zem-item-list__link"
-        *ngIf="multiple && items.length > 0"
+        *ngIf="
+            multiple && items.length > 1 && selectedItems.length < items.length
+        "
         (click)="selectedItemsChange.emit(items)"
         >Select all</a
     >
