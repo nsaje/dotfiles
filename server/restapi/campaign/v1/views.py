@@ -49,11 +49,6 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             queryset_user_perm = queryset_user_perm.exclude_archived()
             queryset_entity_perm = queryset_entity_perm.exclude_archived()
 
-        exclude_inactive = qpe.validated_data.get("exclude_inactive", False)
-        if exclude_inactive:
-            queryset_user_perm = queryset_user_perm.filter_active()
-            queryset_entity_perm = queryset_entity_perm.filter_active()
-
         paginator = StandardPagination()
         if request.user.id == 886:  # HACK(msuber): skip logging differences for OEN due to performance
             campaigns = (
@@ -66,12 +61,11 @@ class CampaignViewSet(RESTAPIBaseViewSet):
                 request, paginator, Permission.READ, queryset_user_perm, queryset_entity_perm
             )
 
-        only_ids = qpe.validated_data.get("only_ids", False)
-        if only_ids:
+        only_non_paginated_ids = qpe.validated_data.get("only_non_paginated_ids", False)
+        if only_non_paginated_ids:
             campaigns = campaigns.order_by("id").values("id")
-            campaigns_paginated = paginator.paginate_queryset(campaigns, request)
-            return paginator.get_paginated_response(
-                serializers.CampaignIdsSerializer(campaigns_paginated, many=True, context={"request": request}).data
+            return self.response_ok(
+                serializers.CampaignIdsSerializer(campaigns, many=True, context={"request": request}).data
             )
 
         campaigns = campaigns.select_related("settings").order_by("pk")

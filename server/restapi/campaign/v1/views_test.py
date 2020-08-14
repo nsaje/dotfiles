@@ -8,7 +8,6 @@ import dash.models
 import restapi.serializers
 import utils.test_helper
 from automation import autopilot
-from automation import campaignstop
 from dash import constants
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
@@ -287,42 +286,21 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             self.validate_against_db(item)
             self.assertEqual(int(item["accountId"]), account.id)
 
-    def test_campaigns_list_only_ids(self):
+    def test_campaigns_list_only_non_paginated_ids(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
         magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
 
         r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
 
-        r_only_ids = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"onlyIds": True})
-        resp_json_only_ids = self.assertResponseValid(r_only_ids, data_type=list)
-
-        self.assertEqual([{"id": campaign["id"]} for campaign in resp_json["data"]], resp_json_only_ids["data"])
-
-    def test_campaigns_list_offset_pagination_only_ids(self):
-        account = self.mix_account(user=self.user, permissions=[Permission.READ])
-        campaigns = magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
-
-        r = self.client.get(
-            reverse("restapi.campaign.v1:campaigns_list"),
-            data={"limit": 2, "offset": 5, "accountId": account.id, "onlyIds": True},
+        r_only_non_paginated_ids = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), data={"onlyNonPaginatedIds": True}
         )
-        resp_json = self.assertResponseValid(r, data_type=list)
+        resp_json_only_non_paginated_ids = self.assertResponseValid(r_only_non_paginated_ids, data_type=list)
 
-        self.assertCountEqual([{"id": str(x.id)} for x in campaigns[5:7]], resp_json["data"])
-
-    def test_campaigns_list_marker_pagination_only_ids(self):
-        account = self.mix_account(user=self.user, permissions=[Permission.READ])
-        campaigns = magic_mixer.cycle(10).blend(core.models.Campaign, account=account)
-        campaigns_ids = sorted([x.id for x in campaigns])
-
-        r_paginated = self.client.get(
-            reverse("restapi.campaign.v1:campaigns_list"),
-            data={"limit": 2, "marker": campaigns_ids[5], "accountId": account.id, "onlyIds": True},
+        self.assertEqual(
+            [{"id": campaign["id"]} for campaign in resp_json["data"]], resp_json_only_non_paginated_ids["data"]
         )
-        resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
-
-        self.assertEqual([{"id": str(campaigns_ids[6])}, {"id": str(campaigns_ids[7])}], resp_json_paginated["data"])
 
     def test_campaigns_list_account_id_invalid(self):
         account = magic_mixer.blend(core.models.Account)
@@ -362,21 +340,6 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(5, len(resp_json["data"]))
         for item in resp_json["data"]:
             self.validate_against_db(item)
-
-    @mock.patch.object(campaignstop, "get_campaignstop_states")
-    def test_campaigns_list_exclude_inactive(self, mock_get_campaign_states):
-        account = self.mix_account(self.user, permissions=[Permission.READ])
-        campaigns = magic_mixer.cycle(3).blend(dash.models.Campaign, account=account)
-        mock_get_campaign_states.return_value = {
-            campaigns[0].id: {"allowed_to_run": True},
-            campaigns[1].id: {"allowed_to_run": True},
-            campaigns[2].id: {"allowed_to_run": False},
-        }
-        r = self.client.get(
-            reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id, "excludeInactive": True}
-        )
-        resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(set([x["id"] for x in resp_json["data"]]), set([str(x.id) for x in campaigns[:2]]))
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
