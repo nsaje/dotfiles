@@ -16,24 +16,6 @@ import {PaginationOptions} from '../../shared/components/smart-grid/types/pagina
 
 export const RULE_TARGET_TYPES = [
     {
-        label: 'Ad',
-        value: RuleTargetType.Ad,
-        availableActions: [
-            {
-                type: RuleActionType.IncreaseBidModifier,
-                label: 'Increase ad bid modifier',
-            },
-            {
-                type: RuleActionType.DecreaseBidModifier,
-                label: 'Decrease ad bid modifier',
-            },
-            {
-                type: RuleActionType.TurnOff,
-                label: 'Pause ad',
-            },
-        ],
-    },
-    {
         label: 'Ad group',
         value: RuleTargetType.AdGroup,
         availableActions: [
@@ -60,6 +42,24 @@ export const RULE_TARGET_TYPES = [
             {
                 type: RuleActionType.SendEmail,
                 label: 'Send email',
+            },
+        ],
+    },
+    {
+        label: 'Ad group / Ad',
+        value: RuleTargetType.Ad,
+        availableActions: [
+            {
+                type: RuleActionType.IncreaseBidModifier,
+                label: 'Increase ad bid modifier',
+            },
+            {
+                type: RuleActionType.DecreaseBidModifier,
+                label: 'Decrease ad bid modifier',
+            },
+            {
+                type: RuleActionType.TurnOff,
+                label: 'Pause ad',
             },
         ],
     },
