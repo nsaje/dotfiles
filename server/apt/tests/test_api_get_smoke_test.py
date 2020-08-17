@@ -63,11 +63,9 @@ class APISmokeTestAccountsTestCase(APTSmokeTestCase):
 
     def test_get_pixel_detail(self):
         conversion_pixel_count = get_count_estimate("dash_conversionpixel")
-        conversion_pixel = (
-            core.models.ConversionPixel.objects.order_by()
-            .all()
-            .filter(archived=False)[self.get_random_index(conversion_pixel_count)]
-        )
+        conversion_pixel = core.models.ConversionPixel.objects.order_by().all()[
+            self.get_random_index(conversion_pixel_count)
+        ]
         self.call_and_assert_ok(
             url="accounts/{accountId}/pixels/{pixelId}",
             params={"account_id": conversion_pixel.account, "pixel_id": conversion_pixel.id},
