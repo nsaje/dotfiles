@@ -36,7 +36,7 @@ export class EntitySelectorComponent implements OnChanges {
         EntitySelectorItem
     >();
     @Output()
-    entitySelectorOpen: EventEmitter<void> = new EventEmitter<void>();
+    open: EventEmitter<void> = new EventEmitter<void>();
 
     selectedGroupedEntities: EntitySelectorItemsByType[] = [];
     filteredAvaialableEntities: EntitySelectorItem[];

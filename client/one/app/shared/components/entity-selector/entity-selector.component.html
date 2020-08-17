@@ -9,7 +9,7 @@
     [appendTo]="appendTo"
     (itemSelect)="addEntity.emit($event)"
     (search)="onSearchEntities($event)"
-    (open)="entitySelectorOpen.emit()"
+    (open)="open.emit()"
 >
     <ng-template #selectGroupTemplate let-item="item">
         {{ entityTypeNames[item.type] }}

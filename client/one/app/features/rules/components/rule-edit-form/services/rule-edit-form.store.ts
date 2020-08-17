@@ -376,8 +376,8 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         return entities;
     }
 
-    searchEntities(keyword: string): void {
-        keyword = keyword ? keyword.trim() : null; // TODO katrca: is this necessary? also, if keyword is null, do we even need to call the BE?
+    searchEntities(keyword: string | null = null): void {
+        keyword = keyword ? keyword.trim() : null;
         Promise.all([
             this.loadAccounts(this.state.agencyId, keyword),
             this.loadCampaigns(
