@@ -1,7 +1,7 @@
 <zem-select-list
     class="zem-select-list zem-entity-selector__list"
     [selectedItems]="selectedGroupedEntities"
-    [availableItems]="filteredAvaialableEntities"
+    [availableItems]="filteredAvailableEntities"
     [selectBindValue]="'id'"
     [selectBindLabel]="'name'"
     [selectPlaceholder]="'Add account, campaign, ad group'"
@@ -30,3 +30,9 @@
         </div>
     </ng-template>
 </zem-select-list>
+<div
+    class="zem-form-group__content-item zem-message zem-message--error"
+    *ngFor="let error of errors"
+>
+    {{ error }}
+</div>

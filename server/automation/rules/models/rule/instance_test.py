@@ -5,7 +5,6 @@ from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
-from ... import exceptions
 from . import model
 
 
@@ -243,7 +242,7 @@ class RuleInstanceTest(TestCase):
 
         rule = magic_mixer.blend(model.Rule, agency=agency)
 
-        with self.assertRaises(exceptions.InvalidParents):
+        with self.assertRaises(ValidationError):
             rule.update(request, agency=None, account=None)
 
     def test_update_with_agency_and_account(self):
@@ -253,7 +252,7 @@ class RuleInstanceTest(TestCase):
 
         rule = magic_mixer.blend(model.Rule, agency=agency)
 
-        with self.assertRaises(exceptions.InvalidParents):
+        with self.assertRaises(ValidationError):
             rule.update(request, agency=agency, account=account)
 
     def test_update_valid_accounts_included(self):

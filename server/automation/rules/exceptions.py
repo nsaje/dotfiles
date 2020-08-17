@@ -77,6 +77,10 @@ class InvalidIncludedAdGroups(ValidationError):
     pass
 
 
+class MissingIncludedEntities(ValidationError):
+    pass
+
+
 class InvalidRuleConditions(ValidationError):
     def __init__(self, *args, conditions_errors=None, **kwargs):
         if not conditions_errors:

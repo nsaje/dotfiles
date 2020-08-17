@@ -29,6 +29,7 @@
             [appendTo]="'body'"
             [selectedEntities]="selectedRuleEntities"
             [availableEntities]="state.availableEntities"
+            [errors]="state.fieldsErrors?.entities"
             (searchEntities)="store.searchEntities($event)"
             (addEntity)="store.addRuleEntity($event)"
             (removeEntity)="store.removeRuleEntity($event)"

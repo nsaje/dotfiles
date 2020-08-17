@@ -439,6 +439,13 @@ class RuleValidationTest(test.TestCase):
                 }
             )
 
+    def test_validate_missing_included_entities(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account_rule = magic_mixer.blend(model.Rule, agency=agency)
+
+        with self._assert_multiple_validation_error([exceptions.MissingIncludedEntities]):
+            account_rule.clean({"name": "New name"})
+
     def test_validate_conditions(self):
         self.rule.clean(
             {

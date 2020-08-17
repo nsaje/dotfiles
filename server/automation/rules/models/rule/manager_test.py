@@ -1,6 +1,9 @@
+from contextlib import contextmanager
+
 from django.test import TestCase
 
 import core.models
+import utils.exc
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
@@ -69,6 +72,7 @@ class RuleManagerTest(TestCase):
     def test_create_with_agency(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__agency=agency)
 
         rule = model.Rule.objects.create(
             request,
@@ -82,6 +86,7 @@ class RuleManagerTest(TestCase):
             window=constants.MetricWindow.LAST_30_DAYS,
             notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
             notification_recipients=["test@test.com"],
+            ad_groups_included=[ad_group],
         )
         rule = model.Rule.objects.get(id=rule.id)
         self.assertEqual(request.user, rule.created_by)
@@ -91,6 +96,7 @@ class RuleManagerTest(TestCase):
     def test_create_with_account(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.models.Account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
 
         rule = model.Rule.objects.create(
             request,
@@ -104,6 +110,7 @@ class RuleManagerTest(TestCase):
             window=constants.MetricWindow.LAST_30_DAYS,
             notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
             notification_recipients=["test@test.com"],
+            ad_groups_included=[ad_group],
         )
 
         rule = model.Rule.objects.get(id=rule.id)
@@ -116,7 +123,7 @@ class RuleManagerTest(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account)
 
-        with self.assertRaises(exceptions.InvalidParents):
+        with self._assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
             model.Rule.objects.create(
                 request,
                 agency=agency,
@@ -135,7 +142,7 @@ class RuleManagerTest(TestCase):
     def test_create_without_agency_or_account(self):
         request = magic_mixer.blend_request_user()
 
-        with self.assertRaises(exceptions.InvalidParents):
+        with self._assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
             model.Rule.objects.create(
                 request,
                 name="Test rule",
@@ -148,3 +155,11 @@ class RuleManagerTest(TestCase):
                 notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
                 notification_recipients=["test@test.com"],
             )
+
+    @contextmanager
+    def _assert_multiple_validation_error(self, exceptions):
+        try:
+            yield
+        except utils.exc.MultipleValidationError as e:
+            for err in e.errors:
+                self.assertTrue(type(err) in exceptions)

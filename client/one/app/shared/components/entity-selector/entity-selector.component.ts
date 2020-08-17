@@ -24,6 +24,8 @@ export class EntitySelectorComponent implements OnChanges {
     @Input()
     availableEntities: EntitySelectorItem[];
     @Input()
+    errors: string[];
+    @Input()
     appendTo: 'body';
     @Output()
     searchEntities: EventEmitter<string> = new EventEmitter<string>();
@@ -39,15 +41,15 @@ export class EntitySelectorComponent implements OnChanges {
     open: EventEmitter<void> = new EventEmitter<void>();
 
     selectedGroupedEntities: EntitySelectorItemsByType[] = [];
-    filteredAvaialableEntities: EntitySelectorItem[];
+    filteredAvailableEntities: EntitySelectorItem[];
 
     entityTypeNames = ENTITY_TYPE_TO_NAME;
 
     ngOnChanges(): void {
-        this.selectedGroupedEntities = this.getGroupedEntitites(
+        this.selectedGroupedEntities = this.getGroupedEntities(
             this.selectedEntities
         );
-        this.filteredAvaialableEntities = this.getFilteredAvailableEntities(
+        this.filteredAvailableEntities = this.getFilteredAvailableEntities(
             this.selectedEntities,
             this.availableEntities
         );
@@ -57,7 +59,7 @@ export class EntitySelectorComponent implements OnChanges {
         this.searchEntities.emit(keyword);
     }
 
-    private getGroupedEntitites(
+    private getGroupedEntities(
         entities: EntitySelectorItem[]
     ): EntitySelectorItemsByType[] {
         return arrayHelpers

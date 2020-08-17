@@ -155,6 +155,15 @@ class RuleSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
             zemauth.access.get_publisher_group(user, Permission.WRITE, publisher_group.id)
         return publisher_group
 
+    def validate_entities(self, entities):
+        if not any(
+            [entities.get("accounts_included"), entities.get("campaigns_included"), entities.get("ad_groups_included")]
+        ):
+            raise rest_framework.serializers.ValidationError(
+                ["Please specify at least one entity on which the rule should run on."]
+            )
+        return entities
+
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
 

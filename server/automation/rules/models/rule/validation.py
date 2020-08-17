@@ -40,9 +40,10 @@ class RuleValidationMixin:
             partial(self._validate_if_present, "accounts_included"),
             partial(self._validate_if_present, "campaigns_included"),
             partial(self._validate_if_present, "ad_groups_included"),
+            partial(self._validate_agency_account),
+            partial(self._validate_included_entities),
             changes=changes,
         )
-        self._validate_agency_account(changes)
 
     def _validate_if_present(self, key, changes):
         if key in changes:
@@ -166,7 +167,7 @@ class RuleValidationMixin:
             )
         elif send_email_subject:
             if "\n" in send_email_subject or "\r" in send_email_subject:
-                raise exceptions.InvalidSendEmailSubject(f"Email subject should not contain multiple lines of text.")
+                raise exceptions.InvalidSendEmailSubject("Email subject should not contain multiple lines of text.")
             try:
                 macros.validate(send_email_subject)
             except exceptions.InvalidMacros as e:
@@ -389,3 +390,18 @@ class RuleValidationMixin:
                 raise exceptions.InvalidIncludedAdGroups(
                     "Included ad groups have to belong to an account of the rule's agency"
                 )
+
+    def _validate_included_entities(self, changes):
+        if self.id:
+            accounts_included = changes.get("accounts_included", self.accounts_included)
+            campaigns_included = changes.get("campaigns_included", self.campaigns_included)
+            ad_groups_included = changes.get("ad_groups_included", self.ad_groups_included)
+        else:
+            accounts_included = changes.get("accounts_included", [])
+            campaigns_included = changes.get("campaigns_included", [])
+            ad_groups_included = changes.get("ad_groups_included", [])
+
+        if not (accounts_included or campaigns_included or ad_groups_included):
+            raise exceptions.MissingIncludedEntities(
+                "Rule must have set either accounts_included, campaigns_included or ad_groups_included"
+            )

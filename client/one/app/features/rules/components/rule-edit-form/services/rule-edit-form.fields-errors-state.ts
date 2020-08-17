@@ -6,6 +6,7 @@ export class RulesEditFormStoreFieldsErrorsState {
     agencyId: FieldErrors = [];
     accountId: FieldErrors = [];
     name: FieldErrors = [];
+    entities: FieldErrors = [];
     targetType: FieldErrors = [];
     actionType: FieldErrors = [];
     actionFrequency: FieldErrors = [];
