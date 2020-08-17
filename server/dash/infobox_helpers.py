@@ -13,6 +13,7 @@ import core.features.multicurrency
 import dash.campaign_goals
 import dash.constants
 import dash.models
+import etl.materialization_run
 import redshiftapi.api_breakdowns
 import utils.cache_helper
 import utils.dates_helper
@@ -254,6 +255,12 @@ def _get_mtd_spend(breakdown, constraints, use_local_currency):
             ret["et_cost"] += row["et_cost"] or 0
             ret["etfm_cost"] += row["etfm_cost"] or 0
     return ret
+
+
+def create_yesterday_data_setting():
+    yesterday_data_complete = etl.materialization_run.etl_data_complete_for_date(utils.dates_helper.local_yesterday())
+    yesterday_data_flag = "Complete" if yesterday_data_complete else "Partial"
+    return OverviewSetting("Yesterday data:", flag=yesterday_data_flag)
 
 
 def calculate_daily_ad_group_cap(ad_group):

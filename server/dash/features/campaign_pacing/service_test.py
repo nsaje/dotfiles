@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-import mock
 from django import test
 
 import core.features.bcm
@@ -39,13 +38,6 @@ class CampaignPacingTestCase(test.TestCase):
             status=dash.constants.CreditLineItemStatus.SIGNED,
             created_by=None,
         )
-
-    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
-    def test_yesterday_data_complete(self):
-        self.assertTrue(service.CampaignPacing(self.campaign).yesterday_data_complete)
-
-    def test_yesterday_data_incomplete(self):
-        self.assertFalse(service.CampaignPacing(self.campaign).yesterday_data_complete)
 
     def test_no_budgets(self):
         pacing_data = service.CampaignPacing(self.campaign).data

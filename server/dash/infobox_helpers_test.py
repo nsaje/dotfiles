@@ -1196,3 +1196,8 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
         )
         refunded = dash.infobox_helpers.calculate_credit_refund(account)
         self.assertEqual(refunded, 0)
+
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
+    def test_yesterday_data_complete(self):
+        yesterday_data_settings = dash.infobox_helpers.create_yesterday_data_setting()
+        self.assertEqual(yesterday_data_settings.flag, "Complete")

@@ -11,7 +11,6 @@ from django.db.models import Sum
 
 import core.features.bcm
 import core.models
-import etl.materialization_run
 import utils.converters
 import utils.dates_helper
 
@@ -34,9 +33,6 @@ PacingData = Dict[int, PacingWindowData]
 
 class CampaignPacing(object):
     def __init__(self, campaign: core.models.Campaign) -> None:
-        self.yesterday_data_complete: bool = etl.materialization_run.etl_data_complete_for_date(
-            utils.dates_helper.local_yesterday()
-        )
         target_date: datetime.datetime = utils.dates_helper.local_today()
         pacing_data: PacingData = self._init_pacing_data(target_date)
         budgets: Sequence[core.features.bcm.BudgetLineItem] = self._prepare_budgets(target_date, campaign, pacing_data)

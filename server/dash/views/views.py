@@ -216,6 +216,7 @@ class AdGroupOverview(DASHAPIBaseView):
         yesterday_costs = async_query.join_and_get_result() or 0
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
 
+        settings.append(infobox_helpers.create_yesterday_data_setting().as_dict())
         settings.append(infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_cap, currency).as_dict())
 
         if user.has_perm("zemauth.campaign_goal_performance"):
@@ -325,8 +326,7 @@ class CampaignOverview(DASHAPIBaseView):
         campaign_pacing = dash.features.campaign_pacing.CampaignPacing(campaign)
         pacing_data = campaign_pacing.data
 
-        yesterday_data_flag = "Complete" if campaign_pacing.yesterday_data_complete else "Partial"
-        settings.append(infobox_helpers.OverviewSetting("Yesterday data:", flag=yesterday_data_flag).as_dict())
+        settings.append(infobox_helpers.create_yesterday_data_setting().as_dict())
 
         currency = campaign.account.currency
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
@@ -488,6 +488,8 @@ class AccountOverview(DASHAPIBaseView):
         currency = account.currency
         daily_budget = infobox_helpers.calculate_daily_account_cap(account)
         yesterday_costs = infobox_helpers.get_yesterday_account_spend(account)
+
+        settings.append(infobox_helpers.create_yesterday_data_setting().as_dict())
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_budget, currency).as_dict()
         )

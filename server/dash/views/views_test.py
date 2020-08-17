@@ -4,6 +4,7 @@ import datetime
 import decimal
 import json
 
+import mock
 from django.contrib.auth.models import Permission
 from django.core import mail
 from django.http.request import HttpRequest
@@ -383,6 +384,7 @@ class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
             return None
 
     @patch("redshiftapi.api_breakdowns.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_run_empty(self, mock_query):
         mock_query.return_value = [
             {
@@ -450,10 +452,14 @@ class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
         response = self._get_ad_group_overview(1)
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 
-        yesterday_spend = self._get_setting(settings, "yesterday")
-        self.assertEqual("$0.00", yesterday_spend["value"])
+        yesterday_spend_setting = self._get_setting(settings, "yesterday spend")
+        self.assertEqual("$0.00", yesterday_spend_setting["value"])
+
+        yesterday_data_setting = self._get_setting(settings, "yesterday data")
+        self.assertEqual("Complete", yesterday_data_setting["flag"])
 
     @patch("redshiftapi.api_breakdowns.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_run_mid(self, mock_query):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
@@ -530,9 +536,12 @@ class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
         response = self._get_ad_group_overview(1)
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
 
-        yesterday_setting = self._get_setting(settings, "yesterday")
-        self.assertEqual("$60.00", yesterday_setting["value"])
-        self.assertEqual("12.00% of $500.00 Daily Spend Cap", yesterday_setting["description"])
+        yesterday_spend_setting = self._get_setting(settings, "yesterday spend")
+        self.assertEqual("$60.00", yesterday_spend_setting["value"])
+        self.assertEqual("12.00% of $500.00 Daily Spend Cap", yesterday_spend_setting["description"])
+
+        yesterday_data_setting = self._get_setting(settings, "yesterday data")
+        self.assertEqual("Complete", yesterday_data_setting["flag"])
 
 
 class AdGroupOverviewTestCase(FutureDASHAPITestCase, LegacyAdGroupOverviewTestCase):
@@ -559,6 +568,7 @@ class LegacyCampaignOverviewTestCase(DASHAPITestCase):
         return None
 
     @patch("redshiftapi.api_breakdowns.query")
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     def test_run_empty(self, mock_query):
         mock_query.return_value = [
             {
@@ -623,6 +633,9 @@ class LegacyCampaignOverviewTestCase(DASHAPITestCase):
         budget_setting = self._get_setting(settings, "campaign budget")
         self.assertEqual("$100.00", budget_setting["value"])
         self.assertEqual("$100.00 remaining", budget_setting["description"])
+
+        yesterday_data_setting = self._get_setting(settings, "yesterday data")
+        self.assertEqual("Complete", yesterday_data_setting["flag"])
 
         pacing_settings = self._get_setting(settings, "pacing")
         self.assertEqual(len(pacing_settings["children"]), 3)
