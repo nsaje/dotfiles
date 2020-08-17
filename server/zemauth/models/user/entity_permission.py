@@ -176,6 +176,10 @@ class EntityPermissionMixin(EntityPermissionValidationMixin):
         cache.delete(cache_key)
 
     @property
+    def all_entity_permissions(self):
+        return self._entity_permission_cache
+
+    @property
     def _entity_permission_cache(self) -> Iterable[EntityPermission]:
         cache_key = cache_helper.get_cache_key(self.id)
         cache = django.core.cache.caches[CACHE_NAME]

@@ -30,6 +30,14 @@ class CanUseEntityPermission(permissions.BasePermission):
         return bool(request.user and request.user.has_perm("zemauth.fea_use_entity_permission"))
 
 
+class CurrentUserViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.CurrentUserSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def current(self, request):
+        return self.response_ok(serializers.CurrentUserSerializer(request.user, context={"request": request}).data)
+
+
 class UserViewSet(RESTAPIBaseViewSet):
     serializer = serializers.UserSerializer
     permission_classes = (permissions.IsAuthenticated, CanUseEntityPermission)

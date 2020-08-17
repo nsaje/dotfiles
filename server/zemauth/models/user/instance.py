@@ -1,8 +1,16 @@
+import datetime
+import hashlib
+import hmac
+
+import pytz
+from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.db import models
 from django.db import transaction
+from django.utils.functional import cached_property
 
 import core.models
+from zemauth.features.entity_permission import Permission
 
 SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_public_rcs", "disable_public_newscorp", "disable_budget_management")
 
@@ -25,37 +33,43 @@ class UserMixin(object):
         return self.email
 
     def get_all_permissions_with_access_levels(self):
-        if not self.is_active or self.is_anonymous:
+        permissions = self.all_permissions
+        if len(permissions) == 0:
             return {}
 
-        perm_cache_name = "_zemauth_permission_cache"
-        if not hasattr(self, perm_cache_name):
-            if self.is_superuser:
-                perms = auth_models.Permission.objects.all().exclude(codename__in=SUPERUSER_EXCLUDED_PERMISSIONS)
-            else:
-                perms = (
-                    auth_models.Permission.objects.filter(
-                        models.Q(id__in=self.user_permissions.all()) | models.Q(group__in=self.groups.all())
-                    )
-                    .order_by("id")
-                    .distinct("id")
+        return {x["permission"]: x["is_public"] for x in permissions}
+
+    @cached_property
+    def all_permissions(self):
+        if not self.is_active or self.is_anonymous:
+            return []
+
+        if self.is_superuser:
+            permissions = list(
+                auth_models.Permission.objects.all().exclude(codename__in=SUPERUSER_EXCLUDED_PERMISSIONS)
+            )
+        else:
+            permissions = list(
+                auth_models.Permission.objects.filter(
+                    models.Q(id__in=self.user_permissions.all()) | models.Q(group__in=self.groups.all())
                 )
-
-            perms = perms.select_related("content_type")
-
-            public_permissions = auth_models.Permission.objects.filter(pk__in=(x.pk for x in perms)).filter(
-                group__in=auth_models.Group.objects.filter(internalgroup=None)
+                .order_by("id")
+                .distinct("id")
             )
 
-            public_permissions_ids = [x.pk for x in public_permissions]
+        public_permissions_ids = (
+            auth_models.Permission.objects.filter(pk__in=(x.pk for x in permissions))
+            .filter(group__in=auth_models.Group.objects.filter(internalgroup=None))
+            .values_list("id", flat=True)
+        )
 
-            permissions = {
-                "{}.{}".format(x.content_type.app_label, x.codename): x.pk in public_permissions_ids for x in perms
+        return [
+            {
+                "permission": "{}.{}".format(x.content_type.app_label, x.codename),
+                "is_public": x.pk in public_permissions_ids,
             }
-
-            setattr(self, perm_cache_name, permissions)
-
-        return getattr(self, perm_cache_name)
+            for x in permissions
+        ]
 
     def is_self_managed(self):
         return self.email and "@zemanta" not in self.email.lower()
@@ -77,6 +91,43 @@ class UserMixin(object):
             return {"*": ["*"]}
         else:
             return self.sspd_sources_markets
+
+    # TODO (msuber): deleted after User Roles will be released.
+    def get_agency_ids(self):
+        if self.has_perm("zemauth.fea_use_entity_permission"):
+            return [
+                ep.agency_id for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
+            ]
+        return list(self.agency_set.all().values_list("id", flat=True))
+
+    @staticmethod
+    def get_timezone_offset():
+        return (
+            pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(datetime.datetime.utcnow(), is_dst=True).total_seconds()
+        )
+
+    def get_intercom_user_hash(self):
+        return hmac.new(
+            settings.INTERCOM_ID_VERIFICATION_SECRET, self.email.encode("utf-8"), digestmod=hashlib.sha256
+        ).hexdigest()
+
+    def get_default_csv_separator(self):
+        if self.has_perm("zemauth.fea_use_entity_permission"):
+            agencies = [
+                ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
+            ]
+        else:
+            agencies = list(self.agency_set.all())
+        return agencies[0].default_csv_separator if agencies else None
+
+    def get_default_csv_decimal_separator(self):
+        if self.has_perm("zemauth.fea_use_entity_permission"):
+            agencies = [
+                ep.agency for ep in self.all_entity_permissions if ep.agency and ep.permission == Permission.READ
+            ]
+        else:
+            agencies = list(self.agency_set.all())
+        return agencies[0].default_csv_decimal_separator if agencies else None
 
     @transaction.atomic
     def update(self, **kwargs):

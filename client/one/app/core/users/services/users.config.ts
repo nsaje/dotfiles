@@ -5,6 +5,10 @@ const usersApiUrl = `${APP_CONFIG.apiRestInternalUrl}/users`;
 export const USERS_CONFIG = {
     requests: {
         users: {
+            current: {
+                name: 'current',
+                url: `${usersApiUrl}/current/`,
+            },
             list: {
                 name: 'list',
                 url: `${usersApiUrl}/`,

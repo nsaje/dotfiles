@@ -1,4 +1,5 @@
 var commonHelpers = require('../../../shared/helpers/common.helpers');
+var arrayHelpers = require('../../../shared/helpers/array.helpers');
 
 angular
     .module('one.services')
@@ -25,11 +26,15 @@ angular
                 return false;
             }
 
-            return permissions.every(function(permission) {
-                return (
-                    Object.keys(user.permissions || {}).indexOf(permission) >= 0
-                );
+            var userPermissions = user.permissions.map(function(x) {
+                return x.permission;
             });
+
+            var intersection = arrayHelpers.intersect(
+                userPermissions,
+                permissions
+            );
+            return intersection.length === permissions.length;
         }
 
         function hasEntityPermission(agencyId, accountId, permission) {
@@ -55,14 +60,13 @@ angular
 
         function isPermissionInternal(permission) {
             var user = zemUserService.current();
-            if (
-                !user ||
-                Object.keys(user.permissions).indexOf(permission) < 0
-            ) {
+            if (!user || !hasPermission(permission)) {
                 return false;
             }
 
-            return !user.permissions[permission];
+            return !user.permissions.find(function(x) {
+                return x.permission === permission;
+            }).isPublic;
         }
 
         function canAccessPlatformCosts() {
@@ -74,10 +78,14 @@ angular
         }
 
         function hasAgencyScope(agencyId) {
+            var user = zemUserService.current();
+            if (hasPermission('zemauth.fea_use_entity_permission')) {
+                return hasEntityPermission(agencyId, null, 'write');
+            }
+            // TODO (msuber): deleted after User Roles will be released.
             if (hasPermission('zemauth.can_see_all_accounts')) {
                 return true;
             }
-            var user = zemUserService.current();
             return user.agencies.includes(Number(agencyId));
         }
 

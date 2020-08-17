@@ -14,11 +14,20 @@ describe('zemPermissions', function() {
         zemPermissions = _zemPermissions_;
         mockedUser = {
             id: 123,
-            permissions: {
-                permission: true,
-                anotherPermission: true,
-                internalPermission: false,
-            },
+            permissions: [
+                {
+                    permission: 'permission',
+                    isPublic: true,
+                },
+                {
+                    permission: 'anotherPermission',
+                    isPublic: true,
+                },
+                {
+                    permission: 'internalPermission',
+                    isPublic: false,
+                },
+            ],
             email: 'test@zemanta.com',
             agencies: [],
         };
@@ -85,13 +94,71 @@ describe('zemPermissions', function() {
             expect(zemPermissions.hasAgencyScope('9')).toBe(false);
         });
 
+        it("should return false if user doesn't have agency scope for specified agency with entity permissions", function() {
+            mockedUser.permissions = [
+                {
+                    permission: 'zemauth.fea_use_entity_permission',
+                    isPublic: true,
+                },
+            ];
+            mockedUser.agencies = [];
+            mockedUser.entityPermissions = [];
+            expect(zemPermissions.hasAgencyScope('9')).toBe(false);
+        });
+
         it('should return true if user has agency scope for specified agency', function() {
             mockedUser.agencies = [5, 7];
             expect(zemPermissions.hasAgencyScope('5')).toBe(true);
         });
 
+        it('should return true if user has agency scope for specified agency with entity permissions', function() {
+            mockedUser.permissions = [
+                {
+                    permission: 'zemauth.fea_use_entity_permission',
+                    isPublic: true,
+                },
+            ];
+            mockedUser.agencies = [];
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: 5,
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: 5,
+                    accountId: null,
+                    permission: 'write',
+                },
+            ];
+            expect(zemPermissions.hasAgencyScope('5')).toBe(true);
+        });
+
         it('should return true if user has agency scope for specified agency with number input', function() {
             mockedUser.agencies = [5, 7];
+            expect(zemPermissions.hasAgencyScope(5)).toBe(true);
+        });
+
+        it('should return true if user has agency scope for specified agency with number input with entity permissions', function() {
+            mockedUser.permissions = [
+                {
+                    permission: 'zemauth.fea_use_entity_permission',
+                    isPublic: true,
+                },
+            ];
+            mockedUser.agencies = [];
+            mockedUser.entityPermissions = [
+                {
+                    agencyId: 5,
+                    accountId: null,
+                    permission: 'read',
+                },
+                {
+                    agencyId: 5,
+                    accountId: null,
+                    permission: 'write',
+                },
+            ];
             expect(zemPermissions.hasAgencyScope(5)).toBe(true);
         });
     });

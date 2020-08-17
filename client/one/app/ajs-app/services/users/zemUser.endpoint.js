@@ -1,3 +1,6 @@
+var USERS_CONFIG = require('../../../core/users/services/users.config')
+    .USERS_CONFIG;
+
 angular
     .module('one.services')
     .service('zemUserEndpoint', function($q, $http, zemUtils) {
@@ -7,7 +10,7 @@ angular
         this.create = create;
         this.remove = remove;
         this.list = list;
-        this.get = get;
+        this.current = current;
 
         function create(accountId, user) {
             var deferred = $q.defer();
@@ -77,24 +80,12 @@ angular
             return deferred.promise;
         }
 
-        function get(id) {
+        function current() {
             var deferred = $q.defer();
-            var url = '/api/users/' + id + '/';
-            var config = {
-                params: {},
-            };
-
             $http
-                .get(url, config)
+                .get(USERS_CONFIG.requests.users.current.url)
                 .success(function(data) {
-                    var user;
-                    if (data && data.data) {
-                        var apiUser = data.data.user;
-                        user = zemUtils.convertToCamelCase(apiUser);
-                        // Revert permission back to original format (underscore)
-                        user.permissions = apiUser.permissions;
-                    }
-                    deferred.resolve(user);
+                    deferred.resolve(data.data);
                 })
                 .error(function(data) {
                     deferred.reject(data);

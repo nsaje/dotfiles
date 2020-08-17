@@ -18,7 +18,7 @@ describe('zemUserService', function() {
         $rootScope = _$rootScope_;
         zemUserService = _zemUserService_;
 
-        spyOn(zemUserEndpoint, 'get').and.callFake(function() {
+        spyOn(zemUserEndpoint, 'current').and.callFake(function() {
             var deferred = $q.defer();
             deferred.resolve(mockedUser);
             return deferred.promise;

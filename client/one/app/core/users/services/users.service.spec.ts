@@ -5,6 +5,7 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {UsersEndpoint} from './users.endpoint';
 import {UsersService} from './users.service';
 import {User} from '../types/user';
+import {UserStatus} from '../../../app.constants';
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -46,6 +47,7 @@ describe('UsersService', () => {
                         permission: 'read',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 id: '10000001',
@@ -61,6 +63,7 @@ describe('UsersService', () => {
                         permission: 'user',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 id: '10000002',
@@ -76,6 +79,7 @@ describe('UsersService', () => {
                         permission: 'budget',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
         ];
         mockedUser = clone(mockedUsers[0]);
@@ -93,6 +97,7 @@ describe('UsersService', () => {
                         permission: 'user',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 email: 'pat@ajeto.cz',
@@ -106,6 +111,7 @@ describe('UsersService', () => {
                         permission: 'user',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 email: 'mat@ajeto.cz',
@@ -119,6 +125,7 @@ describe('UsersService', () => {
                         permission: 'user',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
         ];
     });

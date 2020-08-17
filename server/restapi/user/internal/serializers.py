@@ -18,7 +18,7 @@ class UserQueryParamsExpectations(
     keyword = restapi.serializers.fields.PlainCharField(required=False)
 
 
-class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class EntityPermissionSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     agency_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     account_id = restapi.serializers.fields.IdField(required=False, default=None, allow_null=True)
     permission = rest_framework.serializers.CharField()
@@ -92,10 +92,31 @@ class EntityPermissionsSerializer(restapi.serializers.base.RESTAPIBaseSerializer
         return account_id
 
 
+class PermissionSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    permission = rest_framework.serializers.CharField()
+    is_public = rest_framework.serializers.BooleanField()
+
+
 class UserSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     email = rest_framework.serializers.EmailField()
     first_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
     last_name = rest_framework.serializers.CharField(required=False, allow_blank=True)
-    entity_permissions = EntityPermissionsSerializer(many=True)
+    entity_permissions = EntityPermissionSerializer(many=True)
     status = restapi.serializers.fields.DashConstantField(zemauth.models.user.constants.Status, read_only=True)
+
+
+class CurrentUserSerializer(UserSerializer):
+    name = rest_framework.serializers.CharField(source="get_full_name", read_only=True)
+    # TODO (msuber): deleted agencies field after User Roles will be released.
+    agencies = rest_framework.serializers.ListSerializer(
+        source="get_agency_ids", child=rest_framework.serializers.IntegerField(), default=[], read_only=True
+    )
+    permissions = PermissionSerializer(source="all_permissions", many=True, read_only=True)
+    entity_permissions = EntityPermissionSerializer(source="all_entity_permissions", many=True, read_only=True)
+    timezone_offset = rest_framework.serializers.IntegerField(source="get_timezone_offset", read_only=True)
+    intercom_user_hash = rest_framework.serializers.CharField(source="get_intercom_user_hash", read_only=True)
+    default_csv_separator = rest_framework.serializers.CharField(source="get_default_csv_separator", read_only=True)
+    default_csv_decimal_separator = rest_framework.serializers.CharField(
+        source="get_default_csv_decimal_separator", read_only=True
+    )

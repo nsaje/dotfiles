@@ -2,8 +2,6 @@
 import base64
 import datetime
 import decimal
-import hashlib
-import hmac
 import http.client
 import json
 import urllib.error
@@ -11,7 +9,6 @@ import urllib.parse
 import urllib.request
 from functools import partial
 
-import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.http import Http404
@@ -141,55 +138,6 @@ def supply_dash_redirect(request):
         raise exc.MissingDataError()
 
     return render(request, "redirect.html", {"url": url})
-
-
-class User(DASHAPIBaseView):
-    """
-    @deprecated
-    TODO (msuber): move logic to RESTAPI user
-    """
-
-    @metrics_compat.timer("dash.api")
-    def get(self, request, user_id):
-        response = {}
-
-        if user_id == "current":
-            response["user"] = self.get_dict(request.user)
-
-        return self.create_api_response(response)
-
-    def get_dict(self, user):
-        if not user:
-            return {}
-
-        agencies = user.agency_set.all()
-        entity_permissions = user.entitypermission_set.all()
-        intercom_user_hash = hmac.new(
-            settings.INTERCOM_ID_VERIFICATION_SECRET, user.email.encode("utf-8"), digestmod=hashlib.sha256
-        ).hexdigest()
-        return {
-            "id": str(user.pk),
-            "email": user.email,
-            "name": user.get_full_name(),
-            "agencies": [agency.id for agency in agencies],
-            "permissions": user.get_all_permissions_with_access_levels(),
-            "entity_permissions": [
-                self._get_entity_permission_dict(entity_permission) for entity_permission in entity_permissions
-            ],
-            "timezone_offset": pytz.timezone(settings.DEFAULT_TIME_ZONE)
-            .utcoffset(datetime.datetime.utcnow(), is_dst=True)
-            .total_seconds(),
-            "intercom_user_hash": intercom_user_hash,
-            "default_csv_separator": agencies[0].default_csv_separator if agencies else None,
-            "default_csv_decimal_separator": agencies[0].default_csv_decimal_separator if agencies else None,
-        }
-
-    def _get_entity_permission_dict(self, entity_permission):
-        return {
-            "agency_id": entity_permission.agency_id,
-            "account_id": entity_permission.account_id,
-            "permission": entity_permission.permission,
-        }
 
 
 class AdGroupOverview(DASHAPIBaseView):

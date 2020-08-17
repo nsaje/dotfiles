@@ -5,6 +5,7 @@ from django.utils.http import urlencode
 
 import core.models
 import zemauth.models
+import zemauth.models.user.constants
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -1234,3 +1235,38 @@ class UserViewSetResendEmail(UserViewSetTestBase):
 
         r = self._call_resend_email(requested_user, agency)
         self._assert_error(r, 404, "MissingDataError", "User does not exist")
+
+
+class CurrentUserViewSetTestCase(FutureRESTAPITestCase):
+    permissions = []
+
+    def setUp(self):
+        super().setUp()
+        self.user.update(status=zemauth.models.user.constants.Status.ACTIVE)
+        self.agency = self.mix_agency(self.user, permissions=[Permission.READ])
+
+    def test_get(self):
+        r = self.client.get(reverse("restapi.user.internal:user_current"))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["id"], str(self.user.id))
+        self.assertEqual(resp_json["data"]["email"], str(self.user.email))
+        self.assertEqual(resp_json["data"]["firstName"], str(self.user.first_name))
+        self.assertEqual(resp_json["data"]["lastName"], str(self.user.last_name))
+        self.assertEqual(
+            resp_json["data"]["status"],
+            zemauth.models.user.constants.Status.get_name(zemauth.models.user.constants.Status.ACTIVE),
+        )
+        self.assertEqual(resp_json["data"]["name"], self.user.get_full_name())
+        self.assertEqual(resp_json["data"]["agencies"], [self.agency.id])
+        self.assertEqual(
+            resp_json["data"]["permissions"], [{"permission": "zemauth.fea_use_entity_permission", "isPublic": False}]
+        )
+        self.assertEqual(
+            resp_json["data"]["entityPermissions"],
+            [{"agencyId": str(self.agency.id), "accountId": None, "permission": Permission.READ}],
+        )
+        self.assertIsNotNone(resp_json["data"]["timezoneOffset"])
+        self.assertIsNotNone(resp_json["data"]["intercomUserHash"])
+        self.assertEqual(resp_json["data"]["defaultCsvSeparator"], self.agency.default_csv_separator)
+        self.assertEqual(resp_json["data"]["defaultCsvDecimalSeparator"], self.agency.default_csv_decimal_separator)

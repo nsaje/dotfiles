@@ -16,7 +16,6 @@ angular
         this.list = list;
         this.create = create;
         this.remove = remove;
-        this.get = get;
         this.current = current;
 
         this.onUserCreated = onUserCreated;
@@ -27,7 +26,7 @@ angular
         // Internal
         //
         function init() {
-            return zemUserEndpoint.get('current').then(function(user) {
+            return zemUserEndpoint.current().then(function(user) {
                 currentUser = user;
                 pubsub.notify(EVENTS.ON_CURRENT_USER_UPDATED, user);
                 // Configure Raven/Sentry user context
@@ -62,10 +61,6 @@ angular
                     });
                     return data;
                 });
-        }
-
-        function get(id) {
-            return zemUserEndpoint.get(id);
         }
 
         function current() {

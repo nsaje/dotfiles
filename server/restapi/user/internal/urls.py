@@ -4,6 +4,7 @@ from . import views
 
 app_name = "restapi.user"
 urlpatterns = [
+    url(r"^current/$", views.CurrentUserViewSet.as_view({"get": "current"}), name="user_current"),
     url(r"^$", views.UserViewSet.as_view({"get": "list", "post": "create"}), name="user_list"),
     url(
         r"^(?P<user_id>\d+)$",

@@ -14,7 +14,8 @@ export function intersect<T>(array1: T[], array2: T[]) {
     } else {
         if (commonHelpers.isPrimitive(array1[0])) {
             // Do a fast and simple check for primitive types
-            return array1.filter(v1 => array2.includes(v1));
+            // Return elements of array array1 that are also in array2 in linear time
+            return array1.filter(Set.prototype.has, new Set(array2));
         } else {
             // Call a function that uses deep-equal to check complex types
             return array1.filter(v1 =>

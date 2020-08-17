@@ -9,6 +9,7 @@ import * as mockHelpers from '../../../../testing/mock.helpers';
 import {UsersStoreState} from './users.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import * as clone from 'clone';
+import {UserStatus} from '../../../../app.constants';
 
 describe('UsersStore', () => {
     let usersServiceStub: jasmine.SpyObj<UsersService>;
@@ -87,6 +88,7 @@ describe('UsersStore', () => {
                     permission: 'budget',
                 },
             ],
+            status: UserStatus.ACTIVE,
         };
 
         mockedAgencyUser = {
@@ -104,6 +106,7 @@ describe('UsersStore', () => {
                     permission: 'write',
                 },
             ],
+            status: UserStatus.ACTIVE,
         };
 
         mockedInternalUser = {
@@ -119,6 +122,7 @@ describe('UsersStore', () => {
                     permission: 'agency_spend_margin',
                 },
             ],
+            status: UserStatus.ACTIVE,
         };
         mockedUsers = [mockedAccountUser, mockedAgencyUser, mockedInternalUser];
 
@@ -261,6 +265,7 @@ describe('UsersStore', () => {
                     permission: 'write',
                 },
             ],
+            status: UserStatus.ACTIVE,
         };
         const expectedUsers: User[] = [
             {
@@ -276,6 +281,7 @@ describe('UsersStore', () => {
                         permission: 'write',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 id: null,
@@ -290,6 +296,7 @@ describe('UsersStore', () => {
                         permission: 'write',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 id: null,
@@ -304,6 +311,7 @@ describe('UsersStore', () => {
                         permission: 'write',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
             {
                 id: null,
@@ -318,6 +326,7 @@ describe('UsersStore', () => {
                         permission: 'write',
                     },
                 ],
+                status: UserStatus.ACTIVE,
             },
         ];
         usersServiceStub.create.and

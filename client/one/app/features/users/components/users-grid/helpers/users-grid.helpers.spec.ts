@@ -1,11 +1,13 @@
 import * as usersGridHelpers from './users-grid.helpers';
 import {User} from '../../../../../core/users/types/user';
 import {EntityPermissionValue} from '../../../../../core/users/types/entity-permission-value';
+import {UserStatus} from '../../../../../app.constants';
 
 describe('ArrayHelpers', () => {
     const dummyUser: User = {
         email: '',
         entityPermissions: [],
+        status: UserStatus.ACTIVE,
     };
     const interestingPermissions: EntityPermissionValue[] = [
         'user',

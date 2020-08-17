@@ -469,7 +469,6 @@ urlpatterns += [
         name="navigation_all_accounts",
     ),
     url(r"^api/nav/$", login_required(dash.views.navigation.NavigationTreeView.as_view()), name="navigation_tree"),
-    url(r"^api/users/(?P<user_id>(\d+|current))/$", login_required(dash.views.views.User.as_view()), name="user"),
     url(
         r"^api/all_accounts/breakdown(?P<breakdown>(/\w+)+/?)$",
         login_required(dash.views.breakdown.AllAccountsBreakdown.as_view()),
