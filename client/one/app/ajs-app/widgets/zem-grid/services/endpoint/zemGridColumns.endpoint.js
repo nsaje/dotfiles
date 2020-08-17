@@ -2247,7 +2247,6 @@ angular
             {
                 name: 'Viewability',
                 columns: MRC50_VIEWABILITY_METRICS_GROUP,
-                isNewFeature: true,
             },
             {
                 name: 'MRC100 Viewability',

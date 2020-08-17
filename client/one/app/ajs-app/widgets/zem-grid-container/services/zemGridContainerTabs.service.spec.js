@@ -39,7 +39,6 @@ describe('component: zemGridContainerTabsService', function() {
                 name: 'Placements',
                 breakdown: 'placement',
                 permissions: 'zemauth.can_use_placement_targeting',
-                isNewFeature: true,
             });
         }
     });
