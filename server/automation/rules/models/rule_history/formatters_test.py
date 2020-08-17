@@ -2,13 +2,18 @@ from django.test import TestCase
 
 from . import formatters
 
+MOCK_NO_ACTIONS_TAKEN_TEXT = "n/a"
+
 
 class RuleHistoryFormattersTestCase(TestCase):
     def test_format_bid_modifier(self):
         def get_mapping():
             return {"UK": "United Kingdom"}
 
-        formatter = formatters.get_bid_modifier_formatter("Increased", "for countries", get_mapping)
+        formatter = formatters.get_bid_modifier_formatter(
+            "Increased", "for countries", get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT
+        )
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0.1, {}))
         self.assertEqual(
             "Increased bid modifier for 0.1% for countries: United Kingdom (0.2%)",
             formatter(0.1, {"UK": {"old_value": 0.1, "new_value": 0.2}}),
@@ -18,30 +23,35 @@ class RuleHistoryFormattersTestCase(TestCase):
         def get_mapping():
             return {43: "triplelift"}
 
-        formatter = formatters.get_paused_formatter("media sources", get_mapping)
+        formatter = formatters.get_paused_formatter("media sources", get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0, {}))
         self.assertEqual("Paused media sources: triplelift", formatter(0, {"43": {"old_value": 1, "new_value": 2}}))
 
     def test_format_bid(self):
-        formatter = formatters.get_bid_formatter("Increased", "ad group")
+        formatter = formatters.get_bid_formatter("Increased", "ad group", MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(1, {}))
         self.assertEqual(
             "Increased ad group bid for $1 to $2", formatter(1, {"1234": {"old_value": 1, "new_value": 2}})
         )
 
     def test_format_budget(self):
-        formatter = formatters.get_budget_formatter("Increased", "ad group")
+        formatter = formatters.get_budget_formatter("Increased", "ad group", MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(1, {}))
         self.assertEqual(
             "Increased ad group daily budget from $1 to $2", formatter(1, {"1234": {"old_value": 1, "new_value": 2}})
         )
 
     def test_format_email(self):
-        formatter = formatters.get_email_formatter("ad group")
+        formatter = formatters.get_email_formatter("ad group", MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0, {}))
         self.assertEqual("Sent ad group email", formatter(0, {"1234": {"old_value": 1, "new_value": 2}}))
 
     def test_format_blacklist(self):
         def get_mapping():
             return {}
 
-        formatter = formatters.get_blacklist_formatter("publishers", get_mapping)
+        formatter = formatters.get_blacklist_formatter("publishers", get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0, {}))
         self.assertEqual(
             "Blacklisted publishers: www.cnn.com, www.bbc.com",
             formatter(
@@ -53,7 +63,8 @@ class RuleHistoryFormattersTestCase(TestCase):
         def get_mapping():
             return {}
 
-        formatter = formatters.get_add_to_publisher_formatter(get_mapping)
+        formatter = formatters.get_add_to_publisher_formatter(get_mapping, MOCK_NO_ACTIONS_TAKEN_TEXT)
+        self.assertEqual(MOCK_NO_ACTIONS_TAKEN_TEXT, formatter(0, {}))
         self.assertEqual(
             "Added publisher to the publisher group: www.cnn.com, www.bbc.com",
             formatter(

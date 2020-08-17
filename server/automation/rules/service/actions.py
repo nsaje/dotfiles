@@ -25,8 +25,8 @@ class ValueChangeData:
     def has_changes(self) -> bool:
         return self.new_value != self.old_value
 
-    def to_dict(self) -> Dict[Union[str, int], Dict[str, Optional[Union[str, float]]]]:
-        return {self.target: {"old_value": self.old_value, "new_value": self.new_value}}
+    def to_dict(self) -> Dict[str, Optional[Union[str, float]]]:
+        return {"old_value": self.old_value, "new_value": self.new_value}
 
 
 def adjust_bid(target: str, rule: Rule, ad_group: core.models.AdGroup, **kwargs) -> ValueChangeData:

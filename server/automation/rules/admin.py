@@ -30,7 +30,7 @@ class RuleConditionAdmin(admin.TabularInline):
 
 class RuleHistoryAdmin(admin.TabularInline):
     model = models.RuleHistory
-    readonly_fields = ("ad_group_id", "ad_group", "status", "changes_text", "changes", "created_dt")
+    readonly_fields = ("ad_group_id", "ad_group", "status", "changes", "created_dt")
     ordering = ("-created_dt",)
 
     def has_add_permission(self, request, obj=None):

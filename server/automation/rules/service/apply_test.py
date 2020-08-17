@@ -29,9 +29,8 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = True
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
-        self.assertFalse(errors)
 
         self.assertEqual(3, cooldown_mock.call_count)
         conditions_mock.assert_not_called()
@@ -49,9 +48,8 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = False
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
-        self.assertFalse(errors)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -71,9 +69,8 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
-        self.assertFalse(errors)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -100,17 +97,10 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
-        self.assertEqual(1, len(changes))
-        self.assertEqual(2, len(errors))
-        for error in errors:
-            self.assertIn(error.target, ["-1", "-2"])
-            self.assertEqual("Invalid ad turn off target", str(error.exc))
-            self.assertIn("Invalid ad turn off target", error.stack_trace)
+        with self.assertRaisesRegex(Exception, "Invalid ad turn off target"):
+            apply.apply_rule(rule, ad_group, stats, {}, {}, {})
 
-        self.assertEqual(3, cooldown_mock.call_count)
-        self.assertEqual(3, conditions_mock.call_count)
-        self.assertEqual(1, RuleTriggerHistory.objects.count())
+        self.assertEqual(0, RuleTriggerHistory.objects.count())
 
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
@@ -124,9 +114,8 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=1.0)
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
-        self.assertFalse(errors)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -145,9 +134,8 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=2.0)
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertEqual(3, len(changes))
-        self.assertFalse(errors)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -213,8 +201,7 @@ class ApplyTest(TestCase):
         content_ad_settings = {ad.id: {constants.METRIC_SETTINGS_MAPPING[constants.MetricType.AD_TITLE]: "ad title"}}
         budgets_data = {"campaign_remaining_budget": 500}
 
-        changes, errors = apply.apply_rule(rule, ad_group, stats, ad_group_settings, content_ad_settings, budgets_data)
-        self.assertFalse(errors)
+        changes = apply.apply_rule(rule, ad_group, stats, ad_group_settings, content_ad_settings, budgets_data)
         self.assertEqual(changes, [ValueChangeData(target=str(ad.id), old_value=1.0, new_value=1.01)])
 
     @mock.patch("utils.dates_helper.utc_now")

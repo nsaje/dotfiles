@@ -416,6 +416,18 @@ class ApplyStatus(ConstantBase):
     _VALUES = {SUCCESS: "Rule application successful", FAILURE: "Rule application failed"}
 
 
+class RuleFailureReason(ConstantBase):
+    UNEXPECTED_ERROR = 1
+    CAMPAIGN_AUTOPILOT_ACTIVE = 2
+    BUDGET_AUTOPILOT_INACTIVE = 3
+
+    _VALUES = {
+        UNEXPECTED_ERROR: "Unexpected error",
+        CAMPAIGN_AUTOPILOT_ACTIVE: "Campaign autopilot active",
+        BUDGET_AUTOPILOT_INACTIVE: "Budget autopilot inactive",
+    }
+
+
 class EmailActionMacro(ConstantBase):
     AGENCY_ID = "AGENCY_ID"
     AGENCY_NAME = "AGENCY_NAME"

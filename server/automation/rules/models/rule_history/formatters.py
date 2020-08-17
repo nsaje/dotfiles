@@ -1,62 +1,88 @@
-def get_bid_modifier_formatter(direction, target, get_mapping):
+def get_bid_modifier_formatter(direction, target, get_mapping, no_changes_text):
     def format(change_step, changes):
+        if not changes:
+            return no_changes_text
+
         mapping = get_mapping()
-        return "{} bid modifier for {}% {}: {}".format(
+        message = "{} bid modifier for {}% {}: {}".format(
             direction, change_step, target, ", ".join(_get_changes_breakdown(changes, mapping, True))
         )
+        return message
 
     return format
 
 
-def get_paused_formatter(target, get_mapping):
+def get_paused_formatter(target, get_mapping, no_changes_text):
     def format(change_step, changes):
+        if not changes:
+            return no_changes_text
+
         mapping = get_mapping()
-        return "Paused {}: {}".format(target, ", ".join(_get_changes_breakdown(changes, mapping)))
+        message = "Paused {}: {}".format(target, ", ".join(_get_changes_breakdown(changes, mapping)))
+        return message
 
     return format
 
 
-def get_bid_formatter(direction, target):
+def get_bid_formatter(direction, target, no_changes_text):
     def format(changes_step, changes):
-        if changes is None:
-            return "{} {} bid for ${}".format(direction, target, changes_step)
+        if not changes:
+            return no_changes_text
 
         values = next(iter(changes.values()))
-        return "{} {} bid for ${} to ${}".format(direction, target, changes_step, values["new_value"])
+        message = "{} {} bid for ${} to ${}".format(direction, target, changes_step, values["new_value"])
+        return message
 
     return format
 
 
-def get_budget_formatter(direction, target):
+def get_budget_formatter(direction, target, no_changes_text):
     def format(changes_step, changes):
-        if changes is None:
-            return "{} {} daily budget".format(direction, target)
+        if not changes:
+            return no_changes_text
 
         values = next(iter(changes.values()))
-        return "{} {} daily budget from ${} to ${}".format(direction, target, values["old_value"], values["new_value"])
+        message = "{} {} daily budget from ${} to ${}".format(
+            direction, target, values["old_value"], values["new_value"]
+        )
+        return message
 
     return format
 
 
-def get_email_formatter(target):
+def get_email_formatter(target, no_changes_text):
     def format(changes_step, changes):
-        return "Sent {} email".format(target)
+        if not changes:
+            return no_changes_text
+
+        message = "Sent {} email".format(target)
+        return message
 
     return format
 
 
-def get_blacklist_formatter(target, get_mapping):
+def get_blacklist_formatter(target, get_mapping, no_changes_text):
     def format(changes_step, changes):
+        if not changes:
+            return no_changes_text
+
         mapping = get_mapping()
-        return "Blacklisted {}: {}".format(target, ", ".join(_get_changes_breakdown(changes, mapping)))
+        message = "Blacklisted {}: {}".format(target, ", ".join(_get_changes_breakdown(changes, mapping)))
+        return message
 
     return format
 
 
-def get_add_to_publisher_formatter(get_mapping):
+def get_add_to_publisher_formatter(get_mapping, no_changes_text):
     def format(changes_step, changes):
+        if not changes:
+            return no_changes_text
+
         mapping = get_mapping()
-        return "Added publisher to the publisher group: {}".format(", ".join(_get_changes_breakdown(changes, mapping)))
+        message = "Added publisher to the publisher group: {}".format(
+            ", ".join(_get_changes_breakdown(changes, mapping))
+        )
+        return message
 
     return format
 

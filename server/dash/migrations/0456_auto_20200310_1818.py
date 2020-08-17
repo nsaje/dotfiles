@@ -37,7 +37,7 @@ def load_data(apps, schema_editor):
             """\
         Hi,
 
-        We’re letting you know that your rule “{{rule_name}}” was successfully executed on your ad group {{ad_group_link}} without doing any changes.
+        We’re letting you know that your rule “{{rule_name}}” was successfully executed on your ad group {{ad_group_link}} without making any changes.
 
         Yours truly,
         Zemanta"""

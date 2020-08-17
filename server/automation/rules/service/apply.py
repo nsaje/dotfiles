@@ -1,12 +1,9 @@
-import dataclasses
 import datetime
 import decimal
-import traceback
 from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from django.db import transaction
@@ -38,16 +35,6 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
 }
 
 
-@dataclasses.dataclass
-class ErrorData:
-    target: str
-    exc: Exception
-    stack_trace: str
-
-    def to_dict(self) -> Dict[str, Dict[str, Optional[str]]]:
-        return {self.target: {"message": str(self.exc), "stack_trace": self.stack_trace}}
-
-
 @transaction.atomic
 def apply_rule(
     rule: models.Rule,
@@ -56,14 +43,14 @@ def apply_rule(
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
     campaign_budget: Dict[str, Any],
-) -> Tuple[Sequence[ValueChangeData], Sequence[ErrorData]]:
+) -> Sequence[ValueChangeData]:
 
     if rule.archived:
         raise exceptions.RuleArchived("Archived rule can not be executed.")
 
     helpers.ensure_ad_group_valid(rule, ad_group)
 
-    changes, errors = [], []
+    changes = []
     for target, target_stats in ad_group_stats.items():
 
         if _is_on_cooldown(target, rule, ad_group):
@@ -80,14 +67,8 @@ def apply_rule(
                     changes.append(update)
         except utils.exc.EntityArchivedError:
             continue
-        except exceptions.ApplyFailedBase:
-            # NOTE: apply breaking exception
-            raise
-        except Exception as e:
-            error_data = ErrorData(target=target, exc=e, stack_trace=traceback.format_exc())
-            errors.append(error_data)
 
-    return changes, errors
+    return changes
 
 
 def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> bool:

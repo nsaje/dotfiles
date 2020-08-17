@@ -1,12 +1,9 @@
 import traceback
-from collections import ChainMap
 from typing import Dict
 from typing import List
-from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from django.conf import settings
 from django.db.models import Exists
 from django.db.models import OuterRef
 
@@ -16,7 +13,6 @@ import core.models
 import dash.constants
 import etl.materialization_run
 from utils import dates_helper
-from utils import email_helper
 from utils import zlogging
 
 from .. import Rule
@@ -27,8 +23,8 @@ from . import exceptions
 from . import fetch
 from . import helpers
 from .actions import ValueChangeData
-from .apply import ErrorData
 from .apply import apply_rule
+from .notification_emails import send_notification_email_if_enabled
 
 logger = zlogging.getLogger(__name__)
 
@@ -86,10 +82,8 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rul
         relevant_rules = rules_map[ad_group]
 
         for rule in relevant_rules:
-            exception: Optional[Exception] = None
-            changes, errors = [], []
             try:
-                changes, errors = apply_rule(
+                changes = apply_rule(
                     rule,
                     ad_group,
                     stats.get(ad_group.id, {}),
@@ -97,17 +91,16 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rul
                     content_ad_settings_map.get(ad_group.id, {}),
                     campaign_budgets_map.get(ad_group.campaign_id, {}),
                 )
-                _write_history(rule, ad_group, changes, errors)
             except exceptions.RuleArchived:
                 continue
             except exceptions.ApplyFailedBase as e:
-                exception = e
-                _write_fail_history(rule, ad_group, exception=e)
+                history = _write_fail_history(rule, ad_group, exception=e)
             except Exception as e:
-                exception = e
-                _write_fail_history(rule, ad_group, exception=e, stack_trace=traceback.format_exc())
+                history = _write_fail_history(rule, ad_group, exception=e, stack_trace=traceback.format_exc())
+            else:
+                history = _write_history(rule, ad_group, changes)
 
-            _send_notification_email_if_enabled(rule, ad_group, changes, errors, exception)
+            send_notification_email_if_enabled(rule, ad_group, history)
 
 
 def _fetch_ad_group_settings(
@@ -142,159 +135,41 @@ def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
     return False
 
 
-def _write_history(
-    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData], errors: Sequence[ErrorData]
-):
-    changes_dict = dict(ChainMap(*[c.to_dict() for c in changes]))
-    changes_text = _get_changes_text(rule, ad_group, changes)
-
-    if errors:
-        changes_text += " " + _get_errors_text(errors)
+def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]):
+    changes_dict = {c.target: c.to_dict() for c in changes}
+    history = RuleHistory.objects.create(
+        rule=rule, ad_group=ad_group, status=constants.ApplyStatus.SUCCESS, changes=changes_dict
+    )
 
     ad_group.write_history(
-        changes_text,
+        history.get_formatted_changes(),
         changes=changes_dict,
         system_user=dash.constants.SystemUserType.RULES,
         action_type=dash.constants.HistoryActionType.RULE_RUN,
     )
-    RuleHistory.objects.create(
-        rule=rule,
-        ad_group=ad_group,
-        status=constants.ApplyStatus.SUCCESS,
-        changes=changes_dict,
-        changes_text=changes_text,
-    )
-
-
-def _send_notification_email_if_enabled(
-    rule: Rule,
-    ad_group: core.models.AdGroup,
-    changes: Sequence[ValueChangeData],
-    errors: Sequence[ErrorData],
-    exception: Optional[Exception],
-):
-    if rule.notification_type == constants.NotificationType.NONE:
-        return
-
-    if changes:
-        _send_changes_email(rule, ad_group, changes, errors)
-    elif errors:
-        _send_errors_email(rule, ad_group, errors)
-    elif rule.notification_type == constants.NotificationType.ON_RULE_RUN:
-        if exception:
-            _send_exception_email(rule, ad_group, exception)
-        else:
-            _send_no_action_email(rule, ad_group)
-
-
-def _send_changes_email(
-    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData], errors: Sequence[ErrorData]
-):
-    changes_text = _get_changes_text(rule, ad_group, changes)
-    errors_text = _get_errors_text(errors)
-
-    _send_email_from_template(
-        ad_group.campaign.account.agency,
-        rule.notification_recipients,
-        dash.constants.EmailTemplateType.AUTOMATION_RULE_RUN,
-        {
-            "rule_name": rule.name,
-            "ad_group_name": ad_group.name,
-            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
-            "changes_text": changes_text,
-            "errors_text": errors_text,
-        },
-    )
-
-
-def _send_errors_email(rule: Rule, ad_group: core.models.AdGroup, errors: Sequence[ErrorData]):
-    errors_text = _get_errors_text(errors)
-
-    _send_email_from_template(
-        ad_group.campaign.account.agency,
-        rule.notification_recipients,
-        dash.constants.EmailTemplateType.AUTOMATION_RULE_ERRORS,
-        {
-            "rule_name": rule.name,
-            "ad_group_name": ad_group.name,
-            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
-            "errors_text": errors_text,
-        },
-    )
-
-
-def _send_exception_email(rule: Rule, ad_group: core.models.AdGroup, exception: Exception):
-    errors_text = _get_exception_text(exception)
-
-    _send_email_from_template(
-        ad_group.campaign.account.agency,
-        rule.notification_recipients,
-        dash.constants.EmailTemplateType.AUTOMATION_RULE_ERRORS,
-        {
-            "rule_name": rule.name,
-            "ad_group_name": ad_group.name,
-            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
-            "errors_text": errors_text,
-        },
-    )
-
-
-def _send_no_action_email(rule: Rule, ad_group: core.models.AdGroup):
-    _send_email_from_template(
-        ad_group.campaign.account.agency,
-        rule.notification_recipients,
-        dash.constants.EmailTemplateType.AUTOMATION_RULE_NO_CHANGES,
-        {
-            "rule_name": rule.name,
-            "ad_group_name": ad_group.name,
-            "ad_group_link": settings.BASE_URL + f"/v2/analytics/adgroup/{ad_group.id}",
-        },
-    )
-
-
-def _send_email_from_template(
-    agency: core.models.Agency, recipient_list: List[str], template_type: int, template_params: Dict[str, str]
-):
-    for recipient in recipient_list:
-        email_helper.send_official_email(
-            agency_or_user=agency,
-            recipient_list=[recipient],
-            **email_helper.params_from_template(template_type, **template_params),
-        )
-
-
-def _get_changes_text(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]) -> str:
-    if not changes:
-        return "No target updated."
-    dashboard_targets = _get_changes_dashboard_targets(rule, ad_group, changes)
-    return "Updated targets: {}".format(", ".join(dashboard_targets))
-
-
-def _get_errors_text(errors: Sequence[ErrorData]) -> str:
-    if not errors:
-        return ""
-    return f"Error occurred while trying to update {len(errors)} targets."
-
-
-def _get_changes_dashboard_targets(
-    rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]
-) -> List[str]:
-    if rule.target_type in constants.TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING:
-        bid_modifier_type = constants.TARGET_TYPE_BID_MODIFIER_TYPE_MAPPING[rule.target_type]
-        return [
-            str(core.features.bid_modifiers.converters.TargetConverter.from_target(bid_modifier_type, c.target))
-            for c in changes
-        ]
-    else:
-        return [str(c.target) for c in changes]
+    return history
 
 
 def _write_fail_history(
     rule: Rule, ad_group: core.models.AdGroup, *, exception: Exception, stack_trace: str = None
 ) -> RuleHistory:
     return RuleHistory.objects.create(
-        rule=rule, ad_group=ad_group, status=constants.ApplyStatus.FAILURE, changes_text=_get_exception_text(exception)
+        rule=rule,
+        ad_group=ad_group,
+        failure_reason=_get_failure_reason(exception),
+        status=constants.ApplyStatus.FAILURE,
     )
+
+
+def _get_failure_reason(exception):
+    if isinstance(exception, exceptions.CampaignAutopilotActive):
+        return constants.RuleFailureReason.CAMPAIGN_AUTOPILOT_ACTIVE
+    elif isinstance(exception, exceptions.BudgetAutopilotInactive):
+        return constants.RuleFailureReason.BUDGET_AUTOPILOT_INACTIVE
+    elif exception:
+        return constants.RuleFailureReason.UNEXPECTED_ERROR
+    else:
+        return None
 
 
 def _get_exception_text(exception: Exception) -> str:
