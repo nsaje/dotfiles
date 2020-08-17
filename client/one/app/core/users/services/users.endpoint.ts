@@ -13,6 +13,31 @@ import {isDefined} from '../../../shared/helpers/common.helpers';
 export class UsersEndpoint {
     constructor(private http: HttpClient) {}
 
+    current(requestStateUpdater: RequestStateUpdater): Observable<User> {
+        const request = USERS_CONFIG.requests.users.current;
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.get<ApiResponse<User>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
     list(
         agencyId: string | null,
         accountId: string | null,

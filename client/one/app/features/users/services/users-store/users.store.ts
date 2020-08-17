@@ -25,7 +25,6 @@ import {
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
 import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {CONFIGURABLE_PERMISSIONS} from '../../users.config';
-import * as deepmerge from 'deepmerge';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {

@@ -12,6 +12,7 @@ describe('UsersService', () => {
     let usersEndpointStub: jasmine.SpyObj<UsersEndpoint>;
     let requestStateUpdater: RequestStateUpdater;
 
+    let mockedCurrentUser: User;
     let mockedUser: User;
     let mockedUsers: User[];
     let mockedCreateUsers: User[];
@@ -21,6 +22,7 @@ describe('UsersService', () => {
 
     beforeEach(() => {
         usersEndpointStub = jasmine.createSpyObj(UsersEndpoint.name, [
+            'current',
             'list',
             'create',
             'validate',
@@ -128,6 +130,63 @@ describe('UsersService', () => {
                 status: UserStatus.ACTIVE,
             },
         ];
+
+        mockedCurrentUser = {
+            id: mockedUserId,
+            email: 'test@test.com',
+            firstName: 'test',
+            lastName: 'test',
+            name: 'test tests',
+            status: UserStatus.ACTIVE,
+            agencies: [71],
+            timezoneOffset: -4000,
+            intercomUserHash: '$test$',
+            defaultCsvSeparator: ',',
+            defaultCsvDecimalSeparator: '.',
+            permissions: [
+                {
+                    permission: 'permission.public_1',
+                    isPublic: true,
+                },
+                {
+                    permission: 'permission.public_2',
+                    isPublic: true,
+                },
+                {
+                    permission: 'permission.internal_1',
+                    isPublic: false,
+                },
+                {
+                    permission: 'permission.internal_2',
+                    isPublic: false,
+                },
+            ],
+            entityPermissions: [
+                {
+                    agencyId: '123',
+                    permission: 'read',
+                },
+                {
+                    agencyId: '123',
+                    permission: 'write',
+                },
+            ],
+        };
+    });
+
+    it('should get current user via endpoint', () => {
+        usersEndpointStub.current.and
+            .returnValue(of(mockedCurrentUser, asapScheduler))
+            .calls.reset();
+
+        service.current(requestStateUpdater).subscribe(user => {
+            expect(user).toEqual(mockedCurrentUser);
+        });
+
+        expect(usersEndpointStub.current).toHaveBeenCalledTimes(1);
+        expect(usersEndpointStub.current).toHaveBeenCalledWith(
+            requestStateUpdater
+        );
     });
 
     it('should get users via endpoint', () => {

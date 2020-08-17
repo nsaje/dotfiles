@@ -8,6 +8,10 @@ import {User} from '../types/user';
 export class UsersService {
     constructor(private endpoint: UsersEndpoint) {}
 
+    current(requestStateUpdater: RequestStateUpdater): Observable<User> {
+        return this.endpoint.current(requestStateUpdater);
+    }
+
     list(
         agencyId: string | null,
         accountId: string | null,
