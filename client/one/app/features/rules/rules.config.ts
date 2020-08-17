@@ -978,7 +978,7 @@ export const RULE_CONDITIONS_OPTIONS = {
                 ...RULE_CONDITION_OPERANDS_OPTIONS[
                     RuleConditionOperandType.AbsoluteValue
                 ],
-                dataType: DataType.Integer,
+                dataType: DataType.Decimal,
             },
             // RULE_CONDITION_OPERANDS_OPTIONS[
             //     RuleConditionOperandType.PageviewsPerVisitCampaignGoal
