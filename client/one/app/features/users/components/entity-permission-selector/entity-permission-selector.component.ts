@@ -19,6 +19,7 @@ import {
 } from '../../users.config';
 import {EntityPermissionSelection} from './types/entity-permission-selection';
 import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permission-value';
+import {EntityPermissionCheckboxStates} from './types/entity-permission-checkbox-states';
 
 @Component({
     selector: 'zem-entity-permission-selector',
@@ -26,6 +27,8 @@ import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permi
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityPermissionSelectorComponent implements OnChanges {
+    @Input()
+    checkboxStates: EntityPermissionCheckboxStates;
     @Input()
     selection: EntityPermissionSelection;
     @Input()
@@ -42,7 +45,7 @@ export class EntityPermissionSelectorComponent implements OnChanges {
 
     ngOnChanges(): void {
         this.formattedOptions = GENERAL_PERMISSIONS.map(
-            this.getItem.bind(this)
+            this.getGeneralItem.bind(this)
         );
         this.formattedReportingOptions = REPORTING_PERMISSIONS.map(
             this.getReportingItem.bind(this)
@@ -69,7 +72,7 @@ export class EntityPermissionSelectorComponent implements OnChanges {
         this.selectionChange.emit(newSelection);
     }
 
-    private getItem(
+    private getGeneralItem(
         permission: EntityPermissionValue
     ): EntityPermissionCheckboxItem {
         const isPermissionSelected: boolean = this.isPermissionSelected(
@@ -80,6 +83,8 @@ export class EntityPermissionSelectorComponent implements OnChanges {
             displayValue: ENTITY_PERMISSION_VALUE_TO_NAME[permission],
             description: ENTITY_PERMISSION_VALUE_TO_DESCRIPTION[permission],
             selected: isPermissionSelected,
+            disabled: this.checkboxStates[permission] === 'disabled',
+            hidden: this.checkboxStates[permission] === 'hidden',
         };
     }
 
@@ -93,6 +98,8 @@ export class EntityPermissionSelectorComponent implements OnChanges {
             value: permission,
             displayValue: ENTITY_PERMISSION_VALUE_TO_NAME[permission],
             selected: isPermissionSelected,
+            disabled: this.checkboxStates[permission] === 'disabled',
+            hidden: this.checkboxStates[permission] === 'hidden',
         };
     }
 

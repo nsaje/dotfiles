@@ -20,3 +20,35 @@ class EntityPermission(instance.EntityPermissionMixin, validation.EntityPermissi
     permission = models.CharField(max_length=128, choices=constants.Permission.get_choices(), db_index=True)
 
     objects = manager.EntityPermissionManager.from_queryset(queryset.EntityPermissionQuerySet)()
+
+    def __str__(self):
+        if self.account_id is not None:
+            where = "account " + str(self.account_id)
+        elif self.account is not None:
+            where = "account " + str(self.account.id)
+        elif self.agency_id is not None:
+            where = "agency " + str(self.agency_id)
+        elif self.agency is not None:
+            where = "agency " + str(self.agency.id)
+        else:
+            where = "all accounts"
+
+        return "permission %s on %s" % (self.permission, where)
+
+    def __eq__(self, other):
+        return (
+            other is not None
+            and isinstance(other, EntityPermission)
+            and self.user_id == other.user_id
+            and self.account_id == other.account_id
+            and self.agency_id == other.agency_id
+            and self.permission == other.permission
+        )
+
+    def __hash__(self):
+        return (
+            self.user_id.__hash__()
+            ^ self.account_id.__hash__()
+            ^ self.agency_id.__hash__()
+            ^ self.permission.__hash__()
+        )

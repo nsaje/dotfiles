@@ -5,8 +5,9 @@
         *ngFor="let option of formattedOptions"
     >
         <zem-checkbox-input
+            *ngIf="!option.hidden"
             class="zem-checkbox-input"
-            [isDisabled]="isDisabled"
+            [isDisabled]="isDisabled || option.disabled"
             [hasError]="errors && errors.length > 0"
             [enableIndeterminateState]="true"
             [isChecked]="option.selected"

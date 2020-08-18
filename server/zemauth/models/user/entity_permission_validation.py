@@ -7,14 +7,15 @@ from zemauth.models.user.exceptions import MixedPermissionLevels
 class EntityPermissionValidationMixin(object):
     def validate_entity_permissions(self, entity_permissions):
         has_account_permission = any(
-            filter(lambda permission: permission.get("account") or permission.get("account_id"), entity_permissions)
+            filter(lambda ep: ep.account is not None or ep.account_id is not None, entity_permissions)
         )
         has_agency_permission = any(
-            filter(lambda permission: permission.get("agency") or permission.get("agency_id"), entity_permissions)
+            filter(lambda ep: ep.agency is not None or ep.agency_id is not None, entity_permissions)
         )
         has_internal_permission = any(
             filter(
-                lambda permission: not permission.get("account") and not permission.get("agency"), entity_permissions
+                lambda ep: ep.account is None and ep.account_id is None and ep.agency is None and ep.agency_id is None,
+                entity_permissions,
             )
         )
 
@@ -33,12 +34,12 @@ class EntityPermissionValidationMixin(object):
                 account_permissions = list(
                     filter(lambda ep: self._get_account_id(ep) == account_id, entity_permissions)
                 )
-                self._validate_required_permissions(set(ep["permission"] for ep in account_permissions))
+                self._validate_required_permissions(set(ep.permission for ep in account_permissions))
         else:
-            self._validate_required_permissions(set(ep["permission"] for ep in entity_permissions))
+            self._validate_required_permissions(set(ep.permission for ep in entity_permissions))
 
     def _get_account_id(self, entity_permission):
-        return entity_permission.get("account_id") or entity_permission.get("account").id
+        return entity_permission.account_id or entity_permission.account.id
 
     def _validate_required_permissions(self, permissions_for_entity):
         if Permission.READ not in permissions_for_entity:

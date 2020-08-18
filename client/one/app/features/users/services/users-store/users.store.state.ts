@@ -4,6 +4,7 @@ import {UsersStoreFieldsErrorsState} from './users.store.fields-errors-state';
 import {User} from '../../../../core/users/types/user';
 import {Account} from '../../../../core/entities/types/account/account';
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
+import {EntityPermissionCheckboxStates} from '../../components/entity-permission-selector/types/entity-permission-checkbox-states';
 
 export class UsersStoreState {
     agencyId: string = null;
@@ -25,6 +26,7 @@ export class UsersStoreState {
         entityAccounts: [] as Account[],
         selectedAccounts: [] as Account[],
         selectedEntityPermissions: {} as EntityPermissionSelection,
+        checkboxStates: {} as EntityPermissionCheckboxStates,
         isReadOnly: null as boolean,
         isCurrentUser: null as boolean,
         fieldsErrors: new UsersStoreFieldsErrorsState(),

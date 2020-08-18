@@ -17,15 +17,20 @@ import {isDefined, isNotEmpty} from '../../../../shared/helpers/common.helpers';
 import {EntityPermission} from '../../../../core/users/types/entity-permission';
 import {
     arraysContainSameElements,
-    distinct,
-    isEmpty,
-    groupArray,
     arrayToObject,
+    distinct,
+    groupArray,
+    isEmpty,
 } from '../../../../shared/helpers/array.helpers';
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
 import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
-import {CONFIGURABLE_PERMISSIONS} from '../../users.config';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {
+    CONFIGURABLE_PERMISSIONS,
+    GENERAL_PERMISSIONS,
+    REPORTING_PERMISSIONS,
+} from '../../users.config';
+import {EntityPermissionCheckboxStates} from '../../components/entity-permission-selector/types/entity-permission-checkbox-states';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -232,6 +237,10 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
         if (!isDefined(entity.id) && isEmpty(entity.entityPermissions)) {
             userPatches.entityPermissions = this.getDefaultEntityPermissions();
+        } else {
+            userPatches.entityPermissions = this.cleanUpEntityPermissions(
+                entity.entityPermissions
+            );
         }
 
         this.recalculateActiveEntityState(userPatches, undefined, true);
@@ -253,15 +262,26 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
         if (isNotEmpty(this.state.activeEntity.selectedAccounts)) {
             // If any accounts are selected, copy currently selected permissions to the new account
+            // But do not copy the ones, for which the current app user hasn't got permission
             const currentlySelectedPermissions: EntityPermissionSelection = this.calculateSelectedEntityPermissions(
                 this.state.activeEntity.entity,
                 this.state.activeEntity.selectedAccounts
             );
+
             newEntityPermissions = Object.keys(currentlySelectedPermissions)
-                .filter(permission => currentlySelectedPermissions[permission])
+                .map(permission => <EntityPermissionValue>permission)
+                .filter(
+                    permission =>
+                        currentlySelectedPermissions[permission] &&
+                        this.currentUserHasPermissionInScope(
+                            permission,
+                            ScopeSelectorState.ACCOUNT_SCOPE,
+                            [account]
+                        )
+                )
                 .map(permission => ({
                     accountId: account.id,
-                    permission: <EntityPermissionValue>permission,
+                    permission,
                 }));
         } else {
             // Otherwise just add a read permission
@@ -338,6 +358,18 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     updateSelectedEntityPermissions(
         selectedPermissions: EntityPermissionSelection
     ) {
+        if (this.haveDisabledOrHiddenCheckboxesChanged(selectedPermissions)) {
+            // This should never be thrown during normal UI operations, but is relevant if anybody ever calls the store directly
+            throw new Error('Disabled or hidden checkbox cannot be changed!');
+        }
+
+        const readonlyPermissionScopes: {
+            accountId: string | null;
+            agencyId: string | null;
+        }[] = this.getReadonlyPermissionScopes(
+            this.state.activeEntity.entity.entityPermissions
+        );
+
         let newEntityPermissions: EntityPermission[];
         if (
             this.state.activeEntity.scopeState ===
@@ -399,6 +431,20 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 ...changedPermissionsOnSelectedAccounts,
             ];
         }
+
+        // Restore the readonly setting on reporting permissions on entities that had this setting before.
+        newEntityPermissions.forEach(ep => {
+            if (
+                REPORTING_PERMISSIONS.includes(ep.permission) &&
+                readonlyPermissionScopes.some(
+                    s =>
+                        s.accountId === (ep.accountId || null) &&
+                        s.agencyId === (ep.agencyId || null)
+                )
+            ) {
+                ep.readonly = true;
+            }
+        });
 
         this.recalculateActiveEntityState({
             entityPermissions: newEntityPermissions,
@@ -510,7 +556,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
     private isInternalUser(user: Partial<User>): boolean {
         return user.entityPermissions.some(
-            ep => !isDefined(ep.agencyId) && !isDefined(ep.accountId)
+            ep => !isNotEmpty(ep.agencyId) && !isNotEmpty(ep.accountId)
         );
     }
 
@@ -582,6 +628,40 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }
     }
 
+    private cleanUpEntityPermissions(
+        entityPermissions: EntityPermission[]
+    ): EntityPermission[] {
+        // Sometimes in the DB we have users with mixed levels of entity permissions, here we remove all but the top level with read permission
+        if (
+            entityPermissions.some(
+                ep =>
+                    !isNotEmpty(ep.agencyId) &&
+                    !isNotEmpty(ep.accountId) &&
+                    ep.permission === 'read'
+            )
+        ) {
+            return entityPermissions.filter(
+                ep => !isNotEmpty(ep.agencyId) && !isNotEmpty(ep.accountId)
+            );
+        }
+        if (
+            entityPermissions.some(
+                ep => isNotEmpty(ep.agencyId) && ep.permission === 'read'
+            )
+        ) {
+            return entityPermissions.filter(ep => isNotEmpty(ep.agencyId));
+        }
+        if (
+            entityPermissions.some(
+                ep => isNotEmpty(ep.accountId) && ep.permission === 'read'
+            )
+        ) {
+            return entityPermissions.filter(ep => isNotEmpty(ep.accountId));
+        }
+
+        return [];
+    }
+
     private recalculateActiveEntityState(
         userPatches: Partial<User>,
         proposedSelectedAccounts?: Account[],
@@ -596,15 +676,19 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
             ...userPatches,
         };
 
+        const scopeState: ScopeSelectorState = this.calculateScopeState(
+            patchedUser
+        );
+
         activeEntity = {
             ...activeEntity,
             entity: patchedUser,
+            scopeState,
         };
 
         if (Object.keys(userPatches).includes('entityPermissions')) {
             activeEntity = {
                 ...activeEntity,
-                scopeState: this.calculateScopeState(patchedUser),
                 entityAccounts: this.calculateEntityAccounts(patchedUser),
                 isReadOnly: this.isUserReadOnly(patchedUser),
                 isCurrentUser: this.isCurrentUser(patchedUser),
@@ -622,19 +706,107 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 initialize
             );
 
+            // Gets the list of reporting permissions, whose state is unknown because they are visible on some selected accounts, but not on others
+            const unknownReportingPermissions: EntityPermissionValue[] = this.getUnknownReportingPermissions(
+                scopeState,
+                selectedAccounts
+            );
+
+            // Gets the list of reporting permissions which are disabled because the edited user has some higher reporting permissions that the current user can't see
+            const disabledReportingPermissions: EntityPermissionValue[] = this.getDisabledReportingPermissions(
+                patchedUser,
+                scopeState,
+                selectedAccounts,
+                unknownReportingPermissions
+            );
+
             const selectedEntityPermissions: EntityPermissionSelection = this.calculateSelectedEntityPermissions(
                 patchedUser,
-                selectedAccounts
+                selectedAccounts,
+                unknownReportingPermissions
+            );
+
+            const checkboxStates: EntityPermissionCheckboxStates = this.calculateCheckboxStates(
+                scopeState,
+                selectedAccounts,
+                disabledReportingPermissions,
+                unknownReportingPermissions
             );
 
             activeEntity = {
                 ...activeEntity,
                 selectedAccounts,
                 selectedEntityPermissions,
+                checkboxStates,
             };
         }
 
         this.patchState(activeEntity, 'activeEntity');
+    }
+
+    private getDisabledReportingPermissions(
+        patchedUser: User,
+        scopeState: ScopeSelectorState,
+        selectedAccounts: Account[],
+        unknownReportingPermissions: EntityPermissionValue[]
+    ): EntityPermissionValue[] {
+        if (!isEmpty(unknownReportingPermissions)) {
+            // If any reporting permissions are unknown, ALL reporting permissions should be disabled
+            return <EntityPermissionValue[]>(
+                REPORTING_PERMISSIONS.filter(
+                    permission => permission !== 'total_spend'
+                )
+            );
+        }
+
+        const entityPermissions: EntityPermission[] =
+            patchedUser.entityPermissions || [];
+        const selectedAccountIds: string[] = selectedAccounts.map(
+            account => account.id
+        );
+        return distinct(
+            entityPermissions
+                .filter(
+                    ep =>
+                        ep.readonly &&
+                        REPORTING_PERMISSIONS.includes(ep.permission) &&
+                        (scopeState !== ScopeSelectorState.ACCOUNT_SCOPE ||
+                            selectedAccountIds.includes(ep.accountId))
+                )
+                .map(ep => ep.permission)
+        );
+    }
+
+    private getUnknownReportingPermissions(
+        scopeState: ScopeSelectorState,
+        selectedAccounts: Account[]
+    ): EntityPermissionValue[] {
+        if (scopeState !== ScopeSelectorState.ACCOUNT_SCOPE) {
+            return [];
+        }
+
+        const selectedAccountIds: string[] = selectedAccounts.map(
+            account => account.id
+        );
+        return REPORTING_PERMISSIONS.filter(
+            permission =>
+                permission !== 'total_spend' &&
+                selectedAccountIds.some(
+                    accountId =>
+                        !this.authStore.hasEntityPermission(
+                            this.state.agencyId,
+                            accountId,
+                            permission
+                        )
+                ) &&
+                selectedAccountIds.some(accountId =>
+                    this.authStore.hasEntityPermission(
+                        this.state.agencyId,
+                        accountId,
+                        permission
+                    )
+                )
+        ).map(permission => <EntityPermissionValue>permission);
     }
 
     private calculateScopeState(user: User): ScopeSelectorState {
@@ -755,7 +927,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
     private calculateSelectedEntityPermissions(
         user: User,
-        selectedAccounts: Account[]
+        selectedAccounts: Account[],
+        unknownReportingPermissions: EntityPermissionValue[] = []
     ): EntityPermissionSelection {
         if (
             isEmpty(user.entityPermissions) ||
@@ -770,7 +943,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
             selectedPermissions[permission] = this.isPermissionSelected(
                 user,
                 permission,
-                selectedAccounts
+                selectedAccounts,
+                unknownReportingPermissions
             );
         });
 
@@ -780,8 +954,13 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     private isPermissionSelected(
         user: User,
         permission: EntityPermissionValue,
-        selectedAccounts: Account[]
+        selectedAccounts: Account[],
+        unknownReportingPermissions: EntityPermissionValue[]
     ): boolean {
+        if (unknownReportingPermissions.includes(permission)) {
+            return undefined;
+        }
+
         const allPermissions: EntityPermission[] = user.entityPermissions || [];
 
         if (this.isInternalUser(user) || this.isAgencyManager(user)) {
@@ -810,5 +989,113 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 return true;
             }
         }
+    }
+
+    private calculateCheckboxStates(
+        scopeState: ScopeSelectorState,
+        selectedAccounts: Account[],
+        disabledReportingPermissions: EntityPermissionValue[],
+        unknownReportingPermissions: EntityPermissionValue[]
+    ): EntityPermissionCheckboxStates {
+        const checkboxStates: EntityPermissionCheckboxStates = {};
+
+        GENERAL_PERMISSIONS.forEach(permission => {
+            checkboxStates[permission] = this.currentUserHasPermissionInScope(
+                permission,
+                scopeState,
+                selectedAccounts
+            )
+                ? 'enabled'
+                : 'disabled';
+        });
+
+        REPORTING_PERMISSIONS.forEach(permission => {
+            if (permission === 'total_spend') {
+                checkboxStates[permission] = 'disabled';
+            } else {
+                const canUseCheckbox:
+                    | boolean
+                    | undefined = this.currentUserHasPermissionInScope(
+                    permission,
+                    scopeState,
+                    selectedAccounts
+                );
+
+                if (canUseCheckbox === false) {
+                    checkboxStates[permission] = 'hidden';
+                } else if (
+                    canUseCheckbox === undefined ||
+                    unknownReportingPermissions.includes(permission) ||
+                    disabledReportingPermissions.includes(permission)
+                ) {
+                    checkboxStates[permission] = 'disabled';
+                } else {
+                    checkboxStates[permission] = 'enabled';
+                }
+            }
+        });
+        return checkboxStates;
+    }
+
+    private currentUserHasPermissionInScope(
+        permission: EntityPermissionValue,
+        scopeState: ScopeSelectorState,
+        selectedAccounts: Account[]
+    ): boolean | undefined {
+        if (scopeState === ScopeSelectorState.ALL_ACCOUNTS_SCOPE) {
+            return this.authStore.hasEntityPermission(null, null, permission);
+        } else if (scopeState === ScopeSelectorState.AGENCY_SCOPE) {
+            return this.authStore.hasEntityPermission(
+                this.state.agencyId,
+                null,
+                permission
+            );
+        } else {
+            const hasAccountPermissions: boolean[] = selectedAccounts.map(
+                account =>
+                    this.authStore.hasEntityPermission(
+                        this.state.agencyId,
+                        account.id,
+                        permission
+                    )
+            );
+
+            if (hasAccountPermissions.every(x => x)) {
+                return true;
+            } else if (hasAccountPermissions.some(x => x)) {
+                return undefined;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private haveDisabledOrHiddenCheckboxesChanged(
+        newSelection: EntityPermissionSelection
+    ): boolean {
+        const oldSelection: EntityPermissionSelection = this.state.activeEntity
+            .selectedEntityPermissions;
+        const checkboxStates: EntityPermissionCheckboxStates = this.state
+            .activeEntity.checkboxStates;
+
+        return Object.keys(checkboxStates).some(
+            permission =>
+                permission !== 'total_spend' &&
+                checkboxStates[permission] !== 'enabled' &&
+                newSelection[permission] !== oldSelection[permission]
+        );
+    }
+
+    private getReadonlyPermissionScopes(
+        entityPermissions: EntityPermission[]
+    ): {accountId: string | null; agencyId: string | null}[] {
+        return distinct(
+            (entityPermissions || [])
+                .filter(ep => ep.readonly)
+                .map(ep => ({
+                    accountId: ep.accountId || null,
+                    agencyId: ep.agencyId || null,
+                }))
+        );
     }
 }

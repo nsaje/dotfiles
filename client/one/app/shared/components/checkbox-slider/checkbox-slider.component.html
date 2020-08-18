@@ -1,11 +1,15 @@
-<zem-checkbox-input
+<ng-container
     *ngFor="let option of options; let index = index; trackBy: trackByIndex"
-    class="zem-checkbox-input zem-checkbox-slider__option"
-    [isDisabled]="isDisabled"
-    [hasError]="errors && errors.length > 0"
-    [enableIndeterminateState]="true"
-    [isChecked]="option.selected"
-    (toggle)="toggle($event, index)"
 >
-    {{ option.displayValue }}
-</zem-checkbox-input>
+    <zem-checkbox-input
+        *ngIf="!option.hidden"
+        class="zem-checkbox-input zem-checkbox-slider__option"
+        [isDisabled]="isDisabled || option.disabled"
+        [hasError]="errors && errors.length > 0"
+        [enableIndeterminateState]="true"
+        [isChecked]="option.selected"
+        (toggle)="toggle($event, index)"
+    >
+        {{ option.displayValue }}
+    </zem-checkbox-input>
+</ng-container>

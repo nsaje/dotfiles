@@ -32,23 +32,26 @@ export class CheckboxSliderComponent<T> {
     }
 
     toggle($event: boolean, optionIndex: number) {
-        const changes: CheckboxSliderItem<T>[] = [];
+        const displayedOptions: CheckboxSliderItem<T>[] = this.options.filter(
+            option => !option.hidden
+        );
+        const newSelection: CheckboxSliderItem<T>[] = [];
         if ($event) {
-            changes.push(
-                ...this.options
+            newSelection.push(
+                ...displayedOptions
                     .slice(0, optionIndex + 1)
                     .map(x => ({...x, selected: true}))
             );
-            changes.push(...this.options.slice(optionIndex + 1));
+            newSelection.push(...displayedOptions.slice(optionIndex + 1));
         } else {
-            changes.push(...this.options.slice(0, optionIndex));
-            changes.push(
-                ...this.options
+            newSelection.push(...displayedOptions.slice(0, optionIndex));
+            newSelection.push(
+                ...displayedOptions
                     .slice(optionIndex)
                     .map(x => ({...x, selected: false}))
             );
         }
 
-        this.selectionChange.emit(changes);
+        this.selectionChange.emit(newSelection);
     }
 }

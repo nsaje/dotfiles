@@ -9,8 +9,77 @@ import * as mockHelpers from '../../../../testing/mock.helpers';
 import {UsersStoreState} from './users.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import * as clone from 'clone';
-import {UserStatus} from '../../../../app.constants';
+import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {UserStatus} from '../../../../app.constants';
+
+function mockUserCantSeeServiceFeeOnAccount(
+    authStoreStub: jasmine.SpyObj<AuthStore>,
+    mockedAccountId: string
+) {
+    authStoreStub.hasEntityPermission.and
+        .callFake(
+            (
+                agencyId: string,
+                accountId: string,
+                permission: EntityPermissionValue
+            ) => {
+                if (
+                    accountId === mockedAccountId &&
+                    permission === 'base_costs_service_fee'
+                ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        )
+        .calls.reset();
+}
+
+function mockUserCantSeeServiceFeeOnAgency(
+    authStoreStub: jasmine.SpyObj<AuthStore>,
+    mockedAgencyId: string
+) {
+    authStoreStub.hasEntityPermission.and
+        .callFake(
+            (
+                agencyId: string,
+                accountId: string,
+                permission: EntityPermissionValue
+            ) => {
+                if (
+                    agencyId === mockedAgencyId &&
+                    permission === 'base_costs_service_fee'
+                ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        )
+        .calls.reset();
+}
+
+function mockUserCantSeeServiceFeeInternal(
+    authStoreStub: jasmine.SpyObj<AuthStore>
+) {
+    authStoreStub.hasEntityPermission.and
+        .callFake(
+            (
+                agencyId: string,
+                accountId: string,
+                permission: EntityPermissionValue
+            ) => {
+                if (permission === 'base_costs_service_fee') {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        )
+        .calls.reset();
+}
 
 describe('UsersStore', () => {
     let usersServiceStub: jasmine.SpyObj<UsersService>;
@@ -22,9 +91,9 @@ describe('UsersStore', () => {
     let mockedInternalUser: User;
     let mockedUsers: User[];
     let mockedAgencyId: string;
-    let mockedAccountId: string;
-    let anotherMockedAccountId: string;
-    let aThirdMockedAccountId: string;
+    let mockedAccount0Id: string;
+    let mockedAccount1Id: string;
+    let mockedAccount2Id: string;
     let mockedAccounts: Account[];
     let mockedInitialState: UsersStoreState;
 
@@ -42,6 +111,7 @@ describe('UsersStore', () => {
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasEntityPermission',
+            'hasEntityPermission',
             'getCurrentUserId',
         ]);
 
@@ -52,9 +122,9 @@ describe('UsersStore', () => {
         );
 
         mockedAgencyId = '10';
-        mockedAccountId = '515';
-        anotherMockedAccountId = '525';
-        aThirdMockedAccountId = '535';
+        mockedAccount0Id = '515';
+        mockedAccount1Id = '525';
+        mockedAccount2Id = '535';
 
         mockedAccountUser = {
             id: '10000001',
@@ -63,27 +133,27 @@ describe('UsersStore', () => {
             lastName: 'User',
             entityPermissions: [
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'read',
                 },
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'write',
                 },
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'user',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'read',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'write',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'budget',
                 },
             ],
@@ -128,22 +198,22 @@ describe('UsersStore', () => {
         mockedAccounts = [
             {
                 ...mockHelpers.getMockedAccount(),
-                id: mockedAccountId,
+                id: mockedAccount0Id,
             },
             {
                 ...mockHelpers.getMockedAccount(),
-                id: anotherMockedAccountId,
+                id: mockedAccount1Id,
             },
             {
                 ...mockHelpers.getMockedAccount(),
-                id: aThirdMockedAccountId,
+                id: mockedAccount2Id,
             },
         ];
 
         mockedInitialState = {
             ...new UsersStoreState(),
             agencyId: mockedAgencyId,
-            accountId: mockedAccountId,
+            accountId: mockedAccount0Id,
             hasAgencyScope: true,
             hasAllAccountsScope: true,
             entities: mockedUsers,
@@ -159,16 +229,16 @@ describe('UsersStore', () => {
         accountsServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        authStoreStub.hasEntityPermission.and.returnValue(true).calls.reset();
         authStoreStub.getCurrentUserId.and.returnValue('42').calls.reset();
+        authStoreStub.hasEntityPermission.and.returnValue(true).calls.reset();
     });
 
     it('should correctly initialize store', fakeAsync(() => {
-        store.setStore(mockedAgencyId, mockedAccountId, 1, 10, '', true);
+        store.setStore(mockedAgencyId, mockedAccount0Id, 1, 10, '', true);
         tick();
 
         expect(store.state.agencyId).toEqual(mockedAgencyId);
-        expect(store.state.accountId).toEqual(mockedAccountId);
+        expect(store.state.accountId).toEqual(mockedAccount0Id);
         expect(store.state.hasAgencyScope).toEqual(true);
         expect(store.state.hasAllAccountsScope).toEqual(true);
         expect(store.state.entities).toEqual(mockedUsers);
@@ -215,7 +285,7 @@ describe('UsersStore', () => {
         expect(usersServiceStub.edit).toHaveBeenCalledWith(
             mockedUsers[0],
             mockedAgencyId,
-            mockedAccountId,
+            mockedAccount0Id,
             (<any>store).requestStateUpdater
         );
     }));
@@ -237,7 +307,7 @@ describe('UsersStore', () => {
         expect(usersServiceStub.create).toHaveBeenCalledWith(
             [newUser],
             mockedAgencyId,
-            mockedAccountId,
+            mockedAccount0Id,
             (<any>store).requestStateUpdater
         );
     }));
@@ -332,7 +402,7 @@ describe('UsersStore', () => {
         expect(usersServiceStub.create).toHaveBeenCalledWith(
             expectedUsers,
             mockedAgencyId,
-            mockedAccountId,
+            mockedAccount0Id,
             (<any>store).requestStateUpdater
         );
     }));
@@ -351,7 +421,7 @@ describe('UsersStore', () => {
         expect(usersServiceStub.remove).toHaveBeenCalledWith(
             mockedUsers[0].id,
             mockedAgencyId,
-            mockedAccountId,
+            mockedAccount0Id,
             (<any>store).requestStateUpdater
         );
     }));
@@ -699,31 +769,31 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'read',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'write',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'budget',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'read',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'write',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'user',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'agency_spend_margin',
             },
         ]);
@@ -765,34 +835,289 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'budget',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'read',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'agency_spend_margin',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'read',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'agency_spend_margin',
             },
             {
-                accountId: aThirdMockedAccountId,
+                accountId: mockedAccount2Id,
                 permission: 'read',
             },
             {
-                accountId: aThirdMockedAccountId,
+                accountId: mockedAccount2Id,
                 permission: 'agency_spend_margin',
             },
         ]);
+    }));
+
+    it('should not remove the readonly attribute when permissions are changed on account', fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAccount(authStoreStub, mockedAccount0Id);
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        store.updateSelectedEntityPermissions({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false,
+        });
+
+        expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false,
+        });
+
+        expect(store.state.activeEntity.entity.entityPermissions).toEqual([
+            {
+                accountId: mockedAccount0Id,
+                permission: 'read',
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'write',
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'user',
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'agency_spend_margin',
+                readonly: true,
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'media_cost_data_cost_licence_fee',
+                readonly: true,
+            },
+        ]);
+    }));
+
+    it('should not remove the readonly attribute when permissions are changed on agency', fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAgency(authStoreStub, mockedAgencyId);
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAgencyUser,
+            entityPermissions: [
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'read',
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        store.updateSelectedEntityPermissions({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false,
+        });
+
+        expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false, // This is false, because the user can't see this permission
+        });
+
+        expect(store.state.activeEntity.entity.entityPermissions).toEqual([
+            {
+                agencyId: mockedAgencyId,
+                permission: 'read',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'write',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'user',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'agency_spend_margin',
+                readonly: true,
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'media_cost_data_cost_licence_fee',
+                readonly: true,
+            },
+        ]);
+    }));
+
+    it('should not remove the readonly attribute when permissions are changed - internal', fakeAsync(() => {
+        mockUserCantSeeServiceFeeInternal(authStoreStub);
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedInternalUser,
+            entityPermissions: [
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'read',
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        store.updateSelectedEntityPermissions({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false,
+        });
+
+        expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
+            read: true,
+            write: true,
+            user: true,
+            budget: false,
+            agency_spend_margin: true,
+            media_cost_data_cost_licence_fee: true,
+            base_costs_service_fee: false, // This is false, because the user can't see this permission
+        });
+
+        expect(store.state.activeEntity.entity.entityPermissions).toEqual([
+            {
+                agencyId: mockedAgencyId,
+                permission: 'read',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'write',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'user',
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'agency_spend_margin',
+                readonly: true,
+            },
+            {
+                agencyId: mockedAgencyId,
+                permission: 'media_cost_data_cost_licence_fee',
+                readonly: true,
+            },
+        ]);
+    }));
+
+    it('should not allow changing of readonly permissions', fakeAsync(() => {
+        mockUserCantSeeServiceFeeInternal(authStoreStub);
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAgencyUser,
+            entityPermissions: [
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'read',
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        expect(() => {
+            store.updateSelectedEntityPermissions({
+                read: true,
+                write: true,
+                user: true,
+                budget: false,
+                agency_spend_margin: true,
+                media_cost_data_cost_licence_fee: false,
+                base_costs_service_fee: false,
+            });
+        }).toThrow(new Error('Disabled or hidden checkbox cannot be changed!'));
     }));
 
     it('should correctly add account to user', fakeAsync(() => {
@@ -808,39 +1133,39 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'read',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'write',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'user',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'read',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'write',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'budget',
             },
             {
-                accountId: aThirdMockedAccountId,
+                accountId: mockedAccount2Id,
                 permission: 'read',
             },
             {
-                accountId: aThirdMockedAccountId,
+                accountId: mockedAccount2Id,
                 permission: 'write',
             },
             {
-                accountId: aThirdMockedAccountId,
+                accountId: mockedAccount2Id,
                 permission: 'user',
             },
         ]);
@@ -875,27 +1200,27 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'read',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'write',
             },
             {
-                accountId: mockedAccountId,
+                accountId: mockedAccount0Id,
                 permission: 'user',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'read',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'write',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'budget',
             },
         ]);
@@ -903,6 +1228,73 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entityAccounts).toEqual([
             mockedAccounts[0],
             mockedAccounts[1],
+        ]);
+    }));
+
+    it("should not copy a permission to a new account if the app user hasn't got the permission to use it", fakeAsync(() => {
+        authStoreStub.hasEntityPermission.and
+            .callFake(
+                (
+                    agencyId: string,
+                    accountId: string,
+                    permission: EntityPermissionValue
+                ) => {
+                    if (
+                        accountId === mockedAccount1Id &&
+                        permission === 'budget'
+                    ) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            )
+            .calls.reset();
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'write',
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'budget',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+        store.addActiveEntityAccount(mockedAccounts[1]);
+
+        expect(store.state.activeEntity.entity.entityPermissions).toEqual([
+            {
+                accountId: mockedAccount0Id,
+                permission: 'read',
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'write',
+            },
+            {
+                accountId: mockedAccount0Id,
+                permission: 'budget',
+            },
+            {
+                accountId: mockedAccount1Id,
+                permission: 'read',
+            },
+            {
+                accountId: mockedAccount1Id,
+                permission: 'write',
+            },
         ]);
     }));
 
@@ -915,15 +1307,15 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'read',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'write',
             },
             {
-                accountId: anotherMockedAccountId,
+                accountId: mockedAccount1Id,
                 permission: 'budget',
             },
         ]);
@@ -1070,27 +1462,27 @@ describe('UsersStore', () => {
             ...mockedAccountUser,
             entityPermissions: [
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'read',
                 },
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'write',
                 },
                 {
-                    accountId: mockedAccountId,
+                    accountId: mockedAccount0Id,
                     permission: 'user',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'read',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'write',
                 },
                 {
-                    accountId: anotherMockedAccountId,
+                    accountId: mockedAccount1Id,
                     permission: 'user',
                 },
             ],
@@ -1102,5 +1494,345 @@ describe('UsersStore', () => {
             mockedAccounts[0],
             mockedAccounts[1],
         ]);
+    }));
+
+    it('should show and enable all checkboxes except total_spend if the calling user has permission to change all of them', fakeAsync(() => {
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+    }));
+
+    it("should disable a general permission checkbox if the user hasn't got the permission to use it", fakeAsync(() => {
+        authStoreStub.hasEntityPermission.and
+            .callFake(
+                (
+                    agencyId: string,
+                    accountId: string,
+                    permission: EntityPermissionValue
+                ) => {
+                    if (
+                        accountId === mockedAccount0Id &&
+                        permission === 'budget'
+                    ) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            )
+            .calls.reset();
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'read',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+        store.setSelectedAccounts([mockedAccounts[0]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'disabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+
+        store.setSelectedAccounts([mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+
+        store.setSelectedAccounts([mockedAccounts[0], mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'disabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+    }));
+
+    it("should hide a reporting permission checkbox if the user hasn't got the permission to use it", fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAccount(authStoreStub, mockedAccount0Id);
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'read',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+        store.setSelectedAccounts([mockedAccounts[0]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'hidden',
+        });
+
+        store.setSelectedAccounts([mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+    }));
+
+    it("should disable all reporting checkboxes and set a reporting permission's checkbox to indeterminate if the user has its permission only on some selected accounts", fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAccount(authStoreStub, mockedAccount0Id);
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'read',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+        store.setSelectedAccounts([mockedAccounts[0], mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'disabled',
+            media_cost_data_cost_licence_fee: 'disabled',
+            base_costs_service_fee: 'disabled',
+        });
+
+        expect(store.state.activeEntity.selectedEntityPermissions).toEqual({
+            read: true,
+            write: false,
+            user: false,
+            budget: false,
+            agency_spend_margin: false,
+            media_cost_data_cost_licence_fee: false,
+            base_costs_service_fee: undefined,
+        });
+    }));
+
+    it('should disable all reporting checkboxes if some in the current selection are readonly - account', fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAccount(authStoreStub, mockedAccount0Id);
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAccountUser,
+            entityPermissions: [
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    accountId: mockedAccount0Id,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'read',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'agency_spend_margin',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'media_cost_data_cost_licence_fee',
+                },
+                {
+                    accountId: mockedAccount1Id,
+                    permission: 'base_costs_service_fee',
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+        store.setSelectedAccounts([mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'enabled',
+            media_cost_data_cost_licence_fee: 'enabled',
+            base_costs_service_fee: 'enabled',
+        });
+
+        store.setSelectedAccounts([mockedAccounts[0]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'disabled',
+            media_cost_data_cost_licence_fee: 'disabled',
+            base_costs_service_fee: 'hidden',
+        });
+
+        store.setSelectedAccounts([mockedAccounts[0], mockedAccounts[1]]);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'disabled',
+            media_cost_data_cost_licence_fee: 'disabled',
+            base_costs_service_fee: 'disabled',
+        });
+    }));
+
+    it('should disable all reporting checkboxes if some in the current selection are readonly - agency', fakeAsync(() => {
+        mockUserCantSeeServiceFeeOnAgency(authStoreStub, mockedAgencyId);
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedAgencyUser,
+            entityPermissions: [
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'read',
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    agencyId: mockedAgencyId,
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'disabled',
+            media_cost_data_cost_licence_fee: 'disabled',
+            base_costs_service_fee: 'hidden',
+        });
+    }));
+
+    it('should disable all reporting checkboxes if some in the current selection are readonly - internal', fakeAsync(() => {
+        mockUserCantSeeServiceFeeInternal(authStoreStub);
+
+        store.setState(mockedInitialState);
+
+        const aNewMockedUser: User = {
+            ...mockedInternalUser,
+            entityPermissions: [
+                {
+                    permission: 'read',
+                },
+                {
+                    permission: 'agency_spend_margin',
+                    readonly: true,
+                },
+                {
+                    permission: 'media_cost_data_cost_licence_fee',
+                    readonly: true,
+                },
+            ],
+        };
+
+        store.setActiveEntity(aNewMockedUser);
+
+        expect(store.state.activeEntity.checkboxStates).toEqual({
+            write: 'enabled',
+            user: 'enabled',
+            budget: 'enabled',
+            total_spend: 'disabled',
+            agency_spend_margin: 'disabled',
+            media_cost_data_cost_licence_fee: 'disabled',
+            base_costs_service_fee: 'hidden',
+        });
     }));
 });

@@ -13,10 +13,6 @@ class MissingRequiredPermission(ValidationError):
     pass
 
 
-class EntityPermissionChangeNotAllowed(ValidationError):
-    pass
-
-
 class EmailAlreadyExists(ValidationError):
     pass
 

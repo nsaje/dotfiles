@@ -124,6 +124,17 @@ The function's logic is as follows:
     - Else select the first account in the list of `entityAccounts`
 
 
+### getUnknownReportingPermissions
+This function gets the list of reporting permissions, whose state is unknown because they are visible on some selected accounts, but not on others.
+The result is stored into the variable `unknownReportingPermissions`.
+ 
+
+### getDisabledReportingPermissions
+This function gets the list of reporting permissions which are disabled because the edited user has some higher reporting permissions that the current user can't see.
+The exception is that when there are any permissions in the `unknownReportingPermissions` list. In that case, all reporting permissions are disabled.
+The result is stored into the variable `disabledReportingPermissions`.
+
+
 ### calculateSelectedEntityPermissions
 This function calculates the value of the `selectedEntityPermissions` attribute:
 
@@ -136,6 +147,7 @@ This function calculates the value of the `selectedEntityPermissions` attribute:
   - `agency_spend_margin`,
   - `media_cost_data_cost_license_fee`
 - ...check if this permission should be selected using the `isPermissionSelected` function, which works like this:
+  - If the permission is one of the `unknownReportingPermissions`, return `undefined`
   - If the user is an internal user or agency manager:
     - Return `true` if any `entityPermissions` in the list have this permission, otherwise return `false`
   - Else (if the user is an account manager):
@@ -146,16 +158,28 @@ This function calculates the value of the `selectedEntityPermissions` attribute:
     - If some, but not all selected accounts have this permission, return `undefined`
     - If all the selected accounts have this permission, return `true`
 
+
+### calculateCheckboxStates
+This function determines, which checkboxes should be enabled and which should be disabled.
+- For all general permissions:
+  - If the current user has this permission in the current scope: enable the checkbox
+  - Else: disable the checkbox
+- For all reporting permissions:
+  - If the current user hasn't got this permission in the current scope: disable the checkbox
+  - Else if the user has this permission only on some accounts of the current scope OR if this permission is one of the `disabledReportingPermissions` or `unknownReportingPermissions`: disable the checkbox
+  - Else: hide the checkbox
+
 ##
 Finally, after calculating all these values, the `recalculateActiveEntityState` function calls `patchState` to save the changes into the store's state.
 
 Based on this definition of the `recalculateActiveEntityState` function, we can now look at how state changes coming from the GUI are handled:
 
 ## Load a user and prepare the internal state (setActiveEntity)
-If the entity is a new user (we know this if the user has no `id` yet), AND the list of `entityPermissions` is empty, we get the default list of initial entity permissions from the function `getDefaultEntityPermissions`, which works like this:
-- If an account is selected in the sidebar, return a `read` entity permission for its `accountId`
-- Otherwise if the current application user is an internal user OR agency manager of the current agency AND no account is selected in the sidebar, return a `read` permission for the current `agencyId`
-- Otherwise, return an empty list. Of course this is not possible because an account manager must always have an account selected in the sidebar, but we handle it just in case.
+- If the entity is a new user (we know this if the user has no `id` yet), AND the list of `entityPermissions` is empty, we get the default list of initial entity permissions from the function `getDefaultEntityPermissions`, which works like this:
+  - If an account is selected in the sidebar, return a `read` entity permission for its `accountId`
+  - Otherwise if the current application user is an internal user OR agency manager of the current agency AND no account is selected in the sidebar, return a `read` permission for the current `agencyId`
+  - Otherwise, return an empty list. Of course this is not possible because an account manager must always have an account selected in the sidebar, but we handle it just in case.
+- Otherwise, we call the `cleanUpEntityPermissions` function, which makes sure that the `entityPermissions` contain only a single level of permissions (internal/agency/account). If they contain multiple levels, all permissions below the top level get removed.
 
 Then we assign the `entityPermissions` we got with the above logic to the entity, and use this to call `recalculateActiveEntityState`, with initialize attribute set to true.
 
@@ -181,7 +205,7 @@ Just call the `recalculateActiveEntityState` function without any user changes, 
 
 ## Add an account (addActiveEntityAccount)
 - If the account already exists in `entityPermissions`, return immediately.
-- Otherwise, if any accounts are selected, copy the current's selection's permissions and add them with this account's `accountId`.
+- Otherwise, if any accounts are selected, copy the current selection's permissions and add them with this account's `accountId`. If the currently logged user hasn't got some permissions on the new account, those permissions are not copied.
 - Otherwise add a `read` permission for this account's `accountId` to the list of `entityPermissions`.
 
 Prepare the `proposedSelectedAccounts` parameter so that the newly added account gets added to the current selection.
@@ -191,6 +215,7 @@ Then call `recalculateActiveEntityState` with these `entityPermissions` and `pro
 Remove all `entityPermissions` which contain an `accountId` of any account that we wish to remove and call `recalculateActiveEntityState`.
 
 ## Change the selected permissions (updateSelectedEntityPermissions)
+- If the state of any disabled or hidden checkboxes changes, throw an error
 - If the `scopeState` is `ALL_ACCOUNTS_SCOPE`:
   - For each of the selected permissions (checkbox is checked/true), add this entity permission without `accountId` and `agencyId`
 - If the scopeState is `AGENCY_SCOPE`:
