@@ -41,6 +41,7 @@ angular
         var activeEntity; // Current navigation entity (e.g. ad group)
 
         function init() {
+            handleNavigationChange();
             zemNavigationService.onUpdate($scope, handleDataUpdate);
             zemNavigationService.onBidModifierUpdate(
                 $scope,
