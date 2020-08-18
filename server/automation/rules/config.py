@@ -264,8 +264,6 @@ VALID_STRING_OPERATORS = [
     constants.Operator.NOT_EQUALS,
     constants.Operator.CONTAINS,
     constants.Operator.NOT_CONTAINS,
-    constants.Operator.STARTS_WITH,
-    constants.Operator.ENDS_WITH,
 ]
 VALID_DATE_OPERATORS = [
     constants.Operator.EQUALS,

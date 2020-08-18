@@ -398,8 +398,6 @@ class Operator(ConstantBase):
     GREATER_THAN = 4
     CONTAINS = 5
     NOT_CONTAINS = 6
-    STARTS_WITH = 7
-    ENDS_WITH = 8
 
     _VALUES = {
         EQUALS: "Is equal to",
@@ -408,8 +406,6 @@ class Operator(ConstantBase):
         GREATER_THAN: "Is greater than",
         CONTAINS: "Contains",
         NOT_CONTAINS: "Does not contain",
-        STARTS_WITH: "Starts with",
-        ENDS_WITH: "Ends with",
     }
 
 

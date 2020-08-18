@@ -342,10 +342,6 @@ export class RuleEditFormConditionComponent implements OnChanges {
                 return 'contains';
             case RuleConditionOperator.NotContains:
                 return "doesn't contain";
-            case RuleConditionOperator.StartsWith:
-                return 'starts with';
-            case RuleConditionOperator.EndsWith:
-                return 'ends with';
         }
     }
 

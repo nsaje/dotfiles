@@ -1334,8 +1334,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
@@ -1395,8 +1393,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
@@ -1456,8 +1452,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
@@ -1481,8 +1475,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
@@ -1605,8 +1597,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
@@ -1625,8 +1615,6 @@ export const RULE_CONDITIONS_OPTIONS = {
             RuleConditionOperator.NotEquals,
             RuleConditionOperator.Contains,
             RuleConditionOperator.NotContains,
-            RuleConditionOperator.StartsWith,
-            RuleConditionOperator.EndsWith,
         ],
         availableValueTypes: [
             {
