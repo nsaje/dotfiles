@@ -125,7 +125,7 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     canCreateNewAccount(): boolean {
         // TODO (msuber): deleted after User Roles will be released.
         if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return this.hasPermission('all_accounts_accounts_add_account');
+            return !arrayHelpers.isEmpty(this.state.user.agencies);
         }
         return this.state.user.entityPermissions.some(ep => {
             return (
