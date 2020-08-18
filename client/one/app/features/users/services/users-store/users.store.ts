@@ -119,8 +119,8 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     loadEntities(
         page: number,
         pageSize: number,
-        keyword: string | null = null,
-        showInternal: boolean | null = null
+        keyword: string | null,
+        showInternal: boolean | null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadUsers(

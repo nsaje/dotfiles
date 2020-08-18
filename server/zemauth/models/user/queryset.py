@@ -1,5 +1,7 @@
 from django.db import models
 
+from zemauth.features.entity_permission import Permission
+
 
 class UserQuerySet(models.QuerySet):
     def filter_by_agencies(self, agencies):
@@ -30,7 +32,9 @@ class UserQuerySet(models.QuerySet):
 
     def filter_by_internal(self):
         return self.filter(
-            models.Q(entitypermission__agency=None) & models.Q(entitypermission__account=None)
+            models.Q(entitypermission__agency=None)
+            & models.Q(entitypermission__account=None)
+            & models.Q(entitypermission__permission=Permission.USER)
         ).distinct()
 
     def filter_by_entity_permission_account(self, account):

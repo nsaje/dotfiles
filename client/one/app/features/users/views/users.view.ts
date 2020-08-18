@@ -138,7 +138,8 @@ export class UsersView implements OnInit, OnDestroy {
                 this.store.loadEntities(
                     this.paginationOptions.page,
                     this.paginationOptions.pageSize,
-                    this.keyword
+                    this.keyword,
+                    this.showInternal
                 );
             });
 
@@ -171,7 +172,8 @@ export class UsersView implements OnInit, OnDestroy {
             this.store.loadEntities(
                 this.paginationOptions.page,
                 this.paginationOptions.pageSize,
-                this.keyword
+                this.keyword,
+                this.showInternal
             );
         });
     }
