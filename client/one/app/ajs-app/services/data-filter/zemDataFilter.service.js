@@ -2,7 +2,7 @@ angular
     .module('one.services')
     .service('zemDataFilterService', function(
         $location,
-        zemPermissions,
+        zemAuthStore,
         zemPubSubService
     ) {
         // eslint-disable-line max-len
@@ -376,7 +376,7 @@ angular
             if (condition.type !== CONDITION_TYPES.value) return false;
             if (
                 condition.permissions &&
-                !zemPermissions.hasPermission(condition.permissions)
+                !zemAuthStore.hasPermission(condition.permissions)
             ) {
                 return false;
             }
@@ -393,7 +393,7 @@ angular
             if (condition.type !== CONDITION_TYPES.list) return false;
             if (
                 condition.permissions &&
-                !zemPermissions.hasPermission(condition.permissions)
+                !zemAuthStore.hasPermission(condition.permissions)
             ) {
                 return false;
             }

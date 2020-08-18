@@ -10,7 +10,7 @@ angular
         $location,
         NgRouter,
         zemNavigationService,
-        zemPermissions
+        zemAuthStore
     ) {
         // eslint-disable-line max-len
         this.init = init;
@@ -169,7 +169,7 @@ angular
             if (
                 (breakdown === constants.breakdownParam.PUBLISHERS &&
                     !isAdGroup &&
-                    !zemPermissions.hasPermission(
+                    !zemAuthStore.hasPermission(
                         'zemauth.can_see_publishers_all_levels'
                     )) ||
                 (breakdown === constants.breakdownParam.INSIGHTS &&

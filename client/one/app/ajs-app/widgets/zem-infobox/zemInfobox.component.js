@@ -11,13 +11,13 @@ angular.module('one.widgets').component('zemInfobox', {
         zemDataFilterService,
         zemEntityService,
         zemHistoryService,
-        zemPermissions,
+        zemAuthStore,
         zemUtils,
         $location,
         $window
     ) {
         var $ctrl = this;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.openHistory = openHistory;
 
         var entityUpdateHandler;

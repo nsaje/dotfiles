@@ -23,7 +23,7 @@ angular
         zemUtils,
         $location,
         zemGridConstants,
-        zemPermissions,
+        zemAuthStore,
         NgRouter,
         NgZone
     ) {
@@ -104,7 +104,7 @@ angular
                 breakdown === constants.breakdown.CAMPAIGN
             ) {
                 buttons.push(BUTTONS.settings);
-                if (zemPermissions.hasPermission('zemauth.can_clone_campaigns')) {
+                if (zemAuthStore.hasPermission('zemauth.can_clone_campaigns')) {
                     buttons.push(BUTTONS.clone);
                 }
                 addArchiveUnarchive();

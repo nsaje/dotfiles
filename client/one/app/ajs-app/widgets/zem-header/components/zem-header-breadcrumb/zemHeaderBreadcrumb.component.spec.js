@@ -1,23 +1,22 @@
 describe('component: zemHeaderBreadcrumb', function() {
     var $document;
     var $componentController;
-    var zemPermissions;
+    var zemAuthStore;
     var ctrl;
     var zemNavigationNewService;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
     beforeEach(inject(function(
         _$document_,
         _$componentController_,
         _zemNavigationNewService_,
-        _zemPermissions_
+        _zemAuthStore_
     ) {
         $document = _$document_;
         $componentController = _$componentController_;
-        zemPermissions = _zemPermissions_;
+        zemAuthStore = _zemAuthStore_;
         zemNavigationNewService = _zemNavigationNewService_;
 
         var locals = {zemNavigationNewService: zemNavigationNewService};
@@ -47,7 +46,7 @@ describe('component: zemHeaderBreadcrumb', function() {
             callback(null);
             expect($document[0].title).toEqual('My accounts | Zemanta');
 
-            zemPermissions.setMockedPermissions('zemauth.can_see_all_accounts');
+            zemAuthStore.setMockedPermissions('zemauth.can_see_all_accounts');
             callback(null);
             expect($document[0].title).toEqual('All accounts | Zemanta');
 

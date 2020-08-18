@@ -7,12 +7,14 @@ angular.module('one.widgets').component('zemFilterSelector', {
         $timeout,
         zemFilterSelectorService,
         zemFilterSelectorSharedService,
-        zemPermissions
+        zemAuthStore
     ) {
         // eslint-disable-line max-len
         var $ctrl = this;
 
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
         $ctrl.isExpanded = zemFilterSelectorSharedService.isSelectorExpanded;
         $ctrl.removeCondition = zemFilterSelectorService.removeAppliedCondition;
         $ctrl.clearFilter = zemFilterSelectorService.resetAllConditions;

@@ -22,7 +22,7 @@
     <div
         class="zem-inventory-planning__export-container"
         *ngIf="
-            zemPermissions.hasPermission(
+            authStore.hasPermission(
                 'zemauth.can_use_advanced_inventory_planning_features'
             )
         "

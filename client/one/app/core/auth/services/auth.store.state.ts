@@ -1,4 +1,5 @@
 import {User} from '../../users/types/user';
+import {RequestState} from '../../../shared/types/request-state';
 
 export class AuthStoreState {
     user: User = {
@@ -18,4 +19,7 @@ export class AuthStoreState {
     };
     permissions: string[] = null;
     internalPermissions: string[] = null;
+    requests = {
+        current: {} as RequestState,
+    };
 }

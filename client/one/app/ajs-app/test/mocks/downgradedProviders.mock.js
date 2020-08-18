@@ -136,4 +136,74 @@ angular
             });
             return breakdownParams;
         };
+    })
+    .service('zemAuthStore', function() {
+        this.getCurrentUser = getCurrentUser;
+        this.hasPermission = hasPermission;
+        this.isPermissionInternal = isPermissionInternal;
+        this.hasAgencyScope = angular.noop;
+        this.hasEntityPermission = hasEntityPermission;
+        this.setMockedCurrentUser = setMockedCurrentUser;
+        this.setMockedPermissions = setMockedPermissions;
+        this.setMockedInternalPermissions = setMockedInternalPermissions;
+        this.setMockedEntityPermissions = setMockedEntityPermissions;
+
+        var mockedCurrentUser = {};
+        var mockedPermissions = [];
+        var mockedInternalPermissions = [];
+        var mockedEntityPermissions = [];
+
+        function getCurrentUser() {
+            return mockedCurrentUser;
+        }
+
+        function hasPermission(permission) {
+            if (!mockedPermissions.length) return false;
+
+            var permissions;
+            if (typeof permission === 'string') permissions = [permission];
+            if (permission instanceof Array) permissions = permission;
+
+            return permissions.every(function(p) {
+                return mockedPermissions.indexOf(p) >= 0;
+            });
+        }
+
+        function isPermissionInternal(permission) {
+            return mockedInternalPermissions.indexOf(permission) >= 0;
+        }
+
+        function setMockedCurrentUser(user) {
+            mockedCurrentUser = user;
+        }
+
+        function setMockedPermissions(permissions) {
+            mockedPermissions = permissions;
+        }
+
+        function setMockedInternalPermissions(permissions) {
+            mockedInternalPermissions = permissions;
+        }
+
+        function setMockedEntityPermissions(entityPermissions) {
+            mockedEntityPermissions = entityPermissions;
+        }
+
+        function hasEntityPermission(
+            agencyId,
+            accountId,
+            permission,
+            fallbackPermission
+        ) {
+            if (!hasPermission('zemauth.fea_use_entity_permission')) {
+                return hasPermission(fallbackPermission);
+            }
+            return mockedEntityPermissions.some(function(ep) {
+                return (
+                    [agencyId, null].includes(ep.agencyId) &&
+                    [accountId, null].includes(ep.accountId) &&
+                    ep.permission === permission
+                );
+            });
+        }
     });

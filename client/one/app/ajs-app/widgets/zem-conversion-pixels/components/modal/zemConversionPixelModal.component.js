@@ -4,10 +4,12 @@ angular.module('one.widgets').component('zemConversionPixelModal', {
         close: '&',
     },
     template: require('./zemConversionPixelModal.component.html'),
-    controller: function($rootScope, zemPermissions) {
+    controller: function($rootScope, zemAuthStore) {
         var $ctrl = this;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
 
         $ctrl.submit = submit;
         $ctrl.cancel = cancel;

@@ -6,7 +6,6 @@ import {
     OnInit,
     OnDestroy,
     HostBinding,
-    Inject,
     ViewChild,
 } from '@angular/core';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
@@ -50,8 +49,7 @@ export class RulesView implements OnInit, OnDestroy {
     constructor(
         public store: RulesStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,

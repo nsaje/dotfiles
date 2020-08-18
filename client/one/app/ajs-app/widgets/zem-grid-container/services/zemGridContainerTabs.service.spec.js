@@ -8,10 +8,10 @@ describe('component: zemGridContainerTabsService', function() {
     var service;
 
     beforeEach(angular.mock.module('one.widgets'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
-    beforeEach(inject(function(zemGridContainerTabsService, zemPermissions) {
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
+    beforeEach(inject(function(zemGridContainerTabsService, zemAuthStore) {
         service = zemGridContainerTabsService;
-        zemPermissions.setMockedPermissions([
+        zemAuthStore.setMockedPermissions([
             'zemauth.can_see_publishers_all_levels',
             'zemauth.can_use_placement_targeting',
             'zemauth.can_see_top_level_delivery_breakdowns',

@@ -1,11 +1,8 @@
 angular
     .module('one.widgets')
     .service('zemChartEndpoint', function(
-        $q,
         $http,
         zemUtils,
-        zemPermissions,
-        zemChartMetricsService,
         zemChartMetaDataService
     ) {
         // eslint-disable-line max-len

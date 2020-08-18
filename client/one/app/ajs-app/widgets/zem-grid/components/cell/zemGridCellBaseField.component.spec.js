@@ -1,5 +1,5 @@
 describe('zemGridCellBaseField', function() {
-    var scope, element, $compile, zemGridConstants, zemPermissions;
+    var scope, element, $compile, zemGridConstants, zemAuthStore;
 
     var template =
         '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-base-field>'; // eslint-disable-line max-len
@@ -12,12 +12,12 @@ describe('zemGridCellBaseField', function() {
         $rootScope,
         _$compile_,
         _zemGridConstants_,
-        _zemPermissions_
+        _zemAuthStore_
     ) {
         $compile = _$compile_;
         zemGridConstants = _zemGridConstants_;
-        zemPermissions = _zemPermissions_;
-        zemPermissions.hasPermission = function() {
+        zemAuthStore = _zemAuthStore_;
+        zemAuthStore.hasPermission = function() {
             return true;
         };
 

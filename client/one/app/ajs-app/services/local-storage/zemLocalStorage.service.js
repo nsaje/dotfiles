@@ -1,11 +1,10 @@
 angular
     .module('one.services')
-    .factory('zemLocalStorageService', function(zemUserService) {
+    .factory('zemLocalStorageService', function(zemAuthStore) {
         function getKey(key, namespace) {
             // FIXME: Some tests fails, because current().id throws error, since there is not current user configured
-            var id = zemUserService.current()
-                ? zemUserService.current().id
-                : undefined;
+            var user = zemAuthStore.getCurrentUser();
+            var id = user ? user.id : undefined;
             var components = ['oneApp', id];
 
             if (namespace) {

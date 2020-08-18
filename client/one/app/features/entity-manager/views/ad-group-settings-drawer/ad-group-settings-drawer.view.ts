@@ -3,7 +3,6 @@ import './ad-group-settings-drawer.view.less';
 import {
     AfterViewInit,
     Component,
-    Inject,
     Input,
     OnDestroy,
     OnInit,
@@ -29,6 +28,7 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ImageCheckboxInputGroupItem} from '../../../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
 import {Router} from '@angular/router';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -56,9 +56,9 @@ export class AdGroupSettingsDrawerView
 
     constructor(
         public store: AdGroupSettingsStore,
+        public authStore: AuthStore,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemPermissions') public zemPermissions: any
+        private changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit() {

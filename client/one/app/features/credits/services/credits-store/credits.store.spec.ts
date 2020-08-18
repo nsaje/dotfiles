@@ -15,11 +15,12 @@ import * as mockHelpers from '../../../../testing/mock.helpers';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {CreditStatus, Currency} from '../../../../app.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('CreditsLibraryStore', () => {
     let creditsServiceStub: jasmine.SpyObj<CreditsService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: CreditsStore;
     let mockedCreditTotals: CreditTotal[];
     let mockedActiveCredits: Credit[];
@@ -45,13 +46,13 @@ describe('CreditsLibraryStore', () => {
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
         store = new CreditsStore(
             creditsServiceStub,
             accountsServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
 
         mockedAgencyId = '71';

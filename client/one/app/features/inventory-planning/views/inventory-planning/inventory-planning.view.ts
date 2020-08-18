@@ -3,7 +3,6 @@ import './inventory-planning.view.less';
 import {
     Component,
     OnInit,
-    Inject,
     OnDestroy,
     ChangeDetectionStrategy,
     HostBinding,
@@ -19,6 +18,7 @@ import {InventoryPlanningEndpoint} from '../../services/inventory-planning.endpo
 import {PostAsGetRequestService} from '../../../../core/post-as-get-request/post-as-get-request.service';
 import * as requestPayloadHelpers from '../../helpers/request-payload.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 const FILTER_URL_PARAMS = [
     'countries',
@@ -42,10 +42,10 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
 
     constructor(
         public store: InventoryPlanningStore,
+        public authStore: AuthStore,
         private postAsGetRequestService: PostAsGetRequestService,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {}
 
     ngOnInit() {

@@ -41,7 +41,7 @@ angular
         $q,
         $timeout,
         $scope,
-        zemPermissions
+        zemAuthStore
     ) {
         // eslint-disable-line max-len
         var vm = this;
@@ -58,7 +58,7 @@ angular
         vm.MAX_LABEL_LENGTH = 256;
 
         vm.videoAssetStatus = constants.videoAssetStatus;
-        vm.hasPermission = zemPermissions.hasPermission;
+        vm.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
 
         vm.adType = constants.adType;
         vm.adSizes = options.adSizes;

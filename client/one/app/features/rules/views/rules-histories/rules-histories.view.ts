@@ -6,7 +6,6 @@ import {
     OnInit,
     OnDestroy,
     HostBinding,
-    Inject,
 } from '@angular/core';
 import {Subject} from 'rxjs';
 import {takeUntil, filter} from 'rxjs/operators';
@@ -52,8 +51,7 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
     constructor(
         public store: RulesHistoriesStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,

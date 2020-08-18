@@ -7,7 +7,6 @@ import {
     HostBinding,
     OnDestroy,
     ViewChild,
-    Inject,
 } from '@angular/core';
 import {ActivatedRoute, ParamMap, Router} from '@angular/router';
 import {Subject} from 'rxjs';
@@ -26,6 +25,7 @@ import {
 } from '../../credits.config';
 import {CreditStatus} from '../../../../app.constants';
 import {CreditGridType} from '../../credits.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-credits-view',
@@ -62,9 +62,9 @@ export class CreditsView implements OnInit, OnDestroy {
 
     constructor(
         public store: CreditsStore,
+        public authStore: AuthStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,

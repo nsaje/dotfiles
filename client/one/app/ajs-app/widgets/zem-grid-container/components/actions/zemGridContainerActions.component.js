@@ -8,7 +8,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
     },
     controller: function(
         $scope,
-        zemPermissions,
+        zemAuthStore,
         zemNavigationNewService,
         zemGridActionsService,
         zemGridConstants
@@ -95,7 +95,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function canCreateNewAccount() {
             return (
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.all_accounts_accounts_add_account'
                 ) || $ctrl.level !== constants.level.ALL_ACCOUNTS
             );
@@ -120,7 +120,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         function isAddToPublishersAndPlacementsButtonVisible() {
             return (
                 areGridPublisherAndPlacementActionsVisible() &&
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_see_add_to_pub_plac_button'
                 )
             );
@@ -131,7 +131,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function isCreateAdGroupSourceActionVisible() {
-            if (zemPermissions.hasPermission('zemauth.disable_public_rcs')) {
+            if (zemAuthStore.hasPermission('zemauth.disable_public_rcs')) {
                 return false;
             }
             return (
@@ -144,7 +144,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         function isGridExportVisible() {
             return (
                 $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                !zemPermissions.hasPermission(
+                !zemAuthStore.hasPermission(
                     'zemauth.can_see_new_report_schedule'
                 )
             );
@@ -153,11 +153,11 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         function isReportDropdownVisible() {
             return (
                 ($ctrl.breakdown === constants.breakdown.PUBLISHER &&
-                    zemPermissions.hasPermission(
+                    zemAuthStore.hasPermission(
                         'zemauth.can_access_publisher_reports'
                     )) ||
                 ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                    zemPermissions.hasPermission(
+                    zemAuthStore.hasPermission(
                         'zemauth.can_see_new_report_schedule'
                     ))
             );
@@ -194,7 +194,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function areDeliveryBidModifierActionsVisible() {
             return (
-                zemPermissions.hasPermission('zemauth.can_set_bid_modifiers') &&
+                zemAuthStore.hasPermission('zemauth.can_set_bid_modifiers') &&
                 ($ctrl.breakdown === constants.breakdown.CONTENT_AD ||
                     $ctrl.breakdown === constants.breakdown.COUNTRY ||
                     $ctrl.breakdown === constants.breakdown.STATE ||
@@ -207,7 +207,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function areSourceBidModifierActionsVisible() {
             return (
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_set_source_bid_modifiers'
                 ) && $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
             );
@@ -216,7 +216,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         function areRuleActionsVisible() {
             return (
                 $ctrl.entity &&
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.fea_can_create_automation_rules'
                 ) &&
                 ($ctrl.entity.type === constants.entityType.ACCOUNT ||

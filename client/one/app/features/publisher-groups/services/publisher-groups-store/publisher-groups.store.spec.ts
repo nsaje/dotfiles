@@ -10,11 +10,12 @@ import * as clone from 'clone';
 import {PublisherGroupsStoreState} from './publisher-groups.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('PublisherGroupsStore', () => {
     let publisherGroupsServiceStub: jasmine.SpyObj<PublisherGroupsService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: PublisherGroupsStore;
     let mockedPublisherGroups: PublisherGroup[];
     let mockedPublisherGroupConnection: PublisherGroupConnection;
@@ -37,14 +38,14 @@ describe('PublisherGroupsStore', () => {
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
 
         store = new PublisherGroupsStore(
             publisherGroupsServiceStub,
             accountsServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
 
         mockedPublisherGroups = [

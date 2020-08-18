@@ -9,12 +9,14 @@ angular.module('one.widgets').component('zemConversionPixels', {
     controller: function(
         $scope,
         $uibModal,
-        zemPermissions,
+        zemAuthStore,
         zemConversionPixelsStateService
     ) {
         var $ctrl = this;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
 
         $ctrl.$onInit = function() {
             $ctrl.stateService = zemConversionPixelsStateService.getInstance(

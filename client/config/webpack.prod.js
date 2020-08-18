@@ -67,6 +67,10 @@ function generateMainConfig(appEnvironment) {
             new OptimizeCSSAssetsPlugin({}),
             new TerserPlugin({
                 sourceMap: true,
+                terserOptions: {
+                    keep_fnames: true,
+                    keep_classnames: true,
+                },
             }),
         ],
         splitChunks: {

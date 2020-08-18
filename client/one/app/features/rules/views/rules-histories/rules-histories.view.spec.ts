@@ -15,18 +15,18 @@ import {EntitiesUpdatesService} from '../../../../core/entities/services/entitie
 import {RulesHistoriesFiltersComponent} from '../../components/rules-histories-filters/rules-histories-filters.component';
 import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroupEndpoint} from '../../../../core/entities/services/ad-group/ad-group.endpoint';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('RulesView', () => {
     let component: RulesHistoriesView;
     let fixture: ComponentFixture<RulesHistoriesView>;
-
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-            hasPermission: () => noop,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasAgencyScope',
+            'hasPermission',
+        ]);
 
         TestBed.configureTestingModule({
             declarations: [
@@ -46,8 +46,8 @@ describe('RulesView', () => {
                 AdGroupService,
                 AdGroupEndpoint,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
                 {
                     provide: ActivatedRoute,

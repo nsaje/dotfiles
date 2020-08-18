@@ -15,15 +15,17 @@ angular.module('one.common').component('zemRetargeting', {
         onUpdate: '&',
     },
     template: require('./zemRetargeting.component.html'),
-    controller: function(config, zemPermissions) {
+    controller: function(config, zemAuthStore) {
         var AD_GROUP_TARGETING = 'adGroupTargeting';
         var AUDIENCE_TARGETING = 'audienceTargeting';
 
         var $ctrl = this;
 
         $ctrl.config = config;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
 
         $ctrl.texts = {
             selectedIncludedTitle: 'Included Audiences',

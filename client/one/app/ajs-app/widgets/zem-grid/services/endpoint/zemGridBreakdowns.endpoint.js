@@ -1,6 +1,6 @@
 angular
     .module('one.widgets')
-    .factory('zemGridEndpointBreakdowns', function(zemPermissions, zemUtils) {
+    .factory('zemGridEndpointBreakdowns', function(zemAuthStore, zemUtils) {
         var BASE_LEVEL_GROUP_NAME = 'Base level';
         var STRUCTURE_GROUP_NAME = 'By structure';
         var DELIVERY_GROUP_NAME = 'By delivery';
@@ -307,10 +307,10 @@ angular
 
             // Delivery breakdown group
             breakdownGroups.delivery = {
-                available: zemPermissions.hasPermission(
+                available: zemAuthStore.hasPermission(
                     'zemauth.can_view_breakdown_by_delivery'
                 ),
-                internal: zemPermissions.isPermissionInternal(
+                internal: zemAuthStore.isPermissionInternal(
                     'zemauth.can_view_breakdown_by_delivery'
                 ),
                 name: DELIVERY_GROUP_NAME,
@@ -333,11 +333,11 @@ angular
                 var brCopy = angular.copy(br);
                 brCopy.internal = zemUtils.convertPermission(
                     br.internal,
-                    zemPermissions.isPermissionInternal
+                    zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
                 brCopy.shown = zemUtils.convertPermission(
                     br.shown,
-                    zemPermissions.hasPermission
+                    zemAuthStore.hasPermission.bind(zemAuthStore)
                 );
 
                 copy.push(brCopy);

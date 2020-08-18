@@ -1,7 +1,7 @@
 angular
     .module('one.widgets')
     .factory('zemChartMetricsService', function(
-        zemPermissions,
+        zemAuthStore,
         zemNavigationNewService,
         zemUtils
     ) {
@@ -727,12 +727,12 @@ angular
             metrics.forEach(function(metric) {
                 metric.internal = zemUtils.convertPermission(
                     metric.internal,
-                    zemPermissions.isPermissionInternal
+                    zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
                 metric.shown = zemUtils.convertPermission(
                     metric.shown,
-                    zemPermissions.hasPermission
+                    zemAuthStore.hasPermission.bind(zemAuthStore)
                 );
             });
         }

@@ -1,41 +1,21 @@
 angular
     .module('one.services')
     .service('zemUserService', function(zemPubSubService, zemUserEndpoint) {
-        var currentUser = null;
         var pubsub = zemPubSubService.createInstance();
         var EVENTS = {
             ON_USER_CREATED: 'zem-user-created',
             ON_USER_REMOVED: 'zem-user-removed',
-            ON_CURRENT_USER_UPDATED: 'zem-user-current-updated',
         };
 
         //
         // Public API
         //
-        this.init = init;
         this.list = list;
         this.create = create;
         this.remove = remove;
-        this.current = current;
 
         this.onUserCreated = onUserCreated;
         this.onUserRemoved = onUserRemoved;
-        this.onCurrentUserUpdated = onCurrentUserUpdated;
-
-        //
-        // Internal
-        //
-        function init() {
-            return zemUserEndpoint.current().then(function(user) {
-                currentUser = user;
-                pubsub.notify(EVENTS.ON_CURRENT_USER_UPDATED, user);
-                // Configure Raven/Sentry user context
-                window.Raven.setUserContext({
-                    username: user.name,
-                    email: user.email,
-                });
-            });
-        }
 
         function list(accountId) {
             return zemUserEndpoint.list(accountId);
@@ -63,22 +43,15 @@ angular
                 });
         }
 
-        function current() {
-            return currentUser;
-        }
-
         //
         // Listener functionality
         //
+
         function onUserCreated(callback) {
             return pubsub.register(EVENTS.ON_USER_CREATED, callback);
         }
 
         function onUserRemoved(callback) {
             return pubsub.register(EVENTS.ON_USER_REMOVED, callback);
-        }
-
-        function onCurrentUserUpdated(callback) {
-            return pubsub.register(EVENTS.ON_CURRENT_USER_UPDATED, callback);
         }
     });

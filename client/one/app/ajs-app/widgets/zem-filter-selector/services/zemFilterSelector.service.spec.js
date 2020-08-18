@@ -7,7 +7,7 @@ describe('zemFilterSelectorService', function() {
     var $httpBackend;
     var zemFilterSelectorService;
     var zemDataFilterService;
-    var zemPermissions;
+    var zemAuthStore;
     var zemMediaSourcesService;
     var zemAgenciesService;
     var mockedNgRouter;
@@ -23,19 +23,18 @@ describe('zemFilterSelectorService', function() {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
 
     beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;
         $httpBackend = $injector.get('$httpBackend');
         zemFilterSelectorService = $injector.get('zemFilterSelectorService');
         zemDataFilterService = $injector.get('zemDataFilterService');
-        zemPermissions = $injector.get('zemPermissions');
+        zemAuthStore = $injector.get('zemAuthStore');
         zemMediaSourcesService = $injector.get('zemMediaSourcesService');
         zemAgenciesService = $injector.get('zemAgenciesService');
         mockedNgRouter = $injector.get('NgRouter');
 
-        zemPermissions.setMockedPermissions([
+        zemAuthStore.setMockedPermissions([
             'zemauth.can_filter_by_agency',
             'zemauth.can_filter_by_account_type',
             'zemauth.can_see_publisher_blacklist_status',
@@ -58,7 +57,7 @@ describe('zemFilterSelectorService', function() {
     });
 
     it('should exclude section from visible sections if user has no permission to see it', function() {
-        zemPermissions.setMockedPermissions([]);
+        zemAuthStore.setMockedPermissions([]);
 
         var visibleConditions = getVisibleConditions();
         expect(

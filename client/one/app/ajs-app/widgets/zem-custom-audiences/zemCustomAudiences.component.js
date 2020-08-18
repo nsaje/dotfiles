@@ -8,12 +8,14 @@ angular.module('one.widgets').component('zemCustomAudiences', {
     controller: function(
         $scope,
         $uibModal,
-        zemPermissions,
+        zemAuthStore,
         zemCustomAudiencesStateService
     ) {
         var $ctrl = this;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
 
         $ctrl.tooltipText = tooltipText;
         $ctrl.openAudienceModal = openAudienceModal;

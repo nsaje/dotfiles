@@ -14,11 +14,12 @@ import {
     TimeRange,
     RuleState,
 } from '../../../../core/rules/rules.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('RulesLibraryStore', () => {
     let rulesServiceStub: jasmine.SpyObj<RulesService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: RulesStore;
     let mockedRules: Rule[];
     let mockedAgencyId: string;
@@ -36,13 +37,13 @@ describe('RulesLibraryStore', () => {
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
         store = new RulesStore(
             rulesServiceStub,
             accountsServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
         mockedRules = [
             {

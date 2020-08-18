@@ -5,13 +5,13 @@ angular.module('one.widgets').component('zemAccessPermissions', {
         account: '<',
     },
     template: require('./zemAccessPermissions.component.html'),
-    controller: function(zemPermissions, zemAccessPermissionsStateService) {
+    controller: function(zemAuthStore, zemAccessPermissionsStateService) {
         // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.createUserData = {};
 
-        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.create = create;
 
         $ctrl.$onInit = function() {

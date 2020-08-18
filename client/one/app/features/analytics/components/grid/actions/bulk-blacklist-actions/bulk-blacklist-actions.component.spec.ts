@@ -14,12 +14,13 @@ import {
     PublisherTargetingStatus,
 } from '../../../../../../app.constants';
 import {BulkBlacklistActionsStore} from './services/bulk-blacklist-actions.store';
+import {AuthStore} from '../../../../../../core/auth/services/auth.store';
 
 describe('BulkBlacklistActionsComponent', () => {
     let storeStub: jasmine.SpyObj<BulkBlacklistActionsStore>;
     let component: BulkBlacklistActionsComponent;
     let fixture: ComponentFixture<BulkBlacklistActionsComponent>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     let hasGlobalBlacklistPermission: boolean;
 
@@ -92,34 +93,44 @@ describe('BulkBlacklistActionsComponent', () => {
                 resolve(true);
             })
         );
-        zemPermissionsStub = {
-            hasPermission: (permission: string) => {
-                if (
-                    permission ===
-                    'zemauth.can_access_global_publisher_blacklist_status'
-                ) {
-                    return hasGlobalBlacklistPermission;
-                } else {
-                    return true;
-                }
-            },
-        };
+
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, ['hasPermission']);
+        authStoreStub.hasPermission.and.callFake(permission => {
+            if (
+                permission ===
+                'zemauth.can_access_global_publisher_blacklist_status'
+            ) {
+                return hasGlobalBlacklistPermission;
+            } else {
+                return true;
+            }
+        });
         TestBed.configureTestingModule({
             declarations: [BulkBlacklistActionsComponent],
             imports: [SharedModule, PublishersModule],
             providers: [
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
             ],
-        });
+        })
+            .overrideComponent(BulkBlacklistActionsComponent, {
+                set: {
+                    providers: [
+                        {
+                            provide: BulkBlacklistActionsStore,
+                            useValue: storeStub,
+                        },
+                    ],
+                },
+            })
+            .compileComponents();
     });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(BulkBlacklistActionsComponent);
         component = fixture.componentInstance;
-        component.store = storeStub;
         hasGlobalBlacklistPermission = true;
         component.ngOnInit();
     });

@@ -3,16 +3,16 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../../../../shared/shared.module';
 import {AttributionColumnPickerComponent} from './attribution-column-picker.component';
 import {AttributionLoockbackWindowPickerComponent} from '../attribution-lookback-window-picker/attribution-lookback-window-picker.component';
+import {AuthStore} from '../../../../../../../core/auth/services/auth.store';
 
 describe('AttributionColumnPickerComponent', () => {
     let component: AttributionColumnPickerComponent;
     let fixture: ComponentFixture<AttributionColumnPickerComponent>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasPermission: () => '',
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, ['hasPermission']);
+        authStoreStub.hasPermission.and.returnValue(true);
         TestBed.configureTestingModule({
             declarations: [
                 AttributionColumnPickerComponent,
@@ -21,8 +21,8 @@ describe('AttributionColumnPickerComponent', () => {
             imports: [FormsModule, SharedModule],
             providers: [
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
             ],
         });

@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
         api: '<',
     },
     template: require('./zemReportDropdown.component.html'),
-    controller: function($uibModal, zemPermissions) {
+    controller: function($uibModal, zemAuthStore) {
         var $ctrl = this;
 
         //
@@ -19,9 +19,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
                 hasPermission: true,
             },
         ];
-        if (
-            zemPermissions.hasPermission('zemauth.can_see_new_report_schedule')
-        ) {
+        if (zemAuthStore.hasPermission('zemauth.can_see_new_report_schedule')) {
             $ctrl.actions.push({
                 name: 'Schedule',
                 value: 'schedule',

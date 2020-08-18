@@ -1,8 +1,6 @@
 angular
     .module('one.widgets')
     .service('zemChartService', function(
-        zemPermissions,
-        zemDataFilterService,
         zemChartDataService,
         zemChartEndpoint
     ) {

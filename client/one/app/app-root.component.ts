@@ -15,6 +15,7 @@ import {Subject} from 'rxjs';
 import {GoogleAnalyticsService} from './core/google-analytics/google-analytics.service';
 import {MixpanelService} from './core/mixpanel/mixpanel.service';
 import {EventManager} from '@angular/platform-browser';
+import {AuthStore} from './core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-app-root',
@@ -34,6 +35,7 @@ export class AppRootComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
+        private authStore: AuthStore,
         private googleAnalyticsService: GoogleAnalyticsService,
         private mixpanelService: MixpanelService,
         @Inject('zemInitializationService')
@@ -42,11 +44,14 @@ export class AppRootComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.zemInitializationService.initApp().then(() => {
-            this.googleAnalyticsService.init();
-            this.mixpanelService.init();
-            this.isInitialized = true;
-            this.changeDetectorRef.markForCheck();
+        this.authStore.initStore().then((success: boolean) => {
+            if (success) {
+                this.zemInitializationService.initApp();
+                this.googleAnalyticsService.init();
+                this.mixpanelService.init();
+                this.isInitialized = true;
+                this.changeDetectorRef.markForCheck();
+            }
         });
 
         this.router.events

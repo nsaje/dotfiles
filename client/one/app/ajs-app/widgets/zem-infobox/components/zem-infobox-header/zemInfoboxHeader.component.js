@@ -12,7 +12,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         NgRouter,
         zemEntityService,
         zemNavigationService,
-        zemPermissions
+        zemAuthStore
     ) {
         // eslint-disable-line max-len
         var $ctrl = this;
@@ -64,7 +64,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         function getLevelFromEntity(entity) {
             if (!commonHelpers.isDefined(entity)) {
                 if (
-                    zemPermissions.hasPermission('zemauth.can_see_all_accounts')
+                    zemAuthStore.hasPermission('zemauth.can_see_all_accounts')
                 ) {
                     return 'All accounts';
                 }

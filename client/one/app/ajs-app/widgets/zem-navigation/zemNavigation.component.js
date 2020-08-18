@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemNavigation', {
         $scope,
         $element,
         $timeout,
-        zemPermissions,
+        zemAuthStore,
         zemNavigationUtils,
         zemNavigationNewService,
         zemDataFilterService,
@@ -31,7 +31,7 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
-        $ctrl.showAgency = zemPermissions.hasPermission(
+        $ctrl.showAgency = zemAuthStore.hasPermission(
             'zemauth.can_filter_by_agency'
         );
 

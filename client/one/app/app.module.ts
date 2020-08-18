@@ -105,11 +105,6 @@ if (APP_CONFIG.env.prod) {
             deps: ['$injector'],
         },
         {
-            provide: 'zemPermissions',
-            useFactory: ajs$zemPermissions,
-            deps: ['$injector'],
-        },
-        {
             provide: 'zemNavigationService',
             useFactory: ajs$zemNavigationService,
             deps: ['$injector'],
@@ -145,10 +140,6 @@ export class AppModule {}
 
 function ajs$scope($injector: any) {
     return $injector.get('$rootScope');
-}
-
-function ajs$zemPermissions($injector: any) {
-    return $injector.get('zemPermissions');
 }
 
 function ajs$zemNavigationService($injector: any) {

@@ -17,6 +17,7 @@ import {ScopeSelectorState} from '../../../../shared/components/scope-selector/s
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {RequestState} from '../../../../shared/types/request-state';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
@@ -28,7 +29,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
     constructor(
         private publisherGroupsService: PublisherGroupsService,
         private accountsService: AccountService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new PublisherGroupsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -86,7 +87,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                                 ...this.state,
                                 agencyId: agencyId,
                                 accountId: accountId,
-                                hasAgencyScope: this.zemPermissions.hasAgencyScope(
+                                hasAgencyScope: this.authStore.hasAgencyScope(
                                     agencyId
                                 ),
                                 explicitEntities: values[0],

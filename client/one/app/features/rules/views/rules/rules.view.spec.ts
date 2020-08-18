@@ -19,18 +19,18 @@ import {RuleEditFormConditionComponent} from '../../components/rule-edit-form-co
 import {RuleEditFormConditionModifierComponent} from '../../components/rule-edit-form-condition-modifier/rule-edit-form-condition-modifier.component';
 import {RuleEditFormNotificationComponent} from '../../components/rule-edit-form-notification/rule-edit-form-notification.component';
 import {RuleEditFormConditionsComponent} from '../../components/rule-edit-form-conditions/rule-edit-form-conditions.component';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('RulesView', () => {
     let component: RulesView;
     let fixture: ComponentFixture<RulesView>;
-
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-            hasPermission: () => noop,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasAgencyScope',
+            'hasPermission',
+        ]);
 
         TestBed.configureTestingModule({
             declarations: [
@@ -54,8 +54,8 @@ describe('RulesView', () => {
                 RulesService,
                 RulesEndpoint,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
                 {
                     provide: ActivatedRoute,

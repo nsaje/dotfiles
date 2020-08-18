@@ -4,7 +4,7 @@ angular
         zemScheduledReportsEndpoint,
         $q,
         $timeout,
-        zemPermissions,
+        zemAuthStore,
         zemReportScheduleService
     ) {
         // eslint-disable-line max-len
@@ -37,7 +37,7 @@ angular
                     .list(account)
                     .then(function(data) {
                         if (
-                            zemPermissions.hasPermission(
+                            zemAuthStore.hasPermission(
                                 'zemauth.can_see_new_report_schedule'
                             )
                         ) {

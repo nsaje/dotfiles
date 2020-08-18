@@ -1,4 +1,4 @@
-import {Injectable, OnDestroy, Inject} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
 import {Store} from 'rxjs-observable-store';
@@ -17,6 +17,7 @@ import {AccountService} from '../../../../core/entities/services/account/account
 import {Account} from '../../../../core/entities/types/account/account';
 import {Source} from '../../../../core/sources/types/source';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
@@ -29,7 +30,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
         private dealsService: DealsService,
         private sourcesService: SourcesService,
         private accountsService: AccountService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new DealsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -63,9 +64,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                         ...this.state,
                         agencyId: agencyId,
                         accountId: accountId,
-                        hasAgencyScope: this.zemPermissions.hasAgencyScope(
-                            agencyId
-                        ),
+                        hasAgencyScope: this.authStore.hasAgencyScope(agencyId),
                         entities: values[0],
                         sources: values[1],
                         accounts: values[2],

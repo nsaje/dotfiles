@@ -3,7 +3,6 @@ import './account-settings-drawer.view.less';
 import {
     Component,
     Input,
-    Inject,
     AfterViewInit,
     OnInit,
     OnDestroy,
@@ -22,6 +21,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {Router} from '@angular/router';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-account-settings-drawer',
@@ -45,9 +45,9 @@ export class AccountSettingsDrawerView
 
     constructor(
         public store: AccountSettingsStore,
+        public authStore: AuthStore,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemPermissions') public zemPermissions: any
+        private changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit(): void {

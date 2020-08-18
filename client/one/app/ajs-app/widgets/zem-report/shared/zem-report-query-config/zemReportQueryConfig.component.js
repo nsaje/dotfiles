@@ -12,9 +12,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         zemReportBreakdownService,
         zemReportFieldsService,
         zemCostModeService,
-        zemUserService,
-        zemLocalStorageService,
-        zemPermissions
+        zemAuthStore,
+        zemLocalStorageService
     ) {
         var $ctrl = this;
 
@@ -31,8 +30,10 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         //
         // Public API
         //
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
         $ctrl.onCsvSeparatorOtherChanged = onCsvSeparatorOtherChanged;
         $ctrl.onColumnToggled = onColumnToggled;
         $ctrl.onColumnsToggled = onColumnsToggled;
@@ -95,7 +96,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
             if (
                 $ctrl.view === 'Account' &&
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_request_accounts_report_in_local_currencies'
                 )
             ) {
@@ -104,7 +105,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
             if (
                 $ctrl.view === 'Account' &&
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_include_credit_refunds_in_report'
                 )
             ) {
@@ -112,7 +113,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             }
 
             if (
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_include_tags_in_reports'
                 )
             ) {
@@ -130,7 +131,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         };
 
         function initializeCsvOptions() {
-            var user = zemUserService.current();
+            var user = zemAuthStore.getCurrentUser();
             var localCsvSeparator = zemLocalStorageService.get(
                 KEY_CSV_SEPARATOR,
                 LOCAL_STORAGE_NAMESPACE

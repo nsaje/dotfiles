@@ -32,12 +32,12 @@ import {
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
-import {NotificationService} from '../../../../core/notification/services/notification.service';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {PageSizeConfig} from '../../../../shared/components/smart-grid/types/page-size-config';
 import {PublisherGroupsStoreState} from '../../services/publisher-groups-store/publisher-groups.store.state';
 import {RequestState} from '../../../../shared/types/request-state';
 import {PaginationState} from '../../../../shared/components/smart-grid/types/pagination-state';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 const EXPLICIT_PAGINATION_URL_PARAMS: {
     [key: string]: keyof PaginationState;
@@ -101,8 +101,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private service: PublisherGroupsService,
-        private notificationService: NotificationService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         this.context = {
             componentParent: this,
@@ -111,7 +110,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.subscribeToStateUpdates();
-        this.showNewLabels = this.zemPermissions.hasPermission(
+        this.showNewLabels = this.authStore.hasPermission(
             'zemauth.can_see_new_publisher_library'
         );
 

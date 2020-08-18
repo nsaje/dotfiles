@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemCustomAudiencesList', {
     },
     controller: function(
         zemDataFilterService,
-        zemPermissions,
+        zemAuthStore,
         $scope,
         $uibModal
     ) {

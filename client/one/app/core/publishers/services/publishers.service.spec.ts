@@ -8,11 +8,12 @@ import {
     PublisherTargetingStatus,
 } from '../../../app.constants';
 import {fakeAsync, tick} from '@angular/core/testing';
+import {AuthStore} from '../../auth/services/auth.store';
 
 describe('PublishersService', () => {
     let service: PublishersService;
     let endpointStub: jasmine.SpyObj<PublishersEndpoint>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let requestStateUpdater: RequestStateUpdater;
 
     let mockedPublisherRows: PublisherInfo[];
@@ -26,20 +27,19 @@ describe('PublishersService', () => {
         endpointStub = jasmine.createSpyObj(PublishersEndpoint.name, [
             'updateBlacklistStatuses',
         ]);
-        zemPermissionsStub = {
-            hasPermission: (permission: string) => {
-                if (
-                    permission ===
-                    'zemauth.can_access_global_publisher_blacklist_status'
-                ) {
-                    return hasGlobalBlacklistPermission;
-                } else {
-                    return true;
-                }
-            },
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, ['hasPermission']);
+        authStoreStub.hasPermission.and.callFake(permission => {
+            if (
+                permission ===
+                'zemauth.can_access_global_publisher_blacklist_status'
+            ) {
+                return hasGlobalBlacklistPermission;
+            } else {
+                return true;
+            }
+        });
         endpointStub.updateBlacklistStatuses.and.returnValue(of(true));
-        service = new PublishersService(endpointStub, zemPermissionsStub);
+        service = new PublishersService(endpointStub, authStoreStub);
         requestStateUpdater = (requestName, requestState) => {};
 
         mockedPublisherRows = [

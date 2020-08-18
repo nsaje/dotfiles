@@ -31,12 +31,12 @@
             [context]="context"
             [isLoading]="state.requests.listActive.inProgress"
             [showLicenseFee]="
-                zemPermissions.hasPermission(
+                authStore.hasPermission(
                     'zemauth.can_view_platform_cost_breakdown'
                 )
             "
             [showServiceFee]="
-                zemPermissions.hasPermission('zemauth.can_see_service_fee')
+                authStore.hasPermission('zemauth.can_see_service_fee')
             "
             [creditGridType]="creditGridType.ACTIVE"
             [paginationOptions]="activePaginationOptions"
@@ -54,12 +54,12 @@
             [context]="context"
             [isLoading]="state.requests.listPast.inProgress"
             [showLicenseFee]="
-                zemPermissions.hasPermission(
+                authStore.hasPermission(
                     'zemauth.can_view_platform_cost_breakdown'
                 )
             "
             [showServiceFee]="
-                zemPermissions.hasPermission('zemauth.can_see_service_fee')
+                authStore.hasPermission('zemauth.can_see_service_fee')
             "
             [creditGridType]="creditGridType.PAST"
             [paginationOptions]="pastPaginationOptions"
@@ -88,14 +88,12 @@
                     [isReadOnly]="state.creditActiveEntity.isReadOnly"
                     [isSigned]="state.creditActiveEntity.isSigned"
                     [showLicenseFee]="
-                        zemPermissions.hasPermission(
+                        authStore.hasPermission(
                             'zemauth.can_view_platform_cost_breakdown'
                         )
                     "
                     [showServiceFee]="
-                        zemPermissions.hasPermission(
-                            'zemauth.can_see_service_fee'
-                        )
+                        authStore.hasPermission('zemauth.can_see_service_fee')
                     "
                     [creditErrors]="state.creditActiveEntity.fieldsErrors"
                     (creditChange)="store.changeCreditActiveEntity($event)"
@@ -238,7 +236,7 @@
                     [creditScopeState]="state.creditActiveEntity.scopeState"
                     [accounts]="state.accounts"
                     [showLicenseFee]="
-                        zemPermissions.hasPermission(
+                        authStore.hasPermission(
                             'zemauth.can_view_platform_cost_breakdown'
                         )
                     "

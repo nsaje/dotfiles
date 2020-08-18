@@ -1,4 +1,4 @@
-angular.module('one.common').directive('isInternal', function(zemPermissions) {
+angular.module('one.common').directive('isInternal', function(zemAuthStore) {
     var INTERNAL_FEATURE_HTML = '<i class="internal-feature"></i>';
     return {
         restrict: 'A',
@@ -6,7 +6,7 @@ angular.module('one.common').directive('isInternal', function(zemPermissions) {
         link: function(scope, element, attrs) {
             if (
                 attrs.isInternal === 'true' ||
-                zemPermissions.isPermissionInternal(attrs.isInternal)
+                zemAuthStore.isPermissionInternal(attrs.isInternal)
             ) {
                 angular.element(element).prepend(INTERNAL_FEATURE_HTML);
             }

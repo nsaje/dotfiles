@@ -6,7 +6,6 @@ import {
     OnInit,
     OnDestroy,
     HostBinding,
-    Inject,
     ViewChild,
 } from '@angular/core';
 import {merge, Observable, Subject} from 'rxjs';
@@ -33,6 +32,7 @@ import * as arrayHelpers from '../../../shared/helpers/array.helpers';
 import {User} from '../../../core/users/types/user';
 import {Account} from '../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../shared/components/scope-selector/scope-selector.constants';
+import {AuthStore} from '../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-users-view',
@@ -61,9 +61,9 @@ export class UsersView implements OnInit, OnDestroy {
 
     constructor(
         public store: UsersStore,
+        public authStore: AuthStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,
@@ -84,9 +84,10 @@ export class UsersView implements OnInit, OnDestroy {
                 state.accounts.filter(
                     account =>
                         !state.activeEntity.entityAccounts.includes(account) &&
-                        this.zemPermissions.canEditUsersOnEntity(
+                        this.authStore.hasEntityPermission(
                             state.agencyId,
-                            account.id
+                            account.id,
+                            'user'
                         )
                 )
             ),

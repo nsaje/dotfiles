@@ -7,7 +7,6 @@ import {
     Input,
     Output,
     OnInit,
-    Inject,
     OnDestroy,
 } from '@angular/core';
 import {
@@ -23,6 +22,7 @@ import {AttributionColumnPickerStore} from './services/attribution-column-picker
 import PixelMetric from './types/pixel-metric';
 import {merge, Observable, Subject} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import {AuthStore} from '../../../../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-attribution-column-picker',
@@ -55,7 +55,7 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
 
     constructor(
         public store: AttributionColumnPickerStore,
-        @Inject('zemPermissions') public zemPermissions: any
+        public authStore: AuthStore
     ) {}
 
     ngOnInit() {
@@ -73,7 +73,7 @@ export class AttributionColumnPickerComponent implements OnInit, OnDestroy {
             {attribution: 'View attribution', performance: 'CPA'}
         );
         if (
-            this.zemPermissions.hasPermission('zemauth.fea_can_see_roas') &&
+            this.authStore.hasPermission('zemauth.fea_can_see_roas') &&
             pixelsHaveRoas
         ) {
             this.METRICS_OPTIONS_CLICK.push({

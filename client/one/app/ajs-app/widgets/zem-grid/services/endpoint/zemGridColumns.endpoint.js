@@ -1,7 +1,7 @@
 angular
     .module('one.widgets')
     .factory('zemGridEndpointColumns', function(
-        zemPermissions,
+        zemAuthStore,
         zemGridConstants,
         zemUtils
     ) {
@@ -2300,12 +2300,12 @@ angular
 
                 column.internal = zemUtils.convertPermission(
                     column.internal,
-                    zemPermissions.isPermissionInternal
+                    zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
                 column.shown = zemUtils.convertPermission(
                     columnPermissions,
-                    zemPermissions.hasPermission
+                    zemAuthStore.hasPermission.bind(zemAuthStore)
                 );
             });
         }

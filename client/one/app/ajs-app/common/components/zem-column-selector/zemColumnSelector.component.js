@@ -8,13 +8,13 @@ angular.module('one.widgets').component('zemColumnSelector', {
         onAllColumnsToggled: '&',
     },
     template: require('./zemColumnSelector.component.html'),
-    controller: function(zemPermissions) {
+    controller: function(zemAuthStore) {
         var MSG_DISABLED_COLUMN =
             'Column is available when corresponding breakdown is visible.';
 
         var $ctrl = this;
 
-        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.searchQuery = '';
         $ctrl.getTooltip = getTooltip;
         $ctrl.onSearch = onSearch;

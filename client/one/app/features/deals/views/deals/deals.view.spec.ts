@@ -10,23 +10,22 @@ import {SourcesEndpoint} from '../../../../core/sources/services/sources.endpoin
 import {DealsEndpoint} from '../../../../core/deals/services/deals.endpoint';
 import {ConnectionsListComponent} from '../../components/connections-list/connections-list.component';
 import {DealsActionsComponent} from '../../components/deals-actions/deals-actions.component';
-import {noop} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('DealsView', () => {
     let component: DealsView;
     let fixture: ComponentFixture<DealsView>;
-
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-            hasPermission: () => noop,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore, [
+            'hasAgencyScope',
+            'hasPermission',
+        ]);
 
         TestBed.configureTestingModule({
             declarations: [
@@ -44,8 +43,8 @@ describe('DealsView', () => {
                 DealsService,
                 DealsEndpoint,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
                 SourcesService,
                 SourcesEndpoint,

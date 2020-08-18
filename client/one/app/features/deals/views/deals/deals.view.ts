@@ -199,8 +199,7 @@ export class DealsView implements OnInit, OnDestroy {
     constructor(
         public store: DealsStore,
         private route: ActivatedRoute,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private router: Router
     ) {
         this.context = {
             componentParent: this,

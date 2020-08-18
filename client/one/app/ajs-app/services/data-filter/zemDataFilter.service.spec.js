@@ -1,22 +1,21 @@
 describe('zemDataFilterService', function() {
     var $location;
     var zemDataFilterService;
-    var zemPermissions;
+    var zemAuthStore;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
     beforeEach(inject(function(
         _$location_,
         _zemDataFilterService_,
-        _zemPermissions_
+        _zemAuthStore_
     ) {
         $location = _$location_;
         zemDataFilterService = _zemDataFilterService_;
-        zemPermissions = _zemPermissions_;
+        zemAuthStore = _zemAuthStore_;
 
-        zemPermissions.setMockedPermissions([
+        zemAuthStore.setMockedPermissions([
             'zemauth.can_see_publishers',
             'zemauth.can_filter_by_agency',
             'zemauth.can_filter_by_account_type',

@@ -2,7 +2,7 @@ angular
     .module('one.widgets')
     .factory('zemGridIntegrationService', function(
         $timeout,
-        zemPermissions,
+        zemAuthStore,
         zemGridConstants,
         zemGridEndpointService,
         zemDataSourceService,
@@ -123,7 +123,7 @@ angular
 
                 // TODO: Check for cleaner solution
                 if (
-                    !zemPermissions.hasPermission(
+                    !zemAuthStore.hasPermission(
                         'zemauth.bulk_actions_on_all_levels'
                     )
                 ) {

@@ -3,7 +3,7 @@ var commonHelpers = require('../../../../shared/helpers/common.helpers');
 
 angular
     .module('one.widgets')
-    .service('zemGridContainerTabsService', function(zemPermissions) {
+    .service('zemGridContainerTabsService', function(zemAuthStore) {
         var TABS = {
             accounts: {
                 localStorageKey: 'tab.accounts',
@@ -162,7 +162,7 @@ angular
         function addTabItemWithOptions(tabs, tab) {
             var options = angular.copy(tab.options).filter(function(option) {
                 if (option.permissions) {
-                    var hasPermissions = zemPermissions.hasPermission(
+                    var hasPermissions = zemAuthStore.hasPermission(
                         option.permissions
                     );
                     if (hasPermissions) {
@@ -183,7 +183,7 @@ angular
 
         function addTabItem(tabs, tab) {
             if (tab.permissions) {
-                var hasPermissions = zemPermissions.hasPermission(
+                var hasPermissions = zemAuthStore.hasPermission(
                     tab.permissions
                 );
                 if (hasPermissions) {

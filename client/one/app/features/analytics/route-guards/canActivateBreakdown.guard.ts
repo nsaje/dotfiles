@@ -1,4 +1,4 @@
-import {Inject, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {
     ActivatedRouteSnapshot,
     CanActivate,
@@ -6,13 +6,11 @@ import {
     RouterStateSnapshot,
 } from '@angular/router';
 import {BreakdownParam} from '../../../app.constants';
+import {AuthStore} from '../../../core/auth/services/auth.store';
 
 @Injectable()
 export class CanActivateBreakdownGuard implements CanActivate {
-    constructor(
-        private router: Router,
-        @Inject('zemPermissions') private zemPermissions: any
-    ) {}
+    constructor(private router: Router, private authStore: AuthStore) {}
 
     canActivate(
         route: ActivatedRouteSnapshot,
@@ -41,13 +39,13 @@ export class CanActivateBreakdownGuard implements CanActivate {
             BreakdownParam.OPERATING_SYSTEM,
         ].includes(breakdown);
         if (isDeliveryBreakdown) {
-            return this.zemPermissions.hasPermission(
+            return this.authStore.hasPermission(
                 'zemauth.can_see_top_level_delivery_breakdowns'
             );
         }
 
         if (breakdown === BreakdownParam.PLACEMENTS) {
-            return this.zemPermissions.hasPermission(
+            return this.authStore.hasPermission(
                 'zemauth.can_use_placement_targeting'
             );
         }

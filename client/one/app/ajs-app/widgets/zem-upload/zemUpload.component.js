@@ -23,10 +23,10 @@ angular
     .module('one.widgets')
     .controller('ZemUploadCtrl', function(
         zemUploadEndpointService,
-        zemUserService
+        zemAuthStore
     ) {
         var vm = this;
-        var user = zemUserService.current();
+        var user = zemAuthStore.getCurrentUser();
         vm.endpoint = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
         vm.defaultBatchName = moment()
             .utc()

@@ -15,12 +15,10 @@
             [entityType]="EntityType.CAMPAIGN"
             [entityName]="state.entity.name"
             [showAdminLink]="
-                zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
+                authStore.hasPermission('zemauth.can_see_open_in_admin')
             "
             [isAdminLinkAnInternalFeature]="
-                zemPermissions.isPermissionInternal(
-                    'zemauth.can_see_open_in_admin'
-                )
+                authStore.isPermissionInternal('zemauth.can_see_open_in_admin')
             "
             [entityNameErrors]="state.fieldsErrors.name"
             (entityNameChange)="store.setName($event)"
@@ -38,7 +36,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.fea_can_change_campaign_type'
                             )
                         "
@@ -60,7 +58,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_modify_campaign_manager'
                             )
                         "
@@ -82,7 +80,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_modify_campaign_iab_category'
                             )
                         "
@@ -101,7 +99,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_campaign_language_choices'
                             )
                         "
@@ -120,12 +118,12 @@
                     <zem-integer-form-group
                         class="zem-integer-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_frequency_capping'
                             )
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_set_frequency_capping'
                             )
                         "
@@ -142,12 +140,10 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_campaign_goals'
-                    )
+                    authStore.hasPermission('zemauth.can_see_campaign_goals')
                 "
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_campaign_goals'
                     )
                 "
@@ -192,10 +188,10 @@
                         class="zem-campaign-goals zem-settings-section__item"
                         [campaignType]="state.entity.type"
                         [onlyCpc]="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.disable_public_rcs'
                             ) ||
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.disable_public_newscorp'
                             )
                         "
@@ -227,10 +223,10 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_set_white_blacklist_publisher_groups'
                     ) &&
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_publisher_groups_ui'
                     )
                 "
@@ -245,13 +241,13 @@
                         <div
                             class="zem-settings-section__title"
                             [zemInternalFeature]="
-                                zemPermissions.isPermissionInternal(
+                                authStore.isPermissionInternal(
                                     'zemauth.can_see_publisher_groups_ui'
                                 )
                             "
                         >
                             {{
-                                zemPermissions.hasPermission(
+                                authStore.hasPermission(
                                     'zemauth.can_see_new_publisher_library'
                                 )
                                     ? 'Publishers & placements'
@@ -260,7 +256,7 @@
                         </div>
                         <div class="zem-settings-section__description">
                             {{
-                                zemPermissions.hasPermission(
+                                authStore.hasPermission(
                                     'zemauth.can_see_new_publisher_library'
                                 )
                                     ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement lists.'
@@ -278,7 +274,7 @@
                             state.entity.targeting.publisherGroups.excluded
                         "
                         [showNewLabels]="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
@@ -289,7 +285,7 @@
                     <div
                         *ngIf="
                             false &&
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
@@ -306,9 +302,7 @@
 
             <div
                 class="zem-panel zem-settings__panel"
-                *ngIf="
-                    !zemPermissions.hasPermission('zemauth.disable_public_rcs')
-                "
+                *ngIf="!authStore.hasPermission('zemauth.disable_public_rcs')"
             >
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
@@ -380,7 +374,7 @@
                             [showServiceFee]="canSeeServiceFee()"
                             [showMargin]="canAccessAgencyCosts()"
                             [isEditingEnabled]="
-                                !zemPermissions.hasPermission(
+                                !authStore.hasPermission(
                                     'zemauth.disable_budget_management'
                                 )
                             "
@@ -415,7 +409,7 @@
                     <div
                         class="zem-settings-section__item"
                         *ngIf="
-                            !zemPermissions.hasPermission(
+                            !authStore.hasPermission(
                                 'zemauth.disable_budget_management'
                             )
                         "
@@ -460,7 +454,7 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_budget_optimization'
                     )
                 "
@@ -490,12 +484,12 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
@@ -558,13 +552,9 @@
 
             <div
                 class="zem-panel zem-settings__panel"
-                *ngIf="
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_backend_hacks'
-                    )
-                "
+                *ngIf="authStore.hasPermission('zemauth.can_see_backend_hacks')"
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_backend_hacks'
                     )
                 "
@@ -585,12 +575,12 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
@@ -611,7 +601,7 @@
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.CAMPAIGN"
             [userHasPermissionToArchive]="
-                zemPermissions.hasPermission('zemauth.archive_restore_entity')
+                authStore.hasPermission('zemauth.archive_restore_entity')
             "
             [isLoading]="
                 state.requests.create.inProgress ||

@@ -3,7 +3,6 @@ import './campaign-settings-drawer.view.less';
 import {
     Component,
     Input,
-    Inject,
     AfterViewInit,
     OnInit,
     OnDestroy,
@@ -22,6 +21,7 @@ import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {Subject} from 'rxjs';
 import {Router} from '@angular/router';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-campaign-settings-drawer',
@@ -47,9 +47,9 @@ export class CampaignSettingsDrawerView
 
     constructor(
         public store: CampaignSettingsStore,
+        public authStore: AuthStore,
         private router: Router,
-        private changeDetectorRef: ChangeDetectorRef,
-        @Inject('zemPermissions') public zemPermissions: any
+        private changeDetectorRef: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -132,15 +132,15 @@ export class CampaignSettingsDrawerView
     }
 
     canAccessPlatformCosts(): boolean {
-        return this.zemPermissions.canAccessPlatformCosts();
+        return this.authStore.canAccessPlatformCosts();
     }
 
     canAccessAgencyCosts(): boolean {
-        return this.zemPermissions.canAccessAgencyCosts();
+        return this.authStore.canAccessAgencyCosts();
     }
 
     canSeeServiceFee(): boolean {
-        return this.zemPermissions.hasPermission('zemauth.can_see_service_fee');
+        return this.authStore.hasPermission('zemauth.can_see_service_fee');
     }
 
     private navigateToRoute(routePath: string[]) {

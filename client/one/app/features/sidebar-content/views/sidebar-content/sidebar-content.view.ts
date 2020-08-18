@@ -4,7 +4,6 @@ import {
     Component,
     ChangeDetectionStrategy,
     Input,
-    Inject,
     OnInit,
     OnDestroy,
     OnChanges,
@@ -20,6 +19,7 @@ import {Subject, Observable, merge} from 'rxjs';
 import {takeUntil, distinctUntilChanged, tap, filter} from 'rxjs/operators';
 import {RoutePathName} from '../../../../app.constants';
 import {Router} from '@angular/router';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-sidebar-content-view',
@@ -41,7 +41,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             displayValue: 'Credits',
             icon: ListGroupItemIcon.Credit,
             isVisible: () => {
-                return this.zemPermissions.hasPermission(
+                return this.authStore.hasPermission(
                     'zemauth.account_credit_view'
                 );
             },
@@ -51,7 +51,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             displayValue: 'Deals',
             icon: ListGroupItemIcon.Folder,
             isVisible: () => {
-                return this.zemPermissions.hasPermission(
+                return this.authStore.hasPermission(
                     'zemauth.can_see_deals_library'
                 );
             },
@@ -62,10 +62,10 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             icon: ListGroupItemIcon.User,
             isVisible: () => {
                 return (
-                    this.zemPermissions.hasPermission(
+                    this.authStore.hasPermission(
                         'zemauth.can_see_user_management'
                     ) &&
-                    this.zemPermissions.hasPermission(
+                    this.authStore.hasPermission(
                         'zemauth.fea_use_entity_permission'
                     )
                 );
@@ -73,7 +73,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
         },
         {
             value: RoutePathName.PUBLISHER_GROUPS,
-            displayValue: this.zemPermissions.hasPermission(
+            displayValue: this.authStore.hasPermission(
                 'zemauth.can_see_new_publisher_library'
             )
                 ? 'Publishers & placements'
@@ -81,10 +81,10 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             icon: ListGroupItemIcon.PublisherGroups,
             isVisible: () => {
                 return (
-                    this.zemPermissions.hasPermission(
+                    this.authStore.hasPermission(
                         'zemauth.can_see_publisher_groups_ui'
                     ) &&
-                    this.zemPermissions.hasPermission(
+                    this.authStore.hasPermission(
                         'zemauth.can_edit_publisher_groups'
                     )
                 );
@@ -95,7 +95,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             displayValue: 'Automation rules',
             icon: ListGroupItemIcon.AutomationRules,
             isVisible: () => {
-                return this.zemPermissions.hasPermission(
+                return this.authStore.hasPermission(
                     'zemauth.fea_can_create_automation_rules'
                 );
             },
@@ -104,7 +104,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                     value: '',
                     displayValue: 'Library',
                     isVisible: () => {
-                        return this.zemPermissions.hasPermission(
+                        return this.authStore.hasPermission(
                             'zemauth.fea_can_create_automation_rules'
                         );
                     },
@@ -113,7 +113,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                     value: RoutePathName.RULES_HISTORY,
                     displayValue: 'History',
                     isVisible: () => {
-                        return this.zemPermissions.hasPermission(
+                        return this.authStore.hasPermission(
                             'zemauth.fea_can_create_automation_rules'
                         );
                     },
@@ -128,8 +128,8 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
 
     constructor(
         public store: SidebarContentStore,
-        private router: Router,
-        @Inject('zemPermissions') public zemPermissions: any
+        private authStore: AuthStore,
+        private router: Router
     ) {}
 
     ngOnInit(): void {
@@ -146,9 +146,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                 accountId !== this.store.state.selectedAccountId ||
                 (accountId === null && agencyId === null)
             ) {
-                this.hasAgencyScope = this.zemPermissions.hasAgencyScope(
-                    agencyId
-                );
+                this.hasAgencyScope = this.authStore.hasAgencyScope(agencyId);
                 this.store.setStore(agencyId, accountId);
             }
         }
@@ -187,7 +185,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             distinctUntilChanged(),
             tap(state => {
                 const route = routerHelpers.getActivatedRoute(this.router);
-                this.hasAgencyScope = this.zemPermissions.hasAgencyScope(
+                this.hasAgencyScope = this.authStore.hasAgencyScope(
                     state.selectedAgencyId
                 );
 

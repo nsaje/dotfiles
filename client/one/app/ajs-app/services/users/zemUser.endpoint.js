@@ -1,6 +1,3 @@
-var USERS_CONFIG = require('../../../core/users/services/users.config')
-    .USERS_CONFIG;
-
 angular
     .module('one.services')
     .service('zemUserEndpoint', function($q, $http, zemUtils) {
@@ -10,7 +7,6 @@ angular
         this.create = create;
         this.remove = remove;
         this.list = list;
-        this.current = current;
 
         function create(accountId, user) {
             var deferred = $q.defer();
@@ -70,20 +66,6 @@ angular
 
             $http
                 .get(url)
-                .success(function(data) {
-                    deferred.resolve(data.data);
-                })
-                .error(function(data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        }
-
-        function current() {
-            var deferred = $q.defer();
-            $http
-                .get(USERS_CONFIG.requests.users.current.url)
                 .success(function(data) {
                     deferred.resolve(data.data);
                 })

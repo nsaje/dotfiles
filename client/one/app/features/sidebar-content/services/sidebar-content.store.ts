@@ -11,6 +11,7 @@ import {Account} from '../../../core/entities/types/account/account';
 import {AgencyService} from '../../../core/entities/services/agency/agency.service';
 import {AccountService} from '../../../core/entities/services/account/account.service';
 import {takeUntil} from 'rxjs/operators';
+import {AuthStore} from '../../../core/auth/services/auth.store';
 
 @Injectable()
 export class SidebarContentStore extends Store<SidebarContentStoreState>
@@ -22,7 +23,7 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
     constructor(
         private agencyService: AgencyService,
         private accountService: AccountService,
-        @Inject('zemPermissions') public zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new SidebarContentStoreState());
 
@@ -107,7 +108,7 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
         if (commonHelpers.isDefined(accountId)) {
             return accountId;
         } else if (
-            this.zemPermissions.hasAgencyScope(agencyId) ||
+            this.authStore.hasAgencyScope(agencyId) ||
             arrayHelpers.isEmpty(accounts)
         ) {
             return null;

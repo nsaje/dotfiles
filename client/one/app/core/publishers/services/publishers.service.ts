@@ -13,12 +13,13 @@ import {isDefined} from '../../../shared/helpers/common.helpers';
 import {PublisherBlacklistAction} from '../types/publisher-blacklist-action';
 import {PUBLISHERS_CONFIG} from './publishers.config';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
+import {AuthStore} from '../../auth/services/auth.store';
 
 @Injectable()
 export class PublishersService {
     constructor(
         private endpoint: PublishersEndpoint,
-        @Inject('zemPermissions') public zemPermissions: any
+        private authStore: AuthStore
     ) {}
 
     updateBlacklistStatuses(
@@ -78,7 +79,7 @@ export class PublishersService {
 
     private hasPermissions(item: {permissions?: string[]}): boolean {
         return (item.permissions || []).every(permission =>
-            this.zemPermissions.hasPermission(permission)
+            this.authStore.hasPermission(permission)
         );
     }
 

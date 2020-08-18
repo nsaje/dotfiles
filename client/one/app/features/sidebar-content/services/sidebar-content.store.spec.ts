@@ -6,11 +6,12 @@ import {SidebarContentStore} from './sidebar-content.store';
 import {Agency} from '../../../core/entities/types/agency/agency';
 import {Account} from '../../../core/entities/types/account/account';
 import * as mockHelpers from '../../../testing/mock.helpers';
+import {AuthStore} from '../../../core/auth/services/auth.store';
 
 describe('SidebarContentStore', () => {
     let agencyServiceStub: jasmine.SpyObj<AgencyService>;
     let accountServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: SidebarContentStore;
     let mockedAgencies: Agency[];
     let mockedAccounts: Account[];
@@ -23,13 +24,13 @@ describe('SidebarContentStore', () => {
         accountServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
         store = new SidebarContentStore(
             agencyServiceStub,
             accountServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
         mockedAgencies = [
             {
@@ -63,7 +64,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(true).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(true).calls.reset();
         store.setStore('1', '2');
         tick();
 
@@ -73,7 +74,7 @@ describe('SidebarContentStore', () => {
         expect(store.state.selectedAccountId).toEqual('2');
         expect(agencyServiceStub.list).toHaveBeenCalledTimes(1);
         expect(accountServiceStub.list).toHaveBeenCalledTimes(1);
-        expect(zemPermissionsStub.hasAgencyScope).toHaveBeenCalledTimes(0);
+        expect(authStoreStub.hasAgencyScope).toHaveBeenCalledTimes(0);
     }));
 
     it('should correctly set store with agency and account', fakeAsync(() => {
@@ -84,7 +85,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(true).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(true).calls.reset();
         store.setStore('1', '2');
         tick();
 
@@ -94,7 +95,7 @@ describe('SidebarContentStore', () => {
         expect(store.state.selectedAccountId).toEqual('2');
         expect(agencyServiceStub.list).toHaveBeenCalledTimes(0);
         expect(accountServiceStub.list).toHaveBeenCalledTimes(1);
-        expect(zemPermissionsStub.hasAgencyScope).toHaveBeenCalledTimes(0);
+        expect(authStoreStub.hasAgencyScope).toHaveBeenCalledTimes(0);
     }));
 
     it('should correctly initialize store with only agency and agency user scope', fakeAsync(() => {
@@ -104,7 +105,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(true).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(true).calls.reset();
         store.setStore('1', null);
         tick();
 
@@ -114,7 +115,7 @@ describe('SidebarContentStore', () => {
         expect(store.state.selectedAccountId).toEqual(null);
         expect(agencyServiceStub.list).toHaveBeenCalledTimes(1);
         expect(accountServiceStub.list).toHaveBeenCalledTimes(1);
-        expect(zemPermissionsStub.hasAgencyScope).toHaveBeenCalledTimes(1);
+        expect(authStoreStub.hasAgencyScope).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly initialize store with only agency and account user scope', fakeAsync(() => {
@@ -124,7 +125,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(false).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(false).calls.reset();
         store.setStore('1', null);
         tick();
 
@@ -134,7 +135,7 @@ describe('SidebarContentStore', () => {
         expect(store.state.selectedAccountId).toEqual(mockedAccounts[0].id);
         expect(agencyServiceStub.list).toHaveBeenCalledTimes(1);
         expect(accountServiceStub.list).toHaveBeenCalledTimes(1);
-        expect(zemPermissionsStub.hasAgencyScope).toHaveBeenCalledTimes(1);
+        expect(authStoreStub.hasAgencyScope).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly set selected agency id with agency scope', fakeAsync(() => {
@@ -143,7 +144,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(true).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(true).calls.reset();
         store.setSelectedAgency('2');
         tick();
 
@@ -159,7 +160,7 @@ describe('SidebarContentStore', () => {
         accountServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.hasAgencyScope.and.returnValue(false).calls.reset();
+        authStoreStub.hasAgencyScope.and.returnValue(false).calls.reset();
         store.setSelectedAgency('2');
         tick();
 

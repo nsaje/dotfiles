@@ -3,7 +3,7 @@ angular
     .service('zemReportService', function(
         $q,
         zemReportEndpoint,
-        zemPermissions,
+        zemAuthStore,
         zemDataFilterService,
         zemUtils
     ) {

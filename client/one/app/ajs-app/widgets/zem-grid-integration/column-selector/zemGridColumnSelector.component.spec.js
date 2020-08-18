@@ -1,16 +1,15 @@
 describe('component: zemGridColumnSelector', function() {
     var $componentController;
-    var $ctrl, api, zemPermissions;
+    var $ctrl, api, zemAuthStore;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
 
     beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
-        zemPermissions = $injector.get('zemPermissions');
-        zemPermissions.setMockedPermissions([
+        zemAuthStore = $injector.get('zemAuthStore');
+        zemAuthStore.setMockedPermissions([
             'zemauth.can_view_breakdown_by_delivery',
             'zemauth.can_see_managers_in_campaigns_table',
         ]);

@@ -1,8 +1,7 @@
 describe('component: zemReportQueryConfig', function() {
     var $componentController;
     var $ctrl,
-        zemPermissions,
-        zemUserService,
+        zemAuthStore,
         zemLocalStorageService,
         zemReportFieldsService,
         gridApi;
@@ -10,19 +9,16 @@ describe('component: zemReportQueryConfig', function() {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(angular.mock.module('one.mocks.zemPermissions'));
-
     beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
-        zemPermissions = $injector.get('zemPermissions');
-        zemUserService = $injector.get('zemUserService');
+        zemAuthStore = $injector.get('zemAuthStore');
         zemLocalStorageService = $injector.get('zemLocalStorageService');
         zemReportFieldsService = $injector.get('zemReportFieldsService');
         gridApi = $injector
             .get('zemGridMocks')
             .createApi(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
 
-        zemPermissions.setMockedPermissions([
+        zemAuthStore.setMockedPermissions([
             'zemauth.can_view_breakdown_by_delivery',
             'zemauth.can_see_managers_in_campaigns_table',
         ]);
@@ -75,7 +71,7 @@ describe('component: zemReportQueryConfig', function() {
     });
 
     it('sets default csv config', function() {
-        spyOn(zemUserService, 'current').and.returnValue({
+        spyOn(zemAuthStore, 'getCurrentUser').and.returnValue({
             defaultCsvSeparator: null,
             defaultCsvDecimalSeparator: null,
         });
@@ -86,7 +82,7 @@ describe('component: zemReportQueryConfig', function() {
     });
 
     it('sets agency csv config', function() {
-        spyOn(zemUserService, 'current').and.returnValue({
+        spyOn(zemAuthStore, 'getCurrentUser').and.returnValue({
             defaultCsvSeparator: 'a',
             defaultCsvDecimalSeparator: 'b',
         });
@@ -97,7 +93,7 @@ describe('component: zemReportQueryConfig', function() {
     });
 
     it('sets localsettings csv config', function() {
-        spyOn(zemUserService, 'current').and.returnValue({
+        spyOn(zemAuthStore, 'getCurrentUser').and.returnValue({
             defaultCsvSeparator: 'a',
             defaultCsvDecimalSeparator: 'b',
         });

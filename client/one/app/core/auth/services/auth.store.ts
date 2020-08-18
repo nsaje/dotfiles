@@ -61,19 +61,35 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         );
     }
 
+    //
+    // CURRENT USER
+    //
+
     getCurrentUser(): User {
         return {...this.state.user};
+    }
+
+    getCurrentUserId(): string {
+        return this.state.user.id;
     }
 
     //
     //  PERMISSIONS
     //
 
-    hasPermission(permission: string): boolean {
+    hasPermission(permission: string | string[]): boolean {
         if (arrayHelpers.isEmpty(this.state.permissions)) {
             return false;
         }
-        return this.state.permissions.includes(permission);
+        const permissions: string[] = this.mapToArray(permission);
+        if (arrayHelpers.isEmpty(permissions)) {
+            return false;
+        }
+        const intersection: string[] = arrayHelpers.intersect(
+            permissions,
+            this.state.permissions
+        );
+        return intersection.length === permissions.length;
     }
 
     isPermissionInternal(permission: string): boolean {
@@ -83,16 +99,40 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         return this.state.internalPermissions.includes(permission);
     }
 
+    canAccessPlatformCosts(): boolean {
+        return this.hasPermission('zemauth.can_view_platform_cost_breakdown');
+    }
+
+    canAccessAgencyCosts(): boolean {
+        return this.hasPermission('zemauth.can_view_agency_cost_breakdown');
+    }
+
     //
     //  ENTITY PERMISSIONS
-    //  TODO (msuber): add entity permission functionality
     //
+
+    // TODO (msuber): deleted after User Roles will be released.
+    hasAgencyScope(agencyId: string) {
+        if (this.hasPermission('zemauth.fea_use_entity_permission')) {
+            return this.hasEntityPermission(agencyId, null, 'write');
+        }
+        if (this.hasPermission('zemauth.can_see_all_accounts')) {
+            return true;
+        }
+        return this.state.user.agencies.includes(Number(agencyId));
+    }
 
     hasEntityPermission(
         agencyId: string | number,
         accountId: string | number,
-        permission: EntityPermissionValue
+        permission: EntityPermissionValue,
+        fallbackPermission?: string | string[]
     ): boolean {
+        // TODO (msuber): deleted after User Roles will be released.
+        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
+            return this.hasPermission(fallbackPermission);
+        }
+
         if (
             !commonHelpers.isDefined(permission) ||
             arrayHelpers.isEmpty(this.state.user.entityPermissions)
@@ -100,10 +140,10 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
             return false;
         }
 
-        const parsedAgencyId = commonHelpers.isDefined(agencyId)
+        const parsedAgencyId: string = commonHelpers.isDefined(agencyId)
             ? agencyId.toString()
             : null;
-        const parsedAccountId = commonHelpers.isDefined(accountId)
+        const parsedAccountId: string = commonHelpers.isDefined(accountId)
             ? accountId.toString()
             : null;
 
@@ -120,6 +160,16 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         super.ngOnDestroy();
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+    }
+
+    private mapToArray(value: string | string[]): string[] {
+        if (typeof value === 'string') {
+            return [value];
+        }
+        if (Array.isArray(value)) {
+            return [...value];
+        }
+        return [];
     }
 
     private subscribeToStateUpdates() {

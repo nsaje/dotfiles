@@ -7,8 +7,7 @@ angular.module('one.widgets').component('zemReportDownload', {
     controller: function(
         $interval,
         zemReportService,
-        zemPermissions,
-        zemUserService,
+        zemAuthStore,
         zemDataFilterService
     ) {
         // eslint-disable-line max-len
@@ -16,8 +15,10 @@ angular.module('one.widgets').component('zemReportDownload', {
 
         // Public API
         $ctrl.startReport = startReport;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
         $ctrl.cancel = cancel;
 
         // template variables
@@ -32,7 +33,7 @@ angular.module('one.widgets').component('zemReportDownload', {
         $ctrl.pollInterval = null;
 
         $ctrl.$onInit = function() {
-            $ctrl.user = zemUserService.current();
+            $ctrl.user = zemAuthStore.getCurrentUser();
             $ctrl.dateRange = zemDataFilterService.getDateRange();
         };
 

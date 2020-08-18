@@ -10,7 +10,7 @@ angular.module('one.widgets').component('zemGrid', {
     controller: function(
         $scope,
         $element,
-        zemPermissions,
+        zemAuthStore,
         zemGridObject,
         zemGridPubSub,
         zemGridDataService,
@@ -57,9 +57,12 @@ angular.module('one.widgets').component('zemGrid', {
 
             // Define Grid API and assign to api variable to enable binding between zem-grid and controller
             $ctrl.grid.meta.api = zemGridApi.createInstance(this.grid);
-            $ctrl.grid.meta.api.hasPermission = zemPermissions.hasPermission;
-            $ctrl.grid.meta.api.isPermissionInternal =
-                zemPermissions.isPermissionInternal;
+            $ctrl.grid.meta.api.hasPermission = zemAuthStore.hasPermission.bind(
+                zemAuthStore
+            );
+            $ctrl.grid.meta.api.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+                zemAuthStore
+            );
 
             // Initialize data service; starts loading data
             $ctrl.grid.meta.dataService.initialize();

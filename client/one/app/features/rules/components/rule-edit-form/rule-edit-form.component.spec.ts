@@ -14,21 +14,22 @@ import {PublisherGroupsEndpoint} from '../../../../core/publisher-groups/service
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
-import {noop} from 'rxjs';
 import {CampaignService} from '../../../../core/entities/services/campaign/campaign.service';
 import {CampaignEndpoint} from '../../../../core/entities/services/campaign/campaign.endpoint';
 import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroupEndpoint} from '../../../../core/entities/services/ad-group/ad-group.endpoint';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('RuleEditFormComponent', () => {
     let component: RuleEditFormComponent;
     let fixture: ComponentFixture<RuleEditFormComponent>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasAgencyScope',
+        ]);
+
         TestBed.configureTestingModule({
             declarations: [
                 RuleEditFormComponent,
@@ -52,8 +53,8 @@ describe('RuleEditFormComponent', () => {
                 AdGroupEndpoint,
                 EntitiesUpdatesService,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
             ],
         });

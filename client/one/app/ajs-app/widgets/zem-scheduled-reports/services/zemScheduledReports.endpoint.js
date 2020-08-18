@@ -4,7 +4,7 @@ angular
         $q,
         $http,
         zemUtils,
-        zemPermissions
+        zemAuthStore
     ) {
         this.list = list;
         this.remove = remove;
@@ -13,7 +13,7 @@ angular
             var url;
             if (entity === null) {
                 if (
-                    zemPermissions.hasPermission(
+                    zemAuthStore.hasPermission(
                         'zemauth.can_see_new_report_schedule'
                     )
                 ) {
@@ -23,7 +23,7 @@ angular
                 }
             } else if (entity.type === constants.entityType.ACCOUNT) {
                 if (
-                    zemPermissions.hasPermission(
+                    zemAuthStore.hasPermission(
                         'zemauth.can_see_new_report_schedule'
                     )
                 ) {
@@ -51,7 +51,7 @@ angular
         function remove(id) {
             var url;
             if (
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_see_new_report_schedule'
                 )
             ) {

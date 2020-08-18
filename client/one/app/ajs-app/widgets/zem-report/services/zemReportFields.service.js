@@ -1,6 +1,6 @@
 angular
     .module('one.widgets')
-    .service('zemReportFieldsService', function(zemPermissions) {
+    .service('zemReportFieldsService', function(zemAuthStore) {
         // eslint-disable-line max-len
         var ALWAYS_FIELDS = {
             ad_groups: ['Account', 'Campaign', 'Ad Group'],
@@ -13,7 +13,7 @@ angular
             Thumbnail: ['Image Hash', 'Image URL', 'Ad Tag'],
         };
 
-        if (zemPermissions.hasPermission('zemauth.can_use_creative_icon')) {
+        if (zemAuthStore.hasPermission('zemauth.can_use_creative_icon')) {
             REMAPPED_FIELDS.Thumbnail.push('Brand Logo Hash', 'Brand Logo URL');
         }
 

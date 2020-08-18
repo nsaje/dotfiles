@@ -16,6 +16,7 @@ import * as mockHelpers from '../../../../../testing/mock.helpers';
 import {AdGroupService} from '../../../../../core/entities/services/ad-group/ad-group.service';
 import {CampaignService} from '../../../../../core/entities/services/campaign/campaign.service';
 import {EntityType} from '../../../../../app.constants';
+import {AuthStore} from '../../../../../core/auth/services/auth.store';
 
 describe('RuleEditFormStore', () => {
     let rulesServiceStub: jasmine.SpyObj<RulesService>;
@@ -23,7 +24,7 @@ describe('RuleEditFormStore', () => {
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
     let adGroupServiceStub: jasmine.SpyObj<AdGroupService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     let store: RuleEditFormStore;
     let mockedAgencyId: string;
@@ -49,7 +50,7 @@ describe('RuleEditFormStore', () => {
         adGroupServiceStub = jasmine.createSpyObj(AdGroupService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
         store = new RuleEditFormStore(
@@ -58,7 +59,7 @@ describe('RuleEditFormStore', () => {
             accountsServiceStub,
             campaignServiceStub,
             adGroupServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
 
         mockedAgencyId = '123';

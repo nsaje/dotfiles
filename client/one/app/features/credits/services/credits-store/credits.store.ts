@@ -20,6 +20,7 @@ import {PaginationOptions} from '../../../../shared/components/smart-grid/types/
 import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {CreditsStoreFieldsErrorsState} from './credits.store.fields-errors-state';
 import {CreditStatus, Currency} from '../../../../app.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class CreditsStore extends Store<CreditsStoreState>
@@ -31,7 +32,7 @@ export class CreditsStore extends Store<CreditsStoreState>
     constructor(
         private creditsService: CreditsService,
         private accountsService: AccountService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new CreditsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -85,7 +86,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                                 ...this.state,
                                 agencyId: agencyId,
                                 accountId: accountId,
-                                hasAgencyScope: this.zemPermissions.hasAgencyScope(
+                                hasAgencyScope: this.authStore.hasAgencyScope(
                                     agencyId
                                 ),
                                 totals: values[0],

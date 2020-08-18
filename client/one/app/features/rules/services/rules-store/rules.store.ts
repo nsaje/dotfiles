@@ -1,7 +1,7 @@
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
-import {Injectable, OnDestroy, Inject} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
-import {Subject, Observable} from 'rxjs';
+import {Subject} from 'rxjs';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {RulesService} from '../../../../core/rules/services/rules.service';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
@@ -9,8 +9,8 @@ import {RulesStoreState} from './rules.store.state';
 import {takeUntil} from 'rxjs/operators';
 import {Account} from '../../../../core/entities/types/account/account';
 import {Rule} from '../../../../core/rules/types/rule';
-import {RuleState} from '../../../../core/rules/rules.constants';
 import * as clone from 'clone';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
@@ -21,7 +21,7 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
     constructor(
         private rulesService: RulesService,
         private accountsService: AccountService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new RulesStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -50,9 +50,7 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
                         ...this.state,
                         agencyId: agencyId,
                         accountId: accountId,
-                        hasAgencyScope: this.zemPermissions.hasAgencyScope(
-                            agencyId
-                        ),
+                        hasAgencyScope: this.authStore.hasAgencyScope(agencyId),
                         entities: values[0],
                         accounts: values[1],
                     });

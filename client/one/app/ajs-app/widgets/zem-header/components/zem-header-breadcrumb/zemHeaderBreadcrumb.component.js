@@ -12,7 +12,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $document,
         $window,
         config,
-        zemPermissions,
+        zemAuthStore,
         zemNavigationNewService,
         zemUtils
     ) {
@@ -97,7 +97,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 entity = entity.parent;
             }
 
-            var canUserSeeAllAccounts = zemPermissions.hasPermission(
+            var canUserSeeAllAccounts = zemAuthStore.hasPermission(
                 'zemauth.can_see_all_accounts'
             );
             var name = canUserSeeAllAccounts ? 'All accounts' : 'My accounts';
@@ -199,7 +199,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     RoutePathName.APP_BASE,
                     RoutePathName.PUBLISHER_GROUPS
                 ];
-                var canUserSeeNewPublisherGroupsView = zemPermissions.hasPermission(
+                var canUserSeeNewPublisherGroupsView = zemAuthStore.hasPermission(
                     'zemauth.can_see_new_publisher_library'
                 );
                 return {

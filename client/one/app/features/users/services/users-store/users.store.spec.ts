@@ -10,11 +10,12 @@ import {UsersStoreState} from './users.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import * as clone from 'clone';
 import {UserStatus} from '../../../../app.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('UsersStore', () => {
     let usersServiceStub: jasmine.SpyObj<UsersService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: UsersStore;
     let mockedAccountUser: User;
     let mockedAgencyUser: User;
@@ -39,17 +40,15 @@ describe('UsersStore', () => {
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
-            'canEditUsersOnAgency',
-            'canEditUsersOnAllAccounts',
-            'canEditUsersOnEntity',
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasEntityPermission',
             'getCurrentUserId',
         ]);
 
         store = new UsersStore(
             usersServiceStub,
             accountsServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
 
         mockedAgencyId = '10';
@@ -160,16 +159,8 @@ describe('UsersStore', () => {
         accountsServiceStub.list.and
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
-        zemPermissionsStub.canEditUsersOnAgency.and
-            .returnValue(true)
-            .calls.reset();
-        zemPermissionsStub.canEditUsersOnAllAccounts.and
-            .returnValue(true)
-            .calls.reset();
-        zemPermissionsStub.canEditUsersOnEntity.and
-            .returnValue(true)
-            .calls.reset();
-        zemPermissionsStub.getCurrentUserId.and.returnValue('42').calls.reset();
+        authStoreStub.hasEntityPermission.and.returnValue(true).calls.reset();
+        authStoreStub.getCurrentUserId.and.returnValue('42').calls.reset();
     });
 
     it('should correctly initialize store', fakeAsync(() => {

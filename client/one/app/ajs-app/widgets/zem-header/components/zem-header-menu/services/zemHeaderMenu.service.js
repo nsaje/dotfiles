@@ -8,13 +8,13 @@ angular
         $window,
         NgRouter,
         $uibModal,
-        zemPermissions,
+        zemAuthStore,
         zemNavigationNewService
     ) {
         // eslint-disable-line max-len
         this.getAvailableActions = getAvailableActions;
 
-        var canUserSeeNewPublisherGroupsView = zemPermissions.hasPermission(
+        var canUserSeeNewPublisherGroupsView = zemAuthStore.hasPermission(
             'zemauth.can_see_new_publisher_library'
         );
 
@@ -22,10 +22,10 @@ angular
             {
                 text: 'Request demo',
                 callback: requestDemoAction,
-                isAvailable: zemPermissions.hasPermission(
+                isAvailable: zemAuthStore.hasPermission(
                     'zemauth.can_request_demo_v3'
                 ),
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_request_demo_v3'
                 ),
             },
@@ -41,17 +41,17 @@ angular
                 text: 'Pixels & Audiences',
                 callback: navigateToPixelsView,
                 isAvailable: isPixelsViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_new_pixels_view'
                 ),
             },
             {
                 text: 'Scheduled reports',
                 callback: navigateToScheduledReportsView,
-                isAvailable: zemPermissions.hasPermission(
+                isAvailable: zemAuthStore.hasPermission(
                     'zemauth.can_see_new_scheduled_reports'
                 ),
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_new_scheduled_reports'
                 ),
             },
@@ -59,7 +59,7 @@ angular
                 text: 'User permissions',
                 callback: navigateToUserPermissionsView,
                 isAvailable: isUserPermissionsViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.account_agency_access_permissions'
                 ),
             },
@@ -70,7 +70,7 @@ angular
                 text: 'Credits',
                 callback: navigateToCreditsView,
                 isAvailable: isCreditsViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.account_credit_view'
                 ),
             },
@@ -78,7 +78,7 @@ angular
                 text: 'Deals',
                 callback: navigateToDealsView,
                 isAvailable: isDealsViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_deals_library'
                 ),
             },
@@ -86,7 +86,7 @@ angular
                 text: 'User management',
                 callback: navigateToUsersView,
                 isAvailable: isUsersViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_user_management'
                 ),
                 isNewFeature: canUserSeeNewPublisherGroupsView,
@@ -97,7 +97,7 @@ angular
                     : 'Publisher Groups',
                 callback: navigateToPublisherGroupsView,
                 isAvailable: isPublisherGroupsViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_publisher_groups_ui'
                 ),
             },
@@ -105,7 +105,7 @@ angular
                 text: 'Automation rules',
                 callback: navigateToRulesView,
                 isAvailable: isRulesViewAvailable,
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.fea_can_create_automation_rules'
                 ),
             },
@@ -115,10 +115,10 @@ angular
             {
                 text: 'Inventory planning',
                 callback: navigateToInventoryPlanning,
-                isAvailable: zemPermissions.hasPermission(
+                isAvailable: zemAuthStore.hasPermission(
                     'zemauth.fea_can_see_inventory_planning'
                 ),
-                isInternalFeature: zemPermissions.isPermissionInternal(
+                isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.fea_can_see_inventory_planning'
                 ),
             },
@@ -157,12 +157,10 @@ angular
 
         function isPublisherGroupsViewAvailable() {
             return (
-                zemPermissions.hasPermission(
+                zemAuthStore.hasPermission(
                     'zemauth.can_see_publisher_groups_ui'
                 ) &&
-                zemPermissions.hasPermission(
-                    'zemauth.can_edit_publisher_groups'
-                )
+                zemAuthStore.hasPermission('zemauth.can_edit_publisher_groups')
             );
         }
 
@@ -188,7 +186,7 @@ angular
         }
 
         function isCreditsViewAvailable() {
-            return zemPermissions.hasPermission('zemauth.account_credit_view');
+            return zemAuthStore.hasPermission('zemauth.account_credit_view');
         }
 
         function navigateToCreditsView() {
@@ -241,12 +239,10 @@ angular
 
         function isUserPermissionsViewAvailable() {
             if (
-                !zemPermissions.hasPermission(
+                !zemAuthStore.hasPermission(
                     'zemauth.account_agency_access_permissions'
                 ) ||
-                zemPermissions.hasPermission(
-                    'zemauth.fea_use_entity_permission'
-                )
+                zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
             ) {
                 return false;
             }
@@ -266,9 +262,7 @@ angular
         }
 
         function isPixelsViewAvailable() {
-            if (
-                !zemPermissions.hasPermission('zemauth.can_see_new_pixels_view')
-            )
+            if (!zemAuthStore.hasPermission('zemauth.can_see_new_pixels_view'))
                 return false;
             return commonHelpers.isDefined(
                 zemNavigationNewService.getActiveAccount()
@@ -286,9 +280,7 @@ angular
         }
 
         function isDealsViewAvailable() {
-            return zemPermissions.hasPermission(
-                'zemauth.can_see_deals_library'
-            );
+            return zemAuthStore.hasPermission('zemauth.can_see_deals_library');
         }
 
         function navigateToDealsView() {
@@ -314,12 +306,8 @@ angular
 
         function isUsersViewAvailable() {
             return (
-                zemPermissions.hasPermission(
-                    'zemauth.can_see_user_management'
-                ) &&
-                zemPermissions.hasPermission(
-                    'zemauth.fea_use_entity_permission'
-                )
+                zemAuthStore.hasPermission('zemauth.can_see_user_management') &&
+                zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
             );
         }
 
@@ -345,7 +333,7 @@ angular
         }
 
         function isRulesViewAvailable() {
-            return zemPermissions.hasPermission(
+            return zemAuthStore.hasPermission(
                 'zemauth.fea_can_create_automation_rules'
             );
         }

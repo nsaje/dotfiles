@@ -7,7 +7,7 @@ angular
         $rootScope,
         NgRouter,
         $filter,
-        zemPermissions,
+        zemAuthStore,
         zemDataFilterService,
         zemFilterSelectorSharedService,
         zemMediaSourcesService,
@@ -247,7 +247,7 @@ angular
             FILTER_SECTIONS.forEach(function(section) {
                 if (
                     section.permissions &&
-                    !zemPermissions.hasPermission(section.permissions)
+                    !zemAuthStore.hasPermission(section.permissions)
                 )
                     return;
                 if (section.isVisible && !section.isVisible()) return;

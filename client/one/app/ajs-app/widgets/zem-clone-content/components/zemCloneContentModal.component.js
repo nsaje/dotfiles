@@ -8,10 +8,9 @@ angular.module('one.widgets').component('zemCloneContentModal', {
     template: require('./zemCloneContentModal.component.html'),
     controller: function(
         $q,
-        zemUserService,
+        zemAuthStore,
         zemNavigationNewService,
         zemCloneContentService,
-        zemSelectionService,
         zemSelectDataStore
     ) {
         //eslint-disable-line max-len
@@ -48,7 +47,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
                 })
                 .then(function(adGroup) {
                     $ctrl.adGroup = adGroup;
-                    var user = zemUserService.current(),
+                    var user = zemAuthStore.getCurrentUser(),
                         time = moment()
                             .utc()
                             .add(user ? user.timezoneOffset : 0, 'seconds')

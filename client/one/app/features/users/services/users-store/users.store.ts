@@ -1,4 +1,4 @@
-import {Inject, Injectable, OnDestroy} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
 import {Store} from 'rxjs-observable-store';
@@ -25,6 +25,7 @@ import {
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
 import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {CONFIGURABLE_PERMISSIONS} from '../../users.config';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -35,7 +36,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     constructor(
         private usersService: UsersService,
         private accountsService: AccountService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new UsersStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -60,9 +61,10 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         keyword: string | null,
         showInternal: boolean | null
     ): Promise<boolean> {
-        const canEditUsers: boolean = this.zemPermissions.canEditUsersOnEntity(
+        const canEditUsers: boolean = this.authStore.hasEntityPermission(
             agencyId,
-            accountId
+            accountId,
+            'user'
         );
         if (canEditUsers) {
             return new Promise<boolean>(resolve => {
@@ -82,12 +84,18 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                             ...this.state,
                             agencyId: agencyId,
                             accountId: accountId,
-                            hasAgencyScope: this.zemPermissions.canEditUsersOnAgency(
-                                agencyId
+                            hasAgencyScope: this.authStore.hasEntityPermission(
+                                agencyId,
+                                null,
+                                'user'
                             ),
-                            hasAllAccountsScope: this.zemPermissions.canEditUsersOnAllAccounts(),
+                            hasAllAccountsScope: this.authStore.hasEntityPermission(
+                                null,
+                                null,
+                                'user'
+                            ),
                             canEditUsers,
-                            currentUserId: this.zemPermissions.getCurrentUserId(),
+                            currentUserId: this.authStore.getCurrentUserId(),
                             entities: values[0],
                             accounts: values[1],
                         });

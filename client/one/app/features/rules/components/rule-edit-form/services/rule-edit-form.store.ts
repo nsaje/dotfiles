@@ -35,6 +35,7 @@ import {Campaign} from '../../../../../core/entities/types/campaign/campaign';
 import * as clone from 'clone';
 import {EntityType} from '../../../../../app.constants';
 import {EntitySelectorItem} from '../../../../../shared/components/entity-selector/types/entity-selector-item';
+import {AuthStore} from '../../../../../core/auth/services/auth.store';
 
 @Injectable()
 export class RuleEditFormStore extends Store<RuleEditFormStoreState>
@@ -52,7 +53,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         private accountService: AccountService,
         private campaignService: CampaignService,
         private adGroupService: AdGroupService,
-        @Inject('zemPermissions') private zemPermissions: any
+        private authStore: AuthStore
     ) {
         super(new RuleEditFormStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
@@ -84,7 +85,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         entityName: string,
         entityType: EntityType
     ) {
-        const hasAgencyScope = this.zemPermissions.hasAgencyScope(agencyId);
+        const hasAgencyScope = this.authStore.hasAgencyScope(agencyId);
 
         this.loadAccounts(agencyId).then(accounts => {
             if (commonHelpers.isDefined(rule.id)) {

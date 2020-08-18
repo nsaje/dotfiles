@@ -13,12 +13,13 @@ import {AccountService} from '../../../../core/entities/services/account/account
 import {Account} from '../../../../core/entities/types/account/account';
 import * as mockHelpers from '../../../../testing/mock.helpers';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('DealsLibraryStore', () => {
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
     let sourcesServiceStub: jasmine.SpyObj<SourcesService>;
     let accountsServiceStub: jasmine.SpyObj<AccountService>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: DealsStore;
     let mockedDeals: Deal[];
     let mockedSources: Source[];
@@ -43,7 +44,7 @@ describe('DealsLibraryStore', () => {
         accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
             'list',
         ]);
-        zemPermissionsStub = jasmine.createSpyObj('zemPermissions', [
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
         ]);
 
@@ -51,7 +52,7 @@ describe('DealsLibraryStore', () => {
             dealsServiceStub,
             sourcesServiceStub,
             accountsServiceStub,
-            zemPermissionsStub
+            authStoreStub
         );
         mockedDeals = [
             {

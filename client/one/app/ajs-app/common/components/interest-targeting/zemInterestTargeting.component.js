@@ -11,11 +11,13 @@ angular.module('one.common').component('zemInterestTargeting', {
         onUpdate: '&',
     },
     template: require('./zemInterestTargeting.component.html'), // eslint-disable-line max-len
-    controller: function(zemPermissions) {
+    controller: function(zemAuthStore) {
         var $ctrl = this;
 
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
+        $ctrl.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+            zemAuthStore
+        );
 
         $ctrl.texts = {
             selectedIncludedTitle: 'Included Interests',

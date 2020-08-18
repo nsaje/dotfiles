@@ -22,7 +22,7 @@ export class RefundActionsCellComponent implements ICellRendererAngularComp {
 
         this.isCanceled = this.credit.status === CreditStatus.CANCELED;
         this.isPast = this.params.creditGridType === CreditGridType.PAST;
-        this.canManageRefunds = this.params.context.componentParent.zemPermissions.hasPermission(
+        this.canManageRefunds = this.params.context.componentParent.authStore.hasPermission(
             'zemauth.can_manage_credit_refunds'
         );
     }

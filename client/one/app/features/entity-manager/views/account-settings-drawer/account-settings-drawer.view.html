@@ -15,12 +15,10 @@
             [entityType]="EntityType.ACCOUNT"
             [entityName]="state.entity.name"
             [showAdminLink]="
-                zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
+                authStore.hasPermission('zemauth.can_see_open_in_admin')
             "
             [isAdminLinkAnInternalFeature]="
-                zemPermissions.isPermissionInternal(
-                    'zemauth.can_see_open_in_admin'
-                )
+                authStore.isPermissionInternal('zemauth.can_see_open_in_admin')
             "
             [entityNameErrors]="state.fieldsErrors.name"
             (entityNameChange)="store.setName($event)"
@@ -38,7 +36,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_modify_account_manager'
                             ) && !state.extras.isExternallyManaged
                         "
@@ -60,7 +58,7 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_account_sales_representative'
                             ) && !state.extras.isExternallyManaged
                         "
@@ -82,12 +80,12 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_account_cs_representative'
                             ) && !state.extras.isExternallyManaged
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_set_account_cs_representative'
                             )
                         "
@@ -111,12 +109,12 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_account_ob_representative'
                             ) && !state.extras.isExternallyManaged
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_set_account_ob_representative'
                             )
                         "
@@ -140,12 +138,12 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_account_ob_representative'
                             ) && !state.extras.isExternallyManaged
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_set_account_ob_representative'
                             )
                         "
@@ -167,12 +165,12 @@
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_modify_account_type'
                             )
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_modify_account_type'
                             )
                         "
@@ -207,12 +205,12 @@
                     <zem-text-form-group
                         class="zem-text-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_salesforce_url'
                             ) && !state.extras.isExternallyManaged
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_see_salesforce_url'
                             )
                         "
@@ -244,12 +242,12 @@
                     <zem-integer-form-group
                         class="zem-integer-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_frequency_capping'
                             )
                         "
                         [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
+                            authStore.isPermissionInternal(
                                 'zemauth.can_set_frequency_capping'
                             )
                         "
@@ -263,7 +261,7 @@
                     <zem-content-form-group
                         class="zem-content-form-group zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             )
                         "
@@ -315,7 +313,7 @@
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             ) &&
                             !state.requests.defaults.inProgress &&
@@ -333,7 +331,7 @@
                     <div
                         class="zem-settings-section__item--indented"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             ) &&
                             !state.requests.defaults.inProgress &&
@@ -352,7 +350,7 @@
                     <div
                         class="zem-settings-section__item--indented"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_use_creative_icon'
                             ) &&
                             !isDefaultIconPreviewVisible &&
@@ -376,13 +374,11 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    !zemPermissions.hasPermission(
-                        'zemauth.disable_public_rcs'
-                    ) &&
-                    !zemPermissions.hasPermission(
+                    !authStore.hasPermission('zemauth.disable_public_rcs') &&
+                    !authStore.hasPermission(
                         'zemauth.disable_public_newscorp'
                     ) &&
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_modify_allowed_sources'
                     )
                 "
@@ -417,7 +413,7 @@
                     <zem-checkbox-input
                         class="zem-checkbox-input zem-settings-section__item"
                         *ngIf="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_set_auto_add_new_sources'
                             )
                         "
@@ -446,10 +442,10 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_set_white_blacklist_publisher_groups'
                     ) &&
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_publisher_groups_ui'
                     ) &&
                     state.entity.id
@@ -465,13 +461,13 @@
                         <div
                             class="zem-settings-section__title"
                             [zemInternalFeature]="
-                                zemPermissions.isPermissionInternal(
+                                authStore.isPermissionInternal(
                                     'zemauth.can_see_publisher_groups_ui'
                                 )
                             "
                         >
                             {{
-                                zemPermissions.hasPermission(
+                                authStore.hasPermission(
                                     'zemauth.can_see_new_publisher_library'
                                 )
                                     ? 'Publishers & placements'
@@ -480,7 +476,7 @@
                         </div>
                         <div class="zem-settings-section__description">
                             {{
-                                zemPermissions.hasPermission(
+                                authStore.hasPermission(
                                     'zemauth.can_see_new_publisher_library'
                                 )
                                     ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement lists.'
@@ -498,7 +494,7 @@
                             state.entity.targeting.publisherGroups.excluded
                         "
                         [showNewLabels]="
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
@@ -509,7 +505,7 @@
                     <div
                         *ngIf="
                             false &&
-                            zemPermissions.hasPermission(
+                            authStore.hasPermission(
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
@@ -527,12 +523,12 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
-                    zemPermissions.hasPermission(
+                    authStore.hasPermission(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_direct_deals_section'
                     )
                 "
@@ -595,13 +591,9 @@
 
             <div
                 class="zem-panel zem-settings__panel"
-                *ngIf="
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_backend_hacks'
-                    )
-                "
+                *ngIf="authStore.hasPermission('zemauth.can_see_backend_hacks')"
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_backend_hacks'
                     )
                 "
@@ -620,11 +612,9 @@
             </div>
             <div
                 class="zem-panel zem-settings__panel"
-                *ngIf="
-                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
-                "
+                *ngIf="authStore.hasPermission('zemauth.can_see_deals_in_ui')"
                 [zemInternalFeature]="
-                    zemPermissions.isPermissionInternal(
+                    authStore.isPermissionInternal(
                         'zemauth.can_see_deals_in_ui'
                     )
                 "
@@ -645,7 +635,7 @@
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.ACCOUNT"
             [userHasPermissionToArchive]="
-                zemPermissions.hasPermission('zemauth.archive_restore_entity')
+                authStore.hasPermission('zemauth.archive_restore_entity')
             "
             [isLoading]="
                 state.requests.create.inProgress ||

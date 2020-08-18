@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemScheduledReports', {
         account: '<',
     },
     template: require('./zemScheduledReports.component.html'),
-    controller: function(zemScheduledReportsStateService, zemPermissions) {
+    controller: function(zemScheduledReportsStateService, zemAuthStore) {
         var $ctrl = this;
 
         $ctrl.$onInit = function() {
@@ -14,7 +14,7 @@ angular.module('one.widgets').component('zemScheduledReports', {
             );
             stateService.reloadReports();
 
-            $ctrl.hasPermission = zemPermissions.hasPermission;
+            $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
             $ctrl.removeReport = stateService.removeReport;
             $ctrl.state = stateService.getState();
         };

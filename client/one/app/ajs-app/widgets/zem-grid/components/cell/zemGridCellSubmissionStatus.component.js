@@ -13,11 +13,15 @@ angular
                 grid: '=',
             },
             template: require('./zemGridCellSubmissionStatus.component.html'),
-            controller: function($scope, config, zemPermissions) {
+            controller: function($scope, config, zemAuthStore) {
                 var vm = this;
                 vm.config = config;
-                vm.hasPermission = zemPermissions.hasPermission;
-                vm.isPermissionInternal = zemPermissions.isPermissionInternal;
+                vm.hasPermission = zemAuthStore.hasPermission.bind(
+                    zemAuthStore
+                );
+                vm.isPermissionInternal = zemAuthStore.isPermissionInternal.bind(
+                    zemAuthStore
+                );
 
                 $scope.$watch('ctrl.row', update);
                 $scope.$watch('ctrl.data', update);

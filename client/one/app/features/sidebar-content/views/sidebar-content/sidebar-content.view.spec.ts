@@ -11,17 +11,18 @@ import {SidebarScopeSelectorComponent} from '../../components/sidebar-scope-sele
 import {EntitiesUpdatesService} from '../../../../core/entities/services/entities-updates.service';
 import {noop} from 'rxjs';
 import {RouterTestingModule} from '@angular/router/testing';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('SidebarContentView', () => {
     let component: SidebarContentView;
     let fixture: ComponentFixture<SidebarContentView>;
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-            hasPermission: (x: string) => true,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasAgencyScope',
+            'hasPermission',
+        ]);
 
         TestBed.configureTestingModule({
             declarations: [SidebarContentView, SidebarScopeSelectorComponent],
@@ -38,8 +39,8 @@ describe('SidebarContentView', () => {
                 AccountEndpoint,
                 EntitiesUpdatesService,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
             ],
         });

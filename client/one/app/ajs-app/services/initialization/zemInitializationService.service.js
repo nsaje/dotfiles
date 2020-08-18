@@ -1,8 +1,7 @@
 angular
     .module('one.services')
     .service('zemInitializationService', function(
-        $q,
-        zemUserService,
+        zemAuthStore,
         zemMediaSourcesService,
         zemNavigationNewService,
         zemNavigationService,
@@ -10,33 +9,15 @@ angular
         zemIntercomService,
         zemSupportHeroService
     ) {
-        // eslint-disable-line max-len
         this.initApp = initApp;
-        this.initSequence = initSequence;
-
-        var sequence;
 
         function initApp() {
+            // TODO (msuber): refactor to ng
             zemNavigationNewService.init();
             zemMediaSourcesService.init();
             zemNavigationService.init();
-
-            // Service initializers that need to resolve before user can use the app
-            sequence = $q.all([initZemUserServiceAndDependantServices()]);
-
-            return sequence;
-        }
-
-        function initSequence() {
-            return sequence;
-        }
-
-        function initZemUserServiceAndDependantServices() {
-            return zemUserService.init().then(function() {
-                zemDataFilterService.init();
-
-                zemIntercomService.boot(zemUserService.current());
-                zemSupportHeroService.boot(zemUserService.current());
-            });
+            zemDataFilterService.init();
+            zemIntercomService.boot(zemAuthStore.getCurrentUser());
+            zemSupportHeroService.boot(zemAuthStore.getCurrentUser());
         }
     });

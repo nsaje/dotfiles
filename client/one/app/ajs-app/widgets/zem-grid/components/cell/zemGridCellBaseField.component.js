@@ -16,11 +16,11 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function() {
             zemGridConstants,
             zemGridDataFormatter,
             zemGridUIService,
-            zemPermissions
+            zemAuthStore
         ) {
             // eslint-disable-line max-len
             var vm = this;
-            vm.hasPermission = zemPermissions.hasPermission;
+            vm.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);

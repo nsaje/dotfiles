@@ -58,8 +58,7 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
 
     constructor(
         public store: BulkBlacklistActionsStore,
-        public service: PublishersService,
-        @Inject('zemPermissions') public zemPermissions: any
+        public service: PublishersService
     ) {}
 
     ngOnInit() {

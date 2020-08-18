@@ -5,9 +5,8 @@ angular.module('one.widgets').component('zemReportSchedule', {
     },
     template: require('./zemReportSchedule.component.html'),
     controller: function(
-        $interval,
         zemReportService,
-        zemUserService,
+        zemAuthStore,
         zemReportScheduleService
     ) {
         // eslint-disable-line max-len
@@ -35,7 +34,7 @@ angular.module('one.widgets').component('zemReportSchedule', {
         $ctrl.jobPosted = false;
 
         $ctrl.$onInit = function() {
-            $ctrl.user = zemUserService.current();
+            $ctrl.user = zemAuthStore.getCurrentUser();
         };
 
         function dayOfWeekShown() {

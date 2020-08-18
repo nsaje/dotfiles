@@ -152,4 +152,105 @@ describe('AuthStore', () => {
             ).toBeTrue();
         });
     });
+
+    describe('hasAgencyScope:', () => {
+        it("should return false if user doesn't have agency scope for specified agency", () => {
+            const user: User = {
+                ...mockedUser,
+                agencies: [5, 7],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasAgencyScope('9')).toBeFalse();
+        });
+
+        it("should return false if user doesn't have agency scope for specified agency with entity permissions", () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasAgencyScope('9')).toBeFalse();
+        });
+
+        it('should return true if user has agency scope for specified agency', () => {
+            const user: User = {
+                ...mockedUser,
+                agencies: [5, 7],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasAgencyScope('5')).toBeTrue();
+        });
+
+        it('should return true if user has agency scope for specified agency with entity permissions', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: '5',
+                        accountId: null,
+                        permission: 'read',
+                    },
+                    {
+                        agencyId: '5',
+                        accountId: null,
+                        permission: 'write',
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasAgencyScope('5')).toBeTrue();
+        });
+    });
+
+    describe('hasEntityPermission', () => {
+        let user: User;
+
+        beforeEach(() => {
+            user = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: 'read',
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+        });
+
+        it('should return false if called without specifying entity permission', () => {
+            expect(store.hasEntityPermission('123', '123', null)).toBeFalse();
+            expect(
+                store.hasEntityPermission('123', '123', undefined)
+            ).toBeFalse();
+        });
+
+        it('should return true if user has the specified entity permission', () => {
+            expect(store.hasEntityPermission('123', '123', 'read')).toBeTrue();
+        });
+
+        it('should return false if user does not have the specified entity permission', () => {
+            expect(
+                store.hasEntityPermission('123', '123', 'write')
+            ).toBeFalse();
+        });
+    });
 });

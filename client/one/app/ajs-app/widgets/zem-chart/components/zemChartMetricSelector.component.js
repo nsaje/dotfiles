@@ -8,10 +8,10 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
         onMetricChanged: '&',
     },
     template: require('./zemChartMetricSelector.component.html'),
-    controller: function(zemCostModeService, zemPermissions) {
+    controller: function(zemCostModeService, zemAuthStore) {
         var $ctrl = this;
 
-        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.hasPermission = zemAuthStore.hasPermission.bind(zemAuthStore);
         $ctrl.$onInit = function() {
             zemCostModeService.onCostModeUpdate(function() {
                 $ctrl.categories = getCategories($ctrl.metricOptions);

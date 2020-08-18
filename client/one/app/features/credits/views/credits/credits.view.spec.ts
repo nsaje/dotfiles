@@ -8,7 +8,6 @@ import {CreditsService} from '../../../../core/credits/services/credits.service'
 import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {SourcesEndpoint} from '../../../../core/sources/services/sources.endpoint';
 import {CreditsEndpoint} from '../../../../core/credits/services/credits.endpoint';
-import {noop} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {AccountEndpoint} from '../../../../core/entities/services/account/account.endpoint';
 import {AccountService} from '../../../../core/entities/services/account/account.service';
@@ -21,18 +20,18 @@ import {CreditsTotalsComponent} from '../../components/credits-totals/credits-to
 import {CampaignBudgetsGridComponent} from '../../components/campaign-budgets-grid/campaign-budgets-grid.component';
 import {RefundFormComponent} from '../../components/refund-form/refund-form.component';
 import {RefundsGridComponent} from '../../components/refunds-grid/refunds-grid.component';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('CreditsView', () => {
     let component: CreditsView;
     let fixture: ComponentFixture<CreditsView>;
-
-    let zemPermissionsStub: any;
+    let authStoreStub: jasmine.SpyObj<AuthStore>;
 
     beforeEach(() => {
-        zemPermissionsStub = {
-            hasAgencyScope: () => noop,
-            hasPermission: () => noop,
-        };
+        authStoreStub = jasmine.createSpyObj(AuthStore.name, [
+            'hasAgencyScope',
+            'hasPermission',
+        ]);
 
         TestBed.configureTestingModule({
             declarations: [
@@ -56,8 +55,8 @@ describe('CreditsView', () => {
                 CreditsService,
                 CreditsEndpoint,
                 {
-                    provide: 'zemPermissions',
-                    useValue: zemPermissionsStub,
+                    provide: AuthStore,
+                    useValue: authStoreStub,
                 },
                 SourcesService,
                 SourcesEndpoint,

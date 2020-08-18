@@ -1,6 +1,6 @@
 angular
     .module('one.services')
-    .service('zemCostModeService', function(zemPubSubService, zemPermissions) {
+    .service('zemCostModeService', function(zemPubSubService, zemAuthStore) {
         // eslint-disable-line max-len
         var TOGGLABLE_COST_MODES = [
             constants.costMode.PUBLIC,
@@ -55,7 +55,7 @@ angular
         }
 
         function isToggleAllowed() {
-            return zemPermissions.hasPermission(
+            return zemAuthStore.hasPermission(
                 'zemauth.can_switch_between_cost_breakdowns'
             );
         }
