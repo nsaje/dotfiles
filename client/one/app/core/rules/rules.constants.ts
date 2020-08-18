@@ -272,6 +272,8 @@ export enum RuleConditionOperator {
     NotContains = 'NOT_CONTAINS',
     Equals = 'EQUALS',
     NotEquals = 'NOT_EQUALS',
+    StartsWith = 'STARTS_WITH',
+    EndsWith = 'ENDS_WITH',
 }
 
 export enum TimeRange {

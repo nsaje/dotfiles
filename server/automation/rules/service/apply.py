@@ -232,6 +232,10 @@ def _meets_condition(operator: int, left_value, right_value) -> bool:
         return right_value in left_value
     if operator == constants.Operator.NOT_CONTAINS:
         return right_value not in left_value
+    if operator == constants.Operator.STARTS_WITH:
+        return left_value.startswith(right_value)
+    if operator == constants.Operator.ENDS_WITH:
+        return left_value.endswith(right_value)
     raise ValueError("Invalid operator type")
 
 
