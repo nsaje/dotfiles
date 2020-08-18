@@ -441,6 +441,10 @@ class ApplyTest(TestCase):
             (constants.Operator.CONTAINS, "abcd", "e", False),
             (constants.Operator.NOT_CONTAINS, "abcd", "e", True),
             (constants.Operator.NOT_CONTAINS, "abcd", "bc", False),
+            (constants.Operator.STARTS_WITH, "abcd", "ab", True),
+            (constants.Operator.STARTS_WITH, "abcd", "bc", False),
+            (constants.Operator.ENDS_WITH, "abcd", "cd", True),
+            (constants.Operator.ENDS_WITH, "abcd", "bc", False),
         ]
 
         for operator, left_value, right_value, result in test_cases:
