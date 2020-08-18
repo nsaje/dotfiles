@@ -44,6 +44,7 @@ class RESTAPITestCase(BaseTestCase):
         "can_set_bid_modifiers",
         "can_modify_campaign_manager",
         "can_view_platform_cost_breakdown",
+        "all_accounts_accounts_add_account",
         "can_set_agency_for_account",
         "can_modify_account_type",
         "can_modify_account_manager",

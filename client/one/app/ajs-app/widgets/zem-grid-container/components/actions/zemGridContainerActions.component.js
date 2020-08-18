@@ -95,8 +95,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function canCreateNewAccount() {
             return (
-                zemAuthStore.canCreateNewAccount() ||
-                $ctrl.level !== constants.level.ALL_ACCOUNTS
+                zemAuthStore.hasPermission(
+                    'zemauth.all_accounts_accounts_add_account'
+                ) || $ctrl.level !== constants.level.ALL_ACCOUNTS
             );
         }
 

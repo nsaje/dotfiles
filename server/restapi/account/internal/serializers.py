@@ -77,7 +77,6 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "default_icon_base64": "zemauth.can_use_creative_icon",
         }
 
-    agency_id = restapi.serializers.fields.IdField(allow_null=False)
     account_type = restapi.serializers.fields.DashConstantField(
         dash.constants.AccountType,
         source="settings.account_type",

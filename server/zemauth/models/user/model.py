@@ -116,6 +116,7 @@ class User(
             ("account_sources_view", "Can view account sources view."),
             ("all_accounts_sources_view", "Can view all accounts sources view."),
             ("account_campaigns_add_campaign", "Can add campaigns."),
+            ("all_accounts_accounts_add_account", "Can add accounts."),
             ("archive_restore_entity", "Can archive or restore an entity."),
             ("account_agency_access_permissions", "Can view and set account access permissions."),
             ("campaign_ad_groups_detailed_report", "Can download detailed report on campaign level."),

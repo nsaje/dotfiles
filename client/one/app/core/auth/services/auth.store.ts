@@ -122,23 +122,6 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         return this.state.user.agencies.includes(Number(agencyId));
     }
 
-    canCreateNewAccount(): boolean {
-        // TODO (msuber): deleted after User Roles will be released.
-        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return !arrayHelpers.isEmpty(this.state.user.agencies);
-        }
-        return this.state.user.entityPermissions.some(ep => {
-            return (
-                (commonHelpers.isDefined(ep.agencyId) &&
-                    !commonHelpers.isDefined(ep.accountId) &&
-                    ep.permission === 'write') ||
-                (!commonHelpers.isDefined(ep.agencyId) &&
-                    !commonHelpers.isDefined(ep.accountId) &&
-                    ep.permission === 'write')
-            );
-        });
-    }
-
     hasEntityPermission(
         agencyId: string | number,
         accountId: string | number,
