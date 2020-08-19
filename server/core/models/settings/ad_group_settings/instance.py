@@ -31,6 +31,7 @@ class AdGroupSettingsMixin(object):
         skip_automation=False,
         skip_permission_check=False,
         skip_notification=False,
+        skip_field_change_validation_autopilot=False,
         system_user=None,
         write_history=True,
         write_source_history=True,
@@ -57,6 +58,8 @@ class AdGroupSettingsMixin(object):
             self.keep_old_and_new_bid_values_in_sync(new_settings)
             changes = self.get_setting_changes(new_settings)
             if changes:
+                if not skip_field_change_validation_autopilot:
+                    self._check_if_fields_are_allowed_to_be_changed_with_autopilot_on(changes)
                 new_settings.save(request, system_user=system_user, write_history=write_history)
                 max_autopilot_bid_changed = helpers.check_max_autopilot_bid_changed(self, changes)
                 b1_sources_group_bid_changed = helpers.check_b1_sources_group_bid_changed(self, changes)
@@ -314,6 +317,21 @@ class AdGroupSettingsMixin(object):
         from automation import autopilot
 
         autopilot.recalculate_budgets_ad_group(self.ad_group)
+
+    def _check_if_fields_are_allowed_to_be_changed_with_autopilot_on(self, changes):
+        forbidden_fields = [
+            "autopilot_daily_budget",
+            "autopilot_state",
+            "local_autopilot_daily_budget",
+            "start_date",
+            "end_date",
+        ]
+        if self.ad_group.campaign.settings.autopilot and any(field in changes for field in forbidden_fields):
+            raise exc.ForbiddenError(
+                "The following fields can't be changed if autopilot is active: {}, {}, {}, {}, {}".format(
+                    *[core.models.settings.AdGroupSettings.get_human_prop_name(field) for field in forbidden_fields]
+                )
+            )
 
     def _propagate_changes(self, request, new_settings, changes, system_user, skip_notification=False):
         k1_priority = self.state == constants.AdGroupSettingsState.ACTIVE and any(
