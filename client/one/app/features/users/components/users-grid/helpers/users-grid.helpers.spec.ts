@@ -3,7 +3,7 @@ import {User} from '../../../../../core/users/types/user';
 import {UserStatus} from '../../../../../app.constants';
 import {EntityPermissionValue} from '../../../../../core/users/users.constants';
 
-describe('ArrayHelpers', () => {
+describe('UsersGridHelpers', () => {
     const dummyUser: User = {
         email: '',
         entityPermissions: [],

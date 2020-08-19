@@ -31,6 +31,11 @@ import {
 } from '../../users.config';
 import {EntityPermissionCheckboxStates} from '../../components/entity-permission-selector/types/entity-permission-checkbox-states';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';
+import {
+    isAccountManager,
+    isAgencyManager,
+    isInternalUser,
+} from '../../helpers/users.helpers';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -239,7 +244,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
             userPatches.entityPermissions = this.getDefaultEntityPermissions();
         } else {
             userPatches.entityPermissions = this.cleanUpEntityPermissions(
-                entity.entityPermissions
+                entity
             );
         }
 
@@ -452,9 +457,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     }
 
     isUserReadOnly(user: User): boolean {
-        if (this.isInternalUser(user)) {
+        if (isInternalUser(user)) {
             return !this.state.hasAllAccountsScope;
-        } else if (this.isAgencyManager(user)) {
+        } else if (isAgencyManager(user)) {
             return (
                 !this.state.hasAllAccountsScope && !this.state.hasAgencyScope
             );
@@ -546,20 +551,6 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }));
     }
 
-    private isAccountManager(user: Partial<User>): boolean {
-        return user.entityPermissions.some(ep => isNotEmpty(ep.accountId));
-    }
-
-    private isAgencyManager(user: Partial<User>): boolean {
-        return user.entityPermissions.some(ep => isNotEmpty(ep.agencyId));
-    }
-
-    private isInternalUser(user: Partial<User>): boolean {
-        return user.entityPermissions.some(
-            ep => !isNotEmpty(ep.agencyId) && !isNotEmpty(ep.accountId)
-        );
-    }
-
     private loadUsers(
         agencyId: string | null,
         accountId: string | null,
@@ -638,39 +629,22 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }
     }
 
-    private cleanUpEntityPermissions(
-        entityPermissions: EntityPermission[]
-    ): EntityPermission[] {
+    private cleanUpEntityPermissions(user: Partial<User>): EntityPermission[] {
         // Sometimes in the DB we have users with mixed levels of entity permissions, here we remove all but the top level with read permission
-        if (
-            entityPermissions.some(
-                ep =>
-                    !isNotEmpty(ep.agencyId) &&
-                    !isNotEmpty(ep.accountId) &&
-                    ep.permission === EntityPermissionValue.READ
-            )
-        ) {
-            return entityPermissions.filter(
+        if (isInternalUser(user)) {
+            return (user?.entityPermissions || []).filter(
                 ep => !isNotEmpty(ep.agencyId) && !isNotEmpty(ep.accountId)
             );
         }
-        if (
-            entityPermissions.some(
-                ep =>
-                    isNotEmpty(ep.agencyId) &&
-                    ep.permission === EntityPermissionValue.READ
-            )
-        ) {
-            return entityPermissions.filter(ep => isNotEmpty(ep.agencyId));
+        if (isAgencyManager(user)) {
+            return (user?.entityPermissions || []).filter(ep =>
+                isNotEmpty(ep.agencyId)
+            );
         }
-        if (
-            entityPermissions.some(
-                ep =>
-                    isNotEmpty(ep.accountId) &&
-                    ep.permission === EntityPermissionValue.READ
-            )
-        ) {
-            return entityPermissions.filter(ep => isNotEmpty(ep.accountId));
+        if (isAccountManager(user)) {
+            return (user?.entityPermissions || []).filter(ep =>
+                isNotEmpty(ep.accountId)
+            );
         }
 
         return [];
@@ -824,9 +798,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     }
 
     private calculateScopeState(user: User): ScopeSelectorState {
-        if (this.isInternalUser(user)) {
+        if (isInternalUser(user)) {
             return ScopeSelectorState.ALL_ACCOUNTS_SCOPE;
-        } else if (this.isAgencyManager(user)) {
+        } else if (isAgencyManager(user)) {
             return ScopeSelectorState.AGENCY_SCOPE;
         } else {
             return ScopeSelectorState.ACCOUNT_SCOPE;
@@ -910,7 +884,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     }
 
     private userHasSamePermissionsOnAllAccounts(user: User): boolean {
-        if (!this.isAccountManager(user)) {
+        if (!isAccountManager(user)) {
             return false;
         }
         const permissionsByAccount: EntityPermission[][] = groupArray(
@@ -946,7 +920,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
     ): EntityPermissionSelection {
         if (
             isEmpty(user.entityPermissions) ||
-            (this.isAccountManager(user) && isEmpty(selectedAccounts))
+            (isAccountManager(user) && isEmpty(selectedAccounts))
         ) {
             return {};
         }
@@ -977,7 +951,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
         const allPermissions: EntityPermission[] = user.entityPermissions || [];
 
-        if (this.isInternalUser(user) || this.isAgencyManager(user)) {
+        if (isInternalUser(user) || isAgencyManager(user)) {
             return allPermissions.some(ep => ep.permission === permission);
         } else {
             const selectedAccountIds: string[] = selectedAccounts.map(

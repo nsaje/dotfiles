@@ -1,11 +1,29 @@
 <span
-    *ngIf="tooltip"
-    class="zem-icon-tooltip-cell__icon {{ icon }}"
-    [zemPopover]="tooltip"
-    [placement]="placement"
+    *ngIf="displayOptions.text"
+    class="zem-icon-tooltip-cell__text {{ displayOptions.textStyleClass }}"
+    >{{ displayOptions.text }}</span
+>
+<span
+    *ngIf="displayOptions.tooltip"
+    class="zem-icon-tooltip-cell__icon {{ displayOptions.icon }}"
+    [zemPopover]="
+        displayOptions.tooltipTemplate
+            ? templatedTooltip
+            : displayOptions.tooltip
+    "
+    [placement]="displayOptions.placement"
     triggers="mouseenter:mouseleave"
     container="body"
 ></span>
-<ng-container *ngIf="!tooltip">
+<ng-container *ngIf="!displayOptions.tooltip && !displayOptions.text">
     N/A
 </ng-container>
+
+<ng-template #templatedTooltip>
+    <ng-container
+        *ngTemplateOutlet="
+            displayOptions.tooltipTemplate;
+            context: {$implicit: displayOptions.tooltip}
+        "
+    ></ng-container>
+</ng-template>

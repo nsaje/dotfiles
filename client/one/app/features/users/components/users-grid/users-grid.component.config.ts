@@ -1,9 +1,7 @@
 import {ColDef} from 'ag-grid-community';
 import {EntityPermission} from '../../../../core/users/types/entity-permission';
-import {isDefined, isNotEmpty} from '../../../../shared/helpers/common.helpers';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
 import {User} from '../../../../core/users/types/user';
-import {InfoCellComponent} from '../../../../shared/components/smart-grid/components/cell/info-cell/info-cell.component';
-import {InfoCellRendererParams} from '../../../../shared/components/smart-grid/components/cell/info-cell/types/info-cell.renderer-params';
 import {UsersView} from '../../views/users.view';
 import {
     GENERAL_PERMISSIONS,
@@ -12,10 +10,25 @@ import {
 } from '../../users.config';
 import {UserActionsCellComponent} from '../user-actions-cell/user-actions-cell.component';
 import {
+    getPermissionsLevel,
     getPermissionsText,
-    isAccountManager,
 } from './helpers/users-grid.helpers';
 import {UserStatus} from '../../../../app.constants';
+import {IconTooltipCellComponent} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component';
+import {
+    IconTooltipCellIcon,
+    IconTooltipCellTextStyleClass,
+} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/icon-tooltip-cell.component.constants';
+import {IconTooltipRendererParams} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip.renderer-params';
+import {IconTooltipDisplayOptions} from '../../../../shared/components/smart-grid/components/cell/icon-tooltip-cell/types/icon-tooltip-display-options';
+import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permission-value';
+import {
+    isAccountManager,
+    isAgencyManager,
+    isInternalUser,
+} from '../../helpers/users.helpers';
+import {distinct} from '../../../../shared/helpers/array.helpers';
+import {TemplateRef} from '@angular/core';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -41,20 +54,28 @@ export const COLUMN_STATUS: ColDef = {
 
 export const COLUMN_ACCESS: ColDef = {
     headerName: 'Access',
-    field: 'entityPermissions',
-    valueFormatter: accessFormatter,
-    width: 70,
-    minWidth: 70,
+    cellRendererFramework: IconTooltipCellComponent,
+    cellRendererParams: {
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Comment,
+            placement: 'bottom',
+        },
+        getCellDisplayOptions: getAccessCellDisplayOptions,
+    } as IconTooltipRendererParams<string[], User, UsersView>,
+    width: 90,
+    minWidth: 90,
 };
 
 export const COLUMN_PERMISSIONS: ColDef = {
     headerName: 'Permissions',
-    field: 'entityPermissions',
-    cellRendererFramework: InfoCellComponent,
+    cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
-        getMainContent: getGeneralPermissionsText,
-        getInfoText: getPermissionTooltip,
-    } as InfoCellRendererParams<User, UsersView>,
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Info,
+            placement: 'bottom',
+        },
+        getCellDisplayOptions: getGeneralPermissionsCellDisplayOptions,
+    } as IconTooltipRendererParams<string, User, UsersView>,
     width: 200,
     minWidth: 200,
     resizable: true,
@@ -62,12 +83,14 @@ export const COLUMN_PERMISSIONS: ColDef = {
 
 export const COLUMN_REPORTS: ColDef = {
     headerName: 'Reports',
-    field: 'entityPermissions',
-    cellRendererFramework: InfoCellComponent,
+    cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
-        getMainContent: getReportingPermissionsText,
-        getInfoText: getPermissionTooltip,
-    } as InfoCellRendererParams<User, UsersView>,
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Info,
+            placement: 'bottom',
+        },
+        getCellDisplayOptions: getReportingPermissionsCellDisplayOptions,
+    } as IconTooltipRendererParams<string, User, UsersView>,
     width: 200,
     minWidth: 200,
     resizable: true,
@@ -86,51 +109,87 @@ function statusFormatter(params: {value: UserStatus}): string {
     return STATUS_VALUE_TO_NAME[params.value] || 'N/A';
 }
 
-function accessFormatter(params: {value: EntityPermission[]}): string {
-    const value: EntityPermission[] = params.value;
-
-    if (isNotEmpty(value.filter(ep => ep.accountId))) {
-        return 'Account';
-    } else if (isNotEmpty(value.filter(ep => ep.agencyId))) {
-        return 'Agency';
-    } else if (isNotEmpty(value)) {
-        return 'All accounts';
-    } else {
-        return 'None'; // This should never happen, but we can handle it just in case
-    }
-}
-
 function nameGetter(params: {data: User}): string {
     return `${params?.data?.firstName || ''} ${params?.data?.lastName || ''}`;
 }
 
-function getGeneralPermissionsText(
+function getAccessCellDisplayOptions(
     user: User,
     componentParent: UsersView
-): string {
-    return getPermissionsText(
+): Partial<IconTooltipDisplayOptions<string[]>> {
+    return {
+        text: getPermissionsLevel(user),
+        tooltip: getAccountNames(user, componentParent),
+    };
+}
+
+function getAccountNames(user: User, componentParent: UsersView): string[] {
+    const entityPermissions: EntityPermission[] = user.entityPermissions || [];
+
+    // These 3 possibilities should be mutually exclusive, but we still need to check because there could be inconsistent data in the DB
+    if (
+        !isInternalUser(user) &&
+        !isAgencyManager(user) &&
+        isAccountManager(user)
+    ) {
+        return distinct(
+            entityPermissions
+                .filter(ep => ep.accountId)
+                .map(ep => getAccountName(componentParent, ep.accountId))
+        );
+    } else {
+        return undefined;
+    }
+}
+
+function getAccountName(componentParent: UsersView, accountId: string): string {
+    return componentParent.store.state.accounts?.find(
+        account => account.id === accountId
+    )?.name;
+}
+
+function getGeneralPermissionsCellDisplayOptions(
+    user: User,
+    componentParent: UsersView
+): Partial<IconTooltipDisplayOptions<string>> {
+    return getPermissionsCellDisplayOptions(
         user,
-        componentParent.store.state.accountId,
+        componentParent,
         GENERAL_PERMISSIONS
     );
 }
 
-function getReportingPermissionsText(
+function getReportingPermissionsCellDisplayOptions(
     user: User,
     componentParent: UsersView
-): string {
-    return getPermissionsText(
+): Partial<IconTooltipDisplayOptions<string>> {
+    return getPermissionsCellDisplayOptions(
         user,
-        componentParent.store.state.accountId,
+        componentParent,
         REPORTING_PERMISSIONS
     );
 }
 
-function getPermissionTooltip(user: User, componentParent: UsersView): string {
+function getPermissionsCellDisplayOptions(
+    user: User,
+    componentParent: UsersView,
+    permissionsInColumn: DisplayedEntityPermissionValue[]
+): Partial<IconTooltipDisplayOptions<string>> {
     const accountId: string = componentParent.store.state.accountId;
     if (isAccountManager(user) && !isDefined(accountId)) {
-        return 'This user has access to one or more agency\'s accounts. To review user\'s permissions, select one of the user\'s accounts in the account selector on the left side of the screen.';
+        return {
+            textStyleClass: IconTooltipCellTextStyleClass.Lighter,
+            tooltip:
+                "This user has access to one or more agency's accounts. To review user's permissions, select one of the user's accounts in the account selector on the left side of the screen.",
+            text: 'N/A',
+        };
     } else {
-        return undefined;
+        return {
+            text: getPermissionsText(
+                user,
+                componentParent.store.state.accountId,
+                permissionsInColumn
+            ),
+        };
     }
 }

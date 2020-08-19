@@ -9,3 +9,10 @@
     (gridReady)="onGridReady($event)"
 >
 </zem-smart-grid>
+
+<ng-template #accountAccessTemplate let-accountNames>
+    User has access to the following accounts:
+    <ul>
+        <li *ngFor="let accountName of accountNames">{{ accountName }}</li>
+    </ul>
+</ng-template>

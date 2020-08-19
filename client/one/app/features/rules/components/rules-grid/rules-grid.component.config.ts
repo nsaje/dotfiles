@@ -95,9 +95,11 @@ export const COLUMN_RUNS_ON_TOOLTIP: ColDef = {
     valueGetter: runsOnGetter,
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
-        icon: IconTooltipCellIcon.Comment,
-        placement: 'left',
-    } as IconTooltipRendererParams,
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Comment,
+            placement: 'left',
+        },
+    } as IconTooltipRendererParams<string, Rule, any>,
 };
 
 export const COLUMN_SCOPE: ColDef = {

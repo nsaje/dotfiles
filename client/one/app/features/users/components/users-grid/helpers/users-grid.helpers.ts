@@ -1,12 +1,14 @@
 import {User} from '../../../../../core/users/types/user';
 import {DisplayedEntityPermissionValue} from '../../../types/displayed-entity-permission-value';
 import {EntityPermission} from '../../../../../core/users/types/entity-permission';
-import {
-    isDefined,
-    isNotEmpty,
-} from '../../../../../shared/helpers/common.helpers';
+import {isDefined} from '../../../../../shared/helpers/common.helpers';
 import {distinct} from '../../../../../shared/helpers/array.helpers';
 import {ENTITY_PERMISSION_VALUE_TO_SHORT_NAME} from '../../../users.config';
+import {
+    isAccountManager,
+    isAgencyManager,
+    isInternalUser,
+} from '../../../helpers/users.helpers';
 
 export function getPermissionsText(
     user: User,
@@ -39,6 +41,16 @@ export function getPermissionsText(
     }
 }
 
-export function isAccountManager(user: Partial<User>): boolean {
-    return user.entityPermissions.some(ep => isNotEmpty(ep.accountId));
+export function getPermissionsLevel(
+    user: Partial<User>
+): 'Account' | 'Agency' | 'All accounts' | 'None' {
+    if (isInternalUser(user)) {
+        return 'All accounts';
+    } else if (isAgencyManager(user)) {
+        return 'Agency';
+    } else if (isAccountManager(user)) {
+        return 'Account';
+    } else {
+        return 'None'; // This should never happen, but we can handle it just in case
+    }
 }

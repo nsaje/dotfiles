@@ -6,6 +6,9 @@ import {
     Output,
     EventEmitter,
     OnChanges,
+    TemplateRef,
+    ViewChild,
+    AfterViewInit,
 } from '@angular/core';
 import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
 import {User} from '../../../../core/users/types/user';
@@ -27,7 +30,7 @@ import {UsersView} from '../../views/users.view';
     templateUrl: './users-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UsersGridComponent implements OnChanges {
+export class UsersGridComponent implements OnChanges, AfterViewInit {
     @Input()
     users: User[];
     @Input()
@@ -43,6 +46,9 @@ export class UsersGridComponent implements OnChanges {
         PaginationState
     >();
 
+    @ViewChild('accountAccessTemplate', {read: TemplateRef, static: false})
+    accountAccessTemplate: TemplateRef<string[]>;
+
     columnDefs: ColDef[] = [
         COLUMN_NAME,
         COLUMN_EMAIL,
@@ -54,6 +60,10 @@ export class UsersGridComponent implements OnChanges {
     ];
 
     private gridApi: GridApi;
+
+    ngAfterViewInit() {
+        COLUMN_ACCESS.cellRendererParams.columnDisplayOptions.tooltipTemplate = this.accountAccessTemplate;
+    }
 
     ngOnChanges() {
         if (this.gridApi && this.isLoading) {

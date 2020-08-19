@@ -55,7 +55,9 @@ export const COLUMN_CHANGES_FORMATTED_TOOLTIP: ColDef = {
     resizable: false,
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
-        icon: IconTooltipCellIcon.Comment,
-        placement: 'left',
-    } as IconTooltipRendererParams,
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Comment,
+            placement: 'left',
+        },
+    } as IconTooltipRendererParams<string, RuleHistory, any>,
 };

@@ -186,8 +186,10 @@ export const COLUMN_NOTES: ColDef = {
     resizable: false,
     cellRendererFramework: IconTooltipCellComponent,
     cellRendererParams: {
-        icon: IconTooltipCellIcon.Comment,
-    } as IconTooltipRendererParams,
+        columnDisplayOptions: {
+            icon: IconTooltipCellIcon.Comment,
+        },
+    } as IconTooltipRendererParams<string, Credit, any>,
 };
 
 export const COLUMN_ACTION_CREDIT: ColDef = {

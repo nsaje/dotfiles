@@ -78,7 +78,6 @@ import {ListGroupItemComponent} from './components/list-group/components/list-gr
 import {CheckboxSliderComponent} from './components/checkbox-slider/checkbox-slider.component';
 import {ItemListComponent} from './components/item-list/item-list.component';
 import {SwitchButtonCellComponent} from './components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
-import {InfoCellComponent} from './components/smart-grid/components/cell/info-cell/info-cell.component';
 import {EntitySelectorComponent} from './components/entity-selector/entity-selector.component';
 
 const EXPORTED_DECLARATIONS = [
@@ -144,7 +143,6 @@ const EXPORTED_DECLARATIONS = [
     IconTooltipCellComponent,
     NoteCellComponent,
     LinkCellComponent,
-    InfoCellComponent,
     PublisherGroupEditFormComponent,
     ConnectionActionsCellComponent,
     PortalComponent,
@@ -176,7 +174,6 @@ const EXPORTED_DECLARATIONS = [
             NoteCellComponent,
             LinkCellComponent,
             SwitchButtonCellComponent,
-            InfoCellComponent,
         ]),
         NgbPaginationModule,
     ],

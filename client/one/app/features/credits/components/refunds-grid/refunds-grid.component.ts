@@ -103,8 +103,10 @@ export class RefundsGridComponent implements OnInit {
             resizable: false,
             cellRendererFramework: IconTooltipCellComponent,
             cellRendererParams: {
-                icon: IconTooltipCellIcon.Comment,
-            } as IconTooltipRendererParams,
+                columnDisplayOptions: {
+                    icon: IconTooltipCellIcon.Comment,
+                },
+            } as IconTooltipRendererParams<string, CreditRefund, any>,
         },
     ];
 

@@ -73,8 +73,10 @@ export class CampaignBudgetsGridComponent {
             resizable: false,
             cellRendererFramework: IconTooltipCellComponent,
             cellRendererParams: {
-                icon: IconTooltipCellIcon.Comment,
-            } as IconTooltipRendererParams,
+                columnDisplayOptions: {
+                    icon: IconTooltipCellIcon.Comment,
+                },
+            } as IconTooltipRendererParams<string, CampaignBudget, any>,
         },
     ];
 
