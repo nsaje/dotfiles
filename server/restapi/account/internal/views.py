@@ -79,9 +79,6 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def create(self, request):
-        if not request.user.has_perm("zemauth.all_accounts_accounts_add_account"):
-            raise utils.exc.AuthorizationError()
-
         serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         agency_id = serializer.validated_data.get("agency_id")
