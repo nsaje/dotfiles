@@ -1,7 +1,7 @@
 import * as usersGridHelpers from './users-grid.helpers';
 import {User} from '../../../../../core/users/types/user';
-import {EntityPermissionValue} from '../../../../../core/users/types/entity-permission-value';
 import {UserStatus} from '../../../../../app.constants';
+import {EntityPermissionValue} from '../../../../../core/users/users.constants';
 
 describe('ArrayHelpers', () => {
     const dummyUser: User = {
@@ -10,8 +10,8 @@ describe('ArrayHelpers', () => {
         status: UserStatus.ACTIVE,
     };
     const interestingPermissions: EntityPermissionValue[] = [
-        'user',
-        'agency_spend_margin',
+        EntityPermissionValue.USER,
+        EntityPermissionValue.AGENCY_SPEND_MARGIN,
     ];
     const interestingAccountId = '0';
 
@@ -19,15 +19,15 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 accountId: interestingAccountId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: interestingAccountId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: interestingAccountId,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -41,15 +41,15 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 accountId: interestingAccountId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: interestingAccountId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: '123',
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -65,15 +65,15 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 accountId: interestingAccountId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: interestingAccountId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: '123',
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -89,15 +89,15 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 accountId: '123',
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: '123',
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: '123',
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -113,11 +113,11 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 agencyId: '123',
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: '123',
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -133,15 +133,15 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 agencyId: '123',
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: '123',
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 agencyId: '123',
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ];
         expect(
@@ -157,11 +157,11 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 agencyId: '123',
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: '123',
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
         ];
         expect(
@@ -177,11 +177,11 @@ describe('ArrayHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 agencyId: '012',
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 agencyId: '123',
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
         ];
         expect(

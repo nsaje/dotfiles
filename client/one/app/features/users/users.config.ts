@@ -1,8 +1,8 @@
 import {PaginationState} from '../../shared/components/smart-grid/types/pagination-state';
 import {PaginationOptions} from '../../shared/components/smart-grid/types/pagination-options';
-import {EntityPermissionValue} from '../../core/users/types/entity-permission-value';
 import {DisplayedEntityPermissionValue} from './types/displayed-entity-permission-value';
 import {UserStatus} from '../../app.constants';
+import {EntityPermissionValue} from '../../core/users/users.constants';
 
 export const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -22,15 +22,15 @@ export const DEFAULT_PAGINATION_OPTIONS: PaginationOptions = {
 };
 
 export const GENERAL_PERMISSIONS: EntityPermissionValue[] = [
-    'write',
-    'budget',
-    'user',
+    EntityPermissionValue.WRITE,
+    EntityPermissionValue.BUDGET,
+    EntityPermissionValue.USER,
 ];
 export const REPORTING_PERMISSIONS: DisplayedEntityPermissionValue[] = [
     'total_spend',
-    'agency_spend_margin',
-    'media_cost_data_cost_licence_fee',
-    'base_costs_service_fee',
+    EntityPermissionValue.AGENCY_SPEND_MARGIN,
+    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
+    EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
 ];
 
 export const CONFIGURABLE_PERMISSIONS: EntityPermissionValue[] = [

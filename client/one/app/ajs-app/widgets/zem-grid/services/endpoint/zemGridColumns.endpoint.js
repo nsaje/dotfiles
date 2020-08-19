@@ -1,9 +1,13 @@
+var EntityPermissionValue = require('../../../../../core/users/users.constants')
+    .EntityPermissionValue;
+
 angular
     .module('one.widgets')
     .factory('zemGridEndpointColumns', function(
         zemAuthStore,
         zemGridConstants,
-        zemUtils
+        zemUtils,
+        zemNavigationNewService
     ) {
         // eslint-disable-line max-len
         var CONVERSION_RATE_PREFIX = 'conversion_rate_per_';
@@ -608,6 +612,7 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             eMediaCost: {
                 name: 'Media Spend',
@@ -619,6 +624,8 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 supportsRefunds: true,
             },
             dataCost: {
@@ -642,6 +649,7 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             eDataCost: {
                 name: 'Data Spend',
@@ -654,6 +662,8 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
             serviceFee: {
                 name: 'Service Fee',
@@ -664,6 +674,7 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             licenseFee: {
                 name: 'License Fee',
@@ -675,6 +686,8 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 supportsRefunds: true,
             },
             margin: {
@@ -687,6 +700,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_agency_margin',
                 shown: 'zemauth.can_view_agency_margin',
+                shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 supportsRefunds: true,
             },
             etfmCost: {
@@ -711,6 +725,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_agency_cost_breakdown',
                 shown: 'zemauth.can_view_agency_cost_breakdown',
+                shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 costMode: constants.costMode.ANY,
                 supportsRefunds: true,
             },
@@ -736,6 +751,7 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
                 costMode: constants.costMode.ANY,
             },
             atCost: {
@@ -2282,6 +2298,7 @@ angular
         //
 
         function checkPermissions(columns, breakdown) {
+            var activeAccount = zemNavigationNewService.getActiveAccount();
             // Go trough all columns and convert permissions to boolean, when needed
             columns.forEach(function(column) {
                 var columnPermissions = column.shown;
@@ -2303,10 +2320,29 @@ angular
                     zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
-                column.shown = zemUtils.convertPermission(
-                    columnPermissions,
-                    zemAuthStore.hasPermission.bind(zemAuthStore)
-                );
+                if (
+                    column.shownForEntity &&
+                    zemAuthStore.hasPermission(
+                        'zemauth.fea_use_entity_permission'
+                    )
+                ) {
+                    if (activeAccount) {
+                        column.shown = zemAuthStore.hasPermissionOn(
+                            activeAccount.data.agencyId,
+                            activeAccount.id,
+                            column.shownForEntity
+                        );
+                    } else {
+                        column.shown = zemAuthStore.hasPermissionOnAnyEntity(
+                            column.shownForEntity
+                        );
+                    }
+                } else {
+                    column.shown = zemUtils.convertPermission(
+                        columnPermissions,
+                        zemAuthStore.hasPermission.bind(zemAuthStore)
+                    );
+                }
             });
         }
 

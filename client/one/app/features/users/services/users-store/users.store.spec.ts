@@ -9,7 +9,7 @@ import * as mockHelpers from '../../../../testing/mock.helpers';
 import {UsersStoreState} from './users.store.state';
 import {ScopeSelectorState} from '../../../../shared/components/scope-selector/scope-selector.constants';
 import * as clone from 'clone';
-import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {UserStatus} from '../../../../app.constants';
 
@@ -17,7 +17,7 @@ function mockUserCantSeeServiceFeeOnAccount(
     authStoreStub: jasmine.SpyObj<AuthStore>,
     mockedAccountId: string
 ) {
-    authStoreStub.hasEntityPermission.and
+    authStoreStub.hasPermissionOn.and
         .callFake(
             (
                 agencyId: string,
@@ -26,7 +26,7 @@ function mockUserCantSeeServiceFeeOnAccount(
             ) => {
                 if (
                     accountId === mockedAccountId &&
-                    permission === 'base_costs_service_fee'
+                    permission === EntityPermissionValue.BASE_COSTS_SERVICE_FEE
                 ) {
                     return false;
                 } else {
@@ -41,7 +41,7 @@ function mockUserCantSeeServiceFeeOnAgency(
     authStoreStub: jasmine.SpyObj<AuthStore>,
     mockedAgencyId: string
 ) {
-    authStoreStub.hasEntityPermission.and
+    authStoreStub.hasPermissionOn.and
         .callFake(
             (
                 agencyId: string,
@@ -50,7 +50,7 @@ function mockUserCantSeeServiceFeeOnAgency(
             ) => {
                 if (
                     agencyId === mockedAgencyId &&
-                    permission === 'base_costs_service_fee'
+                    permission === EntityPermissionValue.BASE_COSTS_SERVICE_FEE
                 ) {
                     return false;
                 } else {
@@ -64,20 +64,14 @@ function mockUserCantSeeServiceFeeOnAgency(
 function mockUserCantSeeServiceFeeInternal(
     authStoreStub: jasmine.SpyObj<AuthStore>
 ) {
-    authStoreStub.hasEntityPermission.and
-        .callFake(
-            (
-                agencyId: string,
-                accountId: string,
-                permission: EntityPermissionValue
-            ) => {
-                if (permission === 'base_costs_service_fee') {
-                    return false;
-                } else {
-                    return true;
-                }
+    authStoreStub.hasPermissionOnAllEntities.and
+        .callFake((permission: EntityPermissionValue) => {
+            if (permission === EntityPermissionValue.BASE_COSTS_SERVICE_FEE) {
+                return false;
+            } else {
+                return true;
             }
-        )
+        })
         .calls.reset();
 }
 
@@ -110,8 +104,8 @@ describe('UsersStore', () => {
             'list',
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
-            'hasEntityPermission',
-            'hasEntityPermission',
+            'hasPermissionOn',
+            'hasPermissionOnAllEntities',
             'getCurrentUserId',
         ]);
 
@@ -134,27 +128,27 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'user',
+                    permission: EntityPermissionValue.USER,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'budget',
+                    permission: EntityPermissionValue.BUDGET,
                 },
             ],
             status: UserStatus.ACTIVE,
@@ -168,11 +162,11 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
             ],
             status: UserStatus.ACTIVE,
@@ -185,10 +179,10 @@ describe('UsersStore', () => {
             lastName: 'User',
             entityPermissions: [
                 {
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 },
             ],
             status: UserStatus.ACTIVE,
@@ -230,7 +224,10 @@ describe('UsersStore', () => {
             .returnValue(of(mockedAccounts, asapScheduler))
             .calls.reset();
         authStoreStub.getCurrentUserId.and.returnValue('42').calls.reset();
-        authStoreStub.hasEntityPermission.and.returnValue(true).calls.reset();
+        authStoreStub.hasPermissionOn.and.returnValue(true).calls.reset();
+        authStoreStub.hasPermissionOnAllEntities.and
+            .returnValue(true)
+            .calls.reset();
     });
 
     it('should correctly initialize store', fakeAsync(() => {
@@ -320,10 +317,10 @@ describe('UsersStore', () => {
                 ' user1@outbrain.com,user2@outbrain.com, user3@outbrain.com , user4@outbrain.com ',
             entityPermissions: [
                 {
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
             ],
             status: UserStatus.ACTIVE,
@@ -336,10 +333,10 @@ describe('UsersStore', () => {
                 lastName: '',
                 entityPermissions: [
                     {
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -351,10 +348,10 @@ describe('UsersStore', () => {
                 lastName: '',
                 entityPermissions: [
                     {
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -366,10 +363,10 @@ describe('UsersStore', () => {
                 lastName: '',
                 entityPermissions: [
                     {
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -381,10 +378,10 @@ describe('UsersStore', () => {
                 lastName: '',
                 entityPermissions: [
                     {
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -660,16 +657,16 @@ describe('UsersStore', () => {
 
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ]);
     }));
@@ -702,19 +699,19 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 agencyId: mockedAgencyId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ]);
     }));
@@ -770,31 +767,31 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ]);
     }));
@@ -836,31 +833,31 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount1Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
             {
                 accountId: mockedAccount2Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount2Id,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
             },
         ]);
     }));
@@ -874,16 +871,17 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],
@@ -914,24 +912,25 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 readonly: true,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'media_cost_data_cost_licence_fee',
+                permission:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 readonly: true,
             },
         ]);
@@ -946,16 +945,17 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],
@@ -986,24 +986,25 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 agencyId: mockedAgencyId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 readonly: true,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'media_cost_data_cost_licence_fee',
+                permission:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 readonly: true,
             },
         ]);
@@ -1018,16 +1019,17 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],
@@ -1058,24 +1060,25 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 agencyId: mockedAgencyId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'agency_spend_margin',
+                permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 readonly: true,
             },
             {
                 agencyId: mockedAgencyId,
-                permission: 'media_cost_data_cost_licence_fee',
+                permission:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 readonly: true,
             },
         ]);
@@ -1090,16 +1093,17 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],
@@ -1134,39 +1138,39 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
             {
                 accountId: mockedAccount2Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount2Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount2Id,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
         ]);
 
@@ -1201,27 +1205,27 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'user',
+                permission: EntityPermissionValue.USER,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
         ]);
 
@@ -1232,7 +1236,7 @@ describe('UsersStore', () => {
     }));
 
     it("should not copy a permission to a new account if the app user hasn't got the permission to use it", fakeAsync(() => {
-        authStoreStub.hasEntityPermission.and
+        authStoreStub.hasPermissionOn.and
             .callFake(
                 (
                     agencyId: string,
@@ -1241,7 +1245,7 @@ describe('UsersStore', () => {
                 ) => {
                     if (
                         accountId === mockedAccount1Id &&
-                        permission === 'budget'
+                        permission === EntityPermissionValue.BUDGET
                     ) {
                         return false;
                     } else {
@@ -1258,15 +1262,15 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'budget',
+                    permission: EntityPermissionValue.BUDGET,
                 },
             ],
         };
@@ -1277,23 +1281,23 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount0Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount0Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
         ]);
     }));
@@ -1308,15 +1312,15 @@ describe('UsersStore', () => {
         expect(store.state.activeEntity.entity.entityPermissions).toEqual([
             {
                 accountId: mockedAccount1Id,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'write',
+                permission: EntityPermissionValue.WRITE,
             },
             {
                 accountId: mockedAccount1Id,
-                permission: 'budget',
+                permission: EntityPermissionValue.BUDGET,
             },
         ]);
 
@@ -1463,27 +1467,27 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'user',
+                    permission: EntityPermissionValue.USER,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'user',
+                    permission: EntityPermissionValue.USER,
                 },
             ],
         };
@@ -1504,7 +1508,7 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
             ],
         };
@@ -1523,7 +1527,7 @@ describe('UsersStore', () => {
     }));
 
     it("should disable a general permission checkbox if the user hasn't got the permission to use it", fakeAsync(() => {
-        authStoreStub.hasEntityPermission.and
+        authStoreStub.hasPermissionOn.and
             .callFake(
                 (
                     agencyId: string,
@@ -1532,7 +1536,7 @@ describe('UsersStore', () => {
                 ) => {
                     if (
                         accountId === mockedAccount0Id &&
-                        permission === 'budget'
+                        permission === EntityPermissionValue.BUDGET
                     ) {
                         return false;
                     } else {
@@ -1549,11 +1553,11 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
             ],
         };
@@ -1606,11 +1610,11 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
             ],
         };
@@ -1651,11 +1655,11 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
             ],
         };
@@ -1694,33 +1698,35 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     accountId: mockedAccount0Id,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 },
                 {
                     accountId: mockedAccount1Id,
-                    permission: 'base_costs_service_fee',
+                    permission: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
                 },
             ],
         };
@@ -1773,16 +1779,17 @@ describe('UsersStore', () => {
             entityPermissions: [
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
                     agencyId: mockedAgencyId,
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],
@@ -1810,14 +1817,15 @@ describe('UsersStore', () => {
             ...mockedInternalUser,
             entityPermissions: [
                 {
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
-                    permission: 'agency_spend_margin',
+                    permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                     readonly: true,
                 },
                 {
-                    permission: 'media_cost_data_cost_licence_fee',
+                    permission:
+                        EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                     readonly: true,
                 },
             ],

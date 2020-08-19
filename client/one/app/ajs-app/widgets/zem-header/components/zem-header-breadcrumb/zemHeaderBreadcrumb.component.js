@@ -3,6 +3,8 @@ var ENTITY_TYPE_TO_LEVEL_MAP = require('../../../../../app.constants')
     .ENTITY_TYPE_TO_LEVEL_MAP;
 var LEVEL_TO_LEVEL_PARAM_MAP = require('../../../../../app.constants')
     .LEVEL_TO_LEVEL_PARAM_MAP;
+var EntityPermissionValue = require('../../../../../core/users/users.constants')
+    .EntityPermissionValue;
 
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     template: require('./zemHeaderBreadcrumb.component.html'),
@@ -97,10 +99,8 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 entity = entity.parent;
             }
 
-            var canUserSeeAllAccounts = zemAuthStore.hasEntityPermission(
-                null,
-                null,
-                'read',
+            var canUserSeeAllAccounts = zemAuthStore.hasPermissionOnAllEntities(
+                EntityPermissionValue.READ,
                 'zemauth.can_see_all_accounts'
             );
             var name = canUserSeeAllAccounts ? 'All accounts' : 'My accounts';

@@ -1,3 +1,6 @@
+var EntityPermissionValue = require('../../../../core/users/users.constants')
+    .EntityPermissionValue;
+
 angular
     .module('one.widgets')
     .factory('zemChartMetricsService', function(
@@ -82,6 +85,8 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
             E_MEDIA_COST: {
                 name: 'Media Spend',
@@ -89,6 +94,8 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
             B_DATA_COST: {
                 name: 'Base Data Cost',
@@ -96,6 +103,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             B_MEDIA_COST: {
                 name: 'Base Media Spend',
@@ -103,6 +111,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             ETFM_COST: {
                 name: 'Total Spend',
@@ -118,6 +127,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_view_agency_cost_breakdown',
+                shownForEntity: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 costMode: constants.costMode.ANY,
             },
             ET_COST: {
@@ -134,6 +144,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
                 costMode: constants.costMode.ANY,
             },
 
@@ -143,6 +154,7 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_see_service_fee',
+                shownForEntity: EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
             },
             LICENSE_FEE: {
                 name: 'License Fee',
@@ -150,6 +162,8 @@ angular
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                shownForEntity:
+                    EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
             },
 
             VISITS: {
@@ -723,6 +737,7 @@ angular
         }
 
         function checkPermissions(metrics) {
+            var activeAccount = zemNavigationNewService.getActiveAccount();
             // Go through all the metrics and convert permissions to boolean when needed
             metrics.forEach(function(metric) {
                 metric.internal = zemUtils.convertPermission(
@@ -730,10 +745,29 @@ angular
                     zemAuthStore.isPermissionInternal.bind(zemAuthStore)
                 );
 
-                metric.shown = zemUtils.convertPermission(
-                    metric.shown,
-                    zemAuthStore.hasPermission.bind(zemAuthStore)
-                );
+                if (
+                    metric.shownForEntity &&
+                    zemAuthStore.hasPermission(
+                        'zemauth.fea_use_entity_permission'
+                    )
+                ) {
+                    if (activeAccount) {
+                        metric.shown = zemAuthStore.hasPermissionOn(
+                            activeAccount.data.agencyId,
+                            activeAccount.id,
+                            metric.shownForEntity
+                        );
+                    } else {
+                        metric.shown = zemAuthStore.hasPermissionOnAnyEntity(
+                            metric.shownForEntity
+                        );
+                    }
+                } else {
+                    metric.shown = zemUtils.convertPermission(
+                        metric.shown,
+                        zemAuthStore.hasPermission.bind(zemAuthStore)
+                    );
+                }
             });
         }
 

@@ -54,8 +54,10 @@ def get_agencies(user, account):
         "default_account_type",
     ]
 
-    queryset = zemauth.access.get_agencies(user, Permission.WRITE)
-    return list(queryset.values(*values).distinct())
+    if account.id is None:
+        queryset = zemauth.access.get_agencies(user, Permission.WRITE)
+        return list(queryset.values(*values).distinct())
+    return list(core.models.Agency.objects.filter(pk=account.agency_id).values(*values))
 
 
 def get_account_managers(user, account):

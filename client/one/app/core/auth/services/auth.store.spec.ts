@@ -5,6 +5,7 @@ import {UserStatus} from '../../../app.constants';
 import {SetCurrentUserAction} from './reducers/set-current-user.reducer';
 import {FetchCurrentUserActionEffect} from './effects/fetch-current-user.effect';
 import {TestBed} from '@angular/core/testing';
+import {EntityPermissionValue} from '../../users/users.constants';
 
 describe('AuthStore', () => {
     let fetchCurrentUserActionEffectStub: jasmine.SpyObj<FetchCurrentUserActionEffect>;
@@ -199,12 +200,12 @@ describe('AuthStore', () => {
                     {
                         agencyId: '5',
                         accountId: null,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: '5',
                         accountId: null,
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
             };
@@ -213,7 +214,7 @@ describe('AuthStore', () => {
         });
     });
 
-    describe('hasEntityPermission', () => {
+    describe('hasPermissionOn', () => {
         let user: User;
 
         beforeEach(() => {
@@ -229,7 +230,7 @@ describe('AuthStore', () => {
                     {
                         agencyId: null,
                         accountId: '123',
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                 ],
             };
@@ -237,19 +238,19 @@ describe('AuthStore', () => {
         });
 
         it('should return false if called without specifying entity permission', () => {
-            expect(store.hasEntityPermission('123', '123', null)).toBeFalse();
-            expect(
-                store.hasEntityPermission('123', '123', undefined)
-            ).toBeFalse();
+            expect(store.hasPermissionOn('123', '123', null)).toBeFalse();
+            expect(store.hasPermissionOn('123', '123', undefined)).toBeFalse();
         });
 
         it('should return true if user has the specified entity permission', () => {
-            expect(store.hasEntityPermission('123', '123', 'read')).toBeTrue();
+            expect(
+                store.hasPermissionOn('123', '123', EntityPermissionValue.READ)
+            ).toBeTrue();
         });
 
         it('should return false if user does not have the specified entity permission', () => {
             expect(
-                store.hasEntityPermission('123', '123', 'write')
+                store.hasPermissionOn('123', '123', EntityPermissionValue.WRITE)
             ).toBeFalse();
         });
     });
@@ -314,17 +315,111 @@ describe('AuthStore', () => {
                     {
                         agencyId: '5',
                         accountId: null,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: '5',
                         accountId: null,
-                        permission: 'write',
+                        permission: EntityPermissionValue.WRITE,
                     },
                 ],
             };
             store.dispatch(new SetCurrentUserAction(user));
             expect(store.canCreateNewAccount()).toBeTrue();
+        });
+    });
+
+    describe('hasPermissionOnAllEntities', () => {
+        it('should return false if called without specifying entity permission', () => {
+            expect(store.hasPermissionOnAllEntities(null)).toBeFalse();
+            expect(store.hasPermissionOnAllEntities(undefined)).toBeFalse();
+        });
+
+        it('should return true if user has the specified entity permission on all entities', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: null,
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(
+                store.hasPermissionOnAllEntities(EntityPermissionValue.READ)
+            ).toBeTrue();
+        });
+
+        it('should return false if user does not have the specified entity permission on all entities', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(
+                store.hasPermissionOnAllEntities(EntityPermissionValue.READ)
+            ).toBeFalse();
+        });
+    });
+
+    describe('hasPermissionOnAnyEntities', () => {
+        it('should return false if called without specifying entity permission', () => {
+            expect(store.hasPermissionOnAnyEntity(null)).toBeFalse();
+            expect(store.hasPermissionOnAnyEntity(undefined)).toBeFalse();
+        });
+
+        it('should return true if user has the specified entity permission on any entities', () => {
+            const user: User = {
+                ...mockedUser,
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(
+                store.hasPermissionOnAnyEntity(EntityPermissionValue.READ)
+            ).toBeTrue();
+        });
+
+        it('should return false if user does not have the specified entity permission on any entities', () => {
+            const user: User = {
+                ...mockedUser,
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(
+                store.hasPermissionOnAnyEntity(EntityPermissionValue.WRITE)
+            ).toBeFalse();
         });
     });
 });

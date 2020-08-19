@@ -6,6 +6,7 @@ import {UsersEndpoint} from './users.endpoint';
 import {UsersService} from './users.service';
 import {User} from '../types/user';
 import {UserStatus} from '../../../app.constants';
+import {EntityPermissionValue} from '../users.constants';
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -46,7 +47,7 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAgencyId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -58,11 +59,11 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAccountId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: mockedAccountId,
-                        permission: 'user',
+                        permission: EntityPermissionValue.USER,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -74,11 +75,11 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAccountId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: mockedAccountId,
-                        permission: 'budget',
+                        permission: EntityPermissionValue.BUDGET,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -92,11 +93,11 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAccountId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: mockedAccountId,
-                        permission: 'user',
+                        permission: EntityPermissionValue.USER,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -106,11 +107,11 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAccountId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: mockedAccountId,
-                        permission: 'user',
+                        permission: EntityPermissionValue.USER,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -120,11 +121,11 @@ describe('UsersService', () => {
                 entityPermissions: [
                     {
                         agencyId: mockedAccountId,
-                        permission: 'read',
+                        permission: EntityPermissionValue.READ,
                     },
                     {
                         agencyId: mockedAccountId,
-                        permission: 'user',
+                        permission: EntityPermissionValue.USER,
                     },
                 ],
                 status: UserStatus.ACTIVE,
@@ -164,11 +165,11 @@ describe('UsersService', () => {
             entityPermissions: [
                 {
                     agencyId: '123',
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: '123',
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
             ],
         };

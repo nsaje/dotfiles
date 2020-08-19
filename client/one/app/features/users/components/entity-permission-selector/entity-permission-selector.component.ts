@@ -8,7 +8,6 @@ import {
     EventEmitter,
     OnChanges,
 } from '@angular/core';
-import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {CheckboxSliderItem} from '../../../../shared/components/checkbox-slider/types/checkbox-slider-item';
 import {EntityPermissionCheckboxItem} from './types/entity-permission-checkbox-item';
 import {
@@ -20,6 +19,7 @@ import {
 import {EntityPermissionSelection} from './types/entity-permission-selection';
 import {DisplayedEntityPermissionValue} from '../../types/displayed-entity-permission-value';
 import {EntityPermissionCheckboxStates} from './types/entity-permission-checkbox-states';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Component({
     selector: 'zem-entity-permission-selector',

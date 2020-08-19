@@ -33,6 +33,7 @@ import {User} from '../../../core/users/types/user';
 import {Account} from '../../../core/entities/types/account/account';
 import {ScopeSelectorState} from '../../../shared/components/scope-selector/scope-selector.constants';
 import {AuthStore} from '../../../core/auth/services/auth.store';
+import {EntityPermissionValue} from '../../../core/users/users.constants';
 
 @Component({
     selector: 'zem-users-view',
@@ -84,10 +85,10 @@ export class UsersView implements OnInit, OnDestroy {
                 state.accounts.filter(
                     account =>
                         !state.activeEntity.entityAccounts.includes(account) &&
-                        this.authStore.hasEntityPermission(
+                        this.authStore.hasPermissionOn(
                             state.agencyId,
                             account.id,
-                            'user'
+                            EntityPermissionValue.USER
                         )
                 )
             ),

@@ -1,4 +1,4 @@
-import {EntityPermissionValue} from '../../../../../core/users/types/entity-permission-value';
+import {EntityPermissionValue} from '../../../../../core/users/users.constants';
 
 export type EntityPermissionSelection = {
     [key in EntityPermissionValue]?: boolean | undefined;

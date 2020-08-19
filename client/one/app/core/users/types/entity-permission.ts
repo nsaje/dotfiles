@@ -1,4 +1,4 @@
-import {EntityPermissionValue} from './entity-permission-value';
+import {EntityPermissionValue} from '../users.constants';
 
 export interface EntityPermission {
     agencyId?: string;

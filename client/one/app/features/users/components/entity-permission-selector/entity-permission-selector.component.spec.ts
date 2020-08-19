@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
 import {EntityPermissionSelectorComponent} from './entity-permission-selector.component';
 import Spy = jasmine.Spy;
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 describe('EntityPermissionSelectorComponent', () => {
     let component: EntityPermissionSelectorComponent;
@@ -43,7 +44,7 @@ describe('EntityPermissionSelectorComponent', () => {
         ).and.stub();
 
         component.toggleOption({
-            value: 'write',
+            value: EntityPermissionValue.WRITE,
             selected: true,
             displayValue: '',
             description: '',
@@ -79,7 +80,7 @@ describe('EntityPermissionSelectorComponent', () => {
         ).and.stub();
 
         component.toggleOption({
-            value: 'budget',
+            value: EntityPermissionValue.BUDGET,
             selected: false,
             displayValue: '',
             description: '',
@@ -115,7 +116,7 @@ describe('EntityPermissionSelectorComponent', () => {
         ).and.stub();
 
         component.toggleOption({
-            value: 'user',
+            value: EntityPermissionValue.USER,
             selected: true,
             displayValue: '',
             description: '',
@@ -157,12 +158,12 @@ describe('EntityPermissionSelectorComponent', () => {
                 displayValue: '',
             },
             {
-                value: 'agency_spend_margin',
+                value: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 selected: true,
                 displayValue: '',
             },
             {
-                value: 'media_cost_data_cost_licence_fee',
+                value: EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 selected: false,
                 displayValue: '',
             },
@@ -204,12 +205,12 @@ describe('EntityPermissionSelectorComponent', () => {
                 displayValue: '',
             },
             {
-                value: 'agency_spend_margin',
+                value: EntityPermissionValue.AGENCY_SPEND_MARGIN,
                 selected: true,
                 displayValue: '',
             },
             {
-                value: 'media_cost_data_cost_licence_fee',
+                value: EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 selected: false,
                 displayValue: '',
             },

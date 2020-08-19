@@ -21,7 +21,7 @@ import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {AuthStoreState} from './auth.store.state';
 import {User} from '../../users/types/user';
 import {downgradeInjectable} from '@angular/upgrade/static';
-import {EntityPermissionValue} from '../../users/types/entity-permission-value';
+import {EntityPermissionValue} from '../../users/users.constants';
 
 @Injectable()
 export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
@@ -114,7 +114,11 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     // TODO (msuber): deleted after User Roles will be released.
     hasAgencyScope(agencyId: string) {
         if (this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return this.hasEntityPermission(agencyId, null, 'write');
+            return this.hasPermissionOn(
+                agencyId,
+                null,
+                EntityPermissionValue.WRITE
+            );
         }
         if (this.hasPermission('zemauth.can_see_all_accounts')) {
             return true;
@@ -134,15 +138,15 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
             return (
                 (commonHelpers.isDefined(ep.agencyId) &&
                     !commonHelpers.isDefined(ep.accountId) &&
-                    ep.permission === 'write') ||
+                    ep.permission === EntityPermissionValue.WRITE) ||
                 (!commonHelpers.isDefined(ep.agencyId) &&
                     !commonHelpers.isDefined(ep.accountId) &&
-                    ep.permission === 'write')
+                    ep.permission === EntityPermissionValue.WRITE)
             );
         });
     }
 
-    hasEntityPermission(
+    hasPermissionOn(
         agencyId: string | number,
         accountId: string | number,
         permission: EntityPermissionValue,
@@ -173,6 +177,26 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
                 [parsedAccountId, null].includes(ep.accountId) &&
                 ep.permission === permission
             );
+        });
+    }
+
+    hasPermissionOnAllEntities(
+        permission: EntityPermissionValue,
+        fallbackPermission?: string | string[]
+    ): boolean {
+        return this.hasPermissionOn(null, null, permission, fallbackPermission);
+    }
+
+    hasPermissionOnAnyEntity(permission: EntityPermissionValue): boolean {
+        if (
+            !commonHelpers.isDefined(permission) ||
+            arrayHelpers.isEmpty(this.state.user.entityPermissions)
+        ) {
+            return false;
+        }
+
+        return this.state.user.entityPermissions.some(ep => {
+            return ep.permission === permission;
         });
     }
 

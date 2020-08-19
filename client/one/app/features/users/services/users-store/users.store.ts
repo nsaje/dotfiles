@@ -23,7 +23,6 @@ import {
     isEmpty,
 } from '../../../../shared/helpers/array.helpers';
 import {EntityPermissionSelection} from '../../components/entity-permission-selector/types/entity-permission-selection';
-import {EntityPermissionValue} from '../../../../core/users/types/entity-permission-value';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
 import {
     CONFIGURABLE_PERMISSIONS,
@@ -31,6 +30,7 @@ import {
     REPORTING_PERMISSIONS,
 } from '../../users.config';
 import {EntityPermissionCheckboxStates} from '../../components/entity-permission-selector/types/entity-permission-checkbox-states';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Injectable()
 export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
@@ -66,10 +66,10 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         keyword: string | null,
         showInternal: boolean | null
     ): Promise<boolean> {
-        const canEditUsers: boolean = this.authStore.hasEntityPermission(
+        const canEditUsers: boolean = this.authStore.hasPermissionOn(
             agencyId,
             accountId,
-            'user'
+            EntityPermissionValue.USER
         );
         if (canEditUsers) {
             return new Promise<boolean>(resolve => {
@@ -89,15 +89,15 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                             ...this.state,
                             agencyId: agencyId,
                             accountId: accountId,
-                            hasAgencyScope: this.authStore.hasEntityPermission(
+                            hasAgencyScope: this.authStore.hasPermissionOn(
                                 agencyId,
                                 null,
-                                'user'
+                                EntityPermissionValue.USER
                             ),
-                            hasAllAccountsScope: this.authStore.hasEntityPermission(
+                            hasAllAccountsScope: this.authStore.hasPermissionOn(
                                 null,
                                 null,
-                                'user'
+                                EntityPermissionValue.USER
                             ),
                             canEditUsers,
                             currentUserId: this.authStore.getCurrentUserId(),
@@ -288,7 +288,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
             newEntityPermissions = [
                 {
                     accountId: account.id,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
             ];
         }
@@ -334,11 +334,11 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         if (scopeState === ScopeSelectorState.AGENCY_SCOPE) {
             entityPermissions.push({
                 agencyId: this.state.agencyId,
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             });
         } else if (scopeState === ScopeSelectorState.ALL_ACCOUNTS_SCOPE) {
             entityPermissions.push({
-                permission: 'read',
+                permission: EntityPermissionValue.READ,
             });
         }
 
@@ -620,9 +620,19 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
 
     private getDefaultEntityPermissions(): EntityPermission[] {
         if (this.state.accountId !== null) {
-            return [{accountId: this.state.accountId, permission: 'read'}];
+            return [
+                {
+                    accountId: this.state.accountId,
+                    permission: EntityPermissionValue.READ,
+                },
+            ];
         } else if (this.state.hasAgencyScope === true) {
-            return [{agencyId: this.state.agencyId, permission: 'read'}];
+            return [
+                {
+                    agencyId: this.state.agencyId,
+                    permission: EntityPermissionValue.READ,
+                },
+            ];
         } else {
             return [];
         }
@@ -637,7 +647,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 ep =>
                     !isNotEmpty(ep.agencyId) &&
                     !isNotEmpty(ep.accountId) &&
-                    ep.permission === 'read'
+                    ep.permission === EntityPermissionValue.READ
             )
         ) {
             return entityPermissions.filter(
@@ -646,14 +656,18 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         }
         if (
             entityPermissions.some(
-                ep => isNotEmpty(ep.agencyId) && ep.permission === 'read'
+                ep =>
+                    isNotEmpty(ep.agencyId) &&
+                    ep.permission === EntityPermissionValue.READ
             )
         ) {
             return entityPermissions.filter(ep => isNotEmpty(ep.agencyId));
         }
         if (
             entityPermissions.some(
-                ep => isNotEmpty(ep.accountId) && ep.permission === 'read'
+                ep =>
+                    isNotEmpty(ep.accountId) &&
+                    ep.permission === EntityPermissionValue.READ
             )
         ) {
             return entityPermissions.filter(ep => isNotEmpty(ep.accountId));
@@ -793,14 +807,14 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
                 permission !== 'total_spend' &&
                 selectedAccountIds.some(
                     accountId =>
-                        !this.authStore.hasEntityPermission(
+                        !this.authStore.hasPermissionOn(
                             this.state.agencyId,
                             accountId,
                             permission
                         )
                 ) &&
                 selectedAccountIds.some(accountId =>
-                    this.authStore.hasEntityPermission(
+                    this.authStore.hasPermissionOn(
                         this.state.agencyId,
                         accountId,
                         permission
@@ -1043,9 +1057,9 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         selectedAccounts: Account[]
     ): boolean | undefined {
         if (scopeState === ScopeSelectorState.ALL_ACCOUNTS_SCOPE) {
-            return this.authStore.hasEntityPermission(null, null, permission);
+            return this.authStore.hasPermissionOnAllEntities(permission);
         } else if (scopeState === ScopeSelectorState.AGENCY_SCOPE) {
-            return this.authStore.hasEntityPermission(
+            return this.authStore.hasPermissionOn(
                 this.state.agencyId,
                 null,
                 permission
@@ -1053,7 +1067,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         } else {
             const hasAccountPermissions: boolean[] = selectedAccounts.map(
                 account =>
-                    this.authStore.hasEntityPermission(
+                    this.authStore.hasPermissionOn(
                         this.state.agencyId,
                         account.id,
                         permission

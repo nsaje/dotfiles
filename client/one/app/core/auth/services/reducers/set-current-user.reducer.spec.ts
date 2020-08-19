@@ -5,6 +5,7 @@ import {
 import {AuthStoreState} from '../auth.store.state';
 import {UserStatus} from '../../../../app.constants';
 import {User} from '../../../users/types/user';
+import {EntityPermissionValue} from '../../../users/users.constants';
 
 describe('SetCurrentUserActionReducer', () => {
     let reducer: SetCurrentUserActionReducer;
@@ -45,11 +46,11 @@ describe('SetCurrentUserActionReducer', () => {
             entityPermissions: [
                 {
                     agencyId: null,
-                    permission: 'read',
+                    permission: EntityPermissionValue.READ,
                 },
                 {
                     agencyId: null,
-                    permission: 'write',
+                    permission: EntityPermissionValue.WRITE,
                 },
             ],
         };

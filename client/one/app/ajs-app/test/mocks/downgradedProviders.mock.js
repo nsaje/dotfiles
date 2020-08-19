@@ -142,7 +142,9 @@ angular
         this.hasPermission = hasPermission;
         this.isPermissionInternal = isPermissionInternal;
         this.hasAgencyScope = angular.noop;
-        this.hasEntityPermission = hasEntityPermission;
+        this.hasPermissionOn = hasPermissionOn;
+        this.hasPermissionOnAllEntities = hasPermissionOnAllEntities;
+        this.hasPermissionOnAnyEntity = hasPermissionOnAnyEntity;
         this.setMockedCurrentUser = setMockedCurrentUser;
         this.setMockedPermissions = setMockedPermissions;
         this.setMockedInternalPermissions = setMockedInternalPermissions;
@@ -189,7 +191,7 @@ angular
             mockedEntityPermissions = entityPermissions;
         }
 
-        function hasEntityPermission(
+        function hasPermissionOn(
             agencyId,
             accountId,
             permission,
@@ -204,6 +206,21 @@ angular
                     [accountId, null].includes(ep.accountId) &&
                     ep.permission === permission
                 );
+            });
+        }
+
+        function hasPermissionOnAllEntities(permission, fallbackPermission) {
+            return this.hasPermissionOn(
+                null,
+                null,
+                permission,
+                fallbackPermission
+            );
+        }
+
+        function hasPermissionOnAnyEntity(permission) {
+            return mockedEntityPermissions.some(function(ep) {
+                return ep.permission === permission;
             });
         }
     });

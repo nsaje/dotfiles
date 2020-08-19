@@ -1,6 +1,8 @@
 var ENTITY_MANAGER_CONFIG = require('../../../../../features/entity-manager/entity-manager.config')
     .ENTITY_MANAGER_CONFIG;
 var commonHelpers = require('../../../../../shared/helpers/common.helpers');
+var EntityPermissionValue = require('../../../../../core/users/users.constants')
+    .EntityPermissionValue;
 
 angular.module('one.widgets').component('zemInfoboxHeader', {
     bindings: {
@@ -63,10 +65,8 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
 
         function getLevelFromEntity(entity) {
             if (!commonHelpers.isDefined(entity)) {
-                var canUserSeeAllAccounts = zemAuthStore.hasEntityPermission(
-                    null,
-                    null,
-                    'read',
+                var canUserSeeAllAccounts = zemAuthStore.hasPermissionOnAllEntities(
+                    EntityPermissionValue.READ,
                     'zemauth.can_see_all_accounts'
                 );
                 if (canUserSeeAllAccounts) {

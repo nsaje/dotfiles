@@ -1,4 +1,4 @@
-import {EntityPermissionValue} from '../../../core/users/types/entity-permission-value';
+import {EntityPermissionValue} from '../../../core/users/users.constants';
 
 export type DisplayedEntityPermissionValue =
     | 'total_spend'

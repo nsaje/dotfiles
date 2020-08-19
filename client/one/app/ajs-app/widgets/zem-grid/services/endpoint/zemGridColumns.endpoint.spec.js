@@ -5,7 +5,7 @@ describe('zemGridEndpointColumnsSpec', function() {
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function($rootScope, _zemGridEndpointColumns_) {
+    beforeEach(inject(function(_zemGridEndpointColumns_) {
         // eslint-disable-line max-len
         zemGridEndpointColumns = _zemGridEndpointColumns_;
     }));
