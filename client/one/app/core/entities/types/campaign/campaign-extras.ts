@@ -11,7 +11,6 @@ export interface CampaignExtras {
     agencyId: string;
     archived: boolean;
     language: Language;
-    canRestore: boolean;
     campaignManagers: User[];
     currency: Currency;
     goalsDefaults: CampaignGoalsDefaults;

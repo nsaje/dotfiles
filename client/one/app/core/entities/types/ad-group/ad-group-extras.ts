@@ -11,7 +11,6 @@ import {Deal} from '../common/deal';
 export interface AdGroupExtras {
     agencyId: string;
     actionIsWaiting: boolean;
-    canRestore: boolean;
     isCampaignAutopilotEnabled: boolean;
     accountId: string;
     currency: Currency;

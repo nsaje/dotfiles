@@ -170,9 +170,6 @@ angular
                             internal: gridApi.isPermissionInternal(
                                 'zemauth.archive_restore_entity'
                             ),
-                            checkDisabled: checkCanArchive,
-                            notificationDisabled:
-                                'You can not archive active campaigns',
                             execute: archive,
                         },
                         ACTIONS.restore,
@@ -191,9 +188,6 @@ angular
                             internal: gridApi.isPermissionInternal(
                                 'zemauth.archive_restore_entity'
                             ),
-                            checkDisabled: checkCanArchive,
-                            notificationDisabled:
-                                'You can not archive active accounts',
                             execute: archive,
                         },
                         ACTIONS.restore,
@@ -214,9 +208,6 @@ angular
                             internal: gridApi.isPermissionInternal(
                                 'zemauth.archive_restore_entity'
                             ),
-                            checkDisabled: checkCanArchive,
-                            notificationDisabled:
-                                'You can not archive active ad groups',
                             execute: archive,
                         },
                         ACTIONS.restore,
@@ -227,19 +218,6 @@ angular
                 ) {
                     return [ACTIONS.pause, ACTIONS.enable];
                 }
-            }
-
-            function checkCanArchive() {
-                var selection = gridApi.getSelection();
-                return !selection.selected.every(function(item) {
-                    if (item.level !== 1) {
-                        return true;
-                    }
-                    return (
-                        item.data.stats.status.value !==
-                        constants.settingsState.ACTIVE
-                    );
-                });
             }
 
             function pause(selection) {

@@ -476,10 +476,6 @@ class CampaignAdGroupArchive(BaseBulkActionView):
             models.AdGroup.objects, json.loads(request.body), campaign_id=campaign.id
         )
 
-        active_ad_groups = ad_groups.filter_active()
-        if active_ad_groups.exists():
-            raise exc.ValidationError("Can not archive active ad groups")
-
         with transaction.atomic():
             for ad_group in ad_groups:
                 ad_group.archive(request)
@@ -586,15 +582,8 @@ class AccountCampaignArchive(BaseBulkActionView):
             models.Campaign.objects, json.loads(request.body), account_id=account.id
         )
 
-        active_ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns).filter_active()
-        if active_ad_groups.exists():
-            raise exc.ValidationError("Can not archive active campaigns")
-
         with transaction.atomic():
             for campaign in campaigns:
-                for budget in campaign.budgets.all():
-                    if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
-                        raise exc.ValidationError("Can not archive campaigns with active budget")
                 campaign.archive(request)
 
         return self.create_api_response(self.create_rows(campaigns, archived=True))
@@ -637,10 +626,6 @@ class AllAccountsAccountArchive(BaseBulkActionView):
         accounts = zemauth.features.entity_permission.helpers.log_differences_and_get_queryset(
             request.user, Permission.WRITE, accounts_user_perm, accounts_entity_perm
         )
-
-        active_ad_groups = models.AdGroup.objects.filter(campaign__account__in=accounts).filter_active()
-        if active_ad_groups.exists():
-            raise exc.ValidationError("Can not archive active accounts")
 
         with transaction.atomic():
             for account in accounts:

@@ -5,7 +5,6 @@ export const campaignExtrasMock: CampaignExtras = {
     agencyId: null,
     archived: null,
     language: null,
-    canRestore: null,
     campaignManagers: [],
     currency: null,
     goalsDefaults: {

@@ -6,7 +6,6 @@ import {AccountMediaSource} from './account-media-source';
 
 export interface AccountExtras {
     archived: boolean;
-    canRestore: boolean;
     isExternallyManaged: boolean;
     agencies: AccountAgency[];
     accountManagers: User[];
