@@ -12,12 +12,12 @@ describe('UsersHelpers', () => {
     };
 
     const accountReadPermission: EntityPermission = {
-        accountId: 0,
+        accountId: '0',
         permission: EntityPermissionValue.READ,
     };
 
     const agencyReadPermission: EntityPermission = {
-        agencyId: 0,
+        agencyId: '0',
         permission: EntityPermissionValue.READ,
     };
 
@@ -26,12 +26,12 @@ describe('UsersHelpers', () => {
     };
 
     const anotherAccountPermission: EntityPermission = {
-        accountId: 0,
+        accountId: '0',
         permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
     };
 
     const anotherAgencyPermission: EntityPermission = {
-        agencyId: 0,
+        agencyId: '0',
         permission: EntityPermissionValue.AGENCY_SPEND_MARGIN,
     };
 
