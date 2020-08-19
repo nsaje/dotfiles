@@ -618,6 +618,7 @@ REST_FRAMEWORK = {
         "filippo.portolano@inpwrd.com": "30/second",
         "orz@cortexmg.com": "30/second",
         "ariel@bruleemedia.com": "30/second",
+        "clients@adrizer.com": "30/second",
         "nsaje@outbrain.com": "30/second",  # FIXME(nsaje): remove after test
     },
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
