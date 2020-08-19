@@ -272,6 +272,21 @@ describe('AuthStore', () => {
             expect(store.canCreateNewAccount()).toBeTrue();
         });
 
+        it('should return true if user can create new account - internal user', () => {
+            const user: User = {
+                ...mockedUser,
+                agencies: [],
+                permissions: [
+                    {
+                        permission: 'zemauth.can_see_all_accounts',
+                        isPublic: true,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.canCreateNewAccount()).toBeTrue();
+        });
+
         it('should return false if user can not create new account with entity permissions', () => {
             const user: User = {
                 ...mockedUser,
