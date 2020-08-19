@@ -650,7 +650,7 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
     },
     [RuleConditionOperandType.CampaignManager]: {
         type: RuleConditionOperandType.CampaignManager,
-        label: 'Campaign manager',
+        label: 'Campaign manager email',
         group: RuleConditionOperandGroup.Settings,
     },
     [RuleConditionOperandType.AdGroupName]: {
