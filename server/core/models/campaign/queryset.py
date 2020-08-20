@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Exists
+from django.db.models import OuterRef
 
 import core.models
 import zemauth.features.entity_permission.shortcuts
@@ -44,6 +46,12 @@ class CampaignQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPer
             if campaignstop_state["allowed_to_run"]:
                 active_ids.append(campaign_id)
         return self.filter(id__in=active_ids)
+
+    def filter_has_active_ad_groups(self):
+        active_ad_groups_subquery = core.models.ad_group.AdGroup.objects.filter_current_and_active().filter(
+            campaign=OuterRef("id")
+        )
+        return self.annotate(active_ad_groups=Exists(active_ad_groups_subquery)).filter(active_ad_groups=True)
 
     def _get_query_path_to_account(self) -> str:
         return "account"

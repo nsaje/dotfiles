@@ -6,6 +6,7 @@ from django.urls import reverse
 import core.models
 import dash.models
 import restapi.serializers
+import utils.dates_helper
 import utils.test_helper
 from automation import autopilot
 from dash import constants
@@ -301,6 +302,28 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         self.assertEqual(
             [{"id": campaign["id"]} for campaign in resp_json["data"]], resp_json_only_non_paginated_ids["data"]
         )
+
+    def test_campaigns_list_exclude_inactive(self):
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        campaigns = magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
+        active_adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaigns[0])
+
+        r_no_active = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"excludeInactive": True})
+        resp_json_no_active = self.assertResponseValid(r_no_active, data_type=list)
+        self.assertEqual(len(resp_json_no_active["data"]), 0)
+
+        active_adgroup.settings.update_unsafe(
+            None,
+            state=constants.AdGroupSettingsState.ACTIVE,
+            start_date=utils.dates_helper.local_yesterday(),
+            end_date=utils.dates_helper.days_after(utils.dates_helper.local_today(), 5),
+        )
+
+        r_one_active = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"excludeInactive": True})
+        resp_json_one_active = self.assertResponseValid(r_one_active, data_type=list)
+
+        self.assertEqual(len(resp_json_one_active["data"]), 1)
+        self.assertEqual(str(campaigns[0].id), str(resp_json_one_active["data"][0].get("id")))
 
     def test_campaigns_list_account_id_invalid(self):
         account = magic_mixer.blend(core.models.Account)
