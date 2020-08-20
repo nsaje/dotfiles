@@ -5,6 +5,7 @@ import core.features.bid_modifiers
 import restapi.common.views_base
 import zemauth.access
 import zemauth.features.entity_permission.helpers
+from core.features.bid_modifiers import create_bid_modifier_dict
 from dash import models
 from restapi.common import pagination
 from restapi.common import permissions as restapi_permissions
@@ -102,6 +103,15 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             input_data["modifier"],
             user=request.user,
         )
+
+        if bid_modifier is None:
+            bid_modifier_dict = create_bid_modifier_dict(
+                None,
+                modifier_type=serializer.instance.type,
+                target=serializer.instance.target,
+                source_slug=serializer.instance.source_slug,
+            )
+            bid_modifier = models.BidModifier(**bid_modifier_dict)
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
 

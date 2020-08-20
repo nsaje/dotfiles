@@ -240,3 +240,18 @@ def create_upload_summary_response(delete_type_counts, instances):
 def create_error_file_path(ad_group_id, csv_error_key):
     ad_group_string = "ad_group_{}".format(ad_group_id) if ad_group_id is not None else "temporary"
     return os.path.join("bid_modifier_errors", ad_group_string, csv_error_key + ".csv")
+
+
+def create_bid_modifier_dict(bid_modifier_or_none, modifier_type=None, target=None, source_slug=None):
+    bid_modifier_dict = {
+        "id": None,
+        "type": modifier_type,
+        "target": target,
+        "source_slug": source_slug,
+        "modifier": None,
+    }
+    if bid_modifier_or_none:
+        bid_modifier_dict["id"] = bid_modifier_or_none.id
+        bid_modifier_dict["modifier"] = bid_modifier_or_none.modifier
+        bid_modifier_dict["source_slug"] = bid_modifier_or_none.source_slug
+    return bid_modifier_dict

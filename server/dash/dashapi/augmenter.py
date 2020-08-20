@@ -1,5 +1,6 @@
 import core.features.bid_modifiers
 import stats.constants
+from core.features.bid_modifiers import create_bid_modifier_dict
 from core.models.tags import helpers as tag_helpers
 from dash import constants
 from dash import publisher_helpers
@@ -264,7 +265,7 @@ def augment_content_ad(row, loader, is_base_level=False):
             bid_modifier = loader.bid_modifiers_by_ad.get(content_ad_id)
             row.update(
                 {
-                    "bid_modifier": _create_bid_modifier_dict(
+                    "bid_modifier": create_bid_modifier_dict(
                         bid_modifier,
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
                             core.features.bid_modifiers.BidModifierType.AD
@@ -392,7 +393,7 @@ def augment_source(row, loader, is_base_level=False):
 
     if hasattr(loader, "bid_modifiers_by_source"):
         bid_modifier = loader.bid_modifiers_by_source.get(source_id)
-        row["bid_modifier"] = _create_bid_modifier_dict(
+        row["bid_modifier"] = create_bid_modifier_dict(
             bid_modifier,
             modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
                 core.features.bid_modifiers.BidModifierType.SOURCE
@@ -467,7 +468,7 @@ def augment_publisher(row, loader, is_base_level=False):
         if modifier is not None:
             row.update(
                 {
-                    "bid_modifier": _create_bid_modifier_dict(
+                    "bid_modifier": create_bid_modifier_dict(
                         modifier,
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(modifier.type),
                         target=core.features.bid_modifiers.ApiConverter.from_target(modifier.type, modifier.target),
@@ -478,7 +479,7 @@ def augment_publisher(row, loader, is_base_level=False):
         else:
             row.update(
                 {
-                    "bid_modifier": _create_bid_modifier_dict(
+                    "bid_modifier": create_bid_modifier_dict(
                         None,
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
                             core.features.bid_modifiers.BidModifierType.PUBLISHER
@@ -567,7 +568,7 @@ def augment_placement(row, loader, is_base_level=False):
         if modifier is not None:
             row.update(
                 {
-                    "bid_modifier": _create_bid_modifier_dict(
+                    "bid_modifier": create_bid_modifier_dict(
                         modifier,
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(modifier.type),
                         target=core.features.bid_modifiers.ApiConverter.from_target(modifier.type, modifier.target),
@@ -582,7 +583,7 @@ def augment_placement(row, loader, is_base_level=False):
         else:
             row.update(
                 {
-                    "bid_modifier": _create_bid_modifier_dict(
+                    "bid_modifier": create_bid_modifier_dict(
                         None,
                         modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
                             core.features.bid_modifiers.BidModifierType.PLACEMENT
@@ -634,7 +635,7 @@ def augment_delivery(row, loader, is_base_level=True):
         bid_modifier = loader.objs_map.get(delivery_value)
         row.update(
             {
-                "bid_modifier": _create_bid_modifier_dict(
+                "bid_modifier": create_bid_modifier_dict(
                     bid_modifier,
                     modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
                         core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(delivery_dimension)
@@ -648,21 +649,6 @@ def augment_delivery(row, loader, is_base_level=True):
         )
 
     row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
-
-
-def _create_bid_modifier_dict(bid_modifier_or_none, modifier_type=None, target=None, source_slug=None):
-    bid_modifier_dict = {
-        "id": None,
-        "type": modifier_type,
-        "target": target,
-        "source_slug": source_slug,
-        "modifier": None,
-    }
-    if bid_modifier_or_none:
-        bid_modifier_dict["id"] = bid_modifier_or_none.id
-        bid_modifier_dict["modifier"] = bid_modifier_or_none.modifier
-        bid_modifier_dict["source_slug"] = bid_modifier_or_none.source_slug
-    return bid_modifier_dict
 
 
 def augment_delivery_for_report(row, loader, is_base_level=True):
