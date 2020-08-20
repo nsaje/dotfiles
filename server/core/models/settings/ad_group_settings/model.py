@@ -456,6 +456,8 @@ class AdGroupSettings(
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "click_capping_daily_click_budget" and value is not None:
             value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == "delivery_type" and value is not None:
+            value = constants.AdGroupDeliveryType.get_text(value)
 
         return value
 
