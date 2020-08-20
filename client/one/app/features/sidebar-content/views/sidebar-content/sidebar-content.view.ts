@@ -70,6 +70,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                     )
                 );
             },
+            isNewFeature: true,
         },
         {
             value: RoutePathName.PUBLISHER_GROUPS,
@@ -99,6 +100,7 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                     'zemauth.fea_can_create_automation_rules'
                 );
             },
+            isNewFeature: true,
             subItems: [
                 {
                     value: '',

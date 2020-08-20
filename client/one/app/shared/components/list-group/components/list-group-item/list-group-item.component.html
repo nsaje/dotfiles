@@ -12,7 +12,12 @@
         class="zem-list-group-item__value-container"
         *ngIf="isDisplayValueVisible"
     >
-        <div class="zem-list-group-item__value">{{ item.displayValue }}</div>
+        <div
+            class="zem-list-group-item__value"
+            [zemNewFeature]="item.isNewFeature"
+        >
+            {{ item.displayValue }}
+        </div>
     </div>
     <div
         *ngIf="item.subItems && item.subItems.length && isDisplayValueVisible"

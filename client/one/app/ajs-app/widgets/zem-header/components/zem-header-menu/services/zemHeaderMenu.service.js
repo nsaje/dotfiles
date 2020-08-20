@@ -89,7 +89,7 @@ angular
                 isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.can_see_user_management'
                 ),
-                isNewFeature: canUserSeeNewPublisherGroupsView,
+                isNewFeature: true,
             },
             {
                 text: canUserSeeNewPublisherGroupsView
@@ -108,6 +108,7 @@ angular
                 isInternalFeature: zemAuthStore.isPermissionInternal(
                     'zemauth.fea_can_create_automation_rules'
                 ),
+                isNewFeature: true,
             },
         ];
 

@@ -5,5 +5,6 @@ export interface ListGroupItem {
     displayValue: string;
     icon?: ListGroupItemIcon;
     isVisible: () => boolean;
+    isNewFeature?: boolean;
     subItems?: ListGroupItem[];
 }

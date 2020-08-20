@@ -1,6 +1,7 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {ListGroupItemComponent} from './list-group-item.component';
+import {NewFeatureDirective} from '../../../../directives/new-feature/new-feature.directive';
 
 describe('ListGroupItemComponent', () => {
     let component: ListGroupItemComponent;
@@ -8,7 +9,7 @@ describe('ListGroupItemComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [ListGroupItemComponent],
+            declarations: [ListGroupItemComponent, NewFeatureDirective],
             imports: [FormsModule],
         });
     });
