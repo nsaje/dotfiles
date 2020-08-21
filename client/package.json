@@ -49,7 +49,6 @@
     "ng-sidebar": "9.2.0",
     "ngx-file-drop": "8.0.8",
     "ngx-toastr": "12.0.0",
-    "posthog-js": "1.4.3",
     "promise-queue": "2.2.5",
     "raven-js": "3.27.2",
     "rxjs": "6.5.4",

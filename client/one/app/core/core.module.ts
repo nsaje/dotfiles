@@ -20,7 +20,6 @@ import {CreditsModule} from './credits/credits.module';
 import {UsersModule} from './users/users.module';
 import {AlertsModule} from './alerts/alerts.module';
 import {AuthModule} from './auth/auth.module';
-import {PosthogService} from './posthog/posthog.service';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -55,7 +54,6 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
     providers: [
         GoogleAnalyticsService,
         MixpanelService,
-        PosthogService,
         PostAsGetRequestService,
         NotificationService,
         ExceptionHandlerService,
