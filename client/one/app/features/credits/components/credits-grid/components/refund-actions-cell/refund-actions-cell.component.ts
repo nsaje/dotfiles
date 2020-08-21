@@ -14,6 +14,7 @@ export class RefundActionsCellComponent implements ICellRendererAngularComp {
     credit: Credit;
     isCanceled: boolean;
     isPast: boolean;
+    isReadOnly: boolean;
     canManageRefunds: boolean;
 
     agInit(params: CreditRendererParams) {
@@ -22,6 +23,9 @@ export class RefundActionsCellComponent implements ICellRendererAngularComp {
 
         this.isCanceled = this.credit.status === CreditStatus.CANCELED;
         this.isPast = this.params.creditGridType === CreditGridType.PAST;
+        this.isReadOnly = this.params.context.componentParent.store.isReadOnly(
+            this.credit
+        );
         this.canManageRefunds = this.params.context.componentParent.authStore.hasPermission(
             'zemauth.can_manage_credit_refunds'
         );

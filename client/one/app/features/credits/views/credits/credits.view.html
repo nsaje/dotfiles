@@ -22,6 +22,7 @@
             <button
                 class="zem-credits-view__action zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
                 (click)="addCreditItem()"
+                [disabled]="isReadOnly"
             >
                 Add Credit Item
             </button>

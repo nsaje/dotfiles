@@ -22,6 +22,7 @@ import {AuthStoreState} from './auth.store.state';
 import {User} from '../../users/types/user';
 import {downgradeInjectable} from '@angular/upgrade/static';
 import {EntityPermissionValue} from '../../users/users.constants';
+import {isDefined} from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
@@ -124,6 +125,25 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
             return true;
         }
         return this.state.user.agencies.includes(Number(agencyId));
+    }
+
+    hasReadOnlyAccess(
+        agencyId: string | number,
+        accountId?: string | number
+    ): boolean {
+        // TODO (msuber): deleted after User Roles will be released.
+        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
+            if (isDefined(agencyId) && !isDefined(accountId)) {
+                return !this.hasAgencyScope(`${agencyId}`);
+            } else {
+                return false;
+            }
+        }
+        return !this.hasPermissionOn(
+            agencyId,
+            accountId,
+            EntityPermissionValue.WRITE
+        );
     }
 
     canCreateNewAccount(): boolean {

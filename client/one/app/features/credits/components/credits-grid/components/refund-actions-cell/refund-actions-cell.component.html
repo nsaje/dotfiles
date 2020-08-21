@@ -6,6 +6,7 @@
     ></button>
     <button
         *ngIf="canManageRefunds && !isCanceled && !isPast"
+        [disabled]="isReadOnly"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--add-icon zem-refund-actions-cell__item"
         (click)="openCreditRefundCreateModal()"
     ></button>

@@ -8,7 +8,8 @@
         (click)="openCreditItemModal()"
     ></button>
     <button
-        *ngIf="isSigned && !isReadOnly"
+        *ngIf="isSigned"
+        [disabled]="isReadOnly"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-credit-actions-cell__item"
         (click)="cancelCreditItem()"
     ></button>

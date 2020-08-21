@@ -26,6 +26,8 @@ import {
 import {CreditStatus} from '../../../../app.constants';
 import {CreditGridType} from '../../credits.constants';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-credits-view',
@@ -57,6 +59,8 @@ export class CreditsView implements OnInit, OnDestroy {
     creditItemModalTitle: string;
 
     creditGridType = CreditGridType;
+
+    isReadOnly: boolean = true;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -178,8 +182,8 @@ export class CreditsView implements OnInit, OnDestroy {
     }
 
     private updateInternalState(queryParams: any): void {
-        const agencyId = queryParams.agencyId;
-        const accountId = queryParams.accountId || null;
+        const agencyId: string = queryParams.agencyId;
+        const accountId: string | null = queryParams.accountId || null;
         this.activePaginationOptions = {
             ...this.activePaginationOptions,
             ...this.getPreselectedPagination(ACTIVE_PAGINATION_URL_PARAMS),
@@ -195,6 +199,8 @@ export class CreditsView implements OnInit, OnDestroy {
             this.activePaginationOptions,
             this.pastPaginationOptions
         );
+
+        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
     }
 
     private getPreselectedPagination(paginationParams: {

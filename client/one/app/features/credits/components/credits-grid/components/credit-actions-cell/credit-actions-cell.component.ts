@@ -20,9 +20,9 @@ export class CreditActionsCellComponent implements ICellRendererAngularComp {
         this.params = params;
         this.credit = params.data;
 
-        this.isReadOnly =
-            !this.params.context.componentParent.store.state.hasAgencyScope &&
-            commonHelpers.isDefined(this.credit.agencyId);
+        this.isReadOnly = this.params.context.componentParent.store.isReadOnly(
+            this.credit
+        );
         this.isSigned = this.credit.status === CreditStatus.SIGNED;
         this.isCanceled = this.credit.status === CreditStatus.CANCELED;
     }
