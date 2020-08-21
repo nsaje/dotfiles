@@ -70,6 +70,7 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     implicitColumnDefs: ColDef[] = [];
 
     context: any;
+    isReadOnly: boolean = true;
 
     PAGE_SIZE_OPTIONS: PageSizeConfig[] = [
         {name: '10', value: 10},
@@ -239,8 +240,9 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     }
 
     private updateInternalState(queryParams: any) {
-        const agencyId = queryParams.agencyId;
-        const accountId = queryParams.accountId || null;
+        const agencyId: string = queryParams.agencyId;
+        const accountId: string | null = queryParams.accountId || null;
+        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
         this.explicitPaginationOptions = {
             ...this.explicitPaginationOptions,
             ...this.getPreselectedPagination(EXPLICIT_PAGINATION_URL_PARAMS),

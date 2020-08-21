@@ -83,6 +83,14 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                                 Account[]
                             ]
                         ) => {
+                            const writableAccounts: Account[] = values[2].filter(
+                                account =>
+                                    !this.authStore.hasReadOnlyAccess(
+                                        agencyId,
+                                        account.id
+                                    )
+                            );
+
                             this.setState({
                                 ...this.state,
                                 agencyId: agencyId,
@@ -94,7 +102,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                                 implicitEntities: values[1],
                                 explicitPaginationOptions,
                                 implicitPaginationOptions,
-                                accounts: values[2],
+                                accounts: writableAccounts,
                             });
                             resolve();
                         }
@@ -353,6 +361,13 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
         this.patchState(patchedRequests as any, 'requests');
     }
 
+    isReadOnly(publisherGroup: PublisherGroup): boolean {
+        return this.authStore.hasReadOnlyAccess(
+            this.state.agencyId,
+            publisherGroup.accountId
+        );
+    }
+
     private isPaginationChanged(
         oldPagination: PaginationOptions,
         newPagination: PaginationOptions
@@ -411,14 +426,6 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                     }
                 );
         });
-    }
-
-    private isReadOnly(publisherGroup: PublisherGroup): boolean {
-        if (!this.state.hasAgencyScope && publisherGroup.agencyId) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private loadAccounts(agencyId: string): Promise<Account[]> {

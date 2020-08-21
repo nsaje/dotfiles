@@ -15,6 +15,7 @@
             </div>
             <button
                 class="zem-publisher-groups-view__action_button zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
+                [disabled]="isReadOnly"
                 (click)="addPublisherGroup()"
             >
                 {{ showNewLabels ? 'Add new list' : 'Add new publisher group' }}
@@ -179,10 +180,8 @@
                     disabled
                 ></button>
                 <button
-                    *ngIf="
-                        !state.requests.upload.inProgress ||
-                        state.activeEntity.isReadOnly
-                    "
+                    *ngIf="!state.requests.upload.inProgress"
+                    [disabled]="state.activeEntity.isReadOnly"
                     class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
                     (click)="savePublisherGroup()"
                 >
