@@ -1,6 +1,5 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of, noop} from 'rxjs';
-import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {Account} from '../../../../core/entities/types/account/account';
 import * as mockHelpers from '../../../../testing/mock.helpers';
 import {RulesService} from '../../../../core/rules/services/rules.service';
@@ -18,7 +17,6 @@ import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 describe('RulesLibraryStore', () => {
     let rulesServiceStub: jasmine.SpyObj<RulesService>;
-    let accountsServiceStub: jasmine.SpyObj<AccountService>;
     let authStoreStub: jasmine.SpyObj<AuthStore>;
     let store: RulesStore;
     let mockedRules: Rule[];
@@ -34,17 +32,11 @@ describe('RulesLibraryStore', () => {
             'enable',
             'pause',
         ]);
-        accountsServiceStub = jasmine.createSpyObj(AccountService.name, [
-            'list',
-        ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
+            'hasReadOnlyAccess',
         ]);
-        store = new RulesStore(
-            rulesServiceStub,
-            accountsServiceStub,
-            authStoreStub
-        );
+        store = new RulesStore(rulesServiceStub, authStoreStub);
         mockedRules = [
             {
                 id: '10000000',
@@ -81,9 +73,6 @@ describe('RulesLibraryStore', () => {
         rulesServiceStub.list.and
             .returnValue(of(mockedRules, asapScheduler))
             .calls.reset();
-        accountsServiceStub.list.and
-            .returnValue(of(mockedAccounts, asapScheduler))
-            .calls.reset();
         store.setStore(
             mockedAgencyId,
             mockedAccountId,
@@ -95,9 +84,7 @@ describe('RulesLibraryStore', () => {
 
         expect(store.state.entities).toEqual(mockedRules);
         expect(store.state.accountId).toEqual(mockedAccountId);
-        expect(store.state.accounts).toEqual(mockedAccounts);
         expect(rulesServiceStub.list).toHaveBeenCalledTimes(1);
-        expect(accountsServiceStub.list).toHaveBeenCalledTimes(1);
         expect(rulesServiceStub.list).toHaveBeenCalledWith(
             mockedAgencyId,
             mockedAccountId,
@@ -199,6 +186,6 @@ describe('RulesLibraryStore', () => {
     it('should correctly set activeEntity', () => {
         store.setActiveEntity(mockedRules[0]);
 
-        expect(store.state.activeEntity).toEqual(mockedRules[0]);
+        expect(store.state.activeEntity.entity).toEqual(mockedRules[0]);
     });
 });

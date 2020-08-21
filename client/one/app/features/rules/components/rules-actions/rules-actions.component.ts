@@ -23,6 +23,8 @@ export class RulesActionsComponent implements OnInit, OnDestroy {
     value: string;
     @Input()
     isDisabled: boolean = false;
+    @Input()
+    isReadOnly: boolean = true;
     @Output()
     search = new EventEmitter<string>();
     @Output()

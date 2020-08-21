@@ -27,6 +27,8 @@ export class EntitySelectorComponent implements OnChanges {
     errors: string[];
     @Input()
     appendTo: 'body';
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     searchEntities: EventEmitter<string> = new EventEmitter<string>();
     @Output()

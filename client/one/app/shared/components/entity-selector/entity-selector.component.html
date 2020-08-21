@@ -6,6 +6,7 @@
     [selectBindLabel]="'name'"
     [selectPlaceholder]="'Add account, campaign, ad group'"
     [selectGroupByValue]="'type'"
+    [selectIsDisabled]="isDisabled"
     [appendTo]="appendTo"
     (itemSelect)="addEntity.emit($event)"
     (search)="onSearchEntities($event)"
@@ -25,6 +26,7 @@
             <span>{{ entity.name }}</span>
             <button
                 class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
+                [disabled]="isDisabled"
                 (click)="removeEntity.emit(entity)"
             ></button>
         </div>

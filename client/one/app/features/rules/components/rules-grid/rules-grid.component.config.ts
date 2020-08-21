@@ -55,6 +55,9 @@ export const COLUMN_STATUS: ColDef = {
         toggle: (componentParent: RulesView, item: Rule, value: boolean) => {
             componentParent.onRuleStateToggle(item, value);
         },
+        isReadOnly: (componentParent: RulesView, item: Rule) => {
+            return componentParent.store.isReadOnly(item);
+        },
     } as SwitchButtonRendererParams<Rule, RulesView>,
 };
 

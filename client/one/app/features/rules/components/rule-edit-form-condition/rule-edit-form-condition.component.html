@@ -201,5 +201,6 @@
 </div>
 <button
     class="zem-rule-edit-form-condition__remove-button button button--with-icon button--only-icon remove-icon"
+    [disabled]="isDisabled"
     (click)="removeCondition()"
 ></button>

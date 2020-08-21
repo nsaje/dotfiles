@@ -7,13 +7,12 @@ export class RulesStoreState {
     agencyId: string = null;
     accountId: string = null;
     hasAgencyScope: boolean = null;
-    activeEntity: Partial<Rule> = {};
+    activeEntity = {
+        entity: {} as Partial<Rule>,
+        isReadOnly: null as boolean,
+    };
     entities: Rule[] = [];
     fieldsErrors: RulesStoreFieldsErrorsState[] = [];
-    accounts: Account[] = [];
-    accountsRequests = {
-        list: {} as RequestState,
-    };
     requests = {
         list: {} as RequestState,
     };

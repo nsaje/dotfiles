@@ -23,6 +23,7 @@ import {
 import {Rule} from '../../../../core/rules/types/rule';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {RuleEditFormApi} from '../../components/rule-edit-form/types/rule-edit-form-api';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 @Component({
     selector: 'zem-rules-view',
@@ -37,6 +38,7 @@ export class RulesView implements OnInit, OnDestroy {
     editRuleModal: ModalComponent;
 
     context: any;
+    isReadOnly: boolean = true;
 
     keyword: string;
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
@@ -48,6 +50,7 @@ export class RulesView implements OnInit, OnDestroy {
 
     constructor(
         public store: RulesStore,
+        public authStore: AuthStore,
         private route: ActivatedRoute,
         private router: Router
     ) {
@@ -147,8 +150,9 @@ export class RulesView implements OnInit, OnDestroy {
     }
 
     private updateInternalState(queryParams: any) {
-        const agencyId = queryParams.agencyId;
-        const accountId = queryParams.accountId || null;
+        const agencyId: string = queryParams.agencyId;
+        const accountId: string | null = queryParams.accountId || null;
+        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
         this.keyword = queryParams.keyword || null;
         this.paginationOptions = {
             ...this.paginationOptions,

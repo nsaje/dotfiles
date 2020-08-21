@@ -1,6 +1,7 @@
 <span
     class="zem-switch-button"
     [class.zem-switch-button--checked]="value"
-    (click)="toggle()"
+    [class.zem-switch-button--disabled]="isReadOnly"
+    (click)="!isReadOnly && toggle()"
 >
 </span>

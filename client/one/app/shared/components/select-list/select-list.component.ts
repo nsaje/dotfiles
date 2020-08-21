@@ -31,6 +31,8 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     placeholder: string;
     @Input('selectIsLoading')
     isLoading: boolean = false;
+    @Input('selectIsDisabled')
+    isDisabled: boolean = false;
     @Input('selectSearchFn')
     searchFn: Function;
     @Input('selectGroupByValue')

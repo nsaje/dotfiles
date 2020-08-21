@@ -4,10 +4,8 @@ import {Store} from 'rxjs-observable-store';
 import {Subject} from 'rxjs';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {RulesService} from '../../../../core/rules/services/rules.service';
-import {AccountService} from '../../../../core/entities/services/account/account.service';
 import {RulesStoreState} from './rules.store.state';
 import {takeUntil} from 'rxjs/operators';
-import {Account} from '../../../../core/entities/types/account/account';
 import {Rule} from '../../../../core/rules/types/rule';
 import * as clone from 'clone';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
@@ -16,20 +14,14 @@ import {AuthStore} from '../../../../core/auth/services/auth.store';
 export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
-    private accountsRequestStateUpdater: RequestStateUpdater;
 
     constructor(
         private rulesService: RulesService,
-        private accountsService: AccountService,
         private authStore: AuthStore
     ) {
         super(new RulesStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
-        );
-        this.accountsRequestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
-            this,
-            'accountsRequests'
         );
     }
 
@@ -41,18 +33,14 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
         keyword: string | null
     ): Promise<boolean> {
         return new Promise<boolean>(resolve => {
-            Promise.all([
-                this.loadRules(agencyId, accountId, page, pageSize, keyword),
-                this.loadAccounts(agencyId),
-            ])
-                .then((values: [Rule[], Account[]]) => {
+            this.loadRules(agencyId, accountId, page, pageSize, keyword)
+                .then(rules => {
                     this.setState({
                         ...this.state,
                         agencyId: agencyId,
                         accountId: accountId,
                         hasAgencyScope: this.authStore.hasAgencyScope(agencyId),
-                        entities: values[0],
-                        accounts: values[1],
+                        entities: rules,
                     });
                     resolve(true);
                 })
@@ -119,7 +107,20 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
     }
 
     setActiveEntity(rule: Partial<Rule>) {
-        this.patchState(rule, 'activeEntity');
+        this.setState({
+            ...this.state,
+            activeEntity: {
+                entity: rule,
+                isReadOnly: this.isReadOnly(rule),
+            },
+        });
+    }
+
+    isReadOnly(rule: Partial<Rule>): boolean {
+        return this.authStore.hasReadOnlyAccess(
+            this.state.agencyId,
+            rule.accountId
+        );
     }
 
     ngOnDestroy() {
@@ -152,28 +153,6 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
                         resolve(rules);
                     },
                     error => {
-                        reject();
-                    }
-                );
-        });
-    }
-
-    private loadAccounts(agencyId: string): Promise<Account[]> {
-        return new Promise<Account[]>((resolve, reject) => {
-            this.accountsService
-                .list(
-                    agencyId,
-                    null,
-                    null,
-                    null,
-                    this.accountsRequestStateUpdater
-                )
-                .pipe(takeUntil(this.ngUnsubscribe$))
-                .subscribe(
-                    accounts => {
-                        resolve(accounts);
-                    },
-                    () => {
                         reject();
                     }
                 );

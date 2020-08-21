@@ -88,12 +88,20 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         const hasAgencyScope = this.authStore.hasAgencyScope(agencyId);
 
         this.loadAccounts(agencyId).then(accounts => {
+            const writableAccounts: Account[] = accounts.filter(
+                account =>
+                    !this.authStore.hasReadOnlyAccess(agencyId, account.id)
+            );
+
             if (commonHelpers.isDefined(rule.id)) {
                 this.setState({
                     ...this.state,
                     agencyId: agencyId,
                     accountId: accountId,
-                    isReadOnly: this.isRuleReadOnly(rule, hasAgencyScope),
+                    isReadOnly: this.authStore.hasReadOnlyAccess(
+                        agencyId,
+                        rule.accountId
+                    ),
                     hasAgencyScope: hasAgencyScope,
                     scopeState: rule.agencyId
                         ? ScopeSelectorState.AGENCY_SCOPE
@@ -105,7 +113,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                         ...this.state.rule,
                         ...rule,
                     },
-                    accounts: accounts,
+                    accounts: writableAccounts,
                 });
             } else {
                 let entities = {...this.state.rule.entities};
@@ -542,17 +550,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     }
                 );
         });
-    }
-
-    private isRuleReadOnly(
-        rule: Partial<Rule>,
-        hasAgencyScope: boolean
-    ): boolean {
-        if (!hasAgencyScope && rule.agencyId) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private getConditionsForTarget(

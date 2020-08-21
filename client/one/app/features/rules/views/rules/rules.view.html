@@ -5,6 +5,7 @@
         <zem-rules-actions
             class="zem-rules-actions zem-rules-view__item"
             [value]="keyword"
+            [isReadOnly]="isReadOnly"
             [isDisabled]="!state.agencyId"
             (search)="searchRules($event)"
             (ruleCreate)="openEditRuleModal({})"
@@ -30,7 +31,11 @@
         <ng-container *ngIf="editRuleModal.isOpen">
             <div class="zem-modal__header">
                 <div class="zem-modal__title">
-                    {{ !state.activeEntity.id ? 'Add new rule' : 'Edit rule' }}
+                    {{
+                        !state.activeEntity.entity.id
+                            ? 'Add new rule'
+                            : 'Edit rule'
+                    }}
                 </div>
             </div>
             <div class="zem-modal__body">
@@ -38,7 +43,7 @@
                     class="zem-rule-edit-form"
                     [agencyId]="state.agencyId"
                     [accountId]="state.accountId"
-                    [rule]="state.activeEntity"
+                    [rule]="state.activeEntity.entity"
                     (componentReady)="onRuleEditFormReady($event)"
                 >
                 </zem-rule-edit-form>
@@ -53,6 +58,7 @@
                 </button>
                 <button
                     *ngIf="!isRuleSaveInProgress"
+                    [disabled]="state.activeEntity.isReadOnly"
                     class="button button--highlight button--with-icon check-icon"
                     (click)="saveRule()"
                 >

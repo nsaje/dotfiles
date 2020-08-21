@@ -11,7 +11,7 @@
 <div class="zem-rules-actions__buttons">
     <button
         class="zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon zem-rules-actions__button"
-        [disabled]="isDisabled"
+        [disabled]="isDisabled || isReadOnly"
         (click)="ruleCreate.emit()"
     >
         Add new rule

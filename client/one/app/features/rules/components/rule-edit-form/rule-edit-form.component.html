@@ -30,6 +30,7 @@
             [selectedEntities]="selectedRuleEntities"
             [availableEntities]="state.availableEntities"
             [errors]="state.fieldsErrors?.entities"
+            [isDisabled]="state.isReadOnly"
             (searchEntities)="store.searchEntities($event)"
             (addEntity)="store.addRuleEntity($event)"
             (removeEntity)="store.removeRuleEntity($event)"

@@ -12,12 +12,14 @@ export class SwitchButtonCellComponent<T, S>
     componentParent: S;
     item: T;
     value: boolean;
+    isReadOnly: boolean;
 
     agInit(params: SwitchButtonRendererParams<T, S>) {
         this.params = params;
         this.item = params.data;
         this.componentParent = params.context.componentParent;
         this.value = params.getSwitchValue(params.data);
+        this.isReadOnly = params.isReadOnly(this.componentParent, this.item);
     }
 
     toggle() {

@@ -12,15 +12,15 @@ import {RuleActionsCellRendererParams} from '../../types/rule-actions-cell.rende
 export class RuleActionsCellComponent implements ICellRendererAngularComp {
     params: RuleActionsCellRendererParams;
     rule: Rule;
-    isReadOnlyRule: boolean;
+    isReadOnly: boolean;
 
     agInit(params: RuleActionsCellRendererParams) {
         this.params = params;
         this.rule = params.data;
 
-        this.isReadOnlyRule =
-            !this.params.context.componentParent.store.state.hasAgencyScope &&
-            commonHelpers.isDefined(this.rule.agencyId);
+        this.isReadOnly = this.params.context.componentParent.store.isReadOnly(
+            this.rule
+        );
     }
 
     removeRule() {
