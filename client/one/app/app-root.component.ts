@@ -16,6 +16,7 @@ import {GoogleAnalyticsService} from './core/google-analytics/google-analytics.s
 import {MixpanelService} from './core/mixpanel/mixpanel.service';
 import {EventManager} from '@angular/platform-browser';
 import {AuthStore} from './core/auth/services/auth.store';
+import {PosthogService} from './core/posthog/posthog.service';
 
 @Component({
     selector: 'zem-app-root',
@@ -38,6 +39,7 @@ export class AppRootComponent implements OnInit, OnDestroy {
         private authStore: AuthStore,
         private googleAnalyticsService: GoogleAnalyticsService,
         private mixpanelService: MixpanelService,
+        private posthogService: PosthogService,
         @Inject('zemInitializationService')
         private zemInitializationService: any,
         private eventManager: EventManager
@@ -49,6 +51,7 @@ export class AppRootComponent implements OnInit, OnDestroy {
                 this.zemInitializationService.initApp();
                 this.googleAnalyticsService.init();
                 this.mixpanelService.init();
+                this.posthogService.init();
                 this.isInitialized = true;
                 this.changeDetectorRef.markForCheck();
             }
