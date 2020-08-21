@@ -5,6 +5,7 @@
         <zem-deals-actions
             class="zem-deals-actions zem-deals-view__item"
             [value]="keyword"
+            [isReadOnly]="isReadOnly"
             [isDisabled]="!state.agencyId"
             (search)="searchDeals($event)"
             (dealCreate)="openEditDealModal({})"

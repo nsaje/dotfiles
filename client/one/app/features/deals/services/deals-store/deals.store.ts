@@ -60,6 +60,14 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                 this.loadAccounts(agencyId),
             ])
                 .then((values: [Deal[], Source[], Account[]]) => {
+                    const writableAccounts: Account[] = values[2].filter(
+                        account =>
+                            !this.authStore.hasReadOnlyAccess(
+                                agencyId,
+                                account.id
+                            )
+                    );
+
                     this.setState({
                         ...this.state,
                         agencyId: agencyId,
@@ -67,7 +75,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                         hasAgencyScope: this.authStore.hasAgencyScope(agencyId),
                         entities: values[0],
                         sources: values[1],
-                        accounts: values[2],
+                        accounts: writableAccounts,
                     });
                     resolve(true);
                 })
@@ -246,7 +254,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
             activeEntity: {
                 ...newActiveEntity,
                 scopeState: scopeState,
-                isReadOnly: this.isDealReadOnly({
+                isReadOnly: this.isReadOnly({
                     ...newActiveEntity.entity,
                     ...entity,
                 }),
@@ -304,17 +312,16 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
         this.validateActiveEntity();
     }
 
+    isReadOnly(deal: Deal): boolean {
+        return this.authStore.hasReadOnlyAccess(
+            this.state.agencyId,
+            deal.accountId
+        );
+    }
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
-    }
-
-    private isDealReadOnly(deal: Deal): boolean {
-        if (!this.state.hasAgencyScope && deal.agencyId) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private loadDeals(

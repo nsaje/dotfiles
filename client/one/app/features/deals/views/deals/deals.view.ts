@@ -7,7 +7,6 @@ import {
     OnDestroy,
     ViewChild,
     HostBinding,
-    Inject,
 } from '@angular/core';
 import {merge, Subject, Observable} from 'rxjs';
 import {
@@ -31,6 +30,7 @@ import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
+import {AuthStore} from '../../../../core/auth/services/auth.store';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -49,6 +49,7 @@ export class DealsView implements OnInit, OnDestroy {
     connectionsModal: ModalComponent;
 
     context: any;
+    isReadOnly: boolean = true;
 
     DEFAULT_PAGINATION = {
         page: 1,
@@ -198,6 +199,7 @@ export class DealsView implements OnInit, OnDestroy {
 
     constructor(
         public store: DealsStore,
+        public authStore: AuthStore,
         private route: ActivatedRoute,
         private router: Router
     ) {
@@ -303,8 +305,9 @@ export class DealsView implements OnInit, OnDestroy {
     }
 
     private updateInternalState(queryParams: any) {
-        const agencyId = queryParams.agencyId;
-        const accountId = queryParams.accountId || null;
+        const agencyId: string = queryParams.agencyId;
+        const accountId: string | null = queryParams.accountId || null;
+        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
         this.keyword = queryParams.keyword || null;
         this.paginationOptions = {
             ...this.paginationOptions,
