@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db import transaction
 from rest_framework import permissions
 
@@ -115,31 +117,42 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
     @transaction.atomic()
     def _put_handle_entries(self, request, ad_group, entries):
+        entry_map = {
+            dash.constants.PublisherStatus.BLACKLISTED: defaultdict(list),
+            dash.constants.PublisherStatus.ENABLED: defaultdict(list),
+        }
+        bid_modifier_list = []
+
         for entry in entries:
             cleaned_entry = {"publisher": entry["name"], "source": entry["source"], "include_subdomains": True}
             entity = self._get_level_entity(ad_group, entry)
-            if entry["status"] == dash.constants.PublisherStatus.BLACKLISTED:
-                core.features.publisher_groups.service.blacklist_publishers(request, [cleaned_entry], entity)
-            elif entry["status"] == dash.constants.PublisherStatus.ENABLED:
-                core.features.publisher_groups.service.unlist_publishers(request, [cleaned_entry], entity)
+            entry_map[entry["status"]][entity].append(cleaned_entry)
 
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
                 # TODO: BID MODIFIERS: DEPRECATED; need to make a plan to remove this completely
                 if entry.get("source") is not None and "modifier" in entry:
                     try:
-                        core.features.bid_modifiers.set(
-                            ad_group,
-                            core.features.bid_modifiers.BidModifierType.PUBLISHER,
-                            core.features.bid_modifiers.ApiConverter.to_target(
-                                core.features.bid_modifiers.BidModifierType.PUBLISHER, entry["name"]
-                            ),
-                            entry["source"],
-                            entry.get("modifier"),
-                            user=request.user,
-                            propagate_to_k1=False,
+                        bid_modifier_list.append(
+                            core.features.bid_modifiers.BidModifierData(
+                                core.features.bid_modifiers.BidModifierType.PUBLISHER,
+                                core.features.bid_modifiers.ApiConverter.to_target(
+                                    core.features.bid_modifiers.BidModifierType.PUBLISHER, entry["name"]
+                                ),
+                                entry["source"],
+                                entry.get("modifier"),
+                            )
                         )
                     except core.features.bid_modifiers.BidModifierInvalid as e:
                         raise exc.ValidationError({"modifier": str(e)})
+
+        for entity, cleaned_entries in entry_map[dash.constants.PublisherStatus.BLACKLISTED].items():
+            core.features.publisher_groups.service.blacklist_publishers(request, cleaned_entries, entity)
+
+        for entity, cleaned_entries in entry_map[dash.constants.PublisherStatus.ENABLED].items():
+            core.features.publisher_groups.service.unlist_publishers(request, cleaned_entries, entity)
+
+        if bid_modifier_list:
+            core.features.bid_modifiers.set_bulk(ad_group, bid_modifier_list, user=request.user, propagate_to_k1=False)
 
     @staticmethod
     def _get_level_entity(ad_group, entry):
