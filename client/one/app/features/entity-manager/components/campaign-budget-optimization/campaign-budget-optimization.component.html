@@ -1,6 +1,7 @@
 <zem-checkbox-input
     class="zem-checkbox-input zem-campaign-budget-optimization__item"
     [isChecked]="autopilot"
+    [isDisabled]="isDisabled"
     (toggle)="onAutopilotToggle($event)"
 >
     Enable budget optimization

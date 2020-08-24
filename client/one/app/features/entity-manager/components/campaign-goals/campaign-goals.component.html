@@ -9,6 +9,7 @@
     [index]="index"
     [campaignGoal]="campaignGoal"
     [currency]="currency"
+    [isDisabled]="isDisabled"
     (campaignGoalPrimaryChange)="onCampaignGoalPrimaryChange(campaignGoal)"
     (campaignGoalDelete)="onCampaignGoalDelete(campaignGoal)"
     (campaignGoalEditFormClose)="campaignGoalEditFormClose.emit()"
@@ -25,6 +26,7 @@
         [conversionPixelIsLoading]="
             conversionPixelsRequests[index]?.create?.inProgress
         "
+        [isDisabled]="isDisabled"
         (campaignGoalChange)="onCampaignGoalChange($event)"
         (conversionPixelCreate)="onConversionPixelCreate($event, index)"
         (conversionPixelCancel)="onConversionPixelCancel(index)"
@@ -41,12 +43,13 @@
         type="button"
         class="zem-button zem-button--with-icon zem-button--add-icon zem-campaign-goals__button"
         (click)="createGoal()"
+        [disabled]="isDisabled"
     >
         Add new goal
     </button>
     <div
         class="zem-campaign-goals__primary-goal-legend"
-        [hidden]="campaignGoals.length === 0"
+        [hidden]="campaignGoals.length === 0 || isDisabled"
     >
         Click on a goal to set it as primary
         <zem-help-popover

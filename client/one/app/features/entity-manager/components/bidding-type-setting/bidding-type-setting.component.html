@@ -13,6 +13,7 @@
             class="zem-radio-input zem-form-group__content-item"
             [groupModel]="biddingType"
             [value]="BiddingType.CPC"
+            [isDisabled]="isDisabled"
             [hasError]="hasBidErrors() && biddingType === BiddingType.CPC"
             (select)="onBiddingTypeSelect($event)"
         >
@@ -35,6 +36,7 @@
                         [value]="bid"
                         [hasError]="bidErrors && bidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
+                        [isDisabled]="isDisabled"
                         fractionSize="3"
                         (inputBlur)="bidChange.emit($event)"
                     ></zem-currency-input>
@@ -64,6 +66,7 @@
                         placeholder="No limit"
                         [hasError]="maxBidErrors && maxBidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
+                        [isDisabled]="isDisabled"
                         fractionSize="3"
                         (inputBlur)="maxBidChange.emit($event)"
                     ></zem-currency-input>
@@ -86,6 +89,7 @@
             class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
             [groupModel]="biddingType"
             [value]="BiddingType.CPM"
+            [isDisabled]="isDisabled"
             [hasError]="hasBidErrors() && biddingType === BiddingType.CPM"
             (select)="onBiddingTypeSelect($event)"
         >
@@ -108,6 +112,7 @@
                         [value]="bid"
                         [hasError]="bidErrors && bidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
+                        [isDisabled]="isDisabled"
                         fractionSize="3"
                         (inputBlur)="bidChange.emit($event)"
                     ></zem-currency-input>
@@ -137,6 +142,7 @@
                         placeholder="No limit"
                         [hasError]="maxBidErrors && maxBidErrors.length > 0"
                         [currencySymbol]="currencySymbol"
+                        [isDisabled]="isDisabled"
                         fractionSize="3"
                         (inputBlur)="maxBidChange.emit($event)"
                     ></zem-currency-input>

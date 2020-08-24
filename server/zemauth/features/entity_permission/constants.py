@@ -6,11 +6,11 @@ class Permission(ConstantBase):
     WRITE = "write"
     USER = "user"
     BUDGET = "budget"
-    BUDGET_MARGIN = "budget_margin"
+    BUDGET_MARGIN = "budget_margin"  # NOT USED
     AGENCY_SPEND_MARGIN = "agency_spend_margin"
     MEDIA_COST_DATA_COST_LICENCE_FEE = "media_cost_data_cost_licence_fee"
     BASE_COSTS_SERVICE_FEE = "base_costs_service_fee"
-    RESTAPI = "restapi"
+    RESTAPI = "restapi"  # NOT USED
 
     _VALUES = {
         READ: "View accounts, campaigns, ad groups and ads.",

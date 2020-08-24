@@ -68,7 +68,7 @@
                     *ngIf="budgetRow.isExpanded"
                     class="zem-campaign-budgets-list__row--expanded"
                 >
-                    <td colspan="10">
+                    <td colspan="11">
                         <div class="zem-campaign-budgets-list__edit-form">
                             <ng-container
                                 *ngTemplateOutlet="
@@ -78,6 +78,7 @@
                                         currency: currency,
                                         budgetErrors: budgetsErrors[index],
                                         showLicenseFee: showLicenseFee,
+                                        showServiceFee: showServiceFee,
                                         showMargin: showMargin,
                                         credits: credits
                                     }
@@ -89,7 +90,7 @@
             </ng-container>
         </ng-container>
         <tr *ngIf="formattedBudgets.length === 0">
-            <td colspan="10" class="zem-table__no-data">No budget items.</td>
+            <td colspan="11" class="zem-table__no-data">No budget items.</td>
         </tr>
     </tbody>
 </table>

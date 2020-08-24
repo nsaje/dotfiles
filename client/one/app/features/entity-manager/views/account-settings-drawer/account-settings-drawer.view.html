@@ -14,6 +14,7 @@
             [entityId]="entityId"
             [entityType]="EntityType.ACCOUNT"
             [entityName]="state.entity.name"
+            [isDisabled]="isReadOnly"
             [showAdminLink]="
                 authStore.hasPermission('zemauth.can_see_open_in_admin')
             "
@@ -23,6 +24,12 @@
             [entityNameErrors]="state.fieldsErrors.name"
             (entityNameChange)="store.setName($event)"
         ></zem-settings-drawer-header>
+        <div
+            class="zem-drawer__subheader zem-drawer__subheader--info zem-drawer__subheader--with-icon"
+            *ngIf="isReadOnly"
+        >
+            <span>You don't have permission to edit this account.</span>
+        </div>
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
@@ -51,6 +58,7 @@
                         [placeholder]="'Choose account manager'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.defaultAccountManager"
                         (valueChange)="store.setAccountManager($event)"
@@ -73,6 +81,7 @@
                         [placeholder]="'Choose sales representative'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.defaultSalesRepresentative"
                         (valueChange)="store.setSalesRepresentative($event)"
@@ -100,6 +109,7 @@
                         [placeholder]="'Choose CS representative'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.defaultCsRepresentative"
                         (valueChange)="
@@ -129,6 +139,7 @@
                         [placeholder]="'Choose OB representative'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.obSalesRepresentative"
                         (valueChange)="
@@ -158,6 +169,7 @@
                         [placeholder]="'Choose OB Account Manager'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.obAccountManager"
                         (valueChange)="store.setOutbrainAccountManager($event)"
@@ -182,6 +194,7 @@
                         [placeholder]="'Choose account type'"
                         [isSearchable]="true"
                         [isClearable]="false"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.accountType"
                         (valueChange)="store.setAccountType($event)"
@@ -195,7 +208,7 @@
                         [bindValue]="'id'"
                         [items]="state.extras.agencies"
                         [placeholder]="'Choose agency'"
-                        [isDisabled]="!isNewEntity"
+                        [isDisabled]="!isNewEntity || isReadOnly"
                         [isSearchable]="true"
                         [isClearable]="true"
                         [orderByValue]="'name'"
@@ -218,6 +231,7 @@
                         [helpMessage]="'URL of this account in SalesForce.'"
                         [value]="state.entity.salesforceUrl"
                         [errors]="state.fieldsErrors.salesforceUrl"
+                        [isDisabled]="isReadOnly"
                         (valueChange)="store.setSalesforceUrl($event)"
                     ></zem-text-form-group>
                     <zem-select-form-group
@@ -235,7 +249,7 @@
                         [isSearchable]="true"
                         [isClearable]="false"
                         [orderByValue]="'name'"
-                        [isDisabled]="!isNewEntity"
+                        [isDisabled]="!isNewEntity || isReadOnly"
                         [errors]="state.fieldsErrors.currency"
                         (valueChange)="store.setCurrency($event)"
                     ></zem-select-form-group>
@@ -255,6 +269,7 @@
                         helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
                         [value]="state.entity.frequencyCapping"
                         [errors]="state.fieldsErrors.frequencyCapping"
+                        [isDisabled]="isReadOnly"
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
                     ></zem-integer-form-group>
@@ -292,6 +307,7 @@
                                             ?.length > 0
                                 }"
                                 [hidden]="isDefaultIconPreviewVisible"
+                                [isDisabled]="isReadOnly"
                                 [dropZoneLabel]="'Drop your file here or'"
                                 [accept]="'image/*'"
                                 [isMultiple]="false"
@@ -336,7 +352,8 @@
                             ) &&
                             !state.requests.defaults.inProgress &&
                             !state.requests.get.inProgress &&
-                            isDefaultIconPreviewVisible
+                            isDefaultIconPreviewVisible &&
+                            !isReadOnly
                         "
                     >
                         <button
@@ -356,7 +373,8 @@
                             !isDefaultIconPreviewVisible &&
                             !state.requests.defaults.inProgress &&
                             !state.requests.get.inProgress &&
-                            state.entity.defaultIconUrl
+                            state.entity.defaultIconUrl &&
+                            !isReadOnly
                         "
                     >
                         <button
@@ -396,6 +414,7 @@
                     </div>
                     <zem-media-sources
                         class="zem-media-sources zem-settings-section__item"
+                        [isDisabled]="isReadOnly"
                         [allowedMediaSources]="state.entity.allowedMediaSources"
                         [availableMediaSources]="
                             state.extras.availableMediaSources
@@ -418,6 +437,7 @@
                             )
                         "
                         [isChecked]="state.entity.autoAddNewSources"
+                        [isDisabled]="isReadOnly"
                         [hasError]="
                             state.fieldsErrors.autoAddNewSources.length > 0
                         "
@@ -498,6 +518,7 @@
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
+                        [isDisabled]="isReadOnly"
                         (onUpdate)="
                             store.setPublisherGroupsTargeting($event.$event)
                         "
@@ -546,6 +567,7 @@
                         [deals]="store.state.entity.deals"
                         [availableDeals]="store.state.availableDeals"
                         [isLoading]="store.state.dealsRequests.list.inProgress"
+                        [isDisabled]="isReadOnly"
                         (dealSelect)="store.addDeal($event)"
                         (search)="store.loadAvailableDeals($event)"
                         (open)="store.loadAvailableDeals()"
@@ -561,6 +583,7 @@
                                     'zem-deal--error': store.hasDealError(index)
                                 }"
                                 [deal]="deal"
+                                [isDisabled]="isReadOnly"
                                 (dealRemove)="store.removeDeal($event)"
                                 (dealEditFormClose)="store.validateEntity()"
                             >
@@ -571,7 +594,7 @@
                                     [dealErrors]="
                                         store.state.fieldsErrors.deals[index]
                                     "
-                                    [isDisabled]="!!deal.id"
+                                    [isDisabled]="!!deal.id || isReadOnly"
                                     (dealChange)="store.changeDeal($event)"
                                 ></zem-deal-edit-form>
                             </zem-deal>
@@ -581,6 +604,7 @@
                         <button
                             type="button"
                             class="zem-button zem-button--with-icon zem-button--add-icon"
+                            [disabled]="isReadOnly"
                             (click)="store.addDeal()"
                         >
                             Add new deal
@@ -634,8 +658,10 @@
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.ACCOUNT"
-            [userHasPermissionToArchive]="
-                authStore.hasPermission('zemauth.archive_restore_entity')
+            [isSaveDisabled]="isReadOnly"
+            [isArchiveDisabled]="
+                isReadOnly ||
+                !authStore.hasPermission('zemauth.archive_restore_entity')
             "
             [isLoading]="
                 state.requests.create.inProgress ||

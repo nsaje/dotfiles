@@ -7,6 +7,7 @@
             [bindValue]="'value'"
             [bindLabel]="'name'"
             [isClearable]="false"
+            [isDisabled]="isDisabled"
             (valueChange)="onTypeChange($event)"
         >
         </zem-select-input>
@@ -18,6 +19,7 @@
             [bindValue]="'key'"
             [isSearchable]="true"
             [isClearable]="false"
+            [isDisabled]="isDisabled"
             (valueChange)="onLocationChange($event)"
             (search)="onLocationSearch($event)"
             (open)="locationOpen.emit()"
@@ -31,6 +33,7 @@
         rows="4"
         placeholder="Enter comma-separated ZIP / postal codes"
         [value]="zipCodesText"
+        [isDisabled]="isDisabled"
         (inputBlur)="onZipCodesBlur($event)"
     ></zem-textarea>
 </ng-container>

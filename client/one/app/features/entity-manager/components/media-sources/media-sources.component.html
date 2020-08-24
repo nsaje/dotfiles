@@ -14,7 +14,9 @@
         </select>
         <button
             class="zem-button zem-button--full-width zem-media-sources__item"
-            [disabled]="selectedAvailableMediaSources.length === 0"
+            [disabled]="
+                selectedAvailableMediaSources.length === 0 || isDisabled
+            "
             (click)="addToAllowedMediaSources()"
         >
             Move to allowed
@@ -40,7 +42,7 @@
         </select>
         <button
             class="zem-button zem-button--full-width zem-media-sources__item"
-            [disabled]="selectedAllowedMediaSources.length === 0"
+            [disabled]="selectedAllowedMediaSources.length === 0 || isDisabled"
             (click)="removeFromAllowedMediaSources()"
         >
             <span

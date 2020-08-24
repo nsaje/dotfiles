@@ -21,6 +21,7 @@
                         [currencySymbol]="getGoalUnitText()"
                         [fractionSize]="2"
                         [isFocused]="true"
+                        [isDisabled]="isDisabled"
                         [hasError]="!!campaignGoalErrors?.value"
                         (inputBlur)="onGoalValueChange($event)"
                     ></zem-currency-input>
@@ -36,6 +37,7 @@
                             [placeholder]="'0.00'"
                             [fractionSize]="2"
                             [isFocused]="true"
+                            [isDisabled]="isDisabled"
                             [hasError]="!!campaignGoalErrors?.value"
                             (inputBlur)="onGoalValueChange($event)"
                         ></zem-decimal-input>
@@ -49,6 +51,7 @@
                         [placeholder]="'0.00'"
                         [fractionSize]="2"
                         [isFocused]="true"
+                        [isDisabled]="isDisabled"
                         [hasError]="!!campaignGoalErrors?.value"
                         (inputBlur)="onGoalValueChange($event)"
                     ></zem-decimal-input>
@@ -73,6 +76,7 @@
                     [isDisabled]="!!campaignGoal.id"
                     [isSearchable]="false"
                     [isClearable]="false"
+                    [isDisabled]="isDisabled"
                     [hasError]="!!campaignGoalErrors?.type"
                     (valueChange)="onGoalTypeChange($event)"
                 ></zem-select-input>
@@ -96,7 +100,7 @@
     [bindValue]="'value'"
     [items]="CAMPAIGN_CONVERSION_GOAL_TYPES"
     [placeholder]="'Choose type'"
-    [isDisabled]="!!campaignGoal.id"
+    [isDisabled]="!!campaignGoal.id || isDisabled"
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="campaignGoalErrors?.conversionGoal?.type"
@@ -134,7 +138,7 @@
                         [bindValue]="'id'"
                         [items]="availablePixels"
                         [placeholder]="'Choose pixel'"
-                        [isDisabled]="!!campaignGoal.id"
+                        [isDisabled]="!!campaignGoal.id || isDisabled"
                         [isSearchable]="false"
                         [isClearable]="false"
                         [hasError]="
@@ -157,6 +161,7 @@
                         class="zem-campaign-goal-edit-form__pixel-item zem-text-input"
                         [value]="conversionPixelName"
                         [placeholder]="'Pixel name'"
+                        [isDisabled]="isDisabled"
                         [hasError]="!!conversionPixelErrors?.name"
                         (valueChange)="onConversionPixelNameChange($event)"
                     ></zem-text-input>
@@ -178,7 +183,7 @@
                     <button
                         class="zem-button zem-button--with-icon zem-button--only-icon zem-button--add-icon"
                         (click)="addConversionPixel()"
-                        [disabled]="!!campaignGoal.id"
+                        [disabled]="!!campaignGoal.id || isDisabled"
                     >
                         Add pixel
                     </button>
@@ -194,6 +199,7 @@
                                 !conversionPixelName || conversionPixelIsLoading
                             "
                             (click)="createConversionPixel()"
+                            [disabled]="isDisabled"
                         >
                             Save
                         </button>
@@ -228,7 +234,7 @@
     [bindValue]="'value'"
     [items]="availableWindows"
     [placeholder]="'Choose conversion window'"
-    [isDisabled]="!!campaignGoal.id"
+    [isDisabled]="!!campaignGoal.id || isDisabled"
     [isSearchable]="false"
     [isClearable]="false"
     [errors]="campaignGoalErrors?.conversionGoal?.conversionWindow"
@@ -246,7 +252,7 @@
     "
     [value]="campaignGoal.conversionGoal.goalId"
     [placeholder]="'Goal name'"
-    [isDisabled]="!!campaignGoal.id"
+    [isDisabled]="!!campaignGoal.id || isDisabled"
     [errors]="campaignGoalErrors?.conversionGoal?.goalId"
     (valueChange)="onConversionGoalIdChange($event)"
 ></zem-text-form-group>
@@ -262,7 +268,7 @@
     "
     [value]="campaignGoal.conversionGoal.goalId"
     [placeholder]="'Event name'"
-    [isDisabled]="!!campaignGoal.id"
+    [isDisabled]="!!campaignGoal.id || isDisabled"
     [errors]="campaignGoalErrors?.conversionGoal?.goalId"
     (valueChange)="onConversionGoalIdChange($event)"
 ></zem-text-form-group>

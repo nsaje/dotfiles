@@ -22,6 +22,8 @@ export class DemographicTargetingComponent extends UpgradeComponent
     bluekaiTargeting: any;
     @Input()
     entityId: any;
+    @Input()
+    isDisabled: boolean;
     @Output()
     onUpdate: any;
 

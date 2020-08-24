@@ -8,6 +8,7 @@ angular.module('one.common').component('zemInterestTargeting', {
         excludedInterests: '<',
         includedInterestsErrors: '<',
         excludedInterestsErrors: '<',
+        isDisabled: '<',
         onUpdate: '&',
     },
     template: require('./zemInterestTargeting.component.html'), // eslint-disable-line max-len

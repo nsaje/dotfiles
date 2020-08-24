@@ -26,6 +26,8 @@ export class InterestTargetingComponent extends UpgradeComponent
     includedInterestsErrors: any;
     @Input()
     excludedInterestsErrors: any;
+    @Input()
+    isDisabled: boolean;
     @Output()
     onUpdate: any;
 

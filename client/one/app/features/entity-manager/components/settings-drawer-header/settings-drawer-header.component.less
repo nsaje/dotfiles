@@ -50,7 +50,7 @@
     transition: all @duration-and-timing-fn--default;
 }
 
-.entity-name__read-value::after {
+.entity-name__read-value:not(.entity-name__read-value--disabled)::after {
     content: '';
     position: absolute;
     top: 6px;
@@ -62,13 +62,13 @@
     opacity: 0.4;
 }
 
-.entity-name__read-value:hover {
+.entity-name__read-value:not(.entity-name__read-value--disabled):hover {
     cursor: pointer;
     border-color: tint(@color--secondary, 60%);
     background-color: tint(@color--secondary, 90%);
 }
 
-.entity-name__read-value:hover.entity-name__read-value::after {
+.entity-name__read-value:not(.entity-name__read-value--disabled):hover.entity-name__read-value::after {
     opacity: 1;
 }
 

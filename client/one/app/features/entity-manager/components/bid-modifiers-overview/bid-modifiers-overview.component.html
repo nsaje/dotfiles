@@ -34,7 +34,7 @@
         </div>
     </div>
 </div>
-<div class="zem-settings-section__item">
+<div class="zem-settings-section__item" *ngIf="!isDisabled">
     <div class="zem-settings-section__title">Configure bid modifiers</div>
     <div class="zem-settings-section__description">
         Configure bid modifiers across all dimensions by uploading a CSV file.

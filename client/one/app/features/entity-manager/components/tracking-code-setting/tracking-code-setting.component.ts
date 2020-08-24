@@ -27,6 +27,7 @@ export class TrackingCodeSettingComponent implements OnInit, OnChanges {
     @Input()
     isFocused: boolean = false;
     @Input()
+    @Input()
     errors: string[];
     @Output()
     valueChange = new EventEmitter<string>();

@@ -16,6 +16,8 @@ import {
 export class CampaignBudgetOptimizationComponent {
     @Input()
     autopilot: boolean;
+    @Input()
+    isDisabled: boolean;
     @Output()
     autopilotChange = new EventEmitter<boolean>();
 

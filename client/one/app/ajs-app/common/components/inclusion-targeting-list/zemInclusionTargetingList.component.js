@@ -5,6 +5,7 @@ angular.module('one.common').component('zemInclusionTargetingList', {
         texts: '<',
         targetings: '<',
         displaySections: '<?',
+        isDisabled: '<',
         addIncluded: '&',
         addExcluded: '&',
         removeTargeting: '&',

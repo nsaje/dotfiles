@@ -23,7 +23,7 @@ class CampaignBudgetSerializer(
             },
             "fields": {
                 "margin": {
-                    "permission": Permission.BUDGET_MARGIN,
+                    "permission": Permission.AGENCY_SPEND_MARGIN,
                     "fallback_permission": "zemauth.can_manage_agency_margin",
                 }
             },

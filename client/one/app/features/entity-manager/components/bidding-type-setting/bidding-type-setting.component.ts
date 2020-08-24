@@ -32,6 +32,8 @@ export class BiddingTypeSettingComponent {
     bidErrors: string[];
     @Input()
     maxBidErrors: string[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     biddingTypeChange = new EventEmitter<BiddingType>();
     @Output()

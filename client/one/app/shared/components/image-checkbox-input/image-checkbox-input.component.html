@@ -3,11 +3,12 @@
     [ngClass]="{
         'zem-image-checkbox-input__icon--active': value.checked
     }"
-    (click)="itemToggled.emit(value.value)"
+    (click)="!isDisabled && itemToggled.emit(value.value)"
 ></div>
 <zem-checkbox-input
     class="zem-checkbox-input zem-image-checkbox-input__checkbox"
     [isChecked]="value.checked"
+    [isDisabled]="isDisabled"
     (toggle)="itemToggled.emit(value.value)"
 >
     {{ value.displayValue }}

@@ -19,6 +19,8 @@ export class DeliveryTypeSettingComponent {
     deliveryType: DeliveryType;
     @Input()
     errors: string[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     valueChange = new EventEmitter<DeliveryType>();
 

@@ -18,6 +18,7 @@
         >
             <h2
                 class="entity-name__read-value"
+                [class.entity-name__read-value--disabled]="isDisabled"
                 *ngIf="mode === SettingsDrawerHeaderMode.READ"
                 (click)="switchToEditMode()"
             >

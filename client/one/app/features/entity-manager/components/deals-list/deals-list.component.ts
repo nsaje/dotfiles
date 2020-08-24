@@ -24,6 +24,8 @@ export class DealsListComponent {
     availableDeals: Deal[];
     @Input()
     isLoading: boolean = false;
+    @Input()
+    isDisabled: boolean;
     @Output()
     dealSelect = new EventEmitter<Deal>();
     @Output()

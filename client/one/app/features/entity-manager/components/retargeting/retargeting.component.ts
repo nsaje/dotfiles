@@ -42,6 +42,8 @@ export class RetargetingComponent extends UpgradeComponent
     excludedAdGroupsErrors: any;
     @Input()
     warnings: any;
+    @Input()
+    isDisabled: boolean;
     @Output()
     onUpdate: any;
 

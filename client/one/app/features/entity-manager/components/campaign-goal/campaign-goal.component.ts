@@ -28,6 +28,8 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
     campaignGoal: CampaignGoal;
     @Input()
     currency: Currency;
+    @Input()
+    isDisabled: boolean;
     @Output()
     campaignGoalPrimaryChange = new EventEmitter<void>();
     @Output()
@@ -57,6 +59,9 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
     }
 
     setPrimary() {
+        if (this.isDisabled) {
+            return;
+        }
         this.campaignGoalPrimaryChange.emit();
     }
 

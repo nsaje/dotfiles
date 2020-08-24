@@ -18,7 +18,7 @@ class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBud
             },
             "fields": {
                 "margin": {
-                    "permission": Permission.BUDGET_MARGIN,
+                    "permission": Permission.AGENCY_SPEND_MARGIN,
                     "fallback_permission": "zemauth.can_manage_agency_margin",
                 },
                 "license_fee": {

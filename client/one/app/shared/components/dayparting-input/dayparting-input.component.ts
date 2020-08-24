@@ -21,6 +21,8 @@ import {DaypartingDay} from './dayparting-day';
 export class DaypartingInputComponent implements OnChanges {
     @Input('dayparting')
     originalDayparting: DaypartingDay[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     onSelection = new EventEmitter<DaypartingDay[]>();
 
@@ -39,7 +41,7 @@ export class DaypartingInputComponent implements OnChanges {
     }
 
     startSelection(day: DaypartingDay, hour: number): boolean {
-        if (!this.isSelecting) {
+        if (!this.isDisabled && !this.isSelecting) {
             this.isSelecting = true;
             this.stateToApply = !day.hours[hour];
 

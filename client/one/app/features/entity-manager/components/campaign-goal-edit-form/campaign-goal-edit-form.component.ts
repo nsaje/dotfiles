@@ -54,6 +54,8 @@ export class CampaignGoalEditFormComponent implements OnChanges {
     conversionPixelErrors: ConversionPixelErrors;
     @Input()
     conversionPixelIsLoading: boolean;
+    @Input()
+    isDisabled: boolean;
     @Output()
     campaignGoalChange = new EventEmitter<ChangeEvent<CampaignGoal>>();
     @Output()

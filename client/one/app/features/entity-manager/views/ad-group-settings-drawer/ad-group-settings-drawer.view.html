@@ -14,6 +14,7 @@
             [entityId]="entityId"
             [entityType]="EntityType.AD_GROUP"
             [entityName]="state.entity.name"
+            [isDisabled]="isReadOnly"
             [entityNamePlaceholder]="'Ad group name'"
             [showAdminLink]="
                 authStore.hasPermission('zemauth.can_see_open_in_admin')
@@ -24,6 +25,12 @@
             [entityNameErrors]="state.fieldsErrors.name"
             (entityNameChange)="store.setName($event)"
         ></zem-settings-drawer-header>
+        <div
+            class="zem-drawer__subheader zem-drawer__subheader--info zem-drawer__subheader--with-icon"
+            *ngIf="isReadOnly"
+        >
+            <span>You don't have permission to edit this ad group.</span>
+        </div>
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
@@ -37,7 +44,10 @@
                         label="Start date"
                         helpMessage="The start date of the ad group. If the date is set in the future, the ad group will not run until that date."
                         [value]="state.entity.startDate"
-                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        [isDisabled]="
+                            state.extras.isCampaignAutopilotEnabled ||
+                            isReadOnly
+                        "
                         [errors]="state.fieldsErrors.startDate"
                         (valueChange)="store.setStartDate($event)"
                     ></zem-date-form-group>
@@ -46,7 +56,10 @@
                         label="End date"
                         helpMessage="The end date of the ad group. Ad group will run until the end of stop date."
                         [value]="state.entity.endDate"
-                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        [isDisabled]="
+                            state.extras.isCampaignAutopilotEnabled ||
+                            isReadOnly
+                        "
                         [minDate]="minEndDate"
                         [allowManualOverride]="true"
                         [manualOverrideLabel]="'Use campaign budget end date'"
@@ -78,6 +91,7 @@
                             )
                         "
                         [deliveryType]="state.entity.deliveryType"
+                        [isDisabled]="isReadOnly"
                         [errors]="state.fieldsErrors.deliveryType"
                         (valueChange)="store.setDeliveryType($event)"
                     ></zem-delivery-type-setting>
@@ -117,6 +131,7 @@
                             class="zem-dayparting-setting zem-settings-section__item"
                             [daypartingSetting]="state.entity.dayparting"
                             [errors]="state.fieldsErrors.dayparting"
+                            [isDisabled]="isReadOnly"
                             (valueChange)="store.setDayparting($event)"
                         ></zem-dayparting-setting>
                     </div>
@@ -150,6 +165,7 @@
                         [biddingTypeErrors]="state.fieldsErrors.biddingType"
                         [bidErrors]="state.fieldsErrors.bid"
                         [maxBidErrors]="state.fieldsErrors.autopilot.maxBid"
+                        [isDisabled]="isReadOnly"
                         (biddingTypeChange)="store.setBiddingType($event)"
                         (bidChange)="store.setBid($event)"
                         (maxBidChange)="store.setMaxBid($event)"
@@ -165,7 +181,9 @@
                         "
                         [currencySymbol]="currencySymbol"
                         fractionSize="0"
-                        [isDisabled]="!store.isAdGroupAutopilotEnabled()"
+                        [isDisabled]="
+                            !store.isAdGroupAutopilotEnabled() || isReadOnly
+                        "
                         [errors]="state.fieldsErrors.autopilot.dailyBudget"
                         (valueChange)="store.setAutopilotDailyBudget($event)"
                     ></zem-currency-form-group>
@@ -240,6 +258,7 @@
                                 state.fieldsErrors
                                     .clickCappingDailyAdGroupMaxClicks
                             "
+                            [isDisabled]="isReadOnly"
                             placeholder="No limit"
                             (valueChange)="store.setDailyClickCapping($event)"
                         ></zem-integer-form-group>
@@ -259,6 +278,7 @@
                             helpMessage="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
                             [value]="store.state.entity.frequencyCapping"
                             [errors]="state.fieldsErrors.frequencyCapping"
+                            [isDisabled]="isReadOnly"
                             [placeholder]="'No limit'"
                             (valueChange)="store.setFrequencyCapping($event)"
                         ></zem-integer-form-group>
@@ -282,7 +302,10 @@
                         [optimizationObjective]="
                             state.extras.optimizationObjective
                         "
-                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        [isDisabled]="
+                            state.extras.isCampaignAutopilotEnabled ||
+                            isReadOnly
+                        "
                         (autopilotStateChange)="
                             store.setAdGroupAutopilotState($event)
                         "
@@ -315,7 +338,8 @@
                             "
                             [isDisabled]="
                                 state.extras.isCampaignAutopilotEnabled ||
-                                store.isAdGroupAutopilotEnabled()
+                                store.isAdGroupAutopilotEnabled() ||
+                                isReadOnly
                             "
                             (manageRtbSourcesAsOneChange)="
                                 store.setManageRtbSourcesAsOne($event)
@@ -370,6 +394,7 @@
                             <zem-image-checkbox-input
                                 class="zem-image-checkbox-input"
                                 [value]="formattedOption"
+                                [isDisabled]="isReadOnly"
                                 (itemToggled)="
                                     store.toggleTargetingDevice($event)
                                 "
@@ -423,12 +448,14 @@
                                 class="zem-operating-system-list zem-settings-section__item"
                                 [oses]="state.entity.targeting.os"
                                 [devices]="state.entity.targeting.devices"
+                                [isDisabled]="isReadOnly"
                                 (osAdded)="store.addDeviceTargetingOs($event)"
                             >
                                 <ng-template #osItemTemplate let-os="os">
                                     <zem-operating-system
                                         class="zem-operating-system"
                                         [os]="os"
+                                        [isDisabled]="isReadOnly"
                                         (osChange)="
                                             store.changeDeviceTargetingOs(
                                                 $event
@@ -458,6 +485,7 @@
                                     <zem-image-checkbox-input
                                         class="zem-image-checkbox-input"
                                         [value]="formattedOption"
+                                        [isDisabled]="isReadOnly"
                                         (itemToggled)="
                                             store.toggleTargetingEnvironment(
                                                 $event
@@ -507,6 +535,7 @@
                             state.selectedExcludedLocationsByType
                         "
                         [searchedLocations]="state.searchedLocations"
+                        [isDisabled]="isReadOnly"
                         (locationSearch)="store.searchLocations($event)"
                         (locationOpen)="store.clearSearchedLocations()"
                         (addGeotargeting)="store.addGeotargeting($event)"
@@ -550,6 +579,7 @@
                             [selectedLocation]="
                                 state.selectedZipTargetingLocation
                             "
+                            [isDisabled]="isReadOnly"
                             (locationSearch)="store.searchLocations($event)"
                             (locationOpen)="store.clearSearchedLocations()"
                             (targetingUpdate)="store.setZipTargeting($event)"
@@ -568,6 +598,7 @@
                             [value]="
                                 state.entity.targeting.language.matchingEnabled
                             "
+                            [isDisabled]="isReadOnly"
                             (valueChange)="store.setLanguageMatching($event)"
                         >
                             Enable language matching
@@ -587,6 +618,7 @@
                     <zem-tracking-code-setting
                         class="zem-tracking-code-setting zem-settings-section__item"
                         [value]="state.entity.trackingCode"
+                        [isDisabled]="isReadOnly"
                         [errors]="state.fieldsErrors.trackingCode"
                         (valueChange)="store.setTrackingCode($event)"
                     ></zem-tracking-code-setting>
@@ -676,6 +708,7 @@
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
+                        [isDisabled]="isReadOnly"
                         (onUpdate)="
                             store.setPublisherGroupsTargeting($event.$event)
                         "
@@ -721,6 +754,7 @@
                         [excludedInterests]="
                             state.entity.targeting.interest.excluded
                         "
+                        [isDisabled]="isReadOnly"
                         (onUpdate)="store.setInterestTargeting($event.$event)"
                     ></zem-interest-targeting>
                 </div>
@@ -821,6 +855,7 @@
                                     .excluded
                             "
                             [warnings]="state.extras.warnings.retargeting"
+                            [isDisabled]="isReadOnly"
                             (onUpdate)="store.setRetargeting($event.$event)"
                         ></zem-retargeting>
                     </div>
@@ -850,6 +885,7 @@
                             class="zem-demographic-targeting"
                             [bluekaiTargeting]="state.entity.targeting.audience"
                             [entityId]="state.entity.id"
+                            [isDisabled]="isReadOnly"
                             (onUpdate)="
                                 store.setBluekaiTargeting($event.$event)
                             "
@@ -884,6 +920,7 @@
                         [deals]="store.state.entity.deals"
                         [availableDeals]="store.state.availableDeals"
                         [isLoading]="store.state.dealsRequests.list.inProgress"
+                        [isDisabled]="isReadOnly"
                         (dealSelect)="store.addDeal($event)"
                         (search)="store.loadAvailableDeals($event)"
                         (open)="store.loadAvailableDeals()"
@@ -899,6 +936,7 @@
                                     'zem-deal--error': store.hasDealError(index)
                                 }"
                                 [deal]="deal"
+                                [isDisabled]="isReadOnly"
                                 (dealRemove)="store.removeDeal($event)"
                                 (dealEditFormClose)="store.validateEntity()"
                             >
@@ -909,7 +947,7 @@
                                     [dealErrors]="
                                         store.state.fieldsErrors.deals[index]
                                     "
-                                    [isDisabled]="!!deal.id"
+                                    [isDisabled]="!!deal.id || isReadOnly"
                                     (dealChange)="store.changeDeal($event)"
                                 ></zem-deal-edit-form>
                             </zem-deal>
@@ -920,6 +958,7 @@
                             type="button"
                             class="zem-button zem-button--with-icon zem-button--add-icon"
                             (click)="store.addDeal()"
+                            [disabled]="isReadOnly"
                         >
                             Add new deal
                         </button>
@@ -949,6 +988,7 @@
                         "
                         [importError]="state.bidModifiersImportError"
                         [importSummary]="state.bidModifiersImportSummary"
+                        [isDisabled]="isReadOnly"
                         (importFileChange)="
                             store.handleBidModifierImportFileChange($event)
                         "
@@ -1002,13 +1042,14 @@
                 </div>
             </div>
         </div>
-
         <zem-settings-drawer-footer
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.AD_GROUP"
-            [userHasPermissionToArchive]="
-                authStore.hasPermission('zemauth.archive_restore_entity')
+            [isSaveDisabled]="isReadOnly"
+            [isArchiveDisabled]="
+                isReadOnly ||
+                !authStore.hasPermission('zemauth.archive_restore_entity')
             "
             [isLoading]="
                 state.requests.create.inProgress ||

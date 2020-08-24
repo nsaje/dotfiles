@@ -4,6 +4,7 @@ angular.module('one.common').component('zemDemographicTargeting', {
     bindings: {
         bluekaiTargeting: '<',
         entityId: '<', // Workaround to know when to reinitialize state service (on entity change)
+        isDisabled: '<',
         onUpdate: '&',
     },
     template: require('./zemDemographicTargeting.component.html'),

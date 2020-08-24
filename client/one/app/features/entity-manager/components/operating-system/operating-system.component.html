@@ -11,6 +11,7 @@
     [placeholder]="'-'"
     bindLabel="displayName"
     bindValue="name"
+    [isDisabled]="isDisabled"
     [value]="minVersion?.name"
     (valueChange)="onVersionChanged($event, 'min')"
 >
@@ -23,11 +24,13 @@
     [placeholder]="'-'"
     bindLabel="displayName"
     bindValue="name"
+    [isDisabled]="isDisabled"
     [value]="maxVersion?.name"
     (valueChange)="onVersionChanged($event, 'max')"
 >
 </zem-select-form-group>
 <button
     class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--remove-icon zem-operating-system__remove-button"
+    [disabled]="isDisabled"
     (click)="onOsDeleted()"
 ></button>

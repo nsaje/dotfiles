@@ -16,7 +16,6 @@ import {DeviceType} from '../operating-system/types/device-type';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {DropdownDirective} from '../../../../shared/components/dropdown/dropdown.directive';
 import {OPERATING_SYSTEMS} from '../../entity-manager.config';
-import {ChangeEvent} from '../../../../shared/types/change-event';
 
 @Component({
     selector: 'zem-operating-system-list',
@@ -28,6 +27,8 @@ export class OperatingSystemListComponent implements OnChanges {
     oses: TargetOperatingSystem[];
     @Input()
     devices: DeviceType[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     osAdded: EventEmitter<String> = new EventEmitter<String>();
 

@@ -19,9 +19,16 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
 import {LevelParam, EntityType, RoutePathName} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
-import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
+import {
+    takeUntil,
+    map,
+    distinctUntilChanged,
+    tap,
+    filter,
+} from 'rxjs/operators';
 import {Router} from '@angular/router';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {Account} from '../../../../core/entities/types/account/account';
 
 @Component({
     selector: 'zem-account-settings-drawer',
@@ -40,6 +47,7 @@ export class AccountSettingsDrawerView
     isOpen: boolean;
     isNewEntity: boolean;
     isDefaultIconPreviewVisible: boolean;
+    isReadOnly: boolean;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -162,7 +170,10 @@ export class AccountSettingsDrawerView
     }
 
     private subscribeToStateUpdates() {
-        merge(this.createDefaultIconPreviewUpdater$())
+        merge(
+            this.createDefaultIconPreviewUpdater$(),
+            this.createReadOnlyUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -177,5 +188,22 @@ export class AccountSettingsDrawerView
                 );
             })
         );
+    }
+
+    private createReadOnlyUpdater$(): Observable<Account> {
+        return this.store.state$
+            .pipe(
+                filter(state => commonHelpers.isDefined(state.entity.agencyId))
+            )
+            .pipe(
+                map(state => state.entity),
+                distinctUntilChanged(),
+                tap(entity => {
+                    this.isReadOnly = this.authStore.hasReadOnlyAccessOn(
+                        entity.agencyId,
+                        entity.id
+                    );
+                })
+            );
     }
 }

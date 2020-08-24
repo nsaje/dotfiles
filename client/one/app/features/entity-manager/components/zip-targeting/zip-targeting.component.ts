@@ -39,6 +39,8 @@ export class ZipTargetingComponent implements OnChanges {
     searchedLocations: Geolocation[] = [];
     @Input()
     errors: string[] = [];
+    @Input()
+    isDisabled: boolean;
     @Output()
     locationSearch: EventEmitter<GeolocationSearchParams> = new EventEmitter<
         GeolocationSearchParams

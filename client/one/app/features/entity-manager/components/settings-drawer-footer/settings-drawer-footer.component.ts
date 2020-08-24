@@ -6,11 +6,8 @@ import {
     Input,
     Output,
     EventEmitter,
-    SimpleChanges,
-    OnChanges,
 } from '@angular/core';
 import {EntityType} from '../../../../app.constants';
-import * as messagesHelpers from '../../helpers/messages.helpers';
 
 @Component({
     selector: 'zem-settings-drawer-footer',
@@ -23,7 +20,9 @@ export class SettingsDrawerFooterComponent {
     @Input()
     entityType: EntityType;
     @Input()
-    userHasPermissionToArchive: boolean;
+    isSaveDisabled: boolean;
+    @Input()
+    isArchiveDisabled: boolean;
     @Input()
     isLoading: boolean;
     @Input()

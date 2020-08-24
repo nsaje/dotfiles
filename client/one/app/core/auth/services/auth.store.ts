@@ -100,14 +100,6 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         return this.state.internalPermissions.includes(permission);
     }
 
-    canAccessPlatformCosts(): boolean {
-        return this.hasPermission('zemauth.can_view_platform_cost_breakdown');
-    }
-
-    canAccessAgencyCosts(): boolean {
-        return this.hasPermission('zemauth.can_view_agency_cost_breakdown');
-    }
-
     //
     //  ENTITY PERMISSIONS
     //

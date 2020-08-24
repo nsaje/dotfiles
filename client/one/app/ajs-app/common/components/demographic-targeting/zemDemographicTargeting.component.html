@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div ng-if="$ctrl.state.editable">
+    <div ng-if="$ctrl.state.editable && !$ctrl.isDisabled">
         <div
             class="zem-demographic-targeting__group"
             ng-repeat="node in $ctrl.state.expressionTree.childNodes"

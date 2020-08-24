@@ -64,7 +64,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertEqual(expected, budget)
 
     def test_campaigns_budgets_get(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.BUDGET_MARGIN])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.AGENCY_SPEND_MARGIN])
         account = magic_mixer.blend(dash.models.Account, agency=agency)
         campaign = magic_mixer.blend(
             dash.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
@@ -130,7 +130,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_budgets_get_invalid(self):
-        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.BUDGET_MARGIN])
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.AGENCY_SPEND_MARGIN])
         account = magic_mixer.blend(dash.models.Account, agency=agency)
         campaign = magic_mixer.blend(
             dash.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
@@ -184,7 +184,8 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
 
     def test_campaigns_budgets_put(self):
         agency = self.mix_agency(
-            self.user, permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.BUDGET_MARGIN]
+            self.user,
+            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.AGENCY_SPEND_MARGIN],
         )
         account = magic_mixer.blend(dash.models.Account, agency=agency)
         campaign = magic_mixer.blend(
@@ -224,7 +225,9 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
     @mock.patch("utils.dates_helper.local_today", lambda: datetime.datetime(2016, 1, 15).date())
     def test_campaigns_budgets_list(self):
         agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.BUDGET_MARGIN], agency=agency)
+        account = self.mix_account(
+            self.user, permissions=[Permission.READ, Permission.AGENCY_SPEND_MARGIN], agency=agency
+        )
         campaign = magic_mixer.blend(
             dash.models.Campaign, account=account, name="Test campaign", type=dash.constants.CampaignType.CONTENT
         )
@@ -258,7 +261,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(
             self.user,
-            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.BUDGET_MARGIN],
+            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.AGENCY_SPEND_MARGIN],
             agency=agency,
         )
         campaign = magic_mixer.blend(
@@ -358,7 +361,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(
             self.user,
-            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.BUDGET_MARGIN],
+            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.AGENCY_SPEND_MARGIN],
             agency=agency,
         )
         campaign = magic_mixer.blend(
@@ -448,7 +451,7 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(
             self.user,
-            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.BUDGET_MARGIN],
+            permissions=[Permission.READ, Permission.WRITE, Permission.BUDGET, Permission.AGENCY_SPEND_MARGIN],
             agency=agency,
         )
         campaign = magic_mixer.blend(

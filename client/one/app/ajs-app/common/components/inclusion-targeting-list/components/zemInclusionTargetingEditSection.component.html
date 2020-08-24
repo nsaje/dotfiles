@@ -33,7 +33,8 @@
             </div>
             <a
                 class="button button--extra-small button--with-icon button--only-icon remove-icon"
-                ng-click="$ctrl.remove(targeting)"
+                ng-class="{'button--disabled': $ctrl.disabled}"
+                ng-click="!$ctrl.disabled && $ctrl.remove(targeting)"
                 href
             >
             </a>

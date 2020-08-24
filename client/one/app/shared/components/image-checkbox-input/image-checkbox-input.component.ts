@@ -17,6 +17,8 @@ import {ImageCheckboxInputItem} from './types/image-checkbox-input-item';
 export class ImageCheckboxInputComponent {
     @Input()
     value: ImageCheckboxInputItem;
+    @Input()
+    isDisabled: boolean;
     @Output()
     itemToggled: EventEmitter<String> = new EventEmitter<String>();
 }

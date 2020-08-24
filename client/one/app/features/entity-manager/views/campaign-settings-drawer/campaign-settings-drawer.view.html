@@ -14,6 +14,7 @@
             [entityId]="entityId"
             [entityType]="EntityType.CAMPAIGN"
             [entityName]="state.entity.name"
+            [isDisabled]="isReadOnly"
             [showAdminLink]="
                 authStore.hasPermission('zemauth.can_see_open_in_admin')
             "
@@ -23,6 +24,12 @@
             [entityNameErrors]="state.fieldsErrors.name"
             (entityNameChange)="store.setName($event)"
         ></zem-settings-drawer-header>
+        <div
+            class="zem-drawer__subheader zem-drawer__subheader--info zem-drawer__subheader--with-icon"
+            *ngIf="isReadOnly"
+        >
+            <span>You don't have permission to edit this campaign.</span>
+        </div>
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
@@ -51,6 +58,7 @@
                         [placeholder]="'Choose type'"
                         [isSearchable]="false"
                         [isClearable]="false"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.type"
                         (valueChange)="store.setType($event)"
@@ -73,6 +81,7 @@
                         [placeholder]="'Choose manager'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.campaignManager"
                         (valueChange)="store.setCampaignManager($event)"
@@ -93,6 +102,7 @@
                         [placeholder]="'Choose category'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [errors]="state.fieldsErrors.iabCategory"
                         (valueChange)="store.setIabCategory($event)"
                     ></zem-select-form-group>
@@ -112,6 +122,7 @@
                         [placeholder]="'Choose language'"
                         [isSearchable]="true"
                         [isClearable]="true"
+                        [isDisabled]="isReadOnly"
                         [errors]="state.fieldsErrors.language"
                         (valueChange)="store.setLanguage($event)"
                     ></zem-select-form-group>
@@ -131,6 +142,7 @@
                         helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
                         [value]="state.entity.frequencyCapping"
                         [errors]="state.fieldsErrors.frequencyCapping"
+                        [isDisabled]="isReadOnly"
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
                     ></zem-integer-form-group>
@@ -203,6 +215,7 @@
                         [conversionPixelsRequests]="
                             state.conversionPixelsRequests
                         "
+                        [isDisabled]="isReadOnly"
                         (campaignGoalCreate)="store.createGoal()"
                         (campaignGoalPrimaryChange)="
                             store.setPrimaryGoal($event)
@@ -278,6 +291,7 @@
                                 'zemauth.can_see_new_publisher_library'
                             )
                         "
+                        [isDisabled]="isReadOnly"
                         (onUpdate)="
                             store.setPublisherGroupsTargeting($event.$event)
                         "
@@ -320,6 +334,7 @@
                         class="zem-campaign-performance-tracking zem-settings-section__item"
                         [campaignTracking]="state.entity.tracking"
                         [campaignTrackingErrors]="state.fieldsErrors.tracking"
+                        [isDisabled]="isReadOnly"
                         (campaignTrackingChange)="
                             store.changeCampaignTracking($event)
                         "
@@ -373,11 +388,7 @@
                             [showLicenseFee]="canAccessPlatformCosts()"
                             [showServiceFee]="canSeeServiceFee()"
                             [showMargin]="canAccessAgencyCosts()"
-                            [isEditingEnabled]="
-                                !authStore.hasPermission(
-                                    'zemauth.disable_budget_management'
-                                )
-                            "
+                            [isEditingEnabled]="!isReadOnly && canEditBudget()"
                             [credits]="state.extras.credits"
                             [editFormTemplate]="campaignBudgetEditFormTemplate"
                             (budgetDelete)="store.deleteBudget($event)"
@@ -391,6 +402,7 @@
                         let-currency="currency"
                         let-budgetErrors="budgetErrors"
                         let-showLicenseFee="showLicenseFee"
+                        let-showServiceFee="showServiceFee"
                         let-showMargin="showMargin"
                         let-credits="credits"
                     >
@@ -400,7 +412,7 @@
                             [currency]="currency"
                             [budgetErrors]="budgetErrors"
                             [showLicenseFee]="showLicenseFee"
-                            [showServiceFee]="canSeeServiceFee()"
+                            [showServiceFee]="showServiceFee"
                             [showMargin]="showMargin"
                             [credits]="credits"
                             (budgetChange)="store.updateBudget($event)"
@@ -408,17 +420,15 @@
                     </ng-template>
                     <div
                         class="zem-settings-section__item"
-                        *ngIf="
-                            !authStore.hasPermission(
-                                'zemauth.disable_budget_management'
-                            )
-                        "
+                        *ngIf="canEditBudget()"
                     >
                         <button
                             type="button"
                             class="zem-button zem-button--with-icon zem-button--add-icon zem-campaign-goals__button"
                             (click)="store.createBudget()"
-                            [disabled]="!store.isAnyCreditAvailable()"
+                            [disabled]="
+                                !store.isAnyCreditAvailable() || isReadOnly
+                            "
                         >
                             Add new budget item
                         </button>
@@ -476,6 +486,7 @@
                     <zem-campaign-budget-optimization
                         class="zem-campaign-budget-optimization"
                         [autopilot]="state.entity.autopilot"
+                        [isDisabled]="isReadOnly"
                         (autopilotChange)="store.setAutopilot($event)"
                     ></zem-campaign-budget-optimization>
                 </div>
@@ -507,6 +518,7 @@
                         [deals]="store.state.entity.deals"
                         [availableDeals]="store.state.availableDeals"
                         [isLoading]="store.state.dealsRequests.list.inProgress"
+                        [isDisabled]="isReadOnly"
                         (dealSelect)="store.addDeal($event)"
                         (search)="store.loadAvailableDeals($event)"
                         (open)="store.loadAvailableDeals()"
@@ -522,6 +534,7 @@
                                     'zem-deal--error': store.hasDealError(index)
                                 }"
                                 [deal]="deal"
+                                [isDisabled]="isReadOnly"
                                 (dealRemove)="store.removeDeal($event)"
                                 (dealEditFormClose)="store.validateEntity()"
                             >
@@ -532,7 +545,7 @@
                                     [dealErrors]="
                                         store.state.fieldsErrors.deals[index]
                                     "
-                                    [isDisabled]="!!deal.id"
+                                    [isDisabled]="!!deal.id || isReadOnly"
                                     (dealChange)="store.changeDeal($event)"
                                 ></zem-deal-edit-form>
                             </zem-deal>
@@ -543,6 +556,7 @@
                             type="button"
                             class="zem-button zem-button--with-icon zem-button--add-icon"
                             (click)="store.addDeal()"
+                            [disabled]="isReadOnly"
                         >
                             Add new deal
                         </button>
@@ -600,8 +614,10 @@
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.CAMPAIGN"
-            [userHasPermissionToArchive]="
-                authStore.hasPermission('zemauth.archive_restore_entity')
+            [isSaveDisabled]="isReadOnly"
+            [isArchiveDisabled]="
+                isReadOnly ||
+                !authStore.hasPermission('zemauth.archive_restore_entity')
             "
             [isLoading]="
                 state.requests.create.inProgress ||

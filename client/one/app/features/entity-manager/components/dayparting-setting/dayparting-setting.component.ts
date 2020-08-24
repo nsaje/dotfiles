@@ -23,6 +23,8 @@ export class DaypartingSettingComponent implements OnChanges {
     daypartingSetting: DaypartingSetting;
     @Input()
     errors: string[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     valueChange = new EventEmitter<DaypartingSetting>();
 

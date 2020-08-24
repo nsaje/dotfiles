@@ -214,7 +214,6 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             permissions=[
                 Permission.READ,
                 Permission.WRITE,
-                Permission.BUDGET_MARGIN,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
@@ -336,7 +335,6 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             self.user,
             permissions=[
                 Permission.READ,
-                Permission.BUDGET_MARGIN,
                 Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
@@ -793,7 +791,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.READ,
                 Permission.WRITE,
                 Permission.BUDGET,
-                Permission.BUDGET_MARGIN,
+                Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
             ],
@@ -927,7 +925,7 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
                 Permission.READ,
                 Permission.WRITE,
                 Permission.BUDGET,
-                Permission.BUDGET_MARGIN,
+                Permission.AGENCY_SPEND_MARGIN,
                 Permission.MEDIA_COST_DATA_COST_LICENCE_FEE,
                 Permission.BASE_COSTS_SERVICE_FEE,
             ],

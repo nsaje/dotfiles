@@ -79,6 +79,39 @@
     border-bottom: 1px solid @color--light-neutral;
 }
 
+.zem-drawer__subheader {
+    flex: 0 0;
+    position: relative;
+    padding: 8px 10px;
+}
+
+.zem-drawer__subheader--info {
+    color: @color--info;
+    background-color: tint(@color--info, 95%);
+    border-bottom: 1px solid tint(@color--info, 65%);
+}
+
+.zem-drawer__subheader--with-icon {
+    padding-left: 34px;
+
+    &::before {
+        content: '';
+        background-size: 18px;
+        background-repeat: no-repeat;
+        background-position: center center;
+        width: 18px;
+        height: 18px;
+        position: absolute;
+        left: 7px;
+        top: 7px;
+        opacity: 0.25;
+    }
+}
+
+.zem-drawer__subheader--with-icon.zem-drawer__subheader--info::before {
+    background-image: url('images/info-blue.svg');
+}
+
 .zem-drawer__content {
     flex: 1 0;
     overflow-y: auto;

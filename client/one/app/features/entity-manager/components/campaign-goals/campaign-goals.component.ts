@@ -51,6 +51,8 @@ export class CampaignGoalsComponent implements OnChanges {
         create: RequestState;
         edit: RequestState;
     }[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     campaignGoalCreate = new EventEmitter<void>();
     @Output()

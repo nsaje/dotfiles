@@ -21,7 +21,13 @@ import {
     RoutePathName,
 } from '../../../../app.constants';
 import {merge, Observable, Subject} from 'rxjs';
-import {distinctUntilChanged, map, takeUntil, tap} from 'rxjs/operators';
+import {
+    distinctUntilChanged,
+    map,
+    takeUntil,
+    tap,
+    filter,
+} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as messagesHelpers from '../../helpers/messages.helpers';
@@ -29,6 +35,7 @@ import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {ImageCheckboxInputGroupItem} from '../../../../shared/components/image-checkbox-input-group/types/image-checkbox-input-group-item';
 import {Router} from '@angular/router';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {AdGroupSettingsStoreState} from '../../services/ad-group-settings-store/ad-group-settings.store.state';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -46,6 +53,7 @@ export class AdGroupSettingsDrawerView
 
     isOpen = false;
     isNewEntity = false;
+    isReadOnly: boolean;
     minEndDate = new Date();
     currencySymbol = '';
 
@@ -156,7 +164,10 @@ export class AdGroupSettingsDrawerView
     }
 
     private subscribeToStateUpdates() {
-        merge(this.createCurrencySymbolUpdater$())
+        merge(
+            this.createCurrencySymbolUpdater$(),
+            this.createReadOnlyUpdater$()
+        )
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe();
     }
@@ -169,6 +180,23 @@ export class AdGroupSettingsDrawerView
                 this.currencySymbol = APP_CONFIG.currencySymbols[currency];
             })
         );
+    }
+
+    private createReadOnlyUpdater$(): Observable<AdGroupSettingsStoreState> {
+        return this.store.state$
+            .pipe(
+                filter(state => commonHelpers.isDefined(state.extras.accountId))
+            )
+            .pipe(
+                map(state => state),
+                distinctUntilChanged(),
+                tap(state => {
+                    this.isReadOnly = this.authStore.hasReadOnlyAccessOn(
+                        state.extras.agencyId,
+                        state.extras.accountId
+                    );
+                })
+            );
     }
 
     private navigateToRoute(routePath: string[]) {

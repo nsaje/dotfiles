@@ -31,6 +31,8 @@ export class BidModifiersOverviewComponent implements OnChanges {
     importError: BidModifiersImportErrorState;
     @Input()
     importSummary: BidModifierUploadSummary;
+    @Input()
+    isDisabled: boolean;
     @Output()
     importFileChange = new EventEmitter<File>();
 

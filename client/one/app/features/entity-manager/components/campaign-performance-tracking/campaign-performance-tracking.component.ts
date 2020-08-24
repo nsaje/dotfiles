@@ -24,6 +24,8 @@ export class CampaignPerformanceTrackingComponent {
     campaignTracking: CampaignTracking;
     @Input()
     campaignTrackingErrors: CampaignTrackingErrors;
+    @Input()
+    isDisabled: boolean;
     @Output()
     campaignTrackingChange = new EventEmitter<ChangeEvent<CampaignTracking>>();
 

@@ -1,6 +1,7 @@
 <zem-checkbox-input
     class="zem-checkbox-input"
     [isChecked]="campaignTracking.ga.enabled"
+    [isDisabled]="isDisabled"
     (toggle)="onGaToggle($event)"
 >
     Enable Google Analytics performance tracking
@@ -19,6 +20,7 @@
             [value]="campaignTracking.ga.type"
             [bindLabel]="'label'"
             [bindValue]="'value'"
+            [isDisabled]="isDisabled"
             [items]="availableGaTypes"
             (valueChange)="onGaTypeChange($event)"
         >
@@ -72,7 +74,9 @@
             [value]="campaignTracking.ga.webPropertyId"
             [placeholder]="'UA-xxxxxxx-yy'"
             [errors]="campaignTrackingErrors.ga.webPropertyId"
-            [isDisabled]="campaignTracking.ga.type !== GaTrackingType.API"
+            [isDisabled]="
+                campaignTracking.ga.type !== GaTrackingType.API || isDisabled
+            "
             (valueChange)="onGaPropertyIdChange($event)"
         >
         </zem-text-form-group>
@@ -81,6 +85,7 @@
 
 <zem-checkbox-input
     [isChecked]="campaignTracking.adobe.enabled"
+    [isDisabled]="isDisabled"
     (toggle)="onAdobeToggle($event)"
 >
     Enable Adobe Analytics performance tracking
@@ -99,6 +104,7 @@
             "
             [value]="campaignTracking.adobe.trackingParameter"
             [maxLength]="10"
+            [isDisabled]="isDisabled"
             [errors]="campaignTrackingErrors.adobe.trackingParameter"
             (valueChange)="onAdobeTrackingParameterChange($event)"
         >

@@ -37,6 +37,8 @@ export class FileSelectorComponent extends NgxFileDropComponent
     showBrowseButton: boolean = false;
     @Input()
     browseButtonLabel: string;
+    @Input()
+    isDisabled: boolean;
     @Output()
     filesChange = new EventEmitter<File[]>();
     @Output()
@@ -58,6 +60,7 @@ export class FileSelectorComponent extends NgxFileDropComponent
     }
 
     ngOnInit(): void {
+        this.disabled = this.isDisabled;
         this.filesToUpload = [];
         this.onFileDrop
             .pipe(takeUntil(this.ngUnsubscribe$))

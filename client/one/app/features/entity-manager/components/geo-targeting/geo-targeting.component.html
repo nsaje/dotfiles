@@ -8,6 +8,7 @@
         [selectBindLabel]="'name'"
         [selectPlaceholder]="'Add location'"
         [selectGroupByValue]="'type'"
+        [selectIsDisabled]="isDisabled"
         (itemSelect)="onAddIncludedGeotargeting($event)"
         (search)="onLocationSearch($event)"
         (open)="locationOpen.emit()"
@@ -49,6 +50,7 @@
                     "
                     class="zem-geo-targeting-location zem-geo-targeting__list-item"
                     [location]="location"
+                    [canRemoveLocation]="!isDisabled"
                     (removeLocation)="onRemoveIncludedGeotargeting($event)"
                 ></zem-geo-targeting-location>
             </ng-container>
@@ -80,6 +82,7 @@
         [selectBindLabel]="'name'"
         [selectPlaceholder]="'Add location'"
         [selectGroupByValue]="'type'"
+        [selectIsDisabled]="isDisabled"
         (itemSelect)="onAddExcludedGeotargeting($event)"
         (search)="onLocationSearch($event)"
         (open)="locationOpen.emit()"
@@ -121,6 +124,7 @@
                     "
                     class="zem-geo-targeting-location zem-geo-targeting__list-item"
                     [location]="location"
+                    [canRemoveLocation]="!isDisabled"
                     (removeLocation)="onRemoveExcludedGeotargeting($event)"
                 ></zem-geo-targeting-location>
             </ng-container>
@@ -147,7 +151,7 @@
 <div class="zem-geo-targeting__item zem-geo-targeting__add-excluded">
     <a
         class="zem-geo-targeting__link"
-        *ngIf="!isExcludedVisible"
+        *ngIf="!isExcludedVisible && !isDisabled"
         (click)="isExcludedVisible = true"
         >Add excluded list</a
     >

@@ -9,7 +9,7 @@
             selected-items="$ctrl.targetings.included"
             unselected-items="$ctrl.targetings.notSelected"
             display-sections="$ctrl.displaySections"
-            disabled="$ctrl.disabled"
+            disabled="$ctrl.isDisabled"
             remove="$ctrl.remove"
             group-by="$ctrl.groupBySection"
             on-select="($ctrl.include)"
@@ -35,7 +35,7 @@
             selected-items="$ctrl.targetings.excluded"
             unselected-items="$ctrl.targetings.notSelected"
             display-sections="$ctrl.displaySections"
-            disabled="$ctrl.disabled"
+            disabled="$ctrl.isDisabled"
             remove="$ctrl.remove"
             group-by="$ctrl.groupBySection"
             on-select="($ctrl.exclude)"
@@ -51,6 +51,7 @@
 
 <a
     ng-click="$ctrl.showExcludedSection = !$ctrl.showExcludedSection"
+    ng-if="!$ctrl.isDisabled"
     class="alternative-link"
     ng-show="!$ctrl.targetings.excluded.length && !$ctrl.showExcludedSection"
     href

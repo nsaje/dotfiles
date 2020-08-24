@@ -8,6 +8,7 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         whitelistedPublisherGroupsErrors: '<',
         blacklistedPublisherGroupsErrors: '<',
         showNewLabels: '<',
+        isDisabled: '<',
         onUpdate: '&',
     },
     template: require('./zemPublisherGroupTargeting.component.html'), // eslint-disable-line max-len

@@ -18,10 +18,19 @@ import {CampaignSettingsStore} from '../../services/campaign-settings-store/camp
 import {LevelParam, EntityType, RoutePathName} from '../../../../app.constants';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
-import {Subject} from 'rxjs';
+import {Subject, merge, Observable} from 'rxjs';
 import {Router} from '@angular/router';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {
+    takeUntil,
+    map,
+    distinctUntilChanged,
+    tap,
+    filter,
+} from 'rxjs/operators';
+import {CampaignSettingsStoreState} from '../../services/campaign-settings-store/campaign-settings.store.state';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Component({
     selector: 'zem-campaign-settings-drawer',
@@ -42,6 +51,7 @@ export class CampaignSettingsDrawerView
 
     isOpen: boolean;
     isNewEntity: boolean;
+    isReadOnly: boolean;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -54,6 +64,7 @@ export class CampaignSettingsDrawerView
 
     ngOnInit() {
         this.isNewEntity = !this.entityId;
+        this.subscribeToStateUpdates();
     }
 
     ngAfterViewInit() {
@@ -131,16 +142,47 @@ export class CampaignSettingsDrawerView
         }
     }
 
+    canEditBudget(): boolean {
+        // TODO (msuber): deleted after User Roles will be released.
+        if (
+            !this.authStore.hasPermission('zemauth.fea_use_entity_permission')
+        ) {
+            return !this.authStore.hasPermission(
+                'zemauth.disable_budget_management'
+            );
+        }
+        return this.authStore.hasPermissionOn(
+            this.store.state.extras.agencyId,
+            this.store.state.entity.accountId,
+            EntityPermissionValue.BUDGET
+        );
+    }
+
     canAccessPlatformCosts(): boolean {
-        return this.authStore.canAccessPlatformCosts();
+        return this.authStore.hasPermissionOn(
+            this.store.state.extras.agencyId,
+            this.store.state.entity.accountId,
+            EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
+            'zemauth.can_view_platform_cost_breakdown'
+        );
     }
 
     canAccessAgencyCosts(): boolean {
-        return this.authStore.canAccessAgencyCosts();
+        return this.authStore.hasPermissionOn(
+            this.store.state.extras.agencyId,
+            this.store.state.entity.accountId,
+            EntityPermissionValue.AGENCY_SPEND_MARGIN,
+            'zemauth.can_view_agency_cost_breakdown'
+        );
     }
 
     canSeeServiceFee(): boolean {
-        return this.authStore.hasPermission('zemauth.can_see_service_fee');
+        return this.authStore.hasPermissionOn(
+            this.store.state.extras.agencyId,
+            this.store.state.entity.accountId,
+            EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
+            'zemauth.can_see_service_fee'
+        );
     }
 
     private navigateToRoute(routePath: string[]) {
@@ -169,5 +211,28 @@ export class CampaignSettingsDrawerView
                     });
                 }
             });
+    }
+
+    private subscribeToStateUpdates() {
+        merge(this.createReadOnlyUpdater$())
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe();
+    }
+
+    private createReadOnlyUpdater$(): Observable<CampaignSettingsStoreState> {
+        return this.store.state$
+            .pipe(
+                filter(state => commonHelpers.isDefined(state.entity.accountId))
+            )
+            .pipe(
+                map(state => state),
+                distinctUntilChanged(),
+                tap(state => {
+                    this.isReadOnly = this.authStore.hasReadOnlyAccessOn(
+                        state.extras.agencyId,
+                        state.entity.accountId
+                    );
+                })
+            );
     }
 }

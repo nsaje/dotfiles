@@ -38,6 +38,7 @@
         <button
             class="zem-button zem-button--danger zem-button--icon-only zem-button--remove-icon"
             (click)="deleteCampaignGoal($event)"
+            [disabled]="isDisabled"
         ></button>
     </div>
 </div>

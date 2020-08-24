@@ -20,6 +20,8 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 export class DealComponent implements OnInit {
     @Input()
     deal: Deal;
+    @Input()
+    isDisabled: boolean;
     @Output()
     dealRemove = new EventEmitter<Deal>();
     @Output()

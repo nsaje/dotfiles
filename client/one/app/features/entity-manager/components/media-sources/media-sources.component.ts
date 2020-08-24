@@ -20,6 +20,8 @@ import * as clone from 'clone';
 })
 export class MediaSourcesComponent implements OnChanges {
     @Input()
+    isDisabled: boolean;
+    @Input()
     allowedMediaSources: AccountMediaSource[];
     @Input()
     availableMediaSources: AccountMediaSource[];

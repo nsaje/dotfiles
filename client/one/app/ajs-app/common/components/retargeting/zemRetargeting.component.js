@@ -11,6 +11,7 @@ angular.module('one.common').component('zemRetargeting', {
         excludedAudiencesErrors: '<',
         includedAdGroupsErrors: '<',
         excludedAdGroupsErrors: '<',
+        isDisabled: '<',
         warnings: '<',
         onUpdate: '&',
     },

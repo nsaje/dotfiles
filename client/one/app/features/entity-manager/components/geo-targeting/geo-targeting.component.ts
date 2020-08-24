@@ -34,6 +34,8 @@ export class GeoTargetingComponent implements OnChanges {
 
     @Input()
     searchedLocations: Geolocation[] = [];
+    @Input()
+    isDisabled: boolean;
     @Output()
     locationSearch: EventEmitter<GeolocationSearchParams> = new EventEmitter<
         GeolocationSearchParams

@@ -34,6 +34,8 @@ export class SettingsDrawerHeaderComponent implements OnInit, OnChanges {
     isAdminLinkAnInternalFeature: boolean;
     @Input()
     entityNameErrors: string[];
+    @Input()
+    isDisabled: boolean;
     @Output()
     entityNameChange = new EventEmitter<string>();
 
@@ -70,6 +72,9 @@ export class SettingsDrawerHeaderComponent implements OnInit, OnChanges {
     }
 
     switchToEditMode() {
+        if (this.isDisabled) {
+            return;
+        }
         this.mode = SettingsDrawerHeaderMode.EDIT;
     }
 

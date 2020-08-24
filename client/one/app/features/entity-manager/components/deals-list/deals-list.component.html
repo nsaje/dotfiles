@@ -5,6 +5,7 @@
     [selectBindValue]="'id'"
     [selectPlaceholder]="'Search by name, media source or deal id'"
     [selectIsLoading]="isLoading"
+    [selectIsDisabled]="isDisabled"
     [selectSearchFn]="selectSearchFn"
     (itemSelect)="onDealSelect($event)"
     (search)="onSearch($event)"

@@ -24,6 +24,8 @@ import {safeGet} from '../../../../shared/helpers/common.helpers';
 export class OperatingSystemComponent implements OnChanges {
     @Input()
     os: TargetOperatingSystem;
+    @Input()
+    isDisabled: boolean;
     @Output()
     osChange: EventEmitter<
         ChangeEvent<TargetOperatingSystem>

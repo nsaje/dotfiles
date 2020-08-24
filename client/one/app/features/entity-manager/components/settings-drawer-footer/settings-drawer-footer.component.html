@@ -3,6 +3,7 @@
         <div class="zem-buttons-panel">
             <button
                 class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                [disabled]="isSaveDisabled"
                 (click)="save.emit()"
             >
                 <ng-container *ngIf="isNewEntity">Create</ng-container>
@@ -14,26 +15,22 @@
             >
                 Cancel
             </button>
-            <div
-                *ngIf="!isNewEntity && userHasPermissionToArchive"
-                placement="top"
-                triggers="mouseenter:mouseleave"
+            <button
+                class="zem-button zem-button--outlined"
+                *ngIf="!isNewEntity"
+                [disabled]="isArchiveDisabled"
+                (click)="archive.emit()"
             >
-                <button
-                    class="zem-button zem-button--outlined"
-                    (click)="archive.emit()"
-                >
-                    <ng-container *ngIf="entityType === EntityType.ACCOUNT">
-                        Archive account
-                    </ng-container>
-                    <ng-container *ngIf="entityType === EntityType.CAMPAIGN">
-                        Archive campaign
-                    </ng-container>
-                    <ng-container *ngIf="entityType === EntityType.AD_GROUP">
-                        Archive ad group
-                    </ng-container>
-                </button>
-            </div>
+                <ng-container *ngIf="entityType === EntityType.ACCOUNT">
+                    Archive account
+                </ng-container>
+                <ng-container *ngIf="entityType === EntityType.CAMPAIGN">
+                    Archive campaign
+                </ng-container>
+                <ng-container *ngIf="entityType === EntityType.AD_GROUP">
+                    Archive ad group
+                </ng-container>
+            </button>
         </div>
     </div>
     <div class="zem-settings-drawer-footer__status-display">
