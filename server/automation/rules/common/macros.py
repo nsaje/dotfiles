@@ -24,6 +24,7 @@ CURRENCY_MACROS = [
     constants.EmailActionMacro.AVG_COST_PER_PAGEVIEW,
     constants.EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT,
     constants.EmailActionMacro.AVG_COST_PER_MINUTE,
+    constants.EmailActionMacro.AVG_COST_PER_UNIQUE_USER,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW,
     constants.EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL,

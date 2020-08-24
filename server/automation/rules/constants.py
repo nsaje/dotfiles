@@ -187,6 +187,7 @@ class MetricType(ConstantBase):
     CONVERSIONS = 67
     CONVERSIONS_VIEW = 68
     CONVERSIONS_TOTAL = 69
+    AVG_COST_PER_UNIQUE_USER = 70
 
     _VALUES = {
         TOTAL_SPEND: "Total spend",
@@ -258,6 +259,7 @@ class MetricType(ConstantBase):
         CONVERSIONS: "Conversions (click)",
         CONVERSIONS_VIEW: "Conversions (view)",
         CONVERSIONS_TOTAL: "Conversions (total)",
+        AVG_COST_PER_UNIQUE_USER: "Average cost per unique user",
     }
 
 
@@ -287,6 +289,7 @@ METRIC_STATS_MAPPING = {
     MetricType.AVG_COST_PER_PAGEVIEW: "local_avg_etfm_cost_per_pageview",
     MetricType.AVG_COST_PER_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
     MetricType.AVG_COST_PER_MINUTE: "local_avg_etfm_cost_per_minute",
+    MetricType.AVG_COST_PER_UNIQUE_USER: "local_avg_etfm_cost_per_unique_user",
     MetricType.AVG_COST_PER_CONVERSION: "local_avg_etfm_cost_per_conversion",
     MetricType.AVG_COST_PER_CONVERSION_VIEW: "local_avg_etfm_cost_per_conversion_view",
     MetricType.AVG_COST_PER_CONVERSION_TOTAL: "local_avg_etfm_cost_per_conversion_total",
@@ -469,6 +472,7 @@ class EmailActionMacro(ConstantBase):
     AVG_COST_PER_PAGEVIEW = "AVG_COST_PER_PAGEVIEW"
     AVG_COST_PER_NON_BOUNCED_VISIT = "AVG_COST_PER_NON_BOUNCED_VISIT"
     AVG_COST_PER_MINUTE = "AVG_COST_PER_MINUTE"
+    AVG_COST_PER_UNIQUE_USER = "AVG_COST_PER_UNIQUE_USER"
     AVG_COST_PER_CONVERSION = "AVG_COST_PER_CONVERSION"
     AVG_COST_PER_CONVERSION_VIEW = "AVG_COST_PER_CONVERSION_VIEW"
     AVG_COST_PER_CONVERSION_TOTAL = "AVG_COST_PER_CONVERSION_TOTAL"
@@ -543,6 +547,7 @@ EMAIL_MACRO_STATS_MAPPING = {
     EmailActionMacro.AVG_COST_PER_PAGEVIEW: "local_avg_etfm_cost_per_pageview",
     EmailActionMacro.AVG_COST_PER_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
     EmailActionMacro.AVG_COST_PER_MINUTE: "local_avg_etfm_cost_per_minute",
+    EmailActionMacro.AVG_COST_PER_UNIQUE_USER: "local_avg_etfm_cost_per_unique_user",
     EmailActionMacro.AVG_COST_PER_CONVERSION: "local_avg_etfm_cost_per_conversion",
     EmailActionMacro.AVG_COST_PER_CONVERSION_VIEW: "local_avg_etfm_cost_per_conversion_view",
     EmailActionMacro.AVG_COST_PER_CONVERSION_TOTAL: "local_avg_etfm_cost_per_conversion_total",

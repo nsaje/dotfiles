@@ -499,6 +499,42 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.AudienceMetrics,
         hasTimeRangeModifier: true,
     },
+    [RuleConditionOperandType.AvgCostPerVisit]: {
+        type: RuleConditionOperandType.AvgCostPerVisit,
+        label: 'Avg. Cost per Visit',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCostForNewVisitor]: {
+        type: RuleConditionOperandType.AvgCostForNewVisitor,
+        label: 'Avg. Cost for New Visitor',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCostPerPageview]: {
+        type: RuleConditionOperandType.AvgCostPerPageview,
+        label: 'Avg. Cost per Pageview',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCostPerNonBouncedVisit]: {
+        type: RuleConditionOperandType.AvgCostPerNonBouncedVisit,
+        label: 'Avg. Cost per Non-Bounced Visit',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCostPerMinute]: {
+        type: RuleConditionOperandType.AvgCostPerMinute,
+        label: 'Avg. Cost per Minute',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
+    [RuleConditionOperandType.AvgCostPerUniqueUser]: {
+        type: RuleConditionOperandType.AvgCostPerUniqueUser,
+        label: 'Avg. Cost per Unique User',
+        group: RuleConditionOperandGroup.AudienceMetrics,
+        hasTimeRangeModifier: true,
+    },
     [RuleConditionOperandType.Conversions]: {
         type: RuleConditionOperandType.Conversions,
         label: 'Conversions - click attribution',
@@ -1084,6 +1120,126 @@ export const RULE_CONDITIONS_OPTIONS = {
             // RULE_CONDITION_OPERANDS_OPTIONS[
             //     RuleConditionOperandType.TimeOnSiteCampaignGoal
             // ],
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerVisit]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerVisit
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostForNewVisitor]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostForNewVisitor
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerPageview]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerPageview
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerNonBouncedVisit]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerNonBouncedVisit
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerMinute]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerMinute
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
+        ],
+    },
+    [RuleConditionOperandType.AvgCostPerUniqueUser]: {
+        metric:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AvgCostPerUniqueUser
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableValueTypes: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                dataType: DataType.Currency,
+                unit: Unit.CurrencySign,
+                fractionSize: 2,
+            },
         ],
     },
     [RuleConditionOperandType.Conversions]: {
@@ -2007,6 +2163,26 @@ export const EMAIL_MACROS = [
     {
         label: 'Avg. cost per minute (last 60 days)',
         value: Macro.AvgCostPerMinuteLastSixtyDays,
+    },
+    {
+        label: 'Avg. cost per unique user (last day)',
+        value: Macro.AvgCostPerUniqueUserLastDay,
+    },
+    {
+        label: 'Avg. cost per unique user (last 3 days)',
+        value: Macro.AvgCostPerUniqueUserLastThreeDays,
+    },
+    {
+        label: 'Avg. cost per unique user (last 7 days)',
+        value: Macro.AvgCostPerUniqueUserLastSevenDays,
+    },
+    {
+        label: 'Avg. cost per unique user (last 30 days)',
+        value: Macro.AvgCostPerUniqueUserLastThirtyDays,
+    },
+    {
+        label: 'Avg. cost per unique user (last 60 days)',
+        value: Macro.AvgCostPerUniqueUserLastSixtyDays,
     },
     {
         label: 'Avg. cost per conversion (last day)',

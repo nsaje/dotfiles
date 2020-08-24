@@ -650,7 +650,25 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                 ],
                 RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BounceRate],
                 RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
-                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite]
+                RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostPerVisit
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostForNewVisitor
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostPerPageview
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostPerNonBouncedVisit
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostPerMinute
+                ],
+                RULE_CONDITIONS_OPTIONS[
+                    RuleConditionOperandType.AvgCostPerUniqueUser
+                ]
             );
         }
 

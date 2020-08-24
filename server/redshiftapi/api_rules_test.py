@@ -141,7 +141,13 @@ local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
-local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_minute, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -230,7 +236,13 @@ local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
-local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_minute, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -319,7 +331,13 @@ local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
-local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_minute, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -408,7 +426,13 @@ local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
-local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_minute, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -497,7 +521,13 @@ local_avg_etfm_cost_per_non_bounced_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(total_time_on_site), 0) * 16666666.666666666)
-local_avg_etfm_cost_per_minute, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
+local_avg_etfm_cost_per_minute, (
+  COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
+  COALESCE(SUM(local_margin_nano)::FLOAT, 0)
+)::FLOAT / (NULLIF(SUM(users), 0) * 1000000000)
+local_avg_etfm_cost_per_unique_user, SUM(video_start) video_start, SUM(video_first_quartile) video_first_quartile, SUM(video_midpoint) video_midpoint, SUM(video_third_quartile) video_third_quartile, SUM(video_complete) video_complete, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +

@@ -54,6 +54,7 @@ def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
         "local_avg_etfm_cost_per_pageview",
         "local_avg_etfm_cost_per_non_bounced_visit",
         "local_avg_etfm_cost_per_minute",
+        "local_avg_etfm_cost_per_unique_user",
         "video_start",
         "video_first_quartile",
         "video_midpoint",

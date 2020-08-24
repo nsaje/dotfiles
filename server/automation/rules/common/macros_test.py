@@ -116,6 +116,7 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: {AVG_COST_PER_PAGEVIEW_LAST_30_DAYS}
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: {AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS}
             AVG_COST_PER_MINUTE_LAST_30_DAYS: {AVG_COST_PER_MINUTE_LAST_30_DAYS}
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: {AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS}
             AVG_COST_PER_CONVERSION_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_LAST_30_DAYS}
             AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS}
             AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: {AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS}
@@ -150,6 +151,7 @@ class ExpandTestCase(TestCase):
             "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
             "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
             "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
+            "local_avg_etfm_cost_per_unique_user": {constants.MetricWindow.LAST_30_DAYS: 8.12},
             "local_avg_etfm_cost_per_conversion": {constants.MetricWindow.LAST_30_DAYS: 0.12},
             "local_avg_etfm_cost_per_conversion_view": {constants.MetricWindow.LAST_30_DAYS: 0.23},
             "local_avg_etfm_cost_per_conversion_total": {constants.MetricWindow.LAST_30_DAYS: 0.34},
@@ -192,6 +194,7 @@ class ExpandTestCase(TestCase):
             AVG_COST_PER_PAGEVIEW_LAST_30_DAYS: $0.11
             AVG_COST_PER_NON_BOUNCED_VISIT_LAST_30_DAYS: $0.44
             AVG_COST_PER_MINUTE_LAST_30_DAYS: $2.22
+            AVG_COST_PER_UNIQUE_USER_LAST_30_DAYS: $8.12
             AVG_COST_PER_CONVERSION_LAST_30_DAYS: $0.12
             AVG_COST_PER_CONVERSION_VIEW_LAST_30_DAYS: $0.23
             AVG_COST_PER_CONVERSION_TOTAL_LAST_30_DAYS: $0.34
@@ -227,6 +230,7 @@ class ExpandTestCase(TestCase):
             "local_avg_etfm_cost_per_pageview": {constants.MetricWindow.LAST_30_DAYS: 0.11},
             "local_avg_etfm_cost_per_non_bounced_visit": {constants.MetricWindow.LAST_30_DAYS: 0.44},
             "local_avg_etfm_cost_per_minute": {constants.MetricWindow.LAST_30_DAYS: 2.22},
+            "local_avg_etfm_cost_per_unique_user": {constants.MetricWindow.LAST_30_DAYS: 8.12},
         }
         with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
             macros.expand(self.content, self.ad_group, target_stats)
