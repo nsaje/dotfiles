@@ -4,7 +4,6 @@ import {
     ChangeDetectionStrategy,
     Component,
     EventEmitter,
-    Inject,
     Input,
     OnChanges,
     OnInit,
@@ -48,6 +47,8 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
     campaignId: number;
     @Input()
     adGroupId: number;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     actionSuccess: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -75,7 +76,8 @@ export class BulkBlacklistActionsComponent implements OnInit, OnChanges {
             this.filteredSelectedRows = this.selectedRows.filter(
                 row => !equalsIgnoreCase(row.placement, GRID_ITEM_NOT_REPORTED)
             );
-            this.dropdownsDisabled = isEmpty(this.filteredSelectedRows);
+            this.dropdownsDisabled =
+                isEmpty(this.filteredSelectedRows) || this.isDisabled;
         }
         if (changes.adGroupId || changes.campaignId || changes.accountId) {
             this.blacklistLevels = this.service.getBlacklistLevels(

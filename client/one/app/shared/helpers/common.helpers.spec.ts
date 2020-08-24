@@ -151,4 +151,45 @@ describe('commonHelpers', () => {
         testObject = {a: undefined};
         expect(commonHelpers.safeGet(testObject, x => x.a)).toEqual(undefined);
     });
+
+    it('should correctly patch object', () => {
+        expect(commonHelpers.patchObject(null, null)).toEqual(null);
+        expect(commonHelpers.patchObject(undefined, undefined)).toEqual(
+            undefined
+        );
+
+        expect(commonHelpers.patchObject({name: 'test'}, null)).toEqual({
+            name: 'test',
+        });
+        expect(commonHelpers.patchObject({name: 'test'}, undefined)).toEqual({
+            name: 'test',
+        });
+
+        expect(
+            commonHelpers.patchObject({name: 'test'}, {email: 'test@test.com'})
+        ).toEqual({name: 'test', email: 'test@test.com'});
+
+        expect(
+            commonHelpers.patchObject({name: 'test'}, [
+                {email: 'test@test.com'},
+            ])
+        ).toEqual({name: 'test'});
+
+        expect(
+            commonHelpers.patchObject([{name: 'test'}], {
+                email: 'test@test.com',
+            })
+        ).toEqual([{name: 'test'}]);
+
+        expect(
+            commonHelpers.patchObject(
+                [{name: 'test'}],
+                [
+                    {
+                        email: 'test@test.com',
+                    },
+                ]
+            )
+        ).toEqual([{name: 'test'}, {email: 'test@test.com'}]);
+    });
 });

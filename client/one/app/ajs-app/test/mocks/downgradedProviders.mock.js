@@ -3,6 +3,8 @@ var of = require('rxjs').of;
 var arrayHelpers = require('../../../shared/helpers/array.helpers');
 var LevelParam = require('../../../app.constants').LevelParam;
 var BreakdownParam = require('../../../app.constants').BreakdownParam;
+var EntityPermissionValue = require('../../../core/users/users.constants')
+    .EntityPermissionValue;
 
 angular
     .module('one.mocks.downgradedProviders', [])
@@ -145,6 +147,8 @@ angular
         this.hasPermissionOn = hasPermissionOn;
         this.hasPermissionOnAllEntities = hasPermissionOnAllEntities;
         this.hasPermissionOnAnyEntity = hasPermissionOnAnyEntity;
+        this.hasReadOnlyAccessOn = hasReadOnlyAccessOn;
+        this.hasReadOnlyAccessOnAnyEntity = hasReadOnlyAccessOnAnyEntity;
         this.setMockedCurrentUser = setMockedCurrentUser;
         this.setMockedPermissions = setMockedPermissions;
         this.setMockedInternalPermissions = setMockedInternalPermissions;
@@ -222,5 +226,17 @@ angular
             return mockedEntityPermissions.some(function(ep) {
                 return ep.permission === permission;
             });
+        }
+
+        function hasReadOnlyAccessOn(agencyId, accountId) {
+            return !hasPermissionOn(
+                agencyId,
+                accountId,
+                EntityPermissionValue.WRITE
+            );
+        }
+
+        function hasReadOnlyAccessOnAnyEntity() {
+            return false;
         }
     });

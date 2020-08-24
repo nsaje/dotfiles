@@ -13,7 +13,9 @@ angular
         zemUploadService,
         zemUploadApiConverter,
         zemCloneContentService,
-        zemUtils
+        zemUtils,
+        zemAuthStore,
+        zemNavigationNewService
     ) {
         // eslint-disable-line max-len
 
@@ -79,19 +81,34 @@ angular
                     name: 'Pause',
                     value: 'pause',
                     hasPermission: true,
+                    disabled: false,
                     execute: pause,
                 },
                 enable: {
                     name: 'Enable',
                     value: 'enable',
                     hasPermission: true,
+                    disabled: false,
                     execute: enable,
                 },
                 download: {
                     name: 'Download',
                     value: 'download',
                     hasPermission: true,
+                    disabled: false,
                     execute: download,
+                },
+                archive: {
+                    name: 'Archive',
+                    value: 'archive',
+                    hasPermission: gridApi.hasPermission(
+                        'zemauth.archive_restore_entity'
+                    ),
+                    internal: gridApi.isPermissionInternal(
+                        'zemauth.archive_restore_entity'
+                    ),
+                    disabled: false,
+                    execute: archive,
                 },
                 restore: {
                     name: 'Restore',
@@ -102,6 +119,7 @@ angular
                     internal: gridApi.isPermissionInternal(
                         'zemauth.archive_restore_entity'
                     ),
+                    disabled: false,
                     execute: restore,
                 },
                 edit: {
@@ -113,6 +131,7 @@ angular
                     internal: gridApi.isPermissionInternal(
                         'zemauth.can_edit_content_ads'
                     ),
+                    disabled: false,
                     execute: edit,
                 },
                 clone: {
@@ -124,6 +143,7 @@ angular
                     internal: gridApi.isPermissionInternal(
                         'zemauth.can_clone_contentads'
                     ),
+                    disabled: false,
                     execute: clone,
                 },
             };
@@ -131,93 +151,98 @@ angular
             // prettier-ignore
             function getActions() { // eslint-disable-line complexity
                 var metaData = gridApi.getMetaData();
+                var selection = gridApi.getSelection();
+                var hasReadOnlyAccess = hasReadOnlyAccessOnAnySelectedRow(metaData.level, selection);
                 if (
                     metaData.level === constants.level.AD_GROUPS &&
                     metaData.breakdown === constants.breakdown.CONTENT_AD
                 ) {
                     return [
-                        ACTIONS.pause,
-                        ACTIONS.enable,
-                        ACTIONS.clone,
+                        commonHelpers.patchObject(ACTIONS.pause, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.enable, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.clone, {disabled: hasReadOnlyAccess}),
                         ACTIONS.download,
-                        {
-                            name: 'Archive',
-                            value: 'archive',
-                            hasPermission: gridApi.hasPermission(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            internal: gridApi.isPermissionInternal(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            notification:
-                                'All selected Content Ads will be paused and archived.',
-                            execute: archive,
-                        },
-                        ACTIONS.restore,
-                        ACTIONS.edit,
+                        commonHelpers.patchObject(ACTIONS.archive, {disabled: hasReadOnlyAccess, notification: 'All selected Content Ads will be paused and archived.'}),
+                        commonHelpers.patchObject(ACTIONS.restore, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.edit, {disabled: hasReadOnlyAccess}),
                     ];
                 } else if (
                     metaData.level === constants.level.ACCOUNTS &&
                     metaData.breakdown === constants.breakdown.CAMPAIGN
                 ) {
                     return [
-                        {
-                            name: 'Archive',
-                            value: 'archive',
-                            hasPermission: gridApi.hasPermission(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            internal: gridApi.isPermissionInternal(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            execute: archive,
-                        },
-                        ACTIONS.restore,
+                        commonHelpers.patchObject(ACTIONS.archive, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.restore,  {disabled: hasReadOnlyAccess}),
                     ];
                 } else if (
                     metaData.level === constants.level.ALL_ACCOUNTS &&
                     metaData.breakdown === constants.breakdown.ACCOUNT
                 ) {
                     return [
-                        {
-                            name: 'Archive',
-                            value: 'archive',
-                            hasPermission: gridApi.hasPermission(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            internal: gridApi.isPermissionInternal(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            execute: archive,
-                        },
-                        ACTIONS.restore,
+                        commonHelpers.patchObject(ACTIONS.archive, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.restore,  {disabled: hasReadOnlyAccess}),
                     ];
                 } else if (
                     metaData.level === constants.level.CAMPAIGNS &&
                     metaData.breakdown === constants.breakdown.AD_GROUP
                 ) {
                     return [
-                        ACTIONS.pause,
-                        ACTIONS.enable,
-                        {
-                            name: 'Archive',
-                            value: 'archive',
-                            hasPermission: gridApi.hasPermission(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            internal: gridApi.isPermissionInternal(
-                                'zemauth.archive_restore_entity'
-                            ),
-                            execute: archive,
-                        },
-                        ACTIONS.restore,
+                        commonHelpers.patchObject(ACTIONS.pause, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.enable,  {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.archive, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.restore,  {disabled: hasReadOnlyAccess}),
                     ];
                 } else if (
                     metaData.level === constants.level.AD_GROUPS &&
                     metaData.breakdown === constants.breakdown.MEDIA_SOURCE
                 ) {
-                    return [ACTIONS.pause, ACTIONS.enable];
+                    return [
+                        commonHelpers.patchObject(ACTIONS.pause, {disabled: hasReadOnlyAccess}),
+                        commonHelpers.patchObject(ACTIONS.enable,  {disabled: hasReadOnlyAccess}),
+                    ];
                 }
+            }
+
+            function hasReadOnlyAccessOnAnySelectedRow(level, selection) {
+                // TODO (msuber): deleted after User Roles will be released.
+                if (
+                    !zemAuthStore.hasPermission(
+                        'zemauth.fea_use_entity_permission'
+                    )
+                ) {
+                    return false;
+                }
+
+                if (
+                    selection.type ===
+                    zemGridConstants.gridSelectionFilterType.ALL
+                ) {
+                    if (level !== constants.level.ALL_ACCOUNTS) {
+                        var account = zemNavigationNewService.getActiveAccount();
+                        return zemAuthStore.hasReadOnlyAccessOn(
+                            account.data.agencyId,
+                            account.id
+                        );
+                    }
+                    return zemAuthStore.hasReadOnlyAccessOnAnyEntity();
+                }
+
+                return selection.selected
+                    .filter(function(row) {
+                        return row.level === 1;
+                    })
+                    .some(function(row) {
+                        var agencyId = row.data.stats.agency_id
+                            ? row.data.stats.agency_id.value
+                            : null;
+                        var accountId = row.data.stats.account_id
+                            ? row.data.stats.account_id.value
+                            : null;
+                        return zemAuthStore.hasReadOnlyAccessOn(
+                            agencyId,
+                            accountId
+                        );
+                    });
             }
 
             function pause(selection) {

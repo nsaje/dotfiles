@@ -15,15 +15,18 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             $scope,
             zemGridConstants,
             zemGridEndpointColumns,
-            zemGridStateAndStatusHelpers
+            zemGridStateAndStatusHelpers,
+            zemAuthStore,
+            zemNavigationNewService
         ) {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.gridRowLevel = zemGridConstants.gridRowLevel;
             ctrl.type = getFieldType();
-            ctrl.gridBodyElement = getGridBodyElement();
-            ctrl.showAutopilotIcon = isAutopilotIconShown();
+            ctrl.gridBodyElement = getGridBodyElement;
+            ctrl.showAutopilotIcon = isAutopilotIconShown;
             ctrl.canSeeBidModifierCell = canSeeBidModifierCell;
+            ctrl.isBidModifierCellEditable = isBidModifierCellEditable;
             ctrl.updateBidModifier = updateBidModifier;
             var stateValues = zemGridStateAndStatusHelpers.getStateValues(
                 ctrl.grid.meta.data.level,
@@ -92,6 +95,20 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 return (
                     ctrl.type ===
                     zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD
+                );
+            }
+
+            function isBidModifierCellEditable() {
+                if (!canSeeBidModifierCell()) {
+                    return false;
+                }
+                var account = zemNavigationNewService.getActiveAccount();
+                return (
+                    ctrl.data.isEditable &&
+                    !zemAuthStore.hasReadOnlyAccessOn(
+                        account.data.agencyId,
+                        account.id
+                    )
                 );
             }
 

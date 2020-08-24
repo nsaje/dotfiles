@@ -5,19 +5,30 @@ describe('zemInfoboxHeader', function() {
     var $httpBackend;
     var zemEntityService;
     var zemNavigationService;
+    var zemNavigationNewService;
+    var zemAuthStore;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function(_$injector_) {
+    beforeEach(inject(function(_$injector_, _zemAuthStore_) {
         $injector = _$injector_;
         $componentController = $injector.get('$componentController');
         $rootScope = $injector.get('$rootScope');
         $httpBackend = $injector.get('$httpBackend');
         zemEntityService = $injector.get('zemEntityService');
         zemNavigationService = $injector.get('zemNavigationService');
+        zemNavigationNewService = $injector.get('zemNavigationNewService');
+        zemAuthStore = _zemAuthStore_;
 
         $httpBackend.whenGET(/^\/api\/.*/).respond(200, {data: {}});
+
+        spyOn(zemNavigationNewService, 'getActiveAccount').and.returnValue({
+            id: 1,
+            data: {
+                agencyId: 1,
+            },
+        });
     }));
 
     it('should update view when entity updates', function() {
@@ -36,8 +47,43 @@ describe('zemInfoboxHeader', function() {
             type: '',
             data: {},
         };
+
         $ctrl.$onChanges(changes);
         expect($ctrl.entityName).toEqual('Test entity');
+    });
+
+    it('should correctly disable entity state switch action', function() {
+        spyOn(zemAuthStore, 'hasReadOnlyAccessOn').and.returnValue(true);
+
+        var $ctrl = $componentController('zemInfoboxHeader');
+        var changes = {
+            entity: {
+                currentValue: {
+                    type: constants.entityType.AD_GROUP,
+                    data: {},
+                },
+            },
+        };
+
+        $ctrl.$onChanges(changes);
+        expect($ctrl.isStateSwitchDisabled).toEqual(true);
+    });
+
+    it('should correctly enable entity state switch action', function() {
+        spyOn(zemAuthStore, 'hasReadOnlyAccessOn').and.returnValue(false);
+
+        var $ctrl = $componentController('zemInfoboxHeader');
+        var changes = {
+            entity: {
+                currentValue: {
+                    type: constants.entityType.AD_GROUP,
+                    data: {},
+                },
+            },
+        };
+
+        $ctrl.$onChanges(changes);
+        expect($ctrl.isStateSwitchDisabled).toEqual(false);
     });
 
     it('should set correct level text for entity type', function() {

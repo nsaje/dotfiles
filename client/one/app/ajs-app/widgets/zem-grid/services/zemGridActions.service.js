@@ -65,6 +65,7 @@ angular
         // Public API
         this.getButtons = getButtons;
         this.isStateSwitchVisible = isStateSwitchVisible;
+        this.isStateSwitchDisabled = isStateSwitchDisabled;
         this.getStateCautionMessage = getStateCautionMessage;
         this.getWidth = getWidth;
         this.mapRowToPublisherInfo = mapRowToPublisherInfo;
@@ -72,11 +73,13 @@ angular
         // prettier-ignore
         function getButtons(level, breakdown, row) { // eslint-disable-line complexity
             var buttons = [];
+            var hasReadOnlyAccess = hasReadOnlyAccessOn(level, row);
+
             function addArchiveUnarchive() {
                 if (row.data.archived) {
-                    buttons.push(BUTTONS.unarchive);
+                    buttons.push(commonHelpers.patchObject(BUTTONS.unarchive, {isDisabled: hasReadOnlyAccess}));
                 } else {
-                    buttons.push(BUTTONS.archive);
+                    buttons.push(commonHelpers.patchObject(BUTTONS.archive, {isDisabled: hasReadOnlyAccess}));
                 }
             }
             function addBlacklistActions(row, breakdown, actionType, actionLevels) {
@@ -87,9 +90,10 @@ angular
                         status: actionType.status,
                         type: actionType.status === constants.publisherTargetingStatus.BLACKLISTED ? 'blacklist' : 'unlist',
                         level: actionLevel.level,
-                        breakdown: breakdown
+                        breakdown: breakdown,
+                        isEntityPermission: true,
                     };
-                    buttons.push(action);
+                    buttons.push(commonHelpers.patchObject(action, {isDisabled: hasReadOnlyAccess}));
                 });
             }
 
@@ -105,7 +109,7 @@ angular
             ) {
                 buttons.push(BUTTONS.settings);
                 if (zemAuthStore.hasPermission('zemauth.can_clone_campaigns')) {
-                    buttons.push(BUTTONS.clone);
+                    buttons.push(commonHelpers.patchObject(BUTTONS.clone, {isDisabled: hasReadOnlyAccess}));
                 }
                 addArchiveUnarchive();
             } else if (
@@ -113,19 +117,19 @@ angular
                 breakdown === constants.breakdown.AD_GROUP
             ) {
                 buttons.push(BUTTONS.settings);
-                buttons.push(BUTTONS.clone);
+                buttons.push(commonHelpers.patchObject(BUTTONS.clone, {isDisabled: hasReadOnlyAccess}));
                 addArchiveUnarchive();
             } else if (
                 level === constants.level.AD_GROUPS &&
                 breakdown === constants.breakdown.CONTENT_AD
             ) {
                 if (!row.data.archived) {
-                    buttons.push(BUTTONS.edit);
+                    buttons.push(commonHelpers.patchObject(BUTTONS.edit, {isDisabled: hasReadOnlyAccess}));
                 }
-                buttons.push(BUTTONS.clone);
+                buttons.push(commonHelpers.patchObject(BUTTONS.clone, {isDisabled: hasReadOnlyAccess}));
                 buttons.push(BUTTONS.download);
                 addArchiveUnarchive();
-            } else if (breakdown === constants.breakdown.PUBLISHER || breakdown === constants.breakdown.PLACEMENT) {
+            } else if (level !== constants.level.ALL_ACCOUNTS && (breakdown === constants.breakdown.PUBLISHER || breakdown === constants.breakdown.PLACEMENT)) {
                 if (!row.data.stats.breakdown_name || !row.data.stats.breakdown_name.value || !stringHelpers.equalsIgnoreCase(row.data.stats.breakdown_name.value, GRID_ITEM_NOT_REPORTED)) {
                     var blacklistingActions = zemPublishersService.getBlacklistActions();
                     var blacklistItemAction = blacklistingActions.find(function (action) {
@@ -160,7 +164,63 @@ angular
                     );
                 }
             }
+
             return buttons;
+        }
+
+        function hasReadOnlyAccessOn(level, row) {
+            if (
+                row.dummy ||
+                !zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
+            ) {
+                return false;
+            }
+
+            var accountInfo = getAccountInfoForRow(level, row);
+            return zemAuthStore.hasReadOnlyAccessOn(
+                accountInfo.agencyId,
+                accountInfo.accountId
+            );
+        }
+
+        function getAccountInfoForRow(level, row) {
+            if (level === constants.level.ALL_ACCOUNTS) {
+                var agencyId = null;
+                var accountId = null;
+                if (row.level === 1) {
+                    agencyId = row.data.stats.agency_id
+                        ? row.data.stats.agency_id.value
+                        : null;
+                    accountId = row.data.stats.account_id
+                        ? row.data.stats.account_id.value
+                        : null;
+                } else {
+                    var rootRow = getRootRow(row);
+                    agencyId = rootRow.data.stats.agency_id
+                        ? rootRow.data.stats.agency_id.value
+                        : null;
+                    accountId = rootRow.data.stats.account_id
+                        ? rootRow.data.stats.account_id.value
+                        : null;
+                }
+                return {
+                    agencyId: agencyId,
+                    accountId: accountId,
+                };
+            }
+            var account = zemNavigationNewService.getActiveAccount();
+            return {
+                agencyId: account.data.agencyId,
+                accountId: account.id,
+            };
+        }
+
+        function getRootRow(row) {
+            var rootRow = angular.copy(row);
+            while (rootRow.parent) {
+                rootRow = rootRow.parent;
+            }
+            return rootRow;
         }
 
         function isStateSwitchVisible(level, breakdown, row) {
@@ -183,6 +243,17 @@ angular
             }
 
             return false;
+        }
+
+        function isStateSwitchDisabled(level, breakdown, row) {
+            if (!isStateSwitchVisible(level, breakdown, row)) {
+                return true;
+            }
+            var account = zemNavigationNewService.getActiveAccount();
+            return zemAuthStore.hasReadOnlyAccessOn(
+                account.data.agencyId,
+                account.id
+            );
         }
 
         function getStateCautionMessage(row) {

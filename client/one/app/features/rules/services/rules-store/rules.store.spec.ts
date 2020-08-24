@@ -34,7 +34,7 @@ describe('RulesLibraryStore', () => {
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
-            'hasReadOnlyAccess',
+            'hasReadOnlyAccessOn',
         ]);
         store = new RulesStore(rulesServiceStub, authStoreStub);
         mockedRules = [

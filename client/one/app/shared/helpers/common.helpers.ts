@@ -107,3 +107,25 @@ export function safeGet<T, S>(
     }
     return result;
 }
+
+export function patchObject<T1, T2>(value: T1, patch: T2): any {
+    if (!isDefined(value)) {
+        return value;
+    }
+    if (typeof value !== 'object' || typeof patch !== 'object') {
+        return value;
+    }
+    if (
+        Object.prototype.toString.call(value) !==
+        Object.prototype.toString.call(patch)
+    ) {
+        return value;
+    }
+    if (Array.isArray(value) && Array.isArray(patch)) {
+        return [...value, ...patch];
+    }
+    return {
+        ...value,
+        ...patch,
+    };
+}

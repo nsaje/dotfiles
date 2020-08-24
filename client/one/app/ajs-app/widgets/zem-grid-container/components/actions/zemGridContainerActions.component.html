@@ -1,13 +1,15 @@
 <div class="button-bar" ng-if="$ctrl.gridApi">
     <zem-create-entity-action
-        ng-if="$ctrl.isCreateEntityActionVisible() && $ctrl.canCreateNewAccount()"
+        ng-if="$ctrl.isCreateEntityActionVisible()"
         parent-entity="$ctrl.entity"
+        is-disabled="$ctrl.isCreateEntityActionDisabled()"
         class="button-bar-item"
     ></zem-create-entity-action>
 
     <zem-create-ad-group-source-action
         ng-if="$ctrl.isCreateAdGroupSourceActionVisible()"
         parent-entity="$ctrl.entity"
+        is-disabled="$ctrl.hasReadOnlyAccess()"
         class="button-bar-item"
     ></zem-create-ad-group-source-action>
 
@@ -20,11 +22,12 @@
     <zem-bulk-blacklist-actions
         ng-if="$ctrl.areGridPublisherAndPlacementActionsVisible()"
         class="zem-bulk-blacklist-actions button-bar-item zem-bulk-blacklist-actions"
-        [selected-rows]="$ctrl.selectedRows"
+        [selected-rows]="$ctrl.publisherInfoRows"
         [level]="$ctrl.level"
         [account-id]="$ctrl.accountId"
         [campaign-id]="$ctrl.campaignId"
         [ad-group-id]="$ctrl.adGroupId"
+        [is-disabled]="$ctrl.hasReadOnlyAccess()"
         (action-success)="
             $ctrl.gridApi.clearSelection(); $ctrl.gridApi.reload()
         "
@@ -38,6 +41,7 @@
         [entity-id]="$ctrl.entity.id"
         [entity-name]="$ctrl.entity.name"
         [entity-type]="$ctrl.entity.type"
+        [is-create-rule-disabled]="$ctrl.hasReadOnlyAccess()"
     ></zem-rule-actions>
 
     <zem-add-to-publishers-action
@@ -45,6 +49,7 @@
         class="zem-add-to-publishers-action button-bar-item"
         [selected-rows]="$ctrl.selectedRows"
         [account-id]="$ctrl.accountId"
+        [is-disabled]="$ctrl.hasReadOnlyAccess()"
         (action-success)="$ctrl.gridApi.clearSelection()"
     ></zem-add-to-publishers-action>
 
@@ -53,6 +58,7 @@
         class="zem-bid-modifier-actions button-bar-item"
         [ad-group-id]="$ctrl.entity.id"
         [breakdown]="$ctrl.breakdown"
+        [is-import-disabled]="$ctrl.hasReadOnlyAccess()"
         (import-success)="$ctrl.gridApi.reload()"
     ></zem-bid-modifier-actions>
 

@@ -29,6 +29,8 @@ export class RuleActionsComponent {
     entityName: string;
     @Input()
     entityType: EntityType;
+    @Input()
+    isCreateRuleDisabled: boolean = false;
 
     @ViewChild(DropdownDirective, {static: false})
     ruleActionsDropdown: DropdownDirective;
@@ -42,6 +44,9 @@ export class RuleActionsComponent {
     constructor(private router: Router) {}
 
     openModal(): void {
+        if (this.isCreateRuleDisabled) {
+            return;
+        }
         this.ruleActionsDropdown.close();
         this.ruleModal.open();
     }

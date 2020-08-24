@@ -26,6 +26,8 @@ export class BidModifierActionsComponent {
     adGroupId: number;
     @Input()
     breakdown: Breakdown;
+    @Input()
+    isImportDisabled: boolean = false;
     @Output()
     importSuccess = new EventEmitter<void>();
 
@@ -43,6 +45,14 @@ export class BidModifierActionsComponent {
         this.bidModifierActionsDropdown.close();
         const url = `${APP_CONFIG.apiRestInternalUrl}/adgroups/${this.adGroupId}/bidmodifiers/download/${this.breakdown}/`;
         window.open(url, '_blank');
+    }
+
+    openImportModal() {
+        if (this.isImportDisabled) {
+            return;
+        }
+        this.bidModifierActionsDropdown.close();
+        this.bidModifierImportFormModal.open();
     }
 
     import(): void {

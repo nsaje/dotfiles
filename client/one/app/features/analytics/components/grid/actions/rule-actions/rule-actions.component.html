@@ -12,7 +12,13 @@
     </button>
     <div class="zem-dropdown__content">
         <ul class="zem-rule-actions__list">
-            <li class="zem-rule-actions__list-item" (click)="openModal()">
+            <li
+                class="zem-rule-actions__list-item"
+                [class.zem-rule-actions__list-item--disabled]="
+                    isCreateRuleDisabled
+                "
+                (click)="openModal()"
+            >
                 Create rule
             </li>
             <li

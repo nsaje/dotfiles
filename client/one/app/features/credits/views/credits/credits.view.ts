@@ -200,7 +200,10 @@ export class CreditsView implements OnInit, OnDestroy {
             this.pastPaginationOptions
         );
 
-        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
+        this.isReadOnly = this.authStore.hasReadOnlyAccessOn(
+            agencyId,
+            accountId
+        );
     }
 
     private getPreselectedPagination(paginationParams: {

@@ -7,6 +7,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     template: require('./zemCreateEntityAction.component.html'),
     bindings: {
         parentEntity: '<',
+        isDisabled: '<',
     },
     controller: function(NgRouter, $location, zemCreateEntityActionService) {
         var $ctrl = this;

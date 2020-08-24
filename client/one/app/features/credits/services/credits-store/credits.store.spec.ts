@@ -48,7 +48,7 @@ describe('CreditsLibraryStore', () => {
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
-            'hasReadOnlyAccess',
+            'hasReadOnlyAccessOn',
         ]);
         store = new CreditsStore(
             creditsServiceStub,
@@ -260,7 +260,7 @@ describe('CreditsLibraryStore', () => {
         mockedCredit.accountId = null;
         store.state.agencyId = mockedAgencyId;
         store.state.hasAgencyScope = true;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(false).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(false).calls.reset();
 
         const mockedEmptyCredit = new CreditsStoreState().creditActiveEntity
             .entity;
@@ -283,7 +283,7 @@ describe('CreditsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(true).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(true).calls.reset();
 
         const mockedEmptyCredit = new CreditsStoreState().creditActiveEntity
             .entity;
@@ -306,7 +306,7 @@ describe('CreditsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(false).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(false).calls.reset();
 
         const mockedEmptyCredit = new CreditsStoreState().creditActiveEntity
             .entity;

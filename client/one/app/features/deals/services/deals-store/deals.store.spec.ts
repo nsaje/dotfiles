@@ -46,7 +46,7 @@ describe('DealsLibraryStore', () => {
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
-            'hasReadOnlyAccess',
+            'hasReadOnlyAccessOn',
         ]);
 
         store = new DealsStore(
@@ -261,7 +261,7 @@ describe('DealsLibraryStore', () => {
         mockedDeal.accountId = null;
         store.state.agencyId = mockedAgencyId;
         store.state.hasAgencyScope = true;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(false).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(false).calls.reset();
 
         const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);
@@ -283,7 +283,7 @@ describe('DealsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(true).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(true).calls.reset();
 
         const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);
@@ -305,7 +305,7 @@ describe('DealsLibraryStore', () => {
         store.state.agencyId = mockedAgencyId;
         store.state.accountId = mockedAccountId;
         store.state.hasAgencyScope = false;
-        authStoreStub.hasReadOnlyAccess.and.returnValue(false).calls.reset();
+        authStoreStub.hasReadOnlyAccessOn.and.returnValue(false).calls.reset();
 
         const mockedEmptyDeal = new DealsStoreState().activeEntity.entity;
         store.setActiveEntity(mockedDeal);

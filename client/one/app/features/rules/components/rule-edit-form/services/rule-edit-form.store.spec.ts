@@ -52,7 +52,7 @@ describe('RuleEditFormStore', () => {
         ]);
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
-            'hasReadOnlyAccess',
+            'hasReadOnlyAccessOn',
         ]);
         store = new RuleEditFormStore(
             rulesServiceStub,

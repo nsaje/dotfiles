@@ -1,3 +1,5 @@
+var arrayHelpers = require('../../../../../shared/helpers/array.helpers');
+
 angular.module('one.widgets').component('zemGridContainerActions', {
     template: require('./zemGridContainerActions.component.html'),
     bindings: {
@@ -16,6 +18,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.selectedRows = [];
+        $ctrl.publisherInfoRows = [];
         $ctrl.level = undefined;
         $ctrl.agencyId = undefined;
         $ctrl.accountId = undefined;
@@ -30,10 +33,11 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
-        $ctrl.canCreateNewAccount = canCreateNewAccount;
+        $ctrl.isCreateEntityActionDisabled = isCreateEntityActionDisabled;
         $ctrl.isBreakdownSelectorVisible = isBreakdownSelectorVisible;
         $ctrl.areBidModifierActionsVisible = areBidModifierActionsVisible;
         $ctrl.areRuleActionsVisible = areRuleActionsVisible;
+        $ctrl.hasReadOnlyAccess = hasReadOnlyAccess;
 
         $ctrl.$onInit = function() {
             $ctrl.level = $ctrl.gridApi.getMetaData().level;
@@ -67,16 +71,30 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             } else {
                 $ctrl.selectedRows = $ctrl.gridApi
                     .getSelection()
-                    .selected.map(function(row) {
-                        return zemGridActionsService.mapRowToPublisherInfo(
-                            row,
-                            $ctrl.breakdown
-                        );
-                    })
-                    .filter(function(row) {
-                        return row !== undefined && row.sourceId !== undefined;
+                    .selected.filter(function(row) {
+                        return row.level === 1;
                     });
             }
+            $ctrl.publisherInfoRows = getPublisherInfoRows(
+                $ctrl.selectedRows,
+                $ctrl.breakdown
+            );
+        }
+
+        function getPublisherInfoRows(selectedRows, breakdown) {
+            if (arrayHelpers.isEmpty(selectedRows)) {
+                return [];
+            }
+            return selectedRows
+                .map(function(row) {
+                    return zemGridActionsService.mapRowToPublisherInfo(
+                        row,
+                        breakdown
+                    );
+                })
+                .filter(function(row) {
+                    return row !== undefined && row.sourceId !== undefined;
+                });
         }
 
         function isEntityBreakdown() {
@@ -93,10 +111,13 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             );
         }
 
-        function canCreateNewAccount() {
-            return (
-                zemAuthStore.canCreateNewAccount() ||
-                $ctrl.level !== constants.level.ALL_ACCOUNTS
+        function isCreateEntityActionDisabled() {
+            if ($ctrl.level === constants.level.ALL_ACCOUNTS) {
+                return !zemAuthStore.canCreateNewAccount();
+            }
+            return zemAuthStore.hasReadOnlyAccessOn(
+                $ctrl.agencyId,
+                $ctrl.accountId
             );
         }
 
@@ -111,8 +132,9 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function areGridPublisherAndPlacementActionsVisible() {
             return (
-                $ctrl.breakdown === constants.breakdown.PUBLISHER ||
-                $ctrl.breakdown === constants.breakdown.PLACEMENT
+                $ctrl.level !== constants.level.ALL_ACCOUNTS &&
+                ($ctrl.breakdown === constants.breakdown.PUBLISHER ||
+                    $ctrl.breakdown === constants.breakdown.PLACEMENT)
             );
         }
 
@@ -221,6 +243,13 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 ($ctrl.entity.type === constants.entityType.ACCOUNT ||
                     $ctrl.entity.type === constants.entityType.CAMPAIGN ||
                     $ctrl.entity.type === constants.entityType.AD_GROUP)
+            );
+        }
+
+        function hasReadOnlyAccess() {
+            return zemAuthStore.hasReadOnlyAccessOn(
+                $ctrl.agencyId,
+                $ctrl.accountId
             );
         }
     },

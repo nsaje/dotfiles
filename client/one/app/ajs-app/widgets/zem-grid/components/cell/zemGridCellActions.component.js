@@ -77,6 +77,7 @@ angular
                     vm.isEditable = false;
                     vm.enablingAutopilotSourcesAllowed = true;
                     vm.showStateSwitch = false;
+                    vm.isStateSwitchDisabled = false;
                     vm.buttons = [];
                     vm.disabledMessage = '';
                     vm.stateCautionMessage = null;
@@ -93,6 +94,11 @@ angular
                         );
                         vm.isRowArchived = vm.row.data.archived;
                         vm.showStateSwitch = zemGridActionsService.isStateSwitchVisible(
+                            vm.grid.meta.data.level,
+                            vm.grid.meta.data.breakdown,
+                            vm.row
+                        );
+                        vm.isStateSwitchDisabled = zemGridActionsService.isStateSwitchDisabled(
                             vm.grid.meta.data.level,
                             vm.grid.meta.data.breakdown,
                             vm.row
@@ -157,7 +163,8 @@ angular
                     if (
                         !vm.isEditable ||
                         (!vm.active && !vm.enablingAutopilotSourcesAllowed) ||
-                        vm.isToggleStateInProgress
+                        vm.isToggleStateInProgress ||
+                        vm.isStateSwitchDisabled
                     ) {
                         return;
                     }

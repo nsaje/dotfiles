@@ -11,6 +11,7 @@
             'switch-button--transition-disabled': !ctrl.switchButtonTransitionEnabled,
             'switch-button--caution': ctrl.stateCautionMessage,
             'switch-button--small': ctrl.row.inGroup,
+            'switch-button--disabled': ctrl.isStateSwitchDisabled,
         }"
         zem-lazy-popover-html-unsafe="{{ ctrl.disabledMessage }}"
         zem-lazy-popover-append-to-body="true"
@@ -29,6 +30,7 @@
     <button
         class="button button--outline button--small button--with-icon button--only-icon"
         ng-if="ctrl.mainButton"
+        ng-disabled="ctrl.mainButton.isDisabled"
         ng-class="{
             'edit-icon': ctrl.mainButton.type === 'edit',
             'archive-icon': ctrl.mainButton.type === 'archive',

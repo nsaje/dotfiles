@@ -242,7 +242,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
     private updateInternalState(queryParams: any) {
         const agencyId: string = queryParams.agencyId;
         const accountId: string | null = queryParams.accountId || null;
-        this.isReadOnly = this.authStore.hasReadOnlyAccess(agencyId, accountId);
+        this.isReadOnly = this.authStore.hasReadOnlyAccessOn(
+            agencyId,
+            accountId
+        );
         this.explicitPaginationOptions = {
             ...this.explicitPaginationOptions,
             ...this.getPreselectedPagination(EXPLICIT_PAGINATION_URL_PARAMS),

@@ -4,7 +4,10 @@
 >
     <span
         class="switch-button"
-        ng-class="{'switch-button--checked': $ctrl.isEntityEnabled}"
+        ng-class="{
+            'switch-button--checked': $ctrl.isEntityEnabled, 
+            'switch-button--disabled': $ctrl.isStateSwitchDisabled,
+        }"
         ng-click="$ctrl.toggleEntityState()"
     ></span>
 </div>

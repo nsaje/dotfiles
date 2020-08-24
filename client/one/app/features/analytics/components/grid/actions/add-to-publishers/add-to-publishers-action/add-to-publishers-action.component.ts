@@ -29,6 +29,8 @@ export class AddToPublishersActionComponent implements OnChanges {
     selectedRows: PublisherInfo[];
     @Input()
     accountId: number;
+    @Input()
+    isDisabled: boolean = false;
     @Output()
     actionSuccess: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -45,7 +47,8 @@ export class AddToPublishersActionComponent implements OnChanges {
             this.filteredSelectedRows = this.selectedRows.filter(
                 row => !equalsIgnoreCase(row.placement, GRID_ITEM_NOT_REPORTED)
             );
-            this.buttonDisabled = isEmpty(this.filteredSelectedRows);
+            this.buttonDisabled =
+                isEmpty(this.filteredSelectedRows) || this.isDisabled;
         }
     }
 

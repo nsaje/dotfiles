@@ -14,6 +14,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         NgRouter,
         zemEntityService,
         zemNavigationService,
+        zemNavigationNewService,
         zemAuthStore
     ) {
         // eslint-disable-line max-len
@@ -47,6 +48,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
             $ctrl.level = null;
             $ctrl.entityName = null;
             $ctrl.isStateSwitchAvailable = false;
+            $ctrl.isStateSwitchDisabled = false;
             $ctrl.isEntityEnabled = false;
 
             if (!commonHelpers.isDefined(entity)) {
@@ -58,6 +60,11 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
                 $ctrl.entityName = entity.name;
                 $ctrl.isStateSwitchAvailable =
                     entity.type === constants.entityType.AD_GROUP;
+                var account = zemNavigationNewService.getActiveAccount();
+                $ctrl.isStateSwitchDisabled = zemAuthStore.hasReadOnlyAccessOn(
+                    account.data.agencyId,
+                    account.id
+                );
                 $ctrl.isEntityEnabled =
                     entity.data.state === constants.settingsState.ACTIVE;
             }
@@ -87,7 +94,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
 
         var requestInProgress = false;
         function toggleEntityState() {
-            if (requestInProgress) return;
+            if (requestInProgress || $ctrl.isStateSwitchDisabled) return;
 
             requestInProgress = true;
             $ctrl.isEntityEnabled = !$ctrl.isEntityEnabled;

@@ -85,7 +85,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                         ) => {
                             const writableAccounts: Account[] = values[2].filter(
                                 account =>
-                                    !this.authStore.hasReadOnlyAccess(
+                                    !this.authStore.hasReadOnlyAccessOn(
                                         agencyId,
                                         account.id
                                     )
@@ -362,7 +362,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
     }
 
     isReadOnly(publisherGroup: PublisherGroup): boolean {
-        return this.authStore.hasReadOnlyAccess(
+        return this.authStore.hasReadOnlyAccessOn(
             this.state.agencyId,
             publisherGroup.accountId
         );

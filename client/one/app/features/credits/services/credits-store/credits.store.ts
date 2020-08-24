@@ -84,7 +84,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                         ) => {
                             const writableAccounts: Account[] = values[3].filter(
                                 account =>
-                                    !this.authStore.hasReadOnlyAccess(
+                                    !this.authStore.hasReadOnlyAccessOn(
                                         agencyId,
                                         account.id
                                     )
@@ -437,7 +437,7 @@ export class CreditsStore extends Store<CreditsStoreState>
     }
 
     isReadOnly(credit: Credit): boolean {
-        return this.authStore.hasReadOnlyAccess(
+        return this.authStore.hasReadOnlyAccessOn(
             this.state.agencyId,
             credit.accountId
         );

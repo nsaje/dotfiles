@@ -112,36 +112,17 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
     //  ENTITY PERMISSIONS
     //
 
-    // TODO (msuber): deleted after User Roles will be released.
     hasAgencyScope(agencyId: string) {
-        if (this.hasPermission('zemauth.fea_use_entity_permission')) {
-            return this.hasPermissionOn(
-                agencyId,
-                null,
-                EntityPermissionValue.WRITE
-            );
-        }
-        if (this.hasPermission('zemauth.can_see_all_accounts')) {
-            return true;
-        }
-        return this.state.user.agencies.includes(Number(agencyId));
-    }
-
-    hasReadOnlyAccess(
-        agencyId: string | number,
-        accountId?: string | number
-    ): boolean {
         // TODO (msuber): deleted after User Roles will be released.
         if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
-            if (isDefined(agencyId) && !isDefined(accountId)) {
-                return !this.hasAgencyScope(`${agencyId}`);
-            } else {
-                return false;
+            if (this.hasPermission('zemauth.can_see_all_accounts')) {
+                return true;
             }
+            return this.state.user.agencies.includes(Number(agencyId));
         }
-        return !this.hasPermissionOn(
+        return this.hasPermissionOn(
             agencyId,
-            accountId,
+            null,
             EntityPermissionValue.WRITE
         );
     }
@@ -154,6 +135,9 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
             }
             return !arrayHelpers.isEmpty(this.state.user.agencies);
         }
+        if (arrayHelpers.isEmpty(this.state.user.entityPermissions)) {
+            return false;
+        }
         return this.state.user.entityPermissions.some(ep => {
             return (
                 (commonHelpers.isDefined(ep.agencyId) &&
@@ -164,6 +148,65 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
                     ep.permission === EntityPermissionValue.WRITE)
             );
         });
+    }
+
+    hasReadOnlyAccessOn(
+        agencyId: string | number,
+        accountId: string | number
+    ): boolean {
+        // TODO (msuber): deleted after User Roles will be released.
+        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
+            if (isDefined(agencyId) && !isDefined(accountId)) {
+                return !this.hasAgencyScope(`${agencyId}`);
+            }
+            return false;
+        }
+        return !this.hasPermissionOn(
+            agencyId,
+            accountId,
+            EntityPermissionValue.WRITE
+        );
+    }
+
+    hasReadOnlyAccessOnAnyEntity(): boolean {
+        // TODO (msuber): deleted after User Roles will be released.
+        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
+            return false;
+        }
+        if (arrayHelpers.isEmpty(this.state.user.entityPermissions)) {
+            return false;
+        }
+
+        if (
+            this.hasPermissionOnAllEntities(EntityPermissionValue.READ) &&
+            !this.hasPermissionOnAllEntities(EntityPermissionValue.WRITE)
+        ) {
+            return true;
+        }
+
+        const accountIds: Set<string> = new Set(
+            this.state.user.entityPermissions
+                .filter(ep => commonHelpers.isDefined(ep.accountId))
+                .map(ep => ep.accountId)
+        );
+        if (accountIds.size > 0) {
+            return Array.from(accountIds).some(accountId =>
+                this.hasReadOnlyAccessOn(null, accountId)
+            );
+        }
+
+        const agencyIds: Set<string> = new Set(
+            this.state.user.entityPermissions
+                .filter(ep => commonHelpers.isDefined(ep.agencyId))
+                .map(ep => ep.agencyId)
+        );
+        if (agencyIds.size > 0) {
+            return Array.from(agencyIds).some(agencyId =>
+                this.hasReadOnlyAccessOn(agencyId, null)
+            );
+        }
+
+        return false;
     }
 
     hasPermissionOn(

@@ -123,6 +123,7 @@
             <button class="button button--with-icon"
                     ng-click="ctrl.execute(button)"
                     ng-repeat="button in ctrl.buttons"
+                    ng-disabled="button.isDisabled"
                     ng-class="{
                         'edit-icon': button.type === 'edit',
                         'archive-icon': button.type === 'archive',

@@ -62,7 +62,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                 .then((values: [Deal[], Source[], Account[]]) => {
                     const writableAccounts: Account[] = values[2].filter(
                         account =>
-                            !this.authStore.hasReadOnlyAccess(
+                            !this.authStore.hasReadOnlyAccessOn(
                                 agencyId,
                                 account.id
                             )
@@ -313,7 +313,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
     }
 
     isReadOnly(deal: Deal): boolean {
-        return this.authStore.hasReadOnlyAccess(
+        return this.authStore.hasReadOnlyAccessOn(
             this.state.agencyId,
             deal.accountId
         );

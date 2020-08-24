@@ -1,3 +1,5 @@
+@import 'variables';
+
 .zem-bid-modifier-actions .zem-dropdown__content {
     padding: 4px;
 }
@@ -9,13 +11,19 @@
 }
 
 .zem-bid-modifier-actions__list-item {
+    cursor: default;
     margin: 0;
     padding: 7px 10px;
     font-size: 13px;
 
-    &:hover {
+    &:not(.zem-bid-modifier-actions__list-item--disabled):hover {
         cursor: pointer;
         background-color: rgba(63, 84, 127, 0.1);
         border-radius: 4px;
     }
+}
+
+.zem-bid-modifier-actions__list-item--disabled {
+    background-color: @color--lighter-neutral;
+    border-radius: 4px;
 }

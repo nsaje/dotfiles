@@ -117,7 +117,7 @@ export class RulesStore extends Store<RulesStoreState> implements OnDestroy {
     }
 
     isReadOnly(rule: Partial<Rule>): boolean {
-        return this.authStore.hasReadOnlyAccess(
+        return this.authStore.hasReadOnlyAccessOn(
             this.state.agencyId,
             rule.accountId
         );

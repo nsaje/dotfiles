@@ -13,12 +13,10 @@
             </li>
             <li
                 class="zem-bid-modifier-actions__list-item"
-                (click)="
-                    [
-                        bidModifierActionsDropdown.close(),
-                        bidModifierImportFormModal.open()
-                    ]
+                [class.zem-bid-modifier-actions__list-item--disabled]="
+                    isImportDisabled
                 "
+                (click)="openImportModal()"
             >
                 Import
             </li>

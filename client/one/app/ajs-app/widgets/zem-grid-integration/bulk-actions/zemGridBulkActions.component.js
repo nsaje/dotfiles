@@ -27,8 +27,11 @@ angular.module('one.widgets').component('zemGridBulkActions', {
                     allRTBSelected = true;
                 }
             });
+            $ctrl.actions = service.getActions();
             $ctrl.actions.forEach(function(action) {
-                action.disabled = allRTBSelected;
+                if (!action.disabled) {
+                    action.disabled = allRTBSelected;
+                }
             });
         }
 
@@ -54,10 +57,13 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         }
 
         function execute(actionValue) {
-            $ctrl.showLoader = true;
-
             var selection = $ctrl.api.getSelection();
             var action = getActionByValue(actionValue);
+            if (!action) {
+                return;
+            }
+
+            $ctrl.showLoader = true;
 
             var convertedSelection = {};
             convertedSelection.selectedIds = selection.selected

@@ -422,4 +422,169 @@ describe('AuthStore', () => {
             ).toBeFalse();
         });
     });
+
+    describe('hasReadOnlyAccessOn', () => {
+        it('should return true if user has read-only access on account', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOn(null, '123')).toBeTrue();
+        });
+
+        it('should return true if user has read-only access on agency', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: '123',
+                        accountId: null,
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOn('123', null)).toBeTrue();
+        });
+
+        it('should return false if user has write access on account', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.WRITE,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOn(null, '123')).toBeFalse();
+        });
+
+        it('should return false if user has write access on agency', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: '123',
+                        accountId: null,
+                        permission: EntityPermissionValue.READ,
+                    },
+                    {
+                        agencyId: '123',
+                        accountId: null,
+                        permission: EntityPermissionValue.WRITE,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOn('123', null)).toBeFalse();
+        });
+    });
+
+    describe('hasReadOnlyAccessOnAnyEntity', () => {
+        it('should return true if user has read-only access on any entity', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.WRITE,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '456',
+                        permission: EntityPermissionValue.READ,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOnAnyEntity()).toBeTrue();
+        });
+
+        it('should return true if user has write access on all entities', () => {
+            const user: User = {
+                ...mockedUser,
+                permissions: [
+                    {
+                        permission: 'zemauth.fea_use_entity_permission',
+                        isPublic: true,
+                    },
+                ],
+                entityPermissions: [
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.READ,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '123',
+                        permission: EntityPermissionValue.WRITE,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '456',
+                        permission: EntityPermissionValue.READ,
+                    },
+                    {
+                        agencyId: null,
+                        accountId: '456',
+                        permission: EntityPermissionValue.WRITE,
+                    },
+                ],
+            };
+            store.dispatch(new SetCurrentUserAction(user));
+            expect(store.hasReadOnlyAccessOnAnyEntity()).toBeFalse();
+        });
+    });
 });
