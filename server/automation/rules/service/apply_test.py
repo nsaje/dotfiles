@@ -288,7 +288,7 @@ class ApplyTest(TestCase):
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: None},
         }
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
 
     def test_stats_condition_left_operand_window_none(self):
         rule = magic_mixer.blend(

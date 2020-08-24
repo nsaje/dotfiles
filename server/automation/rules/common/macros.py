@@ -114,9 +114,8 @@ def _get_stat_macro_value(
         raise ValueError("Missing conversion statistics - campaign possibly missing cpa goal")
 
     window_constant_value = constants.MetricWindow.get_constant_value(window)
-    if window_constant_value in target_stats[stat_key]:
-        macro_stat = target_stats[stat_key][window_constant_value]
-    else:
+    macro_stat = target_stats[stat_key].get(window_constant_value)
+    if macro_stat is None:
         macro_stat = config.STATS_FIELDS_DEFAULTS[stat_key]
 
     if macro_prefix in CURRENCY_MACROS and macro_stat is not None:
