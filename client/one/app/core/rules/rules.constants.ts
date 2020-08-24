@@ -217,7 +217,7 @@ export enum RuleConditionOperandType {
     TotalSeconds = 'TOTAL_SECONDS',
     TimeOnSite = 'AVG_TIME_ON_SITE',
     AvgCostPerVisit = 'AVG_COST_PER_VISIT',
-    AvgCostForNewVisitor = 'AVG_COST_FOR_PER_NEW_VISITOR',
+    AvgCostForNewVisitor = 'AVG_COST_PER_NEW_VISITOR',
     AvgCostPerPageview = 'AVG_COST_PER_PAGEVIEW',
     AvgCostPerNonBouncedVisit = 'AVG_COST_PER_NON_BOUNCED_VISIT',
     AvgCostPerMinute = 'AVG_COST_PER_MINUTE',
