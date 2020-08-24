@@ -58,7 +58,6 @@ _DOCKER_POSTGRES = {
 
 DATABASES = {
     "default": _DOCKER_POSTGRES,
-    "testing_default": _DOCKER_POSTGRES,
     STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "dev",

@@ -338,26 +338,10 @@ if TESTING:
     Z3_API_IMAGE_URL = ""
     IMAGE_THUMBNAIL_URL = ""
 
-    TESTING_DB_PREFIX = "testing_"
-    for database_name in list(DATABASES.keys()):
-        if database_name.startswith(TESTING_DB_PREFIX):
-            continue
-        testing_db_replacement = "testing_{}".format(database_name)
-        if testing_db_replacement in DATABASES:
-            # make a copy to avoid issues when using --parallel
-            DATABASES[database_name] = copy.copy(DATABASES[testing_db_replacement])
-            del DATABASES[testing_db_replacement]
-            print(
-                (
-                    "Using {testdbname} instead of {dbname} for testing...".format(
-                        testdbname=testing_db_replacement, dbname=database_name
-                    )
-                )
-            )
-
     if len(sys.argv) > 1 and "--redshift" not in sys.argv:
-        # if not redshift testing
-        DATABASES.pop(STATS_DB_HOT_CLUSTER, None)
+        stats_databases = [STATS_DB_HOT_CLUSTER] + STATS_DB_POSTGRES + STATS_DB_COLD_CLUSTERS
+        for db in stats_databases:
+            DATABASES.pop(db, None)
         STATS_DB_HOT_CLUSTER = "default"
 
 # App specific
