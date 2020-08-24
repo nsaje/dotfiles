@@ -88,7 +88,8 @@ def get_entity_credits(z1_account_id):
 def create_agency(request, validated_data):
     cs_representative = zemauth.models.User.objects.get(email=constants.DEFAULT_CS_REPRESENTATIVE)
     sales_representative = zemauth.models.User.objects.get(email=constants.DEFAULT_SALES_REPRESENTATIVE)
-    entity_tags = validated_data.pop("entity_tags", [])
+
+    entity_tags = []
 
     client_type = validated_data.pop("client_type", None)
     if client_type:
@@ -101,8 +102,10 @@ def create_agency(request, validated_data):
     region = validated_data.pop("region", None)
     if region:
         entity_tags.append(constants.ENTITY_TAGS_PREFIX + region.replace("-", "/"))
-        if region != constants.ENTITY_TAGS_US:
-            entity_tags.append(constants.ENTITY_TAGS_PREFIX + constants.ENTITY_TAGS_INTL)
+
+    custom_fields = validated_data.pop("custom_attributes", [])
+    for field in custom_fields:
+        entity_tags.append(constants.ENTITY_TAGS_CUSTOM_FIELD_PREFIX + field)
 
     return core.models.Agency.objects.create(
         request,

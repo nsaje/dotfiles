@@ -513,12 +513,40 @@ class AgencyTestCase(TestCase):
         payload = {"name": "new Agency 3", "clientType": "PaaS", "region": "EU-IT"}
         response = self.client.post(url, data=payload, format="json")
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/EU/IT", "dmr/Intl"})
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/EU/IT"})
 
         payload = {"name": "new Agency 4", "clientType": "PaaS", "region": "APAC"}
         response = self.client.post(url, data=payload, format="json")
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/APAC", "dmr/Intl"})
+        self.assertEquals(set(response.json()["data"]["tags"]), {"dmr/PaaS", "dmr/APAC"})
+
+    def test_create_agency_custom_attributes(self):
+        url = reverse("service.salesforce.zemanta.agency")
+        payload = {
+            "name": "new Agency 1",
+            "clientType": "Agency",
+            "clientSize": "Indie",
+            "region": "NA-US",
+            "customAttributes": ["Publisher", "SocialAgg"],
+        }
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(
+            set(response.json()["data"]["tags"]),
+            {"dmr/Agency", "dmr/Indie", "dmr/NA/US", "dmr/custom/Publisher", "dmr/custom/SocialAgg"},
+        )
+
+    def test_create_agency_custom_attributes_invalid(self):
+        url = reverse("service.salesforce.zemanta.agency")
+        payload = {
+            "name": "new Agency 1",
+            "clientType": "Agency",
+            "clientSize": "Indie",
+            "region": "NA-US",
+            "customAttributes": ["Publisher", "Social Agg"],
+        }
+        response = self.client.post(url, data=payload, format="json")
+        self.assertEquals(response.status_code, 400)
 
     def test_create_agency_invalid(self):
         url = reverse("service.salesforce.zemanta.agency")

@@ -60,6 +60,7 @@ class AgencySerializer(serializers.ModelSerializer):
     client_type = serializers.CharField(required=False, write_only=True)
     client_size = serializers.CharField(required=False, write_only=True)
     region = serializers.CharField(required=False, write_only=True)
+    custom_attributes = serializers.ListField(child=serializers.RegexField(r"^\w+$"), required=False, write_only=True)
 
     class Meta:
         depth = 1
@@ -76,6 +77,7 @@ class AgencySerializer(serializers.ModelSerializer):
             "client_type",
             "client_size",
             "region",
+            "custom_attributes",
         ]
 
     def get_accounts(self, instance):
