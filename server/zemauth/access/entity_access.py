@@ -274,7 +274,7 @@ def get_user(
             else:
                 requested_user_qs = user_qs.all()
 
-        requested_user: zemauth.models.User = requested_user_qs.get(pk=user_id)
+        requested_user: zemauth.models.User = requested_user_qs.distinct().get(pk=user_id)
         return requested_user
     except zemauth.models.User.DoesNotExist:
         raise utils.exc.MissingDataError("User does not exist")
