@@ -1,4 +1,4 @@
-import {Injectable, OnDestroy, Inject} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
 import {takeUntil} from 'rxjs/operators';
 import {PublisherGroupsService} from '../../../../core/publisher-groups/services/publisher-groups.service';
@@ -18,6 +18,8 @@ import {PaginationOptions} from '../../../../shared/components/smart-grid/types/
 import {PublisherGroupConnection} from '../../../../core/publisher-groups/types/publisher-group-connection';
 import {RequestState} from '../../../../shared/types/request-state';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Injectable()
 export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
@@ -83,14 +85,6 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                                 Account[]
                             ]
                         ) => {
-                            const writableAccounts: Account[] = values[2].filter(
-                                account =>
-                                    !this.authStore.hasReadOnlyAccessOn(
-                                        agencyId,
-                                        account.id
-                                    )
-                            );
-
                             this.setState({
                                 ...this.state,
                                 agencyId: agencyId,
@@ -102,7 +96,7 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
                                 implicitEntities: values[1],
                                 explicitPaginationOptions,
                                 implicitPaginationOptions,
-                                accounts: writableAccounts,
+                                accounts: values[2],
                             });
                             resolve();
                         }
@@ -363,6 +357,13 @@ export class PublisherGroupsStore extends Store<PublisherGroupsStoreState>
 
     isReadOnly(publisherGroup: PublisherGroup): boolean {
         return this.authStore.hasReadOnlyAccessOn(
+            this.state.agencyId,
+            publisherGroup.accountId
+        );
+    }
+
+    hasReadAccess(publisherGroup: PublisherGroup): boolean {
+        return this.authStore.hasReadPermissonOn(
             this.state.agencyId,
             publisherGroup.accountId
         );

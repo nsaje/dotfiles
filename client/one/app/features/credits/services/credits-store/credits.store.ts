@@ -1,4 +1,4 @@
-import {Injectable, OnDestroy, Inject} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Subject, Observable} from 'rxjs';
 import {Store} from 'rxjs-observable-store';
@@ -82,13 +82,6 @@ export class CreditsStore extends Store<CreditsStoreState>
                                 Account[]
                             ]
                         ) => {
-                            const writableAccounts: Account[] = values[3].filter(
-                                account =>
-                                    !this.authStore.hasReadOnlyAccessOn(
-                                        agencyId,
-                                        account.id
-                                    )
-                            );
                             this.setState({
                                 ...this.state,
                                 agencyId: agencyId,
@@ -99,7 +92,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                                 totals: values[0],
                                 activeCredits: values[1],
                                 pastCredits: values[2],
-                                accounts: writableAccounts,
+                                accounts: values[3],
                                 activePaginationOptions: activePaginationOptions,
                                 pastPaginationOptions: pastPaginationOptions,
                             });

@@ -27,6 +27,8 @@ export class ConnectionsListComponent
     connections: DealConnection[];
     @Input()
     connectionType: 'account' | 'campaign' | 'adgroup';
+    @Input()
+    isReadOnly: boolean = true;
     @Output()
     removeConnection = new EventEmitter<string>();
 
@@ -73,5 +75,9 @@ export class ConnectionsListComponent
         ) {
             this.removeConnection.emit(connection.connectionId);
         }
+    }
+
+    isConnectionReadonly(connection: DealConnectionRowData): boolean {
+        return this.isReadOnly;
     }
 }

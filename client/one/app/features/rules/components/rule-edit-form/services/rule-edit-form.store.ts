@@ -88,11 +88,6 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
         const hasAgencyScope = this.authStore.hasAgencyScope(agencyId);
 
         this.loadAccounts(agencyId).then(accounts => {
-            const writableAccounts: Account[] = accounts.filter(
-                account =>
-                    !this.authStore.hasReadOnlyAccessOn(agencyId, account.id)
-            );
-
             if (commonHelpers.isDefined(rule.id)) {
                 this.setState({
                     ...this.state,
@@ -113,7 +108,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                         ...this.state.rule,
                         ...rule,
                     },
-                    accounts: writableAccounts,
+                    accounts: accounts,
                 });
             } else {
                 let entities = {...this.state.rule.entities};

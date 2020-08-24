@@ -1,7 +1,7 @@
 <div class="zem-publisher-group-actions-cell">
     <button
         [hidden]="this.publisherGroup.implicit"
-        [disabled]="isReadOnly"
+        [disabled]="!hasReadAccess"
         class="zem-button zem-button--small zem-button--with-icon zem-button--icon-only zem-button--connections-icon zem-publisher-group-actions-cell__item"
         title="Connections"
         (click)="openConnectionsModal()"

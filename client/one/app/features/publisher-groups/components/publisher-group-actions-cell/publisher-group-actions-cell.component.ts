@@ -12,6 +12,7 @@ export class PublisherGroupActionsCellComponent
     implements ICellRendererAngularComp {
     publisherGroup: PublisherGroup;
     parent: PublisherGroupsView;
+    hasReadAccess: boolean;
     isReadOnly: boolean;
 
     agInit(params: PublisherGroupRendererParams) {
@@ -19,6 +20,9 @@ export class PublisherGroupActionsCellComponent
         this.publisherGroup = params.data;
 
         this.isReadOnly = params.context.componentParent.store.isReadOnly(
+            this.publisherGroup
+        );
+        this.hasReadAccess = params.context.componentParent.store.hasReadAccess(
             this.publisherGroup
         );
     }

@@ -11,10 +11,14 @@ export class ConnectionActionsCellComponent
     implements ICellRendererAngularComp {
     params: ConnectionRowDataRendererParams<any, any>;
     connection: any;
+    isReadOnly: boolean = true;
 
     agInit(params: ConnectionRowDataRendererParams<any, any>) {
         this.params = params;
         this.connection = params.data;
+        this.isReadOnly = params.context.componentParent.isConnectionReadonly(
+            this.connection
+        );
     }
 
     removeConnection() {

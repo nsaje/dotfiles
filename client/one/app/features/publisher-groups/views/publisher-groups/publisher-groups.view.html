@@ -224,6 +224,7 @@
                         store.state.requests.listConnections.inProgress ||
                         store.state.requests.removeConnection.inProgress
                     "
+                    [isReadOnly]="state.activeEntity.isReadOnly"
                     (removeConnection)="removeConnection($event)"
                 ></zem-publisher-group-connections-list>
             </div>

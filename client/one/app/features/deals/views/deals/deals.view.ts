@@ -16,7 +16,13 @@ import {
     tap,
     filter,
 } from 'rxjs/operators';
-import {ColDef, DetailGridInfo, GridApi} from 'ag-grid-community';
+import {
+    CellClassParams,
+    CellClickedEvent,
+    ColDef,
+    DetailGridInfo,
+    GridApi,
+} from 'ag-grid-community';
 import * as moment from 'moment';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
 import {FieldErrors} from 'one/app/shared/types/field-errors';
@@ -31,6 +37,8 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {ItemScopeCellComponent} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/item-scope-cell.component';
 import {ItemScopeRendererParams} from '../../../../shared/components/smart-grid/components/cell/item-scope-cell/types/item-scope.renderer-params';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
 
@@ -130,10 +138,12 @@ export class DealsView implements OnInit, OnDestroy {
             headerName: 'Accounts',
             field: 'numOfAccounts',
             cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
+                    this
+                ),
             },
             onCellClicked: $event => {
-                if ($event.value >= 1) {
+                if (this.canViewConnections($event)) {
                     this.openConnectionsModal($event.data, 'account');
                 }
             },
@@ -145,10 +155,12 @@ export class DealsView implements OnInit, OnDestroy {
             headerName: 'Campaigns',
             field: 'numOfCampaigns',
             cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
+                    this
+                ),
             },
             onCellClicked: $event => {
-                if ($event.value >= 1) {
+                if (this.canViewConnections($event)) {
                     this.openConnectionsModal($event.data, 'campaign');
                 }
             },
@@ -160,10 +172,12 @@ export class DealsView implements OnInit, OnDestroy {
             headerName: 'Ad Groups',
             field: 'numOfAdgroups',
             cellClassRules: {
-                'zem-deals-view__grid-cell--clickable': 'x>=1',
+                'zem-deals-view__grid-cell--clickable': this.canViewConnections.bind(
+                    this
+                ),
             },
             onCellClicked: $event => {
-                if ($event.value >= 1) {
+                if ($event.value >= 1 && !this.store.isReadOnly($event.data)) {
                     this.openConnectionsModal($event.data, 'adgroup');
                 }
             },
@@ -379,5 +393,15 @@ export class DealsView implements OnInit, OnDestroy {
             return moment(date).format('MM/DD/YYYY');
         }
         return 'N/A';
+    }
+
+    private canViewConnections(cellInfo: CellClassParams | CellClickedEvent) {
+        return (
+            cellInfo.value >= 1 &&
+            this.authStore.hasReadPermissonOn(
+                this.store.state.agencyId,
+                cellInfo.data.accountId
+            )
+        );
     }
 }

@@ -20,6 +20,7 @@ import {
     COLUMN_USED_ON,
     PAGINATION_OPTIONS,
 } from './publisher-groups-connections-list.component.config';
+import {DealConnectionRowData} from '../../../deals/types/deal-connection-row-data';
 
 @Component({
     selector: 'zem-publisher-group-connections-list',
@@ -34,6 +35,8 @@ export class PublisherGroupConnectionsListComponent
     connections: PublisherGroupConnection[];
     @Input()
     isLoading: boolean = false;
+    @Input()
+    isReadOnly: boolean = true;
     @Output()
     removeConnection = new EventEmitter<PublisherGroupConnection>();
 
@@ -61,6 +64,10 @@ export class PublisherGroupConnectionsListComponent
         ) {
             this.removeConnection.emit(connection);
         }
+    }
+
+    isConnectionReadonly(connection: PublisherGroupConnection): boolean {
+        return this.isReadOnly;
     }
 
     onGridReady($event: DetailGridInfo) {

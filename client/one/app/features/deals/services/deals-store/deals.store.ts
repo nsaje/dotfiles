@@ -60,14 +60,6 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                 this.loadAccounts(agencyId),
             ])
                 .then((values: [Deal[], Source[], Account[]]) => {
-                    const writableAccounts: Account[] = values[2].filter(
-                        account =>
-                            !this.authStore.hasReadOnlyAccessOn(
-                                agencyId,
-                                account.id
-                            )
-                    );
-
                     this.setState({
                         ...this.state,
                         agencyId: agencyId,
@@ -75,7 +67,7 @@ export class DealsStore extends Store<DealsStoreState> implements OnDestroy {
                         hasAgencyScope: this.authStore.hasAgencyScope(agencyId),
                         entities: values[0],
                         sources: values[1],
-                        accounts: writableAccounts,
+                        accounts: values[2],
                     });
                     resolve(true);
                 })

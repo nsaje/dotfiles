@@ -166,6 +166,7 @@
                 <zem-connections-list
                     [connections]="state.activeEntity.connections"
                     [connectionType]="connectionType"
+                    [isReadOnly]="state.activeEntity.isReadOnly"
                     (removeConnection)="removeConnection($event)"
                 ></zem-connections-list>
             </div>

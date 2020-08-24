@@ -127,6 +127,25 @@ export class AuthStore extends Store<AuthStoreState> implements OnDestroy {
         );
     }
 
+    // TODO (msuber): deleted after User Roles will be released.
+    hasReadPermissonOn(
+        agencyId: string | number,
+        accountId?: string | number
+    ): boolean {
+        if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
+            if (isDefined(agencyId) && !isDefined(accountId)) {
+                return this.hasAgencyScope(`${agencyId}`);
+            } else {
+                return true;
+            }
+        }
+        return this.hasPermissionOn(
+            agencyId,
+            accountId,
+            EntityPermissionValue.READ
+        );
+    }
+
     canCreateNewAccount(): boolean {
         // TODO (msuber): deleted after User Roles will be released.
         if (!this.hasPermission('zemauth.fea_use_entity_permission')) {
