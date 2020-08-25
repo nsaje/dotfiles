@@ -12,7 +12,6 @@ class AdGroupSourceSettingsValidatorMixin(object):
         self._validate_ad_group_source_cpc(new_settings, bcm_modifiers)
         self._validate_ad_group_source_cpm(new_settings, bcm_modifiers)
         self._validate_ad_group_source_daily_budget(new_settings, bcm_modifiers)
-        self._validate_ad_group_source_state(new_settings)
 
     def _validate_ad_group_source_cpc(self, new_settings, bcm_modifiers):
         is_cpm_buying = self.ad_group_source.ad_group.bidding_type == constants.BiddingType.CPM
@@ -39,15 +38,6 @@ class AdGroupSourceSettingsValidatorMixin(object):
         validation_helpers.validate_daily_budget_cc(
             new_settings.daily_budget_cc, self.ad_group_source.source.source_type, bcm_modifiers
         )
-
-    def _validate_ad_group_source_state(self, new_settings):
-        from dash.views import helpers
-
-        if self.state != new_settings.state and new_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            if not helpers.check_facebook_source(self.ad_group_source):
-                raise exceptions.MediaSourceNotConnectedToFacebook(
-                    "Cannot enable Facebook media source that isn't connected to a Facebook page."
-                )
 
     def validate_ad_group_source_autopilot(self, new_settings):
         from dash.views import helpers

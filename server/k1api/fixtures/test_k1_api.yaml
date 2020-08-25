@@ -1003,26 +1003,6 @@
     model: dash.sourcetypepixel
     pk: 6
 
-# test Facebook account
-
--   fields:
-        account_id: 1
-        ad_account_id: 'act_123'
-        page_url: 'https://business.facebook.com/test/'
-        page_id: '1234'
-        status: 2
-    model: dash.facebookaccount
-    pk: 1
-
--   fields:
-        account_id: 2
-        ad_account_id: 'act_456'
-        page_url: 'https://business.facebook.com/test2/'
-        page_id: '5678'
-        status: 2
-    model: dash.facebookaccount
-    pk: 2
-
 # test Audience
 
 -   fields:

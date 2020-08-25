@@ -143,8 +143,6 @@ def get_active_ad_group_sources(modelcls, modelobjects):
 
 
 def get_source_initial_state(ad_group_source):
-    if ad_group_source.source.source_type.type in (constants.SourceType.FACEBOOK,):
-        return check_facebook_source(ad_group_source)
     if ad_group_source.source.maintenance or ad_group_source.source.deprecated:
         return False
     return True
@@ -496,8 +494,6 @@ def _get_editable_fields_status_setting(
 
     # there are cases where a condition is entered(region targeting) but no
     # error message is output - this is why this is a separate loop
-    if message is None and not check_facebook_source(ad_group_source):
-        message = "Please connect your Facebook page to add Facebook as media source."
     elif message is None and not check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPM too low."
 
@@ -509,17 +505,6 @@ def get_source_supply_dash_disabled_message(ad_group_source, source):
         return "This media source doesn't have a dashboard of its own. " "All campaign management is done through Zemanta One dashboard."
 
     return None
-
-
-def check_facebook_source(ad_group_source):
-    if ad_group_source.source.source_type.type != constants.SourceType.FACEBOOK:
-        return True
-
-    try:
-        facebook_account_status = ad_group_source.ad_group.campaign.account.facebookaccount.status
-        return facebook_account_status == constants.FacebookPageRequestType.CONNECTED
-    except models.FacebookAccount.DoesNotExist:
-        return False
 
 
 def check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):

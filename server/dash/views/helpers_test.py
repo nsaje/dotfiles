@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-import decimal
 
 from django.http.request import HttpRequest
 from django.test import RequestFactory
@@ -286,96 +285,6 @@ class AdGroupSourceTableEditableFieldsTestCase(TestCase):
         )
 
         self.assertEqual(result, {"enabled": True, "message": None})
-
-    def test_get_editable_fields_status_setting_no_fb_account(self):
-        req = RequestFactory().get("/")
-        req.user = User.objects.get(pk=1)
-
-        source = models.Source.objects.get(pk=10)
-        source.supports_retargeting = True
-
-        ad_group_source = models.AdGroupSource.objects.get(pk=12)
-        ad_group_source.source = source
-        ad_group_source.can_manage_content_ads = True
-
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        allowed_sources = set([ad_group_source.source_id])
-
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.save(req)
-
-        result = helpers._get_editable_fields_status_setting(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
-        )
-
-        self.assertEqual(
-            result, {"enabled": False, "message": "Please connect your Facebook page to add Facebook as media source."}
-        )
-
-    def test_get_editable_fields_status_setting_yahoo_cpc_too_low(self):
-        req = RequestFactory().get("/")
-        req.user = User.objects.get(pk=1)
-
-        source = models.Source.objects.get(pk=5)
-        source.supports_retargeting = True
-        source.source_type.min_cpc = decimal.Decimal("0.1")
-
-        ad_group_source = models.AdGroupSource.objects.get(pk=12)
-        ad_group_source.source = source
-        ad_group_source.can_manage_content_ads = True
-        ad_group_source.save()
-
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_source_settings.ad_group_source = ad_group_source
-        ad_group_source_settings.cpc_cc = 0.05
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.target_devices = [constants.AdTargetDevice.DESKTOP]
-
-        allowed_sources = set([ad_group_source.source_id])
-
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.save(req)
-
-        result = helpers._get_editable_fields_status_setting(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
-        )
-
-        self.assertEqual(result, {"enabled": True, "message": None})
-
-    def test_get_editable_fields_status_setting_yahoo_cpm_too_low(self):
-        req = RequestFactory().get("/")
-        req.user = User.objects.get(pk=1)
-
-        source = models.Source.objects.get(pk=5)
-        source.supports_retargeting = True
-        source.source_type.min_cpm = decimal.Decimal("0.1")
-
-        ad_group_source = models.AdGroupSource.objects.get(pk=12)
-        ad_group_source.source = source
-        ad_group_source.can_manage_content_ads = True
-        ad_group_source.save()
-
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_source_settings.ad_group_source = ad_group_source
-        ad_group_source_settings.cpm = 0.20
-
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.ad_group.bidding_type = constants.BiddingType.CPM
-
-        allowed_sources = set([ad_group_source.source_id])
-
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.save(req)
-
-        result = helpers._get_editable_fields_status_setting(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
-        )
-
-        self.assertEqual(
-            result,
-            {"enabled": False, "message": "This source can not be enabled with the current settings - CPM too low."},
-        )
 
     def test_get_editable_fields_status_setting_cpm_bidding(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -933,7 +842,7 @@ class UtilityHelpersTestCase(TestCase):
     TODO (msuber): deleted after User Roles will be released.
     """
 
-    fixtures = ["test_views.yaml", "test_agency.yaml", "test_facebook.yaml"]
+    fixtures = ["test_views.yaml", "test_agency.yaml"]
 
     def test_get_user_agency(self):
         u = User.objects.get(pk=1000)
@@ -980,21 +889,6 @@ class UtilityHelpersTestCase(TestCase):
         other_agency.users.add(u)
 
         self.assertFalse(helpers.is_agency_manager(u, acc), msg="account and user agency differ")
-
-    def test_check_facebook_source_valid(self):
-        non_fb_ad_group_source = models.AdGroupSource.objects.get(pk=100)
-        result = helpers.check_facebook_source(non_fb_ad_group_source)
-        self.assertTrue(result)
-
-        fb_ad_group_source = models.AdGroupSource.objects.get(pk=200)
-        result = helpers.check_facebook_source(fb_ad_group_source)
-        self.assertTrue(result)
-
-    def test_check_facebook_source_invalid(self):
-        fb_ad_group_source = models.AdGroupSource.objects.get(pk=300)
-
-        result = helpers.check_facebook_source(fb_ad_group_source)
-        self.assertFalse(result)
 
 
 class ValidateAdGroupsStateTestCase(TestCase):

@@ -137,24 +137,6 @@
     pk: 4
 
 
-# test facebook account
-
--   fields:
-        account: 1
-        ad_account_id: 'dummy_id'
-        page_url: 'http://fakebook.fake/dummy_page_url'
-        status: 2
-    model: dash.facebookaccount
-    pk: 1
-
--   fields:
-        account: 2
-        ad_account_id: 'dummy_id'
-        page_url: 'http://fakebook.fake/dummy_page_url'
-        status: 3
-    model: dash.facebookaccount
-    pk: 2
-
 # test campaign
 
 -   fields:

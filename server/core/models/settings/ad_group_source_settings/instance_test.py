@@ -334,12 +334,6 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal("2.2"))
 
-    def test_update_validate_state_facebook(self):
-        self.source_type.type = constants.SourceType.FACEBOOK
-        self.source_type.save()
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
-
     def test_update_validate_state_yahoo(self):
         self.ad_group_source.source.source_type.min_cpc = decimal.Decimal("0.1")
         self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("0.1"))

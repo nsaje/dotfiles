@@ -1477,16 +1477,6 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         return True
 
 
-# Facebook Account
-class FacebookAccount(admin.ModelAdmin):
-    autocomplete_fields = ("account",)
-
-    def get_queryset(self, request):
-        qs = super(FacebookAccount, self).get_queryset(request)
-        qs = qs.select_related("account")
-        return qs
-
-
 class HistoryResource(resources.ModelResource):
     class Meta:
         model = models.History
@@ -2097,7 +2087,6 @@ admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
-admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)

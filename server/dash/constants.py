@@ -1609,16 +1609,6 @@ class SystemUserType(ConstantBase):
     }
 
 
-class FacebookPageRequestType(ConstantBase):
-    EMPTY = 1
-    CONNECTED = 2
-    PENDING = 3
-    INVALID = 4
-    ERROR = 5
-
-    _VALUES = {EMPTY: "Empty", CONNECTED: "Connected", PENDING: "Pending", INVALID: "Invalid", ERROR: "Error"}
-
-
 class AsyncUploadJobStatus(ConstantBase):
     PENDING_START = 1
     WAITING_RESPONSE = 2
@@ -1966,34 +1956,6 @@ class SlugType(ConstantBase):
     FACEBOOK = "facebook"
 
     _VALUES = {FACEBOOK: "Facebook"}
-
-
-class FacebookAccountStatus(ConstantBase):
-    # for the list of Facebook account status codes, check the page below:
-    # https://developers.facebook.com/docs/marketing-api/reference/ad-account
-    ACTIVE = 1
-    DISABLED = 2
-    UNSETTLED = 3
-    PENDING_RISK_REVIEW = 7
-    IN_GRACE_PERIOD = 9
-    PENDING_CLOSURE = 100
-    CLOSED = 101
-    PENDING_SETTLEMENT = 102
-    ANY_ACTIVE = 201
-    ANY_CLOSED = 202
-
-    _VALUES = {
-        ACTIVE: "active",
-        DISABLED: "disabled",
-        UNSETTLED: "unsettled",
-        PENDING_RISK_REVIEW: "pending risk review",
-        IN_GRACE_PERIOD: "in grace period",
-        PENDING_CLOSURE: "pending closure",
-        CLOSED: "closed",
-        PENDING_SETTLEMENT: "pending settlement",
-        ANY_ACTIVE: "any active",
-        ANY_CLOSED: "any closed",
-    }
 
 
 class AudienceRuleType(ConstantBase):

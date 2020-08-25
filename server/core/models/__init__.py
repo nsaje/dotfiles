@@ -9,7 +9,6 @@ from .deprecated import *
 
 from .agency import Agency
 from .outbrain_account import OutbrainAccount
-from .facebook_account import FacebookAccount
 from .account import Account
 from .campaign import Campaign
 from .ad_group import AdGroup
