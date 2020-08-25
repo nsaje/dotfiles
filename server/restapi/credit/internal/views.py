@@ -41,6 +41,7 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         agency_id = qpe.validated_data.get("agency_id")
         account_id = qpe.validated_data.get("account_id")
         active = qpe.validated_data.get("active", None)
+        exclude_canceled = qpe.validated_data.get("exclude_canceled", None)
 
         credits_qs = self._get_credits_qs(request, account_id=account_id, agency_id=agency_id)
         if active is not None:
@@ -49,6 +50,9 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                 credits_qs = credits_qs.filter(start_date__lte=date, end_date__gte=date)
             else:
                 credits_qs = credits_qs.filter(end_date__lte=date)
+
+        if exclude_canceled:
+            credits_qs = credits_qs.exclude(status=dash.constants.CreditLineItemStatus.CANCELED)
 
         paginator = StandardPagination()
         credits_paginated = paginator.paginate_queryset(credits_qs, request)

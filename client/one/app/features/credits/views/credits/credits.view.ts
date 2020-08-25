@@ -176,6 +176,17 @@ export class CreditsView implements OnInit, OnDestroy {
         );
     }
 
+    onExcludeCanceledChange($event: boolean) {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                excludeCanceled: $event,
+            },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+        });
+    }
+
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -184,6 +195,10 @@ export class CreditsView implements OnInit, OnDestroy {
     private updateInternalState(queryParams: any): void {
         const agencyId: string = queryParams.agencyId;
         const accountId: string | null = queryParams.accountId || null;
+        const excludeCanceled = isDefined(queryParams.excludeCanceled)
+            ? queryParams.excludeCanceled === 'true'
+            : this.store.state.excludeCanceled;
+
         this.activePaginationOptions = {
             ...this.activePaginationOptions,
             ...this.getPreselectedPagination(ACTIVE_PAGINATION_URL_PARAMS),
@@ -196,6 +211,7 @@ export class CreditsView implements OnInit, OnDestroy {
         this.store.setStore(
             agencyId,
             accountId,
+            excludeCanceled,
             this.activePaginationOptions,
             this.pastPaginationOptions
         );

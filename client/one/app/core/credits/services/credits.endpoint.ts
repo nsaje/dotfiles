@@ -4,7 +4,6 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable, throwError} from 'rxjs';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
-import {APP_CONFIG} from '../../../app.config';
 import {CREDITS_CONFIG} from '../credits.config';
 import {Credit} from '../types/credit';
 import {CreditRefund} from '../types/credit-refund';
@@ -21,6 +20,7 @@ export class CreditsEndpoint {
         agencyId: string | null,
         accountId: string | null,
         active: boolean | null,
+        excludeCanceled: boolean,
         offset: number,
         limit: number,
         requestStateUpdater: RequestStateUpdater
@@ -34,6 +34,9 @@ export class CreditsEndpoint {
             ...(commonHelpers.isDefined(accountId) && {accountId}),
             ...(commonHelpers.isDefined(active) && {
                 active: active ? 'true' : 'false',
+            }),
+            ...(commonHelpers.isDefined(offset) && {
+                excludeCanceled: excludeCanceled ? 'true' : 'false',
             }),
             ...(commonHelpers.isDefined(limit) && {
                 limit: `${limit}`,

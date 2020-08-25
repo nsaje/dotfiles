@@ -21,6 +21,8 @@ describe('CreditsService', () => {
     const offset = 0;
     const date = new Date(1970, 1, 1);
 
+    const excludeCanceled = true;
+
     const mockedTotals: CreditTotal[] = [
         {
             total: '100.00',
@@ -124,7 +126,14 @@ describe('CreditsService', () => {
             .calls.reset();
 
         service
-            .listActive(agencyId, accountId, offset, limit, requestStateUpdater)
+            .listActive(
+                agencyId,
+                accountId,
+                excludeCanceled,
+                offset,
+                limit,
+                requestStateUpdater
+            )
             .subscribe(credits => {
                 expect(credits).toEqual(mockedCredits);
             });
@@ -134,6 +143,7 @@ describe('CreditsService', () => {
             agencyId,
             accountId,
             true,
+            excludeCanceled,
             offset,
             limit,
             requestStateUpdater
@@ -146,7 +156,14 @@ describe('CreditsService', () => {
             .calls.reset();
 
         service
-            .listPast(agencyId, accountId, offset, limit, requestStateUpdater)
+            .listPast(
+                agencyId,
+                accountId,
+                excludeCanceled,
+                offset,
+                limit,
+                requestStateUpdater
+            )
             .subscribe(credits => {
                 expect(credits).toEqual(mockedCredits);
             });
@@ -156,6 +173,7 @@ describe('CreditsService', () => {
             agencyId,
             accountId,
             false,
+            excludeCanceled,
             offset,
             limit,
             requestStateUpdater

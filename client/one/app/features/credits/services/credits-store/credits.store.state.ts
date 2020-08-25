@@ -70,4 +70,5 @@ export class CreditsStoreState {
 
     activePaginationOptions: PaginationOptions;
     pastPaginationOptions: PaginationOptions;
+    excludeCanceled: boolean = true;
 }

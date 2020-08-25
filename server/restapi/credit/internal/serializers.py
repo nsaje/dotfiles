@@ -130,3 +130,4 @@ class CreditQueryParams(
     agency_id = restapi.serializers.fields.IdField(required=False)
     account_id = restapi.serializers.fields.IdField(required=False)
     active = restapi.serializers.fields.NullBooleanField(required=False)
+    exclude_canceled = restapi.serializers.fields.NullBooleanField(required=False)

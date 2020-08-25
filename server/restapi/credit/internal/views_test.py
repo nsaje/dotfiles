@@ -304,6 +304,43 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         self.assertEqual(past_credit_paginated_ids, resp_json_paginated_ids)
 
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
+    def test_list_exclude_canceled(self, mock_log_to_slack):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ])
+
+        signed_credits = magic_mixer.cycle(10).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        # canceled credits
+        magic_mixer.cycle(5).blend(
+            core.features.bcm.CreditLineItem,
+            agency=agency,
+            account=None,
+            start_date=datetime.date.today() - datetime.timedelta(30),
+            end_date=datetime.date.today() - datetime.timedelta(10),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.CANCELED,
+        )
+
+        r = self.client.get(
+            reverse("restapi.credit.internal:credits_list"),
+            {"agencyId": agency.id, "offset": 0, "limit": 40, "excludeCanceled": True},
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(resp_json["count"], 10)
+
+        signed_credit_ids = sorted([credit.id for credit in signed_credits])
+        resp_json_ids = sorted([int(item.get("id")) for item in resp_json["data"]])
+        self.assertEqual(signed_credit_ids, resp_json_ids)
+
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_totals(self, mock_log_to_slack):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         # active credits EUR

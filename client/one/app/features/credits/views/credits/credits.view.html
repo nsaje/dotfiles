@@ -19,6 +19,12 @@
             Active Credit Items
         </div>
         <div class="zem-credits-view__panel-actions">
+            <zem-checkbox-input
+                [isChecked]="state.excludeCanceled"
+                (toggle)="onExcludeCanceledChange($event)"
+            >
+                Hide canceled credits
+            </zem-checkbox-input>
             <button
                 class="zem-credits-view__action zem-button zem-button--with-icon zem-button--highlighted zem-button--add-icon"
                 (click)="addCreditItem()"

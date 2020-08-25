@@ -32,6 +32,7 @@ describe('CreditsLibraryStore', () => {
     let mockedAccounts: Account[];
     let paginationOptions: PaginationOptions;
     const date = new Date();
+    const excludeCanceled = true;
 
     beforeEach(() => {
         creditsServiceStub = jasmine.createSpyObj(CreditsService.name, [
@@ -198,6 +199,7 @@ describe('CreditsLibraryStore', () => {
         store.setStore(
             mockedAgencyId,
             mockedAccountId,
+            excludeCanceled,
             paginationOptions,
             paginationOptions
         );

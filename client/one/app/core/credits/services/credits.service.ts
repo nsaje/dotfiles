@@ -15,6 +15,7 @@ export class CreditsService {
     listActive(
         agencyId: string | null,
         accountId: string | null,
+        excludeCanceled: boolean,
         offset: number,
         limit: number,
         requestStateUpdater: RequestStateUpdater
@@ -23,6 +24,7 @@ export class CreditsService {
             agencyId,
             accountId,
             true,
+            excludeCanceled,
             offset,
             limit,
             requestStateUpdater
@@ -32,6 +34,7 @@ export class CreditsService {
     listPast(
         agencyId: string | null,
         accountId: string | null,
+        excludeCanceled: boolean,
         offset: number,
         limit: number,
         requestStateUpdater: RequestStateUpdater
@@ -40,6 +43,7 @@ export class CreditsService {
             agencyId,
             accountId,
             false,
+            excludeCanceled,
             offset,
             limit,
             requestStateUpdater

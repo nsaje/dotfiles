@@ -47,12 +47,14 @@ export class CreditsStore extends Store<CreditsStoreState>
     setStore(
         agencyId: string | null,
         accountId: string | null,
+        excludeCanceled: boolean,
         activePaginationOptions: PaginationOptions,
         pastPaginationOptions: PaginationOptions
     ): Promise<void> {
         if (
             agencyId !== this.state.agencyId ||
-            accountId !== this.state.accountId
+            accountId !== this.state.accountId ||
+            excludeCanceled !== this.state.excludeCanceled
         ) {
             return new Promise<void>((resolve, reject) => {
                 Promise.all([
@@ -61,6 +63,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                         agencyId,
                         accountId,
                         true,
+                        excludeCanceled,
                         activePaginationOptions.page,
                         activePaginationOptions.pageSize
                     ),
@@ -68,6 +71,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                         agencyId,
                         accountId,
                         false,
+                        excludeCanceled,
                         pastPaginationOptions.page,
                         pastPaginationOptions.pageSize
                     ),
@@ -95,6 +99,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                                 accounts: values[3],
                                 activePaginationOptions: activePaginationOptions,
                                 pastPaginationOptions: pastPaginationOptions,
+                                excludeCanceled: excludeCanceled,
                             });
                             resolve();
                         }
@@ -139,6 +144,7 @@ export class CreditsStore extends Store<CreditsStoreState>
                 this.state.agencyId,
                 this.state.accountId,
                 active,
+                this.state.excludeCanceled,
                 paginationOptions.page,
                 paginationOptions.pageSize
             ).then(
@@ -445,6 +451,7 @@ export class CreditsStore extends Store<CreditsStoreState>
         agencyId: string | null,
         accountId: string | null,
         active: boolean,
+        excludeCanceled: boolean,
         page: number,
         pageSize: number
     ): Promise<Credit[]> {
@@ -453,6 +460,7 @@ export class CreditsStore extends Store<CreditsStoreState>
             const serviceMethod: (
                 agencyId: string | null,
                 accountId: string | null,
+                excludeCanceled: boolean,
                 offset: number | null,
                 limit: number | null,
                 requestStateUpdater: RequestStateUpdater
@@ -463,6 +471,7 @@ export class CreditsStore extends Store<CreditsStoreState>
             serviceMethod(
                 agencyId,
                 accountId,
+                excludeCanceled,
                 offset,
                 pageSize,
                 this.requestStateUpdater
