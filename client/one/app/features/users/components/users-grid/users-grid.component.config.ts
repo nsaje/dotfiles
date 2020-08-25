@@ -28,7 +28,6 @@ import {
     isInternalUser,
 } from '../../helpers/users.helpers';
 import {distinct} from '../../../../shared/helpers/array.helpers';
-import {TemplateRef} from '@angular/core';
 
 export const COLUMN_NAME: ColDef = {
     headerName: 'Name',
@@ -136,13 +135,17 @@ function getAccountNames(user: User, componentParent: UsersView): string[] {
             entityPermissions
                 .filter(ep => ep.accountId)
                 .map(ep => getAccountName(componentParent, ep.accountId))
+                .filter(accountName => isDefined(accountName))
         );
     } else {
         return undefined;
     }
 }
 
-function getAccountName(componentParent: UsersView, accountId: string): string {
+function getAccountName(
+    componentParent: UsersView,
+    accountId: string
+): string | undefined {
     return componentParent.store.state.accounts?.find(
         account => account.id === accountId
     )?.name;
