@@ -5,7 +5,6 @@ describe('zemInfoboxHeader', function() {
     var $httpBackend;
     var zemEntityService;
     var zemNavigationService;
-    var zemNavigationNewService;
     var zemAuthStore;
 
     beforeEach(angular.mock.module('one'));
@@ -18,17 +17,9 @@ describe('zemInfoboxHeader', function() {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityService = $injector.get('zemEntityService');
         zemNavigationService = $injector.get('zemNavigationService');
-        zemNavigationNewService = $injector.get('zemNavigationNewService');
         zemAuthStore = _zemAuthStore_;
 
         $httpBackend.whenGET(/^\/api\/.*/).respond(200, {data: {}});
-
-        spyOn(zemNavigationNewService, 'getActiveAccount').and.returnValue({
-            id: 1,
-            data: {
-                agencyId: 1,
-            },
-        });
     }));
 
     it('should update view when entity updates', function() {
@@ -61,6 +52,14 @@ describe('zemInfoboxHeader', function() {
                 currentValue: {
                     type: constants.entityType.AD_GROUP,
                     data: {},
+                    parent: {
+                        parent: {
+                            id: 1,
+                            data: {
+                                agencyId: 1,
+                            },
+                        },
+                    },
                 },
             },
         };
@@ -78,6 +77,14 @@ describe('zemInfoboxHeader', function() {
                 currentValue: {
                     type: constants.entityType.AD_GROUP,
                     data: {},
+                    parent: {
+                        parent: {
+                            id: 1,
+                            data: {
+                                agencyId: 1,
+                            },
+                        },
+                    },
                 },
             },
         };
@@ -118,6 +125,14 @@ describe('zemInfoboxHeader', function() {
         changes.entity.currentValue = {
             type: constants.entityType.AD_GROUP,
             data: {},
+            parent: {
+                parent: {
+                    id: 1,
+                    data: {
+                        agencyId: 1,
+                    },
+                },
+            },
         };
         $ctrl.$onChanges(changes);
         expect($ctrl.level).toEqual('Ad Group');
@@ -152,6 +167,14 @@ describe('zemInfoboxHeader', function() {
         changes.entity.currentValue = {
             type: constants.entityType.AD_GROUP,
             data: {},
+            parent: {
+                parent: {
+                    id: 1,
+                    data: {
+                        agencyId: 1,
+                    },
+                },
+            },
         };
         $ctrl.$onChanges(changes);
         expect($ctrl.isStateSwitchAvailable).toBe(true);
