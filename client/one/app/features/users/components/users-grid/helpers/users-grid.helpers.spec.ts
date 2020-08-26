@@ -177,6 +177,14 @@ describe('UsersGridHelpers', () => {
         dummyUser.entityPermissions = [
             {
                 agencyId: '012',
+                permission: EntityPermissionValue.READ,
+            },
+            {
+                agencyId: '123',
+                permission: EntityPermissionValue.READ,
+            },
+            {
+                agencyId: '012',
                 permission: EntityPermissionValue.USER,
             },
             {

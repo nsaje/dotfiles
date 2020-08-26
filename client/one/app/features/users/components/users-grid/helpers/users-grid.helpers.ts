@@ -5,6 +5,7 @@ import {isDefined} from '../../../../../shared/helpers/common.helpers';
 import {distinct} from '../../../../../shared/helpers/array.helpers';
 import {ENTITY_PERMISSION_VALUE_TO_SHORT_NAME} from '../../../users.config';
 import {
+    getHighestLevelEntityPermissions,
     isAccountManager,
     isAgencyManager,
     isInternalUser,
@@ -17,7 +18,7 @@ export function getPermissionsText(
 ): string {
     const filteredPermissions: EntityPermission[] = permissionsInColumn
         .map(permission =>
-            (user.entityPermissions || []).filter(
+            getHighestLevelEntityPermissions(user).filter(
                 ep => ep.permission === permission
             )
         )
@@ -33,11 +34,13 @@ export function getPermissionsText(
                 ep => !isDefined(ep.accountId) || ep.accountId === accountId
             );
         }
-        return distinct(
-            permissions.map(
-                ep => ENTITY_PERMISSION_VALUE_TO_SHORT_NAME[ep.permission]
-            )
-        ).join(', ');
+        return (
+            distinct(
+                permissions.map(
+                    ep => ENTITY_PERMISSION_VALUE_TO_SHORT_NAME[ep.permission]
+                )
+            ).join(', ') || ''
+        );
     }
 }
 

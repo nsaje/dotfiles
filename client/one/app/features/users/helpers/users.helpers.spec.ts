@@ -134,4 +134,105 @@ describe('UsersHelpers', () => {
         ];
         expect(usersHelpers.isInternalUser(dummyUser)).toBeTrue();
     });
+
+    it('should return only the permissions that are defined at the highest access level which has READ permission', () => {
+        // Only a READ permission => return it
+        dummyUser.entityPermissions = [internalReadPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([internalReadPermission]);
+        dummyUser.entityPermissions = [agencyReadPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([agencyReadPermission]);
+        dummyUser.entityPermissions = [accountReadPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([accountReadPermission]);
+
+        // No READ permissions => return nothing
+        dummyUser.entityPermissions = [];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([]);
+        dummyUser.entityPermissions = [anotherInternalPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([]);
+        dummyUser.entityPermissions = [anotherAgencyPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([]);
+        dummyUser.entityPermissions = [anotherAccountPermission];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([]);
+
+        // Two permissions on the same level => return both
+        dummyUser.entityPermissions = [
+            internalReadPermission,
+            anotherInternalPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([internalReadPermission, anotherInternalPermission]);
+        dummyUser.entityPermissions = [
+            agencyReadPermission,
+            anotherAgencyPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([agencyReadPermission, anotherAgencyPermission]);
+        dummyUser.entityPermissions = [
+            accountReadPermission,
+            anotherAccountPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([accountReadPermission, anotherAccountPermission]);
+
+        // Two permissions on different levels => Return only the highest READ permission
+        dummyUser.entityPermissions = [
+            internalReadPermission,
+            anotherAgencyPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([internalReadPermission]);
+        dummyUser.entityPermissions = [
+            internalReadPermission,
+            anotherAccountPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([internalReadPermission]);
+        dummyUser.entityPermissions = [
+            agencyReadPermission,
+            anotherInternalPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([agencyReadPermission]);
+        dummyUser.entityPermissions = [
+            agencyReadPermission,
+            anotherAccountPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([agencyReadPermission]);
+        dummyUser.entityPermissions = [
+            accountReadPermission,
+            anotherInternalPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([accountReadPermission]);
+        dummyUser.entityPermissions = [
+            accountReadPermission,
+            anotherAgencyPermission,
+        ];
+        expect(
+            usersHelpers.getHighestLevelEntityPermissions(dummyUser)
+        ).toEqual([accountReadPermission]);
+    });
 });

@@ -179,7 +179,7 @@ Based on this definition of the `recalculateActiveEntityState` function, we can 
   - If an account is selected in the sidebar, return a `read` entity permission for its `accountId`
   - Otherwise if the current application user is an internal user OR agency manager of the current agency AND no account is selected in the sidebar, return a `read` permission for the current `agencyId`
   - Otherwise, return an empty list. Of course this is not possible because an account manager must always have an account selected in the sidebar, but we handle it just in case.
-- Otherwise, we call the `cleanUpEntityPermissions` function, which makes sure that the `entityPermissions` contain only a single level of permissions (internal/agency/account). If they contain multiple levels, all permissions below the top level get removed.
+- Otherwise, we call the `getHighestLevelEntityPermissions` function, which makes sure that the `entityPermissions` contain only a single level of permissions (internal/agency/account). If they contain multiple levels, all permissions below the top level get removed.
 
 Then we assign the `entityPermissions` we got with the above logic to the entity, and use this to call `recalculateActiveEntityState`, with initialize attribute set to true.
 

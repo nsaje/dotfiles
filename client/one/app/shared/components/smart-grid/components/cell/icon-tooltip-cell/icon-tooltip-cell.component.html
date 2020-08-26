@@ -23,7 +23,12 @@
     triggers="mouseenter:mouseleave"
     container="body"
 ></span>
-<ng-container *ngIf="!displayOptions.iconTooltip && !displayOptions.text">
+<ng-container
+    *ngIf="
+        !displayOptions.iconTooltip &&
+        (displayOptions.text == null || displayOptions.text == undefined)
+    "
+>
     N/A
 </ng-container>
 

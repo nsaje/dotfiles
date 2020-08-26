@@ -32,6 +32,7 @@ import {
 import {EntityPermissionCheckboxStates} from '../../components/entity-permission-selector/types/entity-permission-checkbox-states';
 import {EntityPermissionValue} from '../../../../core/users/users.constants';
 import {
+    getHighestLevelEntityPermissions,
     isAccountManager,
     isAgencyManager,
     isInternalUser,
@@ -243,7 +244,7 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         if (!isDefined(entity.id) && isEmpty(entity.entityPermissions)) {
             userPatches.entityPermissions = this.getDefaultEntityPermissions();
         } else {
-            userPatches.entityPermissions = this.cleanUpEntityPermissions(
+            userPatches.entityPermissions = getHighestLevelEntityPermissions(
                 entity
             );
         }
@@ -627,27 +628,6 @@ export class UsersStore extends Store<UsersStoreState> implements OnDestroy {
         } else {
             return [];
         }
-    }
-
-    private cleanUpEntityPermissions(user: Partial<User>): EntityPermission[] {
-        // Sometimes in the DB we have users with mixed levels of entity permissions, here we remove all but the top level with read permission
-        if (isInternalUser(user)) {
-            return (user?.entityPermissions || []).filter(
-                ep => !isNotEmpty(ep.agencyId) && !isNotEmpty(ep.accountId)
-            );
-        }
-        if (isAgencyManager(user)) {
-            return (user?.entityPermissions || []).filter(ep =>
-                isNotEmpty(ep.agencyId)
-            );
-        }
-        if (isAccountManager(user)) {
-            return (user?.entityPermissions || []).filter(ep =>
-                isNotEmpty(ep.accountId)
-            );
-        }
-
-        return [];
     }
 
     private recalculateActiveEntityState(
