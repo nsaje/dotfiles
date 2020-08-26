@@ -5,8 +5,8 @@ import core.models
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 from ... import constants
-from .. import common
 from . import instance
+from . import queryset
 
 
 class RuleHistory(instance.RuleHistoryInstance, models.Model):
@@ -15,7 +15,7 @@ class RuleHistory(instance.RuleHistoryInstance, models.Model):
         verbose_name = "Rule history"
         verbose_name_plural = "Rule history"
 
-    objects = common.RuleHistoryQuerySet.as_manager()
+    objects = queryset.RuleHistoryQuerySet.as_manager()
 
     rule = models.ForeignKey("Rule", related_name="history", on_delete=models.CASCADE)
     ad_group = models.ForeignKey(core.models.AdGroup, related_name="rule_history", on_delete=models.PROTECT)

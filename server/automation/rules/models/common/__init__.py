@@ -1,2 +1,2 @@
+from .prevent_updates_queryset_mixin import PreventUpdatesQuerySetMixin
 from .rule_history_instance_mixin import RuleHistoryInstanceMixin
-from .rule_history_queryset import RuleHistoryQuerySet

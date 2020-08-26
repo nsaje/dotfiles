@@ -211,3 +211,4 @@ class RuleHistoryQueryParams(
     ad_group_id = restapi.serializers.fields.IdField(required=False)
     start_date = rest_framework.serializers.DateField(required=False)
     end_date = rest_framework.serializers.DateField(required=False)
+    show_entries_without_changes = restapi.serializers.fields.NullBooleanField(required=False, default=True)

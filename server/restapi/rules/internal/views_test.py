@@ -507,6 +507,33 @@ class LegacyRuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITe
         expected_response_ids = [item.id for item in rule_histories]
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
 
+    def test_list_rule_rules_histories_without_changes(self):
+        agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
+
+        rule = magic_mixer.blend(
+            automation.rules.Rule,
+            agency=agency,
+            target_type=automation.rules.TargetType.COUNTRY,
+            action_type=automation.rules.ActionType.INCREASE_BID_MODIFIER,
+        )
+
+        rule_histories = magic_mixer.cycle(3).blend(
+            automation.rules.RuleHistory, rule=rule, changes={"UK": {"old_value": 0.1, "new_value": 0.2}}
+        )
+        magic_mixer.cycle(3).blend(
+            automation.rules.RuleHistory, changes={}, status=automation.rules.ApplyStatus.SUCCESS
+        )
+
+        response = self.client.get(
+            reverse("restapi.rules.internal:rules_history"),
+            {"agency_id": agency.id, "rule_id": rule.id, "show_entries_without_changes": False},
+        )
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+
+        response_ids = [int(item.get("id")) for item in result["data"]]
+        expected_response_ids = [item.id for item in rule_histories]
+        self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
+
 
 class RuleHistoryViewSetTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyRuleHistoryViewSetTest):
     pass

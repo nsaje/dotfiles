@@ -84,6 +84,7 @@ export class RulesService {
         adGroupId: string | null,
         startDate: Date | null,
         endDate: Date | null,
+        showEntriesWithoutChanges: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<RuleHistory[]> {
         return this.endpoint.listHistories(
@@ -95,6 +96,7 @@ export class RulesService {
             adGroupId,
             startDate,
             endDate,
+            showEntriesWithoutChanges,
             requestStateUpdater
         );
     }

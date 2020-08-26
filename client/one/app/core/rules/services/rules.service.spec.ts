@@ -243,6 +243,7 @@ describe('RulesService', () => {
                 null,
                 null,
                 null,
+                null,
                 requestStateUpdater
             )
             .subscribe(rulesHistories => {
@@ -254,6 +255,7 @@ describe('RulesService', () => {
             mockedAccountId,
             offset,
             limit,
+            null,
             null,
             null,
             null,

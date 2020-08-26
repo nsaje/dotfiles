@@ -33,3 +33,15 @@
     [minDate]="selectedFilters.startDate"
     (valueChange)="onEndDateChange($event)"
 ></zem-date-input>
+<div
+    class="zem-rules-histories-filters__item zem-rules-histories-filters__item--flex"
+>
+    <zem-checkbox-input
+        class="zem-checkbox-input "
+        [isChecked]="selectedFilters.showEntriesWithoutChanges"
+        (toggle)="onShowEntriesWithoutChangesChange($event)"
+    ></zem-checkbox-input>
+    <span class="zem-rules-histories-filters__label">
+        Show histories that didn't perform any actions
+    </span>
+</div>

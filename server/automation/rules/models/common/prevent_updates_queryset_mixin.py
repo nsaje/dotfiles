@@ -1,7 +1,4 @@
-from django.db import models
-
-
-class RuleHistoryQuerySet(models.QuerySet):
+class PreventUpdatesQuerySetMixin:
     def update(self, *args, **kwargs):
         raise AssertionError("Updating rule history objects is not allowed.")
 

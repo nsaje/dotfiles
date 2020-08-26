@@ -150,7 +150,8 @@ describe('RulesHistoriesStore', () => {
             mockedRuleId,
             mockedAdGroupId,
             mockedStartDate,
-            mockedEndDate
+            mockedEndDate,
+            true
         );
         tick();
 
@@ -169,6 +170,7 @@ describe('RulesHistoriesStore', () => {
             mockedAdGroupId,
             mockedStartDate,
             mockedEndDate,
+            true,
             (<any>store).requestStateUpdater
         );
     }));
@@ -189,7 +191,8 @@ describe('RulesHistoriesStore', () => {
             mockedRuleId,
             mockedAdGroupId,
             mockedStartDate,
-            mockedEndDate
+            mockedEndDate,
+            true
         );
         tick();
 
@@ -204,6 +207,7 @@ describe('RulesHistoriesStore', () => {
             mockedAdGroupId,
             mockedStartDate,
             mockedEndDate,
+            true,
             (<any>store).requestStateUpdater
         );
     }));

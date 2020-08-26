@@ -42,6 +42,7 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
         adGroupId: null,
         startDate: null,
         endDate: null,
+        showEntriesWithoutChanges: null,
     };
 
     paginationOptions: PaginationOptions = DEFAULT_PAGINATION_OPTIONS;
@@ -61,6 +62,7 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
     ngOnInit() {
         this.route.queryParams
             .pipe(takeUntil(this.ngUnsubscribe$))
+            .pipe()
             .pipe(
                 filter(queryParams =>
                     commonHelpers.isDefined(queryParams.agencyId)
@@ -87,6 +89,7 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
                 ...$event,
                 startDate: convertDateToString($event.startDate),
                 endDate: convertDateToString($event.endDate),
+                showEntriesWithoutChanges: `${$event.showEntriesWithoutChanges}`,
             },
             queryParamsHandling: 'merge',
             replaceUrl: true,
@@ -101,6 +104,8 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
             adGroupId: queryParams.adGroupId || null,
             startDate: convertStringToDate(queryParams.startDate) || null,
             endDate: convertStringToDate(queryParams.endDate) || null,
+            showEntriesWithoutChanges:
+                queryParams.showEntriesWithoutChanges === 'true' || null,
         };
         this.paginationOptions = {
             ...this.paginationOptions,
@@ -118,7 +123,8 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
                 this.filters.ruleId,
                 this.filters.adGroupId,
                 this.filters.startDate,
-                this.filters.endDate
+                this.filters.endDate,
+                this.filters.showEntriesWithoutChanges
             );
         } else {
             this.store.loadEntities(
@@ -126,7 +132,8 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
                 this.filters.ruleId,
                 this.filters.adGroupId,
                 this.filters.startDate,
-                this.filters.endDate
+                this.filters.endDate,
+                this.filters.showEntriesWithoutChanges
             );
         }
     }

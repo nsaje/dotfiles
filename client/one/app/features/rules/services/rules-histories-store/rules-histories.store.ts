@@ -41,7 +41,8 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
         ruleId: string | null,
         adGroupId: string | null,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        showEntriesWithoutChanges: boolean | null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             Promise.all([
@@ -53,7 +54,8 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
                     ruleId,
                     adGroupId,
                     startDate,
-                    endDate
+                    endDate,
+                    showEntriesWithoutChanges
                 ),
                 this.loadRule(ruleId),
                 this.loadAdGroup(adGroupId),
@@ -83,7 +85,8 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
         ruleId: string | null,
         adGroupId: string | null,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        showEntriesWithoutChanges: boolean | null
     ): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.loadRulesHistories(
@@ -94,7 +97,8 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
                 ruleId,
                 adGroupId,
                 startDate,
-                endDate
+                endDate,
+                showEntriesWithoutChanges
             ).then(
                 (histories: RuleHistory[]) => {
                     this.patchState(histories, 'entities');
@@ -193,7 +197,8 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
         ruleId: string | null,
         adGroupId: string | null,
         startDate: Date | null,
-        endDate: Date | null
+        endDate: Date | null,
+        showEntriesWithoutChanges: boolean | null
     ): Promise<RuleHistory[]> {
         return new Promise<RuleHistory[]>((resolve, reject) => {
             const offset = this.getOffset(page, pageSize);
@@ -207,6 +212,7 @@ export class RulesHistoriesStore extends Store<RulesHistoriesStoreState>
                     adGroupId,
                     startDate,
                     endDate,
+                    showEntriesWithoutChanges,
                     this.requestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

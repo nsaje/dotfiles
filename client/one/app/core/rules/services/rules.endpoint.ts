@@ -160,6 +160,7 @@ export class RulesEndpoint {
         adGroupId: string | null,
         startDate: Date | null,
         endDate: Date | null,
+        showEntriesWithoutChanges: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<RuleHistory[]> {
         const request = RULES_CONFIG.requests.rules.listHistories;
@@ -175,6 +176,9 @@ export class RulesEndpoint {
             }),
             ...(commonHelpers.isDefined(endDate) && {
                 endDate: convertDateToString(endDate),
+            }),
+            ...(commonHelpers.isDefined(showEntriesWithoutChanges) && {
+                showEntriesWithoutChanges: `${showEntriesWithoutChanges}`,
             }),
         };
 

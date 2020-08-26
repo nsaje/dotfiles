@@ -149,7 +149,7 @@ class RuleHistoryInstance(RuleHistoryInstanceMixin):
 
     def get_failure_reason(self):
         if self.failure_reason == constants.RuleFailureReason.CAMPAIGN_AUTOPILOT_ACTIVE:
-            return "Automation rule can't change the daily cap when campaign budget optimisation is turned on."
+            return "Automation rule can't change the daily cap when campaign budget optimization is turned on."
         elif self.failure_reason == constants.RuleFailureReason.BUDGET_AUTOPILOT_INACTIVE:
             return "Automation rule can't change the daily cap when budget autopilot is turned off."
         elif self.failure_reason == constants.RuleFailureReason.UNEXPECTED_ERROR:

@@ -168,6 +168,10 @@ class RuleHistoryViewSet(RESTAPIBaseViewSet):
         if end_date is not None:
             rules_histories = rules_histories.filter(Q(created_dt__date__lte=end_date))
 
+        show_entries_without_changes = qpe.validated_data.get("show_entries_without_changes")
+        if not show_entries_without_changes:
+            rules_histories = rules_histories.exclude_without_changes()
+
         rules_histories.select_related("rule", "ad_group")
 
         paginator = StandardPagination()

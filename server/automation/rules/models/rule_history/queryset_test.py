@@ -15,3 +15,9 @@ class RuleHistoryQuerysetTest(TestCase):
         magic_mixer.blend(model.RuleHistory)
         with self.assertRaises(AssertionError):
             model.RuleHistory.objects.filter().delete()
+
+    def test_exclude_without_changes(self):
+        magic_mixer.cycle(5).blend(model.RuleHistory, changes={})
+
+        rule_history_with_changes = model.RuleHistory.objects.exclude_without_changes()
+        self.assertEqual(len(rule_history_with_changes), 0)

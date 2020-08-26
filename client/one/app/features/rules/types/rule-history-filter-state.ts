@@ -3,4 +3,5 @@ export interface RuleHistoryFilterState {
     adGroupId: string | null;
     startDate: Date | null;
     endDate: Date | null;
+    showEntriesWithoutChanges: boolean | null;
 }

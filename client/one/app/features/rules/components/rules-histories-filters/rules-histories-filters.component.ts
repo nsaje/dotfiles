@@ -58,4 +58,13 @@ export class RulesHistoriesFiltersComponent {
             endDate: endDate,
         });
     }
+
+    onShowEntriesWithoutChangesChange(
+        showEntriesWithoutChanges: boolean | null
+    ) {
+        this.filtersChange.emit({
+            ...this.selectedFilters,
+            showEntriesWithoutChanges: showEntriesWithoutChanges,
+        });
+    }
 }
