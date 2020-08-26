@@ -34,7 +34,7 @@ class UserQuerySet(models.QuerySet):
         return self.filter(
             models.Q(entitypermission__agency=None)
             & models.Q(entitypermission__account=None)
-            & models.Q(entitypermission__permission=Permission.USER)
+            & models.Q(entitypermission__permission=Permission.READ)
         ).distinct()
 
     def filter_by_entity_permission_account(self, account):
