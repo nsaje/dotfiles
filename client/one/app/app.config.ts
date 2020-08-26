@@ -22,6 +22,7 @@ export const APP_CONFIG = {
     GAKey: 'UA-74379813-2',
     mixpanelKey: '0ffce3e85e7532b547b9aad433bce9f7',
     posthogKey: 'LyK-gxP1FXkWDECkmKgbbHsMPDdov-ayiP3OqxN259U',
+    posthogApiHost: 'https://app.posthog.com',
     currencySymbols: {
         [Currency.USD]: '$',
         [Currency.EUR]: '€',

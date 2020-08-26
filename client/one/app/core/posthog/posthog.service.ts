@@ -12,8 +12,10 @@ export class PosthogService {
             return;
         }
         (posthog as any).init(APP_CONFIG.posthogKey, {
-            api_host: window.location.href,
+            api_host: APP_CONFIG.posthogApiHost,
+            loaded: () => {
+                (posthog as any).identify(this.authStore.getCurrentUserId());
+            },
         });
-        (posthog as any).identify(this.authStore.getCurrentUserId());
     }
 }
