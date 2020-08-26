@@ -28,7 +28,7 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
     display_url = models.TextField(null=True, blank=True, default="")
     brand_name = models.TextField(null=True, blank=True, default="")
     description = models.TextField(null=True, blank=True, default="")
-    call_to_action = models.TextField(null=True, blank=True, default="")
+    call_to_action = models.TextField(null=True, blank=True, default=dash.constants.DEFAULT_CALL_TO_ACTION)
 
     primary_tracker_url = models.TextField(null=True, blank=True, default=None)
     secondary_tracker_url = models.TextField(null=True, blank=True, default=None)
