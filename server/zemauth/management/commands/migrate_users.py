@@ -21,16 +21,20 @@ class Command(Z1Command):
     def handle(self, *args, **options):
         logger.info("Star migrating users to entity permissions...")
 
-        agency_id = options.get("agency_id")
-        agency = core.models.Agency.objects.get(pk=agency_id)
-        users_qs = (
-            zemauth.models.User.objects.filter(Q(agency__id=agency.id) | Q(account__agency__id=agency.id))
-            .filter(is_active=True)
-            .distinct()
+        users_qs = zemauth.models.User.objects.exclude(
+            Q(groups__permissions__codename="fea_use_entity_permission")
+            | Q(user_permissions__codename="fea_use_entity_permission")
         )
 
+        agency_id = options.get("agency_id")
+        if agency_id is not None:
+            if not core.models.Agency.objects.filter(pk=agency_id).exists():
+                logger.info("Agency does not exist...")
+                return
+            users_qs = users_qs.filter(Q(agency__id=agency_id) | Q(account__agency__id=agency_id))
+
         chunk_number = 0
-        for users_chunk in chunk_iterator(users_qs, chunk_size=BATCH_SIZE):
+        for users_chunk in chunk_iterator(users_qs.distinct(), chunk_size=BATCH_SIZE):
             chunk_number += 1
             logger.info("Processing chunk number %s...", chunk_number)
             for user in users_chunk:

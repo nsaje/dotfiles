@@ -16,9 +16,10 @@ EXTERNAL_REST_API_GROUP_ID = 33
 @transaction.atomic
 def refresh_entity_permissions_for_user(user):
     user.entitypermission_set.all().delete()
-    _handle_account_manager(user)
+    if _handle_internal_user(user):
+        return
     _handle_agency_manager(user)
-    _handle_internal_user(user)
+    _handle_account_manager(user)
 
 
 @transaction.atomic
@@ -153,9 +154,10 @@ def _remove_and_add_permissions(calling_user, requested_user, removed_permission
 
 
 def _handle_account_manager(user):
-    accounts = user.account_set.all()
+    agencies = user.agency_set.all().values_list("id", flat=True)
+    accounts = user.account_set.all().exclude(agency_id__in=agencies)
     if len(accounts) == 0:
-        return
+        return False
 
     for account in accounts:
         _add_entity_permission(user, None, account, Permission.READ)
@@ -176,11 +178,13 @@ def _handle_account_manager(user):
         if user.groups.filter(pk=EXTERNAL_REST_API_GROUP_ID).exists():
             _add_entity_permission(user, None, account, Permission.RESTAPI)
 
+    return True
+
 
 def _handle_agency_manager(user):
     agencies = user.agency_set.all()
     if len(agencies) == 0:
-        return
+        return False
 
     for agency in agencies:
         _add_entity_permission(user, agency, None, Permission.READ)
@@ -196,10 +200,12 @@ def _handle_agency_manager(user):
         if user.groups.filter(pk=EXTERNAL_REST_API_GROUP_ID).exists():
             _add_entity_permission(user, agency, None, Permission.RESTAPI)
 
+    return True
+
 
 def _handle_internal_user(user):
     if not (user.is_superuser or user.has_perm("zemauth.can_see_all_accounts")):
-        return
+        return False
 
     _add_entity_permission(user, None, None, Permission.READ)
     _add_entity_permission(user, None, None, Permission.WRITE)
@@ -210,6 +216,8 @@ def _handle_internal_user(user):
     _add_entity_permission(user, None, None, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE)
     _add_entity_permission(user, None, None, Permission.BASE_COSTS_SERVICE_FEE)
     _add_entity_permission(user, None, None, Permission.RESTAPI)
+
+    return True
 
 
 def _add_entity_permission(user, agency, account, permission):

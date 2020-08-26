@@ -160,6 +160,70 @@ class EntityPermissionServiceTestCase(TestCase):
         self.assertIn(Permission.BASE_COSTS_SERVICE_FEE, permissions)
         self.assertIn(Permission.RESTAPI, permissions)
 
+    def test_agency_manager_and_account_manager_full_access(self):
+        user = magic_mixer.blend(
+            zemauth.models.User,
+            groups=[
+                self.can_see_basic_cost_breakdown_group,
+                self.enable_margins_and_budgets_group,
+                self.external_rest_api_group,
+            ],
+        )
+
+        # user is agency manager on agency_one and also account manager on connected accounts
+        agency_one = magic_mixer.blend(core.models.Agency, users=[user])  # user is agency manager
+        magic_mixer.cycle(5).blend(core.models.Account, agency=agency_one, users=[user])  # user is account manager
+
+        # use is account manager on account connected to agency_two
+        agency_two = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency_two, users=[user])  # use is account manager
+
+        self.assertEqual(len(user.entitypermission_set.all()), 0)
+
+        refresh_entity_permissions_for_user(user)
+        entity_permissions = list(user.entitypermission_set.all())
+
+        self.assertEqual(len(entity_permissions), 15)
+
+        ageny_entity_permissions = [
+            entity_permission for entity_permission in entity_permissions if entity_permission.agency_id is not None
+        ]
+        self.assertEqual(len(ageny_entity_permissions), 8)
+
+        for entity_permission in ageny_entity_permissions:
+            self.assertEqual(entity_permission.agency_id, agency_one.id)
+            self.assertIsNone(entity_permission.account_id)
+
+        agency_permissions = list(entity_permission.permission for entity_permission in ageny_entity_permissions)
+
+        self.assertIn(Permission.READ, agency_permissions)
+        self.assertIn(Permission.WRITE, agency_permissions)
+        self.assertIn(Permission.USER, agency_permissions)
+        self.assertIn(Permission.BUDGET, agency_permissions)
+        self.assertIn(Permission.BUDGET_MARGIN, agency_permissions)
+        self.assertIn(Permission.AGENCY_SPEND_MARGIN, agency_permissions)
+        self.assertIn(Permission.MEDIA_COST_DATA_COST_LICENCE_FEE, agency_permissions)
+        self.assertIn(Permission.RESTAPI, agency_permissions)
+
+        account_entity_permissions = [
+            entity_permission for entity_permission in entity_permissions if entity_permission.account_id is not None
+        ]
+        self.assertEqual(len(account_entity_permissions), 7)
+
+        for entity_permission in account_entity_permissions:
+            self.assertIsNone(entity_permission.agency_id)
+            self.assertEqual(entity_permission.account_id, account.id)
+
+        account_permissions = list(entity_permission.permission for entity_permission in account_entity_permissions)
+
+        self.assertIn(Permission.READ, account_permissions)
+        self.assertIn(Permission.WRITE, account_permissions)
+        self.assertIn(Permission.BUDGET, account_permissions)
+        self.assertIn(Permission.BUDGET_MARGIN, account_permissions)
+        self.assertIn(Permission.AGENCY_SPEND_MARGIN, account_permissions)
+        self.assertIn(Permission.MEDIA_COST_DATA_COST_LICENCE_FEE, account_permissions)
+        self.assertIn(Permission.RESTAPI, account_permissions)
+
 
 class EntityPermissionServiceSetEntityPermissionsTestCase(FutureBaseTestCase):
     def test_is_change_allowed(self):
