@@ -119,6 +119,8 @@ def _set(
     if (modifier == 1.0 and modifier_type != constants.BidModifierType.PUBLISHER) or not modifier:
         # TODO publisher modifiers with value of 1 are currently needed to correctly support publisher hierarchy in bidder
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
+        if modifier_type == constants.BidModifierType.SOURCE and not skip_source_settings_update:
+            _update_ad_group_source_settings(ad_group, target, modifier, user, skip_validation=skip_validation)
         return None, None
 
     if modifier_type != constants.BidModifierType.SOURCE:

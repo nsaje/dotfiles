@@ -835,6 +835,8 @@ class WorkflowTestCase(TestCase):
             max_cpc=decimal.Decimal("10.0"),
             min_cpm=decimal.Decimal("0.01"),
             max_cpm=decimal.Decimal("10.0"),
+            min_daily_budget=decimal.Decimal("1.0"),
+            max_daily_budget=decimal.Decimal("1000.0"),
         )
         self.source = magic_mixer.blend(models.Source, source_type=self.source_type, maintenance=False)
         self.source_credentials = magic_mixer.blend(models.SourceCredentials, source=self.source)
@@ -1017,6 +1019,39 @@ class WorkflowTestCase(TestCase):
                 type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
             ).exists()
         )
+
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_reset_source_bid_modifier(self, mock_autopilot):
+        self.ad_group = models.AdGroup.objects.create(self.request, self.campaign)
+
+        self.ad_group_source = self.ad_group.adgroupsource_set.get(source=self.source)
+
+        self.assertEqual(self.ad_group.bidding_type, constants.BiddingType.CPC)
+        self.assertEqual(self.ad_group.settings.cpc, decimal.Decimal("0.45"))
+        self.assertEqual(self.ad_group_source.settings.cpc_cc, decimal.Decimal("0.15"))
+        self.assertTrue(
+            self.ad_group.bidmodifier_set.filter(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
+            ).exists()
+        )
+        self.assertTrue(
+            decimal_helpers.equal_decimals(
+                self.ad_group.bidmodifier_set.get(
+                    type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
+                ).modifier,
+                decimal.Decimal("0.15") / decimal.Decimal("0.45"),
+            )
+        )
+
+        bid_modifiers.set(self.ad_group, bid_modifiers.BidModifierType.SOURCE, str(self.source.id), None, 1.0)
+
+        self.assertFalse(
+            self.ad_group.bidmodifier_set.filter(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(self.source.id)
+            ).exists()
+        )
+        self.ad_group_source.refresh_from_db()
+        self.assertEqual(self.ad_group_source.settings.cpc_cc, decimal.Decimal("0.45"))
 
 
 class MissingBidModifiersTestCase(TestCase):
