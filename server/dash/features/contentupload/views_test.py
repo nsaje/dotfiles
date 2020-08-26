@@ -1064,7 +1064,7 @@ class LegacyCandidateTestCase(DASHAPITestCase):
                         "display_url": "",
                         "brand_name": "",
                         "description": "",
-                        "call_to_action": constants.DEFAULT_CALL_TO_ACTION,
+                        "call_to_action": "",
                         "primary_tracker_url": None,
                         "secondary_tracker_url": None,
                         "image_hash": None,
