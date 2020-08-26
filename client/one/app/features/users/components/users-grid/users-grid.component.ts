@@ -62,7 +62,7 @@ export class UsersGridComponent implements OnChanges, AfterViewInit {
     private gridApi: GridApi;
 
     ngAfterViewInit() {
-        COLUMN_ACCESS.cellRendererParams.columnDisplayOptions.tooltipTemplate = this.accountAccessTemplate;
+        COLUMN_ACCESS.cellRendererParams.columnDisplayOptions.iconTooltipTemplate = this.accountAccessTemplate;
     }
 
     ngOnChanges() {
