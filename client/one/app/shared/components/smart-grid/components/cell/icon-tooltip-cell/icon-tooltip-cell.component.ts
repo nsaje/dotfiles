@@ -16,7 +16,7 @@ export class IconTooltipCellComponent<T1, T2, T3>
     agInit(params: IconTooltipRendererParams<T1, T2, T3>) {
         this.displayOptions = {
             ...DEFAULT_DISPLAY_OPTIONS,
-            tooltip: params.value,
+            iconTooltip: params.value,
             ...params.columnDisplayOptions,
             ...params.getCellDisplayOptions?.(
                 params.data,

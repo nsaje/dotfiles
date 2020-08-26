@@ -61,8 +61,8 @@ export const COLUMN_ACCESS: ColDef = {
         },
         getCellDisplayOptions: getAccessCellDisplayOptions,
     } as IconTooltipRendererParams<string[], User, UsersView>,
-    width: 90,
-    minWidth: 90,
+    width: 100,
+    minWidth: 100,
 };
 
 export const COLUMN_PERMISSIONS: ColDef = {
@@ -118,7 +118,7 @@ function getAccessCellDisplayOptions(
 ): Partial<IconTooltipDisplayOptions<string[]>> {
     return {
         text: getPermissionsLevel(user),
-        tooltip: getAccountNames(user, componentParent),
+        iconTooltip: getAccountNames(user, componentParent),
     };
 }
 
@@ -182,17 +182,19 @@ function getPermissionsCellDisplayOptions(
     if (isAccountManager(user) && !isDefined(accountId)) {
         return {
             textStyleClass: IconTooltipCellTextStyleClass.Lighter,
-            tooltip:
+            iconTooltip:
                 "This user has access to one or more agency's accounts. To review user's permissions, select one of the user's accounts in the account selector on the left side of the screen.",
             text: 'N/A',
         };
     } else {
+        const text = getPermissionsText(
+            user,
+            componentParent.store.state.accountId,
+            permissionsInColumn
+        );
         return {
-            text: getPermissionsText(
-                user,
-                componentParent.store.state.accountId,
-                permissionsInColumn
-            ),
+            text,
+            textTooltip: text,
         };
     }
 }

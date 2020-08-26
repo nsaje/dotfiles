@@ -7,9 +7,11 @@ import {
 
 export interface IconTooltipDisplayOptions<T> {
     placement?: IconTooltipCellPlacement;
-    icon?: IconTooltipCellIcon;
     text?: string;
     textStyleClass?: IconTooltipCellTextStyleClass;
-    tooltip?: T;
-    tooltipTemplate?: TemplateRef<T>;
+    textTooltip?: T;
+    textTooltipTemplate?: TemplateRef<T>;
+    icon?: IconTooltipCellIcon;
+    iconTooltip?: T;
+    iconTooltipTemplate?: TemplateRef<T>;
 }
