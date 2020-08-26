@@ -105,7 +105,7 @@ export class RulesHistoriesView implements OnInit, OnDestroy {
             startDate: convertStringToDate(queryParams.startDate) || null,
             endDate: convertStringToDate(queryParams.endDate) || null,
             showEntriesWithoutChanges:
-                queryParams.showEntriesWithoutChanges === 'true' || null,
+                queryParams.showEntriesWithoutChanges === 'true',
         };
         this.paginationOptions = {
             ...this.paginationOptions,
