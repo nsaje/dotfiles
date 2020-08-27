@@ -25,6 +25,7 @@ import utils.s3helpers
 import utils.sort_helper
 from server import celery
 from utils import csv_utils
+from utils import db_router
 from utils import metrics_compat
 from utils import threads
 from utils import zlogging
@@ -192,6 +193,7 @@ class ReportJobExecutor(JobExecutor):
             logger.exception("Exception when processing API report job", job=self.job.id)
 
     @classmethod
+    @db_router.use_read_replica()
     def get_report(cls, job):
         user = job.user
 
