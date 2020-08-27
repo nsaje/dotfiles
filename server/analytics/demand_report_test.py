@@ -6,6 +6,7 @@ import mock
 import unicodecsv as csv
 from django import test
 
+import automation.models
 import core.features.bcm
 import core.features.goals.campaign_goal
 import core.models
@@ -59,12 +60,14 @@ class DemandReportTestCase(test.TestCase):
         target_regions=None,
         world_region="N/A",
         geo_targeting_type=None,
+        rules=None,
     ):
 
         ad_group.refresh_from_db()
 
         target_regions = target_regions or []
         geo_targeting_type = geo_targeting_type or []
+        rules = rules or []
 
         primary_goal = ad_group.campaign.campaigngoal_set.filter(primary=True).first()
         if primary_goal:
@@ -184,6 +187,8 @@ class DemandReportTestCase(test.TestCase):
                 ad_group.campaign.entity_tags.values_list("name", flat=True)
             ),
             "adgroup_tags": tag_helpers.entity_tag_names_to_string(ad_group.entity_tags.values_list("name", flat=True)),
+            "rules": ",".join(str(rule_id) for rule_id in sorted(rule.id for rule in rules)),
+            "rules_count": len(rules),
         }
 
         for column, value in checks.items():
@@ -417,6 +422,10 @@ class DemandReportTestCase(test.TestCase):
             self.budget_2_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(4)]
         )
 
+        self.rule_ad_group_1 = magic_mixer.blend(automation.models.Rule, ad_groups_included=[self.ad_group_1_1])
+        self.rule_campaign_2 = magic_mixer.blend(automation.models.Rule, campaigns_included=[self.campaign_2])
+        self.rule_account_1 = magic_mixer.blend(automation.models.Rule, accounts_included=[self.account_1])
+
     @mock.patch("analytics.demand_report._get_ad_group_spend")
     @mock.patch("utils.bigquery_helper.query")
     @mock.patch("utils.bigquery_helper.upload_csv_file")
@@ -432,7 +441,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
@@ -461,6 +470,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_ad_group_1, self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -475,6 +485,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -489,6 +500,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_campaign_2, self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -503,6 +515,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_campaign_2, self.rule_account_1],
         )
 
     @mock.patch("analytics.demand_report._get_ad_group_spend")
@@ -542,7 +555,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(16):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
@@ -571,6 +584,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_ad_group_1, self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -585,6 +599,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -599,6 +614,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_campaign_2, self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -613,6 +629,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_campaign_2, self.rule_account_1],
         )
 
         self._assert_row_data(
@@ -627,6 +644,7 @@ class DemandReportTestCase(test.TestCase):
             target_regions=[""],
             world_region="World",
             geo_targeting_type=[""],
+            rules=[self.rule_campaign_2, self.rule_account_1],
         )
 
 

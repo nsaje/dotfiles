@@ -78,6 +78,8 @@ OUTPUT_COLUMN_NAMES = [
     "account_tags",
     "campaign_tags",
     "adgroup_tags",
+    "rules",
+    "rules_count",
 ]
 
 WORLD_REGIONS = {

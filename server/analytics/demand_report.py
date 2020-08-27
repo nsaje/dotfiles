@@ -18,6 +18,7 @@ from django.db.models import Subquery
 from django.db.models.functions import Cast
 from django.db.models.functions import Coalesce
 
+import automation.models
 from analytics import demand_report_definitions
 from core import models
 from core.features import bcm
@@ -28,6 +29,7 @@ from dash import constants
 from redshiftapi import db
 from utils import bigquery_helper
 from utils import converters
+from utils import dates_helper
 from utils import queryset_helper
 from utils import zlogging
 from zemauth.models import User
@@ -45,15 +47,10 @@ def create_report():
     """
     Create demand report from AdGroup spend data and Z1 entities and their settings and upload it to BigQuery.
     """
-
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-
-    ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
-
-    account_data_dict = _get_account_data_dict()
-
-    output_stream = _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, yesterday)
-    _update_big_query(output_stream, yesterday)
+    date = dates_helper.local_yesterday()
+    rows = _rows_generator(date)
+    output_stream = _generate_bq_csv_file(rows)
+    _update_big_query(output_stream, date)
 
     logger.info("Demand report done.")
 
@@ -75,7 +72,7 @@ def _delete_big_query_records(date):
     bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
 
 
-def _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, date):
+def _generate_bq_csv_file(rows):
     logger.info("Generating CSV file.")
     output_stream = io.BytesIO()
 
@@ -84,7 +81,7 @@ def _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, date):
     )
     csv_writer.writeheader()
 
-    for row in _csv_rows_generator(account_data_dict, ad_group_spend_dict, date):
+    for row in rows:
         csv_writer.writerow(row)
 
     output_stream.seek(0)
@@ -92,7 +89,10 @@ def _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, date):
     return output_stream
 
 
-def _csv_rows_generator(account_data_dict, ad_group_spend_dict, date):
+def _rows_generator(date):
+    ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
+    account_data_dict = _get_account_data_dict()
+
     date_string = date.strftime("%Y-%m-%d")
     source_id_map = _source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO)
 
@@ -139,6 +139,7 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_spe
             ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
         )
 
+        rules_by_ad_group_id = _compute_active_rules_by_ad_group(ad_group_data_chunk, campaign_data_dict)
         for ad_group_data_row in ad_group_data_chunk:
             row = ad_group_data_row.copy()
             row.update(campaign_data_dict[row["campaign_id"]])
@@ -158,6 +159,8 @@ def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_spe
             row["type"] = constants.CampaignType.get_name(row["type"])
             row["cs_email"] = user_email_dict.get(row["cs_representative_id"], "N/A")
             row["sales_email"] = user_email_dict.get(row["sales_representative_id"], "N/A")
+            row["rules"] = rules_by_ad_group_id[row["adgroup_id"]]
+            row["rules_count"] = len(rules_by_ad_group_id[row["adgroup_id"]])
 
             _normalize_row(row)
             yield row
@@ -378,8 +381,8 @@ def _normalize_row(row):
     _normalize_field(row, "enable_ga_tracking")
     _normalize_field(row, "autopilot")
 
-    _normalize_array(row, "target_regions")
-    _normalize_array(row, "geo_targeting_type")
+    _normalize_iterable(row, "target_regions")
+    _normalize_iterable(row, "geo_targeting_type")
     _normalize_field(row, "retargeting_ad_groups")
     _normalize_field(row, "exclusion_retargeting_ad_groups")
     _normalize_field(row, "bluekai_targeting")
@@ -392,8 +395,9 @@ def _normalize_row(row):
 
     _normalize_field(row, "exclusion_target_regions")
     _normalize_field(row, "target_os")
-    _normalize_array(row, "target_environments")
-    _normalize_array(row, "target_devices")
+    _normalize_iterable(row, "target_environments")
+    _normalize_iterable(row, "target_devices")
+    _normalize_iterable(row, "rules")
 
     row["agency_tags"] = tag_helpers.entity_tag_names_to_string(row["agency_tags"])
     row["account_tags"] = tag_helpers.entity_tag_names_to_string(row["account_tags"])
@@ -429,7 +433,7 @@ def _resolve_geo_targeting(row):
     return list(geos), list(geo_targeting_types)
 
 
-def _normalize_array(row, field_name):
+def _normalize_iterable(row, field_name):
     row[field_name] = _normalize_array_value(row[field_name])
 
 
@@ -438,10 +442,11 @@ def _normalize_array_value(val):
         val = []
     elif isinstance(val, str):
         val = json.loads(val)
-    elif not isinstance(val, list):
-        raise ValueError("%s is not a list" % type(val))
 
-    return ",".join(sorted(val))
+    try:
+        return ",".join(str(el) for el in sorted(val))
+    except TypeError:
+        raise ValueError("%s is not iterable" % type(val))
 
 
 def _normalize_field(row, field_name):
@@ -706,6 +711,58 @@ def _get_budget_data(campaign_ids, date=None):
         bcm.BudgetLineItem.objects.filter(statements__date__lte=date, campaign_id__in=campaign_ids)
         .annotate_spend_data()
         .values("id", "amount", "campaign_id", "spend_data_etfm_total")
+    )
+
+
+def _compute_active_rules_by_ad_group(ad_group_data_chunk, campaign_data_dict):
+    ad_groups_by_account = {}
+    ad_groups_by_campaign = {}
+    for row in ad_group_data_chunk:
+        ad_group_id = row["adgroup_id"]
+        campaign_id = row["campaign_id"]
+        ad_groups_by_campaign.setdefault(campaign_id, set())
+        ad_groups_by_campaign[campaign_id].add(ad_group_id)
+
+        account_id = campaign_data_dict[campaign_id]["account_id"]
+        ad_groups_by_account.setdefault(account_id, set())
+        ad_groups_by_account[account_id].add(ad_group_id)
+
+    rules_by_ad_group_id = defaultdict(set)
+    for row in _get_enabled_rules_qs([row["adgroup_id"] for row in ad_group_data_chunk]):
+        if row["included_ad_group"]:
+            ad_group_id = row["included_ad_group"]
+            rules_by_ad_group_id[ad_group_id].add(row["id"])
+        if row["included_campaign"]:
+            campaign_id = row["included_campaign"]
+            for ad_group_id in ad_groups_by_campaign.get(campaign_id, []):
+                rules_by_ad_group_id[ad_group_id].add(row["id"])
+        if row["included_account"]:
+            account_id = row["included_account"]
+            for ad_group_id in ad_groups_by_account.get(account_id, []):
+                rules_by_ad_group_id[ad_group_id].add(row["id"])
+
+    return rules_by_ad_group_id
+
+
+def _get_enabled_rules_qs(ad_group_ids):
+    ad_groups = models.AdGroup.objects.filter(id__in=ad_group_ids)
+    campaigns = models.Campaign.objects.filter(adgroup__in=ad_groups)
+    accounts = models.Account.objects.filter(campaign__adgroup__in=ad_groups)
+
+    return (
+        automation.models.Rule.objects.filter(
+            Q(ad_groups_included__in=ad_groups)
+            | Q(campaigns_included__in=campaigns)
+            | Q(accounts_included__in=accounts)
+        )
+        .filter_enabled()
+        .exclude_archived()
+        .annotate(
+            included_ad_group=F("ad_groups_included"),
+            included_campaign=F("campaigns_included"),
+            included_account=F("accounts_included"),
+        )
+        .values("id", "included_ad_group", "included_campaign", "included_account")
     )
 
 

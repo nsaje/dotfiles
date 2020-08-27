@@ -2,8 +2,13 @@ from django.db import models
 
 import zemauth.features.entity_permission.shortcuts
 
+from ... import constants
+
 
 class RuleQuerySet(zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet):
+    def filter_enabled(self):
+        return self.filter(state=constants.RuleState.ENABLED)
+
     def exclude_archived(self, show_archived=False):
         if show_archived:
             return self

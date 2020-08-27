@@ -60,7 +60,7 @@ def execute_rules_daily_run() -> None:
             )
             .filter(rule_history_exists_today=False, state=constants.RuleState.ENABLED, target_type=target_type)
             .exclude_archived()
-            .prefetch_related("ad_groups_included", "conditions")
+            .prefetch_related("ad_groups_included", "campaigns_included", "accounts_included", "conditions")
         )
 
         rules_map = helpers.get_rules_by_ad_group_map(rules, exclude_inactive_yesterday=True)
