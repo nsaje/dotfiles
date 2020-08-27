@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.db.models import Q
-
 import zemauth.models
 from utils import zlogging
 from utils.command_helpers import Z1Command
@@ -18,10 +16,7 @@ class Command(Z1Command):
     def handle(self, *args, **options):
         logger.info("Refreshing entitypermission table started...")
 
-        users_qs = zemauth.models.User.objects.exclude(
-            Q(groups__permissions__codename="fea_use_entity_permission")
-            | Q(user_permissions__codename="fea_use_entity_permission")
-        )
+        users_qs = zemauth.models.User.objects.all()
 
         chunk_number = 0
         for users_chunk in chunk_iterator(users_qs.distinct(), chunk_size=BATCH_SIZE):
