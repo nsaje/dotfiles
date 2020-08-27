@@ -456,20 +456,6 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         )
         self.assertResponseError(r, "ValidationError")
 
-    def test_language_validation(self):
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        campaign = magic_mixer.blend(core.models.Campaign, account=account, language=constants.Language.ENGLISH)
-        magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        test_campaign = self.campaign_repr(
-            id=campaign.id, account_id=account.id, name="My test campaign!", language=constants.Language.ARABIC
-        )
-        r = self.client.put(
-            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": campaign.id}),
-            data=test_campaign,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
     def test_adobe_tracking_parameter_blank(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         campaign = magic_mixer.blend(core.models.Campaign, account=account)

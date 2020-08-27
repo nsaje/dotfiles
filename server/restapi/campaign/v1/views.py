@@ -109,9 +109,6 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             campaign.update_type(settings.get("campaign", {}).get("type"))
             campaign.settings.update(request, **settings)
 
-        except core.models.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-            raise utils.exc.ValidationError(errors={"language": [str(err)]})
-
         except core.models.campaign.exceptions.CannotChangeType as err:
             raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
