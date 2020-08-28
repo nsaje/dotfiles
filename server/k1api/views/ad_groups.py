@@ -94,6 +94,8 @@ class AdGroupsView(K1APIView):
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
+            bid = ad_group.settings.get_external_bid(service_fee, license_fee, margin)
+
             b1_sources_group_daily_budget = ad_group.settings.get_external_b1_sources_group_daily_budget(
                 service_fee, license_fee, margin
             )
@@ -110,6 +112,8 @@ class AdGroupsView(K1APIView):
                 "start_date": self._get_start_date(ad_group.settings, campaignstop_states),
                 "end_date": self._get_end_date(ad_group.settings, campaignstop_states),
                 "time_zone": settings.DEFAULT_TIME_ZONE,
+                "bidding_type": ad_group.bidding_type,
+                "bid": format(bid, ".4f"),
                 "brand_name": ad_group.settings.brand_name,
                 "display_url": ad_group.settings.display_url,
                 "tracking_codes": ad_group.settings.get_tracking_codes(),
@@ -151,7 +155,6 @@ class AdGroupsView(K1APIView):
                 "click_capping_daily_ad_group_max_clicks": ad_group.settings.click_capping_daily_ad_group_max_clicks,
                 "click_capping_daily_click_budget": ad_group.settings.click_capping_daily_click_budget,
                 "custom_flags": flags,
-                "bidding_type": ad_group.bidding_type,
                 "amplify_review": ad_group.amplify_review,
                 "freqcap_account": ad_group.campaign.account.settings.frequency_capping,
                 "freqcap_campaign": ad_group.campaign.settings.frequency_capping,

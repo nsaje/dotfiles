@@ -1,8 +1,11 @@
+import datetime
 import json
+from decimal import Decimal
 
 from django.urls import reverse
 from mock import patch
 
+import core.features.bcm
 import dash.constants
 import dash.features.ga
 import dash.features.geolocation
@@ -19,7 +22,26 @@ logger.setLevel(zlogging.INFO)
 
 
 class AdGroupsTest(K1APIBaseTest):
-    def test_get_ad_groups_with_id(self):
+    @patch("utils.dates_helper.local_today", return_value=datetime.date(2014, 1, 1))
+    def test_get_ad_groups_with_id(self, mock_local_today):
+        start_date = datetime.date(2014, 1, 1)
+        end_date = datetime.date(2015, 1, 1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        credit = magic_mixer.blend(
+            core.features.bcm.CreditLineItem,
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            service_fee=Decimal("0.20"),
+            license_fee=Decimal("0.10"),
+        )
+        request = magic_mixer.blend_request_user()
+        core.features.bcm.BudgetLineItem.objects.create(
+            request, ad_group.campaign, credit, start_date, end_date, 100, Decimal("0.1"), "test"
+        )
+
         response = self.client.get(reverse("k1api.ad_groups"), {"ad_group_ids": 1})
 
         data = json.loads(response.content)
@@ -36,8 +58,9 @@ class AdGroupsTest(K1APIBaseTest):
                 "external_name": "ONE: test account 1 / test campaign 1 / test adgroup 1 / 1",
                 "start_date": "2014-06-04",
                 "end_date": None,
-                "bidding_type": dash.constants.BiddingType.CPC,
                 "time_zone": "America/New_York",
+                "bidding_type": dash.constants.BiddingType.CPC,
+                "bid": "0.4536",
                 "brand_name": "brand1",
                 "display_url": "brand1.com",
                 "tracking_codes": "tracking1&tracking2",
@@ -75,7 +98,7 @@ class AdGroupsTest(K1APIBaseTest):
                     {"campaign_id": 1, "conversion_goal": None, "id": 2, "primary": True, "type": 2, "values": []},
                     {"campaign_id": 1, "conversion_goal": None, "id": 1, "primary": False, "type": 5, "values": []},
                 ],
-                "b1_sources_group": {"daily_budget": "10.0000000000000000", "enabled": True, "state": 2},
+                "b1_sources_group": {"daily_budget": "6.4800000000000000", "enabled": True, "state": 2},
                 "dayparting": {"monday": [1, 2, 3], "timezone": "CET"},
                 "whitelist_publisher_groups": [1, 2, 5, 6, 9, 10],
                 "blacklist_publisher_groups": [3, 4, 7, 8, 11, 12],
@@ -105,6 +128,7 @@ class AdGroupsTest(K1APIBaseTest):
 
     def test_get_ad_groups_with_id_with_some_flags(self):
         a = dash.models.AdGroup.objects.get(pk=1)
+        a.bidding_type = dash.constants.BiddingType.CPM
         a.custom_flags = {}
         a.save(None)
         a.campaign.custom_flags = {}
@@ -126,8 +150,9 @@ class AdGroupsTest(K1APIBaseTest):
                 "external_name": "ONE: test account 1 / test campaign 1 / test adgroup 1 / 1",
                 "start_date": "2014-06-04",
                 "end_date": None,
-                "bidding_type": dash.constants.BiddingType.CPC,
                 "time_zone": "America/New_York",
+                "bidding_type": dash.constants.BiddingType.CPM,
+                "bid": "1.7000",
                 "brand_name": "brand1",
                 "display_url": "brand1.com",
                 "tracking_codes": "tracking1&tracking2",

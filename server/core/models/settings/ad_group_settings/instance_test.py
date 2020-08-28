@@ -260,11 +260,30 @@ class InstanceTest(TestCase):
         )
 
     @patch("utils.redirector_helper.insert_adgroup")
-    def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
-        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
-
+    def test_get_external_cpc(self, mock_insert_adgroup):
         self.ad_group.settings.update(
-            request,
+            None, cpc=Decimal("1.0"), autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+
+        self.assertEqual(
+            Decimal("0.648"), self.ad_group.settings.get_external_bid(Decimal("0.1"), Decimal("0.2"), Decimal("0.1"))
+        )
+
+    @patch("utils.redirector_helper.insert_adgroup")
+    def test_get_external_cpm(self, mock_insert_adgroup):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.settings.update(
+            None, cpm=Decimal("10.0"), autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+
+        self.assertEqual(
+            Decimal("6.48"), self.ad_group.settings.get_external_bid(Decimal("0.1"), Decimal("0.2"), Decimal("0.1"))
+        )
+
+    @patch("utils.redirector_helper.insert_adgroup")
+    def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
+        self.ad_group.settings.update(
+            None,
             b1_sources_group_daily_budget=Decimal("500"),
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         )

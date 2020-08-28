@@ -514,6 +514,8 @@
         created_dt: '2014-06-04T00:00:00'
         start_date: '2014-06-04'
         state: 1
+        cpc: 0.7
+        cpm: 1.7
         brand_name: 'brand1'
         display_url: 'brand1.com'
         tracking_code: '?tracking1&tracking2'
