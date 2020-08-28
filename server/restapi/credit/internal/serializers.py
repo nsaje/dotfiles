@@ -105,9 +105,6 @@ class CreditSerializer(restapi.credit.v1.serializers.CreditSerializer):
         if credit_id is not None:
             return super().has_entity_permission(user, permission, config, data)
 
-        if user.id == 886:  # HACK(msuber): skip entity permission check for oen
-            return user.has_perm(permission["fallback_permission"])
-
         if user.has_perm("zemauth.fea_use_entity_permission"):
             agency_id = data.get("agency_id")
             if agency_id is not None:

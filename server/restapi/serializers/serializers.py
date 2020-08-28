@@ -118,9 +118,6 @@ class EntityPermissionedFieldsMixin(object):
         if entity_access_fn is None:
             return True
 
-        if user.id == 886:  # HACK(msuber): skip entity permission check for oen
-            return user.has_perm(permission["fallback_permission"])
-
         if user.has_perm("zemauth.fea_use_entity_permission"):
             try:
                 entity_id = entity_id_getter_fn(data)

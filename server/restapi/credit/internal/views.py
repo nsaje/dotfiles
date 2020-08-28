@@ -32,7 +32,9 @@ class CreditViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     serializer_budgets = restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer
 
     def get(self, request, credit_id):
-        credit = zemauth.access.get_credit_line_item(request.user, Permission.READ, credit_id)
+        credit = zemauth.access.get_credit_line_item(
+            request.user, Permission.READ, credit_id, prefetch_related_budgets=True
+        )
         return self.response_ok(self.serializer(credit, context={"request": request}).data)
 
     def list(self, request):

@@ -191,10 +191,14 @@ def get_direct_deal_connection(
 
 
 def get_credit_line_item(
-    user: zemauth.models.User, permission: str, credit_id: str
+    user: zemauth.models.User, permission: str, credit_id: str, **kwargs: Any
 ) -> core.features.bcm.CreditLineItem:
     try:
-        credit = core.features.bcm.CreditLineItem.objects.prefetch_related("budgets").get(id=credit_id)
+        credit_qs = core.features.bcm.CreditLineItem.objects.all()
+        prefetch_related_budgets = kwargs.get("prefetch_related_budgets", False)
+        if prefetch_related_budgets is True:
+            credit_qs = credit_qs.prefetch_related("budgets")
+        credit = credit_qs.get(id=credit_id)
         if credit.agency_id:
             get_agency(user, permission, credit.agency_id)
         else:
