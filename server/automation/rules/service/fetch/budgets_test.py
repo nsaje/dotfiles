@@ -29,7 +29,7 @@ class PrepareBudgetsTestCase(TestCase):
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
 
     def test_prepare_budgets(self):
-        def _mocked_get_available_amount(budget):
+        def _mocked_get_available_amount(budget, date):
             if budget == current_budget:
                 return decimal.Decimal(0)
             elif budget == current_budget_2:

@@ -85,6 +85,7 @@ def _get_target_type_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "last_7_days_date_from": local_today - datetime.timedelta(days=7),
             "last_30_days_date_from": local_today - datetime.timedelta(days=30),
             "last_60_days_date_from": local_today - datetime.timedelta(days=60),
+            "date_to": local_today - datetime.timedelta(days=1),
             "target_type_group_columns": "{}".format(", ".join(ttc for ttc in target_type_columns)),
         },
     )
@@ -129,6 +130,7 @@ def _get_touchpoints_sql(target_type: int, ad_groups: Sequence[core.models.AdGro
             "last_7_days_date_from": local_today - datetime.timedelta(days=7),
             "last_30_days_date_from": local_today - datetime.timedelta(days=30),
             "last_60_days_date_from": local_today - datetime.timedelta(days=60),
+            "date_to": local_today - datetime.timedelta(days=1),
             "target_type_group_columns": "{}".format(
                 ", ".join(ttc for ttc in ["slug", "window"] + target_type_columns)
             ),

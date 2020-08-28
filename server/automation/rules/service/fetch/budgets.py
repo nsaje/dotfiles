@@ -56,7 +56,9 @@ def _calculate_budget_data_for_campaign(campaign, campaign_budgets):
     margin = (
         budgets_active_today[0].margin if budgets_active_today else 0
     )  # NOTE: assumes margin is the same for all budgets active on a single day
-    remaining_budget = sum(max(bli.get_available_etfm_amount(), 0) for bli in budgets_active_today)
+    remaining_budget = sum(
+        max(bli.get_available_etfm_amount(date=dates_helper.local_yesterday()), 0) for bli in budgets_active_today
+    )
     return min_start_date, max_end_date, remaining_budget, margin
 
 

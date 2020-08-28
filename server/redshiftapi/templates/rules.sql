@@ -11,6 +11,7 @@
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_day_date_from|date:"Y-m-d" }}'
+        AND date <= '{{ date_to|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}
@@ -24,6 +25,7 @@
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_3_days_date_from|date:"Y-m-d" }}'
+        AND date <= '{{ date_to|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}
@@ -37,6 +39,7 @@
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_7_days_date_from|date:"Y-m-d" }}'
+        AND date <= '{{ date_to|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}
@@ -50,6 +53,7 @@
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_30_days_date_from|date:"Y-m-d" }}'
+        AND date <= '{{ date_to|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}
@@ -63,6 +67,7 @@
     WHERE
         ad_group_id IN ({{ ad_group_ids }})
         AND date >= '{{ last_60_days_date_from|date:"Y-m-d" }}'
+        AND date <= '{{ date_to|date:"Y-m-d" }}'
     GROUP BY
         ad_group_id,
         {{ target_type_group_columns }}

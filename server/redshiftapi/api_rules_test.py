@@ -165,6 +165,7 @@ local_video_etfm_cpcv
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-06'
+        AND date <= '2017-07-06'
     GROUP BY
         ad_group_id,
         {group_by}
@@ -260,6 +261,7 @@ local_video_etfm_cpcv
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-07-04'
+        AND date <= '2017-07-06'
     GROUP BY
         ad_group_id,
         {group_by}
@@ -355,6 +357,7 @@ local_video_etfm_cpcv
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-30'
+        AND date <= '2017-07-06'
     GROUP BY
         ad_group_id,
         {group_by}
@@ -450,6 +453,7 @@ local_video_etfm_cpcv
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-06-07'
+        AND date <= '2017-07-06'
     GROUP BY
         ad_group_id,
         {group_by}
@@ -545,6 +549,7 @@ local_video_etfm_cpcv
     WHERE
         ad_group_id IN {ad_group_ids}
         AND date >= '2017-05-08'
+        AND date <= '2017-07-06'
     GROUP BY
         ad_group_id,
         {group_by}
