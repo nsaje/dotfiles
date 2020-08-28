@@ -46,6 +46,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             data[0],
             {
                 "ad_group_id": 1,
+                "source_id": 6,
                 "slug": "b1_adiant",
                 "state": 2,
                 "cpc_cc": "0.1200",
@@ -61,6 +62,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             data[1],
             {
                 "ad_group_id": 2,
+                "source_id": 7,
                 "slug": "b1_google",
                 "state": 1,
                 "cpc_cc": "0.1300",
@@ -150,6 +152,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             data[0],
             {
                 "ad_group_id": ad_group.id,
+                "source_id": 7,
                 "slug": "b1_google",
                 "state": 2,
                 "cpc_cc": "0.0778",
@@ -199,6 +202,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             data[0],
             {
                 "ad_group_id": ad_group.id,
+                "source_id": 7,
                 "slug": "b1_google",
                 "state": 1,
                 "cpc_cc": "0.0778",
@@ -223,6 +227,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             data[0],
             {
                 "ad_group_id": 1,
+                "source_id": 6,
                 "slug": "b1_adiant",
                 "state": 2,
                 "cpc_cc": "0.1200",

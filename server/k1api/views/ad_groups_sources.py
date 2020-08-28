@@ -95,6 +95,7 @@ class AdGroupSourcesView(K1APIView):
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 "ad_group_id": ad_group_source.ad_group_id,
+                "source_id": ad_group_source.source.id,
                 "slug": ad_group_source.source.bidder_slug,
                 "source_campaign_key": ad_group_source.source_campaign_key,
                 "tracking_code": tracking_code,
