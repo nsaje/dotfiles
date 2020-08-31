@@ -592,7 +592,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
            FROM mv_account_placement a
            WHERE (a.date=%s)
            GROUP BY 1, 2, 3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
-        AND temp_base.placement = temp_yesterday.placement
+        AND (temp_base.placement = temp_yesterday.placement OR temp_base.placement IS NULL AND temp_yesterday.placement IS NULL)
         AND temp_base.source_id = temp_yesterday.source_id
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
@@ -732,7 +732,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
            FROM
              (SELECT temp_base.publisher,
                      temp_base.source_id,
-                     NULLIF(temp_base.dma, -1) AS dma,
+                     temp_base.dma,
                      temp_base.clicks,
                      temp_base.total_seconds,
                      temp_base.publisher_id,
@@ -743,7 +743,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
               FROM
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
-                        COALESCE(a.dma, -1) AS dma,
+                        a.dma AS dma,
                         sum(a.clicks) clicks,
                         sum(a.total_time_on_site) total_seconds,
                         max(a.publisher_source_id) publisher_id
@@ -756,7 +756,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
               LEFT OUTER JOIN
                 (SELECT a.publisher AS publisher,
                         a.source_id AS source_id,
-                        COALESCE(a.dma, -1) AS dma,
+                        a.dma AS dma,
                         (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
                         (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
                         (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
@@ -767,7 +767,9 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                           2,
                           3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
               AND temp_base.source_id = temp_yesterday.source_id
-              AND temp_base.dma = temp_yesterday.dma) a) b
+              AND (temp_base.dma = temp_yesterday.dma
+                   OR temp_base.dma IS NULL
+                   AND temp_yesterday.dma IS NULL)) a) b
         WHERE r >= 5 + 1
           AND r <= 10
         """,
@@ -863,7 +865,11 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                           2,
                           3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
                 AND temp_base.source_id = temp_yesterday.source_id
-                AND temp_base.placement = temp_yesterday.placement) a) b
+                AND (
+                    temp_base.placement = temp_yesterday.placement
+                    OR temp_base.placement IS NULL
+                    AND temp_yesterday.placement IS NULL
+                )) a) b
         WHERE r >= 5 + 1
           AND r <= 10
         """,

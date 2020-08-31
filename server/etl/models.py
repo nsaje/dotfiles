@@ -71,22 +71,22 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     publisher = backtosql.Column("publisher", BREAKDOWN)
     publisher_source_id = backtosql.Column("publisher_source_id", BREAKDOWN)
 
-    device_type = backtosql.Column("device_type", BREAKDOWN)
-    device_os = backtosql.Column("device_os", BREAKDOWN)
-    device_os_version = backtosql.Column("device_os_version", BREAKDOWN)
-    environment = backtosql.Column("environment", BREAKDOWN)
+    device_type = backtosql.Column("device_type", BREAKDOWN, null=True)
+    device_os = backtosql.Column("device_os", BREAKDOWN, null=True)
+    device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null=True)
+    environment = backtosql.Column("environment", BREAKDOWN, null=True)
 
-    zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN)
-    video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN)
+    zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN, null=True)
+    video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN, null=True)
 
-    country = backtosql.Column("country", BREAKDOWN)
-    state = backtosql.Column("state", BREAKDOWN)
-    dma = backtosql.Column("dma", BREAKDOWN)
-    city_id = backtosql.Column("city_id", BREAKDOWN)
+    country = backtosql.Column("country", BREAKDOWN, null=True)
+    state = backtosql.Column("state", BREAKDOWN, null=True)
+    dma = backtosql.Column("dma", BREAKDOWN, null=True)
+    city_id = backtosql.Column("city_id", BREAKDOWN, null=True)
 
-    age = backtosql.Column("age", BREAKDOWN)
-    gender = backtosql.Column("gender", BREAKDOWN)
-    age_gender = backtosql.Column("age_gender", BREAKDOWN)
+    age = backtosql.Column("age", BREAKDOWN, null=True)
+    gender = backtosql.Column("gender", BREAKDOWN, null=True)
+    age_gender = backtosql.Column("age_gender", BREAKDOWN, null=True)
 
     impressions = backtosql.TemplateColumn("part_sum.sql", {"column_name": "impressions"}, AGGREGATES)
     clicks = backtosql.TemplateColumn("part_sum.sql", {"column_name": "clicks"}, AGGREGATES)
@@ -207,8 +207,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
 
 
 class MVAdGroupPlacement(MVMaster):
-    placement = backtosql.Column("placement", BREAKDOWN)
-    placement_type = backtosql.Column("placement_type", BREAKDOWN)
+    placement = backtosql.Column("placement", BREAKDOWN, null=True)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
 
 
 class MVConversions(backtosql.Model, RSBreakdownMixin):
@@ -244,8 +244,8 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
     content_ad_id = backtosql.Column("content_ad_id", BREAKDOWN)
     publisher = backtosql.Column("publisher", BREAKDOWN)
     publisher_source_id = backtosql.Column("publisher_source_id", BREAKDOWN)
-    placement = backtosql.Column("placement", BREAKDOWN)
-    placement_type = backtosql.Column("placement_type", BREAKDOWN)
+    placement = backtosql.Column("placement", BREAKDOWN, null=True)
+    placement_type = backtosql.Column("placement_type", BREAKDOWN, null=True)
 
     device_type = backtosql.Column("device_type", BREAKDOWN)
     device_os = backtosql.Column("device_os", BREAKDOWN)
