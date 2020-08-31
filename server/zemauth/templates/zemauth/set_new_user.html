@@ -21,42 +21,42 @@
     <div class="page {{ wl.base }}">
         {% if valid_link %}
             <div class="container container--small">
-                <div class="container__left container__left--full-width" id="set-new-user">
-                    {% if wl.base == "newscorp" %}
-                        <img class="logo" src="{% static "img/newscorp-logo.svg" %}" alt="Newscorp Logo"/>
-                    {% else %}
-                        <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
-                    {% endif %}
 
-                    <form id="signin_form" method="post" action="">
+                <form id="signin_form" method="post" action="">
+                    <div class="container__left container__left--full-width set-new-user__background" id="set-new-user">
+
                         {% csrf_token %}
 
                         {% if wl.base == "newscorp" %}
-                            <h2>Welcome to Newscorp Dashboard</h2>
+                            <h2 class="set-new-user__page_title">Welcome to Newscorp Dashboard</h2>
                         {% else %}
-                            <h2>Welcome to Zemanta One</h2>
+                            <h2 class="set-new-user__page_title">Welcome to Zemanta One</h2>
                         {% endif %}
 
                         <p class="set-new-user__description">You are about to start using Zemanta One. Before you begin, please tell us a bit about yourself, so that we’ll be able to better assist you.</p>
 
+
                         <div class="two-columns set-new-user__item">
                             <div class="two-columns__item two-columns__item--set-new-user">
-                                {{ form.first_name }}
-                                {{ form.last_name }}
+                                <div class="set-new_user__horizontal_input_group">
+                                    {{ form.first_name }}
+                                    {{ form.last_name }}
+                                </div>
                                 {{ form.new_password }}
                                 {{ form.email }}
                                 {{ form.country }}
                                 {{ form.company_type }}
-                                {{ form.job_title }}
-                                {{ form.years_of_experience }}
-                            </div>
-                            <div class="two-columns__item two-columns__item--set-new-user two-columns__item--hide-on-small-screen">
-                                <img class="set-new-user__image set-new-user__image--guitar" src="{% static "img/guitar.svg" %}"/>
+                                <div class="set-new_user__horizontal_input_group">
+                                    {{ form.job_title }}
+                                    {{ form.years_of_experience }}
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="set-new-user__programmatic-platforms set-new-user__item">
-                            <span>What programmatic platform partners do you work with?</span>
+                    <div class="set-new-user__white_background">
+                        <div class="set-new-user__programmatic-platforms">
+                            <h3>What programmatic platform partners do you work with?</h3>
                             {{ form.programmatic_platforms }}
                         </div>
 
@@ -68,13 +68,13 @@
 
                         <div class="set-new-user__actions">
                             {% if wl.base == "newscorp" %}
-                                <input class="button button--set-new-user" id="id_set_new_user_btn" type="submit" value="Start using Newscorp Dashboard" />
+                                <input class="button set-new-user__start_button" id="id_set_new_user_btn" type="submit" value="Start using Newscorp Dashboard">
                             {% else %}
-                                <input class="button button--set-new-user" id="id_set_new_user_btn" type="submit" value="Start using Zemanta One" />
+                                <input class="button set-new-user__start_button" id="id_set_new_user_btn" type="submit" value="Start using Zemanta One" />
                             {% endif %}
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         {% else %}
             <div class="container">

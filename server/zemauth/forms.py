@@ -88,14 +88,14 @@ class SetNewUserForm(SetPasswordForm):
     )
     last_name = forms.CharField(max_length=30, widget=forms.TextInput(attrs={"placeholder": "Last name"}))
     country = utils.forms.EmptyChoiceField(
-        choices=zemauth.models.user.constants.Country.get_choices(), empty_label="Select country..."
+        choices=zemauth.models.user.constants.Country.get_choices(), empty_label="Select country"
     )
     company_type = utils.forms.IntegerEmptyChoiceField(
-        choices=zemauth.models.user.constants.CompanyType.get_choices(), empty_label="Select company type..."
+        choices=zemauth.models.user.constants.CompanyType.get_choices(), empty_label="Select company type"
     )
     job_title = forms.CharField(max_length=256, widget=forms.TextInput(attrs={"placeholder": "Job title"}))
     years_of_experience = utils.forms.IntegerEmptyChoiceField(
-        choices=YearsOfExperience.get_choices(), empty_label="Select years of experience..."
+        choices=YearsOfExperience.get_choices(), empty_label="Years of experience"
     )
     programmatic_platforms = utils.forms.IntegerMultipleChoiceField(
         choices=zemauth.models.user.constants.ProgrammaticPlatform.get_choices(),

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+    <defs>
+        <style>.cls-1{fill:#fff;}</style>
+    </defs>
+    <title>arrow-white</title>
+    <path class="cls-1" d="M8.5,0.5a1,1,0,0,0-1.5,0,1,1,0,0,0,0,1.5l5,5H1a1,1,0,0,0-1,1,1,1,0,0,0,1,1H12l-5,5a1,1,0,0,0,1.5,1.5L15.5,9a1,1,0,0,0,0-1.5Z"/>
+</svg>

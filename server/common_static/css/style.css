@@ -88,10 +88,6 @@ select option {
     outline: none;
 }
 
-.button--set-new-user {
-    margin-bottom: 0;
-}
-
 
 .page {
     position: relative;
@@ -322,6 +318,28 @@ select option {
     flex: 1 0 230px;
 }
 
+.set-new-user__background{
+    background: url("../img/zemanta-logo-squares-white.svg") no-repeat left top, linear-gradient(180deg, #ef8421 0%, #e35325 100%);
+    background-size: 40px;
+}
+
+.set-new-user__white_background{
+    background: white;
+    color: #3f547f;
+    padding: 40px;
+}
+
+.set-new-user__white_background span{
+    color: #3f547f;
+}
+
+h2.set-new-user__page_title{
+    font-weight: 600;
+    font-size: 36px;
+    text-align: center;
+    margin-top: 0;
+}
+
 .set-new-user__item {
     margin-top: 15px;
 }
@@ -330,26 +348,45 @@ select option {
     margin-top: 25px !important;
 }
 
+.set-new-user__programmatic-platforms h3 {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0px;
+}
+
 .set-new-user__programmatic-platforms ul {
     list-style-type: none;
-    color: #FFFFFF;
     padding: 0;
-    columns: 2;
-    -webkit-columns: 2;
-    -moz-columns: 2;
+    display: flex;
+    flex-wrap: wrap;
 }
 
-.set-new-user__image {
-    position: absolute;
-    right: 0;
-}
-
-.set-new-user__image--guitar {
-    width: 300px;
+.set-new-user__programmatic-platforms li {
+    min-width: 180px;
 }
 
 .set-new-user__actions {
-    margin-top: 20px;
+    margin-top: 40px;
+}
+
+.set-new-user__start_button{
+    margin: auto;
+    color: white;
+    background-color: #ef8421;
+    font-weight: bold;
+    background-image: url(../img/arrow-white.svg);
+    background-repeat: no-repeat;
+    background-position: right;
+    background-size: 56px 16px;
+    padding-right: 40px;
+}
+
+.set-new_user__horizontal_input_group{
+    display: flex;
+}
+
+.set-new_user__horizontal_input_group input:not(:last-child){
+    margin-right: 10px;
 }
 
 /* WHITELABEL - NEWSCORP */
@@ -379,6 +416,15 @@ select option {
 
 .newscorp .color-overlay {
     background-color: rgba(4, 7, 7, 0.8);
+}
+
+.newscorp .set-new-user__background{
+    background: url("../img/zemanta-logo-squares-white.svg") no-repeat left top, #040707;
+    background-size: 40px;
+}
+
+.newscorp .set-new-user__start_button{
+    background-color: #040707;
 }
 
 /* WHITELABEL - AMPLIFY */
@@ -470,5 +516,9 @@ select option {
 
     .two-columns__item--hide-on-small-screen {
         display: none;
+    }
+
+    .set-new_user__horizontal_input_group{
+        flex-direction: column;
     }
 }
