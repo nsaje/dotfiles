@@ -23,8 +23,8 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.gridRowLevel = zemGridConstants.gridRowLevel;
             ctrl.type = getFieldType();
-            ctrl.gridBodyElement = getGridBodyElement;
-            ctrl.showAutopilotIcon = isAutopilotIconShown;
+            ctrl.gridBodyElement = getGridBodyElement();
+            ctrl.showAutopilotIcon = isAutopilotIconShown();
             ctrl.canSeeBidModifierCell = canSeeBidModifierCell;
             ctrl.isBidModifierCellEditable = isBidModifierCellEditable;
             ctrl.updateBidModifier = updateBidModifier;
