@@ -60,6 +60,9 @@ export class CreditsView implements OnInit, OnDestroy {
 
     creditGridType = CreditGridType;
 
+    showLicenseFee: boolean = false;
+    showServiceFee: boolean = false;
+
     isReadOnly: boolean = true;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
@@ -73,6 +76,13 @@ export class CreditsView implements OnInit, OnDestroy {
         this.context = {
             componentParent: this,
         };
+
+        this.showLicenseFee = this.authStore.hasPermissionOnAnyEntity(
+            EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE
+        );
+        this.showServiceFee = this.authStore.hasPermissionOnAnyEntity(
+            EntityPermissionValue.BASE_COSTS_SERVICE_FEE
+        );
     }
 
     ngOnInit(): void {

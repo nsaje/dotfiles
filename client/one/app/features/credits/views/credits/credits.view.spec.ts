@@ -31,6 +31,7 @@ describe('CreditsView', () => {
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
             'hasPermission',
+            'hasPermissionOnAnyEntity',
         ]);
 
         TestBed.configureTestingModule({

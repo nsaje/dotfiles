@@ -44,26 +44,28 @@ echo "Server opened port"
 
 # Launch testim CLI for Chrome
 testim \
-    --name "User Login (Internal)" \
-    --name "User Login (Agency Manager)" \
-    --name "User login (Account manager)" \
-    --name "Credits Library (Agency Manager)" \
-    --name "Credits Library (Agency Manager / Clear account)" \
-    --name "Credits Library (Account Manager)" \
+    --name "Automations Rules (Account Manager)" \
+    --name "Automations Rules (Agency Manager)" \
+    --name "Automations Rules (Internal User)" \
     --name "Create account" \
-    --name "Create credit" \
-    --name "Create campaign" \
     --name "Create ad group" \
+    --name "Create campaign" \
+    --name "Create credit" \
+    --name "Credits Library (Account Manager)" \
+    --name "Credits Library (Agency Manager / Clear account)" \
+    --name "Credits Library (Agency Manager)" \
+    --name "Deals Library (Account Manager)" \
+    --name "Deals Library (Agency Manager)" \
+    --name "Deals Library (Internal User)" \
+    --name "Deals Library (Read Only)" \
+    --name "Login/Logout" \
     --name "Publisher groups (Account manager)" \
     --name "Publisher groups (Agency manager)" \
     --name "Publisher groups (Internal user)" \
     --name "Publisher groups (Readonly)" \
-    --name "Deals Library (Internal User)" \
-    --name "Deals Library (Agency Manager)" \
-    --name "Deals Library (Account Manager)" \
-    --name "Automations Rules (Account Manager)" \
-    --name "Automations Rules (Agency Manager)" \
-    --name "Automations Rules (Internal User)" \
+    --name "User management (Account Manager)" \
+    --name "User management (Agency manager)" \
+    --name "User management (Internal user)" \
     --token "$TESTIM_TOKEN" \
     --project "$TESTIM_PROJECT" \
     --host "$GRID_HOST" \

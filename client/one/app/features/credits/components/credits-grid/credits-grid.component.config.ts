@@ -108,9 +108,7 @@ export const COLUMN_LICENSE_FEE: ColDef = {
     width: 80,
     minWidth: 80,
     resizable: false,
-    valueFormatter: params => {
-        return `${params.value}%`;
-    },
+    valueFormatter: feeFormatter,
 };
 
 export const COLUMN_SERVICE_FEE: ColDef = {
@@ -119,9 +117,7 @@ export const COLUMN_SERVICE_FEE: ColDef = {
     width: 80,
     minWidth: 80,
     resizable: false,
-    valueFormatter: params => {
-        return `${params.value}%`;
-    },
+    valueFormatter: feeFormatter,
 };
 
 export const COLUMN_AMOUNT: ColDef = {
@@ -219,3 +215,7 @@ export const COLUMN_ACTION_REFUND_PAST: ColDef = {
         creditGridType: CreditGridType.PAST,
     },
 };
+
+function feeFormatter(params: ValueFormatterParams): string {
+    return isDefined(params.value) ? `${params.value}%` : 'N/A';
+}

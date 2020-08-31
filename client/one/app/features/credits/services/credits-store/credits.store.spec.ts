@@ -3,7 +3,6 @@ import {asapScheduler, of, noop} from 'rxjs';
 import * as clone from 'clone';
 import {CreditsStore} from './credits.store';
 import {CreditsService} from '../../../../core/credits/services/credits.service';
-import {CreditsStoreFieldsErrorsState} from './credits.store.fields-errors-state';
 import {CreditsStoreState} from './credits.store.state';
 import {Credit} from '../../../../core/credits/types/credit';
 import {CreditRefund} from '../../../../core/credits/types/credit-refund';
@@ -50,6 +49,8 @@ describe('CreditsLibraryStore', () => {
         authStoreStub = jasmine.createSpyObj(AuthStore.name, [
             'hasAgencyScope',
             'hasReadOnlyAccessOn',
+            'hasPermissionOn',
+            'hasPermissionOnAnyEntity',
         ]);
         store = new CreditsStore(
             creditsServiceStub,

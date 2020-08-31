@@ -21,6 +21,7 @@ import {AccountService} from '../../../../core/entities/services/account/account
 import {CreditsStoreFieldsErrorsState} from './credits.store.fields-errors-state';
 import {CreditStatus, Currency} from '../../../../app.constants';
 import {AuthStore} from '../../../../core/auth/services/auth.store';
+import {EntityPermissionValue} from '../../../../core/users/users.constants';
 
 @Injectable()
 export class CreditsStore extends Store<CreditsStoreState>
@@ -315,15 +316,41 @@ export class CreditsStore extends Store<CreditsStoreState>
                     ...newActiveEntity.entity,
                     ...entity,
                 },
+                ...this.calculateFeeVisibility(
+                    this.state.agencyId,
+                    entity.accountId
+                ),
             },
         });
     }
 
     setCreditActiveEntityAccount(accountId: string): void {
-        this.patchState(accountId, 'creditActiveEntity', 'entity', 'accountId');
+        this.setState({
+            ...this.state,
+            creditActiveEntity: {
+                ...this.state.creditActiveEntity,
+                entity: {
+                    ...this.state.creditActiveEntity.entity,
+                    accountId,
+                },
+                ...this.calculateFeeVisibility(this.state.agencyId, accountId),
+            },
+        });
     }
 
     setCreditActiveEntityScope(scopeState: ScopeSelectorState): void {
+        const agencyId: string =
+            scopeState === ScopeSelectorState.AGENCY_SCOPE
+                ? this.state.agencyId
+                : null;
+        const accountId: string =
+            scopeState === ScopeSelectorState.ACCOUNT_SCOPE
+                ? commonHelpers.getValueOrDefault(
+                      this.state.accountId,
+                      this.state.accounts[0].id
+                  )
+                : null;
+
         this.setState({
             ...this.state,
             creditActiveEntity: {
@@ -331,35 +358,29 @@ export class CreditsStore extends Store<CreditsStoreState>
                 scopeState: scopeState,
                 entity: {
                     ...this.state.creditActiveEntity.entity,
-                    agencyId:
-                        scopeState === ScopeSelectorState.AGENCY_SCOPE
-                            ? this.state.agencyId
-                            : null,
-                    accountId:
-                        scopeState === ScopeSelectorState.ACCOUNT_SCOPE
-                            ? commonHelpers.getValueOrDefault(
-                                  this.state.accountId,
-                                  this.state.accounts[0].id
-                              )
-                            : null,
+                    agencyId,
+                    accountId,
                 },
+                ...this.calculateFeeVisibility(this.state.agencyId, accountId),
             },
         });
     }
 
     changeCreditActiveEntity(event: ChangeEvent<Credit>): void {
+        const updatedEntity: Credit = {
+            ...event.target,
+            ...event.changes,
+        };
         this.setState({
             ...this.state,
             creditActiveEntity: {
                 ...this.state.creditActiveEntity,
-                isSigned: this.isSigned({
-                    ...event.target,
-                    ...event.changes,
-                }),
-                entity: {
-                    ...event.target,
-                    ...event.changes,
-                },
+                isSigned: this.isSigned(updatedEntity),
+                entity: updatedEntity,
+                ...this.calculateFeeVisibility(
+                    this.state.agencyId,
+                    updatedEntity.accountId
+                ),
             },
         });
     }
@@ -551,5 +572,25 @@ export class CreditsStore extends Store<CreditsStoreState>
 
     private getOffset(page: number, pageSize: number): number {
         return (page - 1) * pageSize;
+    }
+
+    private calculateFeeVisibility(
+        agencyId: string,
+        accountId: string
+    ): {showServiceFee: boolean; showLicenseFee: boolean} {
+        return {
+            showServiceFee: this.authStore.hasPermissionOn(
+                agencyId,
+                accountId,
+                EntityPermissionValue.BASE_COSTS_SERVICE_FEE,
+                'zemauth.can_see_service_fee'
+            ),
+            showLicenseFee: this.authStore.hasPermissionOn(
+                agencyId,
+                accountId,
+                EntityPermissionValue.MEDIA_COST_DATA_COST_LICENCE_FEE,
+                'zemauth.can_view_platform_cost_breakdown'
+            ),
+        };
     }
 }

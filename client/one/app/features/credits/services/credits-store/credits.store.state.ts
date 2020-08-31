@@ -40,6 +40,8 @@ export class CreditsStoreState {
         isSigned: false as boolean,
         campaignBudgets: [] as CampaignBudget[],
         fieldsErrors: new CreditsStoreFieldsErrorsState(),
+        showLicenseFee: false as boolean,
+        showServiceFee: false as boolean,
     };
 
     creditRefundActiveEntity = {
