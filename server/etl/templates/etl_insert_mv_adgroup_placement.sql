@@ -193,7 +193,6 @@ INSERT INTO mv_adgroup_placement (
                     placement_type
                 FROM mv_touchpointconversions
                 WHERE date BETWEEN %(date_from)s AND %(date_to)s
->>>>>>> parent of 6b3ea55272... Z1-632: move touchpoints natural join from materialization to query (#4628)
                 {% if account_id %}
                 AND account_id=%(account_id)s
                 {% endif %}
