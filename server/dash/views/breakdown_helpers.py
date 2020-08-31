@@ -31,10 +31,6 @@ def format_report_rows_performance_fields(rows, goals, currency):
     for campaign_goal in goals.campaign_goals:
         campaign_goals_by_campaign_id[campaign_goal.campaign_id].append(campaign_goal)
 
-    conversion_goals_by_campaign_id = collections.defaultdict(list)
-    for conversion_goal in goals.conversion_goals:
-        conversion_goals_by_campaign_id[conversion_goal.campaign_id].append(conversion_goal)
-
     rows_by_campaign_id = collections.defaultdict(list)
     for row in rows:
         if row.get("campaign_id"):
@@ -65,9 +61,7 @@ def format_report_rows_performance_fields(rows, goals, currency):
 
                 goals_performances = []
                 for goal in campaign_goals:
-                    metric = dash.campaign_goals.get_goal_performance_metric(
-                        goal, conversion_goals_by_campaign_id[campaign_id]
-                    )
+                    metric = dash.campaign_goals.get_goal_performance_metric(goal, goals.conversion_goals)
 
                     metric_value = row.get(metric)
 
