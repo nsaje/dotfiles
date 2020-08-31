@@ -161,7 +161,7 @@
         type: 'b1'
         available_actions: [19, 20]
         min_daily_budget: 0
-        max_daily_budget: 1000      
+        max_daily_budget: 1000
     model: dash.sourcetype
     pk: 2
 
@@ -292,6 +292,7 @@
         target_devices: ['mobile']
         target_os: [{'name': 'android', 'version': {'min': 'android_6_0', 'max': 'android_6_0'}}]
         target_browsers: [{'family': 'CHROME'}]
+        exclusion_target_browsers: []
         target_environments: ['app']
         target_regions: ['US']
         exclusion_target_regions: ['US-NY']
@@ -400,6 +401,7 @@
         target_devices: ['mobile']
         target_os: [{'name': 'android', 'version': {'min': 'android_6_0', 'max': 'android_6_0'}}]
         target_browsers: [{'family': 'CHROME'}]
+        exclusion_target_browsers: []
         target_environments: ['app']
         target_regions: ['US']
         exclusion_target_regions: ['US-NY']

@@ -133,6 +133,31 @@ class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilot
     )
 
 
+class BrowsersSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    included = rest_framework.serializers.ListField(
+        child=restapi.serializers.targeting.BrowserSerializer(),
+        source="target_browsers",
+        allow_null=True,
+        required=False,
+    )
+    excluded = rest_framework.serializers.ListField(
+        child=restapi.serializers.targeting.BrowserSerializer(),
+        source="exclusion_target_browsers",
+        allow_null=True,
+        required=False,
+    )
+
+
+class AdGroupTargetingSerializer(restapi.adgroup.v1.serializers.AdGroupTargetingSerializer):
+    class Meta:
+        permissioned_fields = {
+            "language": "zemauth.can_use_language_targeting",
+            "browsers": "zemauth.can_use_browser_targeting",
+        }
+
+    browsers = BrowsersSerializer(source="*", required=False)
+
+
 class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     class Meta(restapi.adgroup.v1.serializers.AdGroupSerializer.Meta):
         fields = (
@@ -176,6 +201,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     deals = rest_framework.serializers.ListSerializer(
         child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
+    targeting = AdGroupTargetingSerializer(source="*", required=False)
 
 
 class AdGroupInternalQueryParams(

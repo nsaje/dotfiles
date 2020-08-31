@@ -304,3 +304,13 @@ class ValidationTest(TestCase):
 
         new_settings.exclusion_audience_targeting = [audience.id]
         ad_group.settings._validate_custom_audiences(new_settings)
+
+    def test_validate_target_browsers(self):
+        new_settings = model.AdGroupSettings()
+        new_settings.target_browsers = [{"family": constants.BrowserFamily.CHROME}]
+        new_settings.exclusion_target_browsers = [{"family": constants.BrowserFamily.CHROME}]
+        with self.assertRaises(exceptions.TargetBrowsersInvalid):
+            self.ad_group.settings._validate_target_browsers(new_settings)
+
+        new_settings.exclusion_target_browsers = []
+        self.ad_group.settings._validate_target_browsers(new_settings)

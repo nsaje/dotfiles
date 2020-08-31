@@ -32,7 +32,10 @@ export class AdGroupSettingsStoreState {
             devices: [],
             environments: [],
             os: [],
-            browsers: [],
+            browsers: {
+                included: [],
+                excluded: [],
+            },
             audience: {},
             geo: {
                 included: {

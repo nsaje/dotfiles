@@ -180,3 +180,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except core.models.ad_group.exceptions.CampaignIsArchived as err:
             raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
+
+        except exceptions.TargetBrowsersInvalid as err:
+            raise utils.exc.ValidationError(errors={"targeting": {"browsers": [str(err)]}})

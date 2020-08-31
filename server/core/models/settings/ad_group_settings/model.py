@@ -78,6 +78,7 @@ class AdGroupSettings(
         "target_devices",
         "target_os",
         "target_browsers",
+        "exclusion_target_browsers",
         "target_environments",
         "target_regions",
         "exclusion_target_regions",
@@ -176,6 +177,7 @@ class AdGroupSettings(
     target_environments = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Environment")
     target_os = JSONField(null=True, blank=True, verbose_name="Operating System")
     target_browsers = JSONField(null=True, blank=True, verbose_name="Browsers")
+    exclusion_target_browsers = JSONField(null=True, blank=True, verbose_name="Excluded Browsers")
 
     target_regions = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     exclusion_target_regions = jsonfield.JSONField(
@@ -356,6 +358,7 @@ class AdGroupSettings(
             "target_environments": "Environment",
             "target_os": "Operating Systems",
             "target_browsers": "Browser targeting",
+            "exclusion_target_browsers": "Exclusion browser targeting",
             "target_regions": "Locations",
             "exclusion_target_regions": "Excluded Locations",
             "retargeting_ad_groups": "Retargeting ad groups",
@@ -428,8 +431,12 @@ class AdGroupSettings(
             value = ", ".join(constants.Environment.get_text(x) for x in value) if value else ""
         elif prop_name == "target_os":
             value = ", ".join(helpers.get_human_value_target_os(x) for x in value) if value else ""
-        elif prop_name == "target_browsers":
-            value = ", ".join(constants.BrowserFamily.get_text(x["family"]) for x in value if "family" in x)
+        elif prop_name in ("target_browsers", "exclusion_target_browsers"):
+            value = (
+                ", ".join(constants.BrowserFamily.get_text(x["family"]) for x in value if "family" in x)
+                if value
+                else "none"
+            )
         elif prop_name in ("target_regions", "exclusion_target_regions"):
             value = AdGroupSettings._get_human_value_for_target_regions(prop_name, value)
         elif prop_name in ("retargeting_ad_groups", "exclusion_retargeting_ad_groups"):

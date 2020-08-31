@@ -1,0 +1,48 @@
+@import 'variables';
+
+.zem-browser-targeting {
+    display: block;
+}
+
+.zem-browser-targeting__item {
+    display: block;
+    margin-top: @zem-form-group__items-spacing--default;
+}
+
+.zem-browser-targeting__item:first-child {
+    margin-top: 0;
+}
+
+.zem-browser-targeting__list {
+    background-color: #fff;
+}
+
+.zem-browser-targeting__list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.zem-browser-targeting__select-include-exclude {
+    width: 100px;
+}
+
+.zem-browser-targeting__select-include-exclude--include {
+    .zem-ng-select.ng-select .ng-value {
+        color: @color--success;
+    }
+
+    .zem-ng-select.ng-select .ng-select-container {
+        border-color: @color--success;
+    }
+}
+
+.zem-browser-targeting__select-include-exclude--exclude {
+    .zem-ng-select.ng-select .ng-value {
+        color: @color--danger;
+    }
+
+    .zem-ng-select.ng-select .ng-select-container {
+        border-color: @color--danger;
+    }
+}

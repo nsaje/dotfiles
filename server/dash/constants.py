@@ -2325,6 +2325,9 @@ class BrowserFamily(ConstantBase):
     UC_BROWSER = "UC_BROWSER"
     IN_APP = "IN_APP"
     EDGE = "EDGE"
+    ANDROID = "ANDROID"
+    YANDEX = "YANDEX"
+    DALVIK = "DALVIK"
 
     _VALUES = {
         OTHER: "Other",
@@ -2337,6 +2340,9 @@ class BrowserFamily(ConstantBase):
         UC_BROWSER: "UC Browser",
         IN_APP: "In App",
         EDGE: "Edge",
+        ANDROID: "Android",
+        YANDEX: "Yandex",
+        DALVIK: "Dalvik",
     }
 
 

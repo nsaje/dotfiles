@@ -62,6 +62,7 @@ class RESTAPITestCase(BaseTestCase):
         "can_clone_campaigns",
         "can_see_backend_hacks",
         "can_see_service_fee",
+        "can_use_browser_targeting",
     ]
 
     def setUp(self):

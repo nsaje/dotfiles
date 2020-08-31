@@ -38,6 +38,7 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_b1_sources_group_cpc_cc(new_settings)
         self._validate_b1_sources_group_cpm(new_settings)
         self._validate_b1_sources_group_daily_budget(new_settings)
+        self._validate_target_browsers(new_settings)
 
     def _get_currency_symbol(self):
         currency = self.ad_group.campaign.account.currency
@@ -278,3 +279,10 @@ class AdGroupSettingsValidatorMixin(object):
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_daily_budget(
             new_settings.b1_sources_group_daily_budget, new_settings, self.ad_group.campaign.get_bcm_modifiers()
         )
+
+    def _validate_target_browsers(self, new_settings):
+        if new_settings.target_browsers is None or new_settings.exclusion_target_browsers is None:
+            return
+
+        if len(new_settings.target_browsers) != 0 and len(new_settings.exclusion_target_browsers) != 0:
+            raise exceptions.TargetBrowsersInvalid("Cannnot set both included and excluded browser targeting")

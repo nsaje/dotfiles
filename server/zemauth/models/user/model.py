@@ -395,4 +395,5 @@ class User(
                 "User can view platform costs broken down into base media, base data and service fee.",
             ),
             ("can_enable_push_metrics", "User can enable push metrics through special link"),
+            ("can_use_browser_targeting", "User can use browser targeting."),
         )

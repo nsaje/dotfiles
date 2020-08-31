@@ -1,0 +1,38 @@
+<zem-select-input
+    class="zem-select-input zem-browser-targeting__item zem-browser-targeting__select-include-exclude zem-browser-targeting__select-include-exclude--{{
+        includeExcludeType === includeExcludeEnum.INCLUDE
+            ? 'include'
+            : 'exclude'
+    }}"
+    [value]="includeExcludeType"
+    [items]="includeExcludeTypes"
+    [bindValue]="'value'"
+    [bindLabel]="'name'"
+    [isClearable]="false"
+    [isDisabled]="isDisabled"
+    (valueChange)="includeExcludeChange.emit($event)"
+>
+</zem-select-input>
+<zem-select-list
+    class="zem-select-list zem-browser-targeting__item zem-browser-targeting__list"
+    [selectedItems]="formattedSelectedBrowsers"
+    [availableItems]="availableBrowsers"
+    [selectBindValue]="'family'"
+    [selectBindLabel]="'name'"
+    [selectPlaceholder]="'Select browser'"
+    [selectIsDisabled]="isDisabled"
+    (itemSelect)="onAddBrowserTargeting($event)"
+>
+    <ng-template #itemTemplate let-item="item" let-index="index">
+        <div class="zem-browser-targeting__list-item">
+            <span>
+                {{ item.name }}
+            </span>
+            <button
+                *ngIf="!isDisabled"
+                class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
+                (click)="onRemoveBrowserTargeting(item)"
+            ></button>
+        </div>
+    </ng-template>
+</zem-select-list>

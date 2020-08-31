@@ -103,3 +103,7 @@ class AudienceTargetingInvalid(ValidationError):
 
 class ExclusionAudienceTargetingInvalid(ValidationError):
     pass
+
+
+class TargetBrowsersInvalid(ValidationError):
+    pass

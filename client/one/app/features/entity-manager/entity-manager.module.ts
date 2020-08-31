@@ -43,6 +43,7 @@ import {DealComponent} from './components/deal/deal.component';
 import {RouterModule} from '@angular/router';
 import {ENTITY_MANAGER_ROUTES} from './entity-manager.routes';
 import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySettings.guard';
+import {BrowserTargetingComponent} from './components/browser-targeting/browser-targeting.component';
 
 @NgModule({
     declarations: [
@@ -61,6 +62,7 @@ import {CanActivateEntitySettingsGuard} from './route-guards/canActivateEntitySe
         ZipTargetingComponent,
         OperatingSystemListComponent,
         OperatingSystemComponent,
+        BrowserTargetingComponent,
         TrackingCodeSettingComponent,
         TrackingPixelSettingComponent,
         InterestTargetingComponent,

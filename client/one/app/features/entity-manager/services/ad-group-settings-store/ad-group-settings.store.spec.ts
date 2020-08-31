@@ -13,6 +13,7 @@ import {
     AdGroupAutopilotState,
     GeolocationType,
     IncludeExcludeType,
+    BrowserFamily,
 } from '../../../../app.constants';
 import {DealsService} from '../../../../core/deals/services/deals.service';
 import {Deal} from '../../../../core/deals/types/deal';
@@ -28,6 +29,7 @@ import {Geotargeting} from '../../types/geotargeting';
 import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {GeolocationsByType} from '../../types/geolocations-by-type';
+import {Browser} from '../../../../core/entities/types/common/browser';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -1456,4 +1458,118 @@ describe('AdGroupSettingsStore', () => {
             'abcdef'
         );
     }));
+
+    it('should correctly add browser targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedBrowser: Browser = {
+            family: BrowserFamily.CHROME,
+        };
+
+        store.addBrowserTargeting({
+            browser: mockedBrowser,
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+        });
+
+        expect(store.state.entity.targeting.browsers.included).toEqual([
+            mockedBrowser,
+        ]);
+        expect(store.state.entity.targeting.browsers.excluded).toEqual([]);
+
+        store.addBrowserTargeting({
+            browser: mockedBrowser,
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+        });
+
+        expect(store.state.entity.targeting.browsers.included).toEqual([]);
+        expect(store.state.entity.targeting.browsers.excluded).toEqual([
+            mockedBrowser,
+        ]);
+    });
+
+    it('should correctly remove browser targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedBrowser: Browser = {
+            family: BrowserFamily.CHROME,
+        };
+
+        store.setState({
+            ...store.state,
+            entity: {
+                ...store.state.entity,
+                targeting: {
+                    ...store.state.entity.targeting,
+                    browsers: {
+                        included: [mockedBrowser],
+                        excluded: [],
+                    },
+                },
+            },
+        });
+
+        store.removeBrowserTargeting({
+            browser: mockedBrowser,
+            includeExcludeType: IncludeExcludeType.INCLUDE,
+        });
+
+        expect(store.state.entity.targeting.browsers.included).toEqual([]);
+        expect(store.state.entity.targeting.browsers.excluded).toEqual([]);
+
+        store.setState({
+            ...store.state,
+            entity: {
+                ...store.state.entity,
+                targeting: {
+                    ...store.state.entity.targeting,
+                    browsers: {
+                        included: [],
+                        excluded: [mockedBrowser],
+                    },
+                },
+            },
+        });
+
+        store.removeBrowserTargeting({
+            browser: mockedBrowser,
+            includeExcludeType: IncludeExcludeType.EXCLUDE,
+        });
+
+        expect(store.state.entity.targeting.browsers.included).toEqual([]);
+        expect(store.state.entity.targeting.browsers.excluded).toEqual([]);
+    });
+
+    it('should correctly change brower targeting included excluded type', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue()
+            .calls.reset();
+
+        const mockedBrowser: Browser = {
+            family: BrowserFamily.CHROME,
+        };
+
+        store.setState({
+            ...store.state,
+            entity: {
+                ...store.state.entity,
+                targeting: {
+                    ...store.state.entity.targeting,
+                    browsers: {
+                        included: [mockedBrowser],
+                        excluded: [],
+                    },
+                },
+            },
+        });
+
+        store.browserTargetingIncludeExcludeChange(IncludeExcludeType.EXCLUDE);
+        expect(store.state.entity.targeting.browsers.included).toEqual([]);
+        expect(store.state.entity.targeting.browsers.excluded).toEqual([
+            mockedBrowser,
+        ]);
+    });
 });

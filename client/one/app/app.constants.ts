@@ -787,6 +787,20 @@ export enum UserStatus {
     ACTIVE = 'ACTIVE',
 }
 
+export enum BrowserFamily {
+    CHROME = 'CHROME',
+    SAFARI = 'SAFARI',
+    FIREFOX = 'FIREFOX',
+    IE = 'IE',
+    OPERA = 'OPERA',
+    EDGE = 'EDGE',
+    SAMSUNG = 'SAMSUNG',
+    ANDROID = 'ANDROID',
+    YANDEX = 'YANDEX',
+    DALVIK = 'DALVIK',
+    IN_APP = 'IN_APP',
+}
+
 export const LEVEL_PARAM_TO_LEVEL_MAP = {
     [LevelParam.ACCOUNTS]: Level.ALL_ACCOUNTS,
     [LevelParam.ACCOUNT]: Level.ACCOUNTS,

@@ -9,7 +9,7 @@ export interface AdGroupTargetings {
     devices?: string[];
     environments?: string[];
     os?: TargetOperatingSystem[];
-    browsers?: Browser[];
+    browsers?: IncludedExcluded<Browser[]>;
     audience?: any;
     geo?: IncludedExcluded<TargetRegions>;
     interest?: IncludedExcluded<InterestCategory[]>;

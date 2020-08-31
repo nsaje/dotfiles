@@ -21,7 +21,10 @@ export const adGroupMock: AdGroup = {
         devices: [],
         environments: [],
         os: [],
-        browsers: [],
+        browsers: {
+            included: [],
+            excluded: [],
+        },
         audience: null,
         geo: {
             included: {

@@ -53,6 +53,8 @@ import {
 import {GeolocationSearchParams} from '../../types/geolocation-search-params';
 import {Geotargeting} from '../../types/geotargeting';
 import {GeolocationsByType} from '../../types/geolocations-by-type';
+import {Browser} from '../../../../core/entities/types/common/browser';
+import {BrowserTargeting} from '../../types/browser-targeting';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -512,6 +514,70 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             targetOs => targetOs.name !== deletedOs.name
         );
         this.patchState(newTargetOses, 'entity', 'targeting', 'os');
+        this.validateEntity();
+    }
+
+    browserTargetingIncludeExcludeChange(
+        includeExcludeType: IncludeExcludeType
+    ) {
+        const newBrowserTargeting: IncludedExcluded<Browser[]> = {
+            included:
+                includeExcludeType === IncludeExcludeType.INCLUDE
+                    ? clone(this.state.entity.targeting.browsers.excluded)
+                    : [],
+            excluded:
+                includeExcludeType === IncludeExcludeType.EXCLUDE
+                    ? clone(this.state.entity.targeting.browsers.included)
+                    : [],
+        };
+
+        this.patchState(newBrowserTargeting, 'entity', 'targeting', 'browsers');
+        this.validateEntity();
+    }
+
+    addBrowserTargeting(browserTargeting: BrowserTargeting) {
+        const newBrowserTargeting: IncludedExcluded<Browser[]> = {
+            included:
+                browserTargeting.includeExcludeType ===
+                IncludeExcludeType.INCLUDE
+                    ? this.state.entity.targeting.browsers.included.concat(
+                          browserTargeting.browser
+                      )
+                    : [],
+            excluded:
+                browserTargeting.includeExcludeType ===
+                IncludeExcludeType.EXCLUDE
+                    ? this.state.entity.targeting.browsers.excluded.concat(
+                          browserTargeting.browser
+                      )
+                    : [],
+        };
+
+        this.patchState(newBrowserTargeting, 'entity', 'targeting', 'browsers');
+        this.validateEntity();
+    }
+
+    removeBrowserTargeting(browserTargeting: BrowserTargeting) {
+        const newBrowserTargeting: IncludedExcluded<Browser[]> = {
+            included:
+                browserTargeting.includeExcludeType ===
+                IncludeExcludeType.INCLUDE
+                    ? this.state.entity.targeting.browsers.included.filter(
+                          browser =>
+                              browser.family !== browserTargeting.browser.family
+                      )
+                    : [],
+            excluded:
+                browserTargeting.includeExcludeType ===
+                IncludeExcludeType.EXCLUDE
+                    ? this.state.entity.targeting.browsers.excluded.filter(
+                          browser =>
+                              browser.family !== browserTargeting.browser.family
+                      )
+                    : [],
+        };
+
+        this.patchState(newBrowserTargeting, 'entity', 'targeting', 'browsers');
         this.validateEntity();
     }
 

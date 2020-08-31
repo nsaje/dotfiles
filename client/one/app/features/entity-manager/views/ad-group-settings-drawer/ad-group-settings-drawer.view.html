@@ -411,8 +411,12 @@
                         )
                     "
                     [expandedByDefault]="
-                        doesAnySettingHaveValue(state.entity.targeting.os) ||
-                        state.entity.targeting.environments.length === 1
+                        doesAnySettingHaveValue(
+                            state.entity.targeting.os,
+                            state.entity.targeting.environments,
+                            state.entity.targeting.browsers?.included,
+                            state.entity.targeting.browsers?.excluded
+                        )
                     "
                     [expandLabel]="
                         'Show advanced settings (Advanced device targeting options)'
@@ -469,6 +473,50 @@
                                 </ng-template>
                             </zem-operating-system-list>
                             <hr />
+                            <ng-container
+                                *ngIf="
+                                    authStore.hasPermission(
+                                        'zemauth.can_use_browser_targeting'
+                                    )
+                                "
+                            >
+                                <div class="zem-settings-section__description">
+                                    Choose browsers:
+                                </div>
+                                <div
+                                    *ngIf="
+                                        state.entity.targeting.browsers.included
+                                            .length === 0 &&
+                                        state.entity.targeting.browsers.excluded
+                                            .length === 0
+                                    "
+                                    class="zem-message"
+                                >
+                                    You are currently targeting all browsers.
+                                </div>
+                                <zem-browser-targeting
+                                    class="zem-browser-targeting zem-settings-section__item"
+                                    [includedBrowsers]="
+                                        state.entity.targeting.browsers.included
+                                    "
+                                    [excludedBrowsers]="
+                                        state.entity.targeting.browsers.excluded
+                                    "
+                                    [isDisabled]="isReadOnly"
+                                    (includeExcludeChange)="
+                                        store.browserTargetingIncludeExcludeChange(
+                                            $event
+                                        )
+                                    "
+                                    (addBrowserTargeting)="
+                                        store.addBrowserTargeting($event)
+                                    "
+                                    (removeBrowserTargeting)="
+                                        store.removeBrowserTargeting($event)
+                                    "
+                                ></zem-browser-targeting>
+                                <hr />
+                            </ng-container>
                             <div class="zem-settings-section__description">
                                 Choose environment:
                             </div>
