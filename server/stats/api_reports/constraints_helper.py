@@ -141,19 +141,6 @@ def prepare_constraints(
     if only_used_sources:
         filtered_sources = stats.constraints_helper.narrow_filtered_sources(filtered_sources, ad_group_sources)
 
-    blacklists, whitelists, pg_targeting = core.features.publisher_groups.get_publisher_group_targeting_multiple_entities(
-        allowed_accounts if constrain_accounts else None,
-        allowed_campaigns if constrain_campaigns else None,
-        allowed_ad_groups if constrain_ad_group else None,
-    )
-
-    blacklisted_entries = dash.models.PublisherGroupEntry.objects.filter(
-        publisher_group_id__in=blacklists
-    ).filter_by_sources(filtered_sources, include_wo_source=True)
-    whitelisted_entries = dash.models.PublisherGroupEntry.objects.filter(
-        publisher_group_id__in=whitelists
-    ).filter_by_sources(filtered_sources, include_wo_source=True)
-
     # apply show_archived (at the end because higher up we need all users's ad groups in the queryset)
     allowed_content_ads = allowed_content_ads.exclude_archived(show_archived)
     allowed_ad_groups = allowed_ad_groups.exclude_archived(show_archived)
@@ -162,6 +149,19 @@ def prepare_constraints(
 
     include_publisher_groups = stats.constants.contains_dimension(
         breakdown, [stats.constants.PUBLISHER, stats.constants.PLACEMENT]
+    )
+    blacklisted_entries, whitelisted_entries, pg_targeting = (
+        _prepare_publisher_groups_constraints(
+            allowed_accounts,
+            allowed_campaigns,
+            allowed_ad_groups,
+            constrain_accounts,
+            constrain_campaigns,
+            constrain_ad_group,
+            filtered_sources,
+        )
+        if include_publisher_groups
+        else (None, None, None)
     )
 
     constraints = {
@@ -180,6 +180,31 @@ def prepare_constraints(
         "date__lte": end_date,
     }
     return constraints
+
+
+def _prepare_publisher_groups_constraints(
+    allowed_accounts,
+    allowed_campaigns,
+    allowed_ad_groups,
+    constrain_accounts,
+    constrain_campaigns,
+    constrain_ad_group,
+    filtered_sources,
+):
+    blacklists, whitelists, pg_targeting = core.features.publisher_groups.get_publisher_group_targeting_multiple_entities(
+        allowed_accounts if constrain_accounts else None,
+        allowed_campaigns if constrain_campaigns else None,
+        allowed_ad_groups if constrain_ad_group else None,
+    )
+
+    blacklisted_entries = dash.models.PublisherGroupEntry.objects.filter(
+        publisher_group_id__in=blacklists
+    ).filter_by_sources(filtered_sources, include_wo_source=True)
+    whitelisted_entries = dash.models.PublisherGroupEntry.objects.filter(
+        publisher_group_id__in=whitelists
+    ).filter_by_sources(filtered_sources, include_wo_source=True)
+
+    return blacklisted_entries, whitelisted_entries, pg_targeting
 
 
 class Goals(object):
