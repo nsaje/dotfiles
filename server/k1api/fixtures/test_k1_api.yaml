@@ -182,6 +182,7 @@
         created_dt: '2014-06-04T09:58:21'
         name: 'test campaign 1'
         campaign: 1
+        autopilot: false
         iab_category: IAB24
         enable_ga_tracking: true
         ga_tracking_type: 2
@@ -514,6 +515,7 @@
         created_dt: '2014-06-04T00:00:00'
         start_date: '2014-06-04'
         state: 1
+        autopilot_state: 2
         cpc: 0.7
         cpm: 1.7
         brand_name: 'brand1'

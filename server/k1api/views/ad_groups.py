@@ -74,6 +74,13 @@ class AdGroupsView(K1APIView):
             # Cache ad_group on settings to avoid additional DB queries.
             ad_group = ad_group.settings.ad_group
 
+            b1_autopilot_state = (
+                dash.constants.B1AutopilotState.INACTIVE
+                if not ad_group.campaign.settings.autopilot
+                and ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+                else dash.constants.B1AutopilotState.ACTIVE
+            )
+
             blacklist, whitelist = core.features.publisher_groups.concat_publisher_group_targeting(
                 ad_group,
                 ad_group.settings,
@@ -114,6 +121,7 @@ class AdGroupsView(K1APIView):
                 "time_zone": settings.DEFAULT_TIME_ZONE,
                 "bidding_type": ad_group.bidding_type,
                 "bid": format(bid, ".4f"),
+                "autopilot_state": b1_autopilot_state,
                 "brand_name": ad_group.settings.brand_name,
                 "display_url": ad_group.settings.display_url,
                 "tracking_codes": ad_group.settings.get_tracking_codes(),

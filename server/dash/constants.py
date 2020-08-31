@@ -35,6 +35,13 @@ class AdGroupSettingsAutopilotState(ConstantBase):
     }
 
 
+class B1AutopilotState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {ACTIVE: "Active", INACTIVE: "Inactive"}
+
+
 class AdGroupSourceSettingsState(ConstantBase):
     # keep in sync with zwei
     ACTIVE = 1
