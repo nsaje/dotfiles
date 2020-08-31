@@ -238,15 +238,11 @@ INSERT INTO mv_master (
                 SUM(ssp_spend) as ssp_spend
             FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
             WHERE
-                ((hour is null and date>=%(date_from)s AND date<=%(date_to)s)
-                OR
-                (hour is not null and date>%(tzdate_from)s AND date<%(tzdate_to)s)
-                OR
-                (hour IS NOT NULL AND (
-                    (date=%(tzdate_from)s AND hour >= %(tzhour_from)s) OR
-                    (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
+                ((hour is null and date=%(date)s)
+                OR (hour IS NOT NULL AND (
+                    (date=%(tzdate_from)s AND hour >= %(tzhour_from)s)
+                    OR (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
                 )))
-
                 {% if account_id %}
                     AND ad_group_id=ANY(%(ad_group_id)s)
                 {% endif %}
