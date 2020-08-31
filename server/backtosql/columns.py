@@ -2,13 +2,12 @@ from . import helpers
 
 
 class TemplateColumn(object):
-    def __init__(self, template_name, context=None, group=None, alias=None, null=None):
+    def __init__(self, template_name, context=None, group=None, alias=None):
         self.template_name = template_name
         self.context = context or {}
 
         self.group = group
         self.alias = alias  # is set automatically through model if defined on a model
-        self.null = null
 
     @property
     def column_name(self):
@@ -43,21 +42,34 @@ class TemplateColumn(object):
 
         return helpers.generate_sql(self.template_name, context)
 
-    def column_equal_or_null(self, table1, table2):
-        context = {
-            "first_table_column": self.only_alias(table1),
-            "second_table_column": self.only_alias(table2),
-            "null": self.null,
-        }
-        return helpers.generate_sql("column_equal_or_null.sql", context)
+    def column_equal(self, table1, table2):
+        return "{} = {}".format(self.only_alias(table1), self.only_alias(table2))
 
     def as_order(self, direction_hint, nulls=None):
         return OrderColumn(self, direction_hint, nulls)
 
 
 class Column(TemplateColumn):
-    def __init__(self, column_name, group=None, alias=None, null=None):
-        super(Column, self).__init__("column.sql", {"column_name": column_name}, alias=alias, group=group, null=null)
+    ZERO_VALUE_PLACEHOLDERS = {str: "'~N/A~'", int: -1}
+
+    def __init__(self, column_name, group=None, alias=None, null_type=None):
+        super(Column, self).__init__("column.sql", {"column_name": column_name}, alias=alias, group=group)
+        self.null_type = null_type
+
+    def column_as_alias_coalesce_zero_value(self, prefix=None):
+        zero_value = self.ZERO_VALUE_PLACEHOLDERS.get(self.null_type)
+        if zero_value is None:
+            return self.column_as_alias(prefix)
+        column_name = self.context.get("column_name")
+        prefix = helpers.clean_prefix(prefix)
+        return f"COALESCE({prefix}{column_name}, {zero_value}) AS {self._get_alias()}"
+
+    def only_alias_nullif_zero_value(self, prefix=None):
+        column_name = self.only_alias(prefix)
+        zero_value = self.ZERO_VALUE_PLACEHOLDERS.get(self.null_type)
+        if zero_value is None:
+            return column_name
+        return f"NULLIF({column_name}, {zero_value}) AS {self._get_alias()}"
 
 
 class OrderColumn(TemplateColumn):

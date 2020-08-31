@@ -7,6 +7,7 @@ import dash.constants
 import dash.models
 import stats.constants
 from redshiftapi import postprocess
+from utils.magic_mixer import magic_mixer
 
 
 class PostprocessTest(TestCase):
@@ -262,6 +263,8 @@ class PostprocessGoalsTest(TestCase):
         )
 
     def test_apply_pixel_columns(self):
+        magic_mixer.blend(dash.models.ConversionPixel, account_id=1)  # pixel with no data
+
         rows = [
             {
                 "campaign_id": 1,
@@ -333,8 +336,18 @@ class PostprocessGoalsTest(TestCase):
                     "window": 2160,
                     "count": 44,
                     "conversion_value": 400.0,
-                    "count_view": 777,  # should not be counted
-                    "conversion_value_view": 777.0,  # should not be counted
+                    "count_view": 777,  # should not be counted due to window
+                    "conversion_value_view": 777.0,  # should not be counted due to window
+                },
+                {  # conversion with breakdown that's not present in original rows, should add new row
+                    "campaign_id": 1,
+                    "ad_group_id": 3,
+                    "slug": "test",
+                    "window": 168,
+                    "count": 55,
+                    "conversion_value": 500.0,
+                    "count_view": 50,
+                    "conversion_value_view": 590.0,
                 },
             ],
         )
@@ -417,6 +430,35 @@ class PostprocessGoalsTest(TestCase):
                     "media_cost": 20,
                     "local_media_cost": 40,
                     "clicks": 1,
+                },
+                {
+                    "pixel_1_24": 0,
+                    "avg_etfm_cost_per_pixel_1_24": None,
+                    "local_avg_etfm_cost_per_pixel_1_24": None,
+                    "etfm_roas_pixel_1_24": None,
+                    "conversion_rate_per_pixel_1_24": None,
+                    "pixel_1_168": 55,
+                    "avg_etfm_cost_per_pixel_1_168": 0.0,
+                    "local_avg_etfm_cost_per_pixel_1_168": 0.0,
+                    "etfm_roas_pixel_1_168": None,
+                    "conversion_rate_per_pixel_1_168": None,
+                    "pixel_1_720": 55,
+                    "avg_etfm_cost_per_pixel_1_720": 0.0,
+                    "local_avg_etfm_cost_per_pixel_1_720": 0.0,
+                    "etfm_roas_pixel_1_720": None,
+                    "conversion_rate_per_pixel_1_720": None,
+                    "pixel_1_2160": 55,
+                    "avg_etfm_cost_per_pixel_1_2160": 0.0,
+                    "local_avg_etfm_cost_per_pixel_1_2160": 0.0,
+                    "etfm_roas_pixel_1_2160": None,
+                    "conversion_rate_per_pixel_1_2160": None,
+                    "pixel_1_24_view": 0,
+                    "avg_etfm_cost_per_pixel_1_24_view": None,
+                    "local_avg_etfm_cost_per_pixel_1_24_view": None,
+                    "etfm_roas_pixel_1_24_view": None,
+                    "conversion_rate_per_pixel_1_24_view": None,
+                    "ad_group_id": 3,
+                    "campaign_id": 1,
                 },
             ],
         )

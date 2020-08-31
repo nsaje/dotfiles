@@ -2062,6 +2062,7 @@ class OperatingSystem(ConstantBase):
 
 
 class OperatingSystemVersion(ConstantBase):
+    UNKNOWN = None
     ANDROID_2_1 = "android_2_1"
     ANDROID_2_2 = "android_2_2"
     ANDROID_2_3 = "android_2_3"
@@ -2141,6 +2142,7 @@ class OperatingSystemVersion(ConstantBase):
     MACOSX_10_15 = "macosx_10_15"
 
     _VALUES = {
+        UNKNOWN: "Unknown",
         ANDROID_2_1: "2.1 Eclair",
         ANDROID_2_2: "2.2 Froyo",
         ANDROID_2_3: "2.3 Gingerbread",

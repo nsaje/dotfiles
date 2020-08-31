@@ -78,11 +78,11 @@ class BreakdownsBase(backtosql.Model):
     content_ad_id = backtosql.Column("content_ad_id", BREAKDOWN)
     source_id = backtosql.Column("source_id", BREAKDOWN)
     publisher = backtosql.Column("publisher", BREAKDOWN)
-    placement = backtosql.Column("placement", BREAKDOWN, null=True)
+    placement = backtosql.Column("placement", BREAKDOWN)
 
     publisher_id = backtosql.TemplateColumn("part_max.sql", {"column_name": "publisher_source_id"})
     placement_id = backtosql.TemplateColumn("part_placement_id.sql")
-    placement_type = backtosql.TemplateColumn("part_max.sql", {"column_name": "placement_type"}, null=True)
+    placement_type = backtosql.TemplateColumn("part_max.sql", {"column_name": "placement_type"})
 
     def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
@@ -230,21 +230,22 @@ class BreakdownsBase(backtosql.Model):
 
 class MVMaster(BreakdownsBase):
     # Breakdowns
-    device_type = backtosql.Column("device_type", BREAKDOWN, null=True)
-    device_os = backtosql.Column("device_os", BREAKDOWN, null=True)
-    device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null=True)
-    environment = backtosql.Column("environment", BREAKDOWN, null=True)
+    # NOTE: null_type parameter is important for fields on which conversions are joined, because null != null in SQL. Should match with MVTouchpointConversions
+    device_type = backtosql.Column("device_type", BREAKDOWN, null_type=int)
+    device_os = backtosql.Column("device_os", BREAKDOWN, null_type=str)
+    device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null_type=str)
+    environment = backtosql.Column("environment", BREAKDOWN, null_type=str)
 
-    zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN, null=True)
-    video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN, null=True)
+    zem_placement_type = backtosql.Column("zem_placement_type", BREAKDOWN)
+    video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN)
 
-    country = backtosql.Column("country", BREAKDOWN, null=True)
-    region = backtosql.Column("state", BREAKDOWN, null=True)
-    dma = backtosql.Column("dma", BREAKDOWN, null=True)
+    country = backtosql.Column("country", BREAKDOWN, null_type=str)
+    region = backtosql.Column("state", BREAKDOWN, null_type=str)
+    dma = backtosql.Column("dma", BREAKDOWN, null_type=int)
 
-    age = backtosql.Column("age", BREAKDOWN, null=True)
-    gender = backtosql.Column("gender", BREAKDOWN, null=True)
-    age_gender = backtosql.Column("age_gender", BREAKDOWN, null=True)
+    age = backtosql.Column("age", BREAKDOWN)
+    gender = backtosql.Column("gender", BREAKDOWN)
+    age_gender = backtosql.Column("age_gender", BREAKDOWN)
 
     # The basics
     clicks = backtosql.TemplateColumn("part_sum.sql", {"column_name": "clicks"}, AGGREGATE)
@@ -540,14 +541,15 @@ class MVMaster(BreakdownsBase):
 
 
 class MVTouchpointConversions(BreakdownsBase):
-    device_type = backtosql.Column("device_type", BREAKDOWN)
-    device_os = backtosql.Column("device_os", BREAKDOWN)
-    device_os_version = backtosql.Column("device_os_version", BREAKDOWN)
-    environment = backtosql.Column("environment", BREAKDOWN)
+    # NOTE: coalesce parameter is important for fields on which conversions are joined, because null != null in SQL. Should match with MVMaster
+    device_type = backtosql.Column("device_type", BREAKDOWN, null_type=int)
+    device_os = backtosql.Column("device_os", BREAKDOWN, null_type=str)
+    device_os_version = backtosql.Column("device_os_version", BREAKDOWN, null_type=str)
+    environment = backtosql.Column("environment", BREAKDOWN, null_type=str)
 
-    country = backtosql.Column("country", BREAKDOWN)
-    region = backtosql.Column("state", BREAKDOWN)
-    dma = backtosql.Column("dma", BREAKDOWN)
+    country = backtosql.Column("country", BREAKDOWN, null_type=str)
+    region = backtosql.Column("state", BREAKDOWN, null_type=str)
+    dma = backtosql.Column("dma", BREAKDOWN, null_type=int)
 
     slug = backtosql.Column("slug", BREAKDOWN)
     window = backtosql.Column("conversion_window", BREAKDOWN, alias='"window"')  # window is reserved word in PostgreSQL

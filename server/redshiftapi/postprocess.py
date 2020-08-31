@@ -41,6 +41,12 @@ POSTCLICK_FIELDS = [
 ]
 
 
+CONVERSION_WINDOWS_PER_SUFFIX = [
+    (None, sorted(dash.constants.ConversionWindowsLegacy.get_all())),
+    ("_view", sorted(dash.constants.ConversionWindowsViewthrough.get_all())),
+]
+
+
 def fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 
@@ -157,8 +163,11 @@ def postprocess_joint_query_rows(rows):
 
 def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
     """
-    Applys conversions, pixels and goals columns to rows. Equivalent to what redshiftapi joint model
+    Applies conversions, pixels and goals columns to rows. Equivalent to what redshiftapi joint model
     does, the only difference is that joint model calculates this in SQL directly.
+
+    Since touchpoint conversions must be joined with an outer join, it's possible that additional rows get created
+    for conversions that don't have a matching base row.
     """
 
     rows = stats.helpers.merge_rows(breakdown, base_rows, yesterday_rows)
@@ -221,58 +230,72 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     pixel_breakdown = breakdown + ["slug"]
     pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
-    conversion_windows_click = sorted(dash.constants.ConversionWindowsLegacy.get_all())
-    conversion_windows_view = sorted(dash.constants.ConversionWindowsViewthrough.get_all())
-
-    _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_click)
-    _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_view, suffix="_view")
+    _join_to_existing_rows(breakdown, rows, pixels, pixel_rows_map)
+    _add_unjoined_conversions(breakdown, rows, pixels, pixel_rows_map)
 
 
-def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows, suffix=None):
+def _join_to_existing_rows(breakdown, rows, pixels, pixel_rows_map):
     for row in rows:
-        etfm_cost = row["etfm_cost"] or 0
-        local_etfm_cost = row["local_etfm_cost"] or 0
-
         breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
-
         for pixel in pixels:
             pixel_breakdown_key = breakdown_key + (pixel.slug,)
-            pixel_rows = pixel_rows_map.get(pixel_breakdown_key)
+            pixel_rows = pixel_rows_map.pop(pixel_breakdown_key, None)
+            if pixel_rows:
+                _add_pixel_columns_to_row(row, pixel, pixel_rows)
 
-            for conversion_window in conversion_windows:
-                if pixel_rows:
-                    count = sum(x["count" + (suffix or "")] for x in pixel_rows if x["window"] <= conversion_window)
-                    conversion_rate = count / row["clicks"] * 100.0 if row["clicks"] else None
-                    avg_etfm_cost = float(etfm_cost) / count if count else None
-                    local_avg_etfm_cost = float(local_etfm_cost) / count if count else None
 
-                    value = float(
-                        sum(
-                            x["conversion_value" + (suffix or "")]
-                            for x in pixel_rows
-                            if x["window"] <= conversion_window
-                            if x["conversion_value"]
-                        )
+def _add_unjoined_conversions(breakdown, rows, pixels, pixel_rows_map):
+    for pixel_breakdown_key, pixel_rows in pixel_rows_map.items():
+        slug = pixel_breakdown_key[-1]
+        breakdown_key = pixel_breakdown_key[:-1]
+        pixel = next((p for p in pixels if p.slug == slug), None)
+        if not pixel:
+            continue
+        row = dict(zip(breakdown, breakdown_key))
+        _add_pixel_columns_to_row(row, pixel, pixel_rows)
+        rows.append(row)
+
+
+def _add_pixel_columns_to_row(row, pixel, pixel_rows):
+    etfm_cost = row.get("etfm_cost") or 0
+    local_etfm_cost = row.get("local_etfm_cost") or 0
+    clicks = row.get("clicks") or 0
+
+    for suffix, conversion_windows in CONVERSION_WINDOWS_PER_SUFFIX:
+        for conversion_window in conversion_windows:
+            if pixel_rows:
+                count = sum(x["count" + (suffix or "")] for x in pixel_rows if x["window"] <= conversion_window)
+                conversion_rate = count / clicks * 100.0 if clicks else None
+                avg_etfm_cost = float(etfm_cost) / count if count else None
+                local_avg_etfm_cost = float(local_etfm_cost) / count if count else None
+
+                value = float(
+                    sum(
+                        x["conversion_value" + (suffix or "")]
+                        for x in pixel_rows
+                        if x["window"] <= conversion_window
+                        if x["conversion_value"]
                     )
-                    etfm_roas = value / float(local_etfm_cost) if local_etfm_cost else None
-                else:
-                    count = None
-                    conversion_rate = None
-                    avg_etfm_cost = None
-                    local_avg_etfm_cost = None
-                    etfm_roas = None
-
-                pixel_key = pixel.get_view_key(conversion_window) + (suffix or "")
-
-                row.update(
-                    {
-                        pixel_key: count,
-                        "conversion_rate_per_" + pixel_key: conversion_rate,
-                        "avg_etfm_cost_per_" + pixel_key: avg_etfm_cost,
-                        "local_avg_etfm_cost_per_" + pixel_key: local_avg_etfm_cost,
-                        "etfm_roas_" + pixel_key: etfm_roas,
-                    }
                 )
+                etfm_roas = value / float(local_etfm_cost) if local_etfm_cost else None
+            else:
+                count = None
+                conversion_rate = None
+                avg_etfm_cost = None
+                local_avg_etfm_cost = None
+                etfm_roas = None
+
+            pixel_key = pixel.get_view_key(conversion_window) + (suffix or "")
+
+            row.update(
+                {
+                    pixel_key: count,
+                    "conversion_rate_per_" + pixel_key: conversion_rate,
+                    "avg_etfm_cost_per_" + pixel_key: avg_etfm_cost,
+                    "local_avg_etfm_cost_per_" + pixel_key: local_avg_etfm_cost,
+                    "etfm_roas_" + pixel_key: etfm_roas,
+                }
+            )
 
 
 def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_values, conversion_goals, pixels):
