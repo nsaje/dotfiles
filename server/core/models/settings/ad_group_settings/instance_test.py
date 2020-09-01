@@ -8,6 +8,7 @@ import core.models
 import utils.exc
 from core.features import bid_modifiers
 from dash import constants
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from . import model
@@ -333,6 +334,18 @@ class InstanceTest(TestCase):
         mock_autopilot.assert_called_once_with(self.ad_group)
 
     @patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_recalculate_autopilot_campaign_change_start_date(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(None, start_date=dates_helper.day_after(self.ad_group.settings.start_date))
+        mock_autopilot.assert_called_once_with(self.ad_group)
+
+    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_recalculate_autopilot_campaign_change_end_date(self, mock_autopilot):
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group.settings.update(None, end_date=dates_helper.utc_today())
+        mock_autopilot.assert_called_once_with(self.ad_group)
+
+    @patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_campaign_change_allrtb_state(self, mock_autopilot):
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group.settings.update(None, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
@@ -455,12 +468,6 @@ class InstanceTest(TestCase):
         ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
         ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.5"))
         mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
-
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_change_forbidden_fields(self, mock_autopilot):
-        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
-        with self.assertRaises(utils.exc.ForbiddenError):
-            self.ad_group.settings.update(None, autopilot_state=False, autopilot_daily_budget=Decimal("10.0"))
 
 
 @patch("automation.autopilot.recalculate_budgets_ad_group", mock.MagicMock())
