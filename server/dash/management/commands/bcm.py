@@ -403,7 +403,7 @@ class Command(BaseCommand):
         if not end_date:
             end_date = str(datetime.date.today())
         credit = object_list[0]
-        budgets = credit.budgets.all()
+        budgets = credit.budgets.filter(end_date__gt=end_date)
         confirm_msg = "You are setting end date to {} for {} budgets on credit line item {}.".format(
             end_date, len(budgets), credit
         )
