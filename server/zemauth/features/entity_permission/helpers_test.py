@@ -375,10 +375,10 @@ class HelpersTestCase(TestCase):
     @mock.patch("zemauth.features.entity_permission.helpers.logger")
     def test_query_all_empty_for_account_manager(self, mock_logger):
         self.user.user_permissions.add(self.permission)
-        self.assertTrue(self.user.has_perm("zemauth.fea_use_entity_permission"))
+        self.assertEqual(self.user.has_perm("zemauth.fea_use_entity_permission"), True)
 
         agency = magic_mixer.blend(core.models.Agency)
-        magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[self.user])
+        accounts = magic_mixer.cycle(10).blend(core.models.Account, agency=agency, users=[self.user])
         permission = constants.Permission.READ
 
         accounts_by_user_permission = core.models.Account.objects.all().filter_by_user(self.user)
@@ -390,7 +390,9 @@ class HelpersTestCase(TestCase):
             self.user, permission, accounts_by_user_permission, accounts_by_entity_permission
         )
 
-        self.assertEqual(list(queryset), [])
+        self.assertEqual(sorted([x.id for x in accounts_by_user_permission]), sorted([x.id for x in accounts]))
+        self.assertEqual(len(queryset), 0)
+
         mock_logger.warning.assert_called_once_with(
             helpers.LOG_MESSAGE,
             user_email=self.user.email,
