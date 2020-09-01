@@ -24,7 +24,7 @@ A prerequisite for working with Zemanta REST API is an understanding of HTTP and
 
 The diagram and the table below describe the objects this API deals with and the relationships between them.
 
-![Entity Relation Diagram](https://s3.amazonaws.com/z1-static/rest-docs/ZemantaRESTAPIDiagram.png)
+![Entity Relation Diagram](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/ZemantaRESTAPIDiagram.png)
 
 [//]: # (diagram source: https://drive.google.com/a/zemanta.com/file/d/0B6lNA2cM_sh8V3E3dmpoV1UzakU/view?usp=sharing)
 
@@ -242,12 +242,12 @@ Please cache and reuse access tokens for the duration of their validity.
 To create client credentials, first make sure you are logged in to Zemanta One. Then go to https://one.zemanta.com/o/applications/
 and click the **New Application** button. Enter a name for your application, as shown in the image, and click the "Save" button.
 
-![New application registration form](https://s3.amazonaws.com/z1-static/rest-docs/oauth2-1-scaled.png)
+![New application registration form](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-1-scaled.png)
 
 After you click the "Save" button, you will see the details of your newly created application credentials. The provided
 Client ID and Client Secret are used for API authentication.
 
-![Application credentials details](https://s3.amazonaws.com/z1-static/rest-docs/oauth2-2-scaled.png)
+![Application credentials details](https://s3.amazonaws.com/one-static.zemanta.com/rest-docs/oauth2-2-scaled.png)
 
 ### Acquire a new authentication token [POST /o/token/]
 

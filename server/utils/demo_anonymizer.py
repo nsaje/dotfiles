@@ -70,4 +70,4 @@ def fake_sentence():
 
 
 def fake_io():
-    return "https://s3.amazonaws.com/z1-static/demo/Zemanta+One+-+Acme.pdf"
+    return "https://s3.amazonaws.com/one-static.zemanta.com/demo/Zemanta+One+-+Acme.pdf"
