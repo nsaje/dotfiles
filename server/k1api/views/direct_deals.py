@@ -1,9 +1,11 @@
 import core.features.deals
+from utils import db_router
 
 from .base import K1APIView
 
 
 class DirectDealsView(K1APIView):
+    @db_router.use_read_replica()
     def get(self, request):
         deal_connections = core.features.deals.DirectDealConnection.objects.select_related("deal__source").all()
 

@@ -1,9 +1,11 @@
 import core.features.bid_modifiers
+from utils import db_router
 
 from .base import K1APIView
 
 
 class BidModifiersView(K1APIView):
+    @db_router.use_read_replica()
     def get(self, request):
         limit = int(request.GET.get("limit", 500))
         marker = request.GET.get("marker")
