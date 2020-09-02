@@ -17,46 +17,20 @@ describe('NewFeatureDirective', () => {
         directive = new NewFeatureDirective(elementRefStub, rendererSpy);
     });
 
-    it('should add new feature indicator element to host element on init when zemNewFeature input has no value', () => {
-        directive.zemNewFeature = true;
-        directive.ngOnChanges();
-        expect(rendererSpy.appendChild).toHaveBeenCalledWith(
-            elementRefStub.nativeElement,
-            {
-                className: 'zem-new-feature__text',
-                innerText: 'NEW',
-            }
-        );
-    });
-
-    it('should add new feature indicator element to host element on input change when zemNewFeature input is true', () => {
-        directive.zemNewFeature = true;
-        directive.ngOnChanges();
-        expect(rendererSpy.appendChild).toHaveBeenCalledWith(
-            elementRefStub.nativeElement,
-            {
-                className: 'zem-new-feature__text',
-                innerText: 'NEW',
-            }
-        );
-    });
-
-    it('should not remove new feature indicator element from host element if it does not exist', () => {
-        directive.zemNewFeature = false;
-        directive.ngOnChanges();
-        expect(rendererSpy.appendChild).not.toHaveBeenCalled();
-        expect(rendererSpy.removeChild).not.toHaveBeenCalled();
-    });
-
-    it('should remove new feature indicator element from host element on input change when zemNewFeature input is false', () => {
-        directive.zemNewFeature = true;
-        directive.ngOnChanges();
+    it('should supply inputs to super class on changes', () => {
+        expect(directive.isTagDisplayed).toBeTrue();
+        expect(directive.tagClass).toEqual('');
 
         directive.zemNewFeature = false;
+        directive.zemNewFeatureClass = 'xxx';
         directive.ngOnChanges();
-        expect(rendererSpy.removeChild).toHaveBeenCalledWith(
-            jasmine.any(Object),
-            {className: 'zem-new-feature__text', innerText: 'NEW'}
-        );
+        expect(directive.isTagDisplayed).toBeFalse();
+        expect(directive.tagClass.split(' ').includes('xxx')).toBeTrue();
+
+        directive.zemNewFeature = true;
+        directive.zemNewFeatureClass = 'test';
+        directive.ngOnChanges();
+        expect(directive.isTagDisplayed).toBeTrue();
+        expect(directive.tagClass.split(' ').includes('test')).toBeTrue();
     });
 });
