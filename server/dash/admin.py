@@ -857,6 +857,8 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         "modified_by",
         "reset_approved_submission_statuses",
         "reset_rejected_submission_statuses",
+        "redirect_pixel_urls",
+        "redirect_javascript",
     )
     exclude = ("settings",)
     form = dash_forms.AdGroupAdminForm
