@@ -79,6 +79,7 @@ import {CheckboxSliderComponent} from './components/checkbox-slider/checkbox-sli
 import {ItemListComponent} from './components/item-list/item-list.component';
 import {SwitchButtonCellComponent} from './components/smart-grid/components/cell/switch-button-cell/switch-button-cell.component';
 import {EntitySelectorComponent} from './components/entity-selector/entity-selector.component';
+import {ArchivedTagDirective} from './directives/archived-tag/archived-tag.directive';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -90,6 +91,7 @@ const EXPORTED_DECLARATIONS = [
     PopoverDirective,
     InternalFeatureDirective,
     NewFeatureDirective,
+    ArchivedTagDirective,
     TextHighlightDirective,
     LoadingOverlayDirective,
 

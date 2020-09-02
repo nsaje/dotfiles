@@ -101,6 +101,7 @@ describe('AccountService', () => {
         const mockedOffset = 0;
         const mockedLimit = 20;
         const mockedKeyword = 'keyword';
+        const mockedIncludeArchived = false;
 
         accountEndpointStub.list.and
             .returnValue(of([mockedAccount], asapScheduler))
@@ -112,6 +113,7 @@ describe('AccountService', () => {
                 mockedOffset,
                 mockedLimit,
                 mockedKeyword,
+                mockedIncludeArchived,
                 requestStateUpdater
             )
             .subscribe(adGroups => {
@@ -123,6 +125,7 @@ describe('AccountService', () => {
             mockedOffset,
             mockedLimit,
             mockedKeyword,
+            mockedIncludeArchived,
             requestStateUpdater
         );
     });

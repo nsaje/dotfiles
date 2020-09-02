@@ -141,6 +141,7 @@ export class SidebarContentStore extends Store<SidebarContentStoreState>
                     null,
                     null,
                     null,
+                    false,
                     this.accountsRequestStateUpdater
                 )
                 .pipe(takeUntil(this.ngUnsubscribe$))

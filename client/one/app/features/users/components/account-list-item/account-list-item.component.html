@@ -4,7 +4,9 @@
         'zem-account-list-item__item--selected': selected
     }"
 >
-    {{ account.id }}
+    <div class="zem-account-list-item__id" [zemArchivedTag]="account.archived">
+        {{ account.id }}
+    </div>
     <span
         class="zem-account-list-item__remove-button"
         *ngIf="canRemove"

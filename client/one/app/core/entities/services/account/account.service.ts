@@ -35,6 +35,7 @@ export class AccountService {
         offset: number,
         limit: number,
         keyword: string | null,
+        includeArchived: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Account[]> {
         return this.endpoint.list(
@@ -42,6 +43,7 @@ export class AccountService {
             offset,
             limit,
             keyword,
+            includeArchived,
             requestStateUpdater
         );
     }

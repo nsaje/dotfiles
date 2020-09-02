@@ -83,6 +83,7 @@ export class AccountEndpoint {
         offset: number,
         limit: number,
         keyword: string | null,
+        includeArchived: boolean | null,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Account[]> {
         const request = ENTITY_CONFIG.requests.account.list;
@@ -99,6 +100,9 @@ export class AccountEndpoint {
                 offset: `${offset}`,
             }),
             ...(commonHelpers.isDefined(keyword) && {keyword}),
+            ...(commonHelpers.isDefined(includeArchived) && {
+                includeArchived: `${includeArchived}`,
+            }),
         };
 
         return this.http

@@ -84,6 +84,7 @@ export class UsersView implements OnInit, OnDestroy {
             map(state =>
                 state.accounts.filter(
                     account =>
+                        !account.archived &&
                         !state.activeEntity.entityAccounts.includes(account) &&
                         this.authStore.hasPermissionOn(
                             state.agencyId,

@@ -1,6 +1,7 @@
 import {ColDef} from 'ag-grid-community';
 import {EntityPermission} from '../../../../core/users/types/entity-permission';
 import {isDefined} from '../../../../shared/helpers/common.helpers';
+import {Account} from '../../../../core/entities/types/account/account';
 import {User} from '../../../../core/users/types/user';
 import {UsersView} from '../../views/users.view';
 import {
@@ -60,7 +61,7 @@ export const COLUMN_ACCESS: ColDef = {
             placement: 'bottom',
         },
         getCellDisplayOptions: getAccessCellDisplayOptions,
-    } as IconTooltipRendererParams<string[], User, UsersView>,
+    } as IconTooltipRendererParams<Account[], User, UsersView>,
     width: 100,
     minWidth: 100,
 };
@@ -115,14 +116,14 @@ function nameGetter(params: {data: User}): string {
 function getAccessCellDisplayOptions(
     user: User,
     componentParent: UsersView
-): Partial<IconTooltipDisplayOptions<string[]>> {
+): Partial<IconTooltipDisplayOptions<Account[]>> {
     return {
         text: getPermissionsLevel(user),
-        iconTooltip: getAccountNames(user, componentParent),
+        iconTooltip: getAccounts(user, componentParent),
     };
 }
 
-function getAccountNames(user: User, componentParent: UsersView): string[] {
+function getAccounts(user: User, componentParent: UsersView): Account[] {
     const entityPermissions: EntityPermission[] = user.entityPermissions || [];
 
     // These 3 possibilities should be mutually exclusive, but we still need to check because there could be inconsistent data in the DB
@@ -134,7 +135,7 @@ function getAccountNames(user: User, componentParent: UsersView): string[] {
         return distinct(
             entityPermissions
                 .filter(ep => ep.accountId)
-                .map(ep => getAccountName(componentParent, ep.accountId))
+                .map(ep => getAccountById(componentParent, ep.accountId))
                 .filter(accountName => isDefined(accountName))
         );
     } else {
@@ -142,13 +143,13 @@ function getAccountNames(user: User, componentParent: UsersView): string[] {
     }
 }
 
-function getAccountName(
+function getAccountById(
     componentParent: UsersView,
     accountId: string
-): string | undefined {
+): Account | undefined {
     return componentParent.store.state.accounts?.find(
         account => account.id === accountId
-    )?.name;
+    );
 }
 
 function getGeneralPermissionsCellDisplayOptions(

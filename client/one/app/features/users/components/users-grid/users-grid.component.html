@@ -10,9 +10,14 @@
 >
 </zem-smart-grid>
 
-<ng-template #accountAccessTemplate let-accountNames>
+<ng-template #accountAccessTemplate let-accounts>
     User has access to the following accounts:
     <ul>
-        <li *ngFor="let accountName of accountNames">{{ accountName }}</li>
+        <li
+            *ngFor="let account of accounts"
+            [zemArchivedTag]="account.archived"
+        >
+            {{ account.name }}
+        </li>
     </ul>
 </ng-template>
