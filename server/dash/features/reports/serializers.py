@@ -72,14 +72,14 @@ class ReportQuerySerializer(serializers.Serializer):
             raise serializers.ValidationError("Please specify a date range!")
         if "ad_group_id" in filter_constraints:
             zemauth.access.get_ad_group(
-                self.context["request"].user, Permission.WRITE, filter_constraints["ad_group_id"]
+                self.context["request"].user, Permission.READ, filter_constraints["ad_group_id"]
             )
         if "campaign_id" in filter_constraints:
             zemauth.access.get_campaign(
-                self.context["request"].user, Permission.WRITE, filter_constraints["campaign_id"]
+                self.context["request"].user, Permission.READ, filter_constraints["campaign_id"]
             )
         if "account_id" in filter_constraints:
-            zemauth.access.get_account(self.context["request"].user, Permission.WRITE, filter_constraints["account_id"])
+            zemauth.access.get_account(self.context["request"].user, Permission.READ, filter_constraints["account_id"])
         return filters
 
     def validate(self, data):
