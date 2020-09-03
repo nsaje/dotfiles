@@ -126,12 +126,17 @@
     padding: 0 @zem-infobox_spacing 0 @zem-infobox_spacing;
 }
 
+.zem-infobox__delivery-container {
+    display: flex;
+}
+
 .zem-infobox__delivery-icon {
     display: inline-block;
     position: relative;
     width: 11px;
     height: 11px;
-    margin-right: 2px;
+    margin: 2px 5px 0 8px;
+    flex: 0 0 auto;
 
     &::before {
         content: '';
@@ -205,6 +210,11 @@
         max-height: 330px;
         padding: (@zem-infobox_spacing)-5 @zem-infobox_spacing
             @zem-infobox_spacing @zem-infobox_spacing;
+    }
+
+    .zem-infobox-data-row__flag-text,
+    .zem-infobox__delivery-icon {
+        margin: 0;
     }
 }
 

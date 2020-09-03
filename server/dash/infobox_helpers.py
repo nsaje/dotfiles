@@ -577,7 +577,7 @@ def get_entity_delivery_text(status):
     if status == dash.constants.InfoboxStatus.INACTIVE:
         return "Inactive"
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED:
-        return "Stopped - Out of budget (add budget to resume)"
+        return "Stopped - Out of budget"
     if status == dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET:
         return "Active - Running out of budget"
 

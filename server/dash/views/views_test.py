@@ -449,9 +449,6 @@ class LegacyAdGroupOverviewTestCase(DASHAPITestCase):
         goal_setting = [s for s in settings if "goal" in s["name"].lower()]
         self.assertEqual([], goal_setting)
 
-        response = self._get_ad_group_overview(1)
-        settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
-
         yesterday_spend_setting = self._get_setting(settings, "yesterday spend")
         self.assertEqual("$0.00", yesterday_spend_setting["value"])
 
@@ -759,6 +756,14 @@ class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
         response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
 
+    def _get_setting(self, settings, name):
+        ret = [s for s in settings if name in s["name"].lower()]
+        if ret != []:
+            return ret[0]
+        else:
+            return None
+
+    @mock.patch("etl.materialization_run.etl_data_complete_for_date", mock.MagicMock(return_value=True))
     @patch("dash.infobox_helpers.get_mtd_accounts_spend")
     @patch("dash.infobox_helpers.get_yesterday_accounts_spend")
     def test_run_empty(self, mock_query_yd, mock_query_mtd):
@@ -771,6 +776,19 @@ class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
 
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response["success"])
+
+        header = response["data"]["header"]
+        self.assertEqual(header["title"], None)
+        self.assertEqual(header["level"], constants.InfoboxLevel.ALL_ACCOUNTS)
+        self.assertEqual(header["level_verbose"], constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS))
+
+        settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
+
+        yesterday_spend_setting = self._get_setting(settings, "yesterday spend")
+        self.assertEqual("$30.00", yesterday_spend_setting["value"])
+
+        yesterday_data_setting = self._get_setting(settings, "yesterday data")
+        self.assertEqual("Complete", yesterday_data_setting["flag"])
 
     @patch("dash.infobox_helpers.get_mtd_accounts_spend")
     @patch("dash.infobox_helpers.get_yesterday_accounts_spend")

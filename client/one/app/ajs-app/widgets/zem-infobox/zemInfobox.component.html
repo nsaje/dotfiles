@@ -7,7 +7,7 @@
     <div class="loader" ng-show="$ctrl.loadRequestInProgress"></div>
     <div
         ng-if="$ctrl.delivery"
-        class="zem-infobox__delivery zem-infobox-data-row"
+        class="zem-infobox__delivery-container zem-infobox-data-row"
         ng-class="{
             'zem-infobox__delivery--active': 
                 $ctrl.delivery.status === 'active' ||
@@ -34,8 +34,9 @@
             <span class="zem-infobox__delivery-icon"></span>
             <span
                 class="zem-infobox__delivery-text zem-infobox-data-row__value"
-                >{{ $ctrl.delivery.text }}</span
             >
+                {{ $ctrl.delivery.text }}
+            </span>
         </div>
     </div>
     <zem-infobox-data-row

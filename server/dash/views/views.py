@@ -899,6 +899,8 @@ class AllAccountsOverview(DASHAPIBaseView):
         return overview_settings
 
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
+        overview_settings.append(infobox_helpers.create_yesterday_data_setting())
+
         accounts_user_perm = (
             models.Account.objects.filter_by_user(user)
             .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
@@ -993,7 +995,7 @@ def oauth_authorize(request, source_name):
 
 def oauth_redirect(request, source_name):
     # Token requests are implemented using urllib2 requests because Yahoo only supports credentials in
-    # Authorization header while oauth2client sends it in reqeust body (for get_token calls, after that
+    # Authorization header while oauth2client sends it in request body (for get_token calls, after that
     # it puts access token into header).
 
     code = request.GET.get("code")
