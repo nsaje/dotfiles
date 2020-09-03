@@ -54,12 +54,19 @@ export class BrowserTargetingComponent implements OnChanges {
                 this.excludedBrowsers
             );
             this.includeExcludeType = IncludeExcludeType.EXCLUDE;
-        } else {
+        } else if (!arrayHelpers.isEmpty(this.includedBrowsers)) {
             this.formattedSelectedBrowsers = this.getFormattedSelectedBrowsers(
                 this.includedBrowsers
             );
             this.includeExcludeType = IncludeExcludeType.INCLUDE;
+        } else {
+            this.formattedSelectedBrowsers = [];
         }
+    }
+
+    onIncludeExcludeChange(includeExcludeType: IncludeExcludeType) {
+        this.includeExcludeType = includeExcludeType;
+        this.includeExcludeChange.emit(includeExcludeType);
     }
 
     onAddBrowserTargeting(browser: FormattedBrowser) {
