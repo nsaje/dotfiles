@@ -6,54 +6,6 @@ from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
 
-BROWSER_DEVICE_MAPPING = {
-    constants.BrowserFamily.OTHER: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.CHROME: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.FIREFOX: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.SAFARI: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.IE: [constants.AdTargetDevice.DESKTOP],
-    constants.BrowserFamily.SAMSUNG: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
-    constants.BrowserFamily.OPERA: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.UC_BROWSER: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.IN_APP: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
-    constants.BrowserFamily.EDGE: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.ANDROID: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
-    constants.BrowserFamily.YANDEX: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.DALVIK: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
-}
-
 
 @transaction.atomic
 def set_ad_group_sources_bids(
@@ -173,12 +125,3 @@ def _adjust_to_autopilot_bid_if_needed(ad_group_settings, proposed_bid, max_auto
     ):
         proposed_bid = ad_group_settings.max_autopilot_bid
     return proposed_bid
-
-
-def get_browser_targeting_errors(browsers, target_devices):
-    browser_errors = []
-    for browser in browsers:
-        valid = any(device in BROWSER_DEVICE_MAPPING[browser["family"]] for device in target_devices)
-        error = {"family": ["Invalid browser and device type combination configuration"]} if not valid else {}
-        browser_errors.append(error)
-    return browser_errors

@@ -25,19 +25,9 @@
 >
     <ng-template #itemTemplate let-item="item" let-index="index">
         <div class="zem-browser-targeting__list-item">
-            <div
-                class="zem-browser-targeting__list-item-name"
-                [ngClass]="{
-                    'zem-browser-targeting__list-item-name--error':
-                        targetingErrors[index]?.family?.length
-                }"
-            >
+            <span>
                 {{ item.name }}
-                <div
-                    *ngIf="targetingErrors[index]?.family?.length"
-                    class="zem-browser-targeting__list-item-name-error-icon"
-                ></div>
-            </div>
+            </span>
             <button
                 *ngIf="!isDisabled"
                 class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
@@ -46,9 +36,3 @@
         </div>
     </ng-template>
 </zem-select-list>
-<div
-    *ngIf="errorMessage"
-    class="zem-browser-targeting__item zem-message zem-message--error"
->
-    {{ errorMessage }}
-</div>

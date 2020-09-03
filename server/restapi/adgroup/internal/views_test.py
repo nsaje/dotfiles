@@ -494,7 +494,7 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         )
         self.assertResponseError(r, "MissingDataError")
 
-    def test_put_adgroups_invalid_target_browsers(self):
+    def test_adgroups_invalid_target_browsers(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -517,28 +517,7 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         )
         self.assertResponseError(r, "ValidationError")
 
-    def test_put_adgroups_invalid_target_browser_device_type(self):
-        agency = magic_mixer.blend(core.models.Agency)
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
-        campaign = magic_mixer.blend(core.models.Campaign, account=account)
-        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-
-        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
-        resp_json = self.assertResponseValid(r)
-        put_data = resp_json["data"].copy()
-        put_data["name"] = "Demo adgroup"
-
-        put_data["targeting"]["devices"] = [dash.constants.AdTargetDevice.MOBILE]
-        put_data["targeting"]["browsers"] = {"included": [{"family": dash.constants.BrowserFamily.IE}], "excluded": []}
-
-        r = self.client.put(
-            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
-            data=put_data,
-            format="json",
-        )
-        self.assertResponseError(r, "ValidationError")
-
-    def test_put_adgroups_valid_target_browsers(self):
+    def test_adgroups_valid_target_browsers(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)

@@ -2,7 +2,6 @@ import decimal
 
 import rest_framework.serializers
 
-import core.models.settings.ad_group_settings.helpers
 import dash.constants
 import restapi.adgroup.v1.serializers
 import restapi.directdeal.internal.serializers
@@ -157,23 +156,6 @@ class AdGroupTargetingSerializer(restapi.adgroup.v1.serializers.AdGroupTargeting
         }
 
     browsers = BrowsersSerializer(source="*", required=False)
-
-    def validate(self, data):
-        super().validate(data)
-        if data["target_browsers"]:
-            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
-                data["target_browsers"], data["target_devices"]
-            )
-            if any(browsers_errors):
-                raise rest_framework.serializers.ValidationError({"browsers": {"included": browsers_errors}})
-        elif data["exclusion_target_browsers"]:
-            browsers_errors = core.models.settings.ad_group_settings.helpers.get_browser_targeting_errors(
-                data["exclusion_target_browsers"], data["target_devices"]
-            )
-            if any(browsers_errors):
-                raise rest_framework.serializers.ValidationError({"browsers": {"excluded": browsers_errors}})
-
-        return data
 
 
 class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
