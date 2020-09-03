@@ -1,5 +1,6 @@
 import {FormattedBrowser} from '../../types/formatted-browser';
 import {BrowserFamily} from '../../../../app.constants';
+import {DeviceType} from '../operating-system/types/device-type';
 
 export const BROWSER_NAMES: {
     [key in BrowserFamily]: string;
@@ -30,3 +31,19 @@ export const AVAILABLE_BROWSERS: FormattedBrowser[] = [
     {family: BrowserFamily.DALVIK, name: BROWSER_NAMES[BrowserFamily.DALVIK]},
     {family: BrowserFamily.IN_APP, name: BROWSER_NAMES[BrowserFamily.IN_APP]},
 ];
+
+export const BROWSER_DEVICE_MAPPING: {
+    [key in BrowserFamily]: DeviceType[];
+} = {
+    [BrowserFamily.CHROME]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.SAFARI]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.FIREFOX]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.IE]: ['DESKTOP'],
+    [BrowserFamily.OPERA]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.EDGE]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.SAMSUNG]: ['TABLET', 'MOBILE'],
+    [BrowserFamily.ANDROID]: ['TABLET', 'MOBILE'],
+    [BrowserFamily.YANDEX]: ['DESKTOP', 'TABLET', 'MOBILE'],
+    [BrowserFamily.DALVIK]: ['TABLET', 'MOBILE'],
+    [BrowserFamily.IN_APP]: ['TABLET', 'MOBILE'],
+};
