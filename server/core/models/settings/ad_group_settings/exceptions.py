@@ -107,3 +107,7 @@ class ExclusionAudienceTargetingInvalid(ValidationError):
 
 class TargetBrowsersInvalid(ValidationError):
     pass
+
+
+class B1SourcesBudgetUpdateWhileSourcesGroupDisabled(ValidationError):
+    pass

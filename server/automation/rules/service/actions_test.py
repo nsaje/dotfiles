@@ -567,13 +567,13 @@ class ActionsTest(TestCase):
         ad_group_source.refresh_from_db()
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, ad_group_source.settings.state)
         self.assertTrue(update.has_changes())
-        mock_recalculate_budgets.assert_called_once()
+        mock_recalculate_budgets.assert_not_called()
 
         update = actions.turn_off(str(source.id), rule, ad_group)
         ad_group_source.refresh_from_db()
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, ad_group_source.settings.state)
         self.assertFalse(update.has_changes())
-        mock_recalculate_budgets.assert_called_once()
+        mock_recalculate_budgets.assert_not_called()
 
     def test_turn_off_source_invalid_target_id(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)

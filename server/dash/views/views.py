@@ -600,13 +600,12 @@ class AdGroupSourceSettings(DASHAPIBaseView):
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
         data = hacks.override_ad_group_source_settings_form_data(ad_group, data)
 
-        response = self._update_ad_group_source(request, ad_group_source, data)
+        self._update_ad_group_source(request, ad_group_source, data)
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
         campaign_settings = ad_group.campaign.get_current_settings()
         ad_group_settings = ad_group.get_current_settings()
 
-        autopilot_changed_sources = response.get("autopilot_changed_sources", []) if response else []
         return self.create_api_response(
             {
                 "editable_fields": helpers.get_editable_fields(
@@ -618,7 +617,6 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                     campaign_settings,
                     allowed_sources,
                 ),
-                "autopilot_changed_sources": autopilot_changed_sources,
                 "enabling_autopilot_sources_allowed": helpers.enabling_autopilot_single_source_allowed(ad_group),
             }
         )
@@ -627,8 +625,32 @@ class AdGroupSourceSettings(DASHAPIBaseView):
         try:
             return ad_group_source.settings.update(request, k1_sync=True, **data)
 
-        except core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+        except (
+            core.models.settings.ad_group_source_settings.exceptions.CPCNegative,
+            core.models.settings.ad_group_source_settings.exceptions.CannotSetCPC,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative,
+            core.models.settings.ad_group_source_settings.exceptions.CPCInvalid,
+        ) as err:
+            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
+
+        except (
+            core.models.settings.ad_group_source_settings.exceptions.CPMNegative,
+            core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative,
+        ) as err:
+            raise exc.ValidationError(errors={"cpm": [str(err)]})
+
+        except (
+            core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative,
+            core.models.settings.ad_group_source_settings.exceptions.BudgetUpdateWhileSourcesGroupEnabled,
+        ) as err:
             raise exc.ValidationError(errors={"daily_budget_cc": [str(err)]})
+
+        except (
+            core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow,
+            core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
+        ) as err:
+            raise exc.ValidationError(errors={"state": [str(err)]})
 
         except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise exc.ValidationError(
@@ -656,12 +678,6 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                     ]
                 }
             )
-
-        except core.models.settings.ad_group_source_settings.exceptions.CPCNegative as err:
-            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.CPMNegative as err:
-            raise exc.ValidationError(errors={"cpm": [str(err)]})
 
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise exc.ValidationError(
@@ -744,27 +760,6 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                     ]
                 }
             )
-
-        except core.models.settings.ad_group_source_settings.exceptions.CannotSetCPC as err:
-            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM as err:
-            raise exc.ValidationError(errors={"cpm": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative as err:
-            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative as err:
-            raise exc.ValidationError(errors={"cpm": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
-            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
-            raise exc.ValidationError(errors={"state": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow as err:
-            raise exc.ValidationError(errors={"state": [str(err)]})
 
 
 class AllAccountsOverview(DASHAPIBaseView):

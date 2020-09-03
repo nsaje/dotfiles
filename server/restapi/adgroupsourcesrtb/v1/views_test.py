@@ -162,6 +162,29 @@ class LegacyAdGroupSourcesRTBTest(RESTAPITestCase):
         self.validate_against_db(ad_group.id, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
+    def test_adgroups_sources_rtb_put_daily_budget_fail(self):
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.local_b1_sources_group_daily_budget = Decimal("100.0")
+        settings.save(None)
+
+        test_rtbs = self.adgroupsourcertb_repr()
+        test_rtbs["dailyBudget"] = "200.0"
+        test_rtbs["groupEnabled"] = False
+
+        r = self.client.put(
+            reverse("restapi.adgroupsourcesrtb.v1:adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}),
+            data=test_rtbs,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue(
+            "Can not set RTB sources group daily budget while managing RTB sources separately"
+            in json.loads(r.content)["details"]["dailyBudget"]
+        )
+
     def test_adgroups_sources_rtb_bidding_type_fail(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         ad_group = magic_mixer.blend(

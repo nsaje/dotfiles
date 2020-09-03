@@ -187,7 +187,10 @@ class InfoBoxHelpersTestCase(BaseTestCase):
         ags = dash.models.AdGroupSource.objects.get(id=2)
 
         ags.settings.update(
-            None, daily_budget_cc=Decimal("200"), state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+            None,
+            daily_budget_cc=Decimal("200"),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            skip_validation=True,
         )
 
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -1029,7 +1032,10 @@ class AllAccountsInfoboxHelpersTestCase(BaseTestCase):
             source__source_type__max_daily_budget=Decimal("1000.0"),
         )
         self.ad_group_source_local.settings.update(
-            None, daily_budget_cc=Decimal("25"), state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+            None,
+            daily_budget_cc=Decimal("25"),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            skip_validation=True,
         )
         b1_source = dash.models.Source.objects.get(id=2)
         self.b1_ad_group_source_local = magic_mixer.blend(

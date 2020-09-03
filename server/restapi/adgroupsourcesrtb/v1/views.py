@@ -38,26 +38,25 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         except core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
             raise utils.exc.ValidationError(errors={"group_enabled": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPC as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPC,
+            core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative,
+        ) as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPM as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPM,
+            core.models.settings.ad_group_settings.exceptions.CPMAutopilotNotDisabled,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative,
+        ) as err:
             raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled,
+            core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled,
+        ) as err:
             raise utils.exc.ValidationError(errors={"daily_budget": [str(err)]})
-
-        except core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except core.models.settings.ad_group_settings.exceptions.CPMAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative as err:
-            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(

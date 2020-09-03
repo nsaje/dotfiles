@@ -17,6 +17,7 @@ class AdGroupSourceSettingsMixin(object):
         skip_validation=False,
         skip_notification=False,
         write_history=True,
+        is_create=False,
         **updates,
     ):
         if not updates:
@@ -36,7 +37,7 @@ class AdGroupSourceSettingsMixin(object):
 
         is_pause = len(changes) == 1 and changes.get("state") == dash.constants.AdGroupSourceSettingsState.INACTIVE
         if not skip_validation and not is_pause:
-            self.clean(new_settings)
+            self.clean(new_settings, is_create)
 
         if not skip_automation:
             self.validate_ad_group_source_autopilot(new_settings)
@@ -44,12 +45,6 @@ class AdGroupSourceSettingsMixin(object):
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user, write_history=write_history)
-
-        if not skip_automation:
-            # autopilot reloads settings so changes have to be saved when it is called
-            autopilot_changed_sources = self._handle_budget_autopilot(changes)
-            if autopilot_changed_sources:
-                changes["autopilot_changed_sources"] = autopilot_changed_sources
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group_source.ad_group, "AdGroupSource.update")
@@ -82,18 +77,6 @@ class AdGroupSourceSettingsMixin(object):
         if field in updates and updates[field] is None or local_field in updates and updates[local_field] is None:
             updates.pop(field, None)
             updates.pop(local_field, None)
-
-    def _handle_budget_autopilot(self, changes):
-        ad_group_settings = self.ad_group_source.ad_group.settings
-        if "state" in changes and (
-            ad_group_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            or self.ad_group_source.ad_group.campaign.settings.autopilot
-        ):
-            from automation import autopilot
-
-            changed_sources = autopilot.recalculate_budgets_ad_group(self.ad_group_source.ad_group)
-            return [s.source.name for s in changed_sources]
-        return []
 
     def _notify_ad_group_source_settings_changed(self, request, old_settings, new_settings):
         if not request:

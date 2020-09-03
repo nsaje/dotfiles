@@ -121,17 +121,7 @@ class AdGroupSourceSettings(DASHAPIBaseView):
         convert_update_response(response, source_id)
         convert_resource_response(constants.Level.AD_GROUPS, "source_id", response)
 
-        if "autopilot_changed_sources" in response and response["autopilot_changed_sources"]:
-            response["notification"] = self.create_changed_sources_notification(response["autopilot_changed_sources"])
-
         return self.create_api_response(response)
-
-    def create_changed_sources_notification(self, sources):
-        return {
-            "type": constants.AlertType.INFO,
-            "message": "Following your change to a Media Source's state, Autopilot has "
-            + "successfully adjusted daily spend caps of the following Media Sources: {}.".format(sources),
-        }
 
     # MVP for all-RTB-sources-as-one
     def post_all_rtb_source(self, request, ad_group_id, filtered_sources, settings):

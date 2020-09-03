@@ -36,6 +36,7 @@ class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
         self.ad_group = models.AdGroup.objects.get(pk=1)
+        self.ad_group.settings.update_unsafe(None, b1_sources_group_enabled=False)
         self._set_ad_group_sources_state(constants.AdGroupSettingsState.INACTIVE)
 
     def _set_ad_group_sources_state(self, state):
@@ -130,27 +131,6 @@ class LegacyAdGroupSourceSettingsTestCase(DASHAPITestCase):
             reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
             data=json.dumps({"cpm": "1.60"}),
         )
-        self.assertEqual(response.status_code, 200)
-
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
-        self._set_ad_group_end_date(days_delta=3)
-        response = self.client.put(
-            reverse("ad_group_source_settings", kwargs={"ad_group_id": "4", "source_id": "1"}),
-            data=json.dumps({"state": "2"}),
-        )
-        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4))
-        self.assertEqual(response.status_code, 200)
-
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
-        self._set_ad_group_end_date(days_delta=3)
-        self._set_autopilot_state(constants.AdGroupSettingsAutopilotState.INACTIVE)
-        response = self.client.put(
-            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
-            data=json.dumps({"state": "2"}),
-        )
-        self.assertEqual(mock_budget_ap.called, False)
         self.assertEqual(response.status_code, 200)
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)

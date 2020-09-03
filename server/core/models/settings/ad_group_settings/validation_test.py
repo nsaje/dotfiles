@@ -314,3 +314,19 @@ class ValidationTest(TestCase):
 
         new_settings.exclusion_target_browsers = []
         self.ad_group.settings._validate_target_browsers(new_settings)
+
+    def test_validate_b1_sources_group_daily_budget(self):
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+
+        new_settings.b1_sources_group_enabled = True
+        current_settings.b1_sources_group_daily_budget = Decimal("400.0")
+        new_settings.b1_sources_group_daily_budget = Decimal("400.0")
+        current_settings._validate_b1_sources_group_daily_budget(new_settings)
+
+        new_settings.b1_sources_group_daily_budget = Decimal("700.0")
+        current_settings._validate_b1_sources_group_daily_budget(new_settings)
+
+        new_settings.b1_sources_group_enabled = False
+        with self.assertRaises(exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled):
+            current_settings._validate_b1_sources_group_daily_budget(new_settings)

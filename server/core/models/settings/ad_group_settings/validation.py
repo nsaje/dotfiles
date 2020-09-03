@@ -275,6 +275,10 @@ class AdGroupSettingsValidatorMixin(object):
     def _validate_b1_sources_group_daily_budget(self, new_settings):
         if self.local_b1_sources_group_daily_budget == new_settings.local_b1_sources_group_daily_budget:
             return
+        if not new_settings.b1_sources_group_enabled:
+            raise exceptions.B1SourcesBudgetUpdateWhileSourcesGroupDisabled(
+                "Can not set RTB sources group daily budget while managing RTB sources separately"
+            )
         assert isinstance(new_settings.local_b1_sources_group_daily_budget, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_daily_budget(
             new_settings.b1_sources_group_daily_budget, new_settings, self.ad_group.campaign.get_bcm_modifiers()

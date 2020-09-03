@@ -1368,7 +1368,7 @@ source      | string              | source identifier
 state       | `ACTIVE`/`INACTIVE` | is ad group being promoted on the given source
 cpc (deprecated) | [money](#money)     | CPC for the given source. This property is deprecated, please use ad group bid property and source bid modifiers instead.
 cpm (deprecated) | [money](#money)     | CPM for the given source (when ad group biddingType is CPM). This property is deprecated, please use ad group bid property and source bid modifiers instead.
-dailyBudget | [money](#money)     | daily budget for the given source
+dailyBudget | [money](#money)     | Daily budget for the given source. Can not be updated when [all real-time sources as one](#all-rtb-as-one) setting is enabled.
 
 ### Get ad group source settings [GET /rest/v1/adgroups/{adGroupId}/sources/]
 
@@ -1501,7 +1501,7 @@ groupEnabled | boolean             | enable or disable treating all RTB sources 
 state        | `ACTIVE`/`INACTIVE` | the state of all RTB sources
 cpc          | [money](#money)     | CPC for all RTB sources
 cpm          | [money](#money)     | CPM for all RTB sources (when ad group biddingType is CPM)
-dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
+dailyBudget  | [money](#money)     | Daily budget shared among all RTB sources. Can not be updated when [all real-time sources as one](#all-rtb-as-one) setting is disabled.
 
 ### Get ad group source settings for All RTB sources as one [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
 

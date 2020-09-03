@@ -198,6 +198,11 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         updates = {}
 
         updates["daily_budget_cc"] = decimal.Decimal("0.0")
+        with self.assertRaises(exceptions.BudgetUpdateWhileSourcesGroupEnabled) as cm:
+            ad_group_source.settings.update(None, **updates)
+
+        ad_group_source.ad_group.settings.update_unsafe(None, b1_sources_group_enabled=False)
+
         with self.assertRaises(exceptions.MinimalDailyBudgetTooLow) as cm:
             ad_group_source.settings.update(None, **updates)
 

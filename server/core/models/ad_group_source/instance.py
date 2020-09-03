@@ -55,6 +55,7 @@ class AdGroupSourceInstanceMixin:
             skip_validation=True,
             skip_notification=skip_notification,
             write_history=write_history,
+            is_create=True,
             **updates
         )
 
@@ -65,6 +66,7 @@ class AdGroupSourceInstanceMixin:
             k1_sync=False,
             skip_automation=True,
             skip_validation=True,
+            is_create=True,
             daily_budget_cc=source_ad_group_source_settings.daily_budget_cc,
             cpc_cc=source_ad_group_source_settings.cpc_cc,
             cpm=source_ad_group_source_settings.cpm,

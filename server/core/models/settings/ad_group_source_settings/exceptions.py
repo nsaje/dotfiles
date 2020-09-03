@@ -72,3 +72,7 @@ class MediaSourceNotConnectedToFacebook(ValidationError):
 
 class AutopilotDailySpendCapTooLow(ValidationError):
     pass
+
+
+class BudgetUpdateWhileSourcesGroupEnabled(ValidationError):
+    pass

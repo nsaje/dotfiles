@@ -46,7 +46,10 @@ class PrepareAdGroupSettingsTestCase(TestCase):
         )
         for ad_group_source in self.ad_group_sources:
             ad_group_source.settings.update(
-                None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE, daily_budget_cc=decimal.Decimal("10")
+                None,
+                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                daily_budget_cc=decimal.Decimal("10"),
+                skip_validation=True,
             )
         self.campaign.settings.update(None, campaign_manager=self.user)
         self.ad_group.settings.update(None, end_date=self.utc_today + datetime.timedelta(days=7))
@@ -139,7 +142,7 @@ class PrepareAdGroupSettingsTestCase(TestCase):
         ]
         self.assertEqual(decimal.Decimal("50"), ad_group_settings["ad_group_daily_cap"])
 
-    def test_ad_group_daily_caps_all_rtb_api_soures(self):
+    def test_ad_group_daily_caps_all_rtb_api_sources(self):
         non_b1_source_type = magic_mixer.blend(
             core.models.SourceType,
             type="notb1",
@@ -151,7 +154,10 @@ class PrepareAdGroupSettingsTestCase(TestCase):
         )
         for ad_group_source in non_b1_ad_group_sources:
             ad_group_source.settings.update(
-                None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE, daily_budget_cc=decimal.Decimal("10")
+                None,
+                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                daily_budget_cc=decimal.Decimal("10"),
+                skip_validation=True,
             )
 
         ad_group_settings = ad_groups.prepare_ad_group_settings([self.ad_group], include_ad_group_daily_cap=True)[

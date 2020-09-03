@@ -116,8 +116,22 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         try:
             ad_group_source.settings.update(request, k1_sync=True, **data)
 
-        except exceptions.DailyBudgetNegative as err:
+        except (
+            exceptions.CPCNegative,
+            exceptions.CannotSetCPC,
+            exceptions.B1SourcesCPCNegative,
+            exceptions.CPCInvalid,
+        ) as err:
+            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
+
+        except (exceptions.CPMNegative, exceptions.CannotSetCPM, exceptions.B1SourcesCPMNegative) as err:
+            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
+
+        except (exceptions.DailyBudgetNegative, exceptions.BudgetUpdateWhileSourcesGroupEnabled) as err:
             raise utils.exc.ValidationError(errors={"daily_budget": [str(err)]})
+
+        except (exceptions.AutopilotDailySpendCapTooLow, exceptions.MediaSourceNotConnectedToFacebook) as err:
+            raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
         except exceptions.MinimalDailyBudgetTooLow as err:
             raise utils.exc.ValidationError(
@@ -145,12 +159,6 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                     ]
                 }
             )
-
-        except exceptions.CPCNegative as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except exceptions.CPMNegative as err:
-            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
         except exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
@@ -233,24 +241,3 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                     ]
                 }
             )
-
-        except exceptions.CannotSetCPC as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except exceptions.CannotSetCPM as err:
-            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
-
-        except exceptions.B1SourcesCPCNegative as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except exceptions.B1SourcesCPMNegative as err:
-            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
-
-        except exceptions.CPCInvalid as err:
-            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
-
-        except exceptions.MediaSourceNotConnectedToFacebook as err:
-            raise utils.exc.ValidationError(errors={"state": [str(err)]})
-
-        except exceptions.AutopilotDailySpendCapTooLow as err:
-            raise utils.exc.ValidationError(errors={"state": [str(err)]})
