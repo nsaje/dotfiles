@@ -7,12 +7,12 @@ import {
     OnChanges,
     Renderer2,
 } from '@angular/core';
-import {TagDirectiveBase} from '../tag-directive-base/tag-directive-base';
+import {TagDirective} from '../tag/tag.directive';
 
 @Directive({
     selector: '[zemNewFeature]',
 })
-export class NewFeatureDirective extends TagDirectiveBase implements OnChanges {
+export class NewFeatureDirective extends TagDirective implements OnChanges {
     @Input()
     zemNewFeature: boolean = true;
     @Input()

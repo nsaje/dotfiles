@@ -42,7 +42,7 @@ config.module.rules = [
     {
         // Workaround: Convert AngularJS to CommonJS module
         test: /angular\.js$/,
-        loader: 'exports-loader?angular',
+        loader: 'exports-loader?type=commonjs&exports=angular',
         include: [common.root('./lib/components/angular')],
     },
 ];
@@ -50,7 +50,7 @@ config.module.rules = [
 config.plugins.push(
     // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
     // Runs typescript type checking in a separate process.
-    new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true})
+    new ForkTsCheckerWebpackPlugin()
 );
 
 config.mode = 'development';

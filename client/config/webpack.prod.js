@@ -62,9 +62,6 @@ function generateMainConfig(appEnvironment) {
     config.optimization = {
         minimize: true,
         minimizer: [
-            // https://github.com/NMFR/optimize-css-assets-webpack-plugin
-            // A Webpack plugin to optimize \ minimize CSS assets.
-            new OptimizeCSSAssetsPlugin({}),
             new TerserPlugin({
                 sourceMap: true,
                 terserOptions: {
@@ -134,7 +131,7 @@ function generateMainConfig(appEnvironment) {
         config.plugins = config.plugins.concat([
             // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
             // Runs typescript type checking in a separate process.
-            new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
+            new ForkTsCheckerWebpackPlugin(),
         ]);
     }
 
@@ -145,16 +142,18 @@ function generateMainConfig(appEnvironment) {
 
         // https://webpack.js.org/plugins/copy-webpack-plugin/
         // Copies individual files or entire directories to the build directory.
-        new CopyWebpackPlugin([
-            {
-                from: common.root('./one/images'),
-                to: 'images',
-            },
-            {
-                from: common.root('./one/assets'),
-                to: 'assets',
-            },
-        ]),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: common.root('./one/images'),
+                    to: 'images',
+                },
+                {
+                    from: common.root('./one/assets'),
+                    to: 'assets',
+                },
+            ],
+        }),
     ]);
 
     if (appEnvironment.branchName === 'master') {

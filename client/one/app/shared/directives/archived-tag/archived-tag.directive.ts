@@ -7,13 +7,12 @@ import {
     OnChanges,
     Renderer2,
 } from '@angular/core';
-import {TagDirectiveBase} from '../tag-directive-base/tag-directive-base';
+import {TagDirective} from '../tag/tag.directive';
 
 @Directive({
     selector: '[zemArchivedTag]',
 })
-export class ArchivedTagDirective extends TagDirectiveBase
-    implements OnChanges {
+export class ArchivedTagDirective extends TagDirective implements OnChanges {
     @Input()
     zemArchivedTag: boolean = true;
     @Input()

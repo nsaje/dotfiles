@@ -108,7 +108,7 @@ function generateMainConfig(appEnvironment) {
         config.plugins = config.plugins.concat([
             // https://github.com/TypeStrong/fork-ts-checker-webpack-plugin
             // Runs typescript type checking in a separate process.
-            new ForkTsCheckerWebpackPlugin({checkSyntacticErrors: true}),
+            new ForkTsCheckerWebpackPlugin(),
         ]);
     }
 

@@ -1,7 +1,7 @@
 import {ElementRef, OnChanges, Renderer2} from '@angular/core';
-import {TagDirectiveBase} from './tag-directive-base';
+import {TagDirective} from './tag.directive';
 
-class TestTagDirective extends TagDirectiveBase implements OnChanges {
+class TestTagDirective extends TagDirective implements OnChanges {
     zemTestTag: boolean = true;
     zemTestTagClass: string = '';
 
@@ -21,7 +21,7 @@ class TestTagDirective extends TagDirectiveBase implements OnChanges {
     }
 }
 
-describe('TagDirective', () => {
+describe('TestTagDirective', () => {
     let elementRefStub: ElementRef;
     let rendererSpy: jasmine.SpyObj<Renderer2>;
     let directive: TestTagDirective;

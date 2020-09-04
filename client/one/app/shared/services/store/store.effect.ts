@@ -1,6 +1,6 @@
 import {StoreAction} from './store.action';
 import {RequestStateUpdater} from '../../types/request-state-updater';
-import {OnDestroy} from '@angular/core';
+import {OnDestroy, Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 
 interface Effect<
@@ -11,6 +11,7 @@ interface Effect<
     dispatch<T>(action: StoreAction<T>): Promise<boolean>;
 }
 
+@Injectable()
 export abstract class StoreEffect<
     T1 extends {},
     T2 extends StoreAction<{requestStateUpdater: RequestStateUpdater}>

@@ -1,9 +1,10 @@
-import './tag-directive-base.less';
+import './tag.directive.less';
 
-import {ElementRef, OnChanges, Renderer2} from '@angular/core';
+import {ElementRef, OnChanges, Renderer2, Directive} from '@angular/core';
 import {isDefined} from '../../helpers/common.helpers';
 
-export abstract class TagDirectiveBase implements OnChanges {
+@Directive()
+export abstract class TagDirective implements OnChanges {
     isTagDisplayed: boolean = true;
     tagClass: string = '';
     tagText: string = '';

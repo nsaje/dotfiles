@@ -3,7 +3,7 @@
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": ".",
-        "target": "es5",
+        "target": "es6",
         "sourceMap": true,
         "declaration": false,
         "moduleResolution": "node",
@@ -21,6 +21,7 @@
             }
         ],
         "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "skipLibCheck": true
     }
 }

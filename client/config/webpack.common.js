@@ -77,6 +77,7 @@ function generateMainConfig(appEnvironment) {
         },
         {
             test: /\.css$/,
+            sideEffects: true,
             use: [
                 {loader: MiniCssExtractPlugin.loader},
                 {loader: 'css-loader'},
@@ -89,7 +90,7 @@ function generateMainConfig(appEnvironment) {
         {
             // Workaround: Convert AngularJS to CommonJS module
             test: /angular\.js$/,
-            loader: 'exports-loader?angular',
+            loader: 'exports-loader?type=commonjs&exports=angular',
             include: [root('./lib/components/angular')],
         },
     ];
@@ -98,7 +99,7 @@ function generateMainConfig(appEnvironment) {
         // Workaround for angular/angular#11580
         new webpack.ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /@angular(\\|\/)core(\\|\/)fesm5/,
+            /@angular(\\|\/)core/,
             root('./one'), // location of your src
             {} // a map of your routes
         ),
@@ -159,9 +160,11 @@ function generateStyleConfig(themeName) {
                 {
                     loader: 'less-loader',
                     options: {
-                        paths: [root('./one/app/themes/' + themeName)],
-                        relativeUrls: false,
-                        rootpath: APP_ENVIRONMENT.staticUrl + '/one/',
+                        lessOptions: {
+                            paths: [root('./one/app/themes/' + themeName)],
+                            relativeUrls: false,
+                            rootpath: APP_ENVIRONMENT.staticUrl + '/one/',
+                        },
                     },
                 },
             ],

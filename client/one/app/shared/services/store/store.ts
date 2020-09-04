@@ -2,11 +2,12 @@ import {Store as ObservableStore} from 'rxjs-observable-store';
 import {StoreProvider} from './store.provider';
 import {StoreReducer} from './store.reducer';
 import {StoreAction} from './store.action';
-import {Injector, OnDestroy} from '@angular/core';
+import {Injector, OnDestroy, Injectable} from '@angular/core';
 import {StoreEffect} from './store.effect';
 import * as commonHelpers from '../../helpers/common.helpers';
 import * as arrayHelpers from '../../helpers/array.helpers';
 
+@Injectable()
 export abstract class Store<T extends {}> extends ObservableStore<T>
     implements OnDestroy {
     private reducers: {
