@@ -8,7 +8,7 @@
     "dev-analyze": "NODE_ENV=development npm_config_analyze=true webpack",
     "dev-aot-analyze": "NODE_ENV=development npm_config_aot=true npm_config_analyze=true webpack",
     "prod": "NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 npm_config_aot=true webpack && NODE_ENV=production npm_config_build_whitelabels=true NODE_OPTIONS=--max-old-space-size=4096 webpack",
-    "prod-parallel": "NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 npm_config_aot=true parallel-webpack --no-stats --max-retries=10 && NODE_ENV=production npm_config_build_whitelabels=true NODE_OPTIONS=--max-old-space-size=4096 parallel-webpack --no-stats --max-retries=10",
+    "prod-parallel": "NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 npm_config_aot=true webpack && NODE_ENV=production npm_config_build_whitelabels=true NODE_OPTIONS=--max-old-space-size=4096 parallel-webpack --no-stats --max-retries=5",
     "e2e": "NODE_ENV=e2e npm_config_aot=true webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9898 --host=0.0.0.0",
     "tests": "NODE_ENV=test karma start karma.conf.js",
     "tests-watch": "NODE_ENV=test karma start karma.conf.js --no-single-run",
