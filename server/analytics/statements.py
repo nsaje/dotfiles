@@ -2,14 +2,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from django.conf import settings
-
 import dash.constants
 import dash.models
 import redshiftapi.db
 import utils.csv_utils
 from redshiftapi.models import MVMaster
-from utils import s3helpers
 
 DOWNLOAD_URL = "https://one.zemanta.com/api/custom_report_download/"
 
@@ -63,11 +60,3 @@ def media_source_performance_report_csv(from_date, till_date):
 
 def get_url(path):
     return DOWNLOAD_URL + "?" + urllib.parse.urlencode({"path": path})
-
-
-def generate_csv(path, report, *args, **kwargs):
-    s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
-    s3.put(
-        path, report if type(report) == str else report(*args, **kwargs), human_readable_filename=path.split("/")[-1]
-    )
-    return get_url(path)

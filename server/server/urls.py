@@ -531,11 +531,6 @@ urlpatterns += [
         name="publisher_groups_upload",
     ),
     url(
-        r"^api/custom_report_download/$",
-        login_required(dash.views.custom_report.CustomReportDownload.as_view()),
-        name="custom_report_download",
-    ),
-    url(
         r"^api/publisher_groups/download/example/$",
         login_required(dash.views.publishers.PublisherGroupsExampleDownload.as_view()),
         name="publisher_groups_example",

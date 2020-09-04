@@ -1,48 +1,4 @@
-from django.conf import settings
-
-import analytics.statements
-import redshiftapi.db
-import utils.csv_utils
 from dash.features.reports import reports
-from utils import s3helpers
-
-
-def upload_report_from_fs(path, filepath):
-    s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
-    with open(filepath) as fd:
-        s3.put(path, fd.read(), human_readable_filename=filepath.split("/")[-1])
-    return analytics.statements.get_url(path)
-
-
-def generate_report_from_dicts(name, dicts):
-    """
-    Generates a report with keys as column headers
-    """
-
-    headers = list(dicts[0].keys())
-    headers.sort()
-
-    rows = [headers]
-    for row in dicts:
-        rows.append([row[h] for h in headers])
-
-    return generate_report(name, rows)
-
-
-def generate_report(name, data):
-    s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
-    path = "/custom-csv/{}.csv".format(name)
-    s3.put(path, utils.csv_utils.tuplelist_to_csv(data))
-    return analytics.statements.get_url(path)
-
-
-def generate_report_from_query(name, query):
-    with redshiftapi.db.get_stats_cursor() as cur:
-        cur.execute(query)
-        columns = [col[0] for col in cur.description]
-        data = cur.fetchall()
-        return generate_report(name, [columns] + data)
-    return None
 
 
 def reprocess_report_job(job_id):

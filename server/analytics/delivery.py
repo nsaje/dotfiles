@@ -1,9 +1,7 @@
-import datetime
 from decimal import Decimal
 
 from django.db.models import Count
 from django.db.models import F
-from django.db.models import Prefetch
 
 import analytics.constants
 import analytics.helpers
@@ -12,7 +10,6 @@ import dash.campaign_goals
 import dash.constants
 import dash.infobox_helpers
 import dash.models
-import utils.csv_utils
 from utils import zlogging
 
 logger = zlogging.getLogger(__name__)
@@ -50,112 +47,6 @@ DEFAULT_ACCOUNT_TYPES = (
 
 UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl", "weborama")
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
-
-
-def generate_delivery_reports(account_types=[], skip_ok=True, generate_csv=True):
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(1)
-
-    # Filter ad groups that are running today and were running yesterday
-    valid_accounts = (
-        dash.models.Account.objects.all()
-        .filter_by_account_types(account_types or DEFAULT_ACCOUNT_TYPES)
-        .values_list("id", flat=True)
-    )
-
-    running_ad_groups = set(
-        dash.models.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
-        .filter_running(yesterday)
-        .select_related("campaign", "settings")
-        .prefetch_related(
-            Prefetch(
-                "adgroupsource_set",
-                to_attr="sources_b1_active",
-                queryset=dash.models.AdGroupSource.objects.only(
-                    "settings__state", "source__source_type__type", "ad_group__campaign__account_id"
-                ).filter(
-                    settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-                    source__source_type__type=dash.constants.SourceType.B1,
-                    ad_group__campaign__account_id__in=valid_accounts,
-                ),
-            ),
-            Prefetch(
-                "adgroupsource_set",
-                to_attr="sources_api_active",
-                queryset=dash.models.AdGroupSource.objects.only("settings__state", "ad_group__campaign__account_id")
-                .filter(
-                    settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-                    ad_group__campaign__account_id__in=valid_accounts,
-                )
-                .exclude(source__source_type__type=dash.constants.SourceType.B1),
-            ),
-            Prefetch(
-                "contentad_set",
-                to_attr="content_ads",
-                queryset=dash.models.ContentAd.objects.only("ad_group__campaign__account_id").filter(
-                    ad_group__campaign__account_id__in=valid_accounts
-                ),
-            ),
-            Prefetch(
-                "contentad_set",
-                to_attr="content_ads_inactive",
-                queryset=dash.models.ContentAd.objects.only("ad_group__campaign__account_id", "state").filter(
-                    state=dash.constants.ContentAdSourceState.INACTIVE,
-                    ad_group__campaign__account_id__in=valid_accounts,
-                ),
-            ),
-        )
-    )
-
-    running_campaigns = set(
-        dash.models.Campaign.objects.only(
-            "id", "account", "settings__enable_adobe_tracking", "settings__enable_ga_tracking", "settings__iab_category"
-        )
-        .filter(id__in=[i.campaign_id for i in running_ad_groups])
-        .select_related("account", "account__agency", "settings")
-        .prefetch_related(
-            Prefetch(
-                "campaigngoal_set",
-                to_attr="campaign_goals",
-                queryset=dash.models.CampaignGoal.objects.only("primary").filter(primary=True),
-            ),
-            Prefetch(
-                "adgroup_set", to_attr="ad_groups_active", queryset=dash.models.AdGroup.objects.all().filter_active()
-            ),
-            Prefetch(
-                "budgets",
-                to_attr="ending_budgets",
-                queryset=dash.models.BudgetLineItem.objects.filter(
-                    end_date__range=(datetime.date.today(), (datetime.date.today() + datetime.timedelta(30)))
-                ),
-            ),
-        )
-    )
-    campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
-
-    prev_campaign_stats = analytics.helpers.get_stats_multiple(
-        yesterday - datetime.timedelta(1), campaign=running_campaigns
-    )
-    ad_group_stats = analytics.helpers.get_stats_multiple(yesterday, ad_group=running_ad_groups)
-
-    campaign_data = _prepare_campaign_data(running_campaigns, campaign_stats, prev_campaign_stats, skip_ok=skip_ok)
-
-    ad_group_data = _prepare_ad_group_data(running_ad_groups, ad_group_stats, skip_ok=skip_ok)
-
-    return {
-        "campaign": analytics.statements.generate_csv(
-            "csr/{}-campaign.csv".format(today),
-            utils.csv_utils.tuplelist_to_csv([CAMPAIGN_REPORT_HEADER] + campaign_data),
-        )
-        if generate_csv
-        else campaign_data,
-        "ad_group": analytics.statements.generate_csv(
-            "csr/{}-ad-group.csv".format(today),
-            utils.csv_utils.tuplelist_to_csv([AD_GROUP_REPORT_HEADER] + ad_group_data),
-        )
-        if generate_csv
-        else ad_group_data,
-    }
 
 
 def check_campaign_delivery(campaign, campaign_stats, prev_campaign_stats):
