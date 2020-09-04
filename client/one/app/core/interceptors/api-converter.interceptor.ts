@@ -5,12 +5,14 @@ import {
     HttpHandler,
     HttpRequest,
     HttpResponse,
+    HttpParams,
 } from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import * as clone from 'clone';
 import * as commonHelpers from '../../shared/helpers/common.helpers';
 import * as dateHelpers from '../../shared/helpers/date.helpers';
+import {ApiHttpParamEncoder} from '../http/api-http-param-encoder';
 
 @Injectable()
 export class ApiConverterHttpInterceptor implements HttpInterceptor {
@@ -29,7 +31,9 @@ export class ApiConverterHttpInterceptor implements HttpInterceptor {
                 request.body instanceof FormData
                     ? request.body
                     : this.convertBodyToServerFormat(clone(request.body)),
+            params: this.replaceHttpParamEncoder(request.params),
         });
+
         return next.handle(request).pipe(
             map((event: HttpEvent<any>) => {
                 if (event instanceof HttpResponse) {
@@ -46,6 +50,16 @@ export class ApiConverterHttpInterceptor implements HttpInterceptor {
                 return event;
             })
         );
+    }
+
+    private replaceHttpParamEncoder(requestParams: HttpParams): HttpParams {
+        const encoder: ApiHttpParamEncoder = new ApiHttpParamEncoder();
+        const paramsObject: {[param: string]: string} = {};
+        requestParams.keys().forEach(key => {
+            paramsObject[key] = requestParams.get(key);
+        });
+
+        return new HttpParams({encoder, fromObject: paramsObject});
     }
 
     private convertBodyToServerFormat(body: any): any {
