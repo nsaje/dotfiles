@@ -48,10 +48,12 @@ function $zemLazyPopoverDirective(
             var event = attrs.zemLazyPopoverEvent || 'mouseleave';
             var stayOpenOnHover = attrs.zemLazyPopoverStayOpenOnHover || false;
 
+            // eslint-disable-next-line complexity
             var positionTooltip = function() {
                 if (!tooltip) {
                     return;
                 }
+
                 var ttPosition = $position.positionElements(
                     element,
                     tooltip,
@@ -59,13 +61,48 @@ function $zemLazyPopoverDirective(
                     ttScope.appendToBody
                 );
 
+                var windowHeight = document.documentElement.clientHeight;
+                var availableSpace = windowHeight - Math.max(0, ttPosition.top);
+                var tooltipHeight = tooltip.height();
+
+                var arrow = tooltip.find('.arrow');
+                var tooltipContent = tooltip.find('.popover-content');
+
                 if (ttPosition.left < 0) {
-                    var arrow = tooltip.find('.arrow');
                     arrow.css(
                         'transform',
                         'translateX(' + ttPosition.left + 'px)'
                     );
                     ttPosition.left = 0;
+                }
+
+                var shift = 0;
+                var isTopProblem = ttPosition.top < 0;
+                var isSpaceProblem = availableSpace < tooltipHeight;
+
+                if (isSpaceProblem) {
+                    shift = tooltipHeight - availableSpace;
+                    if (
+                        ttScope.placement === 'left' ||
+                        ttScope.placement === 'right'
+                    ) {
+                        arrow.css({top: tooltipHeight / 2 + shift});
+                    }
+                    if (ttPosition.top - shift < 0) {
+                        tooltipContent.css({'max-height': windowHeight});
+                        ttPosition.top = 0;
+                    } else {
+                        ttPosition.top = ttPosition.top - shift;
+                    }
+                } else if (isTopProblem) {
+                    shift = Math.abs(ttPosition.top);
+                    if (
+                        ttScope.placement === 'left' ||
+                        ttScope.placement === 'right'
+                    ) {
+                        arrow.css({top: tooltipHeight / 2 - shift});
+                    }
+                    ttPosition.top = 0;
                 }
 
                 ttPosition.top += 'px';
