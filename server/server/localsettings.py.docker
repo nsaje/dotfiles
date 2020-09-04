@@ -233,7 +233,7 @@ HASH_CACHE_TTL = 24 * 60 * 60
 
 USE_REDSHIFT_BACKGROUND_CACHE = False
 
-IMAGE_THUMBNAIL_URL = "https://images2.zemanta.com/"
+IMAGE_THUMBNAIL_URL = "https://zem.outbrainimg.com/"
 
 # QUEUES
 BROKER_TRANSPORT = "memory"
