@@ -1,5 +1,8 @@
 from django.db import models
 
+import dash.constants
+from core.models import ConversionPixel
+
 from ... import constants
 from . import instance
 from . import manager
@@ -31,3 +34,13 @@ class RuleCondition(instance.RuleConditionInstanceMixin, validation.RuleConditio
     right_operand_window = models.IntegerField(choices=constants.MetricWindow.get_choices(), null=True, blank=True)
     right_operand_type = models.IntegerField(choices=constants.ValueType.get_choices())
     right_operand_value = models.CharField(max_length=127)
+
+    conversion_pixel = models.ForeignKey(
+        ConversionPixel, related_name="coversion_pixel", on_delete=models.CASCADE, null=True
+    )
+    conversion_pixel_window = models.IntegerField(
+        choices=dash.constants.ConversionWindows.get_choices(), null=True, blank=True
+    )
+    conversion_pixel_attribution = models.IntegerField(
+        choices=dash.constants.ConversionType.get_choices(), null=True, blank=True
+    )
