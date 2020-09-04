@@ -24,7 +24,7 @@ class CompanyType(ConstantBase):
 
 
 class Country(ConstantBase):
-    _VALUES = dict(list(dash.regions.COUNTRY_BY_CODE.items()))
+    _VALUES = dict(sorted(list(dash.regions.COUNTRY_BY_CODE.items()), key=lambda x: x[1]))
 
     @classmethod
     def _get_all_kv_pairs(cls):
