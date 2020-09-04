@@ -3,6 +3,7 @@
     label="Select list"
     bindLabel="name"
     bindValue="id"
+    [placeholder]="'Start typing to search...'"
     [value]="publisherGroup.id"
     [items]="availablePublisherGroups"
     [isLoading]="searchInProgress"
@@ -10,6 +11,8 @@
     [isClearable]="true"
     [appendTo]="'body'"
     [errors]="publisherGroupErrors?.name"
+    [searchOnFocus]="true"
+    [loadingText]="'Searching...'"
     (valueChange)="selectPublisherGroup($event)"
     (search)="search.emit($event)"
 ></zem-select-form-group>

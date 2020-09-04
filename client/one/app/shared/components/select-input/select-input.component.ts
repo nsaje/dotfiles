@@ -20,6 +20,7 @@ import * as clone from 'clone';
 import {NgSelectComponent} from '@ng-select/ng-select';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
+import {isEmpty} from '../../helpers/array.helpers';
 
 @Component({
     selector: 'zem-select-input',
@@ -71,6 +72,10 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
     debounceTime: number;
     @Input()
     hasError: boolean = false;
+    @Input()
+    searchOnFocus: boolean = false;
+    @Input()
+    loadingText: string;
     @Output()
     valueChange = new EventEmitter<string | string[]>();
     @Output()
@@ -109,6 +114,7 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
                 debounceTime(
                     commonHelpers.getValueOrDefault(this.debounceTime, 200)
                 ),
+                distinctUntilChanged(),
                 takeUntil(this.ngUnsubscribe$)
             )
             .subscribe(term => {
@@ -178,6 +184,12 @@ export class SelectInputComponent implements OnInit, OnChanges, OnDestroy {
 
     onSearch($event: string) {
         this.searchDebouncer$.next($event);
+    }
+
+    onFocus($event: FocusEvent) {
+        if (this.searchOnFocus) {
+            this.searchDebouncer$.next((<any>$event.target)?.value || null);
+        }
     }
 
     onWindowScroll($event: any): void {

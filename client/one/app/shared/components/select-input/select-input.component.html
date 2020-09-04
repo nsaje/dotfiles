@@ -22,9 +22,11 @@
     addTagText="{{ addCustomItemText }}"
     [dropdownPosition]="dropdownPosition"
     [multiple]="isMultiple"
+    [loadingText]="loadingText"
     (open)="open.emit()"
     (search)="onSearch($event.term)"
     (change)="onChange($event)"
+    (focus)="onFocus($event)"
 >
     <ng-template ng-optgroup-tmp let-item="item">
         <ng-container

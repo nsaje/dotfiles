@@ -47,7 +47,7 @@
     <zem-add-to-publishers-action
         ng-if="$ctrl.isAddToPublishersAndPlacementsButtonVisible()"
         class="zem-add-to-publishers-action button-bar-item"
-        [selected-rows]="$ctrl.selectedRows"
+        [selected-rows]="$ctrl.publisherInfoRows"
         [account-id]="$ctrl.accountId"
         [is-disabled]="$ctrl.hasReadOnlyAccess()"
         (action-success)="$ctrl.gridApi.clearSelection()"

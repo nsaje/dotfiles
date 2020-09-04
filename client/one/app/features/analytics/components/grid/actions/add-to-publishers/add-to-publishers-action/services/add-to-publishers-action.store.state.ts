@@ -25,7 +25,7 @@ export class AddToPublishersActionStoreState {
     };
     mode: 'add' | 'create' = 'add';
     requests = {
-        search: {} as RequestState,
+        listExplicit: {} as RequestState,
         addEntries: {} as RequestState,
     };
 }

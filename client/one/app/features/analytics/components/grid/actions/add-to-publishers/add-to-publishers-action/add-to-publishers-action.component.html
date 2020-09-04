@@ -32,7 +32,7 @@
                 [availablePublisherGroups]="state.availablePublisherGroups"
                 [publisherGroup]="state.activeEntity.entity"
                 [publisherGroupErrors]="state.activeEntity.fieldsErrors"
-                [searchInProgress]="state.requests.search.inProgress"
+                [searchInProgress]="state.requests.listExplicit.inProgress"
                 (switchToCreate)="store.setMode('create')"
                 (search)="search($event)"
                 (publisherGroupSelected)="store.setActiveEntity($event)"

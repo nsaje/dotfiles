@@ -58,6 +58,10 @@ export class SelectFormGroupComponent implements OnChanges {
     debounceTime: number;
     @Input()
     errors: string[];
+    @Input()
+    searchOnFocus: boolean = false;
+    @Input()
+    loadingText: string;
     @Output()
     valueChange = new EventEmitter<string>();
     @Output()
