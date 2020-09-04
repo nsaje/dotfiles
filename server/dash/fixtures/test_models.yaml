@@ -281,6 +281,8 @@
         end_date: '2014-06-05'
         cpc_cc: '1.00'
         cpc: '1.00'
+        daily_budget: '500.'
+        local_daily_budget: '500.'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false

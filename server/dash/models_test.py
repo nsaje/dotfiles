@@ -50,6 +50,8 @@ class AdGroupSettingsTest(TestCase):
             "archived": False,
             "state": 1,
             "cpc_cc": Decimal("1.0000"),
+            "daily_budget": Decimal("500.0000"),
+            "local_daily_budget": Decimal("500.0000"),
             "daily_budget_cc": Decimal("50.0000"),
             "start_date": datetime.date(2014, 6, 4),
             "end_date": datetime.date(2014, 6, 5),
@@ -1261,7 +1263,7 @@ class HistoryTest(TestCase):
         hist = (
             models.History.objects.exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
             .all()
-            .order_by("-created_dt")[1]
+            .order_by("-created_dt")[10]
         )
         self.assertIn("Created settings. Source: b1.", hist.changes_text)
 

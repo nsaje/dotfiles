@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Sum
 
 import core.features.bcm
 import dash.constants
@@ -46,6 +47,8 @@ class AdGroupSourceSettingsMixin(object):
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user, write_history=write_history)
 
+        self._update_ad_group_daily_budget(request, changes)
+
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group_source.ad_group, "AdGroupSource.update")
 
@@ -77,6 +80,26 @@ class AdGroupSourceSettingsMixin(object):
         if field in updates and updates[field] is None or local_field in updates and updates[local_field] is None:
             updates.pop(field, None)
             updates.pop(local_field, None)
+
+    def _update_ad_group_daily_budget(self, request, changes):
+        if "local_daily_budget_cc" not in changes:
+            return
+
+        ad_group_budget_data = self.ad_group_source.ad_group.adgroupsource_set.filter_active().aggregate(
+            total_local_daily_budget=Sum("settings__local_daily_budget_cc")
+        )
+        self.ad_group_source.ad_group.settings.update(
+            request,
+            local_daily_budget=ad_group_budget_data["total_local_daily_budget"],
+            skip_validation=True,
+            skip_automation=True,
+            skip_permission_check=True,
+            skip_notification=True,
+            skip_field_change_validation_autopilot=True,
+            write_history=False,
+            write_source_history=False,
+            k1_sync=False,
+        )
 
     def _notify_ad_group_source_settings_changed(self, request, old_settings, new_settings):
         if not request:

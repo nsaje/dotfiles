@@ -42,7 +42,6 @@ class UpdateExchangeRatesTestCase(TestCase):
             skip_validation=True,
             local_cpc="0.8",
             local_autopilot_daily_budget=100,
-            local_b1_sources_group_daily_budget=72,
             local_b1_sources_group_cpc_cc="0.35",
             local_cpm="1.3",
         )
@@ -56,6 +55,9 @@ class UpdateExchangeRatesTestCase(TestCase):
             local_cpc_cc="0.62",
             local_daily_budget_cc=28,
         )
+        self.ad_group.settings.update(
+            request, skip_automation=True, skip_validation=True, local_b1_sources_group_daily_budget=72
+        )
         utils.test_helper.prepare_threadpoolexecutor_mock(self)
 
     def test_initial_settings(self):
@@ -66,6 +68,7 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal("1"), self.ad_group.settings.cpc)
         self.assertEqual(decimal.Decimal("125"), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("90"), self.ad_group.settings.b1_sources_group_daily_budget)
+        self.assertEqual(decimal.Decimal("90"), self.ad_group.settings.daily_budget)
         self.assertEqual(decimal.Decimal("0.4375"), self.ad_group.settings.b1_sources_group_cpc_cc)
         self.assertEqual(decimal.Decimal("1.625"), self.ad_group.settings.cpm)
         self.assertEqual(decimal.Decimal("35"), self.ad_group_source.settings.daily_budget_cc)
@@ -84,6 +87,7 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal("1.0667"), self.ad_group.settings.cpc)
         self.assertEqual(decimal.Decimal("133.3333"), self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("96"), self.ad_group.settings.b1_sources_group_daily_budget)
+        self.assertEqual(decimal.Decimal("96"), self.ad_group.settings.daily_budget)
         self.assertEqual(decimal.Decimal("0.4667"), self.ad_group.settings.b1_sources_group_cpc_cc)
         self.assertEqual(decimal.Decimal("1.7333"), self.ad_group.settings.cpm)
         self.assertEqual(decimal.Decimal("37.3333"), self.ad_group_source.settings.daily_budget_cc)
@@ -95,6 +99,7 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal("0.8"), self.ad_group.settings.local_cpc)
         self.assertEqual(decimal.Decimal("100"), self.ad_group.settings.local_autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("72"), self.ad_group.settings.local_b1_sources_group_daily_budget)
+        self.assertEqual(decimal.Decimal("72"), self.ad_group.settings.local_daily_budget)
         self.assertEqual(decimal.Decimal("0.35"), self.ad_group.settings.local_b1_sources_group_cpc_cc)
         self.assertEqual(decimal.Decimal("1.3"), self.ad_group.settings.local_cpm)
         self.assertEqual(decimal.Decimal("28"), self.ad_group_source.settings.local_daily_budget_cc)

@@ -74,6 +74,8 @@ class AdGroupSettings(
         "local_max_autopilot_bid",
         "cpc_cc",
         "local_cpc_cc",
+        "daily_budget",
+        "local_daily_budget",
         "daily_budget_cc",
         "target_devices",
         "target_os",
@@ -136,6 +138,7 @@ class AdGroupSettings(
         "cpc",
         "cpm",
         "max_autopilot_bid",
+        "daily_budget",
         "autopilot_daily_budget",
         "b1_sources_group_daily_budget",
         "b1_sources_group_cpc_cc",
@@ -168,6 +171,12 @@ class AdGroupSettings(
     )  # max CPC
     local_cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
+    )
+    daily_budget = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Ad group’s daily budget"
+    )
+    local_daily_budget = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Ad group’s daily budget"
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Daily spend cap"
@@ -314,6 +323,7 @@ class AdGroupSettings(
                 ("max_cpm", None),
                 ("cpm", cls.DEFAULT_CPM_VALUE),
                 ("max_autopilot_bid", None),
+                ("daily_budget", Decimal("50.00")),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
                 ("target_regions", []),
@@ -353,6 +363,8 @@ class AdGroupSettings(
             "local_cpc_cc": "Max CPC bid",
             "max_cpm": "Max CPM bid",
             "local_max_cpm": "Max CPM bid",
+            "daily_budget": "Ad group’s daily budget",
+            "local_daily_budget": "Ad group’s daily budget",
             "daily_budget_cc": "Daily spend cap",
             "target_devices": "Device targeting",
             "target_environments": "Environment",
@@ -423,6 +435,8 @@ class AdGroupSettings(
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_max_cpm" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_daily_budget" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "daily_budget_cc" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "target_devices":

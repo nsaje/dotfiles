@@ -34,6 +34,7 @@ class AdGroupSettingsMixin(object):
         system_user=None,
         write_history=True,
         write_source_history=True,
+        k1_sync=True,
         **updates
     ):
         updates = prodops.hacks.override_ad_group_settings(self.ad_group, updates)
@@ -66,7 +67,7 @@ class AdGroupSettingsMixin(object):
                     write_source_history=write_source_history,
                 )
                 self._propagate_changes(
-                    request, new_settings, changes, system_user, skip_notification=skip_notification
+                    request, new_settings, changes, system_user, k1_sync, skip_notification=skip_notification
                 )
                 self._update_ad_group(request, changes)
                 # autopilot reloads settings so changes have to be saved when it is called
@@ -243,6 +244,10 @@ class AdGroupSettingsMixin(object):
 
             if "b1_sources_group_daily_budget" not in changes:
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
+                new_settings.daily_budget = core.models.AllRTBSource.default_daily_budget_cc
+
+        if "b1_sources_group_daily_budget" in changes:
+            new_settings.daily_budget = new_settings.b1_sources_group_daily_budget
 
     def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
@@ -315,7 +320,22 @@ class AdGroupSettingsMixin(object):
 
         autopilot.recalculate_budgets_ad_group(self.ad_group)
 
-    def _propagate_changes(self, request, new_settings, changes, system_user, skip_notification=False):
+    def _check_if_fields_are_allowed_to_be_changed_with_autopilot_on(self, changes):
+        forbidden_fields = [
+            "autopilot_daily_budget",
+            "autopilot_state",
+            "local_autopilot_daily_budget",
+            "start_date",
+            "end_date",
+        ]
+        if self.ad_group.campaign.settings.autopilot and any(field in changes for field in forbidden_fields):
+            raise exc.ForbiddenError(
+                "The following fields can't be changed if autopilot is active: {}, {}, {}, {}, {}".format(
+                    *[core.models.settings.AdGroupSettings.get_human_prop_name(field) for field in forbidden_fields]
+                )
+            )
+
+    def _propagate_changes(self, request, new_settings, changes, system_user, k1_sync, skip_notification=False):
         k1_priority = self.state == constants.AdGroupSettingsState.ACTIVE and any(
             field in changes for field in PRIORITY_UPDATE_FIELDS
         )
@@ -327,7 +347,8 @@ class AdGroupSettingsMixin(object):
         if any(field in changes for field in REDIRECTOR_UPDATE_FIELDS):
             redirector_helper.insert_adgroup(self.ad_group)
 
-        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=k1_priority)
+        if k1_sync:
+            k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=k1_priority)
 
         if not skip_notification:
             self._send_notification_email(request, new_settings)

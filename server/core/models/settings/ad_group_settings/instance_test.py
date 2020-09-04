@@ -37,6 +37,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpc_cc = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.daily_budget = Decimal("100.0")
         new_settings.cpc = Decimal("0.5")
         new_settings.save(None)
 
@@ -58,8 +59,10 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpc_cc": Decimal("0.5"),
                 "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_cpc_cc": Decimal("0.5"),
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -72,6 +75,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpm = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.daily_budget = Decimal("100.0")
         new_settings.cpm = Decimal("0.8")
         new_settings.save(None)
 
@@ -93,8 +97,10 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpm": Decimal("0.8"),
                 "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_b1_sources_group_cpm": Decimal("0.8"),
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 
@@ -135,8 +141,10 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpc_cc": Decimal("0.211"),
                 "b1_sources_group_daily_budget": Decimal("10.0"),
+                "daily_budget": Decimal("10.0"),
                 "local_b1_sources_group_cpc_cc": Decimal("0.211"),
                 "local_b1_sources_group_daily_budget": Decimal("10.0"),
+                "local_daily_budget": Decimal("10.0"),
             },
         )
 
@@ -180,8 +188,10 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpm": Decimal("0.211"),
                 "b1_sources_group_daily_budget": Decimal("10.0"),
+                "daily_budget": Decimal("10.0"),
                 "local_b1_sources_group_cpm": Decimal("0.211"),
                 "local_b1_sources_group_daily_budget": Decimal("10.0"),
+                "local_daily_budget": Decimal("10.0"),
             },
         )
 
@@ -191,6 +201,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpc_cc = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.daily_budget = Decimal("100.0")
         new_settings.cpc = Decimal("0.5")
         new_settings.save(None)
 
@@ -214,9 +225,11 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpc_cc": Decimal("0.05"),
                 "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "cpc": Decimal("0.05"),
                 "local_b1_sources_group_cpc_cc": Decimal("0.05"),
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_cpc": Decimal("0.05"),
             },
         )
@@ -230,6 +243,7 @@ class InstanceTest(TestCase):
         new_settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_cpm = Decimal("0.111")
         new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.daily_budget = Decimal("100.0")
         new_settings.cpm = Decimal("0.8")
         new_settings.save(None)
 
@@ -253,10 +267,12 @@ class InstanceTest(TestCase):
                 "b1_sources_group_enabled": True,
                 "b1_sources_group_cpm": Decimal("0.05"),
                 "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "cpm": Decimal("0.05"),
                 "local_b1_sources_group_cpm": Decimal("0.05"),
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_cpm": Decimal("0.05"),
+                "local_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
             },
         )
 

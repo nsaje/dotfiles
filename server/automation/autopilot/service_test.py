@@ -662,7 +662,11 @@ class AutopilotPlusTestCase(test.TestCase):
                 ),
                 (
                     dash.constants.SystemUserType.AUTOPILOT,
-                    {"local_b1_sources_group_cpc_cc": "0.2200", "local_b1_sources_group_daily_budget": "20.0000"},
+                    {
+                        "local_b1_sources_group_cpc_cc": "0.2200",
+                        "local_b1_sources_group_daily_budget": "20.0000",
+                        "local_daily_budget": "20.0000",
+                    },
                 ),
             ],
         )
