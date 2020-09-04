@@ -534,6 +534,29 @@ class LegacyBidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITe
             result, {"errorCode": "ValidationError", "details": {"target": ["This field may not be blank."]}}
         )
 
+    def test_create_invalid_ad(self):
+        invalid_ad = magic_mixer.blend(core.models.ContentAd)
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.AD),
+            "sourceSlug": "",
+            "target": str(invalid_ad.id),
+            "modifier": 1.1,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}), data=bm, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {
+                "errorCode": "ValidationError",
+                "details": {"target": ["Target content ad is not a part of this ad group"]},
+            },
+        )
+
     def test_create_unsupported_operating_system(self):
         bm = {
             "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.OPERATING_SYSTEM),
@@ -781,6 +804,44 @@ class LegacyBidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITe
                         "modifier": 1.7,
                     },
                 ]
+            },
+        )
+
+    def test_update_bulk_ad_error(self):
+        invalid_ad = magic_mixer.blend(core.models.ContentAd)
+        bm1 = self.bid_modifiers_list[0]
+        bm2 = self.bid_modifiers_list[1]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}),
+            data=[
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bm1.type),
+                    "target": bm1.target,
+                    "modifier": 1.5,
+                    "sourceSlug": bm1.source_slug,
+                },
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bm2.type),
+                    "target": self.source.bidder_slug,
+                    "modifier": 1.6,
+                    "sourceSlug": "",
+                },
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.AD),
+                    "target": str(invalid_ad.id),
+                    "modifier": 1.1,
+                },
+            ],
+            format="json",
+        )
+
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {
+                "errorCode": "ValidationError",
+                "details": "At least one of the target content ads is not a part of this ad group",
             },
         )
 

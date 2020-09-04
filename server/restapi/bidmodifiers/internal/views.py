@@ -107,7 +107,10 @@ class BidModifiersUpload(RESTAPIBaseViewSet):
             if csv_error_key:
                 raise serializers.ValidationError({"file": "Errors in CSV file!", "errorFileUrl": csv_error_key})
 
-        except bid_modifiers.exceptions.InvalidBidModifierFile as exc:
+        except (
+            bid_modifiers.exceptions.InvalidBidModifierFile,
+            bid_modifiers.exceptions.BidModifierTargetAdGroupMismatch,
+        ) as exc:
             raise serializers.ValidationError({"file": str(exc)})
 
         return self.response_ok(bid_modifiers.helpers.create_upload_summary_response(delete_type_counts, instances))

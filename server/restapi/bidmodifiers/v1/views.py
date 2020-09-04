@@ -63,8 +63,12 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                 input_data["modifier"],
                 user=request.user,
             )
+
         except core.features.bid_modifiers.BidModifierInvalid as e:
             raise exc.ValidationError(str(e))
+
+        except core.features.bid_modifiers.BidModifierTargetAdGroupMismatch as e:
+            raise exc.ValidationError(errors={"target": [str(e)]})
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data, status=status.HTTP_201_CREATED)
 
@@ -133,7 +137,11 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         ]
         try:
             bid_modifiers = core.features.bid_modifiers.set_bulk(ad_group, bms_to_set, user=request.user)
-        except core.features.bid_modifiers.BidModifierInvalid as e:
+
+        except (
+            core.features.bid_modifiers.BidModifierInvalid,
+            core.features.bid_modifiers.BidModifierTargetAdGroupMismatch,
+        ) as e:
             raise exc.ValidationError(str(e))
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifiers, many=True).data)

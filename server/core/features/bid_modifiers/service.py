@@ -60,7 +60,7 @@ def set(
 ):
     if modifier_type == constants.BidModifierType.AD:
         if not core.models.ContentAd.objects.filter(ad_group=ad_group, id=target).exists():
-            raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not part of this ad group")
+            raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not a part of this ad group")
 
     instance, created = _set(
         ad_group,
@@ -85,7 +85,9 @@ def set_bulk(
     target_ad_ids = {bm.target for bm in bid_modifiers_to_set if bm.type == constants.BidModifierType.AD}
     if target_ad_ids:
         if core.models.ContentAd.objects.filter(ad_group=ad_group, id__in=target_ad_ids).count() != len(target_ad_ids):
-            raise exceptions.BidModifierTargetAdGroupMismatch("Target content ad is not part of this ad group")
+            raise exceptions.BidModifierTargetAdGroupMismatch(
+                "At least one of the target content ads is not a part of this ad group"
+            )
 
     instances = []
     for bid_modifier_data in bid_modifiers_to_set:

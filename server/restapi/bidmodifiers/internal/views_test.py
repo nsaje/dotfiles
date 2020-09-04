@@ -487,6 +487,42 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCa
             ],
         )
 
+    @mock.patch("utils.s3helpers.S3Helper.put")
+    @mock.patch("core.features.bid_modifiers.helpers.create_csv_error_key")
+    def test_upload_validation_error_ad(self, mock_create_csv_error_key, mock_s3_helper_put):
+        mock_create_csv_error_key.return_value = "j4NILLm4bPUkR0ukfA475kEuKLy0uGssS5eMUfrWvSZTB9GL6oO51y9ehZwbx1vT"
+
+        csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")
+        target_column_name = bid_modifiers.helpers.output_modifier_type(bid_modifiers.constants.BidModifierType.AD)
+        csv_columns = [target_column_name, "Bid Modifier"]
+        invalid_ad = magic_mixer.blend(core.models.ContentAd)
+        entries = [{target_column_name: str(invalid_ad.id), "Bid Modifier": "1.1"}]
+
+        csv_writer = csv.DictWriter(csv_file, csv_columns)
+        csv_writer.writeheader()
+        csv_writer.writerows(entries)
+        csv_file.seek(0)
+
+        response = self.client.post(
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.AD
+                    ),
+                },
+            ),
+            {"file": csv_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, 400)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {"errorCode": "ValidationError", "details": {"file": "Target content ad is not a part of this ad group"}},
+        )
+
     def test_download_example_file(self):
         response = self.client.get(
             reverse(
@@ -968,6 +1004,58 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCa
         )
 
         self.assertEqual(actual_contents, expected_contents)
+
+    @mock.patch("utils.s3helpers.S3Helper.put")
+    @mock.patch("core.features.bid_modifiers.helpers.create_csv_error_key")
+    def test_bulk_upload_validation_error_ad(self, mock_create_csv_error_key, mock_s3_helper_put):
+        mock_create_csv_error_key.return_value = "j4NILLm4bPUkR0ukfA475kEuKLy0uGssS5eMUfrWvSZTB9GL6oO51y9ehZwbx1vT"
+        valid_ad_1 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        valid_ad_2 = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
+        invalid_ad = magic_mixer.blend(core.models.ContentAd)
+        entries = [
+            {
+                bid_modifiers.helpers.output_modifier_type(bid_modifiers.constants.BidModifierType.AD): str(
+                    valid_ad_1.id
+                ),
+                "Bid Modifier": "1.1",
+            },
+            {
+                bid_modifiers.helpers.output_modifier_type(bid_modifiers.constants.BidModifierType.AD): str(
+                    invalid_ad.id
+                ),
+                "Bid Modifier": "1.2",
+            },
+            {
+                bid_modifiers.helpers.output_modifier_type(bid_modifiers.constants.BidModifierType.AD): str(
+                    valid_ad_2.id
+                ),
+                "Bid Modifier": "1.3",
+            },
+        ]
+
+        def sub_file_generator(entries):
+            for entry in entries:
+                sub_file = io.StringIO()
+                csv_writer = csv.DictWriter(sub_file, entry.keys())
+                csv_writer.writeheader()
+                csv_writer.writerows([entry])
+                sub_file.seek(0)
+                yield sub_file
+
+        csv_file = bid_modifiers.helpers.create_bulk_csv_file(sub_file_generator(entries))
+
+        response = self.client.post(
+            reverse("bid_modifiers_upload_bulk", kwargs={"ad_group_id": self.ad_group.id}),
+            {"file": csv_file},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {"errorCode": "ValidationError", "details": {"file": "Target content ad is not a part of this ad group"}},
+        )
 
     @mock.patch("utils.s3helpers.S3Helper.get")
     def test_error_download(self, mock_s3_helper_get):
