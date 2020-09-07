@@ -11,7 +11,6 @@ from core.features.history.models import *
 from core.features.bid_modifiers import BidModifier
 from core.features.publisher_groups import *
 from core.features.multicurrency import *
-from core.features.yahoo_accounts.models import *
 from core.features.deals import *
 from core.features.videoassets.models import *
 from core.features.entity_status.models import *

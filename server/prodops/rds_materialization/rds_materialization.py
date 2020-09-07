@@ -112,7 +112,6 @@ class RDSAccount(RDSModelization):
         name="name",
         auto_archiving_enabled="auto_archiving_enabled",
         currency="currency",
-        yahoo_account_id="yahoo_account",
         agency_id="agency",
         account_sales_representative="settings__default_sales_representative__email",
         account_account_manager="settings__default_account_manager__email",

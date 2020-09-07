@@ -116,9 +116,6 @@ class AgencyInstanceMixin:
             elif field == "default_account_type":
                 self.default_account_type = value
                 sub_accounts_updates["account_type"] = value
-            elif field == "yahoo_account":
-                self.yahoo_account = value
-                sub_accounts_updates["yahoo_account"] = value
             else:
                 setattr(self, field, value)
         self.save(request)

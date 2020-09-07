@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
-import core.features.yahoo_accounts
 import utils.demo_anonymizer
 import utils.string_helper
 from core.models import tags
@@ -39,7 +38,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
         "real_time_campaign_stop",
         "entity_tags",
         "is_disabled",
-        "yahoo_account",
         "default_whitelist",
         "default_blacklist",
         "agency",
@@ -84,9 +82,6 @@ class Account(EntityPermissionMixin, AccountValidatorMixin, AccountInstanceMixin
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
     outbrain_marketer_version = models.IntegerField(default=0)
     outbrain_internal_marketer_id = models.CharField(null=True, blank=True, max_length=255)
-    yahoo_account = models.ForeignKey(
-        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True
-    )
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
     salesforce_id = models.IntegerField(null=True, blank=True, help_text="Outbrain custom Salesforce ID.")

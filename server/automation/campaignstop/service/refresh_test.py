@@ -4,12 +4,9 @@ import itertools
 
 import mock
 import pytz
-from django.conf import settings
 from django.test import TestCase
 
-import core.features.yahoo_accounts
 import core.models
-import dash.constants
 from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -21,7 +18,7 @@ from . import refresh
 
 class RefreshRealtimeDataTest(TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.models.Account, yahoo_account__budgets_tz="America/Los_Angeles")
+        self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.source_type = magic_mixer.blend(core.models.SourceType, budgets_tz=pytz.utc)
@@ -174,39 +171,6 @@ class RefreshRealtimeDataTest(TestCase):
 
         refresh.refresh_realtime_data([campaign])
         self.assertFalse(RealTimeDataHistory.objects.exists())
-
-    @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
-    def test_refresh_budgets_tz_behind_source(self, mock_get_realtime_data):
-        yahoo_source_type = magic_mixer.blend(core.models.SourceType, type=dash.constants.SourceType.YAHOO)
-        yahoo_source = magic_mixer.blend(core.models.Source, source_type=yahoo_source_type)
-        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=yahoo_source)
-
-        data = {"stats": [{"source": yahoo_source, "spend": decimal.Decimal("10.0")}]}
-        mock_get_realtime_data.return_value = data
-
-        today = dates_helper.local_today()
-        yesterday = dates_helper.local_yesterday()
-        with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
-            local_tz_offset = datetime.datetime.now(pytz.timezone(settings.DEFAULT_TIME_ZONE)).utcoffset()
-            mock_utc_now.return_value = datetime.datetime(today.year, today.month, today.day) - local_tz_offset
-
-            refresh.refresh_realtime_data([self.campaign])
-
-        history = RealTimeDataHistory.objects.get()
-        self.assertEqual(self.ad_group.id, history.ad_group_id)
-        self.assertEqual(yahoo_source.id, history.source_id)
-        self.assertEqual(dates_helper.local_yesterday(), history.date)
-        self.assertEqual(data["stats"][0]["spend"], history.etfm_spend)
-
-        campaign_history_today = RealTimeCampaignDataHistory.objects.get(date=today)
-        self.assertEqual(self.campaign.id, campaign_history_today.campaign_id)
-        self.assertEqual(today, campaign_history_today.date)
-        self.assertEqual(0, campaign_history_today.etfm_spend)
-
-        campaign_history_yesterday = RealTimeCampaignDataHistory.objects.get(date=yesterday)
-        self.assertEqual(self.campaign.id, campaign_history_yesterday.campaign_id)
-        self.assertEqual(yesterday, campaign_history_yesterday.date)
-        self.assertEqual(data["stats"][0]["spend"], campaign_history_yesterday.etfm_spend)
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_multiple(self, mock_get_realtime_data):

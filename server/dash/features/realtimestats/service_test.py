@@ -8,7 +8,6 @@ import mock
 import pytz
 from django.test import TestCase
 
-import core.features.yahoo_accounts
 import core.models
 import dash.constants
 from dash.features.realtimestats import service
@@ -23,10 +22,7 @@ class RealtimestatsServiceTest(TestCase):
             {"type": "outbrain", "source_campaign_key": {"campaign_id": "test_outbrain_1"}},
             {"type": "yahoo", "source_campaign_key": "test_yahoo_1"},
         ]
-        self.yahoo_account = magic_mixer.blend(
-            core.features.yahoo_accounts.YahooAccount, budgets_tz="America/Los_Angeles", advertiser_id="test"
-        )
-        self.account = magic_mixer.blend(core.models.Account, yahoo_account=self.yahoo_account)
+        self.account = magic_mixer.blend(core.models.Account)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group_sources = magic_mixer.cycle(len(ad_group_sources)).blend(
@@ -36,11 +32,6 @@ class RealtimestatsServiceTest(TestCase):
             source__source_type__type=(ags["type"] for ags in ad_group_sources),
             source_campaign_key=(ags["source_campaign_key"] for ags in ad_group_sources),
         )
-        self.expected_params = {
-            "outbrain_campaign_id": "test_outbrain_1",
-            "yahoo_campaign_id": "test_yahoo_1",
-            "yahoo_advertiser_id": "test",
-        }
 
         self._set_up_budgets()
 
@@ -83,7 +74,7 @@ class RealtimestatsServiceTest(TestCase):
         result = service.get_ad_group_stats(self.ad_group)
         self.assertEqual(result, {"clicks": 13, "spend": test_helper.AlmostMatcher(decimal.Decimal("8.8696"))})
 
-        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
+        mock_k1_get.assert_called_once_with(self.ad_group.id, {})
         mock_redirector_get.assert_called_once_with(self.ad_group.id)
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
@@ -117,7 +108,7 @@ class RealtimestatsServiceTest(TestCase):
             ],
         )
 
-        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
+        mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_only_allowed(self, mock_k1_get):
@@ -151,7 +142,7 @@ class RealtimestatsServiceTest(TestCase):
             ],
         )
 
-        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
+        mock_k1_get.assert_called_once_with(self.ad_group.id, {})
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
@@ -186,7 +177,7 @@ class RealtimestatsServiceTest(TestCase):
                 },
             ],
         )
-        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
+        mock_k1_get.assert_called_once_with(self.ad_group.id, {})
         mock_k1_get.return_value = {
             "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
@@ -215,21 +206,20 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_today(self, mock_k1_get):
         mock_k1_get.return_value = {"stats": [], "errors": {}}
-        budgets_tz = self.yahoo_account.budgets_tz
+        budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
             tz_now = budgets_tz.localize(datetime.datetime(utc_today.year, utc_today.month, utc_today.day, 0))
             mock_utc_now.return_value = tz_now.astimezone(pytz.utc)
-            service.get_ad_group_sources_stats(self.ad_group, use_source_tz=True)
+            service.get_ad_group_sources_stats(self.ad_group)
 
-            expected_params = dict(self.expected_params)
-            expected_params["yahoo_date"] = utc_today.isoformat()
+            expected_params = dict({})
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_with_source_tz_yesterday(self, mock_k1_get):
         mock_k1_get.return_value = {"stats": [], "errors": {}}
-        budgets_tz = self.yahoo_account.budgets_tz
+        budgets_tz = pytz.timezone("America/Los_Angeles")
         utc_today = dates_helper.utc_today()
         utc_yesterday = dates_helper.day_before(utc_today)
         with mock.patch("utils.dates_helper.utc_now") as mock_utc_now:
@@ -237,10 +227,9 @@ class RealtimestatsServiceTest(TestCase):
                 datetime.datetime(utc_yesterday.year, utc_yesterday.month, utc_yesterday.day, 23)
             )
             mock_utc_now.return_value = tz_now.astimezone(pytz.utc)
-            service.get_ad_group_sources_stats(self.ad_group, use_source_tz=True)
+            service.get_ad_group_sources_stats(self.ad_group)
 
-            expected_params = dict(self.expected_params)
-            expected_params["yahoo_date"] = utc_yesterday.isoformat()
+            expected_params = dict({})
             mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
@@ -277,7 +266,7 @@ class RealtimestatsServiceTest(TestCase):
             },
         )
 
-        expected_params = dict(self.expected_params, **{"no_cache": True})
+        expected_params = dict({}, **{"no_cache": True})
         mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
     @mock.patch("dash.features.realtimestats.service.metrics_compat")

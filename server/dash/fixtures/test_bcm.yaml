@@ -32,15 +32,6 @@
     model: zemauth.user
     pk: 10
 
-# test yahoo account
-
--   fields:
-        advertiser_id: '953699'
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-    model: dash.yahooaccount
-    pk: 1
-
 # test accountsettings
 
 -   fields:
@@ -91,7 +82,6 @@
         modified_by: 1
         settings: 1
         name: 'test account 1'
-        yahoo_account: 1
     model: dash.account
     pk: 1
 
@@ -101,7 +91,6 @@
         modified_by: 1
         settings: 2
         name: 'test account 2'
-        yahoo_account: 1
     model: dash.account
     pk: 2
 
@@ -111,7 +100,6 @@
         modified_by: 1
         settings: 3
         name: 'test account 3'
-        yahoo_account: 1
     model: dash.account
     pk: 3
 
@@ -121,7 +109,6 @@
         modified_by: 10
         settings: 10
         name: 'test account non-connected'
-        yahoo_account: 1
     model: dash.account
     pk: 10
 

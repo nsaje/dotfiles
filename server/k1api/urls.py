@@ -14,7 +14,6 @@ from .views import outbrain
 from .views import publishers
 from .views import r1_mapping
 from .views import sources
-from .views import yahoo
 
 urlpatterns = [
     url(r"^ad_groups$", ad_groups.AdGroupsView.as_view(), name="k1api.ad_groups"),
@@ -76,7 +75,6 @@ urlpatterns = [
     ),
     url(r"^outbrain/marketer_id$", outbrain.OutbrainMarketerIdView.as_view(), name="k1api.outbrain_marketer_id"),
     url(r"^outbrain/sync_marketer$", outbrain.OutbrainMarketerSyncView.as_view(), name="k1api.outbrain_marketer_sync"),
-    url(r"^yahoo/accounts$", yahoo.YahooAccountsView.as_view(), name="k1api.yahoo_accounts"),
     url(r"^publisher_groups$", publishers.PublisherGroupsView.as_view(), name="k1api.publisher_groups"),
     url(
         r"^publisher_groups_entries$",

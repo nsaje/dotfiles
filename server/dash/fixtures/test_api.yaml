@@ -48,16 +48,6 @@
     model: zemauth.user
     pk: 3
 
-# test yahoo account
-
--   fields:
-        advertiser_id: '953699'
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        currency: 'USD'
-    model: dash.yahooaccount
-    pk: 1
-
 # test accountsettings
 
 -   fields:
@@ -101,7 +91,6 @@
         allowed_sources: [1,2,3,4,5,6,7,8,9]
         settings: 1
         name: 'test account 1 Čžš'
-        yahoo_account: 1
     model: dash.account
     pk: 1
 
@@ -111,7 +100,6 @@
         modified_by: 1
         settings: 2
         name: 'test account 2'
-        yahoo_account: 1
     model: dash.account
     pk: 2
 
@@ -121,7 +109,6 @@
         modified_by: 1
         settings: 3
         name: 'test account 3'
-        yahoo_account: 1
         archived: True
     model: dash.account
     pk: 3
@@ -132,7 +119,6 @@
         modified_by: 1
         settings: 4
         name: 'demo account'
-        yahoo_account: 1
     model: dash.account
     pk: 4
 

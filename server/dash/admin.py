@@ -538,11 +538,6 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         form.request = request
         return form
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.yahoo_account:
-            return self.readonly_fields + ("yahoo_account",)
-        return self.readonly_fields
-
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:
             instances = formset.save(commit=False)

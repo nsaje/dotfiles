@@ -5,10 +5,7 @@ import urllib.request
 from operator import itemgetter
 
 import core.features.bcm.calculations
-import core.features.yahoo_accounts
-from dash import constants
 from dash import models
-from utils import dates_helper
 from utils import k1_helper
 from utils import metrics_compat
 from utils import redirector_helper
@@ -24,21 +21,17 @@ def get_ad_group_stats(ad_group, use_local_currency=False):
     return stats
 
 
-def get_ad_group_sources_stats(ad_group, use_source_tz=False, use_local_currency=False):
-    stats = _get_ad_group_sources_stats(ad_group, use_source_tz=use_source_tz, use_local_currency=use_local_currency)
+def get_ad_group_sources_stats(ad_group, use_local_currency=False):
+    stats = _get_ad_group_sources_stats(ad_group, use_local_currency=use_local_currency)
     return stats["stats"]
 
 
-def get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=False, use_local_currency=False):
-    return _get_ad_group_sources_stats(
-        ad_group, no_cache=True, use_source_tz=use_source_tz, use_local_currency=use_local_currency
-    )
+def get_ad_group_sources_stats_without_caching(ad_group, use_local_currency=False):
+    return _get_ad_group_sources_stats(ad_group, no_cache=True, use_local_currency=use_local_currency)
 
 
-def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False, use_source_tz=False):
-    stats = _get_etfm_source_stats(
-        ad_group, no_cache=no_cache, use_source_tz=use_source_tz, use_local_currency=use_local_currency
-    )
+def _get_ad_group_sources_stats(ad_group, *, use_local_currency, no_cache=False):
+    stats = _get_etfm_source_stats(ad_group, no_cache=no_cache, use_local_currency=use_local_currency)
 
     sources = models.Source.objects.all().select_related("source_type")
     sources_by_slug = {source.bidder_slug: source for source in sources}
@@ -55,8 +48,8 @@ def _augment_source(stats, sources_by_slug):
             stat["source"] = source
 
 
-def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False, use_source_tz=False):
-    stats = _get_k1_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
+def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False):
+    stats = _get_k1_source_stats(ad_group, no_cache=no_cache)
     _clean_sources(ad_group, stats)
     _add_fees_and_margin(ad_group, stats["stats"])
     if use_local_currency:
@@ -93,15 +86,15 @@ def _to_local_currency(ad_group, stats):
         stat["spend"] = decimal.Decimal(stat["spend"]) * exchange_rate
 
 
-def _get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
+def _get_k1_source_stats(ad_group, no_cache=False):
     if no_cache:
-        return _try_get_k1_source_stats(ad_group, no_cache, use_source_tz=use_source_tz)
-    return _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=use_source_tz)
+        return _try_get_k1_source_stats(ad_group, no_cache)
+    return _get_k1_source_stats_with_error_handling(ad_group)
 
 
-def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
+def _get_k1_source_stats_with_error_handling(ad_group):
     try:
-        return _try_get_k1_source_stats(ad_group, use_source_tz=use_source_tz)
+        return _try_get_k1_source_stats(ad_group)
     except urllib.error.HTTPError as e:
         metrics_compat.incr("dash.realtimestats.error", 1, type="http", status=str(e.code))
     except IOError:
@@ -112,48 +105,8 @@ def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
     return {"stats": []}
 
 
-def _try_get_k1_source_stats(ad_group, no_cache=False, use_source_tz=False):
-    params = _get_params(ad_group, no_cache, use_source_tz=use_source_tz)
-    return k1_helper.get_adgroup_realtimestats(ad_group.id, params)
-
-
-def _get_params(ad_group, no_cache, use_source_tz=False):
-    params = _get_source_params(ad_group, use_source_tz=use_source_tz)
+def _try_get_k1_source_stats(ad_group, no_cache=False):
+    params = {}
     if no_cache:
         params["no_cache"] = True
-
-    return params
-
-
-def _get_source_params(ad_group, use_source_tz=False):
-    source_types = [constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO]
-    ad_group_sources = (
-        models.AdGroupSource.objects.select_related("source__source_type")
-        .filter(ad_group=ad_group)
-        .exclude(ad_review_only=True)
-        .filter(source__source_type__type__in=source_types)
-    )
-
-    params = {}
-    for ad_group_source in ad_group_sources:
-        if (
-            ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN
-            and "campaign_id" in ad_group_source.source_campaign_key
-        ):
-            params["outbrain_campaign_id"] = ad_group_source.source_campaign_key["campaign_id"]
-        elif (
-            ad_group_source.source.source_type.type == constants.SourceType.YAHOO
-            and ad_group_source.source_campaign_key
-        ):
-            params.update(
-                {
-                    "yahoo_advertiser_id": ad_group.campaign.account.yahoo_account.advertiser_id,
-                    "yahoo_campaign_id": ad_group_source.source_campaign_key,
-                }
-            )
-            if use_source_tz:
-                yahoo_account = ad_group.campaign.account.yahoo_account
-                if yahoo_account:
-                    params["yahoo_date"] = dates_helper.tz_today(yahoo_account.budgets_tz).isoformat()
-
-    return params
+    return k1_helper.get_adgroup_realtimestats(ad_group.id, params)

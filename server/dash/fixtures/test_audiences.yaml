@@ -48,15 +48,6 @@
     model: zemauth.user
     pk: 3
 
-# test yahoo account
-
--   fields:
-        advertiser_id: '953699'
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-    model: dash.yahooaccount
-    pk: 1
-
 # test accountsettings
 
 -   fields:
@@ -80,7 +71,6 @@
         name: 'test account 1'
         users: [1, 2, 3]
         settings: 1
-        yahoo_account: 1
     model: dash.account
     pk: 1
 
@@ -91,7 +81,6 @@
         name: 'test account 2'
         users: [1, 3]
         settings: 2
-        yahoo_account: 1
     model: dash.account
     pk: 2
 

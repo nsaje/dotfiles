@@ -69,15 +69,6 @@
     model: dash.accountsettings
     pk: 1000
 
-# test yahoo account
-
-- fields:
-      advertiser_id: '953699'
-      created_dt: '2014-06-04T09:58:21'
-      modified_dt: '2014-06-04T09:58:21'
-  model: dash.yahooaccount
-  pk: 1
-
 # test account
 - fields:
     name: 'test account 1'
@@ -88,7 +79,6 @@
     allowed_sources: [1,2]
     agency: 1
     settings: 1
-    yahoo_account: 1
   model: dash.account
   pk: 1
 
@@ -101,7 +91,6 @@
     allowed_sources: [1,2]
     agency: 1
     settings: 2
-    yahoo_account: 1
   model: dash.account
   pk: 2
 
@@ -116,7 +105,6 @@
     default_blacklist: 1000
     agency: 1
     settings: 1000
-    yahoo_account: 1
   model: dash.account
   pk: 1000
 

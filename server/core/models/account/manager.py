@@ -1,7 +1,6 @@
 from django.db import transaction
 
 import core.common
-import core.features.yahoo_accounts
 import core.models
 import dash.features.custom_flags.constants
 from dash import constants
@@ -68,7 +67,6 @@ class AccountManager(core.common.BaseManager):
             )
         if agency is not None:
             account.amplify_review = agency.amplify_review
-        account.yahoo_account = core.features.yahoo_accounts.get_default_account()
         return account
 
     def _validate_externally_managed(self, user, agency=None):

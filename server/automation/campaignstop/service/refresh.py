@@ -1,4 +1,3 @@
-import core.features.yahoo_accounts
 import core.models
 import dash.constants
 import dash.features.realtimestats
@@ -50,19 +49,13 @@ def _refresh_campaigns_realtime_data(campaigns):
 
 
 def _refresh_ad_groups_realtime_data(campaign):
-    ad_groups = (
-        campaign.adgroup_set.all()
-        .select_related("campaign__account__yahoo_account")
-        .exclude(
-            settings__archived=True,
-            settings__created_dt__lte=dates_helper.local_to_utc_time(
-                dates_helper.get_midnight(dates_helper.local_today())
-            ),
-        )
+    ad_groups = campaign.adgroup_set.all().exclude(
+        settings__archived=True,
+        settings__created_dt__lte=dates_helper.local_to_utc_time(dates_helper.get_midnight(dates_helper.local_today())),
     )
     for ad_group in ad_groups:
         try:
-            stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=True)
+            stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(ad_group)
         except Exception:
             logger.exception("Failed refreshing realtime data for ad group", ad_group_id=ad_group.id)
             metrics_compat.incr("campaignstop.refresh.error", 1, level="adgroup")
@@ -89,29 +82,12 @@ def _log_source_errors(stats):
 
 def _add_source_stat(ad_group, source, spend):
     budgets_tz = dates_helper.DEFAULT_TIME_ZONE
-    if source.source_type.type == dash.constants.SourceType.YAHOO:
-        yahoo_account = ad_group.campaign.account.yahoo_account
-        if yahoo_account:
-            budgets_tz = yahoo_account.budgets_tz
-
     tz_today = dates_helper.tz_today(budgets_tz)
     RealTimeDataHistory.objects.create(ad_group=ad_group, source=source, date=tz_today, etfm_spend=spend)
 
 
 def _refresh_campaign_realtime_data(campaign):
     _refresh_realtime_campaign_data_for_date(campaign, dates_helper.local_today())
-    if _should_refresh_campaign_realtime_data_for_yesterday(campaign):
-        _refresh_realtime_campaign_data_for_date(campaign, dates_helper.local_yesterday())
-
-
-def _should_refresh_campaign_realtime_data_for_yesterday(campaign):
-    local_today = dates_helper.local_today()
-    yahoo_source_type = core.models.SourceType.objects.filter(
-        source__adgroup__campaign_id=campaign.id, type=dash.constants.SourceType.YAHOO
-    )
-    if not yahoo_source_type.exists() or not campaign.account.yahoo_account:
-        return False
-    return dates_helper.tz_today(campaign.account.yahoo_account.budgets_tz) < local_today
 
 
 def _refresh_realtime_campaign_data_for_date(campaign, date):

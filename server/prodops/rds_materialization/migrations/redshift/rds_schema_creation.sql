@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
   name                         varchar(127),
   auto_archiving_enabled       boolean,
   currency                     varchar(30)  NULL,
-  yahoo_account_id             integer      NULL,
   agency_id                    integer      NULL,
   account_sales_representative varchar(100) NULL,
   account_account_manager      varchar(100) NULL,

@@ -680,7 +680,6 @@
     agency: 1
     settings: 1
     name: "Demo account"
-    yahoo_account: 1
   model: dash.account
   pk: 1
 
@@ -693,7 +692,6 @@
     agency: 1
     settings: 2
     name: "Another account"
-    yahoo_account: 1
   model: dash.account
   pk: 2
 

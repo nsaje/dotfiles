@@ -6,8 +6,6 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
-import core.features.yahoo_accounts
-import core.models
 from core.models import tags
 from dash import constants
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
@@ -36,7 +34,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
         "custom_flags",
         "default_whitelist",
         "default_blacklist",
-        "yahoo_account",
         "default_csv_separator",
         "default_csv_decimal_separator",
         "is_externally_managed",
@@ -88,10 +85,6 @@ class Agency(EntityPermissionMixin, AgencyValidatorMixin, AgencyInstanceMixin, m
     )
     default_blacklist = models.OneToOneField(
         "PublisherGroup", related_name="blacklisted_agencies", on_delete=models.PROTECT, null=True, blank=True
-    )
-
-    yahoo_account = models.ForeignKey(
-        core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True
     )
 
     default_csv_separator = models.CharField(max_length=1, default=",")
