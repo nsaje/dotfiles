@@ -23,7 +23,7 @@ class S3Helper(object):
     In case S3 is not used, it falls back to local file system.
     """
 
-    def __init__(self, bucket_name=settings.S3_BUCKET):
+    def __init__(self, bucket_name):
         self.use_s3 = settings.USE_S3 and not settings.TESTING
         if self.use_s3:
             _ensure_boto_defaults()
