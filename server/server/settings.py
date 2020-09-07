@@ -179,6 +179,10 @@ CACHES = {
         "LOCATION": "entity_permission_cache",
         "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
     },
+    "cluster_level_cache": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "cluster_level_cache",
+    },
 }
 
 DATABASE_ROUTERS = ["utils.db_router.routers.UseReadReplicaRouter"]
@@ -329,6 +333,10 @@ if TESTING:
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "entity_permission_cache",
             "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
+        },
+        "cluster_level_cache": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "cluster_level_cache",
         },
     }
 

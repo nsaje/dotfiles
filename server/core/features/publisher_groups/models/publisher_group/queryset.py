@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Count
 
+import core.common
 import core.models
 import zemauth.features.entity_permission.shortcuts
 import zemauth.models
@@ -10,7 +11,9 @@ ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
 
 
 class PublisherGroupQuerySet(
-    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin, models.QuerySet
+    zemauth.features.entity_permission.shortcuts.HasEntityPermissionQuerySetMixin,
+    models.QuerySet,
+    core.common.CachedCountMixin,
 ):
     def filter_by_implicit(self, implicit):
         return self.filter(implicit=implicit)

@@ -395,6 +395,10 @@ CACHES = {
         "LOCATION": "redis://z1-cache-redis.6keury.0001.use1.cache.amazonaws.com:6379/5",
         "TIMEOUT": None,  # don't expire, cache invalidated when data manually updated,
     },
+    "cluster_level_cache": {  # general cluster-level cache
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://z1-cache-redis.6keury.0001.use1.cache.amazonaws.com:6379/6",
+    },
 }
 
 USE_HASH_CACHE = True

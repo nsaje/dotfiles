@@ -200,6 +200,10 @@ CACHES = {
         "LOCATION": "unique-snowflake",
         "TIMEOUT": 60,  # 1 min
     },
+    "cluster_level_cache": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "cluster_level_cache",
+    },
 }
 
 USE_HASH_CACHE = True

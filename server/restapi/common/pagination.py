@@ -157,6 +157,8 @@ class MarkerOffsetPagination(pagination.BasePagination):
         Determine an object count, supporting either querysets or regular lists.
         """
         try:
+            if hasattr(queryset, "cached_count"):
+                return queryset.cached_count()
             return queryset.count()
         except (AttributeError, TypeError):
             return len(queryset)
