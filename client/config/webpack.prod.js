@@ -1,32 +1,39 @@
 var webpack = require('webpack');
 var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
+var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var TerserPlugin = require('terser-webpack-plugin');
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 var SentryPlugin = require('webpack-sentry-plugin');
-var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
+if (appEnvironment.buildMainConfig) {
+    var mainConfig = generateMainConfig(appEnvironment);
+    configs.push(mainConfig);
+}
+
+if (appEnvironment.buildStyleConfig) {
+    var styleConfig = generateStyleConfig(
+        appEnvironment,
+        appEnvironment.theme.name
+    );
+    configs.push(styleConfig);
+}
+
 if (appEnvironment.buildWhitelabels) {
     var themes = common.getThemes();
     Object.keys(themes).forEach(function(key) {
-        if (key !== appEnvironment.theme) {
-            var styleConfig = generateStyleConfig(appEnvironment, themes[key]);
+        var theme = themes[key];
+        if (theme.name !== appEnvironment.theme.name) {
+            var styleConfig = generateStyleConfig(appEnvironment, theme.name);
             configs.push(styleConfig);
         }
     });
-} else {
-    var mainConfig = generateMainConfig(appEnvironment);
-    configs.push(mainConfig);
-
-    var theme = common.getTheme(appEnvironment.theme);
-    var styleConfig = generateStyleConfig(appEnvironment, theme);
-    configs.push(styleConfig);
 }
 
 module.exports = configs;
@@ -62,6 +69,9 @@ function generateMainConfig(appEnvironment) {
     config.optimization = {
         minimize: true,
         minimizer: [
+            // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+            // A Webpack plugin to optimize \ minimize CSS assets.
+            new OptimizeCSSAssetsPlugin({}),
             new TerserPlugin({
                 sourceMap: true,
                 terserOptions: {
@@ -184,15 +194,15 @@ function generateMainConfig(appEnvironment) {
     return config;
 }
 
-function generateStyleConfig(appEnvironment, theme) {
+function generateStyleConfig(appEnvironment, themeName) {
     var mainConfig = common.generateMainConfig(appEnvironment);
-    var styleConfig = common.generateStyleConfig(theme.name);
+    var styleConfig = common.generateStyleConfig(appEnvironment, themeName);
 
     var config = merge.smart(mainConfig, styleConfig);
 
     var entryName = 'zemanta-one';
-    if (theme !== common.THEMES.one) {
-        entryName = entryName + '-' + theme.name;
+    if (themeName !== appEnvironment.theme.name) {
+        entryName = entryName + '-' + themeName;
     }
 
     config.entry = {};
@@ -213,6 +223,24 @@ function generateStyleConfig(appEnvironment, theme) {
             // A Webpack plugin to optimize \ minimize CSS assets.
             new OptimizeCSSAssetsPlugin({}),
         ],
+        splitChunks: {
+            cacheGroups: {
+                polyfills: {
+                    test: /(core-js\/es|core-js\/proposals\/reflect-metadata|zone.js\/dist\/zone)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.polyfills',
+                    priority: 20,
+                    enforce: true,
+                },
+                vendor: {
+                    test: /(node_modules|lib\/components)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.lib',
+                    priority: 10,
+                    enforce: true,
+                },
+            },
+        },
     };
 
     config.module.rules.push({

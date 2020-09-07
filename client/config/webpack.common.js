@@ -133,7 +133,7 @@ function generateMainConfig(appEnvironment) {
     return config;
 }
 
-function generateStyleConfig(themeName) {
+function generateStyleConfig(appEnvironment, themeName) {
     var config = {
         module: {},
         plugins: [],
@@ -163,7 +163,7 @@ function generateStyleConfig(themeName) {
                         lessOptions: {
                             paths: [root('./one/app/themes/' + themeName)],
                             relativeUrls: false,
-                            rootpath: APP_ENVIRONMENT.staticUrl + '/one/',
+                            rootpath: appEnvironment.staticUrl + '/one/',
                         },
                     },
                 },
@@ -181,13 +181,20 @@ function generateStyleConfig(themeName) {
         // https://www.npmjs.com/package/filter-chunk-webpack-plugin
         // Include or exclude files / chunks from the final webpack output based on a list of patterns.
         new FilterChunkWebpackPlugin({
-            patterns: ['*.js'],
+            patterns: [
+                '*.js',
+                '*.txt',
+                '*.map',
+                '*.polyfills.css',
+                '*.lib.css',
+            ],
         }),
     ];
 
     return config;
 }
 
+// eslint-disable-next-line complexity
 function generateAppEnvironment(env) {
     var config = {
         env: {
@@ -198,9 +205,11 @@ function generateAppEnvironment(env) {
         },
         buildNumber: env.npm_config_build_number || '',
         branchName: env.npm_config_branch_name || '',
-        theme: env.npm_config_theme || THEMES.one,
+        theme: THEMES[env.npm_config_theme] || THEMES.one,
         analyze: env.npm_config_analyze === 'true' || false,
         sentryToken: env.npm_config_sentry_token || '',
+        buildMainConfig: env.npm_config_build_main === 'true' || false,
+        buildStyleConfig: env.npm_config_build_style === 'true' || false,
         buildWhitelabels: env.npm_config_build_whitelabels === 'true' || false,
         aot: env.npm_config_aot === 'true' || false,
     };

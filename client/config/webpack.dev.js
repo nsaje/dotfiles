@@ -1,9 +1,9 @@
 var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
+var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
+var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
     .BundleAnalyzerPlugin;
-var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-var AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 
 var appEnvironment = common.getAppEnvironment();
 var configs = [];
@@ -11,8 +11,10 @@ var configs = [];
 var mainConfig = generateMainConfig(appEnvironment);
 configs.push(mainConfig);
 
-var theme = common.getTheme(appEnvironment.theme);
-var styleConfig = generateStyleConfig(appEnvironment, theme);
+var styleConfig = generateStyleConfig(
+    appEnvironment,
+    appEnvironment.theme.name
+);
 configs.push(styleConfig);
 
 module.exports = configs;
@@ -139,9 +141,9 @@ function generateMainConfig(appEnvironment) {
     return config;
 }
 
-function generateStyleConfig(appEnvironment, theme) {
+function generateStyleConfig(appEnvironment, themeName) {
     var mainConfig = common.generateMainConfig(appEnvironment);
-    var styleConfig = common.generateStyleConfig(theme.name);
+    var styleConfig = common.generateStyleConfig(appEnvironment, themeName);
 
     var config = merge.smart(mainConfig, styleConfig);
 
@@ -155,6 +157,28 @@ function generateStyleConfig(appEnvironment, theme) {
     config.output = {
         path: common.root('./dist/one'),
         publicPath: 'one/',
+    };
+
+    config.optimization = {
+        minimize: false,
+        splitChunks: {
+            cacheGroups: {
+                polyfills: {
+                    test: /(core-js\/es|core-js\/proposals\/reflect-metadata|zone.js\/dist\/zone)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.polyfills',
+                    priority: 20,
+                    enforce: true,
+                },
+                vendor: {
+                    test: /(node_modules|lib\/components)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.lib',
+                    priority: 10,
+                    enforce: true,
+                },
+            },
+        },
     };
 
     config.module.rules.push({

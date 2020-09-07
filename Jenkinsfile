@@ -95,6 +95,10 @@ node {
                             // webpack sometimes build empty z1 client
                             sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
                         },
+                        'Client styles build': {
+                            // Client styles artifacts
+                            sh 'make build_client_styles'
+                        },
                         failFast: true  // if one of the parallel branches fails, fail the build right away
                 )
             }
