@@ -57,6 +57,7 @@ class CampaignSettingsMixin(object):
                 self.campaign.name = changes["name"]
             if "archived" in changes:
                 self.campaign.archived = changes["archived"]
+                self._recalculate_campaign_goals_with_current_exchange(changes)
             self.campaign.save()
 
     def _log_and_notify_changes(self, request, changes):
@@ -99,3 +100,11 @@ class CampaignSettingsMixin(object):
         ad_group_changes = any(prop in changes for prop in ["iab_category", "language"])
         if ad_group_changes:
             utils.k1_helper.update_ad_groups(campaign_ad_groups, msg="CampaignSettings.update")
+
+    def _recalculate_campaign_goals_with_current_exchange(self, changes):
+        if "archived" in changes and not changes["archived"]:
+            self.recalculate_multicurrency_values()
+
+    def recalculate_multicurrency_values(self):
+        for goal in self.campaign.campaigngoal_set.iterator(100):
+            goal.add_local_value(None, goal.get_current_value().local_value, skip_history=True)

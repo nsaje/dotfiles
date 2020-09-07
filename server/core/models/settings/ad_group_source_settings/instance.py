@@ -151,3 +151,15 @@ class AdGroupSourceSettingsMixin(object):
 
     def get_currency(self):
         return self.ad_group_source.ad_group.campaign.account.currency
+
+    def recalculate_multicurrency_values(self):
+        fields = ["local_" + field for field in self.ad_group_source.settings.multicurrency_fields]
+        updates = {
+            field: getattr(self.ad_group_source.settings, field)
+            for field in fields
+            if getattr(self.ad_group_source.settings, field) is not None
+        }
+        changes = self.ad_group_source.settings.update(
+            None, skip_automation=True, skip_validation=True, skip_notification=True, **updates
+        )
+        return changes

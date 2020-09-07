@@ -5,8 +5,10 @@ from django.test import TestCase
 from mock import patch
 
 import core.models
+import dash.constants
 import utils.exc
 from core.features import bid_modifiers
+from core.features.multicurrency import CurrencyExchangeRate
 from dash import constants
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
@@ -593,3 +595,43 @@ class AdGroupArchiveRestoreTest(TestCase):
         ad_group.refresh_from_db()
         self.assertFalse(ad_group.archived)
         self.assertFalse(ad_group.settings.archived)
+
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_restore_multicurrency_ad_group_settings(self, mock_get_exchange_rate):
+        CurrencyExchangeRate.objects.create(
+            date="2018-01-01", currency=dash.constants.Currency.EUR, exchange_rate="0.8"
+        )
+        request = magic_mixer.blend_request_user(is_superuser=True)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account_currency=dash.constants.Currency.EUR)
+        ad_group.settings.update_unsafe(
+            request,
+            local_cpc="0.8",
+            local_autopilot_daily_budget=100,
+            local_b1_sources_group_daily_budget=72,
+            local_b1_sources_group_cpc_cc="0.35",
+            local_cpm="1.3",
+        )
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group)
+        ad_group_source.settings.update_unsafe(request, local_cpc_cc="0.62", local_daily_budget_cc=28)
+
+        self.assertEqual(Decimal("28"), ad_group_source.settings.local_daily_budget_cc)
+        self.assertEqual(Decimal("100"), ad_group.settings.local_autopilot_daily_budget)
+        self.assertEqual(Decimal("72"), ad_group.settings.local_b1_sources_group_daily_budget)
+        self.assertEqual("0.35", ad_group.settings.local_b1_sources_group_cpc_cc)
+        self.assertEqual("1.3", ad_group.settings.local_cpm)
+        self.assertEqual("0.8", ad_group.settings.local_cpc)
+        self.assertEqual(Decimal("0.45"), ad_group.settings.cpc)
+        self.assertEqual("0.62", ad_group_source.settings.local_cpc_cc)
+
+        ad_group.settings.update_unsafe(None, archived=True)
+        mock_get_exchange_rate.return_value = Decimal("3.0")
+        ad_group.restore(None)
+        ad_group.refresh_from_db()
+        ad_group_source.refresh_from_db()
+        self.assertEqual(Decimal("0.2667"), ad_group.settings.cpc)
+        self.assertEqual(Decimal("33.3333"), ad_group.settings.autopilot_daily_budget)
+        self.assertEqual(Decimal("24.0000"), ad_group.settings.b1_sources_group_daily_budget)
+        self.assertEqual(Decimal("0.1167"), ad_group.settings.b1_sources_group_cpc_cc)
+        self.assertEqual(Decimal("0.4333"), ad_group.settings.cpm)
+        self.assertEqual(Decimal("28.0000"), ad_group_source.settings.local_daily_budget_cc)
+        self.assertEqual(Decimal("0.8001"), ad_group_source.settings.local_cpc_cc)

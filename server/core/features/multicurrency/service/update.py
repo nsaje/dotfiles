@@ -60,48 +60,21 @@ def _update_accounts(currency):
 @transaction.atomic
 def _update_account(account):
     for campaign in account.campaign_set.iterator(100):
-        _recalculate_goals(campaign)
+        campaign.settings.recalculate_multicurrency_values()
         _recalculate_ad_group_amounts(campaign)
-
-
-def _recalculate_goals(campaign):
-    for goal in campaign.campaigngoal_set.iterator(100):
-        goal.add_local_value(None, goal.get_current_value().local_value, skip_history=True)
 
 
 def _recalculate_ad_group_amounts(campaign):
     for ad_group in campaign.adgroup_set.iterator(200):
-        _recalculate_ad_group_settings_amounts(ad_group)
+        changes = ad_group.settings.recalculate_multicurrency_values()
+        _sanity_check(changes, ad_group.settings.multicurrency_fields)
         _recalculate_ad_group_sources_amounts(ad_group)
-
-
-def _recalculate_ad_group_settings_amounts(ad_group):
-    fields = ["local_" + field for field in ad_group.settings.multicurrency_fields]
-    updates = {
-        field: getattr(ad_group.settings, field) for field in fields if getattr(ad_group.settings, field) is not None
-    }
-    changes = ad_group.settings.update(
-        None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates
-    )
-    _sanity_check(changes, ad_group.settings.multicurrency_fields)
 
 
 def _recalculate_ad_group_sources_amounts(ad_group):
     for ad_group_source in ad_group.adgroupsource_set.all():
-        _recalculate_ad_group_source_settings_amounts(ad_group_source)
-
-
-def _recalculate_ad_group_source_settings_amounts(ad_group_source):
-    fields = ["local_" + field for field in ad_group_source.settings.multicurrency_fields]
-    updates = {
-        field: getattr(ad_group_source.settings, field)
-        for field in fields
-        if getattr(ad_group_source.settings, field) is not None
-    }
-    changes = ad_group_source.settings.update(
-        None, skip_automation=True, skip_validation=True, skip_notification=True, **updates
-    )
-    _sanity_check(changes, ad_group_source.settings.multicurrency_fields)
+        changes = ad_group_source.settings.recalculate_multicurrency_values()
+        _sanity_check(changes, ad_group_source.settings.multicurrency_fields)
 
 
 def _sanity_check(changes, multicurrency_fields):

@@ -73,6 +73,7 @@ class AdGroupSettingsMixin(object):
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
+                self._recalculate_multicurrency_values_if_necessary(changes)
                 return changes
         return None
 
@@ -388,3 +389,21 @@ class AdGroupSettingsMixin(object):
 
     def get_currency(self):
         return self.ad_group.campaign.account.currency
+
+    def _recalculate_multicurrency_values_if_necessary(self, changes):
+        if "archived" in changes and not changes["archived"]:
+            self.recalculate_multicurrency_values()
+            for ad_group_source in self.ad_group.adgroupsource_set.all():
+                ad_group_source.settings.recalculate_multicurrency_values()
+
+    def recalculate_multicurrency_values(self):
+        fields = ["local_" + field for field in self.ad_group.settings.multicurrency_fields]
+        updates = {
+            field: getattr(self.ad_group.settings, field)
+            for field in fields
+            if getattr(self.ad_group.settings, field) is not None
+        }
+        changes = self.ad_group.settings.update(
+            None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates
+        )
+        return changes

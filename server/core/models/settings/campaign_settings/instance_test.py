@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.test import TestCase
 from mock import patch
 
@@ -102,3 +104,28 @@ class InstanceTestCase(TestCase):
         campaign.refresh_from_db()
         self.assertFalse(campaign.archived)
         self.assertFalse(campaign.settings.archived)
+
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_update_goals_when_restoring_campaign(self, mock_get_exchange_rate):
+        mock_get_exchange_rate.return_value = Decimal("1.0")
+        request = magic_mixer.blend_request_user(is_superuser=True)
+        campaign = magic_mixer.blend(core.models.Campaign, account_currency=dash.constants.Currency.EUR)
+        goal1 = magic_mixer.blend(
+            core.features.goals.CampaignGoal, campaign=campaign, primary=True, type=dash.constants.CampaignGoalKPI.CPC
+        )
+        goal2 = magic_mixer.blend(
+            core.features.goals.CampaignGoal,
+            campaign=campaign,
+            primary=True,
+            type=dash.constants.CampaignGoalKPI.PAGES_PER_SESSION,
+        )
+        goal1.add_local_value(request, "0.15")
+        goal2.add_local_value(request, 20)
+        self.assertEqual(Decimal("0.15"), goal1.get_current_value().value)
+        self.assertEqual(20, goal2.get_current_value().value)
+
+        campaign.settings.update_unsafe(None, archived=True)
+        mock_get_exchange_rate.return_value = Decimal("3.0")
+        campaign.restore(None)
+        self.assertEqual(Decimal("0.05"), goal1.get_current_value().value)
+        self.assertEqual(20, goal2.get_current_value().value)
