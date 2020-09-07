@@ -81,6 +81,7 @@ function $zemLazyPopoverDirective(
                 var isSpaceProblem = availableSpace < tooltipHeight;
 
                 if (isSpaceProblem) {
+                    document.body.classList.add('body--popover-open');
                     shift = tooltipHeight - availableSpace;
                     if (
                         ttScope.placement === 'left' ||
@@ -113,6 +114,7 @@ function $zemLazyPopoverDirective(
             };
 
             function removeTooltip() {
+                document.body.classList.remove('body--popover-open');
                 transitionTimeout = null;
                 if (tooltip) {
                     tooltip.remove();
