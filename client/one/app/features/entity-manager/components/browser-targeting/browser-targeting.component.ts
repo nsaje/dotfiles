@@ -12,9 +12,15 @@ import {Browser} from '../../../../core/entities/types/common/browser';
 import {IncludeExcludeType} from '../../../../app.constants';
 import * as arrayHelpers from '../../../../shared/helpers/array.helpers';
 import {BrowserTargeting} from '../../types/browser-targeting';
-import {AVAILABLE_BROWSERS, BROWSER_NAMES} from './browser-targeting.config';
+import {
+    AVAILABLE_BROWSERS,
+    BROWSER_NAMES,
+    BROWSER_DEVICE_MAPPING,
+} from './browser-targeting.config';
 import {INCLUDE_EXCLUDE_TYPES} from '../../entity-manager.config';
 import {FormattedBrowser} from '../../types/formatted-browser';
+import {BrowserTargetingErrors} from '../../types/browser-targeting-errors';
+import {DeviceType} from '../operating-system/types/device-type';
 
 @Component({
     selector: 'zem-browser-targeting',
@@ -27,7 +33,14 @@ export class BrowserTargetingComponent implements OnChanges {
     @Input()
     excludedBrowsers: Browser[];
     @Input()
+    selectedDeviceTypes: DeviceType[];
+    @Input()
     isDisabled: boolean;
+    @Input()
+    browserTargetingErrors: {
+        included: BrowserTargetingErrors[];
+        excluded: BrowserTargetingErrors[];
+    };
     @Output()
     addBrowserTargeting: EventEmitter<BrowserTargeting> = new EventEmitter<
         BrowserTargeting
@@ -41,12 +54,15 @@ export class BrowserTargetingComponent implements OnChanges {
         IncludeExcludeType
     >();
 
-    availableBrowsers: FormattedBrowser[] = AVAILABLE_BROWSERS;
+    availableBrowsers: FormattedBrowser[] = [];
     formattedSelectedBrowsers: FormattedBrowser[] = [];
 
     includeExcludeType: IncludeExcludeType = IncludeExcludeType.INCLUDE;
     includeExcludeTypes = INCLUDE_EXCLUDE_TYPES;
     includeExcludeEnum = IncludeExcludeType;
+
+    targetingErrors: BrowserTargetingErrors[] = [];
+    errorMessage: string;
 
     ngOnChanges() {
         if (!arrayHelpers.isEmpty(this.excludedBrowsers)) {
@@ -54,14 +70,21 @@ export class BrowserTargetingComponent implements OnChanges {
                 this.excludedBrowsers
             );
             this.includeExcludeType = IncludeExcludeType.EXCLUDE;
+            this.targetingErrors = this.browserTargetingErrors.excluded;
         } else if (!arrayHelpers.isEmpty(this.includedBrowsers)) {
             this.formattedSelectedBrowsers = this.getFormattedSelectedBrowsers(
                 this.includedBrowsers
             );
             this.includeExcludeType = IncludeExcludeType.INCLUDE;
+            this.targetingErrors = this.browserTargetingErrors.included;
         } else {
             this.formattedSelectedBrowsers = [];
         }
+        this.availableBrowsers = this.getAvailableBrowsers(
+            AVAILABLE_BROWSERS,
+            this.selectedDeviceTypes
+        );
+        this.errorMessage = this.getErrorMessage(this.targetingErrors);
     }
 
     onIncludeExcludeChange(includeExcludeType: IncludeExcludeType) {
@@ -90,5 +113,24 @@ export class BrowserTargetingComponent implements OnChanges {
                 name: BROWSER_NAMES[browser.family],
             };
         });
+    }
+
+    private getAvailableBrowsers(
+        browsers: FormattedBrowser[],
+        selectedDeviceTypes: DeviceType[]
+    ) {
+        return browsers.filter(browser => {
+            return arrayHelpers.includesAny(
+                BROWSER_DEVICE_MAPPING[browser.family],
+                selectedDeviceTypes
+            );
+        });
+    }
+
+    private getErrorMessage(targetingErrors: BrowserTargetingErrors[]) {
+        const error = targetingErrors.find(targetingError => {
+            return targetingError?.family?.length;
+        });
+        return error ? error.family[0] : null;
     }
 }

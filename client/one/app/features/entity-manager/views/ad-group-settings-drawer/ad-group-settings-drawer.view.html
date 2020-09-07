@@ -502,7 +502,13 @@
                                     [excludedBrowsers]="
                                         state.entity.targeting.browsers.excluded
                                     "
+                                    [selectedDeviceTypes]="
+                                        state.entity.targeting.devices
+                                    "
                                     [isDisabled]="isReadOnly"
+                                    [browserTargetingErrors]="
+                                        state.fieldsErrors.targeting.browsers
+                                    "
                                     (includeExcludeChange)="
                                         store.browserTargetingIncludeExcludeChange(
                                             $event

@@ -1,3 +1,3 @@
-export class DeviceTargetingOsErrors {
+export interface DeviceTargetingOsErrors {
     version?: {min?: string; max?: string};
 }
