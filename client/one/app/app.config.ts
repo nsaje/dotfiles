@@ -39,6 +39,7 @@ export const APP_CONFIG = {
         [Currency.CAD]: 'C$',
         [Currency.NZD]: 'NZ$',
         [Currency.TRY]: '₺',
+        [Currency.MXN]: 'Mex$',
     },
     requestRetryTimeout: 500,
     maxRequestRetries: 3,
@@ -63,4 +64,5 @@ export const CURRENCIES: CurrencyConfig[] = [
     {name: 'Canadian Dollar', value: Currency.CAD},
     {name: 'New Zealand Dollar', value: Currency.NZD},
     {name: 'Turkish Lira', value: Currency.TRY},
+    {name: 'Mexican Peso', value: Currency.MXN},
 ];

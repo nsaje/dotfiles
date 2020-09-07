@@ -29,6 +29,7 @@ export enum Currency {
     CAD = 'CAD',
     NZD = 'NZD',
     TRY = 'TRY',
+    MXN = 'MXN',
 }
 
 export enum EntityType {
