@@ -26,13 +26,10 @@ if (appEnvironment.buildStyleConfig) {
 }
 
 if (appEnvironment.buildWhitelabels) {
-    var themes = common.getThemes();
-    Object.keys(themes).forEach(function(key) {
-        var theme = themes[key];
-        if (theme.name !== appEnvironment.theme.name) {
-            var styleConfig = generateStyleConfig(appEnvironment, theme.name);
-            configs.push(styleConfig);
-        }
+    var whitelabels = common.getWhitelabels();
+    whitelabels.forEach(function(theme) {
+        var styleConfig = generateStyleConfig(appEnvironment, theme.name);
+        configs.push(styleConfig);
     });
 }
 

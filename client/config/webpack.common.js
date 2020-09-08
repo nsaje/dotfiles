@@ -13,11 +13,18 @@ var THEMES = {
     mediamond: {name: 'mediamond'},
     adyoulike: {name: 'adyoulike'},
 };
+var WHITELABELS = [
+    THEMES.adtechnacity,
+    THEMES.greenpark,
+    THEMES.newscorp,
+    THEMES.burda,
+    THEMES.mediamond,
+    THEMES.adyoulike,
+];
 
-module.exports.THEMES = THEMES;
 module.exports.getAppEnvironment = getAppEnvironment;
-module.exports.getTheme = getTheme;
 module.exports.getThemes = getThemes;
+module.exports.getWhitelabels = getWhitelabels;
 module.exports.generateMainConfig = generateMainConfig;
 module.exports.generateStyleConfig = generateStyleConfig;
 module.exports.root = root;
@@ -29,12 +36,12 @@ function getAppEnvironment() {
     return APP_ENVIRONMENT;
 }
 
-function getTheme(name) {
-    return THEMES[name] || THEMES.one;
-}
-
 function getThemes() {
     return THEMES;
+}
+
+function getWhitelabels() {
+    return WHITELABELS;
 }
 
 function generateMainConfig(appEnvironment) {
