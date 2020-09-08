@@ -282,9 +282,6 @@ class AdGroupContentAdEdit(BaseBulkActionView):
 class AdGroupContentAdArchive(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         content_ads = helpers.get_selected_entities_post_request(
@@ -312,9 +309,6 @@ class AdGroupContentAdArchive(BaseBulkActionView):
 class AdGroupContentAdRestore(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         content_ads = helpers.get_selected_entities_post_request(
@@ -468,9 +462,6 @@ class AdGroupContentAdCSV(DASHAPIBaseView):
 class CampaignAdGroupArchive(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
 
         ad_groups = helpers.get_selected_entities_post_request(
@@ -487,9 +478,6 @@ class CampaignAdGroupArchive(BaseBulkActionView):
 class CampaignAdGroupRestore(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         campaign = zemauth.access.get_campaign(request.user, Permission.WRITE, campaign_id)
 
         ad_groups = helpers.get_selected_entities_post_request(
@@ -574,9 +562,6 @@ class CampaignAdGroupState(BaseBulkActionView):
 class AccountCampaignArchive(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, account_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         campaigns = helpers.get_selected_entities_post_request(
@@ -593,9 +578,6 @@ class AccountCampaignArchive(BaseBulkActionView):
 class AccountCampaignRestore(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, account_id):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
         campaigns = helpers.get_selected_entities_post_request(
@@ -612,9 +594,6 @@ class AccountCampaignRestore(BaseBulkActionView):
 class AllAccountsAccountArchive(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         accounts_user_perm = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_user(request.user), json.loads(request.body)
         )
@@ -638,9 +617,6 @@ class AllAccountsAccountArchive(BaseBulkActionView):
 class AllAccountsAccountRestore(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request):
-        if not request.user.has_perm("zemauth.archive_restore_entity"):
-            raise exc.ForbiddenError(message="Not allowed")
-
         accounts_user_perm = helpers.get_selected_entities_post_request(
             models.Account.objects.all().filter_by_user(request.user), json.loads(request.body), include_archived=True
         )

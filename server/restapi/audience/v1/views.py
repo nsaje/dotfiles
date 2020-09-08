@@ -10,13 +10,8 @@ from restapi.common.views_base import RESTAPIBaseViewSet
 from zemauth.features.entity_permission import Permission
 
 
-class CanManageCustomAudiencesPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.account_custom_audiences_view"))
-
-
 class AudienceViewSet(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, CanManageCustomAudiencesPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, account_id, audience_id):
         account = zemauth.access.get_account(request.user, Permission.READ, account_id)

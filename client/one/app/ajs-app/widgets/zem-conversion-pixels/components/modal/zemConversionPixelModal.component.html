@@ -61,13 +61,8 @@
         <div
             class="form__group"
             ng-class="{'form--error': !!$ctrl.error && !!$ctrl.errorMessage}"
-            ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')"
         >
-            <label
-                class="form__label"
-                for="audience-enabled-input"
-                is-internal="zemauth.account_custom_audiences_view"
-            >
+            <label class="form__label" for="audience-enabled-input">
                 Build custom audiences from this pixel
             </label>
             <div class="form__checkbox">
@@ -151,10 +146,7 @@
         </div>
     </div>
 
-    <div
-        ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')"
-        class="m-b"
-    >
+    <div class="m-b">
         <div
             class="message message--info message--with-icon"
             ng-if="!$ctrl.audiencePixel"

@@ -13,13 +13,7 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         super().setUp()
         utils.test_helper.add_permissions(
             self.user,
-            [
-                "archive_restore_entity",
-                "can_promote_additional_pixel",
-                "can_redirect_pixels",
-                "can_see_pixel_notes",
-                "can_see_pixel_traffic",
-            ],
+            ["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes", "can_see_pixel_traffic"],
         )
 
     @classmethod
@@ -201,22 +195,6 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertTrue(resp_json["data"]["archived"])
-
-    def test_put_archived_no_permission(self):
-        utils.test_helper.remove_permissions(self.user, ["archive_restore_entity"])
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
-        self.assertFalse(pixel.archived)
-        r = self.client.put(
-            reverse(
-                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
-            ),
-            data={"archived": True},
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json["data"])
-        self.assertFalse(resp_json["data"]["archived"])
 
     def test_put_additional_pixel(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])

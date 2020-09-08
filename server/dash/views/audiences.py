@@ -12,9 +12,6 @@ from zemauth.features.entity_permission import Permission
 
 class AudiencesView(DASHAPIBaseView):
     def get(self, request, account_id, audience_id=None):
-        if not request.user.has_perm("zemauth.account_custom_audiences_view"):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         if audience_id:
             audience_id = int(audience_id)
@@ -27,9 +24,6 @@ class AudiencesView(DASHAPIBaseView):
         return self._get_audiences(request, account)
 
     def post(self, request, account_id):
-        if not request.user.has_perm("zemauth.account_custom_audiences_view"):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         account = zemauth.access.get_account(request.user, Permission.WRITE, account_id)
 
@@ -71,9 +65,6 @@ class AudiencesView(DASHAPIBaseView):
         return self.create_api_response(response)
 
     def put(self, request, account_id, audience_id):
-        if not request.user.has_perm("zemauth.account_custom_audiences_view"):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         audience_id = int(audience_id)
 
@@ -173,9 +164,6 @@ class AudiencesView(DASHAPIBaseView):
 
 class AudienceArchive(DASHAPIBaseView):
     def post(self, request, account_id, audience_id):
-        if not request.user.has_perm("zemauth.account_custom_audiences_view"):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         audience_id = int(audience_id)
 
@@ -197,9 +185,6 @@ class AudienceArchive(DASHAPIBaseView):
 
 class AudienceRestore(DASHAPIBaseView):
     def post(self, request, account_id, audience_id):
-        if not request.user.has_perm("zemauth.account_custom_audiences_view"):
-            raise exc.AuthorizationError()
-
         account_id = int(account_id)
         audience_id = int(audience_id)
 

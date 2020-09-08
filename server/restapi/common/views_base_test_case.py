@@ -17,9 +17,6 @@ class RESTAPITestCase(BaseTestCase):
 
     permissions = [
         "can_use_restapi",
-        "settings_view",
-        "archive_restore_entity",
-        "account_campaigns_view",
         "can_see_campaign_goals",
         "can_modify_publisher_blacklist_status",
         "can_edit_publisher_groups",
@@ -40,7 +37,6 @@ class RESTAPITestCase(BaseTestCase):
         "can_use_language_targeting",
         "can_see_pixel_notes",
         "can_see_pixel_traffic",
-        "account_custom_audiences_view",
         "can_set_bid_modifiers",
         "can_modify_campaign_manager",
         "can_view_platform_cost_breakdown",

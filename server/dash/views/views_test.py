@@ -17,7 +17,6 @@ from mock import patch
 
 import core.models.source_type.model
 import demo
-import utils.test_helper
 import zemauth.models
 from dash import constants
 from dash import history_helpers
@@ -195,7 +194,6 @@ class LegacyAdGroupSourcesTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["ad_group_sources_add_source"])
 
     def test_get_name(self):
         request = HttpRequest()

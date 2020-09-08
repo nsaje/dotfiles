@@ -115,13 +115,7 @@
                         </span>
                     </td>
                     <td class="custom-table__action-buttons">
-                        <span
-                            ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !item.archived"
-                        >
-                            <zem-internal-feature
-                                ng-if="isPermissionInternal('zemauth.archive_restore_entity')"
-                                popover-placement="left"
-                            ></zem-internal-feature>
+                        <span ng-if="!item.archived">
                             <a
                                 tabindex="-1"
                                 ng-click="$ctrl.archiveConversionPixel(item)"
@@ -130,13 +124,7 @@
                                 >Archive</a
                             >
                         </span>
-                        <span
-                            ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !!item.archived"
-                        >
-                            <zem-internal-feature
-                                ng-if="isPermissionInternal('zemauth.archive_restore_entity')"
-                                popover-placement="left"
-                            ></zem-internal-feature>
+                        <span ng-if="!!item.archived">
                             <a
                                 tabindex="-1"
                                 ng-click="$ctrl.restoreConversionPixel(item)"

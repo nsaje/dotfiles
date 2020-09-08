@@ -194,7 +194,6 @@ class LegacyAdGroupContentAdArchiveTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     @patch("utils.email_helper.send_ad_group_notification_email")
     @patch("utils.k1_helper.update_content_ads")
@@ -380,7 +379,6 @@ class LegacyAdGroupContentAdRestoreTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     @patch("utils.email_helper.send_ad_group_notification_email")
     @patch("utils.k1_helper.update_content_ads")
@@ -568,7 +566,6 @@ class LegacyAdGroupContentAdStateTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     @patch("utils.k1_helper.update_content_ads")
     def test_post(self, mock_k1_ping):
@@ -991,7 +988,6 @@ class LegacyCampaignAdGroupArchiveTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -1028,7 +1024,6 @@ class LegacyCampaignAdGroupRestoreTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
@@ -1068,7 +1063,6 @@ class LegacyAccountCampaignArchiveTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account = models.Account.objects.get(pk=1)
@@ -1105,7 +1099,6 @@ class LegacyAccountCampaignRestoreTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account = models.Account.objects.get(pk=1)
@@ -1145,7 +1138,6 @@ class LegacyAllAccountsAccountArchiveTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
 
     def test_post(self):
         account_id = 1
@@ -1181,7 +1173,6 @@ class LegacyAllAccountsAccountRestoreTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password="secret")
-        utils.test_helper.add_permissions(self.user, ["archive_restore_entity"])
         self.factory = RequestFactory()
 
     def test_post(self):

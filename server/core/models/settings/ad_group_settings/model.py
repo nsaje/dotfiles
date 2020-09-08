@@ -41,7 +41,6 @@ class AdGroupSettings(
 ):
     class Meta:
         ordering = ("-created_dt",)
-        permissions = (("settings_view", "Can view settings in dashboard."),)
         app_label = "dash"
 
     objects = manager.AdGroupSettingsManager()

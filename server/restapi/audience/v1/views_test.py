@@ -14,7 +14,6 @@ from zemauth.features.entity_permission import Permission
 class LegacyAudiencesTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
 
     @classmethod
     def audience_repr(

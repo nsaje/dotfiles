@@ -214,10 +214,9 @@ class AdGroupOverview(DASHAPIBaseView):
         settings.append(infobox_helpers.create_yesterday_data_setting().as_dict())
         settings.append(infobox_helpers.create_yesterday_spend_setting(yesterday_costs, daily_cap, currency).as_dict())
 
-        if user.has_perm("zemauth.campaign_goal_performance"):
-            settings.extend(
-                infobox_helpers.get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency)
-            )
+        settings.extend(
+            infobox_helpers.get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency)
+        )
 
         return settings
 
@@ -346,8 +345,7 @@ class CampaignOverview(DASHAPIBaseView):
             )
         settings.append(pacing_settings.as_dict())
 
-        if user.has_perm("zemauth.campaign_goal_performance"):
-            settings.extend(infobox_helpers.get_primary_campaign_goal(user, campaign, start_date, end_date, currency))
+        settings.extend(infobox_helpers.get_primary_campaign_goal(user, campaign, start_date, end_date, currency))
 
         return settings
 
@@ -519,9 +517,6 @@ class AvailableSources(DASHAPIBaseView):
 class AdGroupSources(DASHAPIBaseView):
     @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
-            raise exc.MissingDataError()
-
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
@@ -551,9 +546,6 @@ class AdGroupSources(DASHAPIBaseView):
 
     @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
-            raise exc.MissingDataError()
-
         ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
 
         source_id = json.loads(request.body)["source_id"]

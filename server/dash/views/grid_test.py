@@ -30,7 +30,6 @@ class LegacyRTBSourceSettingsTestCase(DASHAPITestCase):
         add_permissions(
             self.user,
             [
-                "settings_view",
                 "can_set_ad_group_max_cpc",
                 "can_access_table_breakdowns_feature",
                 "can_set_rtb_sources_as_one_cpc",

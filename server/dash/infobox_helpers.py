@@ -602,7 +602,7 @@ def get_primary_campaign_goal(user, campaign, start_date, end_date, currency=das
     performance = dash.campaign_goals.get_goals_performance_campaign(
         user, campaign, start_date, end_date, local_values=True
     )
-    return _get_primary_campaign_goal(user, campaign, performance, currency)
+    return _get_primary_campaign_goal(performance, currency)
 
 
 def get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency=dash.constants.Currency.USD):
@@ -613,13 +613,11 @@ def get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, cur
     performance = dash.campaign_goals.get_goals_performance_ad_group(
         user, ad_group, start_date, end_date, local_values=True
     )
-    return _get_primary_campaign_goal(user, ad_group.campaign, performance, currency)
+    return _get_primary_campaign_goal(performance, currency)
 
 
-def _get_primary_campaign_goal(user, campaign, performance, currency):
+def _get_primary_campaign_goal(performance, currency):
     settings = []
-
-    permissions = user.get_all_permissions_with_access_levels()
 
     status, metric_value, planned_value, campaign_goal = performance[0]
     goal_description = dash.campaign_goals.format_campaign_goal(
@@ -633,7 +631,6 @@ def _get_primary_campaign_goal(user, campaign, performance, currency):
         and "planned {}".format(dash.campaign_goals.format_value(campaign_goal.type, planned_value, currency))
         or None,
         section_start=True,
-        internal=not permissions.get("zemauth.campaign_goal_performance"),
     )
 
     primary_campaign_goal_setting.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]

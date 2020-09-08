@@ -183,8 +183,8 @@ angular
                 help: 'Goal performance indicator',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
-                internal: 'zemauth.campaign_goal_performance',
-                shown: 'zemauth.campaign_goal_performance',
+                internal: false,
+                shown: true,
             },
             agency: {
                 name: 'Agency',

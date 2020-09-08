@@ -1,6 +1,5 @@
 import json
 
-from django.contrib.auth.models import Permission
 from django.test import Client
 from django.urls import reverse
 
@@ -55,9 +54,6 @@ class LegacyScheduledReportsTestCase(DASHAPITestCase):
         self.assertEqual(constants.ScheduledReportState.ACTIVE, report.state)
 
     def test_put(self):
-        permission = Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(permission)
-
         query = {
             "fields": [{"field": "Content Ad"}],
             "filters": [{"field": "Date", "operator": "between", "from": "2017-04-07", "to": "2017-04-08"}],

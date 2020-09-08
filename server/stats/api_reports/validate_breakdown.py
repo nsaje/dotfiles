@@ -10,17 +10,6 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     if constants.is_placement_breakdown(breakdown) and not user.has_perm("zemauth.can_use_placement_targeting"):
         raise exc.MissingDataError()
 
-    if constants.StructureDimension.SOURCE in breakdown:
-        if level == Level.ALL_ACCOUNTS and not user.has_perm("zemauth.all_accounts_sources_view"):
-            raise exc.MissingDataError()
-        elif level == Level.ACCOUNTS and not user.has_perm("zemauth.account_sources_view"):
-            raise exc.MissingDataError()
-    else:
-        if level == Level.ALL_ACCOUNTS and not user.has_perm("zemauth.all_accounts_accounts_view"):
-            raise exc.MissingDataError()
-        elif level == Level.ACCOUNTS and not user.has_perm("zemauth.account_campaigns_view"):
-            raise exc.MissingDataError()
-
     if (
         constants.StructureDimension.PUBLISHER in breakdown
         and constants.StructureDimension.CONTENT_AD in breakdown

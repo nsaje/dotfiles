@@ -21,7 +21,6 @@ class ConversionPixel(validation.ConversionPixelValidatorMixin, instance.Convers
     _settings_fields = ["name", "archived", "audience_enabled", "additional_pixel", "redirect_url", "notes"]
 
     _permissioned_fields = {
-        "archived": "zemauth.archive_restore_entity",
         "additional_pixel": "zemauth.can_promote_additional_pixel",
         "redirect_url": "zemauth.can_redirect_pixels",
         "notes": "zemauth.can_see_pixel_notes",

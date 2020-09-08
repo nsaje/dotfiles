@@ -101,24 +101,14 @@ angular
                 archive: {
                     name: 'Archive',
                     value: 'archive',
-                    hasPermission: gridApi.hasPermission(
-                        'zemauth.archive_restore_entity'
-                    ),
-                    internal: gridApi.isPermissionInternal(
-                        'zemauth.archive_restore_entity'
-                    ),
+                    hasPermission: true,
                     disabled: false,
                     execute: archive,
                 },
                 restore: {
                     name: 'Restore',
                     value: 'restore',
-                    hasPermission: gridApi.hasPermission(
-                        'zemauth.archive_restore_entity'
-                    ),
-                    internal: gridApi.isPermissionInternal(
-                        'zemauth.archive_restore_entity'
-                    ),
+                    hasPermission: true,
                     disabled: false,
                     execute: restore,
                 },

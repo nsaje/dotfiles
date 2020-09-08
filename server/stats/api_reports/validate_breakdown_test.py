@@ -25,12 +25,6 @@ class ValidateBreakdownTest(TestCase):
         test_helper.remove_permissions(user, permissions)
 
     def test_breakdown_validate_by_permissions(self):
-        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["account_id"], ["all_accounts_accounts_view"])
-        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["source_id"], ["all_accounts_sources_view"])
-
-        self.add_permission_and_test(Level.ACCOUNTS, ["campaign_id"], ["account_campaigns_view"])
-        self.add_permission_and_test(Level.ACCOUNTS, ["source_id"], ["account_sources_view"])
-
         self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
 
         self.add_permission_and_test(
@@ -98,16 +92,6 @@ class ValidateBreakdownTest(TestCase):
             validate_breakdown_by_structure(Level.AD_GROUPS, [constants.DAY, constants.WEEK])
 
     def test_breakdown_structure(self):
-        user = User.objects.get(pk=1)
-        test_helper.add_permissions(
-            user,
-            [
-                "all_accounts_sources_view",
-                "account_sources_view",
-                "all_accounts_accounts_view",
-                "account_campaigns_view",
-            ],
-        )
         validate_breakdown_by_structure(
             Level.AD_GROUPS,
             [constants.ACCOUNT, constants.CAMPAIGN, constants.AD_GROUP, constants.CONTENT_AD, constants.SOURCE],

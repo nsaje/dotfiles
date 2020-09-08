@@ -369,7 +369,7 @@ class CampaignBreakdown(DASHAPIBaseView):
             stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals=goals, **extras)
-        if len(breakdown) == 1 and request.user.has_perm("zemauth.campaign_goal_optimization"):
+        if len(breakdown) == 1:
             report[0]["campaign_goals"] = campaign_goals.get_campaign_goals(
                 campaign, report[0].get("conversion_goals", [])
             )
@@ -478,7 +478,7 @@ class AdGroupBreakdown(DASHAPIBaseView):
             stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals, **extras)
-        if len(breakdown) == 1 and request.user.has_perm("zemauth.campaign_goal_optimization"):
+        if len(breakdown) == 1:
             report[0]["campaign_goals"] = campaign_goals.get_campaign_goals(
                 ad_group.campaign, report[0].get("conversion_goals", [])
             )

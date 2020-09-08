@@ -37,12 +37,7 @@ class InstanceTestCase(TestCase):
     @mock.patch("utils.redirector_helper.update_pixel")
     def test_update(self, redirector_pixel_mock, history_mock, k1_update_account_mock, redirector_audience_mock):
         request = magic_mixer.blend_request_user(
-            permissions=[
-                "archive_restore_entity",
-                "can_promote_additional_pixel",
-                "can_redirect_pixels",
-                "can_see_pixel_notes",
-            ]
+            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
         )
         account = magic_mixer.blend(core.models.Account)
         core.models.ConversionPixel.objects.create(request, account, name="test_audience", audience_enabled=True)
@@ -85,12 +80,7 @@ class InstanceTestCase(TestCase):
     @mock.patch("utils.redirector_helper.update_pixel")
     def test_update_name(self, redirector_pixel_mock, history_mock, k1_update_account_mock, redirector_audience_mock):
         request = magic_mixer.blend_request_user(
-            permissions=[
-                "archive_restore_entity",
-                "can_promote_additional_pixel",
-                "can_redirect_pixels",
-                "can_see_pixel_notes",
-            ]
+            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
         )
         account = magic_mixer.blend(core.models.Account)
         core.models.ConversionPixel.objects.create(request, account, name="test_audience", audience_enabled=True)
@@ -104,10 +94,6 @@ class InstanceTestCase(TestCase):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.models.Account)
         pixel = core.models.ConversionPixel.objects.create(request, account, name="test", skip_notification=True)
-        pixel.update(request, archived=True)
-        self.assertFalse(pixel.archived)
-
-        request = magic_mixer.blend_request_user(permissions=["archive_restore_entity"])
         pixel.update(request, archived=True)
         self.assertTrue(pixel.archived)
 
@@ -134,12 +120,7 @@ class InstanceTestCase(TestCase):
         redirector_audience_mock.assert_called_once()
 
         request = magic_mixer.blend_request_user(
-            permissions=[
-                "archive_restore_entity",
-                "can_promote_additional_pixel",
-                "can_redirect_pixels",
-                "can_see_pixel_notes",
-            ]
+            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
         )
         pixel.update(request, additional_pixel=True, redirect_url="test_url", notes="test_notes")
         self.assertTrue(pixel.additional_pixel)

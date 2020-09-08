@@ -1101,10 +1101,7 @@
             [isNewEntity]="isNewEntity"
             [entityType]="EntityType.AD_GROUP"
             [isSaveDisabled]="isReadOnly"
-            [isArchiveDisabled]="
-                isReadOnly ||
-                !authStore.hasPermission('zemauth.archive_restore_entity')
-            "
+            [isArchiveDisabled]="isReadOnly"
             [isLoading]="
                 state.requests.create.inProgress ||
                 state.requests.edit.inProgress ||

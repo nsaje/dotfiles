@@ -3,7 +3,6 @@ import datetime
 import json
 from decimal import Decimal
 
-from django.contrib.auth import models as authmodels
 from django.test import Client
 from django.urls import reverse
 from mock import patch
@@ -86,6 +85,8 @@ class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
         selected_name,
         with_conversion_goals=True,
         with_pixels=True,
+        with_goal_fields=True,
+        with_cpa_fields=True,
         conversion_goals=None,
         currency=constants.Currency.USD,
     ):
@@ -134,6 +135,46 @@ class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
         if with_pixels:
             expected_response["data"]["pixels"] = [{"prefix": "pixel_1", "name": "test"}]
 
+        if with_goal_fields:
+            expected_response["data"]["campaign_goals"] = {}
+            expected_response["data"]["goal_fields"] = {
+                "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                "avg_etfm_cost_per_non_bounced_visit": {
+                    "id": "Cost per Non-Bounced Visit",
+                    "name": "Cost per Non-Bounced Visit",
+                },
+                "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
+                "avg_etfm_cost_per_visit": {"id": "Cost per Visit", "name": "Cost per Visit"},
+                "avg_tos": {"id": "Time on Site - Seconds", "name": "Time on Site - Seconds"},
+                "bounce_rate": {"id": "Max Bounce Rate", "name": "Max Bounce Rate"},
+                "etfm_cpc": {"id": "CPC", "name": "CPC"},
+                "percent_new_users": {"id": "New Unique Visitors", "name": "New Unique Visitors"},
+                "pv_per_visit": {"id": "Pageviews per Visit", "name": "Pageviews per Visit"},
+                "video_etfm_cpcv": {"id": "Cost per Completed Video View", "name": "Cost per Completed Video View"},
+            }
+
+        if with_cpa_fields:
+            expected_response["data"]["goal_fields"]["avg_etfm_cost_per_conversion_goal_2"] = {
+                "id": "avg_etfm_cost_per_conversion_goal_2",
+                "name": "$CPA - test conversion goal 2",
+            }
+            expected_response["data"]["goal_fields"]["avg_etfm_cost_per_conversion_goal_3"] = {
+                "id": "avg_etfm_cost_per_conversion_goal_3",
+                "name": "$CPA - test conversion goal 3",
+            }
+            expected_response["data"]["goal_fields"]["avg_etfm_cost_per_conversion_goal_4"] = {
+                "id": "avg_etfm_cost_per_conversion_goal_4",
+                "name": "$CPA - test conversion goal 4",
+            }
+            expected_response["data"]["goal_fields"]["avg_etfm_cost_per_conversion_goal_5"] = {
+                "id": "avg_etfm_cost_per_conversion_goal_5",
+                "name": "$CPA - test conversion goal 5",
+            }
+            expected_response["data"]["goal_fields"]["avg_etfm_cost_per_pixel_1_168"] = {
+                "id": "avg_etfm_cost_per_pixel_1_168",
+                "name": "$CPA - test conversion goal",
+            }
+
         self.assertDictEqual(expected_response, json_blob)
 
         """
@@ -154,8 +195,6 @@ class LegacyBaseDailyStatsTestCase(DASHAPITestCase):
 class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
     # def test_invalid_metrics(self):
-    #     perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
-    #     self.user.user_permissions.add(perm)
     #     source_id = 3
 
     #     self._prepare_mock('source_id', source_id)
@@ -170,8 +209,6 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
     #     self.assertEqual(400, response.status_code)
 
     def test_get_by_source(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
         source_id = 3
 
         self._prepare_mock("source_id", source_id)
@@ -183,11 +220,17 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
         source = models.Source.objects.get(pk=source_id)
-        self._assert_response(response, source_id, source.name, with_conversion_goals=False, with_pixels=False)
+        self._assert_response(
+            response,
+            source_id,
+            source.name,
+            with_conversion_goals=False,
+            with_pixels=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
+        )
 
     def test_get_by_source_join_selected(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
         source_ids = [3, 4, 5, 6]
 
         self._prepare_mock(None, None)
@@ -197,11 +240,17 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
         self.assertEqual(200, response.status_code)
-        self._assert_response(response, "selected", "Selected", with_conversion_goals=False, with_pixels=False)
+        self._assert_response(
+            response,
+            "selected",
+            "Selected",
+            with_conversion_goals=False,
+            with_pixels=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
+        )
 
     def test_get_by_account(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
         account_id = 2
 
         self._prepare_mock("account_id", account_id)
@@ -213,14 +262,19 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
         account = models.Account.objects.get(pk=account_id)
-        self._assert_response(response, account_id, account.name, with_conversion_goals=False, with_pixels=False)
+        self._assert_response(
+            response,
+            account_id,
+            account.name,
+            with_conversion_goals=False,
+            with_pixels=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
+        )
 
     def test_get_by_agency(self):
         agency = models.Agency(name="test")
         agency.save(fake_request(self.user))
-
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
 
         response = self.client.get(
             reverse("accounts_accounts_daily_stats"),
@@ -243,9 +297,6 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_get_by_account_type(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
-
         response = self.client.get(
             reverse("accounts_accounts_daily_stats"),
             self._get_params(selected_ids=[], account_types=[constants.AccountType.TEST]),
@@ -268,8 +319,6 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_get_by_delivery(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
         add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
 
         device_id = constants.DeviceType.DESKTOP
@@ -288,11 +337,11 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             constants.DeviceType.get_name(device_id),
             with_conversion_goals=False,
             with_pixels=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
         )
 
     def test_get_by_delivery_join_selected(self):
-        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
-        self.user.user_permissions.add(perm)
         add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
 
         device_ids = [
@@ -310,7 +359,15 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
         self.assertEqual(200, response.status_code)
-        self._assert_response(response, "selected", "Selected", with_conversion_goals=False, with_pixels=False)
+        self._assert_response(
+            response,
+            "selected",
+            "Selected",
+            with_conversion_goals=False,
+            with_pixels=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
+        )
 
 
 class AccountsDailyStatsTestCase(FutureDASHAPITestCase, LegacyAccountsDailyStatsTestCase):
@@ -332,7 +389,9 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
         source = models.Source.objects.get(pk=source_id)
-        self._assert_response(response, source_id, source.name, with_conversion_goals=False)
+        self._assert_response(
+            response, source_id, source.name, with_conversion_goals=False, with_goal_fields=False, with_cpa_fields=False
+        )
 
     def test_get_by_source_local_currency(self):
         source_id = 3
@@ -355,6 +414,8 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             with_conversion_goals=False,
             with_pixels=False,
             currency=constants.Currency.EUR,
+            with_goal_fields=False,
+            with_cpa_fields=False,
         )
 
     def test_get_by_campaign(self):
@@ -371,7 +432,14 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
-        self._assert_response(response, campaign_id, campaign.name, with_conversion_goals=False)
+        self._assert_response(
+            response,
+            campaign_id,
+            campaign.name,
+            with_conversion_goals=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
+        )
 
     def test_get_by_campaign_local_currency(self):
         campaign_id = 87
@@ -394,6 +462,8 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             with_conversion_goals=False,
             with_pixels=False,
             currency=constants.Currency.EUR,
+            with_goal_fields=False,
+            with_cpa_fields=False,
         )
 
     def test_get_by_delivery(self):
@@ -410,7 +480,12 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
         self.assertEqual(200, response.status_code)
         self._assert_response(
-            response, device_id, constants.DeviceType.get_name(device_id), with_conversion_goals=False
+            response,
+            device_id,
+            constants.DeviceType.get_name(device_id),
+            with_conversion_goals=False,
+            with_goal_fields=False,
+            with_cpa_fields=False,
         )
 
     def test_get_by_delivery_local_currency(self):
@@ -433,6 +508,8 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             with_conversion_goals=False,
             with_pixels=False,
             currency=constants.Currency.EUR,
+            with_goal_fields=False,
+            with_cpa_fields=False,
         )
 
 
@@ -472,7 +549,14 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(
-            response, source_id, source.name, with_pixels=False, conversion_goals=[], currency=constants.Currency.EUR
+            response,
+            source_id,
+            source.name,
+            with_pixels=False,
+            conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
+            currency=constants.Currency.EUR,
         )
 
     def test_get_by_ad_group(self):
@@ -511,6 +595,8 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             ad_group.name,
             with_pixels=False,
             conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
             currency=constants.Currency.EUR,
         )
 
@@ -525,20 +611,6 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        response_blob = json.loads(response.content)
-        self.assertFalse("goal_fields" in response_blob["data"])
-        self.assertFalse("campaign_goals" in response_blob["data"])
-
-        perm = authmodels.Permission.objects.get(codename="campaign_goal_performance")
-        self.user.user_permissions.add(perm)
-
-        self._prepare_mock("ad_group_id", ad_group_id)
-        response = self.client.get(
-            reverse("campaign_ad_groups_daily_stats", kwargs={"campaign_id": 1}),
-            self._get_params(selected_ids=[ad_group_id]),
-            follow=True,
-        )
 
         response_blob = json.loads(response.content)
         self.assertTrue("goal_fields" in response_blob["data"])
@@ -578,6 +650,8 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             constants.DeviceType.get_name(device_id),
             with_pixels=False,
             conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
             currency=constants.Currency.EUR,
         )
 
@@ -618,7 +692,14 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(
-            response, source_id, source.name, with_pixels=False, conversion_goals=[], currency=constants.Currency.EUR
+            response,
+            source_id,
+            source.name,
+            with_pixels=False,
+            conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
+            currency=constants.Currency.EUR,
         )
 
     def test_get_campaign_goals(self):
@@ -633,11 +714,8 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
         response_blob = json.loads(response.content)
-        self.assertFalse("goal_fields" in response_blob["data"])
-        self.assertFalse("campaign_goals" in response_blob["data"])
-
-        perm = authmodels.Permission.objects.get(codename="campaign_goal_performance")
-        self.user.user_permissions.add(perm)
+        self.assertTrue("goal_fields" in response_blob["data"])
+        self.assertTrue("campaign_goals" in response_blob["data"])
 
         self._prepare_mock("source_id", source_id)
         response = self.client.get(
@@ -688,6 +766,8 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             content_ad.title,
             with_pixels=False,
             conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
             currency=constants.Currency.EUR,
         )
 
@@ -741,9 +821,6 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
 
     def test_get_with_conversion_goals(self):
         created_dt = datetime.datetime.utcnow()
-
-        permission = authmodels.Permission.objects.get(codename="campaign_goal_performance")
-        self.user.user_permissions.add(permission)
 
         models.ConversionGoal.objects.filter(name="test conversion goal 5").delete()
 
@@ -888,6 +965,8 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
             constants.DeviceType.get_name(device_id),
             with_pixels=False,
             conversion_goals=[],
+            with_goal_fields=True,
+            with_cpa_fields=False,
             currency=constants.Currency.EUR,
         )
 
@@ -905,7 +984,7 @@ class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1054,7 +1133,7 @@ class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1204,7 +1283,7 @@ class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1354,7 +1433,7 @@ class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1504,7 +1583,7 @@ class LegacyAccountPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1587,7 +1666,7 @@ class LegacyAccountPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1670,7 +1749,7 @@ class LegacyAllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1726,7 +1805,7 @@ class LegacyAllAccountsPlacementsDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting", "campaign_goal_performance"])
+        test_helper.add_permissions(self.user, permissions=["can_use_placement_targeting"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)

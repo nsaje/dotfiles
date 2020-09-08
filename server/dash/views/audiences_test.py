@@ -3,7 +3,6 @@ import json
 
 import mock
 from django.conf import settings
-from django.contrib.auth import models as authmodels
 from django.urls import reverse
 
 from dash import constants
@@ -11,7 +10,6 @@ from dash import history_helpers
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.common.views_base_test_case import FutureDASHAPITestCase
-from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth import models as zmodels
 
@@ -24,7 +22,6 @@ class LegacyAudiencesTestCase(DASHAPITestCase):
         settings.K1_DEMO_MODE = True
 
         self.user = zmodels.User.objects.get(pk=3)
-        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 
@@ -40,29 +37,8 @@ class LegacyAudiencesTestCase(DASHAPITestCase):
             "rules": [{"type": constants.AudienceRuleType.CONTAINS, "value": "test"}],
         }
 
-    def test_permissions(self):
-        self.user = zmodels.User.objects.get(pk=2)
-        self.assertFalse(self.user.is_superuser)
-        self.client.login(username=self.user.email, password="secret")
-
-        url = reverse("accounts_audience", kwargs={"account_id": 1, "audience_id": 1})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.put(url)
-        self.assertEqual(response.status_code, 401)
-
-        url = reverse("accounts_audiences", kwargs={"account_id": 1})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_account_permissions(self):
         self.user = zmodels.User.objects.get(pk=2)
-        permission = authmodels.Permission.objects.get(codename="account_custom_audiences_view")
-        self.user.user_permissions.add(permission)
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 
@@ -389,25 +365,13 @@ class LegacyAudienceArchiveTestCase(DASHAPITestCase):
 
     def setUp(self):
         self.user = zmodels.User.objects.get(pk=3)
-        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
         magic_mixer.blend(models.Campaign, account_id=1, id=124, name="Campaign 0").save(None)
         magic_mixer.blend(models.AdGroup, campaign_id=124, id=125, name="Adgroup 0 ").save(None)
 
-    def test_permissions(self):
-        self.user = zmodels.User.objects.get(pk=2)
-        self.assertFalse(self.user.is_superuser)
-        self.client.login(username=self.user.email, password="secret")
-
-        url = reverse("accounts_audience_archive", kwargs={"account_id": 1, "audience_id": 1})
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
-
     def test_account_permissions(self):
         self.user = zmodels.User.objects.get(pk=2)
-        permission = authmodels.Permission.objects.get(codename="account_custom_audiences_view")
-        self.user.user_permissions.add(permission)
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 
@@ -494,23 +458,11 @@ class LegacyAudienceRestoreTestCase(DASHAPITestCase):
 
     def setUp(self):
         self.user = zmodels.User.objects.get(pk=3)
-        test_helper.add_permissions(self.user, ["account_custom_audiences_view"])
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
-
-    def test_permissions(self):
-        self.user = zmodels.User.objects.get(pk=2)
-        self.assertFalse(self.user.is_superuser)
-        self.client.login(username=self.user.email, password="secret")
-
-        url = reverse("accounts_audience_archive", kwargs={"account_id": 1, "audience_id": 1})
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
 
     def test_account_permissions(self):
         self.user = zmodels.User.objects.get(pk=2)
-        permission = authmodels.Permission.objects.get(codename="account_custom_audiences_view")
-        self.user.user_permissions.add(permission)
         self.assertFalse(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
 

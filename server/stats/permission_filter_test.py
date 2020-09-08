@@ -255,12 +255,6 @@ class BreakdownAllowedTest(TestCase):
         test_helper.remove_permissions(user, permissions)
 
     def test_breakdown_validate_by_permissions(self):
-        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["account_id"], ["all_accounts_accounts_view"])
-        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["source_id"], ["all_accounts_sources_view"])
-
-        self.add_permission_and_test(Level.ACCOUNTS, ["campaign_id"], ["account_campaigns_view"])
-        self.add_permission_and_test(Level.ACCOUNTS, ["source_id"], ["account_sources_view"])
-
         self.add_permission_and_test(Level.ALL_ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
         self.add_permission_and_test(Level.ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
         self.add_permission_and_test(Level.CAMPAIGNS, ["placement_id"], ["can_use_placement_targeting"])
@@ -302,13 +296,12 @@ class BreakdownAllowedTest(TestCase):
 
     def test_breakdown_validate_by_delivery_permissions(self):
         user = User.objects.get(pk=1)
-        test_helper.add_permissions(user, ["all_accounts_accounts_view"])
 
         with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["account_id", "dma"])
 
         user = User.objects.get(pk=1)
-        test_helper.add_permissions(user, ["all_accounts_accounts_view", "can_view_breakdown_by_delivery"])
+        test_helper.add_permissions(user, ["can_view_breakdown_by_delivery"])
 
         permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["account_id", "dma"])
 

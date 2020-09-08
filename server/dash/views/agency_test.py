@@ -605,8 +605,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
 
     @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive(self, redirector_mock):
-        add_permissions(self.user, ["archive_restore_entity"])
-
         conversion_pixel = models.ConversionPixel.objects.get(pk=2)
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 2}),
@@ -638,8 +636,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
 
     @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive_audience_enabled(self, redirector_mock):
-        add_permissions(self.user, ["archive_restore_entity"])
-
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
@@ -670,8 +666,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
 
     @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive_additional_pixel_enabled(self, redirector_mock):
-        add_permissions(self.user, ["archive_restore_entity"])
-
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.additional_pixel = True
         conversion_pixel.audience_enabled = False
@@ -705,41 +699,8 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
 
         self.assertFalse(redirector_mock.called)
 
-    @patch("utils.redirector_helper.upsert_audience")
-    def test_put_archive_no_permissions(self, redirector_mock):
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        conversion_pixel.audience_enabled = False
-        conversion_pixel.save()
-        self.assertFalse(conversion_pixel.archived)
-
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"archived": True, "name": conversion_pixel.name}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(200, response.status_code)
-
-        decoded_response = json.loads(response.content)
-        self.assertDictEqual(
-            {
-                "id": 1,
-                "archived": False,
-                "name": conversion_pixel.name,
-                "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
-                "audience_enabled": False,
-                "additional_pixel": False,
-            },
-            decoded_response["data"],
-        )
-
-        self.assertFalse(redirector_mock.called)
-
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest("id")
-
-        add_permissions(self.user, ["archive_restore_entity"])
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": conversion_pixel.id + 1}),
             json.dumps({"archived": True}),
@@ -758,7 +719,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
             None, account=account, skip_notification=True, name="abcd"
         )
 
-        add_permissions(self.user, ["archive_restore_entity"])
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": new_conversion_pixel.id}),
             json.dumps({"archived": True}),

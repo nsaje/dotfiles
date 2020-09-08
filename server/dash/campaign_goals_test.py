@@ -274,7 +274,7 @@ class CampaignGoalsTestCase(TestCase):
             [
                 {
                     "section_start": True,
-                    "internal": True,
+                    "internal": False,
                     "type": "setting",
                     "name": "Primary Goal:",
                     "value": "10.00 Time on Site - Seconds",
@@ -317,7 +317,7 @@ class CampaignGoalsTestCase(TestCase):
             [
                 {
                     "section_start": True,
-                    "internal": True,
+                    "internal": False,
                     "type": "setting",
                     "name": "Primary Goal:",
                     "value": "10.00 Time on Site - Seconds",

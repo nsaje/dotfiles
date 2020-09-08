@@ -16,9 +16,6 @@
     groups: []
     user_permissions:
       - ['can_use_restapi', 'zemauth', 'user']
-      - ['settings_view', 'dash', 'adgroupsettings']
-      - ['archive_restore_entity', 'zemauth', 'user']
-      - ['account_campaigns_view', 'zemauth', 'user']
       - ['can_see_campaign_goals', 'zemauth', 'user']
       - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
       - ['can_edit_publisher_groups', 'zemauth', 'user']
@@ -39,7 +36,6 @@
       - ['can_use_language_targeting', 'zemauth', 'user']
       - ['can_see_pixel_notes', 'zemauth', 'user']
       - ['can_see_pixel_traffic', 'zemauth', 'user']
-      - ['account_custom_audiences_view', 'zemauth', 'user']
       - ['can_set_bid_modifiers', 'zemauth', 'user']
       - ['can_modify_campaign_manager', 'zemauth', 'user']
       - ['can_view_platform_cost_breakdown', 'zemauth', 'user']

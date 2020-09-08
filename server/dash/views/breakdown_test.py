@@ -50,8 +50,7 @@ class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
         mock_query.return_value = {}
 
         test_helper.add_permissions(
-            self.user,
-            ["can_access_table_breakdowns_feature", "all_accounts_accounts_view", "can_view_breakdown_by_delivery"],
+            self.user, ["can_access_table_breakdowns_feature", "can_view_breakdown_by_delivery"]
         )
 
         params = {
@@ -107,7 +106,7 @@ class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature", "all_accounts_accounts_view"])
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature"])
 
         mock_totals.return_value = {"ctr": 0.9, "clicks": 123}
 
@@ -245,8 +244,7 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
 
     def test_post(self, mock_query):
         test_helper.add_permissions(
-            self.user,
-            ["can_access_table_breakdowns_feature", "account_campaigns_view", "can_view_breakdown_by_delivery"],
+            self.user, ["can_access_table_breakdowns_feature", "can_view_breakdown_by_delivery"]
         )
 
         mock_query.return_value = {}
@@ -307,7 +305,7 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature", "account_campaigns_view"])
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature"])
 
         mock_query.return_value = [
             {
@@ -414,8 +412,7 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
         test_helper.add_permissions(
-            self.user,
-            ["can_access_table_breakdowns_feature", "account_campaigns_view", "can_see_top_level_delivery_breakdowns"],
+            self.user, ["can_access_table_breakdowns_feature", "can_see_top_level_delivery_breakdowns"]
         )
 
         mock_query.return_value = [
@@ -863,6 +860,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
                         "breakdown_id": None,
                         "totals": {"clicks": 123},
                         "batches": [{"id": 4, "name": "batch 4"}, {"id": 1, "name": "batch 1"}],
+                        "campaign_goals": [],
                         "conversion_goals": [
                             {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                             {"id": "conversion_goal_3", "name": "test conversion goal 3"},
@@ -946,6 +944,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
                         "rows": {},
                         "breakdown_id": None,
                         "totals": {"clicks": 123},
+                        "campaign_goals": [],
                         "conversion_goals": [
                             {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                             {"id": "conversion_goal_3", "name": "test conversion goal 3"},
@@ -1054,6 +1053,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
                         "breakdown_id": None,
                         "totals": {"clicks": 123},
                         "ob_blacklisted_count": 0,
+                        "campaign_goals": [],
                         "conversion_goals": [
                             {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                             {"id": "conversion_goal_3", "name": "test conversion goal 3"},
@@ -1135,6 +1135,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
                         "rows": {},
                         "breakdown_id": None,
                         "totals": {"clicks": 123},
+                        "campaign_goals": [],
                         "conversion_goals": [
                             {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                             {"id": "conversion_goal_3", "name": "test conversion goal 3"},

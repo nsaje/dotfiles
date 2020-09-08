@@ -139,7 +139,6 @@ class BaseDailyStatsView(DASHAPIBaseView):
         )
 
     def get_goals(self, request, conversion_goals=None, campaign=None, pixels=None):
-        user = request.user
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():
             raise exc.ValidationError(errors=dict(view_filter.errors))
@@ -152,8 +151,7 @@ class BaseDailyStatsView(DASHAPIBaseView):
         if pixels:
             result["pixels"] = dash.views.helpers.get_pixels_list(pixels)
 
-        can_see_campaign_goals = user.has_perm("zemauth.campaign_goal_performance")
-        if campaign is not None and can_see_campaign_goals:
+        if campaign is not None:
             result["goal_fields"] = campaign_goals.inverted_campaign_goal_map(conversion_goals)
 
             result["campaign_goals"] = dict(
@@ -202,9 +200,6 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
         return params
 
     def get(self, request):
-        if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
-            raise exc.MissingDataError()
-
         self.view_filter = forms.ViewFilterForm(request.GET)
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
@@ -244,9 +239,6 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
         return params
 
     def get(self, request):
-        if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
-            raise exc.MissingDataError()
-
         self.view_filter = forms.ViewFilterForm(request.GET)
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
