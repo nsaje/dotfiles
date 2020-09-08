@@ -19,9 +19,13 @@ cat <<EOF | python $DIR/manage.py shell
 from zemauth.models import User
 from django.contrib.auth.models import Group
 import oauth2_provider.models
+import zemauth.models.user.constants
+import zemauth.features.entity_permission
 
-u = User.objects.create_superuser('test@test.com', 'test123')
+u = User.objects.create_superuser('test@test.com', 'test123', status=zemauth.models.user.constants.Status.ACTIVE)
 u.groups.set(Group.objects.all())
+for permission in zemauth.features.entity_permission.Permission.get_all():
+    zemauth.features.entity_permission.EntityPermission.objects.create(u, permission, agency=None, account=None)
 
 sspd_u = User.objects.get_or_create_service_user('sspd')
 sspd_u.groups.set(Group.objects.all())
