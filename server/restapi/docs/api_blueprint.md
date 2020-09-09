@@ -222,6 +222,8 @@ The response has the following content:
 
 Each Zemanta One user can perform a maximum of 20 requests per second to the Zemanta One API.
 In case that limit is crossed, the API will start responding with HTTP status 429 (Too Many Requests).
+We suggest the implementation of client side request rate limiting and graceful handling of HTTP status 429 responses. 
+
 
 ## Authentication
 
@@ -2544,6 +2546,9 @@ level              | [publisher level](#publishers-level)   | level on which the
 
 Getting a report is performed asynchronously. First, you create a report job, then you poll
 its status and finally, when its status is DONE, you receive a link to a CSV file in the result field.
+
+We advise the implementation of an exponential backoff retrying mechanism in order to gap occasional service issues.
+
 
 ### Filters
 #### Time Filter
