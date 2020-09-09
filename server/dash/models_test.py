@@ -1263,7 +1263,7 @@ class HistoryTest(TestCase):
         hist = (
             models.History.objects.exclude(action_type=constants.HistoryActionType.BID_MODIFIER_UPDATE)
             .all()
-            .order_by("-created_dt")[10]
+            .order_by("-created_dt")[1]
         )
         self.assertIn("Created settings. Source: b1.", hist.changes_text)
 
