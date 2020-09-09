@@ -136,7 +136,9 @@
                         [bindLabel]="'name'"
                         [bindValue]="'id'"
                         [items]="state.extras.obRepresentatives"
-                        [placeholder]="'Choose OB representative'"
+                        [placeholder]="
+                            'Choose OB representative, if left empty it will inherit agency\'s default'
+                        "
                         [isSearchable]="true"
                         [isClearable]="true"
                         [isDisabled]="isReadOnly"
@@ -166,7 +168,9 @@
                         [bindLabel]="'name'"
                         [bindValue]="'id'"
                         [items]="state.extras.obRepresentatives"
-                        [placeholder]="'Choose OB Account Manager'"
+                        [placeholder]="
+                            'Choose OB Account Manager, if left empty it will inherit agency\'s default'
+                        "
                         [isSearchable]="true"
                         [isClearable]="true"
                         [isDisabled]="isReadOnly"

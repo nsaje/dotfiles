@@ -6,6 +6,8 @@ from django.urls import reverse
 import core.features.deals
 import core.models
 import dash.constants
+import utils.test_helper
+import zemauth
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
@@ -80,7 +82,14 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
 
     @mock.patch("restapi.account.internal.helpers.get_extra_data")
     def test_get_default(self, mock_get_extra_data):
-        agency = self.mix_agency(user=self.user, permissions=[Permission.READ, Permission.WRITE])
+        agency_ob_sales_representative = magic_mixer.blend(zemauth.models.User)
+        agency_ob_account_manager = magic_mixer.blend(zemauth.models.User)
+        agency = self.mix_agency(
+            user=self.user,
+            permissions=[Permission.READ, Permission.WRITE],
+            ob_sales_representative=agency_ob_sales_representative,
+            ob_account_manager=agency_ob_account_manager,
+        )
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
@@ -156,14 +165,8 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
             resp_json["data"]["defaultCsRepresentative"],
             str(agency.cs_representative.id) if agency.cs_representative is not None else None,
         )
-        self.assertEqual(
-            resp_json["data"]["obSalesRepresentative"],
-            str(agency.ob_sales_representative.id) if agency.ob_sales_representative is not None else None,
-        )
-        self.assertEqual(
-            resp_json["data"]["obAccountManager"],
-            str(agency.ob_account_manager.id) if agency.ob_account_manager is not None else None,
-        )
+        self.assertEqual(resp_json["data"]["obSalesRepresentative"], None)
+        self.assertEqual(resp_json["data"]["obAccountManager"], None)
         self.assertEqual(resp_json["data"]["autoAddNewSources"], True)
         self.assertEqual(resp_json["data"]["salesforceUrl"], "")
 
@@ -1059,6 +1062,66 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         self.assertEqual(128, account.settings.default_icon.height)
         self.assertEqual(3000, account.settings.default_icon.file_size)
         self.assertIsNone(account.settings.default_icon.origin_url)
+
+    @mock.patch("utils.slack.publish")
+    def test_post_empty_ob_repr(self, mock_slack_publish):
+        agency_ob_sales_representative = magic_mixer.blend(zemauth.models.User)
+        agency_ob_account_manager = magic_mixer.blend(zemauth.models.User)
+        agency = self.mix_agency(
+            user=self.user,
+            permissions=[Permission.READ, Permission.WRITE],
+            ob_sales_representative=agency_ob_sales_representative,
+            ob_account_manager=agency_ob_account_manager,
+        )
+
+        new_account = self.account_repr(
+            agency_id=agency.id,
+            account_name="Generic account",
+            auto_add_new_sources=True,
+            ob_sales_representative=None,
+            ob_account_manager=None,
+        )
+
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertIsNotNone(resp_json["data"]["id"])
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency.id))
+        self.assertEqual(resp_json["data"]["obSalesRepresentative"], str(agency_ob_sales_representative.id))
+        self.assertEqual(resp_json["data"]["obAccountManager"], str(agency_ob_account_manager.id))
+
+    @mock.patch("utils.slack.publish")
+    def test_post_new_ob_repr(self, mock_slack_publish):
+        agency_ob_sales_representative = magic_mixer.blend(zemauth.models.User)
+        agency_ob_account_manager = magic_mixer.blend(zemauth.models.User)
+        agency = self.mix_agency(
+            user=self.user,
+            permissions=[Permission.READ, Permission.WRITE],
+            ob_sales_representative=agency_ob_sales_representative,
+            ob_account_manager=agency_ob_account_manager,
+        )
+
+        account_ob_sales_representative = magic_mixer.blend(zemauth.models.User)
+        utils.test_helper.add_permissions(account_ob_sales_representative, ["can_be_ob_representative"])
+
+        account_ob_account_manager = magic_mixer.blend(zemauth.models.User)
+        utils.test_helper.add_permissions(account_ob_account_manager, ["can_be_ob_representative"])
+
+        new_account = self.account_repr(
+            agency_id=agency.id,
+            account_name="Generic account",
+            auto_add_new_sources=True,
+            ob_sales_representative=account_ob_sales_representative.id,
+            ob_account_manager=account_ob_account_manager.id,
+        )
+
+        r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+
+        self.assertIsNotNone(resp_json["data"]["id"])
+        self.assertEqual(resp_json["data"]["agencyId"], str(agency.id))
+        self.assertEqual(resp_json["data"]["obSalesRepresentative"], str(account_ob_sales_representative.id))
+        self.assertEqual(resp_json["data"]["obAccountManager"], str(account_ob_account_manager.id))
 
     @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
     @mock.patch("utils.slack.publish")

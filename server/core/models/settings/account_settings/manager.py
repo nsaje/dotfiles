@@ -12,8 +12,6 @@ class AccountSettingsManager(core.common.QuerySetManager):
         if agency is not None:
             settings.default_sales_representative = agency.sales_representative
             settings.default_cs_representative = agency.cs_representative
-            settings.ob_sales_representative = agency.ob_sales_representative
-            settings.ob_account_manager = agency.ob_account_manager
             settings.account_type = dash.constants.AccountType.ACTIVATED
             settings.auto_add_new_sources = not agency.entity_tags.filter(name__icontains="biz/NES").exists()
 

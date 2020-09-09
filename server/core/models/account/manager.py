@@ -43,7 +43,6 @@ class AccountManager(core.common.BaseManager):
 
         account.settings = core.models.settings.AccountSettings(account=account, name=name)
         account.settings.update(request, **settings_updates)
-        account.settings_id = account.settings.id
         account.save(request)
         hacks.apply_account_create_hack(request, account)
 

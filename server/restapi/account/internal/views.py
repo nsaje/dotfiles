@@ -93,6 +93,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             )
             settings = serializer.validated_data.get("settings", {})
             settings = self._process_default_icon(settings, new_account, serializer.validated_data)
+            self._remove_ob_repr(settings)
             self._update_account(request, new_account, settings)
             # self._validate_default_icon(new_account)
             self._handle_allowed_media_sources(
@@ -102,6 +103,14 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         self._augment_account(request, new_account)
         return self.response_ok(self.serializer(new_account, context={"request": request}).data, status=201)
+
+    @staticmethod
+    def _remove_ob_repr(settings):
+        if not settings.get("ob_sales_representative"):
+            settings.pop("ob_sales_representative", None)
+
+        if not settings.get("ob_account_manager"):
+            settings.pop("ob_account_manager", None)
 
     @staticmethod
     def _augment_account(request, account):
