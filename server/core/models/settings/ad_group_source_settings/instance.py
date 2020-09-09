@@ -47,7 +47,7 @@ class AdGroupSourceSettingsMixin(object):
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user, write_history=write_history)
 
-        self._update_ad_group_daily_budget(request, changes)
+        self._update_ad_group_daily_budget(request, changes, is_create)
 
         if k1_sync:
             utils.k1_helper.update_ad_group(self.ad_group_source.ad_group, "AdGroupSource.update")
@@ -81,8 +81,8 @@ class AdGroupSourceSettingsMixin(object):
             updates.pop(field, None)
             updates.pop(local_field, None)
 
-    def _update_ad_group_daily_budget(self, request, changes):
-        if "local_daily_budget_cc" not in changes:
+    def _update_ad_group_daily_budget(self, request, changes, is_create):
+        if is_create or "local_daily_budget_cc" not in changes:
             return
 
         ad_group_budget_data = self.ad_group_source.ad_group.adgroupsource_set.filter_active().aggregate(
