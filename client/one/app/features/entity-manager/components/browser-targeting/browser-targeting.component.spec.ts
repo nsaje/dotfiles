@@ -105,8 +105,8 @@ describe('BrowserTargetingComponent', () => {
                 name: BROWSER_NAMES[BrowserFamily.EDGE],
             },
             {
-                family: BrowserFamily.YANDEX,
-                name: BROWSER_NAMES[BrowserFamily.YANDEX],
+                family: BrowserFamily.OTHER,
+                name: BROWSER_NAMES[BrowserFamily.OTHER],
             },
         ]);
     });

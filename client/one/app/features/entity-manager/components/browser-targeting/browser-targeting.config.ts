@@ -12,10 +12,7 @@ export const BROWSER_NAMES: {
     [BrowserFamily.OPERA]: 'Opera',
     [BrowserFamily.EDGE]: 'Edge',
     [BrowserFamily.SAMSUNG]: 'Samsung',
-    [BrowserFamily.ANDROID]: 'Android',
-    [BrowserFamily.YANDEX]: 'Yandex',
-    [BrowserFamily.DALVIK]: 'Dalvik',
-    [BrowserFamily.IN_APP]: 'In app',
+    [BrowserFamily.OTHER]: 'Other',
 };
 
 export const AVAILABLE_BROWSERS: FormattedBrowser[] = [
@@ -26,10 +23,7 @@ export const AVAILABLE_BROWSERS: FormattedBrowser[] = [
     {family: BrowserFamily.OPERA, name: BROWSER_NAMES[BrowserFamily.OPERA]},
     {family: BrowserFamily.EDGE, name: BROWSER_NAMES[BrowserFamily.EDGE]},
     {family: BrowserFamily.SAMSUNG, name: BROWSER_NAMES[BrowserFamily.SAMSUNG]},
-    {family: BrowserFamily.ANDROID, name: BROWSER_NAMES[BrowserFamily.ANDROID]},
-    {family: BrowserFamily.YANDEX, name: BROWSER_NAMES[BrowserFamily.YANDEX]},
-    {family: BrowserFamily.DALVIK, name: BROWSER_NAMES[BrowserFamily.DALVIK]},
-    {family: BrowserFamily.IN_APP, name: BROWSER_NAMES[BrowserFamily.IN_APP]},
+    {family: BrowserFamily.OTHER, name: BROWSER_NAMES[BrowserFamily.OTHER]},
 ];
 
 export const BROWSER_DEVICE_MAPPING: {
@@ -42,8 +36,5 @@ export const BROWSER_DEVICE_MAPPING: {
     [BrowserFamily.OPERA]: ['DESKTOP', 'TABLET', 'MOBILE'],
     [BrowserFamily.EDGE]: ['DESKTOP', 'TABLET', 'MOBILE'],
     [BrowserFamily.SAMSUNG]: ['TABLET', 'MOBILE'],
-    [BrowserFamily.ANDROID]: ['TABLET', 'MOBILE'],
-    [BrowserFamily.YANDEX]: ['DESKTOP', 'TABLET', 'MOBILE'],
-    [BrowserFamily.DALVIK]: ['TABLET', 'MOBILE'],
-    [BrowserFamily.IN_APP]: ['TABLET', 'MOBILE'],
+    [BrowserFamily.OTHER]: ['DESKTOP', 'TABLET', 'MOBILE'],
 };

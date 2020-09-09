@@ -796,10 +796,7 @@ export enum BrowserFamily {
     OPERA = 'OPERA',
     EDGE = 'EDGE',
     SAMSUNG = 'SAMSUNG',
-    ANDROID = 'ANDROID',
-    YANDEX = 'YANDEX',
-    DALVIK = 'DALVIK',
-    IN_APP = 'IN_APP',
+    OTHER = 'OTHER',
 }
 
 export const LEVEL_PARAM_TO_LEVEL_MAP = {

@@ -45,13 +45,6 @@ BROWSER_DEVICE_MAPPING = {
         constants.AdTargetDevice.TABLET,
         constants.AdTargetDevice.MOBILE,
     ],
-    constants.BrowserFamily.ANDROID: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
-    constants.BrowserFamily.YANDEX: [
-        constants.AdTargetDevice.DESKTOP,
-        constants.AdTargetDevice.TABLET,
-        constants.AdTargetDevice.MOBILE,
-    ],
-    constants.BrowserFamily.DALVIK: [constants.AdTargetDevice.TABLET, constants.AdTargetDevice.MOBILE],
 }
 
 

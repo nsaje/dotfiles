@@ -2324,7 +2324,8 @@ OSV_MAPPING = {
 
 
 class BrowserFamily(ConstantBase):
-    OTHER = None
+    UNKNOWN = None
+    OTHER = "OTHER"
     CHROME = "CHROME"
     FIREFOX = "FIREFOX"
     SAFARI = "SAFARI"
@@ -2334,11 +2335,9 @@ class BrowserFamily(ConstantBase):
     UC_BROWSER = "UC_BROWSER"
     IN_APP = "IN_APP"
     EDGE = "EDGE"
-    ANDROID = "ANDROID"
-    YANDEX = "YANDEX"
-    DALVIK = "DALVIK"
 
     _VALUES = {
+        UNKNOWN: "Unknown",
         OTHER: "Other",
         CHROME: "Chrome",
         FIREFOX: "Firefox",
@@ -2349,9 +2348,6 @@ class BrowserFamily(ConstantBase):
         UC_BROWSER: "UC Browser",
         IN_APP: "In App",
         EDGE: "Edge",
-        ANDROID: "Android",
-        YANDEX: "Yandex",
-        DALVIK: "Dalvik",
     }
 
 
