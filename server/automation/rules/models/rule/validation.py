@@ -89,14 +89,10 @@ class RuleValidationMixin:
                 raise exceptions.InvalidChangeStep("Please provide change step")
             elif change_step < action_type_config.min_step:
                 min_step = self._get_action_type_min_step_amount(action_type_config)
-                raise exceptions.InvalidChangeStep(
-                    f"Change step is too small. Please provide a value greater or equal to {min_step:.2f}{sign}."
-                )
+                raise exceptions.InvalidChangeStep(f"Please provide a value greater or equal to {min_step:.2f}{sign}.")
             elif change_step > action_type_config.max_step:
                 max_step = self._get_action_type_max_step_amount(action_type_config)
-                raise exceptions.InvalidChangeStep(
-                    f"Change step is too big. Please provide a value lower than {max_step:.2f}{sign}."
-                )
+                raise exceptions.InvalidChangeStep(f"Please provide a value lower than {max_step:.2f}{sign}.")
 
     def _get_action_type_max_step_amount(self, action_type_config):
         return self._get_action_type_step_value(action_type_config.max_step, action_type_config.type)
@@ -127,12 +123,12 @@ class RuleValidationMixin:
             elif change_limit < action_type_config.min_limit:
                 min_limit = self._get_action_type_min_limit_amount(action_type_config)
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too small. Please provide a value greater or equal to {min_limit:.2f}{sign}."
+                    action_type_config.min_limit_error_message.format(min_limit=min_limit, sign=sign)
                 )
             elif change_limit > action_type_config.max_limit:
                 max_limit = self._get_action_type_max_limit_amount(action_type_config)
                 raise exceptions.InvalidChangeLimit(
-                    f"Change limit is too big. Please provide a value lower than {max_limit:.2f}{sign}."
+                    action_type_config.max_limit_error_message.format(max_limit=max_limit, sign=sign)
                 )
 
     def _get_action_type_max_limit_amount(self, action_type_config):

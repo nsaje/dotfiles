@@ -12,6 +12,8 @@ class AdjustmentTypeConfiguration:
     max_step: float
     min_limit: float
     max_limit: float
+    min_limit_error_message: str
+    max_limit_error_message: str
     type: str
 
 
@@ -71,6 +73,8 @@ ADJUSTMENT_ACTION_TYPES = {
         min_step=0.01,
         max_step=1,
         type=ADJUSTMENT_ACTION_TYPE_PERCENTAGE,
+        min_limit_error_message="Maximum bid modifier must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Maximum bid modifier must be {max_limit:.2f}{sign} or less.",
     ),
     constants.ActionType.DECREASE_BID_MODIFIER: AdjustmentTypeConfiguration(
         min_limit=float(MODIFIER_MIN),
@@ -78,19 +82,45 @@ ADJUSTMENT_ACTION_TYPES = {
         min_step=0.01,
         max_step=1,
         type=ADJUSTMENT_ACTION_TYPE_PERCENTAGE,
+        min_limit_error_message="Minimum bid modifier must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Minimum bid modifier must be {max_limit:.2f}{sign} or less.",
     ),
     # TODO: Separate limits for CPC and CPM
     constants.ActionType.INCREASE_BID: AdjustmentTypeConfiguration(
-        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
+        min_limit=0.01,
+        max_limit=25,
+        min_step=0.005,
+        max_step=20,
+        type=ADJUSTMENT_ACTION_TYPE_CURRENCY,
+        min_limit_error_message="Maximum bid must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Maximum bid must be {max_limit:.2f}{sign} or less.",
     ),
     constants.ActionType.DECREASE_BID: AdjustmentTypeConfiguration(
-        min_limit=0.01, max_limit=25, min_step=0.005, max_step=20, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
+        min_limit=0.01,
+        max_limit=25,
+        min_step=0.005,
+        max_step=20,
+        type=ADJUSTMENT_ACTION_TYPE_CURRENCY,
+        min_limit_error_message="Minimum bid must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Minimum bid must be {max_limit:.2f}{sign} or less.",
     ),
     constants.ActionType.INCREASE_BUDGET: AdjustmentTypeConfiguration(
-        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
+        min_limit=20,
+        max_limit=100000,
+        min_step=1,
+        max_step=10000,
+        type=ADJUSTMENT_ACTION_TYPE_CURRENCY,
+        min_limit_error_message="Maximum daily budget must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Maximum daily budget must be {max_limit:.2f}{sign} or less.",
     ),
     constants.ActionType.DECREASE_BUDGET: AdjustmentTypeConfiguration(
-        min_limit=20, max_limit=100000, min_step=1, max_step=10000, type=ADJUSTMENT_ACTION_TYPE_CURRENCY
+        min_limit=20,
+        max_limit=100000,
+        min_step=1,
+        max_step=10000,
+        type=ADJUSTMENT_ACTION_TYPE_CURRENCY,
+        min_limit_error_message="Minimum daily budget must be {min_limit:.2f}{sign} or greater.",
+        max_limit_error_message="Minimum daily budget must be {max_limit:.2f}{sign} or less.",
     ),
 }
 

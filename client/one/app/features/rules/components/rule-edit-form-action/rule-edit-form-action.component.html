@@ -32,6 +32,12 @@
         placement="right"
         (inputBlur)="updateChangeStep($event, actionType)"
     ></zem-currency-input>
+    <div
+        class="zem-form-group__content-item zem-message zem-message--error"
+        *ngFor="let error of changeStepErrors"
+    >
+        {{ error }}
+    </div>
 </zem-content-form-group>
 
 <zem-content-form-group
