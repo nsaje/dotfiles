@@ -2,7 +2,7 @@
 <div class="modal__body">
     <div
         class="message message--info message--with-icon m-b-s"
-        ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')"
+        ng-if="hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')"
     >
         Exports currently don't support some of the breakdowns available in the
         table view.
@@ -219,15 +219,8 @@
             </div>
         </div>
 
-        <div
-            class="form__group"
-            ng-if="hasPermission('zemauth.can_include_totals_in_reports')"
-        >
-            <label
-                class="form__label"
-                for="include-totals-checkbox"
-                is-internal="zemauth.can_include_totals_in_reports"
-            >
+        <div class="form__group">
+            <label class="form__label" for="include-totals-checkbox">
                 Include totals
             </label>
             <div class="form__checkbox">
@@ -243,15 +236,8 @@
             </div>
         </div>
 
-        <div
-            class="form__group"
-            ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')"
-        >
-            <label
-                class="form__label"
-                for="add-ids-checkbox"
-                is-internal="zemauth.can_include_model_ids_in_reports"
-            >
+        <div class="form__group">
+            <label class="form__label" for="add-ids-checkbox">
                 Add IDs to report
             </label>
             <div class="form__checkbox">

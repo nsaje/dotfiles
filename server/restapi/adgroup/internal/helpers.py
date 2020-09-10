@@ -46,10 +46,9 @@ def get_extra_data(user, ad_group):
     if user.has_perm("zemauth.can_see_deals_in_ui"):
         extra["deals"] = get_deals(ad_group)
 
-    if user.has_perm("zemauth.can_review_and_set_bid_modifiers_in_settings"):
-        overview = get_bid_modifier_type_summaries(ad_group)
-        if overview is not None:
-            extra["bid_modifier_type_summaries"] = overview
+    overview = get_bid_modifier_type_summaries(ad_group)
+    if overview is not None:
+        extra["bid_modifier_type_summaries"] = overview
 
     return extra
 

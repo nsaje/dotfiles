@@ -4,7 +4,6 @@ from rest_framework.response import Response
 import core.features.publisher_groups
 import zemauth.access
 from restapi.common.pagination import StandardPagination
-from restapi.common.permissions import CanEditPublisherGroupsPermission
 from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.publishergroupentry.v1 import serializers
 from zemauth.features.entity_permission import Permission
@@ -12,7 +11,7 @@ from zemauth.features.entity_permission import Permission
 
 class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelViewSet):
     pagination_class = StandardPagination
-    permission_classes = RESTAPIBaseViewSet.permission_classes + (CanEditPublisherGroupsPermission,)
+    permission_classes = RESTAPIBaseViewSet.permission_classes
 
     lookup_url_kwarg = "entry_id"
 

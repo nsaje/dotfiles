@@ -397,12 +397,7 @@
                 class="zem-panel zem-settings__panel"
                 *ngIf="
                     !authStore.hasPermission('zemauth.disable_public_rcs') &&
-                    !authStore.hasPermission(
-                        'zemauth.disable_public_newscorp'
-                    ) &&
-                    authStore.hasPermission(
-                        'zemauth.can_modify_allowed_sources'
-                    )
+                    !authStore.hasPermission('zemauth.disable_public_newscorp')
                 "
             >
                 <div class="zem-panel__header">

@@ -40,16 +40,9 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         entries = publisher_group.entries.all().values("publisher", "placement", "source", "include_subdomains")
         self.assertCountEqual(entry_dicts, entries)
 
-    def test_post_not_allowed(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        payload = self.get_payload(ad_group=ad_group.id)
-
-        response = self.client.post(reverse("publisher_targeting"), data=payload)
-        self.assertEqual(response.status_code, 404)
-
     def test_post_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status"])
+        payload = self.get_payload(ad_group=ad_group.id)
         payload = self.get_payload(ad_group=ad_group.id)
 
         response = self.client.post(
@@ -58,22 +51,8 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEntriesInserted(ad_group.default_blacklist)
 
-    def test_post_campaign_not_allowed(self):
-        campaign = models.Campaign.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status"])
-        payload = self.get_payload(campaign=campaign.id)
-
-        response = self.client.post(
-            reverse("publisher_targeting"), data=json.dumps(payload), content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 401)
-
     def test_post_campaign(self):
         campaign = models.Campaign.objects.get(pk=1)
-        test_helper.add_permissions(
-            self.user,
-            ["can_modify_publisher_blacklist_status", "can_access_campaign_account_publisher_blacklist_status"],
-        )
         payload = self.get_payload(campaign=campaign.id)
 
         response = self.client.post(
@@ -83,22 +62,8 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         campaign.refresh_from_db()
         self.assertEntriesInserted(campaign.default_blacklist)
 
-    def test_post_account_not_allowed(self):
-        account = models.Account.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status"])
-        payload = self.get_payload(account=account.id)
-
-        response = self.client.post(
-            reverse("publisher_targeting"), data=json.dumps(payload), content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 401)
-
     def test_post_account(self):
         account = models.Account.objects.get(pk=1)
-        test_helper.add_permissions(
-            self.user,
-            ["can_modify_publisher_blacklist_status", "can_access_campaign_account_publisher_blacklist_status"],
-        )
         payload = self.get_payload(account=account.id)
 
         response = self.client.post(
@@ -109,7 +74,6 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         self.assertEntriesInserted(account.default_blacklist)
 
     def test_post_global_not_allowed(self):
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status"])
         payload = self.get_payload()
 
         response = self.client.post(
@@ -123,9 +87,7 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
         request.user = self.user
         global_group.save(request)
 
-        test_helper.add_permissions(
-            self.user, ["can_modify_publisher_blacklist_status", "can_access_global_publisher_blacklist_status"]
-        )
+        test_helper.add_permissions(self.user, ["can_access_global_publisher_blacklist_status"])
         payload = self.get_payload()
 
         with override_settings(GLOBAL_BLACKLIST_ID=global_group.id):
@@ -137,7 +99,7 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
 
     def test_post_placement_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         payload = self.get_payload(ad_group=ad_group.id, entries=[{"publisher": "cnn.com", "placement": "widget1"}])
 
         response = self.client.post(
@@ -151,7 +113,6 @@ class LegacyPublisherTargetingViewTestCase(DASHAPITestCase):
 
     def test_post_placement_ad_group_no_permission(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        test_helper.add_permissions(self.user, ["can_modify_publisher_blacklist_status"])
         payload = self.get_payload(ad_group=ad_group.id, entries=[{"publisher": "cnn.com", "placement": "widget1"}])
 
         response = self.client.post(
@@ -174,12 +135,7 @@ class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    def test_get_not_allowed(self):
-        response = self.client.get(reverse("publisher_groups"), {"account_id": 1})
-        self.assertEqual(response.status_code, 404)
-
     def test_get_with_account(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
 
         response = self.client.get(reverse("publisher_groups"), {"account_id": account.id})
@@ -192,7 +148,6 @@ class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
             self.assertEqual(models.PublisherGroup.objects.filter(pk=pg["id"]).filter_by_account(account).count(), 1)
 
     def test_get_with_agency(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         publisher_group = magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
 
@@ -209,7 +164,6 @@ class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
             self.assertEqual(models.PublisherGroup.objects.filter(pk=pg["id"]).filter_by_agency(agency).count(), 1)
 
     def test_get_without_agency_and_account(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
 
         magic_mixer.blend(models.PublisherGroup, name="test publisher group", agency=agency)
@@ -221,7 +175,6 @@ class LegacyPublisherGroupsViewTestCase(DASHAPITestCase):
         self.assertEqual(content["data"]["error_code"], "ValidationError")
 
     def test_get_not_implicit(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
 
         response = self.client.get(reverse("publisher_groups"), {"account_id": account.id, "not_implicit": True})
@@ -249,25 +202,14 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
-    def test_get_not_allowed(self):
-        response = self.client.get(reverse("publisher_groups_upload", kwargs={"csv_key": "asd"}), {"account_id": 1})
-        self.assertEqual(response.status_code, 404)
-
-    def test_post_not_allowed(self):
-        response = self.client.post(reverse("publisher_groups_upload"), {"account_id": 1})
-        self.assertEqual(response.status_code, 404)
-
     @patch.object(s3helpers.S3Helper, "get")
     def test_get(self, mock_s3):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
-
         response = self.client.get(reverse("publisher_groups_upload", kwargs={"csv_key": "asd"}), {"account_id": 1})
 
         self.assertEqual(response.status_code, 200)
         mock_s3.assert_called_with("publisher_group_errors/account_1/asd.csv")
 
     def test_post_update(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         data = {"id": 1, "name": "qweasd", "include_subdomains": True, "account_id": account.id}
 
@@ -280,7 +222,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_update_apply_include_subdomains(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         data = {"id": 1, "name": "qweasd", "include_subdomains": False, "account_id": account.id}
 
@@ -304,7 +245,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         return csv_file.read()
 
     def test_post_create_publisher_source(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Source": ""}, {"Publisher": "qwe", "Source": "adsnative"}]
 
@@ -326,7 +266,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_publisher(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd"}, {"Publisher": "qwe"}]
 
@@ -348,7 +287,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_publisher_source_placement_no_permission(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "asd", "Placement": "widget1", "Source": ""},
@@ -365,7 +303,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Placement" is not supported'])
 
     def test_post_create_publisher_source_placement(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "asd", "Placement": "widget1", "Source": ""},
@@ -391,7 +329,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_publisher_placement_no_permission(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
 
@@ -405,7 +342,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Placement" is not supported'])
 
     def test_post_create_publisher_placement(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Placement": "widget1"}, {"Publisher": "qwe", "Placement": "widget2"}]
 
@@ -428,7 +365,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_unknown_columns(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [{"Publisher": "asd", "Unknown": "foo"}, {"Publisher": "qwe", "Unknown": "bar"}]
 
@@ -442,7 +379,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
         self.assertEqual(response.json()["data"]["errors"]["entries"], ['Column "Unknown" is not supported'])
 
     def test_post_create_publisher_mixed_entries(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "qwe", "Placement": "", "Source": ""},
@@ -470,7 +407,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
             self.assertEqual(entry.include_subdomains, True)
 
     def test_post_create_publisher_optional_in_column_names(self):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "qwe", "Placement (optional)": "", "Source (optional)": ""},
@@ -499,7 +436,7 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
 
     @patch.object(s3helpers.S3Helper, "put")
     def test_post_create_publisher_mixed_entries_errors(self, mock_s3):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups", "can_use_placement_targeting"])
+        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "", "Placement": "", "Source": ""},
@@ -548,7 +485,6 @@ class LegacyPublisherGroupsUploadTestCase(DASHAPITestCase):
 
     @patch.object(s3helpers.S3Helper, "put")
     def test_post_create_publisher_mixed_entries_errors_no_permission(self, mock_s3):
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         account = models.Account.objects.get(pk=1)
         rows = [
             {"Publisher": "", "Source": ""},
@@ -585,7 +521,6 @@ class PublisherGroupsUploadTestCase(FutureDASHAPITestCase, LegacyPublisherGroups
 class LegacyPublisherGroupsDownloadTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
@@ -687,7 +622,6 @@ class PublisherGroupsDownloadTestCase(FutureDASHAPITestCase, LegacyPublisherGrou
 class LegacyPublisherGroupsExampleDownloadTestCase(DASHAPITestCase):
     def setUp(self):
         self.user = magic_mixer.blend(User, password="md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c")
-        test_helper.add_permissions(self.user, ["can_edit_publisher_groups"])
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 

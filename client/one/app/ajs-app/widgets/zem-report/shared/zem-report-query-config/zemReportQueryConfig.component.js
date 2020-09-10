@@ -94,12 +94,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.showIncludeItemsWithNoSpend = false;
             }
 
-            if (
-                $ctrl.view === 'Account' &&
-                zemAuthStore.hasPermission(
-                    'zemauth.can_request_accounts_report_in_local_currencies'
-                )
-            ) {
+            if ($ctrl.view === 'Account') {
                 $ctrl.showAllAccountsInLocalCurrencyCheckbox = true;
             }
 

@@ -774,14 +774,6 @@ class LegacyAllAccountsOverviewTestCase(DASHAPITestCase):
         mock_query_yd.return_value = {"yesterday_at_cost": 20, "yesterday_etfm_cost": 30}
         mock_query_mtd.return_value = {"e_media_cost": 10, "et_cost": 20, "etfm_cost": 30}
         response = self._get_all_accounts_overview(1)
-        self.assertFalse(response["success"])
-
-        permission_2 = Permission.objects.get(codename="can_access_agency_infobox")
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission_2)
-        user.save()
-
-        response = self._get_all_accounts_overview(1)
         self.assertTrue(response["success"])
 
         self.assertEqual(set(["Active accounts:"]), set(s["name"] for s in response["data"]["basic_settings"]))

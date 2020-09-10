@@ -201,13 +201,8 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             ad_group.add_deals(request, list(to_be_added))
 
 
-class CanUseCloneAdGroupsPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.can_clone_adgroups"))
-
-
 class CloneAdGroupViewSet(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, CanUseCloneAdGroupsPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         serializer = serializers.CloneAdGroupSerializer(data=request.data, context=self.get_serializer_context())

@@ -185,8 +185,6 @@ angular
                     return value;
                 case zemGridConstants.gridColumnTypes.SUBMISSION_STATUS:
                     return value;
-                case zemGridConstants.gridColumnTypes.STATE_SELECTOR:
-                    return value;
                 case zemGridConstants.gridColumnTypes.STATUS:
                     return convertStatusValue(value);
                 case zemGridConstants.gridColumnTypes.THUMBNAIL:

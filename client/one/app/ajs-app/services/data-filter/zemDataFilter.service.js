@@ -82,7 +82,6 @@ angular
                 type: CONDITION_TYPES.list,
                 urlParam: 'filtered_agencies',
                 event: EVENTS.ON_FILTERED_AGENCIES_UPDATE,
-                permissions: ['zemauth.can_filter_by_agency'],
             },
             accountTypes: {
                 name: 'accountTypes',

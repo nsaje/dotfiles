@@ -11,13 +11,8 @@ from zemauth.features.entity_permission import Permission
 from . import serializers
 
 
-class CanUseCloneContentAdsPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm("zemauth.can_clone_contentads"))
-
-
 class CloneContentAdsViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, CanUseCloneContentAdsPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         serializer = serializers.CloneContentAdsSerializer(data=request.data, context=self.get_serializer_context())

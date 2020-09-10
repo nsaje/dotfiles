@@ -98,11 +98,6 @@
                 </div>
                 <zem-expandable-section
                     class="zem-expandable-section"
-                    *ngIf="
-                        authStore.hasPermission(
-                            'zemauth.can_manage_ad_group_dayparting'
-                        )
-                    "
                     [expandedByDefault]="
                         doesAnySettingHaveValue(state.entity.dayparting)
                     "
@@ -111,14 +106,7 @@
                 >
                     <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
-                            <div
-                                class="zem-settings-section__title"
-                                [zemInternalFeature]="
-                                    authStore.isPermissionInternal(
-                                        'zemauth.can_manage_ad_group_dayparting'
-                                    )
-                                "
-                            >
+                            <div class="zem-settings-section__title">
                                 Dayparting
                             </div>
                             <div class="zem-settings-section__description">
@@ -1020,14 +1008,7 @@
                 </div>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="
-                    authStore.hasPermission(
-                        'zemauth.can_review_and_set_bid_modifiers_in_settings'
-                    )
-                "
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Bid modifiers

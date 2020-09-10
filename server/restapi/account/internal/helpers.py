@@ -35,10 +35,9 @@ def get_extra_data(user, account):
     if user.has_perm("zemauth.can_see_deals_in_ui"):
         extra["deals"] = get_deals(account)
 
-    if user.has_perm("zemauth.can_modify_allowed_sources"):
-        extra["available_media_sources"] = restapi.common.helpers.get_available_sources(
-            user, account.agency, account=account
-        )
+    extra["available_media_sources"] = restapi.common.helpers.get_available_sources(
+        user, account.agency, account=account
+    )
 
     return extra
 

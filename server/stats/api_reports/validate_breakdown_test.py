@@ -27,11 +27,7 @@ class ValidateBreakdownTest(TestCase):
     def test_breakdown_validate_by_permissions(self):
         self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
 
-        self.add_permission_and_test(
-            Level.AD_GROUPS,
-            ["publisher_id", "content_ad_id"],
-            ["can_see_publishers", "can_breakdown_reports_by_ads_and_publishers"],
-        )
+        self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id", "content_ad_id"], ["can_see_publishers"])
 
     def test_breakdown_validate_publisher(self):
         user = User.objects.get(pk=1)

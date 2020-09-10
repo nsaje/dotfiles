@@ -28,13 +28,7 @@ class LegacyRTBSourceSettingsTestCase(DASHAPITestCase):
         self.assertFalse(self.user.is_superuser)
 
         add_permissions(
-            self.user,
-            [
-                "can_set_ad_group_max_cpc",
-                "can_access_table_breakdowns_feature",
-                "can_set_rtb_sources_as_one_cpc",
-                "fea_can_use_cpm_buying",
-            ],
+            self.user, ["can_set_ad_group_max_cpc", "can_set_rtb_sources_as_one_cpc", "fea_can_use_cpm_buying"]
         )
         self.client.login(username=self.user.email, password="secret")
 

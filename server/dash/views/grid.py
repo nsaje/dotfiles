@@ -32,9 +32,6 @@ from . import breakdown_helpers
 
 class AdGroupSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
-            raise exc.MissingDataError()
-
         data = json.loads(request.body)
         settings = data["settings"]
         state = settings.get("state")
@@ -52,8 +49,6 @@ class AdGroupSettings(DASHAPIBaseView):
 
 class ContentAdSettings(DASHAPIBaseView):
     def post(self, request, content_ad_id):
-        if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
-            raise exc.MissingDataError()
         content_ad = zemauth.access.get_content_ad(request.user, Permission.WRITE, content_ad_id)
 
         data = json.loads(request.body)
@@ -92,9 +87,6 @@ class ContentAdEdit(DASHAPIBaseView):
 
 class AdGroupSourceSettings(DASHAPIBaseView):
     def post(self, request, ad_group_id, source_id):
-        if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
-            raise exc.MissingDataError()
-
         data = json.loads(request.body)
         config = data["config"] if "config" in data else {}
         settings = data["settings"]

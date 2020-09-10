@@ -31,9 +31,6 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
-        $ctrl.showAgency = zemAuthStore.hasPermission(
-            'zemauth.can_filter_by_agency'
-        );
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
@@ -194,7 +191,7 @@ angular.module('one.widgets').component('zemNavigation', {
                 $ctrl.query,
                 activeAccount,
                 showArchived,
-                $ctrl.showAgency
+                true
             );
 
             $ctrl.selectedEntity = null;

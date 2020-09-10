@@ -108,9 +108,7 @@ angular
                 breakdown === constants.breakdown.CAMPAIGN
             ) {
                 buttons.push(BUTTONS.settings);
-                if (zemAuthStore.hasPermission('zemauth.can_clone_campaigns')) {
-                    buttons.push(commonHelpers.patchObject(BUTTONS.clone, {isDisabled: hasReadOnlyAccess}));
-                }
+                buttons.push(commonHelpers.patchObject(BUTTONS.clone, {isDisabled: hasReadOnlyAccess}));
                 addArchiveUnarchive();
             } else if (
                 (level === constants.level.ACCOUNTS || level === constants.level.CAMPAIGNS) &&
