@@ -1,5 +1,24 @@
 <div
     class="custom-panel"
+    ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions') && $ctrl.agencyManagers !== null && $ctrl.agencyManagers !== undefined && !$ctrl.hasPermission('zemauth.can_see_agency_managers_under_access_permissions')"
+>
+    <h2 class="custom-panel__title">Agency managers</h2>
+    <div class="custom-panel__description">
+        Users who are members of account's agency and have access to the account
+        you're currently on.
+    </div>
+    <div class="message" ng-if="$ctrl.state.agencyManagers.length === 0">
+        No agency managers
+    </div>
+
+    <ul class="list-with-bullets" ng-if="$ctrl.state.agencyManagers.length > 0">
+        <li ng-repeat="user in $ctrl.state.agencyManagers">
+            <strong>{{ user.name }}</strong> ({{ user.email }})
+        </li>
+    </ul>
+</div>
+<div
+    class="custom-panel"
     is-internal="zemauth.account_agency_access_permissions"
     ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions')"
 >

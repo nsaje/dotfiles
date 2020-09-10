@@ -19,31 +19,78 @@
       - ["campaign_settings_cs_rep", "zemauth", "user"]
       - ["campaign_settings_sales_rep", "zemauth", "user"]
       - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
       - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
       - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
       - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
       - ["can_create_agency", "zemauth", "user"]
       - ["can_download_custom_reports", "zemauth", "user"]
       - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
       - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
       - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
       - ["can_filter_sources_through_table", "zemauth", "user"]
       - ["can_hide_chart", "zemauth", "user"]
       - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
       - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
       - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
       - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
       - ["can_manage_oauth2_apps", "zemauth", "user"]
       - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
       - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
       - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
       - ["can_promote_additional_pixel", "zemauth", "user"]
       - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
       - ["can_receive_sales_credit_email", "zemauth", "user"]
       - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
       - ["can_request_demo_v3", "zemauth", "user"]
       - ["can_review_bid_modifiers", "zemauth", "user"]
       - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
       - ["can_see_all_accounts", "zemauth", "user"]
       - ["can_see_all_available_sources", "zemauth", "user"]
       - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
@@ -52,8 +99,13 @@
       - ["can_see_amplify_live_preview", "zemauth", "user"]
       - ["can_see_amplify_review_link", "zemauth", "user"]
       - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
       - ["can_see_deals_in_ui", "zemauth", "user"]
       - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
       - ["can_see_history_in_drawer", "zemauth", "user"]
       - ["can_see_id_columns_in_table", "zemauth", "user"]
       - ["can_see_infobox_in_local_currency", "zemauth", "user"]
@@ -154,6 +206,7 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
       - ["can_see_user_management", "zemauth", "user"]
       - ["fea_use_entity_permission", "zemauth", "user"]
   model: zemauth.user
@@ -178,31 +231,78 @@
       - ["campaign_settings_cs_rep", "zemauth", "user"]
       - ["campaign_settings_sales_rep", "zemauth", "user"]
       - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
       - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
       - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
       - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
       - ["can_create_agency", "zemauth", "user"]
       - ["can_download_custom_reports", "zemauth", "user"]
       - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
       - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
       - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
       - ["can_filter_sources_through_table", "zemauth", "user"]
       - ["can_hide_chart", "zemauth", "user"]
       - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
       - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
       - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
       - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
       - ["can_manage_oauth2_apps", "zemauth", "user"]
       - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
       - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
       - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
       - ["can_promote_additional_pixel", "zemauth", "user"]
       - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
       - ["can_receive_sales_credit_email", "zemauth", "user"]
       - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
       - ["can_request_demo_v3", "zemauth", "user"]
       - ["can_review_bid_modifiers", "zemauth", "user"]
       - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
       - ["can_see_all_available_sources", "zemauth", "user"]
       - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
       - ["can_see_all_users_for_managers", "zemauth", "user"]
@@ -210,8 +310,13 @@
       - ["can_see_amplify_live_preview", "zemauth", "user"]
       - ["can_see_amplify_review_link", "zemauth", "user"]
       - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
       - ["can_see_deals_in_ui", "zemauth", "user"]
       - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
       - ["can_see_history_in_drawer", "zemauth", "user"]
       - ["can_see_id_columns_in_table", "zemauth", "user"]
       - ["can_see_infobox_in_local_currency", "zemauth", "user"]
@@ -312,6 +417,7 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
       - ["can_see_user_management", "zemauth", "user"]
       - ["fea_use_entity_permission", "zemauth", "user"]
   model: zemauth.user
@@ -336,31 +442,78 @@
       - ["campaign_settings_cs_rep", "zemauth", "user"]
       - ["campaign_settings_sales_rep", "zemauth", "user"]
       - ["can_access_additional_outbrain_publisher_settings", "zemauth", "user"]
+      - ["can_access_agency_infobox", "zemauth", "user"]
       - ["can_access_all_accounts_infobox", "zemauth", "user"]
+      - [
+          "can_access_campaign_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
       - ["can_access_global_publisher_blacklist_status", "zemauth", "user"]
+      - ["can_access_publisher_reports", "zemauth", "user"]
+      - ["can_access_table_breakdowns_feature", "zemauth", "user"]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level",
+          "zemauth",
+          "user",
+        ]
+      - [
+          "can_access_table_breakdowns_feature_on_ad_group_level_publishers",
+          "zemauth",
+          "user",
+        ]
       - ["can_be_ob_representative", "zemauth", "user"]
+      - ["can_breakdown_reports_by_ads_and_publishers", "zemauth", "user"]
+      - ["can_clone_campaigns", "zemauth", "user"]
+      - ["can_clone_adgroups", "zemauth", "user"]
+      - ["can_clone_contentads", "zemauth", "user"]
+      - ["can_control_ad_group_state_in_table", "zemauth", "user"]
       - ["can_create_agency", "zemauth", "user"]
       - ["can_download_custom_reports", "zemauth", "user"]
       - ["can_edit_advanced_custom_flags", "zemauth", "user"]
+      - ["can_edit_content_ads", "zemauth", "user"]
+      - ["can_edit_publisher_groups", "zemauth", "user"]
       - ["can_filter_by_account_type", "zemauth", "user"]
+      - ["can_filter_by_agency", "zemauth", "user"]
       - ["can_filter_by_business", "zemauth", "user"]
+      - ["can_filter_by_media_source", "zemauth", "user"]
       - ["can_filter_sources_through_table", "zemauth", "user"]
       - ["can_hide_chart", "zemauth", "user"]
       - ["can_include_credit_refunds_in_report", "zemauth", "user"]
+      - ["can_include_model_ids_in_reports", "zemauth", "user"]
       - ["can_include_tags_in_reports", "zemauth", "user"]
+      - ["can_include_totals_in_reports", "zemauth", "user"]
+      - ["can_manage_ad_group_dayparting", "zemauth", "user"]
       - ["can_manage_agency_margin", "zemauth", "user"]
+      - ["can_manage_budgets_in_local_currency", "zemauth", "user"]
       - ["can_manage_credit_refunds", "zemauth", "user"]
+      - ["can_manage_goals_in_local_currency", "zemauth", "user"]
       - ["can_manage_oauth2_apps", "zemauth", "user"]
       - ["can_manage_restapi_access", "zemauth", "user"]
+      - ["can_manage_settings_in_local_currency", "zemauth", "user"]
       - ["can_modify_account_manager", "zemauth", "user"]
+      - ["can_modify_account_name", "zemauth", "user"]
       - ["can_modify_account_type", "zemauth", "user"]
+      - ["can_modify_allowed_sources", "zemauth", "user"]
+      - ["can_modify_campaign_iab_category", "zemauth", "user"]
+      - ["can_modify_campaign_manager", "zemauth", "user"]
+      - ["can_modify_facebook_page", "zemauth", "user"]
+      - [
+          "can_modify_outbrain_account_publisher_blacklist_status",
+          "zemauth",
+          "user",
+        ]
+      - ["can_modify_publisher_blacklist_status", "zemauth", "user"]
       - ["can_promote_additional_pixel", "zemauth", "user"]
       - ["can_promote_agency_managers", "zemauth", "user"]
+      - ["can_receive_pacing_email", "zemauth", "user"]
       - ["can_receive_sales_credit_email", "zemauth", "user"]
       - ["can_redirect_pixels", "zemauth", "user"]
+      - ["can_request_accounts_report_in_local_currencies", "zemauth", "user"]
       - ["can_request_demo_v3", "zemauth", "user"]
       - ["can_review_bid_modifiers", "zemauth", "user"]
       - ["can_see_account_type", "zemauth", "user"]
+      - ["can_see_agency_managers_under_access_permissions", "zemauth", "user"]
       - ["can_see_all_available_sources", "zemauth", "user"]
       - ["can_see_all_nas_in_inventory_planning", "zemauth", "user"]
       - ["can_see_all_users_for_managers", "zemauth", "user"]
@@ -368,8 +521,13 @@
       - ["can_see_amplify_live_preview", "zemauth", "user"]
       - ["can_see_amplify_review_link", "zemauth", "user"]
       - ["can_see_backend_hacks", "zemauth", "user"]
+      - ["can_see_budget_optimization", "zemauth", "user"]
+      - ["can_see_campaign_goals", "zemauth", "user"]
+      - ["can_see_campaign_language_choices", "zemauth", "user"]
+      - ["can_see_currency_setting", "zemauth", "user"]
       - ["can_see_deals_in_ui", "zemauth", "user"]
       - ["can_see_direct_deals_section", "zemauth", "user"]
+      - ["can_see_grid_actions", "zemauth", "user"]
       - ["can_see_history_in_drawer", "zemauth", "user"]
       - ["can_see_id_columns_in_table", "zemauth", "user"]
       - ["can_see_infobox_in_local_currency", "zemauth", "user"]
@@ -470,6 +628,7 @@
       - ["sspd_can_see_link_to_entity_in_z1", "zemauth", "user"]
       - ["sspd_can_use_sspd", "zemauth", "user"]
       - ["supply_dash_link_view", "zemauth", "user"]
+      - ["can_see_deals_library", "zemauth", "user"]
       - ["can_see_user_management", "zemauth", "user"]
       - ["fea_use_entity_permission", "zemauth", "user"]
   model: zemauth.user

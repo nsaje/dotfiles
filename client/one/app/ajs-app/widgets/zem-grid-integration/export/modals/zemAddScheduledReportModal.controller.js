@@ -92,8 +92,15 @@ angular
                 data.filtered_account_types = filteredAccountTypes.join(',');
             }
 
-            data.include_model_ids = $scope.export.includeIds;
-            data.include_totals = $scope.export.includeTotals;
+            if (
+                $scope.hasPermission('zemauth.can_include_model_ids_in_reports')
+            ) {
+                data.include_model_ids = $scope.export.includeIds;
+            }
+
+            if ($scope.hasPermission('zemauth.can_include_totals_in_reports')) {
+                data.include_totals = $scope.export.includeTotals;
+            }
 
             zemAddScheduledReportModalEndpoint
                 .put(url, data)

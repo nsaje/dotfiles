@@ -80,6 +80,15 @@ describe('zemGridEndpointColumnsSpec', function() {
         );
         expect(statusColumn.name).toBe('Status');
         expect(statusColumn.help.indexOf('Status of an ad group')).toBe(0);
+
+        var stateColumn = findColumn(
+            zemGridEndpointColumns.COLUMNS.state,
+            columns
+        );
+        expect(stateColumn.name).toBe('\u25CF');
+        expect(stateColumn.help).toBe(
+            'A setting for enabling and pausing Ad Groups.'
+        );
     });
 
     it('should create columns based on breakdown', function() {
@@ -91,6 +100,12 @@ describe('zemGridEndpointColumnsSpec', function() {
                 constants.breakdown.MEDIA_SOURCE,
             ]
         );
+
+        var stateColumn = findColumn(
+            zemGridEndpointColumns.COLUMNS.state,
+            columns
+        );
+        expect(stateColumn).toBe(undefined);
 
         var imageUrlsColumn = findColumn(
             zemGridEndpointColumns.COLUMNS.imageUrls,

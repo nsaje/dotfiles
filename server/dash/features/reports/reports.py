@@ -208,7 +208,9 @@ class ReportJobExecutor(JobExecutor):
         level = helpers.get_level_from_constraints(filter_constraints)
         breakdown = list(helpers.get_breakdown_from_fields(cls._handle_legacy_fields(job.query["fields"], user), level))
         structure_constraints = cls._extract_structure_constraints(filter_constraints)
-        all_accounts_in_local_currency = helpers.get_option(job, "all_accounts_in_local_currency")
+        all_accounts_in_local_currency = helpers.get_option(job, "all_accounts_in_local_currency") and user.has_perm(
+            "zemauth.can_request_accounts_report_in_local_currencies"
+        )
         csv_separator, csv_decimal_separator = cls._get_csv_separators(job)
 
         constraints = stats.api_reports.prepare_constraints(

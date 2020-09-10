@@ -40,6 +40,8 @@ def serialize_publisher_group(publisher_group):
 
 class PublisherTargeting(DASHAPIBaseView):
     def post(self, request):
+        if not request.user.has_perm("zemauth.can_modify_publisher_blacklist_status"):
+            raise exc.MissingDataError()
         resource = json.loads(request.body)
         form = forms.PublisherTargetingForm(request.user, resource)
         if not form.is_valid():
@@ -60,6 +62,9 @@ class PublisherTargeting(DASHAPIBaseView):
 
 class PublisherGroups(DASHAPIBaseView):
     def get(self, request):
+        if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
+            raise exc.MissingDataError()
+
         agency_id = request.GET.get("agency_id")
         account_id = request.GET.get("account_id")
 
@@ -87,6 +92,9 @@ class PublisherGroups(DASHAPIBaseView):
 class PublisherGroupsUpload(DASHAPIBaseView):
     def get(self, request, csv_key):
         # download errors csv
+        if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
+            raise exc.MissingDataError()
+
         agency_id = request.GET.get("agency_id")
         account_id = request.GET.get("account_id")
 
@@ -117,6 +125,8 @@ class PublisherGroupsUpload(DASHAPIBaseView):
         return self.create_csv_response("publisher_group_errors", content=content)
 
     def post(self, request):
+        if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
+            raise exc.MissingDataError()
         agency_id = request.POST.get("agency_id")
         account_id = request.POST.get("account_id")
 
@@ -162,6 +172,9 @@ class PublisherGroupsUpload(DASHAPIBaseView):
 
 class PublisherGroupsDownload(DASHAPIBaseView):
     def get(self, request, publisher_group_id):
+        if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
+            raise exc.MissingDataError()
+
         try:
             publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(id=int(publisher_group_id))
 
@@ -203,6 +216,9 @@ class PublisherGroupsDownload(DASHAPIBaseView):
 
 class PublisherGroupsExampleDownload(DASHAPIBaseView):
     def get(self, request):
+        if not request.user.has_perm("zemauth.can_edit_publisher_groups"):
+            raise exc.MissingDataError()
+
         include_placement = request.user.has_perm("zemauth.can_use_placement_targeting")
         return self.create_csv_response(
             "publisher_group_example",

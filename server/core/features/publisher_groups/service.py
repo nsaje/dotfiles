@@ -107,6 +107,10 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
 
 
 def can_user_handle_publisher_listing_level(user, obj):
+    if (isinstance(obj, models.Account) or isinstance(obj, models.Campaign)) and not user.has_perm(
+        "zemauth.can_access_campaign_account_publisher_blacklist_status"
+    ):
+        return False
     if obj is None and not user.has_perm("zemauth.can_access_global_publisher_blacklist_status"):
         return False
     return True

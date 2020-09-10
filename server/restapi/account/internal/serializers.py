@@ -71,6 +71,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "ob_account_manager": "zemauth.can_set_account_ob_representative",
             "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
+            "allowed_media_sources": "zemauth.can_modify_allowed_sources",
             "deals": "zemauth.can_see_direct_deals_section",
             "default_icon_url": "zemauth.can_use_creative_icon",
             "default_icon_base64": "zemauth.can_use_creative_icon",

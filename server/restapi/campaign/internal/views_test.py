@@ -1187,6 +1187,30 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
         )
         self.assertResponseError(r, "ValidationError")
 
+    def test_clone_no_permission(self):
+        test_helper.remove_permissions(self.user, permissions=["can_clone_campaigns"])
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+
+        data = self.normalize(
+            {
+                "destinationCampaignName": "New campaign clone",
+                "cloneAdGroups": False,
+                "cloneAds": True,
+                "adGroupStateOverride": "ACTIVE",
+                "adStateOverride": "ACTIVE",
+            }
+        )
+
+        r = self.client.post(
+            reverse("restapi.campaign.internal:campaigns_clone", kwargs={"campaign_id": campaign.id}),
+            data=data,
+            format="json",
+        )
+        self.assertEqual(r.status_code, 401)
+        self.assertResponseError(r, "AuthorizationError")
+
     @mock.patch("dash.features.alerts.get_campaign_alerts")
     def test_get_alerts(self, mock_get_campaign_alerts):
         mock_get_campaign_alerts.return_value = []

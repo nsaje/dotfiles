@@ -364,6 +364,7 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         self.assertEqual(resp_json["data"]["deals"][1]["accountId"], str(account.id))
 
     def test_get_bid_modifier_type_summaries(self):
+        test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
@@ -416,11 +417,34 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         )
 
     def test_get_default_bid_modifier_type_summaries(self):
+        test_helper.add_permissions(self.user, ["can_review_and_set_bid_modifiers_in_settings"])
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
+        resp_json = self.assertResponseValid(r)
+
+        self.assertTrue("extra" in resp_json)
+        self.assertFalse("bidModifierTypeSummaries" in resp_json["extra"])
+
+    def test_get_bid_modifier_type_summaries_no_permission(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
+
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier,
+            ad_group=ad_group,
+            type=bid_modifiers.BidModifierType.DEVICE,
+            modifier=1.02,
+        )
+        magic_mixer.blend(
+            bid_modifiers.models.BidModifier, ad_group=ad_group, type=bid_modifiers.BidModifierType.STATE, modifier=0.7
+        )
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertTrue("extra" in resp_json)
@@ -563,6 +587,7 @@ class AdGroupViewSetTestCase(FutureRESTAPITestCase, LegacyAdGroupViewSetTestCase
 class LegacyCloneAdGroupViewTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
+        test_helper.add_permissions(self.user, permissions=["can_clone_adgroups"])
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
@@ -577,6 +602,16 @@ class LegacyCloneAdGroupViewTestCase(RESTAPITestCase):
                 "cloneAds": False,
             }
         )
+
+    def test_no_obj_access(self):
+        account = magic_mixer.blend(core.models.Account)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        data = self.clone_repr(ad_group, campaign)
+
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_clone"), data=data, format="json")
+        self.assertResponseError(r, "MissingDataError")
 
     @mock.patch.object(dash.features.cloneadgroup.service, "clone", autospec=True)
     def test_post(self, mock_clone):

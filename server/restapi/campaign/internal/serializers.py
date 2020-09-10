@@ -93,6 +93,9 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     class Meta:
         permissioned_fields = {
             "frequency_capping": "zemauth.can_set_frequency_capping",
+            "iab_category": "zemauth.can_modify_campaign_iab_category",
+            "campaign_manager": "zemauth.can_modify_campaign_manager",
+            "goals": "zemauth.can_see_campaign_goals",
             "deals": "zemauth.can_see_direct_deals_section",
         }
 

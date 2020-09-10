@@ -282,6 +282,7 @@ class LegacyReportsGetReportCSVTestCase(DASHAPITestCase):
         self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
         self.reportJob.user = self.user
         self.reportJob.save()
+        utils.test_helper.add_permissions(self.reportJob.user, ["can_request_accounts_report_in_local_currencies"])
 
         influx_incr_patcher = mock.patch("utils.metrics_compat.incr")
         self.mock_influx_incr = influx_incr_patcher.start()

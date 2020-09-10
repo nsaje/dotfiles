@@ -114,7 +114,45 @@ angular
             actions: {
                 name: 'Actions',
                 type: zemGridConstants.gridColumnTypes.ACTIONS,
-                shown: true,
+                shown: 'zemauth.can_see_grid_actions',
+            },
+            state: {
+                name: '', // Branded based on breakdown
+                help: '', // Branded based on breakdown
+                field: 'state',
+                type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.ASC,
+                internal: false,
+                shown: '!zemauth.can_see_grid_actions',
+                totalRow: false,
+                archivedField: 'archived',
+            },
+            cloneButton: {
+                name: '',
+                help: '',
+                field: 'cloneButton',
+                type: zemGridConstants.gridColumnTypes.CLONE_BUTTON,
+                order: false,
+                internal: 'zemauth.can_clone_adgroups',
+                shown: [
+                    'zemauth.can_clone_adgroups',
+                    '!zemauth.can_see_grid_actions',
+                ],
+                totalRow: false,
+            },
+            editButton: {
+                name: '',
+                help: '',
+                field: 'editButton',
+                type: zemGridConstants.gridColumnTypes.EDIT_BUTTON,
+                order: false,
+                internal: 'zemauth.can_edit_content_ads',
+                shown: [
+                    'zemauth.can_edit_content_ads',
+                    '!zemauth.can_see_grid_actions',
+                ],
+                totalRow: false,
             },
             status: {
                 name: '', // Branded based on breakdown
@@ -1713,6 +1751,9 @@ angular
         // Permanent columns - always present and can't be hidden
         var PERMANENT_COLUMNS_GROUP = [
             COLUMNS.actions,
+            COLUMNS.state,
+            COLUMNS.editButton,
+            COLUMNS.cloneButton,
             COLUMNS.name,
             COLUMNS.placementType,
             COLUMNS.publisher,
@@ -1962,6 +2003,19 @@ angular
         ];
         COLUMNS.amplifyAdId.exceptions.breakdownBaseLevelOnly = true;
 
+        // Exceptions (state - not yet supported everywhere, only available on base level)
+        COLUMNS.state.exceptions.breakdowns = [
+            constants.breakdown.AD_GROUP,
+            constants.breakdown.CONTENT_AD,
+        ];
+        COLUMNS.state.exceptions.breakdownBaseLevelOnly = true;
+        // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
+        COLUMNS.state.exceptions.custom.push({
+            level: constants.level.AD_GROUPS,
+            breakdown: constants.breakdown.MEDIA_SOURCE,
+            shown: true,
+        }); // eslint-disable-line max-len
+
         // Exceptions (actions - on media source breakdown only on ad group level)
         COLUMNS.actions.exceptions.breakdowns = [
             constants.breakdown.ACCOUNT,
@@ -1982,6 +2036,20 @@ angular
             breakdown: constants.breakdown.MEDIA_SOURCE,
             shown: true,
         });
+
+        // Exceptions (edit button - only available on base content ad level)
+        COLUMNS.editButton.exceptions.breakdowns = [
+            constants.breakdown.CONTENT_AD,
+        ];
+        COLUMNS.editButton.exceptions.levels = [constants.level.AD_GROUPS];
+        COLUMNS.editButton.exceptions.breakdownBaseLevelOnly = true;
+
+        // Exceptions (clone button - only available on base ad group level)
+        COLUMNS.cloneButton.exceptions.breakdowns = [
+            constants.breakdown.AD_GROUP,
+        ];
+        COLUMNS.cloneButton.exceptions.levels = [constants.level.CAMPAIGNS];
+        COLUMNS.cloneButton.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
         COLUMNS.submissionStatus.exceptions.breakdowns = [
@@ -2307,6 +2375,12 @@ angular
             if (statusColumn) {
                 statusColumn.name = STATUS_COLUMN_BRANDING[breakdown].name;
                 statusColumn.help = STATUS_COLUMN_BRANDING[breakdown].help;
+            }
+
+            var stateColumn = findColumn(COLUMNS.state);
+            if (stateColumn) {
+                stateColumn.name = STATE_COLUMN_BRANDING[breakdown].name;
+                stateColumn.help = STATE_COLUMN_BRANDING[breakdown].help;
             }
         }
 

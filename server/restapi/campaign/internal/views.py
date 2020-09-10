@@ -140,6 +140,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return self.response_ok(self.serializer(new_campaign.settings, context={"request": request}).data, status=201)
 
     def clone(self, request, campaign_id):
+        if not request.user.has_perm("zemauth.can_clone_campaigns"):
+            raise utils.exc.AuthorizationError()
+
         serializer = serializers.CloneCampaignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -174,7 +177,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
     def _augment_campaign(self, request, campaign):
         campaign.settings.goals = []
-        campaign.settings.goals = self._get_campaign_goals(campaign)
+        if request.user.has_perm("zemauth.can_see_campaign_goals"):
+            campaign.settings.goals = self._get_campaign_goals(campaign)
         campaign.settings.budgets = self._get_campaign_budgets(campaign)
         campaign.settings.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):

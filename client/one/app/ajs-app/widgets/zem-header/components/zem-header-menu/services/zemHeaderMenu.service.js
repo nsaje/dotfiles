@@ -77,7 +77,10 @@ angular
             {
                 text: 'Deals',
                 callback: navigateToDealsView,
-                isAvailable: true,
+                isAvailable: isDealsViewAvailable,
+                isInternalFeature: zemAuthStore.isPermissionInternal(
+                    'zemauth.can_see_deals_library'
+                ),
             },
             {
                 text: 'User management',
@@ -154,8 +157,11 @@ angular
         }
 
         function isPublisherGroupsViewAvailable() {
-            return zemAuthStore.hasPermission(
-                'zemauth.can_see_publisher_groups_ui'
+            return (
+                zemAuthStore.hasPermission(
+                    'zemauth.can_see_publisher_groups_ui'
+                ) &&
+                zemAuthStore.hasPermission('zemauth.can_edit_publisher_groups')
             );
         }
 
@@ -272,6 +278,10 @@ angular
                 LevelParam.ACCOUNT,
                 activeAccount.id,
             ]);
+        }
+
+        function isDealsViewAvailable() {
+            return zemAuthStore.hasPermission('zemauth.can_see_deals_library');
         }
 
         function navigateToDealsView() {

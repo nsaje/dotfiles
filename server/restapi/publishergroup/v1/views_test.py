@@ -6,13 +6,18 @@ import core.models
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from restapi.publishergroup.v1 import views
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
 class LegacyPublisherGroupTest(RESTAPITestCase):
     def setUp(self):
-        permissions = ["can_use_restapi", "can_access_additional_outbrain_publisher_settings"]
+        permissions = [
+            "can_edit_publisher_groups",
+            "can_use_restapi",
+            "can_access_additional_outbrain_publisher_settings",
+        ]
 
         self.client = APIClient()
         self.user = magic_mixer.blend_user(permissions=permissions)
@@ -155,6 +160,20 @@ class LegacyPublisherGroupTest(RESTAPITestCase):
         )
         self.assertEqual(r.status_code, 404)
         self.assertResponseError(r, "MissingDataError")
+
+    def test_check_permission(self):
+        test_helper.remove_permissions(self.user, ["can_edit_publisher_groups"])
+        publisher_group = magic_mixer.blend(core.features.publisher_groups.PublisherGroup, account=self.account)
+
+        r = self.client.put(
+            reverse(
+                "restapi.publishergroup.v1:publisher_group_details",
+                kwargs={"account_id": self.account.id, "publisher_group_id": publisher_group.id},
+            ),
+            data={"name": "test"},
+            format="json",
+        )
+        self.assertEqual(r.status_code, 403)
 
 
 class PublisherGroupTest(FutureRESTAPITestCase, LegacyPublisherGroupTest):

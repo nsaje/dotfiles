@@ -133,6 +133,9 @@ angular
             if (column.order !== zemGridConstants.gridColumnOrder.NONE) {
                 width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
             }
+            if (column.type === zemGridConstants.gridColumnTypes.EDIT_BUTTON) {
+                width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+            }
 
             grid.body.rows.forEach(function(row) {
                 if (row.type === zemGridConstants.gridRowType.BREAKDOWN) return;

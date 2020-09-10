@@ -40,10 +40,18 @@ class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
+    def test_permission(self, mock_query):
+        url = reverse("breakdown_all_accounts", kwargs={"breakdown": "/account/campaign/dma/day"})
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+
     def test_post(self, mock_query):
         mock_query.return_value = {}
 
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature", "can_view_breakdown_by_delivery"]
+        )
 
         params = {
             "limit": 5,
@@ -98,6 +106,8 @@ class LegacyAllAccountsBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level(self, mock_totals, mock_query):
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature"])
+
         mock_totals.return_value = {"ctr": 0.9, "clicks": 123}
 
         mock_query.return_value = [
@@ -226,8 +236,16 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
+    def test_permission(self, mock_query):
+        url = reverse("breakdown_accounts", kwargs={"account_id": 1, "breakdown": "/campaign/dma/day"})
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature", "can_view_breakdown_by_delivery"]
+        )
 
         mock_query.return_value = {}
 
@@ -287,6 +305,8 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level(self, mock_totals, mock_query):
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature"])
+
         mock_query.return_value = [
             {
                 "campaign_id": 198,
@@ -391,7 +411,9 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature", "can_see_top_level_delivery_breakdowns"]
+        )
 
         mock_query.return_value = [
             {
@@ -505,8 +527,16 @@ class LegacyCampaignBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
+    def test_permission(self, mock_query):
+        url = reverse("breakdown_campaigns", kwargs={"campaign_id": 1, "breakdown": "/ad_group/dma/day"})
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature", "can_view_breakdown_by_delivery"]
+        )
 
         mock_query.return_value = {}
 
@@ -569,7 +599,12 @@ class LegacyCampaignBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
         test_helper.add_permissions(
-            self.user, ["can_view_breakdown_by_delivery", "can_see_top_level_delivery_breakdowns"]
+            self.user,
+            [
+                "can_access_table_breakdowns_feature",
+                "can_view_breakdown_by_delivery",
+                "can_see_top_level_delivery_breakdowns",
+            ],
         )
 
         mock_query.return_value = {}
@@ -644,8 +679,16 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
 
+    def test_permission(self, mock_query):
+        url = reverse("breakdown_ad_groups", kwargs={"ad_group_id": 1, "breakdown": "/ad_group/dma/day"})
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 401)
+
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature_on_ad_group_level", "can_view_breakdown_by_delivery"]
+        )
 
         mock_query.return_value = {}
 
@@ -697,7 +740,12 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
         test_helper.add_permissions(
-            self.user, ["can_view_breakdown_by_delivery", "can_see_top_level_delivery_breakdowns"]
+            self.user,
+            [
+                "can_access_table_breakdowns_feature_on_ad_group_level",
+                "can_view_breakdown_by_delivery",
+                "can_see_top_level_delivery_breakdowns",
+            ],
         )
 
         mock_query.return_value = {}
@@ -747,6 +795,8 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_content_ads(self, mock_totals, mock_query):
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature_on_ad_group_level"])
+
         mock_query.return_value = {}
 
         mock_totals.return_value = {"clicks": 123}
@@ -827,6 +877,8 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_source(self, mock_totals, mock_query):
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature_on_ad_group_level"])
+
         mock_query.return_value = {}
 
         s = models.AdGroup.objects.get(pk=1).get_current_settings().copy_settings()
@@ -911,6 +963,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
         )
 
     def test_post_base_level_publisher_not_allowed(self, mock_query):
+        test_helper.add_permissions(self.user, ["can_access_table_breakdowns_feature_on_ad_group_level"])
         mock_query.return_value = {}
 
         params = {
@@ -934,7 +987,9 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_publisher(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_see_publishers"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature_on_ad_group_level", "can_see_publishers"]
+        )
 
         mock_query.return_value = {}
 
@@ -1015,7 +1070,9 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_placement(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_use_placement_targeting"])
+        test_helper.add_permissions(
+            self.user, ["can_access_table_breakdowns_feature_on_ad_group_level", "can_use_placement_targeting"]
+        )
 
         mock_query.return_value = {}
 

@@ -65,6 +65,11 @@
                     ></zem-select-form-group>
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
+                        *ngIf="
+                            authStore.hasPermission(
+                                'zemauth.can_modify_campaign_manager'
+                            )
+                        "
                         [label]="'Campaign Manager'"
                         [helpMessage]="
                             'Campaign manager responsible for the campaign and the communication with the client.'
@@ -83,6 +88,11 @@
                     ></zem-select-form-group>
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
+                        *ngIf="
+                            authStore.hasPermission(
+                                'zemauth.can_modify_campaign_iab_category'
+                            )
+                        "
                         [label]="'Campaign Category'"
                         helpMessage="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
                         [value]="state.entity.iabCategory"
@@ -98,6 +108,11 @@
                     ></zem-select-form-group>
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
+                        *ngIf="
+                            authStore.hasPermission(
+                                'zemauth.can_see_campaign_language_choices'
+                            )
+                        "
                         [label]="'Campaign Language'"
                         helpMessage="Language can be updated only if Campaign has no Ad Groups yet."
                         [value]="state.entity.language"
@@ -134,7 +149,17 @@
                 </div>
             </div>
 
-            <div class="zem-panel zem-settings__panel">
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    authStore.hasPermission('zemauth.can_see_campaign_goals')
+                "
+                [zemInternalFeature]="
+                    authStore.isPermissionInternal(
+                        'zemauth.can_see_campaign_goals'
+                    )
+                "
+            >
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Campaign goals

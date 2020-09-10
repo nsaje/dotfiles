@@ -260,6 +260,9 @@ class AdGroupSourceState(BaseBulkActionView):
 class AdGroupContentAdEdit(BaseBulkActionView):
     @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
+        if not request.user.has_perm("zemauth.can_edit_content_ads"):
+            raise exc.ForbiddenError(message="Not allowed")
+
         ad_group = zemauth.access.get_ad_group(request.user, Permission.WRITE, ad_group_id)
         content_ads = helpers.get_selected_entities_post_request(
             models.ContentAd.objects, json.loads(request.body), ad_group_id=ad_group.id

@@ -50,7 +50,11 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             value: RoutePathName.DEALS,
             displayValue: 'Deals',
             icon: ListGroupItemIcon.Folder,
-            isVisible: () => true,
+            isVisible: () => {
+                return this.authStore.hasPermission(
+                    'zemauth.can_see_deals_library'
+                );
+            },
         },
         {
             value: RoutePathName.USERS,
@@ -77,8 +81,13 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
                 : 'Publisher Groups',
             icon: ListGroupItemIcon.PublisherGroups,
             isVisible: () => {
-                return this.authStore.hasPermission(
-                    'zemauth.can_see_publisher_groups_ui'
+                return (
+                    this.authStore.hasPermission(
+                        'zemauth.can_see_publisher_groups_ui'
+                    ) &&
+                    this.authStore.hasPermission(
+                        'zemauth.can_edit_publisher_groups'
+                    )
                 );
             },
         },

@@ -44,6 +44,7 @@ angular
                 condition: zemDataFilterService.CONDITIONS.sources,
                 title: 'Filter by Media source',
                 appliedConditionName: 'Media source',
+                permissions: ['zemauth.can_filter_by_media_source'],
                 cssClass: 'sources',
                 getOptions: getSourcesOptions,
                 isVisible: function() {
@@ -58,6 +59,7 @@ angular
                 appliedConditionName: 'Agency',
                 cssClass: 'agencies',
                 getOptions: getAgenciesOptions,
+                permissions: ['zemauth.can_filter_by_agency'],
                 isVisible: function() {
                     var activatedRoute = routerHelpers.getActivatedRoute(
                         NgRouter

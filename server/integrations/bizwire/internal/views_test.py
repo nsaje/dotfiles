@@ -34,7 +34,7 @@ class ArticleUploadTest(TestCase):
         self.verify_patcher = patch("utils.request_signer.verify_wsgi_request")
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 
-        permissions = ["can_use_restapi"]
+        permissions = ["can_use_restapi", "can_control_ad_group_state_in_table"]
         u = User.objects.get(email="user@test.com")
         for permission in permissions:
             u.user_permissions.add(Permission.objects.get(codename=permission))

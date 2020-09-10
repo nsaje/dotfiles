@@ -1276,21 +1276,14 @@ class AccountUsersTestCase(DASHAPITestCase):
                     "email": "superuser@test.com",
                     "can_use_restapi": True,
                 },
-                {
-                    "name": "",
-                    "is_active": False,
-                    "is_agency_manager": True,
-                    "id": 1,
-                    "last_login": "2014-06-16",
-                    "email": "superuser@test.com",
-                    "can_use_restapi": True,
-                },
             ],
             response.json()["data"]["users"],
         )
 
     def test_get_agency_with_can_see_agency_managers(self):
-        client = self._get_client_with_permissions(["account_agency_access_permissions"])
+        client = self._get_client_with_permissions(
+            ["account_agency_access_permissions", "can_see_agency_managers_under_access_permissions"]
+        )
 
         acc = models.Account.objects.get(pk=1)
         agency = models.Agency.objects.get(pk=1)
@@ -2078,8 +2071,17 @@ class LegacyAgenciesTestCase(DASHAPITestCase):
         response = self.client.get(reversed_url, follow=True)
         return response.json()
 
+    def test_permission(self):
+        response = self.get_agencies()
+        self.assertFalse(response["success"])
+
+        add_permissions(self.user, ["can_filter_by_agency"])
+        response = self.get_agencies()
+        self.assertTrue(response["success"])
+
     def test_get(self):
         magic_mixer.blend(models.Agency)
+        add_permissions(self.user, ["can_filter_by_agency"])
 
         response = self.get_agencies()
         self.assertTrue(response["success"])

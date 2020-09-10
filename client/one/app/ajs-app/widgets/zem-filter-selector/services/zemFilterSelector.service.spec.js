@@ -35,8 +35,10 @@ describe('zemFilterSelectorService', function() {
         mockedNgRouter = $injector.get('NgRouter');
 
         zemAuthStore.setMockedPermissions([
+            'zemauth.can_filter_by_agency',
             'zemauth.can_filter_by_account_type',
             'zemauth.can_see_publisher_blacklist_status',
+            'zemauth.can_filter_by_media_source',
         ]);
 
         spyOn(zemMediaSourcesService, 'getAvailableSources').and.callFake(

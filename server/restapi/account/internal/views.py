@@ -115,7 +115,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
     @staticmethod
     def _augment_account(request, account):
         account.allowed_media_sources = []
-        account.allowed_media_sources = helpers.get_allowed_sources(account)
+        if request.user.has_perm("zemauth.can_modify_allowed_sources"):
+            account.allowed_media_sources = helpers.get_allowed_sources(account)
         account.deals = []
         if request.user.has_perm("zemauth.can_see_direct_deals_section"):
             account.deals = account.get_deals(request)

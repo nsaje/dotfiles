@@ -18,9 +18,11 @@ def get_extra_data(user, campaign):
         "currency": campaign.account.currency,
     }
 
-    extra["goals_defaults"] = core.features.goals.get_campaign_goals_defaults(campaign.account)
+    if user.has_perm("zemauth.can_see_campaign_goals"):
+        extra["goals_defaults"] = core.features.goals.get_campaign_goals_defaults(campaign.account)
 
-    extra["campaign_managers"] = get_campaign_managers(user, campaign)
+    if user.has_perm("zemauth.can_modify_campaign_manager"):
+        extra["campaign_managers"] = get_campaign_managers(user, campaign)
 
     if user.has_perm("zemauth.can_see_backend_hacks"):
         extra["hacks"] = get_hacks(campaign)

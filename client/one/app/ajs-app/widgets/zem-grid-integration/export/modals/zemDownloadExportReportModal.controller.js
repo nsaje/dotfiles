@@ -95,8 +95,14 @@ angular
                 $scope.export.byDay;
 
             url += '&include_missing=' + $scope.export.includeMissing;
-            url += '&include_model_ids=' + $scope.export.includeIds;
-            url += '&include_totals=' + $scope.export.includeTotals;
+            if (
+                $scope.hasPermission('zemauth.can_include_model_ids_in_reports')
+            ) {
+                url += '&include_model_ids=' + $scope.export.includeIds;
+            }
+            if ($scope.hasPermission('zemauth.can_include_totals_in_reports')) {
+                url += '&include_totals=' + $scope.export.includeTotals;
+            }
 
             var filteredSources = zemDataFilterService.getFilteredSources();
             var filteredAgencies = zemDataFilterService.getFilteredAgencies();

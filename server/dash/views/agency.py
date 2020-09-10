@@ -200,7 +200,8 @@ class AccountUsers(DASHAPIBaseView):
         )
         users = [self._get_user_dict(u) for u in account_users]
 
-        users = agency_managers + users
+        if request.user.has_perm("zemauth.can_see_agency_managers_under_access_permissions"):
+            users = agency_managers + users
 
         return self.create_api_response(
             {"users": users, "agency_managers": agency_managers if account.agency else None}
@@ -538,6 +539,9 @@ class History(DASHAPIBaseView):
 
 class Agencies(DASHAPIBaseView):
     def get(self, request):
+        if not request.user.has_perm("zemauth.can_filter_by_agency"):
+            raise exc.AuthorizationError()
+
         queryset_user_perm = models.Agency.objects.filter_by_user(request.user).values(
             "id", "name", "is_externally_managed"
         )

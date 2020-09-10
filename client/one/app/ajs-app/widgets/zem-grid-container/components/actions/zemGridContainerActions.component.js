@@ -139,7 +139,12 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         }
 
         function isAddToPublishersAndPlacementsButtonVisible() {
-            return areGridPublisherAndPlacementActionsVisible();
+            return (
+                areGridPublisherAndPlacementActionsVisible() &&
+                zemAuthStore.hasPermission(
+                    'zemauth.can_see_add_to_pub_plac_button'
+                )
+            );
         }
 
         function isCreateEntityActionVisible() {
@@ -168,7 +173,10 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function isReportDropdownVisible() {
             return (
-                $ctrl.breakdown === constants.breakdown.PUBLISHER ||
+                ($ctrl.breakdown === constants.breakdown.PUBLISHER &&
+                    zemAuthStore.hasPermission(
+                        'zemauth.can_access_publisher_reports'
+                    )) ||
                 ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
                     zemAuthStore.hasPermission(
                         'zemauth.can_see_new_report_schedule'
