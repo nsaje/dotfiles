@@ -6,8 +6,5 @@ import restapi.conversion_pixel.v1.urls
 
 urlpatterns = [
     url(r"^v1/accounts/", include(restapi.conversion_pixel.v1.urls, namespace="restapi.conversion_pixel.v1")),
-    url(
-        r"^internal/accounts/",
-        include(restapi.conversion_pixel.internal.urls, namespace="restapi.conversion_pixel.internal"),
-    ),
+    url(r"^internal/", include(restapi.conversion_pixel.internal.urls, namespace="restapi.conversion_pixel.internal")),
 ]

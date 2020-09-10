@@ -1,21 +1,21 @@
 import {APP_CONFIG} from '../../app.config';
 
-const conversionPixelsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/accounts`;
+const conversionPixelsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/pixels/`;
 
 export const CONVERSION_PIXELS_CONFIG = {
     requests: {
         conversionPixels: {
             list: {
                 name: 'list',
-                url: `${conversionPixelsApiUrl}/`,
+                url: conversionPixelsApiUrl,
             },
             create: {
                 name: 'create',
-                url: `${conversionPixelsApiUrl}/`,
+                url: conversionPixelsApiUrl,
             },
             edit: {
                 name: 'edit',
-                url: `${conversionPixelsApiUrl}/`,
+                url: `${conversionPixelsApiUrl}{conversionPixelId}`,
             },
         },
     },

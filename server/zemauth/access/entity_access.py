@@ -310,3 +310,13 @@ def get_automation_rule(user: zemauth.models.User, permission: str, rule_id: str
         return rule
     except automation.rules.Rule.DoesNotExist:
         raise utils.exc.MissingDataError("Rule does not exist")
+
+
+def get_conversion_pixel(user: zemauth.models.User, permission: str, pixel_id: str) -> core.models.ConversionPixel:
+    try:
+        pixel = core.models.ConversionPixel.objects.get(pk=pixel_id)
+        if pixel.account_id:
+            get_account(user, permission, pixel.account_id)
+        return pixel
+    except (core.models.ConversionPixel.DoesNotExist, utils.exc.MissingDataError):
+        raise utils.exc.MissingDataError("Conversion pixel does not exist")

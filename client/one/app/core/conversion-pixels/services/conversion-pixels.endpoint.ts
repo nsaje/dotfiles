@@ -6,6 +6,7 @@ import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
 import {ConversionPixel} from '../types/conversion-pixel';
 import {CONVERSION_PIXELS_CONFIG} from '../conversion-pixels.config';
+import {replaceUrl} from '../../../shared/helpers/endpoint.helpers';
 
 @Injectable()
 export class ConversionPixelsEndpoint {
@@ -20,11 +21,12 @@ export class ConversionPixelsEndpoint {
         requestStateUpdater(request.name, {
             inProgress: true,
         });
+        const params = {accountId};
 
         return this.http
-            .get<ApiResponse<ConversionPixel[]>>(
-                `${request.url}${accountId}/pixels/`
-            )
+            .get<ApiResponse<ConversionPixel[]>>(request.url, {
+                params: params,
+            })
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -53,12 +55,15 @@ export class ConversionPixelsEndpoint {
         requestStateUpdater(request.name, {
             inProgress: true,
         });
+        const data = {
+            accountId,
+            name: conversionPixelName,
+        };
 
         return this.http
-            .post<ApiResponse<ConversionPixel>>(
-                `${request.url}${accountId}/pixels/`,
-                {name: conversionPixelName}
-            )
+            .post<ApiResponse<ConversionPixel>>(request.url, {
+                data: data,
+            })
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -81,16 +86,16 @@ export class ConversionPixelsEndpoint {
         conversionPixel: ConversionPixel,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel> {
-        const request = CONVERSION_PIXELS_CONFIG.requests.conversionPixels.edit;
+        const request = replaceUrl(
+            CONVERSION_PIXELS_CONFIG.requests.conversionPixels.edit,
+            {conversionPixelId: conversionPixel.id}
+        );
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http
-            .put<ApiResponse<ConversionPixel>>(
-                `${request.url}${conversionPixel.accountId}/pixels/${conversionPixel.id}`,
-                conversionPixel
-            )
+            .put<ApiResponse<ConversionPixel>>(request.url, conversionPixel)
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {

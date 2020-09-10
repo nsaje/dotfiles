@@ -7,3 +7,11 @@ class ConversionPixelSerializer(restapi.conversion_pixel.v1.serializers.Conversi
 
 class ConversionPixelCreateSerializer(restapi.conversion_pixel.v1.serializers.ConversionPixelCreateSerializer):
     pass
+
+
+class ConversionPixelQueryParams(
+    restapi.serializers.serializers.QueryParamsExpectations, restapi.serializers.serializers.PaginationParametersMixin
+):
+    agency_id = restapi.serializers.fields.IdField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
+    audience_enabled_only = restapi.serializers.fields.NullBooleanField(required=False)

@@ -461,3 +461,18 @@ class UserAccessTestCase(TestCase):
             account=None,
             agency=None,
         )
+
+
+class ConversionPixelAccessTestCase(ObjectAccessTestCaseMixin, TestCase):
+    @mock.patch("zemauth.features.entity_permission.helpers.log_differences_and_get_queryset")
+    def test_get_conversion_pixel(self, mock_log_differences_and_get_queryset):
+        mock_log_differences_and_get_queryset.side_effect = self.side_effect_log_differences_and_get_queryset
+
+        account: core.models.Account = magic_mixer.blend(core.models.Account)
+        pixel: core.models.ConversionPixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        user: zemauth.models.User = magic_mixer.blend_user()
+
+        for permission in zemauth.features.entity_permission.Permission.get_all():
+            self._for_all_entities(user, permission, entity_access.get_conversion_pixel, pixel)
+            self._for_account(user, permission, entity_access.get_conversion_pixel, account, pixel, False)
+            self._for_none(user, permission, entity_access.get_conversion_pixel, pixel)
