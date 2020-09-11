@@ -91,7 +91,10 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     class Meta:
-        permissioned_fields = {"deals": "zemauth.can_see_direct_deals_section"}
+        permissioned_fields = {
+            "frequency_capping": "zemauth.can_set_frequency_capping",
+            "deals": "zemauth.can_see_direct_deals_section",
+        }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)
     goals = rest_framework.serializers.ListSerializer(

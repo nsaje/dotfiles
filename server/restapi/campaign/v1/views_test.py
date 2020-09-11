@@ -267,6 +267,17 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             resp_json["details"],
         )
 
+    def test_campaigns_list_permissionless(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        magic_mixer.cycle(5).blend(core.models.Campaign, account=account)
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json["data"]:
+            self.assertFalse("frequencyCapping" in item)
+            item["frequencyCapping"] = None
+            self.validate_against_db(item)
+
     def test_campaigns_list_account_id(self):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
         magic_mixer.cycle(5).blend(core.models.Campaign, account=account)

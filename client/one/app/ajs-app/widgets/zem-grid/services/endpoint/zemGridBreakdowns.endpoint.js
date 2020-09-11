@@ -76,32 +76,37 @@ angular
                 name: 'Country',
                 query: 'country',
                 report_query: 'Country',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
             region: {
                 name: 'State / Region',
                 query: 'region',
                 report_query: 'State / Region',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
             dma: {
                 name: 'DMA',
                 query: 'dma',
                 report_query: 'DMA',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
 
             device: {
                 name: 'Device',
                 query: 'device_type',
                 report_query: 'Device',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
             deviceOs: {
                 name: 'Operating System',
                 query: 'device_os',
                 report_query: 'Operating System',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
             deviceOsVersion: {
                 name: 'Operating System Version',
@@ -115,7 +120,8 @@ angular
                 name: 'Environment',
                 query: 'environment',
                 report_query: 'Environment',
-                shown: true,
+                shown: 'zemauth.can_view_breakdown_by_delivery',
+                internal: 'zemauth.can_view_breakdown_by_delivery',
             },
 
             zemPlacementType: {
@@ -301,6 +307,12 @@ angular
 
             // Delivery breakdown group
             breakdownGroups.delivery = {
+                available: zemAuthStore.hasPermission(
+                    'zemauth.can_view_breakdown_by_delivery'
+                ),
+                internal: zemAuthStore.isPermissionInternal(
+                    'zemauth.can_view_breakdown_by_delivery'
+                ),
                 name: DELIVERY_GROUP_NAME,
                 breakdowns: getDeliveryBreakdowns(breakdown),
             };

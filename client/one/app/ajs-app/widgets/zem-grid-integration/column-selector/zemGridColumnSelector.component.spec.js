@@ -10,6 +10,7 @@ describe('component: zemGridColumnSelector', function() {
         $componentController = $injector.get('$componentController');
         zemAuthStore = $injector.get('zemAuthStore');
         zemAuthStore.setMockedPermissions([
+            'zemauth.can_view_breakdown_by_delivery',
             'zemauth.can_see_managers_in_campaigns_table',
         ]);
 

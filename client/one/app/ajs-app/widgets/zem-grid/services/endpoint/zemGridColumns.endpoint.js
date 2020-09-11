@@ -521,6 +521,7 @@ angular
                     'Bid modifiers allow you to adjust bid per selected breakdown.',
                 shown: [
                     {
+                        permissions: ['zemauth.can_set_bid_modifiers'],
                         breakdowns: [
                             constants.breakdown.CONTENT_AD,
                             constants.breakdown.COUNTRY,
@@ -529,13 +530,19 @@ angular
                             constants.breakdown.DEVICE,
                             constants.breakdown.ENVIRONMENT,
                             constants.breakdown.OPERATING_SYSTEM,
-                            constants.breakdown.PUBLISHER,
-                            constants.breakdown.MEDIA_SOURCE,
                         ],
+                    },
+                    {
+                        permissions: [],
+                        breakdowns: [constants.breakdown.PUBLISHER],
                     },
                     {
                         permissions: ['zemauth.can_use_placement_targeting'],
                         breakdowns: [constants.breakdown.PLACEMENT],
+                    },
+                    {
+                        permissions: ['zemauth.can_set_source_bid_modifiers'],
+                        breakdowns: [constants.breakdown.MEDIA_SOURCE],
                     },
                 ],
             },

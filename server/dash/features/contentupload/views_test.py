@@ -7,10 +7,12 @@ from django.urls import reverse
 from mock import MagicMock
 from mock import patch
 
+import utils.test_helper
 from dash import constants
 from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.common.views_base_test_case import FutureDASHAPITestCase
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
@@ -24,6 +26,7 @@ class LegacyUploadCsvTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad(self):
@@ -72,9 +75,39 @@ class LegacyUploadCsvTestCase(DASHAPITestCase):
         self.assertEqual("description", candidate.description)
         self.assertEqual("Click for more", candidate.call_to_action)
 
+    def test_post_content_ad_no_icon_permission(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_use_creative_icon"])
+
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Title,Image URL,Label,Image Crop,Brand Logo URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
+            b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
+        )
+        response = self.client.post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": 1, "account_id": 1},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": None,
+                    "errors": {"candidates": ['Unrecognized column name "Brand Logo URL".']},
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
+
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad_ad_group_archived(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
+        test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
         campaign = magic_mixer.blend(models.Campaign, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign, archived=True)
         mock_file = SimpleUploadedFile(
@@ -396,6 +429,7 @@ class LegacyUploadStatusTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_pending(self):
         batch_id = 1
@@ -468,6 +502,7 @@ class LegacyUploadSaveTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     @staticmethod
     def _mock_insert_redirects(content_ads, clickthrough_resolve):
@@ -708,6 +743,7 @@ class LegacyCandidatesDownloadTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_valid(self):
         batch_id = 1
@@ -722,6 +758,27 @@ class LegacyCandidatesDownloadTestCase(DASHAPITestCase):
                 '"Label","Image crop","Primary impression tracker URL","Secondary impression'
                 ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
                 '"http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg","zemanta.com","Zemanta","Zemanta blog",'
+                '"Read more","content ad 1","entropy","",""\r\n'
+            ).encode("utf-8"),
+            response.content,
+        )
+        self.assertEqual('attachment; filename="batch 1.csv"', response.get("Content-Disposition"))
+
+    def test_valid_no_icon_permission(self):
+        utils.test_helper.remove_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+
+        batch_id = 1
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = self.client.get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            (
+                '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+                '"Label","Image crop","Primary impression tracker URL","Secondary impression'
+                ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
+                '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog",'
                 '"Read more","content ad 1","entropy","",""\r\n'
             ).encode("utf-8"),
             response.content,
@@ -789,6 +846,7 @@ class LegacyUploadCancelTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_valid(self):
         batch_id = 1
@@ -875,7 +933,7 @@ class LegacyUploadBatchTestCase(DASHAPITestCase):
         response = json.loads(response.content)
         self.assertEqual(
             {
-                "data": {"batch_id": batch.id, "batch_name": batch_name, "candidates": [new_candidate.to_dict(True)]},
+                "data": {"batch_id": batch.id, "batch_name": batch_name, "candidates": [new_candidate.to_dict()]},
                 "success": True,
             },
             response,
@@ -905,6 +963,7 @@ class LegacyCandidateTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_get_candidate(self):
         batch_id = 1
@@ -922,6 +981,7 @@ class LegacyCandidateTestCase(DASHAPITestCase):
         user = User.objects.get(pk=1)
         client = Client()
         client.login(username=user.email, password="secret")
+        utils.test_helper.add_permissions(user, permissions=["can_use_creative_icon"])
 
         response = self.client.get(reverse("upload_candidate", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
@@ -1101,6 +1161,7 @@ class LegacyCandidateUpdateTestCase(DASHAPITestCase):
         self.user = User.objects.get(pk=2)
         self.client = Client()
         self.client.login(username=self.user.email, password="secret")
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
 
     def test_update_candidate(self):
         batch_id = 5

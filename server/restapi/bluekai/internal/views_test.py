@@ -10,7 +10,7 @@ from utils import test_helper
 class SegmentReachViewSetTestCase(FutureRESTAPITestCase):
     def setUp(self):
         super().setUp()
-        test_helper.add_permissions(self.user, permissions=["can_use_restapi"])
+        test_helper.add_permissions(self.user, permissions=["can_use_bluekai_targeting", "can_use_restapi"])
 
     @patch("dash.features.bluekai.service.get_reach")
     def test_post(self, mock_get_reach):

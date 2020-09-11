@@ -408,9 +408,10 @@ def get_editable_fields(
         ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
-    editable_fields["bid_modifier"] = _get_editable_fields_bid_modifier(
-        ad_group, ad_group_source, ad_group_settings, campaign_settings
-    )
+    if user.has_perm("zemauth.can_set_source_bid_modifiers"):
+        editable_fields["bid_modifier"] = _get_editable_fields_bid_modifier(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
 
     return editable_fields
 

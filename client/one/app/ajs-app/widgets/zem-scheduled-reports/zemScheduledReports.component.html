@@ -24,10 +24,14 @@
                         Breakdown
                     </th>
                     <th>Frequency</th>
-                    <th>
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')"
+                    >
                         Day of week
                     </th>
-                    <th>
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')"
+                    >
                         Time period
                     </th>
                     <th>Recipients</th>
@@ -45,10 +49,14 @@
                         {{ report.breakdown }}
                     </td>
                     <td>{{ report.frequency }}</td>
-                    <td>
+                    <td
+                        ng-if="$ctrl.hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')"
+                    >
                         {{ report.dayOfWeek }}
                     </td>
-                    <td>
+                    <td
+                        ng-if="$ctrl.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')"
+                    >
                         {{ report.timePeriod }}
                     </td>
                     <td>{{ report.recipients }}</td>

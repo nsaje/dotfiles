@@ -186,18 +186,23 @@ angular.module('one.widgets').component('zemGridContainerActions', {
 
         function areDeliveryBidModifierActionsVisible() {
             return (
-                $ctrl.breakdown === constants.breakdown.CONTENT_AD ||
-                $ctrl.breakdown === constants.breakdown.COUNTRY ||
-                $ctrl.breakdown === constants.breakdown.STATE ||
-                $ctrl.breakdown === constants.breakdown.DMA ||
-                $ctrl.breakdown === constants.breakdown.DEVICE ||
-                $ctrl.breakdown === constants.breakdown.ENVIRONMENT ||
-                $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM
+                zemAuthStore.hasPermission('zemauth.can_set_bid_modifiers') &&
+                ($ctrl.breakdown === constants.breakdown.CONTENT_AD ||
+                    $ctrl.breakdown === constants.breakdown.COUNTRY ||
+                    $ctrl.breakdown === constants.breakdown.STATE ||
+                    $ctrl.breakdown === constants.breakdown.DMA ||
+                    $ctrl.breakdown === constants.breakdown.DEVICE ||
+                    $ctrl.breakdown === constants.breakdown.ENVIRONMENT ||
+                    $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM)
             );
         }
 
         function areSourceBidModifierActionsVisible() {
-            return $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE;
+            return (
+                zemAuthStore.hasPermission(
+                    'zemauth.can_set_source_bid_modifiers'
+                ) && $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
+            );
         }
 
         function areRuleActionsVisible() {

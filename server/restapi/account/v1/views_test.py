@@ -3,6 +3,7 @@ from django.urls import reverse
 
 import core.models
 import dash.constants
+import utils.test_helper
 from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
@@ -186,6 +187,15 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         account = self.mix_account(user=self.user, permissions=[Permission.READ])
         r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+
+    def test_account_get_permissionless(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
+        account = self.mix_account(user=self.user, permissions=[Permission.READ])
+        r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+        self.assertFalse("frequencyCapping" in resp_json["data"])
+        resp_json["data"]["frequencyCapping"] = None
         self.validate_against_db(resp_json["data"])
 
     def test_accounts_put(self):

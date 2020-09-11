@@ -240,7 +240,12 @@ class AdGroupSourceSettings(DASHAPIBaseView):
                 }
             )
 
-        row = breakdown_helpers.create_all_rtb_source_row_data(request, ad_group, ad_group.settings)
+        row = breakdown_helpers.create_all_rtb_source_row_data(
+            request,
+            ad_group,
+            ad_group.settings,
+            show_rtb_group_bid=request.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc"),
+        )
         response_update = legacy.get_updated_ad_group_sources_changes(
             request.user, None, filtered_sources, ad_group_id_=ad_group_id
         )

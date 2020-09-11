@@ -279,6 +279,12 @@ class BreakdownAllowedTest(TestCase):
     def test_breakdown_validate_by_delivery_permissions(self):
         user = User.objects.get(pk=1)
 
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["account_id", "dma"])
+
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ["can_view_breakdown_by_delivery"])
+
         permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ["account_id", "dma"])
 
     def test_validate_breakdown_structure(self):

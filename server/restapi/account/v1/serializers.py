@@ -23,7 +23,10 @@ class AccountSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {}
+        permissioned_fields = {
+            "frequency_capping": "zemauth.can_set_frequency_capping",
+            "default_icon_url": "zemauth.can_use_creative_icon",
+        }
 
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(required=False, allow_null=True)

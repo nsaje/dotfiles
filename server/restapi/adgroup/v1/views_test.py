@@ -1131,11 +1131,25 @@ class LegacyAdGroupViewSetTest(RESTAPITestCase):
         campaign = magic_mixer.blend(dash.models.Campaign, account=account)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
-        utils.test_helper.remove_permissions(self.user, permissions=["can_set_click_capping_daily_click_budget"])
+        utils.test_helper.remove_permissions(
+            self.user,
+            permissions=[
+                "can_set_click_capping",
+                "can_set_click_capping_daily_click_budget",
+                "can_set_frequency_capping",
+                "can_use_language_targeting",
+            ],
+        )
         r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
+        self.assertFalse("clickCappingDailyAdGroupMaxClicks" in resp_json["data"])
         self.assertFalse("clickCappingDailyClickBudget" in resp_json["data"])
+        self.assertFalse("frequencyCapping" in resp_json["data"])
+        self.assertFalse("language" in resp_json["data"]["targeting"])
+        resp_json["data"]["clickCappingDailyAdGroupMaxClicks"] = self.expected_none_click_output
         resp_json["data"]["clickCappingDailyClickBudget"] = self.expected_none_click_output
+        resp_json["data"]["frequencyCapping"] = self.expected_none_frequency_capping_output
+        resp_json["data"]["targeting"]["language"] = {"matchingEnabled": False}
         self.validate_against_db(resp_json["data"])
 
     def test_adgroups_put_blank_strings(self):

@@ -23,6 +23,12 @@ angular.module('one.widgets').directive('zemUploadEditForm', function() {
             ctrl.scrollTop = function() {
                 element[0].scrollTop = 0;
             };
+
+            var callToActionInput = element.find('#call-to-action-input');
+            callToActionInput.on('select2-opening', function() {
+                // workaround for select 2 that doesn't broadcast ng-click very well
+                ctrl.clearSelectedCandidateErrors('callToAction');
+            });
         },
         controller: 'ZemUploadEditFormCtrl',
     };
@@ -277,6 +283,7 @@ angular
             candidate.usePrimaryTracker = false;
             candidate.primaryTrackerUrl = null;
             vm.updateField(candidate, 'primaryTrackerUrl');
+            vm.clearSelectedCandidateErrors('primaryTrackerUrl');
         };
 
         vm.addSecondaryTracker = function(candidate) {
@@ -288,6 +295,7 @@ angular
             candidate.useSecondaryTracker = false;
             candidate.secondaryTrackerUrl = null;
             vm.updateField(candidate, 'secondaryTrackerUrl');
+            vm.clearSelectedCandidateErrors('secondaryTrackerUrl');
         };
 
         vm.fieldsHaveErrors = function(fields) {
@@ -301,6 +309,14 @@ angular
                 }
             }
             return false;
+        };
+
+        vm.clearSelectedCandidateErrors = function(field) {
+            if (!vm.selectedCandidate || !vm.selectedCandidate.errors) return;
+            if (vm.hasPermission('zemauth.can_use_partial_updates_in_upload'))
+                return;
+
+            delete vm.selectedCandidate.errors[field];
         };
 
         vm.toggleImageUpload = function() {

@@ -41,7 +41,9 @@ class UploadBatch(DASHAPIBaseView):
         if not request.GET.get("withoutCandidates"):
             candidates = [upload.add_candidate(batch)]
 
-        can_use_icon = ad_group.campaign.type != constants.CampaignType.DISPLAY
+        can_use_icon = ad_group.campaign.type != constants.CampaignType.DISPLAY and request.user.has_perm(
+            "zemauth.can_use_creative_icon"
+        )
         return self.create_api_response(
             {
                 "batch_id": batch.id,

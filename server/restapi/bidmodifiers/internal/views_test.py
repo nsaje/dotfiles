@@ -10,6 +10,7 @@ import restapi.common.views_base_test_case
 from core.features import bid_modifiers
 from dash import constants
 from dash.features import geolocation
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
@@ -1090,6 +1091,110 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCa
         self.assertEqual(
             mock_s3_helper_get.call_args_list[0][0][0], bid_modifiers.create_error_file_path(None, csv_error_key)
         )
+
+
+class BidModifierCSVTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierCSVTest):
+    pass
+
+
+class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
+    def setUp(self):
+        super(LegacyNoPermissionTest, self).setUp()
+        test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
+
+    def test_download_modifiers(self):
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_download",
+                kwargs={
+                    "ad_group_id": 1,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+    def test_upload_modifiers(self):
+        response = self.client.post(
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": 1,
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
+            {"file": io.StringIO()},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+    def test_download_example_file(self):
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_example_download",
+                kwargs={
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    )
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+    def test_bulk_download_modifiers(self):
+        response = self.client.get(reverse("bid_modifiers_download_bulk", kwargs={"ad_group_id": 1}))
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+    def test_bulk_upload_modifiers(self):
+        response = self.client.post(
+            reverse("bid_modifiers_upload_bulk", kwargs={"ad_group_id": 1}), {"file": io.StringIO()}, format="multipart"
+        )
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+    def test_download_bulk_example_file(self):
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_example_download",
+                kwargs={
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    )
+                },
+            )
+        )
+        self.assertEqual(response.status_code, 403)
+        result = self.assertResponseError(response, "PermissionDenied")
+        self.assertEqual(
+            result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
+        )
+
+
+class NoPermissionTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyNoPermissionTest):
+    pass
 
 
 class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test_case.RESTAPITestCase):

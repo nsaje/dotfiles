@@ -123,10 +123,14 @@ class AdGroupSettings(
         "additional_data",
     ]
     _permissioned_fields = {
+        "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
+        "click_capping_daily_click_budget": "zemauth.can_set_click_capping",
         "max_cpm": "zemauth.fea_can_use_cpm_buying",
         "local_max_cpm": "zemauth.fea_can_use_cpm_buying",
         "b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
         "local_b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
+        "frequency_capping": "zemauth.can_set_frequency_capping",
+        "language_targeting_enabled": "zemauth.can_use_language_targeting",
         "additional_data": "zemauth.can_use_ad_additional_data",
     }
     multicurrency_fields = [
@@ -558,6 +562,12 @@ class AdGroupSettings(
         excluded_keys = set()
         if user is not None and not user.has_perm("zemauth.can_view_retargeting_settings"):
             excluded_keys.update(["retargeting_ad_groups", "exclusion_retargeting_ad_groups"])
+
+        if user is not None and not user.has_perm("zemauth.can_set_white_blacklist_publisher_groups"):
+            excluded_keys.update(["whitelist_publisher_groups", "blacklist_publisher_groups"])
+
+        if user is not None and not user.has_perm("zemauth.can_use_language_targeting"):
+            excluded_keys.update("language_targeting_enabled")
 
         valid_changes = {key: value for key, value in changes.items() if key not in excluded_keys}
         return core.features.history.helpers.get_changes_text_from_dict(self, valid_changes, separator=separator)

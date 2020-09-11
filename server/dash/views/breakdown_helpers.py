@@ -184,7 +184,7 @@ def get_ad_group_sources_extras(ad_group):
 
 
 # MVP for all-RTB-sources-as-one
-def create_all_rtb_source_row(request, constraints):
+def create_all_rtb_source_row(request, constraints, can_show_rtb_group_bid):
     ad_group = constraints["ad_group"]
     settings = ad_group.get_current_settings()
     if not settings.b1_sources_group_enabled:
@@ -196,12 +196,12 @@ def create_all_rtb_source_row(request, constraints):
     rtb_source_ids = list(map(str, rtb_source_ids))
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row_data(request, ad_group, settings)
+    all_rtb_source_row = create_all_rtb_source_row_data(request, ad_group, settings, can_show_rtb_group_bid)
     all_rtb_source_row["group"] = {"ids": rtb_source_ids}
     return all_rtb_source_row
 
 
-def create_all_rtb_source_row_data(request, ad_group, ad_group_settings):
+def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rtb_group_bid):
     status = {"value": ad_group_settings.b1_sources_group_state}
     notifications = {}
     if (
@@ -241,13 +241,13 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings):
         "state": {"value": ad_group_settings.b1_sources_group_state},
         "status": status,
         "daily_budget": ad_group_settings.local_b1_sources_group_daily_budget,
-        "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc,
-        "bid_cpm": ad_group_settings.local_b1_sources_group_cpm,
+        "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc if show_rtb_group_bid else "",
+        "bid_cpm": ad_group_settings.local_b1_sources_group_cpm if show_rtb_group_bid else "",
         "notifications": notifications,
         "editable_fields": {
             "state": {"message": state_edit_message, "enabled": state_edit_enabled},
             "daily_budget": {"message": daily_budget_edit_message, "enabled": daily_budget_edit_enabled},
-            "bid_cpc": {"message": bid_edit_message, "enabled": bid_edit_enabled},
-            "bid_cpm": {"message": bid_edit_message, "enabled": bid_edit_enabled},
+            "bid_cpc": {"message": bid_edit_message, "enabled": bid_edit_enabled and show_rtb_group_bid},
+            "bid_cpm": {"message": bid_edit_message, "enabled": bid_edit_enabled and show_rtb_group_bid},
         },
     }

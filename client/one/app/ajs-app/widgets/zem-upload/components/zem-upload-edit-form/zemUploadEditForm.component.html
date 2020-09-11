@@ -337,7 +337,7 @@
                     <div
                         class="form__group"
                         ng-class="{'form--error': ctrl.fieldsHaveErrors(['icon', 'iconUrl'])}"
-                        ng-if="ctrl.showIconUpload"
+                        ng-if="ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
                     >
                         <label class="form__label" for="icon-url-input"
                             >Brand logo</label
@@ -411,7 +411,7 @@
                     <div
                         class="form__group"
                         ng-class="{'form--error': ctrl.fieldsHaveErrors(['icon', 'iconUrl'])}"
-                        ng-if="!ctrl.showIconUpload"
+                        ng-if="!ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
                     >
                         <label class="form__label" for="icon-url-input"
                             >Brand Logo URL</label
