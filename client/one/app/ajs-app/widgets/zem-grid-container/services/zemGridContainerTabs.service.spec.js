@@ -12,9 +12,7 @@ describe('component: zemGridContainerTabsService', function() {
     beforeEach(inject(function(zemGridContainerTabsService, zemAuthStore) {
         service = zemGridContainerTabsService;
         zemAuthStore.setMockedPermissions([
-            'zemauth.can_see_publishers_all_levels',
             'zemauth.can_use_placement_targeting',
-            'zemauth.can_see_top_level_delivery_breakdowns',
         ]);
     }));
 

@@ -9,8 +9,7 @@ angular
         $q,
         $location,
         NgRouter,
-        zemNavigationService,
-        zemAuthStore
+        zemNavigationService
     ) {
         // eslint-disable-line max-len
         this.init = init;
@@ -163,16 +162,9 @@ angular
 
             var activatedRoute = routerHelpers.getActivatedRoute(NgRouter);
             var breakdown = activatedRoute.snapshot.params.breakdown;
-            var isAdGroup =
-                entity && entity.type === constants.entityType.AD_GROUP;
             var isCampaign =
                 entity && entity.type === constants.entityType.CAMPAIGN;
             if (
-                (breakdown === constants.breakdownParam.PUBLISHERS &&
-                    !isAdGroup &&
-                    !zemAuthStore.hasPermission(
-                        'zemauth.can_see_publishers_all_levels'
-                    )) ||
                 (breakdown === constants.breakdownParam.INSIGHTS &&
                     !isCampaign)
             ) {

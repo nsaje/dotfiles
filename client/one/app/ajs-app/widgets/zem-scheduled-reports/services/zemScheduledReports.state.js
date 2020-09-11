@@ -36,13 +36,7 @@ angular
                 return zemScheduledReportsEndpoint
                     .list(account)
                     .then(function(data) {
-                        if (
-                            zemAuthStore.hasPermission(
-                                'zemauth.can_see_new_report_schedule'
-                            )
-                        ) {
-                            data = formatReports(data);
-                        }
+                        data = formatReports(data);
                         state.reports = data;
                     })
                     .catch(function() {

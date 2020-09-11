@@ -12,7 +12,6 @@ from dash import models
 from dash.common.views_base_test_case import DASHAPITestCase
 from dash.common.views_base_test_case import FutureDASHAPITestCase
 from utils import test_helper
-from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
 from zemauth.models import User
 
@@ -319,8 +318,6 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_get_by_delivery(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -342,8 +339,6 @@ class LegacyAccountsDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
     def test_get_by_delivery_join_selected(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_ids = [
             constants.DeviceType.DESKTOP,
             constants.DeviceType.MOBILE,
@@ -467,8 +462,6 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
     def test_get_by_delivery(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -489,8 +482,6 @@ class LegacyAccountDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
     def test_get_by_delivery_local_currency(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -617,8 +608,6 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self.assertTrue("campaign_goals" in response_blob["data"])
 
     def test_get_by_delivery(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -632,8 +621,6 @@ class LegacyCampaignDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self._assert_response(response, device_id, constants.DeviceType.get_name(device_id))
 
     def test_get_by_delivery_local_currency(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -932,8 +919,6 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         )
 
     def test_get_by_delivery(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -947,8 +932,6 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
         self._assert_response(response, device_id, constants.DeviceType.get_name(device_id))
 
     def test_get_by_delivery_local_currency(self):
-        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         device_id = constants.DeviceType.DESKTOP
         self._prepare_mock("device_type", device_id)
 
@@ -984,7 +967,6 @@ class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1283,7 +1265,6 @@ class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1583,7 +1564,6 @@ class LegacyAccountPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
@@ -1749,7 +1729,6 @@ class LegacyAllAccountsPublishersDailyStatsTestCase(DASHAPITestCase):
         self.client = Client()
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password=password)
-        test_helper.add_permissions(self.user, permissions=["can_see_publishers"])
 
     def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)

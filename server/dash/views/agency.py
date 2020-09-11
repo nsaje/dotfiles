@@ -148,14 +148,14 @@ class ConversionPixel(DASHAPIBaseView):
             "audience_enabled": pixel.audience_enabled,
             "additional_pixel": pixel.additional_pixel,
             "archived": pixel.archived,
+            "last_triggered": pixel.last_triggered,
+            "impressions": pixel.get_impressions(date=date),
+            "notes": pixel.notes,
         }
-        if user.has_perm("zemauth.can_see_pixel_traffic"):
-            data["last_triggered"] = pixel.last_triggered
-            data["impressions"] = pixel.get_impressions(date=date)
+
         if user.has_perm("zemauth.can_redirect_pixels"):
             data["redirect_url"] = pixel.redirect_url
-        if user.has_perm("zemauth.can_see_pixel_notes"):
-            data["notes"] = pixel.notes
+
         return data
 
 

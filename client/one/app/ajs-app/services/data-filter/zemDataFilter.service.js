@@ -109,7 +109,6 @@ angular
                 urlParam: 'filtered_publisher_status',
                 default: PUBLISHER_STATUS_CONDITION_VALUES.all,
                 event: EVENTS.ON_FILTERED_PUBLISHER_STATUS_UPDATE,
-                permissions: ['zemauth.can_see_publishers'],
             },
         };
         this.CONDITIONS = CONDITIONS;

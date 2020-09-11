@@ -264,7 +264,6 @@ class UserViewSet(RESTAPIBaseViewSet):
     def _add_user_to_groups(user):
         # TODO (msuber): deleted adding permissions after User Roles will be released.
         user.user_permissions.add(auth_models.Permission.objects.get(codename="fea_use_entity_permission"))
-        user.user_permissions.add(auth_models.Permission.objects.get(codename="can_see_user_management"))
         perm = auth_models.Permission.objects.get(codename="this_is_public_group")
         group = auth_models.Group.objects.filter(permissions=perm).first()
         if group is not None:

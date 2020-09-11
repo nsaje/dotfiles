@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
         api: '<',
     },
     template: require('./zemReportDropdown.component.html'),
-    controller: function($uibModal, zemAuthStore) {
+    controller: function($uibModal) {
         var $ctrl = this;
 
         //
@@ -18,15 +18,13 @@ angular.module('one.widgets').component('zemReportDropdown', {
                 execute: openReportModal,
                 hasPermission: true,
             },
-        ];
-        if (zemAuthStore.hasPermission('zemauth.can_see_new_report_schedule')) {
-            $ctrl.actions.push({
+            {
                 name: 'Schedule',
                 value: 'schedule',
                 execute: openScheduleModal,
                 hasPermission: true,
-            });
-        }
+            },
+        ];
 
         function execute(selected) {
             for (var i = 0; i < $ctrl.actions.length; i++) {

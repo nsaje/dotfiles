@@ -391,8 +391,6 @@ class LegacyAccountBreakdownTestCase(DASHAPITestCase):
 
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
-
         mock_query.return_value = [
             {
                 "campaign_id": 198,
@@ -568,9 +566,7 @@ class LegacyCampaignBreakdownTestCase(DASHAPITestCase):
     @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
-        test_helper.add_permissions(
-            self.user, ["can_view_breakdown_by_delivery", "can_see_top_level_delivery_breakdowns"]
-        )
+        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
         mock_query.return_value = {}
         mock_totals.return_value = {}
@@ -696,9 +692,7 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
     @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_delivery(self, mock_totals, mock_query):
-        test_helper.add_permissions(
-            self.user, ["can_view_breakdown_by_delivery", "can_see_top_level_delivery_breakdowns"]
-        )
+        test_helper.add_permissions(self.user, ["can_view_breakdown_by_delivery"])
 
         mock_query.return_value = {}
         mock_totals.return_value = {}
@@ -910,32 +904,8 @@ class LegacyAdGroupBreakdownTestCase(DASHAPITestCase):
             },
         )
 
-    def test_post_base_level_publisher_not_allowed(self, mock_query):
-        mock_query.return_value = {}
-
-        params = {
-            "limit": 5,
-            "offset": 33,
-            "order": "-clicks",
-            "start_date": "2016-01-01",
-            "end_date": "2016-02-03",
-            "filtered_sources": ["1", "3", "4"],
-            "show_archived": "true",
-            "parents": [],
-        }
-
-        response = self.client.post(
-            reverse("breakdown_ad_groups", kwargs={"ad_group_id": 1, "breakdown": "/publisher"}),
-            data=json.dumps({"params": params}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 404)
-
     @patch("stats.api_breakdowns.totals")
     def test_post_base_level_publisher(self, mock_totals, mock_query):
-        test_helper.add_permissions(self.user, ["can_see_publishers"])
-
         mock_query.return_value = {}
 
         mock_totals.return_value = {"clicks": 123}

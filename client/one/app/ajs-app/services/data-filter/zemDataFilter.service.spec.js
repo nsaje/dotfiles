@@ -16,7 +16,6 @@ describe('zemDataFilterService', function() {
         zemAuthStore = _zemAuthStore_;
 
         zemAuthStore.setMockedPermissions([
-            'zemauth.can_see_publishers',
             'zemauth.can_filter_by_account_type',
         ]);
     }));

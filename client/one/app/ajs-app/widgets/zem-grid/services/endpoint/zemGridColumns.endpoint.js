@@ -22,8 +22,7 @@ angular
         //
         var COLUMNS = {
             agencyId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: false,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Agency ID',
@@ -32,8 +31,7 @@ angular
                 help: 'The ID number of your agency.',
             },
             accountId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Account ID',
@@ -42,8 +40,7 @@ angular
                 help: 'The ID number of your account.',
             },
             campaignId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Campaign ID',
@@ -52,8 +49,7 @@ angular
                 help: 'The ID number of your campaign.',
             },
             adGroupId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Ad Group ID',
@@ -62,8 +58,7 @@ angular
                 help: 'The ID number of your ad group.',
             },
             contentAdId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Content Ad ID',
@@ -83,8 +78,7 @@ angular
                 shown: 'zemauth.can_see_amplify_ad_id_column',
             },
             sourceId: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Source ID',
@@ -93,8 +87,7 @@ angular
                 help: 'The ID number of your media source.',
             },
             sourceSlug: {
-                internal: 'zemauth.can_see_id_columns_in_table',
-                shown: 'zemauth.can_see_id_columns_in_table',
+                shown: true,
                 name: 'Source Slug',
                 field: 'source_slug',
                 type: zemGridConstants.gridColumnTypes.TEXT,

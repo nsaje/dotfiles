@@ -90,7 +90,6 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
         ...DEFAULT_PAGINATION,
     };
 
-    showNewLabels: boolean = false;
     addPublisherGroupModalTitle: string;
     editPublisherGroupModalTitle: string;
     private explicitGridApi: GridApi;
@@ -111,17 +110,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.subscribeToStateUpdates();
-        this.showNewLabels = this.authStore.hasPermission(
-            'zemauth.can_see_new_publisher_library'
-        );
 
         this.initColumnDefs();
-        this.addPublisherGroupModalTitle = this.showNewLabels
-            ? 'Create Publishers & Placement list'
-            : 'Add new publisher group';
-        this.editPublisherGroupModalTitle = this.showNewLabels
-            ? 'Edit Publishers & Placement list'
-            : 'Edit publisher group';
+        this.addPublisherGroupModalTitle = 'Create Publishers & Placement list';
+        this.editPublisherGroupModalTitle = 'Edit Publishers & Placement list';
 
         this.route.queryParams
             .pipe(takeUntil(this.ngUnsubscribe$))
@@ -275,12 +267,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 valueFormatter: booleanFormatter,
             },
             {
-                headerName: this.showNewLabels
-                    ? 'Number of publishers/placements'
-                    : 'Number of publishers',
+                headerName: 'Number of publishers/placements',
                 field: 'size',
                 width: 220,
-                minWidth: this.showNewLabels ? 200 : 134,
+                minWidth: 200,
             },
             {
                 headerName: 'Modified',
@@ -325,13 +315,11 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
             {headerName: 'Name', field: 'levelName', width: 170, minWidth: 170},
             {headerName: 'Level', field: 'level', width: 75, minWidth: 75},
             {
-                headerName: this.showNewLabels ? 'Status' : 'Type',
+                headerName: 'Status',
                 field: 'type',
                 width: 66,
                 minWidth: 66,
-                valueFormatter: this.showNewLabels
-                    ? this.blacklistStatusFormatter
-                    : null,
+                valueFormatter: this.blacklistStatusFormatter,
             },
             {
                 headerName: 'Subdomains included',
@@ -341,12 +329,10 @@ export class PublisherGroupsView implements OnInit, OnDestroy {
                 valueFormatter: booleanFormatter,
             },
             {
-                headerName: this.showNewLabels
-                    ? 'Number of publishers/placements'
-                    : 'Number of publishers',
+                headerName: 'Number of publishers/placements',
                 field: 'size',
                 width: 134,
-                minWidth: this.showNewLabels ? 200 : 134,
+                minWidth: 200,
             },
             {
                 headerName: 'Modified',

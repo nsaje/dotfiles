@@ -36,9 +36,7 @@ class InstanceTestCase(TestCase):
     @mock.patch("core.models.Account.write_history")
     @mock.patch("utils.redirector_helper.update_pixel")
     def test_update(self, redirector_pixel_mock, history_mock, k1_update_account_mock, redirector_audience_mock):
-        request = magic_mixer.blend_request_user(
-            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
-        )
+        request = magic_mixer.blend_request_user(permissions=["can_promote_additional_pixel", "can_redirect_pixels"])
         account = magic_mixer.blend(core.models.Account)
         core.models.ConversionPixel.objects.create(request, account, name="test_audience", audience_enabled=True)
         pixel = core.models.ConversionPixel.objects.create(request, account, name="test")
@@ -79,9 +77,7 @@ class InstanceTestCase(TestCase):
     @mock.patch("core.models.Account.write_history")
     @mock.patch("utils.redirector_helper.update_pixel")
     def test_update_name(self, redirector_pixel_mock, history_mock, k1_update_account_mock, redirector_audience_mock):
-        request = magic_mixer.blend_request_user(
-            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
-        )
+        request = magic_mixer.blend_request_user(permissions=["can_promote_additional_pixel", "can_redirect_pixels"])
         account = magic_mixer.blend(core.models.Account)
         core.models.ConversionPixel.objects.create(request, account, name="test_audience", audience_enabled=True)
         pixel = core.models.ConversionPixel.objects.create(request, account, name="test")
@@ -112,16 +108,14 @@ class InstanceTestCase(TestCase):
         pixel.update(request, additional_pixel=True, redirect_url="test_url", notes="test_notes")
         self.assertFalse(pixel.additional_pixel)
         self.assertNotEqual("test_url", pixel.redirect_url)
-        self.assertNotEqual("test_notes", pixel.notes)
 
+        self.assertEqual("test_notes", pixel.notes)
         self.assertEqual(2, redirector_pixel_mock.call_count)
         self.assertEqual(4, history_mock.call_count)
         self.assertEqual(2, k1_update_account_mock.call_count)
         redirector_audience_mock.assert_called_once()
 
-        request = magic_mixer.blend_request_user(
-            permissions=["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes"]
-        )
+        request = magic_mixer.blend_request_user(permissions=["can_promote_additional_pixel", "can_redirect_pixels"])
         pixel.update(request, additional_pixel=True, redirect_url="test_url", notes="test_notes")
         self.assertTrue(pixel.additional_pixel)
         self.assertEqual("test_url", pixel.redirect_url)

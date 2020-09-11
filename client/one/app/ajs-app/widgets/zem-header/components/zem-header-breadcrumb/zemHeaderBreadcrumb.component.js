@@ -202,12 +202,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     RoutePathName.APP_BASE,
                     RoutePathName.PUBLISHER_GROUPS
                 ];
-                var canUserSeeNewPublisherGroupsView = zemAuthStore.hasPermission(
-                    'zemauth.can_see_new_publisher_library'
-                );
                 return {
                     typeName: 'Management Console',
-                    name: canUserSeeNewPublisherGroupsView ? 'Publishers & placements' : 'Publisher Groups',
+                    name: 'Publishers & placements',
                     href: NgRouter.createUrlTree(urlTree, {queryParams: queryParams}).toString(),
                 };
             } else if (NgRouter.url.includes(RoutePathName.APP_BASE + '/' + RoutePathName.RULES)) {

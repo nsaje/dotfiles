@@ -261,9 +261,6 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
 
     @newrelic.agent.function_trace()
     def get(self, request):
-        if not request.user.has_perm("zemauth.can_see_publishers"):
-            raise exc.MissingDataError()
-
         self.view_filter = forms.ViewFilterForm(request.GET)
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
@@ -299,9 +296,6 @@ class AllAccountsPlacementsDailyStats(AllAccountsPublishersDailyStats):
 class AllAccountsDeliveryDailyStats(AllAccountsDailyStatsView):
     @newrelic.agent.function_trace()
     def get(self, request, delivery_dimension):
-        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
-            raise exc.MissingDataError()
-
         self.view_filter = forms.ViewFilterForm(request.GET)
         if not self.view_filter.is_valid():
             raise exc.ValidationError(errors=dict(self.view_filter.errors))
@@ -401,9 +395,6 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         return params
 
     def get(self, request, account_id):
-        if not request.user.has_perm("zemauth.can_see_publishers"):
-            raise exc.MissingDataError()
-
         self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
@@ -445,9 +436,6 @@ class AccountPlacementsDailyStats(AccountPublishersDailyStats):
 
 class AccountDeliveryDailyStats(AccountDailyStatsView):
     def get(self, request, account_id, delivery_dimension):
-        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
-            raise exc.MissingDataError()
-
         self.account = zemauth.access.get_account(request.user, Permission.READ, account_id)
 
         pixels = self.account.conversionpixel_set.filter(archived=False)
@@ -549,9 +537,6 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         return params
 
     def get(self, request, campaign_id):
-        if not request.user.has_perm("zemauth.can_see_publishers"):
-            raise exc.MissingDataError()
-
         self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
@@ -596,9 +581,6 @@ class CampaignPlacementsDailyStats(CampaignPublishersDailyStats):
 
 class CampaignDeliveryDailyStats(CampaignDailyStatsView):
     def get(self, request, campaign_id, delivery_dimension):
-        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
-            raise exc.MissingDataError()
-
         self.campaign = zemauth.access.get_campaign(request.user, Permission.READ, campaign_id)
 
         conversion_goals = self.campaign.conversiongoal_set.all()
@@ -705,9 +687,6 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         return params
 
     def get(self, request, ad_group_id):
-        if not request.user.has_perm("zemauth.can_see_publishers"):
-            raise exc.MissingDataError()
-
         self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
@@ -756,9 +735,6 @@ class AdGroupPlacementsDailyStats(AdGroupPublishersDailyStats):
 
 class AdGroupDeliveryDailyStats(AdGroupDailyStatsView):
     def get(self, request, ad_group_id, delivery_dimension):
-        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
-            raise exc.MissingDataError()
-
         self.ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
 
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()

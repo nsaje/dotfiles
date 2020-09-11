@@ -36,7 +36,6 @@ describe('zemFilterSelectorService', function() {
 
         zemAuthStore.setMockedPermissions([
             'zemauth.can_filter_by_account_type',
-            'zemauth.can_see_publisher_blacklist_status',
         ]);
 
         spyOn(zemMediaSourcesService, 'getAvailableSources').and.callFake(

@@ -29,7 +29,30 @@ describe('zemScheduledReportsStateService', function() {
     });
 
     it('should correctly update state when successfully getting data from endpoint', function() {
-        var reports = [{id: 1}, {id: 2}];
+        var reports = [
+            {
+                id: 1,
+                name: '1',
+                user: '1',
+                breakdown: [],
+                level: '1',
+                dayOfWeek: '',
+                frequency: undefined,
+                timePeriod: undefined,
+                recipients: [],
+            },
+            {
+                id: 2,
+                name: '2',
+                user: '2',
+                breakdown: [],
+                level: '2',
+                dayOfWeek: '',
+                frequency: undefined,
+                timePeriod: undefined,
+                recipients: [],
+            },
+        ];
         var stateService = zemScheduledReportsStateService.createInstance({
             id: 999,
             type: 'mockedAccount',
@@ -49,7 +72,11 @@ describe('zemScheduledReportsStateService', function() {
         });
         $rootScope.$digest();
         expect(stateService.getState()).toEqual({
-            reports: reports,
+            reports: reports.map(function(report) {
+                report.breakdown = '';
+                report.recipients = '';
+                return report;
+            }),
             loadReportsRequestInProgress: false,
         });
     });

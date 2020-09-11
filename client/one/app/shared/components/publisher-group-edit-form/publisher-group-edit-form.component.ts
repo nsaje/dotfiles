@@ -22,8 +22,6 @@ export class PublisherGroupEditFormComponent {
     @Input()
     publisherGroupErrors: PublisherGroupErrors;
     @Input()
-    showNewLabels: boolean = false;
-    @Input()
     isDisabled: boolean = false;
     @Input()
     showFileUpload: boolean = true;

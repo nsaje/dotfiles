@@ -5,8 +5,6 @@ from utils import exc
 
 
 def validate_breakdown_by_permissions(level, user, breakdown):
-    if constants.StructureDimension.PUBLISHER in breakdown and not user.has_perm("zemauth.can_see_publishers"):
-        raise exc.MissingDataError()
     if constants.is_placement_breakdown(breakdown) and not user.has_perm("zemauth.can_use_placement_targeting"):
         raise exc.MissingDataError()
 

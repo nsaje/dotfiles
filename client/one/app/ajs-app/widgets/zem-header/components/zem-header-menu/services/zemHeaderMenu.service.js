@@ -14,10 +14,6 @@ angular
         // eslint-disable-line max-len
         this.getAvailableActions = getAvailableActions;
 
-        var canUserSeeNewPublisherGroupsView = zemAuthStore.hasPermission(
-            'zemauth.can_see_new_publisher_library'
-        );
-
         var USER_ACTIONS = [
             {
                 text: 'Request demo',
@@ -41,19 +37,12 @@ angular
                 text: 'Pixels & Audiences',
                 callback: navigateToPixelsView,
                 isAvailable: isPixelsViewAvailable,
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.can_see_new_pixels_view'
-                ),
             },
             {
                 text: 'Scheduled reports',
                 callback: navigateToScheduledReportsView,
-                isAvailable: zemAuthStore.hasPermission(
-                    'zemauth.can_see_new_scheduled_reports'
-                ),
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.can_see_new_scheduled_reports'
-                ),
+                isAvailable: true,
+                isInternalFeature: false,
             },
             {
                 text: 'User permissions',
@@ -83,20 +72,12 @@ angular
                 text: 'User management',
                 callback: navigateToUsersView,
                 isAvailable: isUsersViewAvailable,
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.can_see_user_management'
-                ),
                 isNewFeature: true,
             },
             {
-                text: canUserSeeNewPublisherGroupsView
-                    ? 'Publishers & placements'
-                    : 'Publisher Groups',
+                text: 'Publishers & placements',
                 callback: navigateToPublisherGroupsView,
-                isAvailable: isPublisherGroupsViewAvailable,
-                isInternalFeature: zemAuthStore.isPermissionInternal(
-                    'zemauth.can_see_publisher_groups_ui'
-                ),
+                isAvailable: true,
             },
             {
                 text: 'Automation rules',
@@ -151,12 +132,6 @@ angular
 
         function navigate(params) {
             $window.location.href = params.href;
-        }
-
-        function isPublisherGroupsViewAvailable() {
-            return zemAuthStore.hasPermission(
-                'zemauth.can_see_publisher_groups_ui'
-            );
         }
 
         function navigateToPublisherGroupsView() {
@@ -257,8 +232,6 @@ angular
         }
 
         function isPixelsViewAvailable() {
-            if (!zemAuthStore.hasPermission('zemauth.can_see_new_pixels_view'))
-                return false;
             return commonHelpers.isDefined(
                 zemNavigationNewService.getActiveAccount()
             );
@@ -296,9 +269,8 @@ angular
         }
 
         function isUsersViewAvailable() {
-            return (
-                zemAuthStore.hasPermission('zemauth.can_see_user_management') &&
-                zemAuthStore.hasPermission('zemauth.fea_use_entity_permission')
+            return zemAuthStore.hasPermission(
+                'zemauth.fea_use_entity_permission'
             );
         }
 

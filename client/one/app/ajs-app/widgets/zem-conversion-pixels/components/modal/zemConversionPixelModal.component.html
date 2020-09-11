@@ -119,12 +119,8 @@
         <div
             class="form__group"
             ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.notes}"
-            ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
         >
-            <label
-                class="form__label"
-                for="notes-input"
-                is-internal="zemauth.can_see_pixel_notes"
+            <label class="form__label" for="notes-input"
                 >Notes<zem-help-popover
                     content="Add a note describing where the pixel is placed on your website and what it tracks."
                     placement="top"

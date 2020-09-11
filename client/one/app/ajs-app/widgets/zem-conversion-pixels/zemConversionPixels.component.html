@@ -23,20 +23,14 @@
                             placement="top"
                         ></zem-help-popover>
                     </th>
-                    <th
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
-                        is-internal="zemauth.can_see_pixel_traffic"
-                    >
+                    <th>
                         Last Triggered
                         <zem-help-popover
                             content="Synchronized every 24 hours."
                             placement="top"
                         ></zem-help-popover>
                     </th>
-                    <th
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
-                        is-internal="zemauth.can_see_pixel_traffic"
-                    >
+                    <th>
                         Traffic Yesterday
                         <zem-help-popover
                             content="Number of times pixel triggered yesterday. Synchronized every 24 hours."
@@ -49,10 +43,7 @@
                     >
                         Redirected
                     </th>
-                    <th
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
-                        is-internal="zemauth.can_see_pixel_notes"
-                    >
+                    <th>
                         Notes
                     </th>
                     <th></th>
@@ -73,17 +64,13 @@
                             >(Additional custom audience pixel)</span
                         >
                     </td>
-                    <td
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
-                    >
+                    <td>
                         {{
                             (item.lastTriggered | date: 'M/d/yyyy h:mm a') ||
                                 'Never'
                         }}
                     </td>
-                    <td
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
-                    >
+                    <td>
                         {{ item.impressions }}
                     </td>
                     <td
@@ -91,10 +78,7 @@
                     >
                         {{ item.redirectUrl ? 'Yes' : 'No' }}
                     </td>
-                    <td
-                        class="custom-table__break-word"
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
-                    >
+                    <td class="custom-table__break-word">
                         {{ item.notes }}
                     </td>
                     <td>

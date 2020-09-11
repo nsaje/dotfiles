@@ -23,7 +23,7 @@ describe('zemScheduledReportsEndpoint', function() {
         spyOn($http, 'get').and.callFake(mockedAsyncFunction);
 
         zemScheduledReportsEndpoint.list(entity);
-        expect($http.get).toHaveBeenCalledWith('/api/all_accounts/reports/');
+        expect($http.get).toHaveBeenCalledWith('/api/scheduled_reports/');
     });
 
     it('should make correct request to server for account scheduled reports', function() {
@@ -38,7 +38,9 @@ describe('zemScheduledReportsEndpoint', function() {
         spyOn($http, 'get').and.callFake(mockedAsyncFunction);
 
         zemScheduledReportsEndpoint.list(entity);
-        expect($http.get).toHaveBeenCalledWith('/api/accounts/999/reports/');
+        expect($http.get).toHaveBeenCalledWith(
+            'api/scheduled_reports/?account_id=999'
+        );
     });
 
     it('should make correct request to server to remove scheduled report', function() {
@@ -50,7 +52,7 @@ describe('zemScheduledReportsEndpoint', function() {
 
         zemScheduledReportsEndpoint.remove(123);
         expect($http.delete).toHaveBeenCalledWith(
-            '/api/accounts/reports/remove/123'
+            '/api/scheduled_reports/123/'
         );
     });
 });

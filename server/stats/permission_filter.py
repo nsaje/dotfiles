@@ -134,8 +134,6 @@ def filter_columns_by_permission(user, constraints, rows, goals):
     else:
         _remove_fields(rows, fields_to_keep)
 
-    _custom_cleanup(user, rows)
-
 
 def _extract_constraints(constraints):
     new_constraints = {}
@@ -217,19 +215,6 @@ def _remove_fields(rows, fields_to_keep):
                 row.pop(row_field, None)
 
 
-def _custom_cleanup(user, rows):
-    """
-    Put here custom logics for cleaning fields that doesn't fit '_remove_fields'.
-    """
-
-    remove_content_ad_source_status = not user.has_perm("zemauth.can_see_media_source_status_on_submission_popover")
-    if remove_content_ad_source_status:
-        for row in rows:
-            if row.get("status_per_source"):
-                for source_status in list(row["status_per_source"].values()):
-                    source_status.pop("source_status", None)
-
-
 def _get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_values, conversion_goals):
     """
     Returns campaign goal field names that should be kept if user has
@@ -300,8 +285,6 @@ def validate_breakdown_by_permissions(level, user, breakdown):
     base_dimension = constants.get_base_dimension(breakdown)
 
     if len(breakdown) == 1 and is_top_level_delivery_dimension(base_dimension):
-        if not user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
-            raise exc.MissingDataError()
         return
 
     if level == Level.ALL_ACCOUNTS:
@@ -339,9 +322,6 @@ def validate_breakdown_by_permissions(level, user, breakdown):
             StructureDimension.PLACEMENT,
         ):
             raise exc.MissingDataError()
-
-    if StructureDimension.PUBLISHER in breakdown and not user.has_perm("zemauth.can_see_publishers"):
-        raise exc.MissingDataError()
 
     if constants.is_placement_breakdown(breakdown) and not user.has_perm("zemauth.can_use_placement_targeting"):
         raise exc.MissingDataError()

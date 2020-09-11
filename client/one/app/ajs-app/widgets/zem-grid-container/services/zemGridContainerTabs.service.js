@@ -33,7 +33,6 @@ angular
                     {
                         name: 'Publishers',
                         breakdown: constants.breakdown.PUBLISHER,
-                        permissions: 'zemauth.can_see_publishers_all_levels',
                     },
                     {
                         name: 'Placements',
@@ -47,38 +46,26 @@ angular
                     {
                         name: 'Country',
                         breakdown: constants.breakdown.COUNTRY,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'State / Region',
                         breakdown: constants.breakdown.STATE,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'DMA',
                         breakdown: constants.breakdown.DMA,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Device',
                         breakdown: constants.breakdown.DEVICE,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Environment',
                         breakdown: constants.breakdown.ENVIRONMENT,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Operating System',
                         breakdown: constants.breakdown.OPERATING_SYSTEM,
-                        permissions:
-                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                 ],
             },

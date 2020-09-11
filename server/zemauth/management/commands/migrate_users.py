@@ -40,6 +40,5 @@ class Command(Z1Command):
             for user in users_chunk:
                 user.refresh_entity_permissions()
                 user.user_permissions.add(auth_models.Permission.objects.get(codename="fea_use_entity_permission"))
-                user.user_permissions.add(auth_models.Permission.objects.get(codename="can_see_user_management"))
 
         logger.info("Users migration to entity permissions completed...")

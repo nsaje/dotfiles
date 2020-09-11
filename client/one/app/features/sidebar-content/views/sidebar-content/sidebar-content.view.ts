@@ -57,30 +57,17 @@ export class SidebarContentView implements OnInit, OnChanges, OnDestroy {
             displayValue: 'User management',
             icon: ListGroupItemIcon.User,
             isVisible: () => {
-                return (
-                    this.authStore.hasPermission(
-                        'zemauth.can_see_user_management'
-                    ) &&
-                    this.authStore.hasPermission(
-                        'zemauth.fea_use_entity_permission'
-                    )
+                return this.authStore.hasPermission(
+                    'zemauth.fea_use_entity_permission'
                 );
             },
             isNewFeature: true,
         },
         {
             value: RoutePathName.PUBLISHER_GROUPS,
-            displayValue: this.authStore.hasPermission(
-                'zemauth.can_see_new_publisher_library'
-            )
-                ? 'Publishers & placements'
-                : 'Publisher Groups',
+            displayValue: 'Publishers & placements',
             icon: ListGroupItemIcon.PublisherGroups,
-            isVisible: () => {
-                return this.authStore.hasPermission(
-                    'zemauth.can_see_publisher_groups_ui'
-                );
-            },
+            isVisible: () => true,
         },
         {
             value: RoutePathName.RULES,

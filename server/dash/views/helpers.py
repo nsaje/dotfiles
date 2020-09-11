@@ -234,12 +234,12 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         cas_source = content_ad_source.source
 
         ad_group_source_state_text = ""
-        if user.has_perm("zemauth.can_see_media_source_status_on_submission_popover"):
-            cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
 
-            if cas_ad_group_source_state is not None:
-                if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = "(paused)"
+        cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
+
+        if cas_ad_group_source_state is not None:
+            if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
+                ad_group_source_state_text = "(paused)"
 
         status["source_state"] = ad_group_source_state_text
 

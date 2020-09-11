@@ -169,6 +169,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
                 {
                     "id": 2,
@@ -177,6 +180,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": False,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
             ],
             decoded_response["data"]["rows"],
@@ -203,6 +209,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
                 {
                     "id": 2,
@@ -211,6 +220,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": False,
                     "additional_pixel": True,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
             ],
             decoded_response["data"]["rows"],
@@ -241,6 +253,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                     "redirect_url": None,
                 },
                 {
@@ -250,6 +265,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": False,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                     "redirect_url": None,
                 },
             ],
@@ -262,9 +280,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
         pixel = models.ConversionPixel.objects.get(pk=1)
         pixel.notes = "test note"
         pixel.save()
-
-        permission = authmodels.Permission.objects.get(codename="can_see_pixel_notes")
-        self.user.user_permissions.add(permission)
 
         response = self.client.get(reverse("account_conversion_pixels", kwargs={"account_id": account.id}), follow=True)
 
@@ -281,6 +296,8 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "audience_enabled": True,
                     "additional_pixel": False,
                     "notes": "test note",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
                 {
                     "id": 2,
@@ -290,6 +307,8 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "audience_enabled": False,
                     "additional_pixel": False,
                     "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                 },
             ],
             decoded_response["data"]["rows"],
@@ -316,6 +335,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "archived": False,
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
             },
             decoded_response["data"],
         )
@@ -357,6 +379,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                     "url": "https://p1.zemanta.com/p/1/{}/".format(audience_enabled_pixels[0].slug),
                 },
                 "success": True,
@@ -426,6 +451,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "archived": False,
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
                 "redirect_url": "http://test.com",
             },
             decoded_response["data"],
@@ -488,8 +516,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.k1_helper.update_account")
     def test_post_notes(self, ping_mock, redirector_mock, update_pixel_mock):
-        permission = authmodels.Permission.objects.get(codename="can_see_pixel_notes")
-        self.user.user_permissions.add(permission)
         conversion_pixel = models.ConversionPixel.objects.get(id=1)
         conversion_pixel.audience_enabled = False
         conversion_pixel.save()
@@ -512,6 +538,8 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "audience_enabled": False,
                 "additional_pixel": False,
                 "notes": "test notes",
+                "impressions": 0,
+                "last_triggered": None,
             },
             decoded_response["data"],
         )
@@ -556,6 +584,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
+                    "notes": "",
+                    "impressions": 0,
+                    "last_triggered": None,
                     "url": "https://p1.zemanta.com/p/1/{}/".format(audience_enabled_pixels[0].slug),
                 },
                 "success": True,
@@ -624,6 +655,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test2/",
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
             },
             decoded_response["data"],
         )
@@ -756,6 +790,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
                 "redirect_url": "http://test.com",
             },
             decoded_response["data"],
@@ -795,6 +832,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
                 "redirect_url": "",
             },
             decoded_response["data"],
@@ -823,8 +863,6 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.redirector_helper.update_pixel")
     def test_put_notes(self, update_pixel_mock, upsert_audience_mock):
-
-        add_permissions(self.user, ["can_see_pixel_notes"])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.audience_enabled = False
         conversion_pixel.save()
@@ -847,6 +885,8 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "audience_enabled": False,
                 "additional_pixel": False,
                 "notes": "test notes",
+                "impressions": 0,
+                "last_triggered": None,
             },
             decoded_response["data"],
         )
@@ -980,6 +1020,9 @@ class LegacyConversionPixelTestCase(DASHAPITestCase):
                 "archived": False,
                 "audience_enabled": False,
                 "additional_pixel": False,
+                "notes": "",
+                "impressions": 0,
+                "last_triggered": None,
             },
             data,
         )

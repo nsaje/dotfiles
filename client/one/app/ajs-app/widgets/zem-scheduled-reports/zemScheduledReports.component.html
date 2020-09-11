@@ -20,14 +20,7 @@
                     <th>Report Name</th>
                     <th>Created by</th>
                     <th>Report Level</th>
-                    <th
-                        ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"
-                    >
-                        Granularity
-                    </th>
-                    <th
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"
-                    >
+                    <th>
                         Breakdown
                     </th>
                     <th>Frequency</th>
@@ -52,14 +45,7 @@
                     </td>
                     <td>{{ report.user }}</td>
                     <td>{{ report.level }}</td>
-                    <td
-                        ng-if="!$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"
-                    >
-                        {{ report.granularity }}
-                    </td>
-                    <td
-                        ng-if="$ctrl.hasPermission('zemauth.can_see_new_report_schedule')"
-                    >
+                    <td>
                         {{ report.breakdown }}
                     </td>
                     <td>{{ report.frequency }}</td>

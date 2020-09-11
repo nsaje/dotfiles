@@ -7,7 +7,6 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         blacklistedPublisherGroups: '<',
         whitelistedPublisherGroupsErrors: '<',
         blacklistedPublisherGroupsErrors: '<',
-        showNewLabels: '<',
         isDisabled: '<',
         onUpdate: '&',
     },
@@ -16,11 +15,12 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         var $ctrl = this;
 
         $ctrl.texts = {
-            selectedIncludedTitle: 'Whitelisted publisher groups',
-            selectedExcludedTitle: 'Blacklisted publisher groups',
             selectTargetingButton: 'Add publisher group',
             noChoice: 'No available publisher groups',
             toggleTargetingEditSection: 'Enable publisher targeting',
+            selectedIncludedTitle: 'Whitelisted publisher & placements list',
+            selectedExcludedTitle: 'Blacklisted publisher & placements list',
+            $selectTargetingButton: 'Select list',
         };
         $ctrl.accountPublisherGroups = null;
 
@@ -29,18 +29,6 @@ angular.module('one.common').component('zemPublisherGroupTargeting', {
         $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.showNewLabels) {
-                $ctrl.texts.selectedIncludedTitle = $ctrl.showNewLabels
-                    ? 'Whitelisted publisher & placements list'
-                    : 'Whitelisted publisher groups';
-                $ctrl.texts.selectedExcludedTitle = $ctrl.showNewLabels
-                    ? 'Blacklisted publisher & placements list'
-                    : 'Blacklisted publisher groups';
-                $ctrl.texts.selectTargetingButton = $ctrl.showNewLabels
-                    ? 'Select list'
-                    : 'Add publisher group';
-            }
-
             if (
                 changes.whitelistedPublisherGroups ||
                 changes.blacklistedPublisherGroups

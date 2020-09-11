@@ -144,7 +144,6 @@ angular
                 appliedConditionName: 'Publisher status',
                 cssClass: 'publisher-statuses',
                 getOptions: getPublisherStatusOptions,
-                permissions: ['zemauth.can_see_publisher_blacklist_status'],
                 isVisible: function() {
                     var activatedRoute = routerHelpers.getActivatedRoute(
                         NgRouter

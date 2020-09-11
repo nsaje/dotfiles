@@ -12,9 +12,6 @@ class ConversionPixelSerializer(
         permissioned_fields = {
             "additional_pixel": "zemauth.can_promote_additional_pixel",
             "redirect_url": "zemauth.can_redirect_pixels",
-            "notes": "zemauth.can_see_pixel_notes",
-            "last_triggered": "zemauth.can_see_pixel_traffic",
-            "impressions": "zemauth.can_see_pixel_traffic",
         }
 
     id = restapi.serializers.fields.IdField(read_only=True)

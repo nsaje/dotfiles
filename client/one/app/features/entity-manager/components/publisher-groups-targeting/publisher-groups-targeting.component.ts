@@ -29,8 +29,6 @@ export class PublisherGroupTargetingComponent extends UpgradeComponent
     @Input()
     blacklistedPublisherGroupsErrors: any;
     @Input()
-    showNewLabels: boolean;
-    @Input()
     isDisabled: boolean;
     @Output()
     onUpdate: any;

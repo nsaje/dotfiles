@@ -566,9 +566,6 @@ class AdGroupSettings(
         if user is not None and not user.has_perm("zemauth.can_set_white_blacklist_publisher_groups"):
             excluded_keys.update(["whitelist_publisher_groups", "blacklist_publisher_groups"])
 
-        if user is not None and not user.has_perm("zemauth.can_set_advanced_device_targeting"):
-            excluded_keys.update(["target_os", "target_environments"])
-
         if user is not None and not user.has_perm("zemauth.can_use_language_targeting"):
             excluded_keys.update("language_targeting_enabled")
 

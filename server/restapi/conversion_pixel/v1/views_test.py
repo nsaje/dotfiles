@@ -11,10 +11,7 @@ from zemauth.features.entity_permission import Permission
 class LegacyConversionPixelViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.add_permissions(
-            self.user,
-            ["can_promote_additional_pixel", "can_redirect_pixels", "can_see_pixel_notes", "can_see_pixel_traffic"],
-        )
+        utils.test_helper.add_permissions(self.user, ["can_promote_additional_pixel", "can_redirect_pixels"])
 
     @classmethod
     def pixel_repr(
@@ -122,9 +119,7 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         self.assertEqual(2, len(resp_json["data"]))
 
     def test_get_permissioned(self):
-        utils.test_helper.remove_permissions(
-            self.user, ["can_redirect_pixels", "can_see_pixel_notes", "can_see_pixel_traffic"]
-        )
+        utils.test_helper.remove_permissions(self.user, ["can_redirect_pixels"])
         account = self.mix_account(self.user, permissions=[Permission.READ])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.get(
@@ -134,13 +129,7 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         )
         resp_json = self.assertResponseValid(r)
         self.assertFalse("redirectUrl" in resp_json["data"])
-        self.assertFalse("notes" in resp_json["data"])
-        self.assertFalse("lastTriggered" in resp_json["data"])
-        self.assertFalse("impressions" in resp_json["data"])
         resp_json["data"]["redirectUrl"] = pixel.redirect_url or ""
-        resp_json["data"]["notes"] = pixel.notes
-        resp_json["data"]["lastTriggered"] = pixel.last_triggered
-        resp_json["data"]["impressions"] = pixel.impressions
         self.validate_against_db(resp_json["data"])
 
     def test_post(self):
@@ -299,24 +288,6 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         self.validate_against_db(resp_json["data"])
         self.assertEqual("https://test.com", resp_json["data"]["redirectUrl"])
         self.assertEqual("putty notes", resp_json["data"]["notes"])
-
-    def test_put_permissioned_no_permission(self):
-        utils.test_helper.remove_permissions(self.user, ["can_redirect_pixels", "can_see_pixel_notes"])
-        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
-        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
-        r = self.client.put(
-            reverse(
-                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
-            ),
-            data={"redirectUrl": "https://test.com", "notes": "putty notes"},
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r)
-        self.assertFalse("redirectUrl" in resp_json["data"])
-        self.assertFalse("notes" in resp_json["data"])
-        resp_json["data"]["redirectUrl"] = pixel.redirect_url or ""
-        resp_json["data"]["notes"] = pixel.notes
-        self.validate_against_db(resp_json["data"])
 
     def test_name_too_long_error(self):
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])

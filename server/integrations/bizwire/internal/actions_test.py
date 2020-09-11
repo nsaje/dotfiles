@@ -61,7 +61,7 @@ class RotateAdGroupsTestCase(TestCase):
     fixtures = ["test_bizwire.yaml"]
 
     def setUp(self):
-        permissions = ["can_use_restapi", "can_set_adgroup_to_auto_pilot"]
+        permissions = ["can_use_restapi"]
         u = User.objects.get(email="user@test.com")
         for permission in permissions:
             u.user_permissions.add(Permission.objects.get(codename=permission))

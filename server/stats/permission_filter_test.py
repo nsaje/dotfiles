@@ -160,7 +160,7 @@ class FilterTestCase(FutureStatsTestCase):
         )
 
     def test_filter_columns_by_permission_content_ad_source_status(self):
-        user = magic_mixer.blend_user(["can_see_media_source_status_on_submission_popover"])
+        user = magic_mixer.blend_user()
 
         permission_filter.filter_columns_by_permission(user, self.constraints, self.rows, self.goals)
 
@@ -254,21 +254,6 @@ class BreakdownAllowedTest(TestCase):
 
         test_helper.remove_permissions(user, permissions)
 
-    def test_breakdown_validate_by_permissions(self):
-        self.add_permission_and_test(Level.ALL_ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
-        self.add_permission_and_test(Level.ACCOUNTS, ["placement_id"], ["can_use_placement_targeting"])
-        self.add_permission_and_test(Level.CAMPAIGNS, ["placement_id"], ["can_use_placement_targeting"])
-        self.add_permission_and_test(Level.AD_GROUPS, ["placement_id"], ["can_use_placement_targeting"])
-
-        self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
-
-        user = User.objects.get(pk=1)
-        delivery_fields = ["device_type", "device_os", "environment", "country", "region", "dma"]
-        for field in delivery_fields:
-            with self.assertRaises(exc.MissingDataError):
-                permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, [field])
-            self.add_permission_and_test(Level.AD_GROUPS, [field], ["can_see_top_level_delivery_breakdowns"])
-
     def test_breakdown_validate_by_permissions_placement_type(self):
         user = User.objects.get(pk=1)
 
@@ -280,9 +265,6 @@ class BreakdownAllowedTest(TestCase):
             permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, ["placement_type"])
         with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.AD_GROUPS, user, ["placement_type"])
-
-        user = User.objects.get(pk=1)
-        test_helper.add_permissions(user, ["can_use_placement_targeting", "can_see_top_level_delivery_breakdowns"])
 
         # invalid base dimension
         with self.assertRaises(exc.MissingDataError):

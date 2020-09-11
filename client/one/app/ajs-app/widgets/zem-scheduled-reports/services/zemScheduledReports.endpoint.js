@@ -1,36 +1,15 @@
 angular
     .module('one.widgets')
-    .service('zemScheduledReportsEndpoint', function(
-        $q,
-        $http,
-        zemUtils,
-        zemAuthStore
-    ) {
+    .service('zemScheduledReportsEndpoint', function($q, $http, zemUtils) {
         this.list = list;
         this.remove = remove;
 
         function list(entity) {
             var url;
             if (entity === null) {
-                if (
-                    zemAuthStore.hasPermission(
-                        'zemauth.can_see_new_report_schedule'
-                    )
-                ) {
-                    url = '/api/scheduled_reports/';
-                } else {
-                    url = '/api/all_accounts/reports/';
-                }
+                url = '/api/scheduled_reports/';
             } else if (entity.type === constants.entityType.ACCOUNT) {
-                if (
-                    zemAuthStore.hasPermission(
-                        'zemauth.can_see_new_report_schedule'
-                    )
-                ) {
-                    url = 'api/scheduled_reports/?account_id=' + entity.id;
-                } else {
-                    url = '/api/accounts/' + entity.id + '/reports/';
-                }
+                url = 'api/scheduled_reports/?account_id=' + entity.id;
             }
 
             var deferred = $q.defer();
@@ -49,16 +28,7 @@ angular
         }
 
         function remove(id) {
-            var url;
-            if (
-                zemAuthStore.hasPermission(
-                    'zemauth.can_see_new_report_schedule'
-                )
-            ) {
-                url = '/api/scheduled_reports/' + id + '/';
-            } else {
-                url = '/api/accounts/reports/remove/' + id;
-            }
+            var url = '/api/scheduled_reports/' + id + '/';
 
             var deferred = $q.defer();
             $http

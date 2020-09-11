@@ -470,14 +470,8 @@
                         </div>
                     </div>
 
-                    <div
-                        class="form__group"
-                        ng-if="ctrl.showVideoUpload && ctrl.hasPermission('zemauth.can_see_vast')"
-                    >
-                        <label
-                            class="form__label"
-                            for="video-type-input"
-                            is-internal="zemauth.can_see_vast"
+                    <div class="form__group" ng-if="ctrl.showVideoUpload">
+                        <label class="form__label" for="video-type-input"
                             >Upload video by</label
                         >
                         <ui-select

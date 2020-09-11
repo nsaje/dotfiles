@@ -26,13 +26,11 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.adGroupId = undefined;
 
         $ctrl.isEntityBreakdown = isEntityBreakdown;
-        $ctrl.isGridExportVisible = isGridExportVisible;
         $ctrl.isGridBulkActionsVisible = isGridBulkActionsVisible;
         $ctrl.areGridPublisherAndPlacementActionsVisible = areGridPublisherAndPlacementActionsVisible;
         $ctrl.isAddToPublishersAndPlacementsButtonVisible = isAddToPublishersAndPlacementsButtonVisible;
         $ctrl.isCreateEntityActionVisible = isCreateEntityActionVisible;
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
-        $ctrl.isReportDropdownVisible = isReportDropdownVisible;
         $ctrl.isCreateEntityActionDisabled = isCreateEntityActionDisabled;
         $ctrl.isBreakdownSelectorVisible = isBreakdownSelectorVisible;
         $ctrl.areBidModifierActionsVisible = areBidModifierActionsVisible;
@@ -154,25 +152,6 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE &&
                 $ctrl.entity &&
                 $ctrl.entity.type === constants.entityType.AD_GROUP
-            );
-        }
-
-        function isGridExportVisible() {
-            return (
-                $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                !zemAuthStore.hasPermission(
-                    'zemauth.can_see_new_report_schedule'
-                )
-            );
-        }
-
-        function isReportDropdownVisible() {
-            return (
-                $ctrl.breakdown === constants.breakdown.PUBLISHER ||
-                ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                    zemAuthStore.hasPermission(
-                        'zemauth.can_see_new_report_schedule'
-                    ))
             );
         }
 

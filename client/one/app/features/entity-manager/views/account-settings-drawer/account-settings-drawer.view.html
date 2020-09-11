@@ -463,11 +463,7 @@
                 *ngIf="
                     authStore.hasPermission(
                         'zemauth.can_set_white_blacklist_publisher_groups'
-                    ) &&
-                    authStore.hasPermission(
-                        'zemauth.can_see_publisher_groups_ui'
-                    ) &&
-                    state.entity.id
+                    ) && state.entity.id
                 "
             >
                 <div class="zem-panel__header">
@@ -477,30 +473,13 @@
                 </div>
                 <div class="zem-settings-section">
                     <div class="zem-settings-section__header">
-                        <div
-                            class="zem-settings-section__title"
-                            [zemInternalFeature]="
-                                authStore.isPermissionInternal(
-                                    'zemauth.can_see_publisher_groups_ui'
-                                )
-                            "
-                        >
-                            {{
-                                authStore.hasPermission(
-                                    'zemauth.can_see_new_publisher_library'
-                                )
-                                    ? 'Publishers & placements'
-                                    : 'Publishers'
-                            }}
+                        <div class="zem-settings-section__title">
+                            Publishers & placements
                         </div>
                         <div class="zem-settings-section__description">
-                            {{
-                                authStore.hasPermission(
-                                    'zemauth.can_see_new_publisher_library'
-                                )
-                                    ? 'Define your publisher and placement targeting by whitelisting or blacklisting publisher and placement lists.'
-                                    : 'Define your publisher targeting by whitelisting or blacklisting publisher groups.'
-                            }}
+                            Define your publisher and placement targeting by
+                            whitelisting or blacklisting publisher and placement
+                            lists.
                         </div>
                     </div>
                     <zem-publisher-group-targeting
@@ -512,25 +491,12 @@
                         [blacklistedPublisherGroups]="
                             state.entity.targeting.publisherGroups.excluded
                         "
-                        [showNewLabels]="
-                            authStore.hasPermission(
-                                'zemauth.can_see_new_publisher_library'
-                            )
-                        "
                         [isDisabled]="isReadOnly"
                         (onUpdate)="
                             store.setPublisherGroupsTargeting($event.$event)
                         "
                     ></zem-publisher-group-targeting>
-                    <div
-                        *ngIf="
-                            false &&
-                            authStore.hasPermission(
-                                'zemauth.can_see_new_publisher_library'
-                            )
-                        "
-                        class="zem-settings-section__description"
-                    >
+                    <div class="zem-settings-section__description">
                         If you are using different level whitelists, it means
                         you are targeting only whitelisted placements from
                         whitelisted publishers and additionally all placements

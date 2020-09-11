@@ -39,9 +39,7 @@ export class CanActivateBreakdownGuard implements CanActivate {
             BreakdownParam.OPERATING_SYSTEM,
         ].includes(breakdown);
         if (isDeliveryBreakdown) {
-            return this.authStore.hasPermission(
-                'zemauth.can_see_top_level_delivery_breakdowns'
-            );
+            return true;
         }
 
         if (breakdown === BreakdownParam.PLACEMENTS) {
