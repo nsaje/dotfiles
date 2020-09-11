@@ -9,7 +9,7 @@ from . import serializers
 
 
 class TaxonomyTreeInternalViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi.bluekai.v1.views.CanUseBluekaiTargetingPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         tree = dash.features.bluekai.service.get_tree()
@@ -17,7 +17,7 @@ class TaxonomyTreeInternalViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
 
 class SegmentReachViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi.bluekai.v1.views.CanUseBluekaiTargetingPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         serializer = restapi.serializers.targeting.AudienceSerializer(data=request.data)

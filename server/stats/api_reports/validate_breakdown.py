@@ -9,9 +9,6 @@ def validate_breakdown_by_permissions(level, user, breakdown):
         raise exc.MissingDataError()
 
     delivery_dimension = constants.get_delivery_dimension(breakdown)
-    if delivery_dimension is not None and not user.has_perm("zemauth.can_view_breakdown_by_delivery"):
-        raise exc.MissingDataError()
-
     if constants.is_extended_delivery_dimension(delivery_dimension) and not user.has_perm(
         "zemauth.can_view_breakdown_by_delivery_extended"
     ):

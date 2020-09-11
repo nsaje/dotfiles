@@ -298,7 +298,7 @@ EXPRESSIVE_FIELD_NAME_MAPPING = {
     "secondary_impression_tracker_url": "secondary_tracker_url",
 }
 INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.items()}
-FIELD_PERMISSION_MAPPING = {"icon_url": ("zemauth.can_use_creative_icon",)}
+FIELD_PERMISSION_MAPPING = {}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -477,13 +477,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
             # immediately works.
             field = re.sub(r"_*\(optional\)", "", field)
             field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
-            if (
-                n >= 3
-                and field not in OPTIONAL_CSV_FIELDS
-                and field not in IGNORED_CSV_FIELDS
-                or self.user
-                and not all(self.user.has_perm(p) for p in FIELD_PERMISSION_MAPPING.get(field, []))
-            ):
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 

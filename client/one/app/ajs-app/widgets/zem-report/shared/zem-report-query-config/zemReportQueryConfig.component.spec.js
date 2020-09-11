@@ -19,7 +19,6 @@ describe('component: zemReportQueryConfig', function() {
             .createApi(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
 
         zemAuthStore.setMockedPermissions([
-            'zemauth.can_view_breakdown_by_delivery',
             'zemauth.can_see_managers_in_campaigns_table',
         ]);
 

@@ -77,7 +77,7 @@ class CampaignSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}
+        permissioned_fields = {}
 
     id = restapi.serializers.fields.IdField(read_only=True, source="campaign.id")
     account_id = restapi.serializers.fields.IdField(source="campaign.account_id")

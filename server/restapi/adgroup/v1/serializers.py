@@ -98,7 +98,7 @@ class AdGroupTargetingSerializer(
     restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
     class Meta:
-        permissioned_fields = {"language": "zemauth.can_use_language_targeting"}
+        permissioned_fields = {}
 
     # TODO: PLAC: remove after legacy grace period
     def to_representation(self, instance):
@@ -185,9 +185,7 @@ class AdGroupSerializer(
             "additional_data",
         )
         permissioned_fields = {
-            "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
-            "frequency_capping": "zemauth.can_set_frequency_capping",
             "additional_data": "zemauth.can_use_ad_additional_data",
         }
 

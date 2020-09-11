@@ -259,16 +259,6 @@
                     ></zem-select-form-group>
                     <zem-integer-form-group
                         class="zem-integer-form-group zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_set_frequency_capping'
-                            )
-                        "
-                        [zemInternalFeature]="
-                            authStore.isPermissionInternal(
-                                'zemauth.can_set_frequency_capping'
-                            )
-                        "
                         [label]="'Daily impression frequency cap'"
                         helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
                         [value]="state.entity.frequencyCapping"
@@ -279,11 +269,6 @@
                     ></zem-integer-form-group>
                     <zem-content-form-group
                         class="zem-content-form-group zem-settings-section__item"
-                        *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_use_creative_icon'
-                            )
-                        "
                         helpMessage="Brand logo will be placed in all creatives and served with ads where this is required by the publisher. In case you wish to change the brand logo for a specific creative you can do that on the ad creative level."
                         [label]="'Brand logo'"
                     >
@@ -333,9 +318,6 @@
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
                         *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_use_creative_icon'
-                            ) &&
                             !state.requests.defaults.inProgress &&
                             !state.requests.get.inProgress
                         "
@@ -351,9 +333,6 @@
                     <div
                         class="zem-settings-section__item--indented"
                         *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_use_creative_icon'
-                            ) &&
                             !state.requests.defaults.inProgress &&
                             !state.requests.get.inProgress &&
                             isDefaultIconPreviewVisible &&
@@ -371,9 +350,6 @@
                     <div
                         class="zem-settings-section__item--indented"
                         *ngIf="
-                            authStore.hasPermission(
-                                'zemauth.can_use_creative_icon'
-                            ) &&
                             !isDefaultIconPreviewVisible &&
                             !state.requests.defaults.inProgress &&
                             !state.requests.get.inProgress &&
@@ -458,14 +434,7 @@
                 </div>
             </div>
 
-            <div
-                class="zem-panel zem-settings__panel"
-                *ngIf="
-                    authStore.hasPermission(
-                        'zemauth.can_set_white_blacklist_publisher_groups'
-                    ) && state.entity.id
-                "
-            >
+            <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">
                         Audience targeting

@@ -987,7 +987,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [valid_candidate]
 
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         ad_group.campaign.type = constants.CampaignType.VIDEO
@@ -1057,7 +1057,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_candidate]
 
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         ad_group = models.AdGroup.objects.get(id=1)
         ad_group.campaign.type = constants.CampaignType.VIDEO
@@ -1139,7 +1139,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     def test_valid_display_candidate(self):
         data = [valid_display_candidate]
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1201,7 +1201,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_display_candidate]
 
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1271,7 +1271,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
     def test_valid_display_ad_tag_candidate(self):
         data = [valid_display_ad_tag_candidate]
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1333,7 +1333,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         data = [invalid_display_ad_tag_candidate]
 
         # prepare candidate
-        request = magic_mixer.blend_request_user(permissions=["can_use_creative_icon"])
+        request = magic_mixer.blend_request_user()
         account = models.Account.objects.get(id=1)
         campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
@@ -1623,7 +1623,6 @@ class GetCandidatesCsvTestCase(TestCase):
 
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        utils.test_helper.add_permissions(self.request.user, permissions=["can_use_creative_icon"])
 
     def test_candidates_csv_unprocessed(self):
         batch = models.UploadBatch.objects.get(id=1)
@@ -1674,20 +1673,6 @@ class GetCandidatesCsvTestCase(TestCase):
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
             '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
             '"https://t.zemanta.com/px2.png","500x500",""\r\n',
-            content,
-        )
-
-    def test_candidates_csv_processed_no_icon_permission(self):
-        utils.test_helper.remove_permissions(self.request.user, permissions=["can_use_creative_icon"])
-
-        batch = models.UploadBatch.objects.get(id=2)
-        content = contentupload.upload.get_candidates_csv(self.request, batch)
-        self.assertEqual(
-            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
-            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
-            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg",'
-            '"zemanta.com","Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
-            '"https://t.zemanta.com/px2.png"\r\n',
             content,
         )
 

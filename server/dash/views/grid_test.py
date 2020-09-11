@@ -27,7 +27,7 @@ class LegacyRTBSourceSettingsTestCase(DASHAPITestCase):
 
         self.assertFalse(self.user.is_superuser)
 
-        add_permissions(self.user, ["can_set_rtb_sources_as_one_cpc", "fea_can_use_cpm_buying"])
+        add_permissions(self.user, ["fea_can_use_cpm_buying"])
         self.client.login(username=self.user.email, password="secret")
 
     @patch("utils.redirector_helper.insert_adgroup")

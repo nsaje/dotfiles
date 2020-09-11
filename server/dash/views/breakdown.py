@@ -477,9 +477,7 @@ class AdGroupBreakdown(DASHAPIBaseView):
         # Append ALL_RTB_SOURCE row at the end of the requested page
         # Frontend REQ: should be present on each page to be able to merge grouped rows
         if breakdown == ["source_id"]:
-            all_rtb_source_row = breakdown_helpers.create_all_rtb_source_row(
-                request, constraints, request.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc")
-            )
+            all_rtb_source_row = breakdown_helpers.create_all_rtb_source_row(request, constraints)
             if all_rtb_source_row:
                 report[0]["rows"].append(all_rtb_source_row)
 

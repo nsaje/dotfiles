@@ -20,9 +20,7 @@ from zemauth.features.entity_permission import Permission
 class LegacyContentAdsTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
-        utils.test_helper.add_permissions(
-            self.user, ["fea_can_change_campaign_type_to_display", "can_use_creative_icon"]
-        )
+        utils.test_helper.add_permissions(self.user, ["fea_can_change_campaign_type_to_display"])
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
 
@@ -134,13 +132,6 @@ class LegacyContentAdsTest(RESTAPITestCase):
         self.assertNotIn("adWidth", resp_json["data"])
         self.assertNotIn("adHeight", resp_json["data"])
 
-    def test_contentads_get_icon_no_permission(self):
-        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
-        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
-        r = self.client.get(reverse("restapi.contentad.v1:contentads_details", kwargs={"content_ad_id": content_ad.id}))
-        resp_json = self.assertResponseValid(r)
-        self.assertNotIn("iconUrl", resp_json["data"])
-
     def test_contentads_get_permissioned_display(self):
         utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
         content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=self.ad_group)
@@ -236,9 +227,7 @@ class LegacyTestBatchUpload(RESTAPITestCase):
         self.user = magic_mixer.blend_user()
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
-        utils.test_helper.add_permissions(
-            self.user, ["can_use_restapi", "fea_can_change_campaign_type_to_display", "can_use_creative_icon"]
-        )
+        utils.test_helper.add_permissions(self.user, ["can_use_restapi", "fea_can_change_campaign_type_to_display"])
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=self.account)
 
@@ -359,38 +348,6 @@ class LegacyTestBatchUpload(RESTAPITestCase):
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
-
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
-    def test_content_batch_upload_success_no_icon_permission(self):
-        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
-        to_upload = [self._mock_content_ad("test1")]
-        r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId={}".format(self.ad_group.id),
-            to_upload,
-            format="json",
-        )
-        resp_json = json.loads(r.content)
-
-        batch_id = int(resp_json["data"]["id"])
-        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
-        candidate = batch.contentadcandidate_set.get()
-
-        self.assertIsNotNone(to_upload[0]["iconUrl"])
-        self.assertIsNone(candidate.icon_id)
-        self.assertIsNone(candidate.icon_hash)
-        self.assertIsNone(candidate.icon_height)
-        self.assertIsNone(candidate.icon_width)
-        self.assertIsNone(candidate.icon_file_size)
-
-    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
-    def test_contentads_batch_upload_invalid_params(self):
-        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
-        to_upload = [self._mock_content_ad("test1")]
-        r = self.client.post(
-            reverse("restapi.contentad.v1:contentads_batch_list") + "?adGroupId='NON-NUMERIC'", to_upload, format="json"
-        )
-        resp_json = json.loads(r.content)
-        self.assertEqual({"adGroupId": ["Invalid format"]}, resp_json["details"])
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):

@@ -8,7 +8,6 @@ from rest_framework.parsers import MultiPartParser
 import restapi.serializers.bid_modifiers
 import zemauth.access
 from core.features import bid_modifiers
-from restapi.common import permissions as restapi_permissions
 from restapi.common.views_base import RESTAPIBaseViewSet
 from utils import csv_utils
 from utils import s3helpers
@@ -16,7 +15,7 @@ from zemauth.features.entity_permission import Permission
 
 
 class BidModifiersDownload(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request, ad_group_id, breakdown_name=None):
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
@@ -33,7 +32,7 @@ class BidModifiersDownload(RESTAPIBaseViewSet):
 
 
 class BidModifiersUpload(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser,)
 
     def validate_new(self, request, breakdown_name=None):
@@ -117,7 +116,7 @@ class BidModifiersUpload(RESTAPIBaseViewSet):
 
 
 class BidModifiersErrorDownload(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request, ad_group_id, csv_error_key):
         zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
@@ -134,7 +133,7 @@ class BidModifiersErrorDownload(RESTAPIBaseViewSet):
 
 
 class BidModifiersExampleCSVDownload(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request, breakdown_name=None):
         if breakdown_name:
@@ -147,7 +146,7 @@ class BidModifiersExampleCSVDownload(RESTAPIBaseViewSet):
 
 
 class BidModifierTypeSummariesViewSet(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def retrieve(self, request, ad_group_id):
         ad_group = zemauth.access.get_ad_group(request.user, Permission.READ, ad_group_id)
