@@ -5,7 +5,6 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
 import {Geolocation} from '../../../../core/geolocations/types/geolocation';
 import {GeolocationType, IncludeExcludeType} from '../../../../app.constants';
-import {GeotargetingListItem} from '../../types/geotargeting-list-item';
 import {GEOLOCATION_TYPE_VALUE_TEXT} from './geo-targeting.config';
 import {SimpleChange} from '@angular/core';
 import {GeolocationsByType} from '../../types/geolocations-by-type';
@@ -136,44 +135,7 @@ describe('GeoTargetingComponent', () => {
         expect(component.locationSearch.emit).not.toHaveBeenCalled();
     });
 
-    it('should filter out locations in search select that are already in the list', () => {
-        const locationsByType: GeolocationsByType = {
-            [GeolocationType.COUNTRY]: [slovenia, czechia],
-            [GeolocationType.REGION]: [],
-            [GeolocationType.DMA]: [],
-            [GeolocationType.CITY]: [],
-            [GeolocationType.ZIP]: [],
-        };
-        const searchedLocations: Geolocation[] = [czechia, austria];
-        component.includedLocationsByType = locationsByType;
-        component.searchedLocations = searchedLocations;
-
-        component.ngOnChanges({
-            includedLocationsByType: new SimpleChange(
-                null,
-                locationsByType,
-                false
-            ),
-            searchedLocations: new SimpleChange(null, searchedLocations, false),
-        });
-
-        expect(component.searchedListItems).toEqual([austria]);
-    });
-
-    it('should transform locations by type into array of geolocation list items and set has different included location type flag', () => {
-        const listItems: GeotargetingListItem[] = [
-            {
-                name: GEOLOCATION_TYPE_VALUE_TEXT.COUNTRY,
-                type: GeolocationType.COUNTRY,
-                locations: [slovenia, czechia],
-            },
-            {
-                name: GEOLOCATION_TYPE_VALUE_TEXT.REGION,
-                type: GeolocationType.REGION,
-                locations: [austriaRegion],
-            },
-        ];
-
+    it('should transform locations by type into array of geolocations and set has different included location type flag', () => {
         const locationsByType: GeolocationsByType = {
             [GeolocationType.COUNTRY]: [slovenia, czechia],
             [GeolocationType.REGION]: [austriaRegion],
@@ -191,7 +153,11 @@ describe('GeoTargetingComponent', () => {
             ),
         });
 
-        expect(component.includedListItems).toEqual(listItems);
+        expect(component.includedLocations).toEqual([
+            slovenia,
+            czechia,
+            austriaRegion,
+        ]);
         expect(component.hasDifferentLocationTypes).toEqual(true);
     });
 

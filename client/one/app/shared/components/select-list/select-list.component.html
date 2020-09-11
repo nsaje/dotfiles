@@ -14,21 +14,68 @@
             "
         ></ng-container>
     </ng-container>
-    <div
-        class="zem-select-list__content-item"
-        *ngFor="
-            let item of selectedItems;
-            index as index;
-            trackBy: trackByIndex
-        "
-    >
-        <ng-container
-            *ngTemplateOutlet="
-                itemTemplate;
-                context: {item: item, index: index}
+    <ng-container *ngIf="!groupByValue">
+        <div
+            class="zem-select-list__content-item"
+            *ngFor="let item of selectedItemsLimited; index as itemIndex"
+        >
+            <ng-container
+                *ngTemplateOutlet="
+                    itemTemplate;
+                    context: {
+                        item: item,
+                        index: itemIndex
+                    }
+                "
+            ></ng-container>
+        </div>
+        <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="groupByValue">
+        <div
+            class="zem-select-list__group-item"
+            *ngFor="
+                let itemGroup of selectedItemsGroupedLimited;
+                index as groupIndex;
+                trackBy: trackByIndex
             "
-        ></ng-container>
-    </div>
+        >
+            <span class="zem-select-list__group-item-title">
+                <ng-container
+                    *ngTemplateOutlet="
+                        itemGroupTitleTemplate
+                            ? itemGroupTitleTemplate
+                            : defaultGroupTitleTemplate;
+                        context: {group: itemGroup.groupName}
+                    "
+                ></ng-container>
+            </span>
+            <div
+                class="zem-select-list__group-content-item"
+                *ngFor="let item of itemGroup.limitedItems; index as itemIndex"
+            >
+                <ng-container
+                    *ngTemplateOutlet="
+                        itemTemplate;
+                        context: {
+                            item: item,
+                            index: itemIndex
+                        }
+                    "
+                ></ng-container>
+            </div>
+            <ng-container
+                *ngTemplateOutlet="
+                    itemGroupFooterTemplate;
+                    context: {
+                        group: itemGroup.groupName,
+                        items: itemGroup.items
+                    }
+                "
+            ></ng-container>
+        </div>
+        <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+    </ng-container>
 </div>
 <zem-select-input
     class="zem-select-input zem-select-list__select-input zem-select-list__item"
@@ -63,10 +110,10 @@
     <ng-template #optionGroupTemplate let-item="item">
         <ng-container
             *ngTemplateOutlet="
-                selectGroupTemplate
-                    ? selectGroupTemplate
-                    : defaultSelectGroupTemplate;
-                context: {item: item}
+                selectGroupTitleTemplate
+                    ? selectGroupTitleTemplate
+                    : defaultGroupTitleTemplate;
+                context: {group: item[groupByValue]}
             "
         ></ng-container>
     </ng-template>
@@ -80,6 +127,6 @@
 <ng-template #defaultSelectItemTemplate let-item="item" let-search="search">
     <span [zemTextHighlight]="search">{{ item[bindLabel] }}</span>
 </ng-template>
-<ng-template #defaultSelectGroupTemplate let-item="item">
-    {{ item[groupByValue] }}
+<ng-template #defaultGroupTitleTemplate let-group="group">
+    {{ group }}
 </ng-template>

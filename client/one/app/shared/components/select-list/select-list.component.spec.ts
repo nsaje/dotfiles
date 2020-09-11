@@ -5,6 +5,7 @@ import {SelectInputComponent} from '../select-input/select-input.component';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {TextHighlightDirective} from '../../directives/text-highlight/text-highlight.directive';
 import {SimpleChange} from '@angular/core';
+import {group} from '@angular/animations';
 
 describe('SelectListComponent', () => {
     let component: SelectListComponent;
@@ -106,5 +107,142 @@ describe('SelectListComponent', () => {
         component.onItemSelect(null);
         expect(component.itemSelect.emit).not.toHaveBeenCalled();
         (<any>component.itemSelect.emit).calls.reset();
+    });
+
+    it('should correctly limit items', () => {
+        const bindValue = 'value';
+        const selectedItems: any[] = [
+            {name: 'Nejc', value: 1},
+            {name: 'Anej', value: 2},
+            {name: 'Jure', value: 3},
+        ];
+        let itemListLimit = 2;
+
+        component.bindValue = bindValue;
+        component.selectedItems = selectedItems;
+        component.availableItems = [];
+        component.itemListLimit = itemListLimit;
+
+        component.ngOnChanges({
+            bindValue: new SimpleChange(null, bindValue, false),
+            selectedItems: new SimpleChange(null, selectedItems, false),
+            itemListLimit: new SimpleChange(null, itemListLimit, false),
+        });
+
+        expect(component.selectedItemsLimited).toEqual([
+            {name: 'Nejc', value: 1},
+            {name: 'Anej', value: 2},
+        ]);
+
+        itemListLimit = null;
+        component.itemListLimit = itemListLimit;
+        component.ngOnChanges({
+            bindValue: new SimpleChange(null, bindValue, false),
+            selectedItems: new SimpleChange(null, selectedItems, false),
+            itemListLimit: new SimpleChange(2, itemListLimit, false),
+        });
+
+        expect(component.selectedItemsLimited).toEqual([
+            {name: 'Nejc', value: 1},
+            {name: 'Anej', value: 2},
+            {name: 'Jure', value: 3},
+        ]);
+    });
+
+    it('should correctly group and limit items', () => {
+        const bindValue = 'value';
+        const selectedItems: any[] = [
+            {name: 'Nejc', type: 'male', value: 1},
+            {name: 'Anej', type: 'male', value: 2},
+            {name: 'Jure', type: 'male', value: 3},
+            {name: 'Katja', type: 'female', value: 4},
+            {name: 'Petra', type: 'female', value: 5},
+        ];
+
+        const groupByValue = 'type';
+        let itemListLimitByGroup = {
+            male: 1,
+            female: 1,
+        };
+
+        component.bindValue = bindValue;
+        component.selectedItems = selectedItems;
+        component.availableItems = [];
+        component.groupByValue = groupByValue;
+        component.itemListLimitByGroup = itemListLimitByGroup;
+
+        component.ngOnChanges({
+            bindValue: new SimpleChange(null, bindValue, false),
+            selectedItems: new SimpleChange(null, selectedItems, false),
+            groupByValue: new SimpleChange(null, groupByValue, false),
+            itemListLimitByGroup: new SimpleChange(
+                null,
+                itemListLimitByGroup,
+                false
+            ),
+        });
+
+        expect(component.selectedItemsGroupedLimited).toEqual([
+            {
+                groupName: 'male',
+                items: [
+                    {name: 'Nejc', type: 'male', value: 1},
+                    {name: 'Anej', type: 'male', value: 2},
+                    {name: 'Jure', type: 'male', value: 3},
+                ],
+                limitedItems: [{name: 'Nejc', type: 'male', value: 1}],
+            },
+            {
+                groupName: 'female',
+                items: [
+                    {name: 'Katja', type: 'female', value: 4},
+                    {name: 'Petra', type: 'female', value: 5},
+                ],
+                limitedItems: [{name: 'Katja', type: 'female', value: 4}],
+            },
+        ]);
+
+        itemListLimitByGroup = {
+            male: null,
+            female: null,
+        };
+        component.itemListLimitByGroup = itemListLimitByGroup;
+        component.ngOnChanges({
+            bindValue: new SimpleChange(null, bindValue, false),
+            selectedItems: new SimpleChange(null, selectedItems, false),
+            groupByValue: new SimpleChange(null, groupByValue, false),
+            itemListLimitByGroup: new SimpleChange(
+                null,
+                itemListLimitByGroup,
+                false
+            ),
+        });
+
+        expect(component.selectedItemsGroupedLimited).toEqual([
+            {
+                groupName: 'male',
+                items: [
+                    {name: 'Nejc', type: 'male', value: 1},
+                    {name: 'Anej', type: 'male', value: 2},
+                    {name: 'Jure', type: 'male', value: 3},
+                ],
+                limitedItems: [
+                    {name: 'Nejc', type: 'male', value: 1},
+                    {name: 'Anej', type: 'male', value: 2},
+                    {name: 'Jure', type: 'male', value: 3},
+                ],
+            },
+            {
+                groupName: 'female',
+                items: [
+                    {name: 'Katja', type: 'female', value: 4},
+                    {name: 'Petra', type: 'female', value: 5},
+                ],
+                limitedItems: [
+                    {name: 'Katja', type: 'female', value: 4},
+                    {name: 'Petra', type: 'female', value: 5},
+                ],
+            },
+        ]);
     });
 });

@@ -19,7 +19,7 @@ import {
     ITEM_LIST_LIMIT,
 } from './geo-targeting.config';
 import {GeolocationsByType} from '../../types/geolocations-by-type';
-import {GeotargetingListItem} from '../../types/geotargeting-list-item';
+import * as clone from 'clone';
 
 @Component({
     selector: 'zem-geo-targeting',
@@ -51,26 +51,23 @@ export class GeoTargetingComponent implements OnChanges {
         Geotargeting
     >();
 
-    includedListItems: GeotargetingListItem[] = [];
-    excludedListItems: GeotargetingListItem[] = [];
-    searchedListItems: Geolocation[] = [];
+    includedLocations: Geolocation[] = [];
+    excludedLocations: Geolocation[] = [];
 
     isExcludedVisible: boolean = false;
     hasDifferentLocationTypes: boolean = false;
     hasNoTargeting: boolean = false;
-    expandedTypes = {
-        [IncludeExcludeType.INCLUDE]: {
-            [GeolocationType.COUNTRY]: false,
-            [GeolocationType.REGION]: false,
-            [GeolocationType.DMA]: false,
-            [GeolocationType.CITY]: false,
-        },
-        [IncludeExcludeType.EXCLUDE]: {
-            [GeolocationType.COUNTRY]: false,
-            [GeolocationType.REGION]: false,
-            [GeolocationType.DMA]: false,
-            [GeolocationType.CITY]: false,
-        },
+    includedItemListLimit = {
+        [GeolocationType.COUNTRY]: ITEM_LIST_LIMIT,
+        [GeolocationType.REGION]: ITEM_LIST_LIMIT,
+        [GeolocationType.DMA]: ITEM_LIST_LIMIT,
+        [GeolocationType.CITY]: ITEM_LIST_LIMIT,
+    };
+    excludedItemListLimit = {
+        [GeolocationType.COUNTRY]: ITEM_LIST_LIMIT,
+        [GeolocationType.REGION]: ITEM_LIST_LIMIT,
+        [GeolocationType.DMA]: ITEM_LIST_LIMIT,
+        [GeolocationType.CITY]: ITEM_LIST_LIMIT,
     };
 
     geolocationTypes: GeolocationType[] = [
@@ -79,41 +76,35 @@ export class GeoTargetingComponent implements OnChanges {
         GeolocationType.DMA,
         GeolocationType.CITY,
     ];
-    itemListLimit: number = ITEM_LIST_LIMIT;
     geolocationTypeNames = GEOLOCATION_TYPE_VALUE_TEXT;
     includeExcludeType = IncludeExcludeType;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.includedLocationsByType) {
-            this.includedListItems = this.getListItems(
-                this.includedLocationsByType,
-                this.geolocationTypes
+            this.includedLocations = this.getListItems(
+                this.includedLocationsByType
             );
         }
         if (changes.excludedLocationsByType) {
-            this.excludedListItems = this.getListItems(
-                this.excludedLocationsByType,
-                this.geolocationTypes
-            );
-        }
-        if (changes.searchedLocations) {
-            this.searchedListItems = this.getSearchedListItems(
-                this.searchedLocations,
-                this.includedLocationsByType,
+            this.excludedLocations = this.getListItems(
                 this.excludedLocationsByType
             );
         }
 
         this.isExcludedVisible =
-            this.isExcludedVisible || !isEmpty(this.excludedListItems);
+            this.isExcludedVisible || !isEmpty(this.excludedLocations);
 
         this.hasNoTargeting =
-            isEmpty(this.includedListItems) &&
-            isEmpty(this.excludedListItems) &&
+            isEmpty(this.includedLocations) &&
+            isEmpty(this.excludedLocations) &&
             isEmpty(this.includedLocationsByType.ZIP) &&
             isEmpty(this.excludedLocationsByType.ZIP);
 
-        this.hasDifferentLocationTypes = this.includedListItems.length > 1;
+        this.hasDifferentLocationTypes =
+            this.includedLocationsByType.COUNTRY.length > 0 &&
+            (this.includedLocationsByType.CITY.length > 0 ||
+                this.includedLocationsByType.REGION.length > 0 ||
+                this.includedLocationsByType.DMA.length > 0);
     }
 
     onLocationSearch(nameContains: string): void {
@@ -128,10 +119,12 @@ export class GeoTargetingComponent implements OnChanges {
     }
 
     onAddIncludedGeotargeting(location: Geolocation): void {
+        this.onShowAll(IncludeExcludeType.INCLUDE, location.type);
         this.onAddGeotargeting(location, IncludeExcludeType.INCLUDE);
     }
 
     onAddExcludedGeotargeting(location: Geolocation): void {
+        this.onShowAll(IncludeExcludeType.EXCLUDE, location.type);
         this.onAddGeotargeting(location, IncludeExcludeType.EXCLUDE);
     }
 
@@ -139,7 +132,6 @@ export class GeoTargetingComponent implements OnChanges {
         location: Geolocation,
         includeExcludeType: IncludeExcludeType
     ): void {
-        this.expandedTypes[includeExcludeType][location.type] = true;
         this.addGeotargeting.emit({
             selectedLocation: location,
             includeExcludeType: includeExcludeType,
@@ -164,44 +156,22 @@ export class GeoTargetingComponent implements OnChanges {
         });
     }
 
-    private getListItems(
-        locationsByType: GeolocationsByType,
-        geolocationTypes: GeolocationType[]
-    ): GeotargetingListItem[] {
-        const items: GeotargetingListItem[] = [];
-
-        geolocationTypes.forEach(geolocationType => {
-            if (!isEmpty(locationsByType[geolocationType])) {
-                items.push({
-                    name: GEOLOCATION_TYPE_VALUE_TEXT[geolocationType],
-                    type: geolocationType,
-                    locations: locationsByType[geolocationType],
-                });
-            }
-        });
-        return items;
+    onShowAll(includeExcludeType: IncludeExcludeType, locationType: string) {
+        const propertyName =
+            includeExcludeType === IncludeExcludeType.INCLUDE
+                ? 'includedItemListLimit'
+                : 'excludedItemListLimit';
+        const itemListLimit = clone(this[propertyName]);
+        itemListLimit[locationType] = null;
+        this[propertyName] = itemListLimit;
     }
 
-    private getSearchedListItems(
-        searchedLocations: Geolocation[],
-        includedLocationsByType: GeolocationsByType,
-        excludedLocationsByType: GeolocationsByType
-    ): Geolocation[] {
-        const allSelectedLocationsKeys = []
-            .concat(
-                includedLocationsByType.COUNTRY,
-                includedLocationsByType.REGION,
-                includedLocationsByType.DMA,
-                includedLocationsByType.CITY,
-                excludedLocationsByType.COUNTRY,
-                excludedLocationsByType.REGION,
-                excludedLocationsByType.DMA,
-                excludedLocationsByType.CITY
-            )
-            .map(location => location.key);
-
-        return searchedLocations.filter(location => {
-            return !allSelectedLocationsKeys.includes(location.key);
-        });
+    private getListItems(locationsByType: GeolocationsByType): Geolocation[] {
+        return [].concat(
+            locationsByType.COUNTRY,
+            locationsByType.REGION,
+            locationsByType.DMA,
+            locationsByType.CITY
+        );
     }
 }

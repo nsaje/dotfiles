@@ -12,6 +12,7 @@ import {
     AfterViewInit,
 } from '@angular/core';
 import * as commonHelpers from '../../helpers/common.helpers';
+import * as arrayHelpers from '../../helpers/array.helpers';
 
 @Component({
     selector: 'zem-select-list',
@@ -35,8 +36,14 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     isDisabled: boolean = false;
     @Input('selectSearchFn')
     searchFn: Function;
-    @Input('selectGroupByValue')
+    @Input()
+    selectGroupByValue: string;
+    @Input()
     groupByValue: string;
+    @Input()
+    itemListLimit: number;
+    @Input()
+    itemListLimitByGroup: {[key: string]: number};
     @Input()
     appendTo: 'body';
     @Output()
@@ -55,13 +62,36 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
     @ContentChild('itemTemplate', {read: TemplateRef, static: false})
     itemTemplate: TemplateRef<any>;
 
+    @ContentChild('itemGroupTitleTemplate', {
+        read: TemplateRef,
+        static: false,
+    })
+    itemGroupTitleTemplate: TemplateRef<any>;
+
+    @ContentChild('itemGroupFooterTemplate', {read: TemplateRef, static: false})
+    itemGroupFooterTemplate: TemplateRef<any>;
+
     @ContentChild('selectItemTemplate', {read: TemplateRef, static: false})
     selectItemTemplate: TemplateRef<any>;
 
-    @ContentChild('selectGroupTemplate', {read: TemplateRef, static: false})
-    selectGroupTemplate: TemplateRef<any>;
+    @ContentChild('selectGroupTitleTemplate', {
+        read: TemplateRef,
+        static: false,
+    })
+    selectGroupTitleTemplate: TemplateRef<any>;
+
+    @ContentChild('footerTemplate', {read: TemplateRef, static: false})
+    footerTemplate: TemplateRef<any>;
 
     availableItemsFiltered: any[] = [];
+
+    selectedItemsLimited: any[] = [];
+
+    selectedItemsGroupedLimited: {
+        groupName: string;
+        items: any[];
+        limitedItems: any[];
+    }[] = [];
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.selectedItems || changes.availableItems) {
@@ -70,6 +100,26 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
                     y => y[this.bindValue] !== x[this.bindValue]
                 );
             });
+        }
+
+        if (
+            this.groupByValue &&
+            (changes.selectedItems ||
+                changes.itemListLimit ||
+                changes.itemListLimitByGroup)
+        ) {
+            this.selectedItemsGroupedLimited = this.getGroupedLimitedItems(
+                this.groupByValue,
+                this.selectedItems,
+                this.itemListLimitByGroup
+                    ? this.itemListLimitByGroup
+                    : this.itemListLimit
+            );
+        } else if (changes.selectedItems || changes.itemListLimit) {
+            this.selectedItemsLimited = this.getLimitedItems(
+                this.selectedItems,
+                this.itemListLimit
+            );
         }
     }
 
@@ -95,5 +145,36 @@ export class SelectListComponent implements OnChanges, AfterViewInit {
 
     onSearch($event: string) {
         this.search.emit($event);
+    }
+
+    private getGroupedLimitedItems(
+        groupByValue: string,
+        items: any[],
+        itemListLimit: {[key: string]: number} | number
+    ): {
+        groupName: string;
+        items: any[];
+        limitedItems: any[];
+    }[] {
+        return arrayHelpers
+            .groupArray(items, item => item[groupByValue])
+            .map(group => ({
+                groupName: group[0][groupByValue],
+                items: group,
+                limitedItems: this.getLimitedItems(
+                    group,
+                    itemListLimit instanceof Object
+                        ? itemListLimit[group[0][groupByValue]]
+                        : itemListLimit
+                ),
+            }));
+    }
+
+    private getLimitedItems(items: any[], itemListLimit: number): any[] {
+        if (!commonHelpers.isDefined(itemListLimit)) {
+            return items;
+        }
+
+        return items.slice(0, itemListLimit);
     }
 }

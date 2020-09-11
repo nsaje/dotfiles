@@ -25,29 +25,25 @@
     margin-top: @spacing--default;
 }
 
-.zem-geo-targeting__link {
-    color: @color--secondary;
-
-    &:hover {
-        color: @color--secondary;
-    }
-}
-
 .zem-geo-targeting__list:last-child {
     margin-top: @zem-form-group__items-spacing--default;
 }
 
-.zem-geo-targeting__list-title {
-    color: @text-color--lighter;
-}
-
 .zem-geo-targeting__list-item {
-    margin: 3px;
-    margin-left: @spacing--small;
     display: flex;
     align-items: center;
 }
 
 .zem-geo-targeting__list-item--search {
     margin: 0;
+}
+
+.zem-geo-targeting__link {
+    display: block;
+    margin: 3px 3px 3px @spacing--small;
+    color: @color--secondary;
+
+    &:hover {
+        color: @color--secondary;
+    }
 }

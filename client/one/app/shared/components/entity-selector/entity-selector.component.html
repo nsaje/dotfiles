@@ -1,33 +1,31 @@
 <zem-select-list
     class="zem-select-list zem-entity-selector__list"
-    [selectedItems]="selectedGroupedEntities"
-    [availableItems]="filteredAvailableEntities"
+    [selectedItems]="selectedEntities"
+    [availableItems]="availableEntities"
     [selectBindValue]="'id'"
     [selectBindLabel]="'name'"
-    [selectPlaceholder]="'Add account, campaign, ad group'"
-    [selectGroupByValue]="'type'"
+    [selectPlaceholder]="selectPlaceholder"
     [selectIsDisabled]="isDisabled"
+    [selectGroupByValue]="'type'"
+    [groupByValue]="'type'"
     [appendTo]="appendTo"
     (itemSelect)="addEntity.emit($event)"
-    (search)="onSearchEntities($event)"
+    (search)="searchEntities.emit($event)"
     (open)="open.emit()"
 >
-    <ng-template #selectGroupTemplate let-item="item">
-        {{ entityTypeNames[item.type] }}
+    <ng-template #selectGroupTitleTemplate let-group="group">
+        {{ entityTypeNames[group] }}
+    </ng-template>
+    <ng-template #itemGroupTitleTemplate let-group="group">
+        {{ entityTypeNames[group] }}
     </ng-template>
     <ng-template #itemTemplate let-item="item" let-index="index">
-        <div class="zem-entity-selector__list-title">
-            {{ entityTypeNames[item.type] }}
-        </div>
-        <div
-            *ngFor="let entity of item.entities"
-            class="zem-entity-selector__list-item"
-        >
-            <span>{{ entity.name }}</span>
+        <div class="zem-entity-selector__list-item">
+            <span>{{ item.name }}</span>
             <button
                 class="zem-button zem-button--small zem-button--danger zem-button--icon-only zem-button--remove-icon"
                 [disabled]="isDisabled"
-                (click)="removeEntity.emit(entity)"
+                (click)="removeEntity.emit(item)"
             ></button>
         </div>
     </ng-template>

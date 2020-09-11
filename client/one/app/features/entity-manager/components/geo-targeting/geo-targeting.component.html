@@ -2,13 +2,15 @@
 <div class="zem-geo-targeting__item zem-geo-targeting__list-container">
     <zem-select-list
         class="zem-select-list zem-geo-targeting__list"
-        [selectedItems]="includedListItems"
-        [availableItems]="searchedListItems"
+        [selectedItems]="includedLocations"
+        [availableItems]="searchedLocations"
         [selectBindValue]="'key'"
         [selectBindLabel]="'name'"
         [selectPlaceholder]="'Add location'"
-        [selectGroupByValue]="'type'"
         [selectIsDisabled]="isDisabled"
+        [selectGroupByValue]="'type'"
+        [groupByValue]="'type'"
+        [itemListLimitByGroup]="includedItemListLimit"
         (itemSelect)="onAddIncludedGeotargeting($event)"
         (search)="onLocationSearch($event)"
         (open)="locationOpen.emit()"
@@ -20,55 +22,45 @@
                 Included Locations
             </div>
         </ng-template>
-        <ng-template
-            #selectItemTemplate
-            let-location="item"
-            let-search="search"
-        >
+        <ng-template #selectItemTemplate let-item="item" let-search="search">
             <zem-geo-targeting-location
                 class="zem-geo-targeting-location zem-geo-targeting__list-item zem-geo-targeting__list-item--search"
-                [location]="location"
+                [location]="item"
                 [highlightText]="search"
                 [canRemoveLocation]="false"
             ></zem-geo-targeting-location>
         </ng-template>
-        <ng-template #selectGroupTemplate let-item="item">
-            {{ geolocationTypeNames[item.type] }}
+        <ng-template #selectGroupTitleTemplate let-group="group">
+            {{ geolocationTypeNames[group] }}
         </ng-template>
-        <ng-template #itemTemplate let-item="item" let-index="index">
-            <div class="zem-geo-targeting__list-title">{{ item.name }}</div>
-            <ng-container
-                *ngFor="
-                    let location of item.locations;
-                    let locationIndex = index
-                "
-            >
-                <zem-geo-targeting-location
-                    *ngIf="
-                        expandedTypes[includeExcludeType.INCLUDE][item.type] ||
-                        locationIndex < itemListLimit
-                    "
-                    class="zem-geo-targeting-location zem-geo-targeting__list-item"
-                    [location]="location"
-                    [canRemoveLocation]="!isDisabled"
-                    (removeLocation)="onRemoveIncludedGeotargeting($event)"
-                ></zem-geo-targeting-location>
-            </ng-container>
+        <ng-template #itemGroupTitleTemplate let-group="group">
+            {{ geolocationTypeNames[group] }}
+        </ng-template>
+        <ng-template #itemTemplate let-item="item">
+            <zem-geo-targeting-location
+                class="zem-geo-targeting-location zem-geo-targeting__list-item"
+                [location]="item"
+                [canRemoveLocation]="!isDisabled"
+                (removeLocation)="onRemoveIncludedGeotargeting($event)"
+            ></zem-geo-targeting-location>
+        </ng-template>
+        <ng-template
+            #itemGroupFooterTemplate
+            let-group="group"
+            let-items="items"
+        >
             <div
                 *ngIf="
-                    item.locations.length > itemListLimit &&
-                    !expandedTypes[includeExcludeType.INCLUDE][item.type]
+                    includedItemListLimit[group] &&
+                    items.length > includedItemListLimit[group]
                 "
                 class="zem-geo-targeting__list-item"
             >
                 <a
                     class="zem-geo-targeting__link"
-                    (click)="
-                        expandedTypes[includeExcludeType.INCLUDE][
-                            item.type
-                        ] = true
-                    "
-                    >Show all ({{ item.locations.length }})
+                    (click)="onShowAll(includeExcludeType.INCLUDE, group)"
+                >
+                    Show all ({{ items.length }})
                 </a>
             </div>
         </ng-template>
@@ -76,13 +68,15 @@
     <zem-select-list
         *ngIf="isExcludedVisible"
         class="zem-select-list zem-geo-targeting__list"
-        [selectedItems]="excludedListItems"
-        [availableItems]="searchedListItems"
+        [selectedItems]="excludedLocations"
+        [availableItems]="searchedLocations"
         [selectBindValue]="'key'"
         [selectBindLabel]="'name'"
         [selectPlaceholder]="'Add location'"
-        [selectGroupByValue]="'type'"
         [selectIsDisabled]="isDisabled"
+        [selectGroupByValue]="'type'"
+        [groupByValue]="'type'"
+        [itemListLimitByGroup]="excludedItemListLimit"
         (itemSelect)="onAddExcludedGeotargeting($event)"
         (search)="onLocationSearch($event)"
         (open)="locationOpen.emit()"
@@ -94,55 +88,45 @@
                 Excluded Locations
             </div>
         </ng-template>
-        <ng-template
-            #selectItemTemplate
-            let-location="item"
-            let-search="search"
-        >
+        <ng-template #selectItemTemplate let-item="item" let-search="search">
             <zem-geo-targeting-location
                 class="zem-geo-targeting-location zem-geo-targeting__list-item zem-geo-targeting__list-item--search"
-                [location]="location"
+                [location]="item"
                 [highlightText]="search"
                 [canRemoveLocation]="false"
             ></zem-geo-targeting-location>
         </ng-template>
-        <ng-template #selectGroupTemplate let-item="item">
-            {{ geolocationTypeNames[item.type] }}
+        <ng-template #selectGroupTitleTemplate let-group="group">
+            {{ geolocationTypeNames[group] }}
         </ng-template>
-        <ng-template #itemTemplate let-item="item" let-index="index">
-            <div class="zem-geo-targeting__list-title">{{ item.name }}</div>
-            <ng-container
-                *ngFor="
-                    let location of item.locations;
-                    let locationIndex = index
-                "
-            >
-                <zem-geo-targeting-location
-                    *ngIf="
-                        expandedTypes[includeExcludeType.EXCLUDE][item.type] ||
-                        locationIndex < itemListLimit
-                    "
-                    class="zem-geo-targeting-location zem-geo-targeting__list-item"
-                    [location]="location"
-                    [canRemoveLocation]="!isDisabled"
-                    (removeLocation)="onRemoveExcludedGeotargeting($event)"
-                ></zem-geo-targeting-location>
-            </ng-container>
+        <ng-template #itemGroupTitleTemplate let-group="group">
+            {{ geolocationTypeNames[group] }}
+        </ng-template>
+        <ng-template #itemTemplate let-item="item">
+            <zem-geo-targeting-location
+                class="zem-geo-targeting-location zem-geo-targeting__list-item"
+                [location]="item"
+                [canRemoveLocation]="!isDisabled"
+                (removeLocation)="onRemoveExcludedGeotargeting($event)"
+            ></zem-geo-targeting-location>
+        </ng-template>
+        <ng-template
+            #itemGroupFooterTemplate
+            let-group="group"
+            let-items="items"
+        >
             <div
                 *ngIf="
-                    item.locations.length > itemListLimit &&
-                    !expandedTypes[includeExcludeType.EXCLUDE][item.type]
+                    excludedItemListLimit[group] &&
+                    items.length > excludedItemListLimit[group]
                 "
                 class="zem-geo-targeting__list-item"
             >
                 <a
                     class="zem-geo-targeting__link"
-                    (click)="
-                        expandedTypes[includeExcludeType.EXCLUDE][
-                            item.type
-                        ] = true
-                    "
-                    >Show all ({{ item.locations.length }})
+                    (click)="onShowAll(includeExcludeType.EXCLUDE, group)"
+                >
+                    Show all ({{ items.length }})
                 </a>
             </div>
         </ng-template>
