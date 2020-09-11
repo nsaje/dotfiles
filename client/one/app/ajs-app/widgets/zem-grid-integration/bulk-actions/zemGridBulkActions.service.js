@@ -115,24 +115,16 @@ angular
                 edit: {
                     name: 'Edit',
                     value: 'edit',
-                    hasPermission: gridApi.hasPermission(
-                        'zemauth.can_edit_content_ads'
-                    ),
-                    internal: gridApi.isPermissionInternal(
-                        'zemauth.can_edit_content_ads'
-                    ),
+                    hasPermission: true,
+                    internal: false,
                     disabled: false,
                     execute: edit,
                 },
                 clone: {
                     name: 'Clone',
                     value: 'clone',
-                    hasPermission: gridApi.hasPermission(
-                        'zemauth.can_clone_contentads'
-                    ),
-                    internal: gridApi.isPermissionInternal(
-                        'zemauth.can_clone_contentads'
-                    ),
+                    hasPermission: true,
+                    internal: false,
                     disabled: false,
                     execute: clone,
                 },

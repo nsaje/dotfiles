@@ -40,8 +40,6 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
             INTERNAL_LINK: 'internalLink',
             STATUS: 'status',
             STATE_SELECTOR: 'stateSelector',
-            EDIT_BUTTON: 'editButton',
-            CLONE_BUTTON: 'cloneButton',
             PERFORMANCE_INDICATOR: 'performanceIndicator',
             SUBMISSION_STATUS: 'submissionStatus',
             THUMBNAIL: 'thumbnail',

@@ -83,10 +83,6 @@
 </div>
 <hr />
 <div class="form__group form__group--informative">
-    <zem-internal-feature
-        ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')"
-        popover-placement="right"
-    ></zem-internal-feature>
     <label class="form__label" for="include-totals-checkbox"
         >Include totals</label
     >
@@ -107,12 +103,7 @@
     ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
     class="form__group"
 >
-    <label
-        class="form__label"
-        for="add-ids-checkbox"
-        is-internal="zemauth.can_include_model_ids_in_reports"
-        >Add IDs to report</label
-    >
+    <label class="form__label" for="add-ids-checkbox">Add IDs to report</label>
     <div class="form__checkbox">
         <label>
             <input
@@ -145,11 +136,7 @@
     </div>
 </div>
 <div ng-if="$ctrl.showAllAccountsInLocalCurrencyCheckbox" class="form__group">
-    <label
-        class="form__label"
-        for="all-accounts-in-local-currency-checkbox"
-        is-internal="zemauth.can_request_accounts_report_in_local_currencies"
-    >
+    <label class="form__label" for="all-accounts-in-local-currency-checkbox">
         Use accounts' local currencies to generate report
     </label>
     <div class="form__checkbox">

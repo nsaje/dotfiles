@@ -13,36 +13,12 @@
         grid="ctrl.grid"
     ></zem-grid-cell-actions>
 
-    <zem-grid-cell-state-selector
-        ng-if="ctrl.type === ctrl.gridColumnTypes.STATE_SELECTOR"
-        data="ctrl.data"
-        row="ctrl.row"
-        column="ctrl.col"
-        grid="ctrl.grid"
-    ></zem-grid-cell-state-selector>
-
     <zem-grid-cell-status-field
         ng-if="ctrl.type === ctrl.gridColumnTypes.STATUS"
         data="ctrl.data"
         row="ctrl.row"
         grid="ctrl.grid"
     ></zem-grid-cell-status-field>
-
-    <zem-grid-cell-edit-button
-        ng-if="ctrl.type === ctrl.gridColumnTypes.EDIT_BUTTON"
-        data="ctrl.data"
-        row="ctrl.row"
-        column="ctrl.col"
-        grid="ctrl.grid"
-    ></zem-grid-cell-edit-button>
-
-    <zem-grid-cell-clone-button
-        ng-if="ctrl.type === ctrl.gridColumnTypes.CLONE_BUTTON"
-        data="ctrl.data"
-        row="ctrl.row"
-        column="ctrl.col"
-        grid="ctrl.grid"
-    ></zem-grid-cell-clone-button>
 
     <zem-grid-cell-submission-status
         ng-if="ctrl.type === ctrl.gridColumnTypes.SUBMISSION_STATUS"

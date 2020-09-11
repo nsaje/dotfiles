@@ -5,7 +5,6 @@ from rest_framework.response import Response
 import core.features.publisher_groups
 import zemauth.access
 from restapi.common import pagination
-from restapi.common.permissions import CanEditPublisherGroupsPermission
 from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.publishergroup.v1 import serializers
 from zemauth.features.entity_permission import Permission
@@ -14,7 +13,7 @@ from zemauth.features.entity_permission import Permission
 class PublisherGroupViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelViewSet):
     serializer_class = serializers.PublisherGroupSerializer
     lookup_url_kwarg = "publisher_group_id"
-    permission_classes = RESTAPIBaseViewSet.permission_classes + (CanEditPublisherGroupsPermission,)
+    permission_classes = RESTAPIBaseViewSet.permission_classes
     pagination_class = pagination.MarkerOffsetPagination
 
     @property

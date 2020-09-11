@@ -114,7 +114,7 @@ angular
             actions: {
                 name: 'Actions',
                 type: zemGridConstants.gridColumnTypes.ACTIONS,
-                shown: 'zemauth.can_see_grid_actions',
+                shown: true,
             },
             state: {
                 name: '', // Branded based on breakdown
@@ -124,35 +124,9 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 internal: false,
-                shown: '!zemauth.can_see_grid_actions',
+                shown: false,
                 totalRow: false,
                 archivedField: 'archived',
-            },
-            cloneButton: {
-                name: '',
-                help: '',
-                field: 'cloneButton',
-                type: zemGridConstants.gridColumnTypes.CLONE_BUTTON,
-                order: false,
-                internal: 'zemauth.can_clone_adgroups',
-                shown: [
-                    'zemauth.can_clone_adgroups',
-                    '!zemauth.can_see_grid_actions',
-                ],
-                totalRow: false,
-            },
-            editButton: {
-                name: '',
-                help: '',
-                field: 'editButton',
-                type: zemGridConstants.gridColumnTypes.EDIT_BUTTON,
-                order: false,
-                internal: 'zemauth.can_edit_content_ads',
-                shown: [
-                    'zemauth.can_edit_content_ads',
-                    '!zemauth.can_see_grid_actions',
-                ],
-                totalRow: false,
             },
             status: {
                 name: '', // Branded based on breakdown
@@ -1752,8 +1726,6 @@ angular
         var PERMANENT_COLUMNS_GROUP = [
             COLUMNS.actions,
             COLUMNS.state,
-            COLUMNS.editButton,
-            COLUMNS.cloneButton,
             COLUMNS.name,
             COLUMNS.placementType,
             COLUMNS.publisher,
@@ -2036,20 +2008,6 @@ angular
             breakdown: constants.breakdown.MEDIA_SOURCE,
             shown: true,
         });
-
-        // Exceptions (edit button - only available on base content ad level)
-        COLUMNS.editButton.exceptions.breakdowns = [
-            constants.breakdown.CONTENT_AD,
-        ];
-        COLUMNS.editButton.exceptions.levels = [constants.level.AD_GROUPS];
-        COLUMNS.editButton.exceptions.breakdownBaseLevelOnly = true;
-
-        // Exceptions (clone button - only available on base ad group level)
-        COLUMNS.cloneButton.exceptions.breakdowns = [
-            constants.breakdown.AD_GROUP,
-        ];
-        COLUMNS.cloneButton.exceptions.levels = [constants.level.CAMPAIGNS];
-        COLUMNS.cloneButton.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
         COLUMNS.submissionStatus.exceptions.breakdowns = [
@@ -2375,12 +2333,6 @@ angular
             if (statusColumn) {
                 statusColumn.name = STATUS_COLUMN_BRANDING[breakdown].name;
                 statusColumn.help = STATUS_COLUMN_BRANDING[breakdown].help;
-            }
-
-            var stateColumn = findColumn(COLUMNS.state);
-            if (stateColumn) {
-                stateColumn.name = STATE_COLUMN_BRANDING[breakdown].name;
-                stateColumn.help = STATE_COLUMN_BRANDING[breakdown].help;
             }
         }
 

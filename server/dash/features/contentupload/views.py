@@ -1,7 +1,6 @@
 import json
 
 from django.db import transaction
-from django.http import Http404
 
 import core.models.content_ad.exceptions
 import core.models.content_ad_candidate.exceptions
@@ -134,10 +133,8 @@ class UploadSave(DASHAPIBaseView):
 
         if batch.type != constants.UploadBatchType.EDIT:
             content_ads = self._execute_save(request, batch)
-        elif request.user.has_perm("zemauth.can_edit_content_ads"):
-            content_ads = self._execute_update(request, batch)
         else:
-            raise Http404("Permission denied")
+            content_ads = self._execute_update(request, batch)
 
         return self.create_api_response({"num_successful": len(content_ads)})
 

@@ -771,14 +771,12 @@ class AllAccountsOverview(DASHAPIBaseView):
                 performance_settings, request.user, view_filter
             )
             performance_settings = [setting.as_dict() for setting in performance_settings]
-        elif request.user.has_perm("zemauth.can_access_agency_infobox"):
+        else:
             basic_settings = self._basic_agency_settings(request.user, start_date, end_date, view_filter)
             performance_settings = self._append_performance_agency_settings(
                 performance_settings, request.user, view_filter
             )
             performance_settings = [setting.as_dict() for setting in performance_settings]
-        else:
-            raise exc.AuthorizationError()
 
         response = {
             "header": header,

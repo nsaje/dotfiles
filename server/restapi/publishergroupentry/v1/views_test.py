@@ -14,7 +14,6 @@ from zemauth.features.entity_permission import Permission
 class LegacyPublisherGroupEntryTest(RESTAPITestCase):
     def setUp(self):
         permissions = [
-            "can_edit_publisher_groups",
             "can_use_restapi",
             "can_access_additional_outbrain_publisher_settings",
             "can_use_placement_targeting",
@@ -365,19 +364,6 @@ class LegacyPublisherGroupEntryTest(RESTAPITestCase):
             )
         )
         self.assertEqual(r.status_code, 404)
-
-    def test_check_permission(self):
-        test_helper.remove_permissions(self.user, ["can_edit_publisher_groups"])
-        pge = magic_mixer.blend(
-            core.features.publisher_groups.PublisherGroupEntry, publisher_group=self.publisher_group
-        )
-        r = self.client.get(
-            reverse(
-                "restapi.publishergroupentry.v1:publisher_group_entry_details",
-                kwargs={"publisher_group_id": self.publisher_group.id, "entry_id": pge.id},
-            )
-        )
-        self.assertEqual(r.status_code, 403)
 
     def test_no_outbrain_permission(self):
         test_helper.remove_permissions(self.user, ["can_access_additional_outbrain_publisher_settings"])
