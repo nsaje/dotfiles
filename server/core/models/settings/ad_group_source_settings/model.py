@@ -44,7 +44,7 @@ class AdGroupSourceSettings(
     multicurrency_fields = ["cpc_cc", "cpm", "daily_budget_cc"]
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
-    id = models.AutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
 
     ad_group_source = models.ForeignKey("AdGroupSource", null=True, on_delete=models.PROTECT)
 
