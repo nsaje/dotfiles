@@ -11,5 +11,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name="adgroupsourcesettings", name="id", field=models.BigAutoField(primary_key=True, serialize=False)
-        )
+        ),
+        migrations.RunSQL(
+            """SELECT setval('"dash_adgroupsourcesettings_id_seq"', 10000000) FROM "dash_adgroupsourcesettings";""",
+            migrations.RunSQL.noop,
+        ),
     ]
