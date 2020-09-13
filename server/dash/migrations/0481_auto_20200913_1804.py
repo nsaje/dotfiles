@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="adgroupsourcesettings", name="id", field=models.BigAutoField(primary_key=True, serialize=False)
         ),
-        migrations.RunSQL(
+        migrations.RunSQL(  # HACK: this was was added with intention to be faked in prod, only to keep consistency in test/dev database
             """SELECT setval('"dash_adgroupsourcesettings_id_seq"', 10000000) FROM "dash_adgroupsourcesettings";""",
             migrations.RunSQL.noop,
         ),
