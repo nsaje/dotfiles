@@ -1,8 +1,11 @@
+from contextlib import contextmanager
+
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 
 import core.models
 from utils import test_helper
+from utils.exc import MultipleValidationError
 from utils.magic_mixer import magic_mixer
 
 
@@ -24,6 +27,20 @@ class BaseTestCase(TestCase):
         if user is not None:
             account.users.add(user)
         return account
+
+    @contextmanager
+    def assert_multiple_validation_error(self, exceptions):
+        try:
+            yield
+        except MultipleValidationError as e:
+            excs = exceptions.copy()
+            for err in e.errors:
+                self.assertIn(type(err), excs)
+                excs.remove(type(err))
+            if len(excs) > 0:
+                raise AssertionError(f"{excs} not raised")
+        else:
+            raise AssertionError(f"{exceptions} not raised")
 
 
 class FutureBaseTestCase(BaseTestCase):

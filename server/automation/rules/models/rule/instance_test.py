@@ -68,7 +68,8 @@ class RuleInstanceTest(TestCase):
     def test_archive(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
-        rule = magic_mixer.blend(model.Rule, agency=agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        rule = magic_mixer.blend(model.Rule, agency=agency, accounts_included=[account])
         self.assertEqual(rule.archived, False)
 
         rule.archive(request)
@@ -77,7 +78,8 @@ class RuleInstanceTest(TestCase):
     def test_restore(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
-        rule = magic_mixer.blend(model.Rule, agency=agency, archived=True)
+        account = magic_mixer.blend(core.models.Account, agency=agency)
+        rule = magic_mixer.blend(model.Rule, agency=agency, archived=True, accounts_included=[account])
         self.assertEqual(rule.archived, True)
 
         rule.restore(request)

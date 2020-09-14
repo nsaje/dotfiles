@@ -1,9 +1,5 @@
-from contextlib import contextmanager
-
-from django.test import TestCase
-
 import core.models
-import utils.exc
+from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
 
 from ... import constants
@@ -11,7 +7,7 @@ from ... import exceptions
 from . import model
 
 
-class RuleManagerTest(TestCase):
+class RuleManagerTest(FutureBaseTestCase):
     def test_create(self):
         request = magic_mixer.blend_request_user()
         agency = magic_mixer.blend(core.models.Agency)
@@ -123,7 +119,7 @@ class RuleManagerTest(TestCase):
         agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account)
 
-        with self._assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
+        with self.assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
             model.Rule.objects.create(
                 request,
                 agency=agency,
@@ -142,7 +138,7 @@ class RuleManagerTest(TestCase):
     def test_create_without_agency_or_account(self):
         request = magic_mixer.blend_request_user()
 
-        with self._assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
+        with self.assert_multiple_validation_error([exceptions.InvalidParents, exceptions.MissingIncludedEntities]):
             model.Rule.objects.create(
                 request,
                 name="Test rule",
@@ -155,11 +151,3 @@ class RuleManagerTest(TestCase):
                 notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED,
                 notification_recipients=["test@test.com"],
             )
-
-    @contextmanager
-    def _assert_multiple_validation_error(self, exceptions):
-        try:
-            yield
-        except utils.exc.MultipleValidationError as e:
-            for err in e.errors:
-                self.assertTrue(type(err) in exceptions)

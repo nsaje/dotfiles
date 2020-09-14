@@ -389,9 +389,9 @@ class RuleValidationMixin:
 
     def _validate_included_entities(self, changes):
         if self.id:
-            accounts_included = changes.get("accounts_included", self.accounts_included)
-            campaigns_included = changes.get("campaigns_included", self.campaigns_included)
-            ad_groups_included = changes.get("ad_groups_included", self.ad_groups_included)
+            accounts_included = changes.get("accounts_included", self.accounts_included.all())
+            campaigns_included = changes.get("campaigns_included", self.campaigns_included.all())
+            ad_groups_included = changes.get("ad_groups_included", self.ad_groups_included.all())
         else:
             accounts_included = changes.get("accounts_included", [])
             campaigns_included = changes.get("campaigns_included", [])
