@@ -7,7 +7,8 @@ RUN apt-get update && \
     libpq-dev \
     python-dev \
     libcurl4-openssl-dev
-RUN pip install -U flake8==3.7.7 xenon pip-tools==5.0.0 black==18.6b4 mypy isort==4.3.21
+# flake8-polyfill is only installed because radon plugin is loaded from flake8 and it has broken dependencies
+RUN pip install -U flake8==3.7.7 flake8-polyfill==1.0.2 xenon pip-tools==5.0.0 black==18.6b4 mypy isort==4.3.21
 
 RUN useradd --create-home --password '*' --shell /bin/bash --uid 1000 ubuntu
 USER ubuntu
