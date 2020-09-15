@@ -41,18 +41,6 @@ DATABASES = {
         "PORT": 5432,
         "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1E6))},
     },
-    "b1": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "bidder",
-        "USER": "bidder",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QGYOwE/6UNrQPUAtPwB9RtAAAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIspcr9+HGakFL33vQIBEIBDIbb2TVlvYolKYKSux4rtWpiL/oyv0J45r+0B6RdlmyyqJUGdgz9LCWSFEkV4ZZMJGrhsiXK/lvfdhlNf5OSpMV0KNA=="
-        )
-        .get()
-        .decode("utf-8"),  # noqa
-        "HOST": "b1-replica-2.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
-        "PORT": 5432,
-    },
     STATS_DB_HOT_CLUSTER: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
