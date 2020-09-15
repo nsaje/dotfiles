@@ -20,7 +20,7 @@ DATABASE_READ_REPLICAS = []
 
 # Stats databases
 STATS_DB_POSTGRES_MAX_DAYS = 62
-STATS_DB_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_POSTGRES = []
 STATS_DB_HOT_CLUSTER_MAX_DAYS = 186
 STATS_DB_HOT_CLUSTER = "stats-hot-1"
 STATS_DB_COLD_CLUSTERS = []
@@ -31,9 +31,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "one",
-        "USER": "eins23",
+        "USER": "eins_ro_apt",
         "PASSWORD": Secret(
-            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QFxA0uz7lzmK6UfzvIjpIQGAAAAmjCBlwYJKoZIhvcNAQcGoIGJMIGGAgEAMIGABgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDFTdvIdvRLuhKZKhDAIBEIBTe4imRxN3SNhOEqHuORXRGr06Q1cL16j727Xy3N44cBKhrTkbICmtsP+hTgI9CcfID+CdR8i3bhIy3sWiFGoS7Febqy8/P35Yee4cYwu3J7Qfg0M="
+            "kms:region=us-east-1:AQICAHictPscENSYVyNw0iYdeBYCSPxW1krgRSQm+fhDfbJ85QFim8o9e3H1f9YMLj7ajP3cAAAAkjCBjwYJKoZIhvcNAQcGoIGBMH8CAQAwegYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz4BUIP/pr7nVqCPzYCARCATSi4p7SVbmnnepYhEaRfb5upcqquAKc6iSXXsiKm4xN3nXKL4Fz12mD+jWE1GlVbdvh8O1aIfRIp05vNPFQ+ROPr29cSzuscF5OxMNg4"
         )
         .get()
         .decode("utf-8"),  # noqa
