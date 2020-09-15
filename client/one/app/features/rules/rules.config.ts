@@ -505,8 +505,8 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
         group: RuleConditionOperandGroup.AudienceMetrics,
         hasTimeRangeModifier: true,
     },
-    [RuleConditionOperandType.AvgCostForNewVisitor]: {
-        type: RuleConditionOperandType.AvgCostForNewVisitor,
+    [RuleConditionOperandType.AvgCostPerNewVisitor]: {
+        type: RuleConditionOperandType.AvgCostPerNewVisitor,
         label: 'Avg. Cost per New Visitor',
         group: RuleConditionOperandGroup.AudienceMetrics,
         hasTimeRangeModifier: true,
@@ -1142,10 +1142,10 @@ export const RULE_CONDITIONS_OPTIONS = {
             },
         ],
     },
-    [RuleConditionOperandType.AvgCostForNewVisitor]: {
+    [RuleConditionOperandType.AvgCostPerNewVisitor]: {
         metric:
             RULE_CONDITION_OPERANDS_OPTIONS[
-                RuleConditionOperandType.AvgCostForNewVisitor
+                RuleConditionOperandType.AvgCostPerNewVisitor
             ],
         availableOperators: [
             RuleConditionOperator.LessThan,

@@ -651,7 +651,7 @@ export class RuleEditFormStore extends Store<RuleEditFormStoreState>
                     RuleConditionOperandType.AvgCostPerVisit
                 ],
                 RULE_CONDITIONS_OPTIONS[
-                    RuleConditionOperandType.AvgCostForNewVisitor
+                    RuleConditionOperandType.AvgCostPerNewVisitor
                 ],
                 RULE_CONDITIONS_OPTIONS[
                     RuleConditionOperandType.AvgCostPerPageview

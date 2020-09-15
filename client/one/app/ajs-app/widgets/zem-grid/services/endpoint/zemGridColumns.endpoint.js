@@ -928,7 +928,7 @@ angular
                 shown: true,
                 costMode: constants.costMode.PUBLIC,
             },
-            avgEtfmCostForNewVisitor: {
+            avgEtfmCostPerNewVisitor: {
                 name: 'Avg. Cost per New Visitor',
                 field: 'avg_etfm_cost_per_new_visitor',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
@@ -1867,7 +1867,7 @@ angular
             COLUMNS.totalSeconds,
             COLUMNS.avgTos,
             COLUMNS.avgEtfmCostPerVisit,
-            COLUMNS.avgEtfmCostForNewVisitor,
+            COLUMNS.avgEtfmCostPerNewVisitor,
             COLUMNS.avgEtfmCostPerPageview,
             COLUMNS.avgEtfmCostPerNonBouncedVisit,
             COLUMNS.avgEtfmCostPerMinute,
