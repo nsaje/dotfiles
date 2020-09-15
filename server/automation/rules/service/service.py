@@ -15,22 +15,20 @@ import etl.materialization_run
 from utils import dates_helper
 from utils import zlogging
 
-from .. import Rule
-from .. import RuleHistory
-from .. import RulesDailyJobLog
 from .. import constants
+from .. import models
+from . import actions
+from . import apply
 from . import exceptions
 from . import fetch
 from . import helpers
-from .actions import ValueChangeData
-from .apply import apply_rule
-from .notification_emails import send_notification_email_if_enabled
+from . import notification_emails
 
 logger = zlogging.getLogger(__name__)
 
 
-def execute_rules(rules: Sequence[Rule]) -> None:
-    rules_by_target_type: Dict[int, List[Rule]] = {}
+def execute_rules(rules: Sequence[models.Rule]) -> None:
+    rules_by_target_type: Dict[int, List[models.Rule]] = {}
     for rule in rules:
         rules_by_target_type.setdefault(rule.target_type, [])
         rules_by_target_type[rule.target_type].append(rule)
@@ -41,7 +39,7 @@ def execute_rules(rules: Sequence[Rule]) -> None:
 
 
 def execute_rules_daily_run() -> None:
-    if RulesDailyJobLog.objects.filter(created_dt__gte=dates_helper.local_midnight_to_utc_time()).exists():
+    if models.RulesDailyJobLog.objects.filter(created_dt__gte=dates_helper.local_midnight_to_utc_time()).exists():
         logger.info("Execution of rules was aborted since the daily run was already completed.")
         return
 
@@ -51,9 +49,9 @@ def execute_rules_daily_run() -> None:
 
     for target_type in constants.TargetType.get_all():
         rules = (
-            Rule.objects.annotate(
+            models.Rule.objects.annotate(
                 rule_history_exists_today=Exists(
-                    RuleHistory.objects.filter(
+                    models.RuleHistory.objects.filter(
                         rule_id=OuterRef("id"), created_dt__gte=dates_helper.local_midnight_to_utc_time()
                     )
                 )
@@ -66,10 +64,10 @@ def execute_rules_daily_run() -> None:
         rules_map = helpers.get_rules_by_ad_group_map(rules, exclude_inactive_yesterday=True)
         _apply_rules(target_type, rules_map)
 
-    RulesDailyJobLog.objects.create()
+    models.RulesDailyJobLog.objects.create()
 
 
-def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rule]]):
+def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[models.Rule]]):
     ad_groups = list(rules_map.keys())
     stats = fetch.query_stats(target_type, rules_map)
     ad_group_settings_map = _fetch_ad_group_settings(target_type, ad_groups, rules_map)
@@ -83,7 +81,7 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rul
 
         for rule in relevant_rules:
             try:
-                changes = apply_rule(
+                changes, per_target_condition_values = apply.apply_rule(
                     rule,
                     ad_group,
                     stats.get(ad_group.id, {}),
@@ -99,12 +97,13 @@ def _apply_rules(target_type: int, rules_map: Dict[core.models.AdGroup, List[Rul
                 history = _write_fail_history(rule, ad_group, exception=e, stack_trace=traceback.format_exc())
             else:
                 history = _write_history(rule, ad_group, changes)
+                _write_history_details(rule, history, per_target_condition_values)
 
-            send_notification_email_if_enabled(rule, ad_group, history)
+            notification_emails.send_notification_email_if_enabled(rule, ad_group, history)
 
 
 def _fetch_ad_group_settings(
-    target_type: int, ad_groups: Sequence[core.models.AdGroup], rules_map: Dict[core.models.AdGroup, List[Rule]]
+    target_type: int, ad_groups: Sequence[core.models.AdGroup], rules_map: Dict[core.models.AdGroup, List[models.Rule]]
 ) -> Dict[int, Dict[str, Union[int, str]]]:
     include_campaign_goals = _any_condition_of_types(
         [
@@ -135,10 +134,10 @@ def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
     return False
 
 
-def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]):
+def _write_history(rule: models.Rule, ad_group: core.models.AdGroup, changes: Sequence[actions.ValueChangeData]):
     changes_dict = {c.target: c.to_dict() for c in changes}
     status = constants.ApplyStatus.SUCCESS if changes_dict else constants.ApplyStatus.SUCCESS_NO_CHANGES
-    history = RuleHistory.objects.create(rule=rule, ad_group=ad_group, status=status, changes=changes_dict)
+    history = models.RuleHistory.objects.create(rule=rule, ad_group=ad_group, status=status, changes=changes_dict)
 
     ad_group.write_history(
         history.get_formatted_changes(),
@@ -150,9 +149,9 @@ def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[
 
 
 def _write_fail_history(
-    rule: Rule, ad_group: core.models.AdGroup, *, exception: Exception, stack_trace: str = None
-) -> RuleHistory:
-    return RuleHistory.objects.create(
+    rule: models.Rule, ad_group: core.models.AdGroup, *, exception: Exception, stack_trace: str = None
+) -> models.RuleHistory:
+    return models.RuleHistory.objects.create(
         rule=rule,
         ad_group=ad_group,
         failure_reason=_get_failure_reason(exception),
@@ -171,10 +170,19 @@ def _get_failure_reason(exception):
         return None
 
 
-def _get_exception_text(exception: Exception) -> str:
-    if isinstance(exception, exceptions.CampaignAutopilotActive):
-        return "Automation rule can’t change the daily cap when campaign budget optimization is turned on."
-    elif isinstance(exception, exceptions.BudgetAutopilotInactive):
-        return "Automation rule can’t change the daily cap when daily cap autopilot is turned off."
-    else:
-        return "An error has occurred."
+def _write_history_details(
+    rule: models.Rule,
+    history: models.RuleHistory,
+    per_target_condition_values: Dict[str, Dict[str, apply.ConditionValues]],
+):
+    conditions_dict = {condition.id: condition.to_dict() for condition in rule.conditions.all()}
+    values_dict = {
+        target: {
+            condition_id: condition_values.to_dict() for condition_id, condition_values in condition_values_dict.items()
+        }
+        for target, condition_values_dict in per_target_condition_values.items()
+    }
+    history = models.RuleHistoryDetails.objects.create(
+        rule_history=history, conditions=conditions_dict, target_condition_values=values_dict
+    )
+    return history

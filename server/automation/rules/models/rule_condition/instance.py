@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.forms.models import model_to_dict
 
 
 class RuleConditionInstanceMixin:
@@ -8,6 +9,9 @@ class RuleConditionInstanceMixin:
         filtered_updates = self._filter_updates(updates)
         self._apply_updates(filtered_updates)
         self.save()
+
+    def to_dict(self):
+        return model_to_dict(self)
 
     def _filter_updates(self, updates):
         new_updates = {}

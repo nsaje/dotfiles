@@ -1,9 +1,11 @@
+import dataclasses
 import datetime
 import decimal
 from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Sequence
+from typing import Tuple
 from typing import Union
 
 from django.db import transaction
@@ -35,6 +37,15 @@ ACTION_TYPE_APPLY_FN_MAPPING = {
 }
 
 
+@dataclasses.dataclass
+class ConditionValues:
+    left_operand_value: Union[str, float]
+    right_operand_value: Union[str, float]
+
+    def to_dict(self) -> Dict[str, Optional[Union[str, float]]]:
+        return {"left_operand_value": self.left_operand_value, "right_operand_value": self.right_operand_value}
+
+
 @transaction.atomic
 def apply_rule(
     rule: models.Rule,
@@ -43,7 +54,7 @@ def apply_rule(
     ad_group_settings: Dict[str, Union[int, str]],
     content_ads_settings: Dict[int, Dict[str, Union[int, str]]],
     campaign_budget: Dict[str, Any],
-) -> Sequence[ValueChangeData]:
+) -> Tuple[Sequence[ValueChangeData], Dict[str, Dict[str, ConditionValues]]]:
 
     if rule.archived:
         raise exceptions.RuleArchived("Archived rule can not be executed.")
@@ -51,6 +62,7 @@ def apply_rule(
     helpers.ensure_ad_group_valid(rule, ad_group)
 
     changes = []
+    per_target_condition_values = {}
     for target, target_stats in ad_group_stats.items():
 
         if _is_on_cooldown(target, rule, ad_group):
@@ -60,15 +72,20 @@ def apply_rule(
             rule, ad_group, target, campaign_budget, ad_group_settings, content_ads_settings
         )
         try:
-            if _meets_all_conditions(rule, target_stats, settings_dict):
+            values_by_condition = _compute_values_by_condition(rule, target_stats, settings_dict)
+            if _meets_all_conditions(values_by_condition):
                 update = _apply_action(target, rule, ad_group, target_stats)
                 if update.has_changes():
                     _write_trigger_history(target, rule, ad_group)
                     changes.append(update)
+                    per_target_condition_values[target] = {
+                        str(condition.id): ConditionValues(left_operand_value=value[0], right_operand_value=value[1])
+                        for condition, value in values_by_condition.items()
+                    }
         except utils.exc.EntityArchivedError:
             continue
 
-    return changes
+    return changes, per_target_condition_values
 
 
 def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> bool:
@@ -106,11 +123,19 @@ def _construct_target_settings_dict(
     return settings_dict
 
 
-def _meets_all_conditions(
+def _compute_values_by_condition(
     rule: models.Rule, target_stats: Dict[str, Dict[int, Optional[float]]], settings_dict: Dict[str, Union[int, str]]
-) -> bool:
+):
+    values_by_condition = {}
     for condition in rule.conditions.all():
         left_operand_value, right_operand_value = _prepare_operands(rule, condition, target_stats, settings_dict)
+        values_by_condition[condition] = left_operand_value, right_operand_value
+    return values_by_condition
+
+
+def _meets_all_conditions(values_by_condition) -> bool:
+    for condition, condition_values in values_by_condition.items():
+        left_operand_value, right_operand_value = condition_values
         if not _meets_condition(condition.operator, left_operand_value, right_operand_value):
             return False
     return True

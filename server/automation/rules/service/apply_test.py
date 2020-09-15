@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 import mock
 from django.test import TestCase
@@ -29,8 +30,9 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = True
         conditions_mock.return_value = True
 
-        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
+        self.assertFalse(condition_values)
 
         self.assertEqual(3, cooldown_mock.call_count)
         conditions_mock.assert_not_called()
@@ -48,8 +50,9 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = False
 
-        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
+        self.assertFalse(condition_values)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -69,8 +72,9 @@ class ApplyTest(TestCase):
         cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
-        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
+        self.assertFalse(condition_values)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -114,8 +118,9 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=1.0)
 
-        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
+        self.assertFalse(condition_values)
 
         self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
@@ -134,7 +139,7 @@ class ApplyTest(TestCase):
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=2.0)
 
-        changes = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
+        changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertEqual(3, len(changes))
 
         self.assertEqual(3, cooldown_mock.call_count)
@@ -162,7 +167,7 @@ class ApplyTest(TestCase):
             change_limit=1.5,
             cooldown=24,
         )
-        magic_mixer.blend(
+        condition_1 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
             left_operand_window=None,
@@ -173,7 +178,7 @@ class ApplyTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_value="name",
         )
-        magic_mixer.blend(
+        condition_2 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
             left_operand_window=None,
@@ -184,7 +189,7 @@ class ApplyTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_value="title",
         )
-        magic_mixer.blend(
+        condition_3 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
             left_operand_window=None,
@@ -201,8 +206,26 @@ class ApplyTest(TestCase):
         content_ad_settings = {ad.id: {constants.METRIC_SETTINGS_MAPPING[constants.MetricType.AD_TITLE]: "ad title"}}
         budgets_data = {"campaign_remaining_budget": 500}
 
-        changes = apply.apply_rule(rule, ad_group, stats, ad_group_settings, content_ad_settings, budgets_data)
+        changes, condition_values = apply.apply_rule(
+            rule, ad_group, stats, ad_group_settings, content_ad_settings, budgets_data
+        )
         self.assertEqual(changes, [ValueChangeData(target=str(ad.id), old_value=1.0, new_value=1.01)])
+        self.assertEqual(
+            condition_values,
+            {
+                str(ad.id): {
+                    str(condition_1.id): apply.ConditionValues(
+                        left_operand_value="ad group name", right_operand_value="name"
+                    ),
+                    str(condition_2.id): apply.ConditionValues(
+                        left_operand_value="ad title", right_operand_value="title"
+                    ),
+                    str(condition_3.id): apply.ConditionValues(
+                        left_operand_value=500, right_operand_value=decimal.Decimal("1000")
+                    ),
+                }
+            },
+        )
 
     @mock.patch("utils.dates_helper.utc_now")
     def test_is_on_cooldown(self, mock_now):
@@ -232,7 +255,7 @@ class ApplyTest(TestCase):
 
     def test_meet_all_conditions_left_operand_stats(self):
         rule = magic_mixer.blend(Rule)
-        magic_mixer.blend(
+        condition_1 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
             left_operand_window=constants.MetricWindow.LAST_3_DAYS,
@@ -243,7 +266,7 @@ class ApplyTest(TestCase):
             right_operand_type=constants.ValueType.ABSOLUTE,
             right_operand_value="10",
         )
-        magic_mixer.blend(
+        condition_2 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
             left_operand_window=constants.MetricWindow.LAST_60_DAYS,
@@ -258,37 +281,49 @@ class ApplyTest(TestCase):
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
-        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (14.0, 10.0), condition_2: (10.0, 11.0)})
+        self.assertTrue(apply._meets_all_conditions(computed))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (10.0, 10.0), condition_2: (10.0, 11.0)})
+        self.assertFalse(apply._meets_all_conditions(computed))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (14.0, 10.0), condition_2: (10.0, 9.9)})
+        self.assertFalse(apply._meets_all_conditions(computed))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 5},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 0.9, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (10.0, 10.0), condition_2: (10.0, 9.9)})
+        self.assertFalse(apply._meets_all_conditions(computed))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: None, constants.MetricWindow.LAST_60_DAYS: 10.0},
         }
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (14.0, 10.0), condition_2: (10.0, None)})
+        self.assertFalse(apply._meets_all_conditions(computed))
 
         stats = {
             "clicks": {constants.MetricWindow.LAST_3_DAYS: 7},
             "local_etfm_cost": {constants.MetricWindow.LAST_DAY: 1.0, constants.MetricWindow.LAST_60_DAYS: None},
         }
-        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertEqual(computed, {condition_1: (14.0, 10.0), condition_2: (0.0, 11.0)})
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_stats_condition_left_operand_window_none(self):
         rule = magic_mixer.blend(
@@ -307,7 +342,8 @@ class ApplyTest(TestCase):
         )
 
         stats = {"clicks": {constants.MetricWindow.LAST_3_DAYS: 7}}
-        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_stats_condition_right_operand_window_none(self):
         rule = magic_mixer.blend(
@@ -327,7 +363,8 @@ class ApplyTest(TestCase):
         stats = {
             "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
         }
-        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_stats_cpa_metrics_missing(self):
         rule = magic_mixer.blend(
@@ -348,7 +385,7 @@ class ApplyTest(TestCase):
             "local_etfm_cost": {constants.MetricWindow.LAST_3_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
         }
         with self.assertRaisesRegexp(ValueError, "Missing conversion statistics - campaign possibly missing cpa goal"):
-            apply._meets_all_conditions(rule, stats, {})
+            apply._compute_values_by_condition(rule, stats, {})
 
     def test_stats_window_data_missing(self):
         rule = magic_mixer.blend(
@@ -368,7 +405,8 @@ class ApplyTest(TestCase):
         stats = {
             "local_etfm_cost": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
         }
-        self.assertTrue(apply._meets_all_conditions(rule, stats, {}))
+        computed = apply._compute_values_by_condition(rule, stats, {})
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_stats_window_avg_data_missing(self):
         rule = magic_mixer.blend(
@@ -388,9 +426,9 @@ class ApplyTest(TestCase):
         stats = {
             "local_etfm_cpc": {constants.MetricWindow.LAST_30_DAYS: 1.0, constants.MetricWindow.LAST_60_DAYS: 10.0}
         }
-
+        computed = apply._compute_values_by_condition(rule, stats, {})
         # should evaluate to False since avg data is unknown and thus not comparable
-        self.assertFalse(apply._meets_all_conditions(rule, stats, {}))
+        self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_meet_all_conditions_invalid_operator(self):
         rule = magic_mixer.blend(Rule)
@@ -417,7 +455,7 @@ class ApplyTest(TestCase):
         )
 
         with self.assertRaisesRegexp(ValueError, "Invalid operator for left operand"):
-            apply._meets_all_conditions(rule, {}, {})
+            apply._compute_values_by_condition(rule, {}, {})
 
     def test_meets_condition(self):
         test_cases = [
@@ -467,7 +505,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="1",
         )
         settings_dict = {"days_since_account_created": 23}
-        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_left_operand_string_type(self):
         RuleCondition.objects.create(
@@ -478,7 +517,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="exceptional",
         )
         settings_dict = {"account_name": "My exceptionally performing account"}
-        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_left_operand_date_type(self):
         RuleCondition.objects.create(
@@ -489,7 +529,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="1999-12-31",
         )
         settings_dict = {"account_created_date": datetime.date(2000, 1, 1)}
-        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_left_operand_date_type_with_date_modifier(self):
         RuleCondition.objects.create(
@@ -501,7 +542,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="1999-12-31",
         )
         settings_dict = {"account_created_date": datetime.date(1999, 12, 30)}
-        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_left_operand_date_type_with_date_modifier_negative(self):
         RuleCondition.objects.create(
@@ -513,7 +555,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="1999-12-31",
         )
         settings_dict = {"account_created_date": datetime.date(2000, 1, 1)}
-        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_left_operand_constant_type(self):
         RuleCondition.objects.create(
@@ -524,7 +567,8 @@ class SettingsOperandTest(TestCase):
             right_operand_value="1",
         )
         settings_dict = {"campaign_type": dash.constants.CampaignType.CONTENT}
-        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertTrue(apply._meets_all_conditions(computed))
 
     def test_left_operand_ad_group_end_date(self):
         RuleCondition.objects.create(
@@ -538,7 +582,8 @@ class SettingsOperandTest(TestCase):
             "ad_group_end_date": datetime.date(2003, 1, 1),
             "campaign_budget_end_date": datetime.date(2000, 1, 1),
         }
-        self.assertFalse(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_left_operand_ad_group_end_date_none(self):
         RuleCondition.objects.create(
@@ -549,4 +594,5 @@ class SettingsOperandTest(TestCase):
             right_operand_value="2002-01-01",
         )
         settings_dict = {"ad_group_end_date": None, "campaign_budget_end_date": datetime.date(2000, 1, 1)}
-        self.assertTrue(apply._meets_all_conditions(self.rule, {}, settings_dict))
+        computed = apply._compute_values_by_condition(self.rule, {}, settings_dict)
+        self.assertTrue(apply._meets_all_conditions(computed))
