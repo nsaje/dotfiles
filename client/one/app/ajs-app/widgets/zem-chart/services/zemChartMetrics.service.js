@@ -258,7 +258,7 @@ angular
                 shown: true,
             },
             ETFM_COST_PER_PAGEVIEW: {
-                name: 'Avg. Cost for Pageview',
+                name: 'Avg. Cost per Pageview',
                 value: 'avg_etfm_cost_per_pageview',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
@@ -282,8 +282,8 @@ angular
                 shown: true,
             },
             ETFM_COST_PER_NEW_VISITOR: {
-                name: 'Avg. Cost for New Visitor',
-                value: 'avg_etfm_cost_for_new_visitor',
+                name: 'Avg. Cost per New Visitor',
+                value: 'avg_etfm_cost_per_new_visitor',
                 type: TYPE_CURRENCY,
                 fractionSize: 2,
                 costMode: constants.costMode.PUBLIC,

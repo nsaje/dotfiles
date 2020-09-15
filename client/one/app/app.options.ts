@@ -121,7 +121,7 @@ export const APP_OPTIONS = {
             value: APP_CONSTANTS.chartMetric.COST_PER_MINUTE,
         },
         {
-            name: 'Avg. Cost for Pageview',
+            name: 'Avg. Cost per Pageview',
             value: APP_CONSTANTS.chartMetric.COST_PER_PAGEVIEW,
         },
         {
@@ -133,7 +133,7 @@ export const APP_OPTIONS = {
             value: APP_CONSTANTS.chartMetric.COST_PER_NON_BOUNCED_VISIT,
         },
         {
-            name: 'Avg. Cost for New Visitor',
+            name: 'Avg. Cost per New Visitor',
             value: APP_CONSTANTS.chartMetric.COST_PER_NEW_VISITOR,
         },
         {

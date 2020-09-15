@@ -200,7 +200,7 @@ class CampaignGoalsTestCase(TestCase):
             "percent_new_users": 1.2,
             "avg_etfm_cost_per_visit": 35,
             "avg_etfm_cost_per_non_bounced_visit": 8,
-            "avg_etfm_cost_for_new_visitor": 9,
+            "avg_etfm_cost_per_new_visitor": 9,
             "avg_etfm_cost_per_pageview": 7,
             "video_etfm_cpcv": 6,
         }

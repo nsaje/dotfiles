@@ -507,7 +507,7 @@ export const RULE_CONDITION_OPERANDS_OPTIONS = {
     },
     [RuleConditionOperandType.AvgCostForNewVisitor]: {
         type: RuleConditionOperandType.AvgCostForNewVisitor,
-        label: 'Avg. Cost for New Visitor',
+        label: 'Avg. Cost per New Visitor',
         group: RuleConditionOperandGroup.AudienceMetrics,
         hasTimeRangeModifier: true,
     },

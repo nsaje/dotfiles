@@ -929,8 +929,8 @@ angular
                 costMode: constants.costMode.PUBLIC,
             },
             avgEtfmCostForNewVisitor: {
-                name: 'Avg. Cost for New Visitor',
-                field: 'avg_etfm_cost_for_new_visitor',
+                name: 'Avg. Cost per New Visitor',
+                field: 'avg_etfm_cost_per_new_visitor',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 help:
                     '<p>The average cost per new visitor. New visitor is a user that ' +

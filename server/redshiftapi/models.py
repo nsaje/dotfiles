@@ -371,10 +371,10 @@ class MVMaster(BreakdownsBase):
     )
 
     _context = {"divisor": "new_visits", "divisor_modifier": converters.CURRENCY_TO_NANO}
-    avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
+    avg_etfm_cost_per_new_visitor = backtosql.TemplateColumn(
         "part_4sumdiv.sql", dict_join(_context, ETFM_COST_COLUMNS), AGGREGATE
     )
-    local_avg_etfm_cost_for_new_visitor = backtosql.TemplateColumn(
+    local_avg_etfm_cost_per_new_visitor = backtosql.TemplateColumn(
         "part_4sumdiv.sql", dict_join(_context, LOCAL_ETFM_COST_COLUMNS), AGGREGATE
     )
 
