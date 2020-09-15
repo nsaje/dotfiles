@@ -137,7 +137,7 @@ class RuleHistoryInstance(RuleHistoryInstanceMixin):
         return settings.BASE_URL + f"/v2/rules/history?agencyId={agency_id}&ruleId={self.rule.id}"
 
     def get_formatted_changes(self):
-        if self.status == constants.ApplyStatus.SUCCESS:
+        if self.status != constants.ApplyStatus.FAILURE:
             try:
                 return FORMATTED_CHANGES_TEMPLATES[self.rule.target_type][self.rule.action_type](
                     self.rule.change_step, self.changes

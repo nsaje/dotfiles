@@ -68,7 +68,7 @@ class NotificationEmailTestCase(TestCase):
         )
 
     def test_execute_rule_send_email_no_changes(self, mock_send_email):
-        history = magic_mixer.blend(RuleHistory, rule=self.rule, changes={})
+        history = magic_mixer.blend(RuleHistory, rule=self.rule, status=constants.ApplyStatus.SUCCESS_NO_CHANGES)
         notification_emails.send_notification_email_if_enabled(self.rule, self.ad_group, history)
 
         self._assert_email_sent_to_all_recipients_separately(
@@ -88,7 +88,7 @@ class NotificationEmailTestCase(TestCase):
 
     def test_execute_rule_send_email_no_changes_on_rule_action_triggered(self, mock_send_email):
         self.rule.update(None, notification_type=constants.NotificationType.ON_RULE_ACTION_TRIGGERED)
-        history = magic_mixer.blend(RuleHistory, rule=self.rule, changes={})
+        history = magic_mixer.blend(RuleHistory, rule=self.rule, status=constants.ApplyStatus.SUCCESS_NO_CHANGES)
         notification_emails.send_notification_email_if_enabled(self.rule, self.ad_group, history)
 
         self.assertFalse(mock_send_email.called)

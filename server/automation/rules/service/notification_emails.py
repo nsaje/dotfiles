@@ -16,12 +16,12 @@ def send_notification_email_if_enabled(rule: Rule, ad_group: core.models.AdGroup
     if rule.notification_type == constants.NotificationType.NONE:
         return
 
-    if history.changes:
+    if history.status == constants.ApplyStatus.SUCCESS:
         _send_changes_email(rule, ad_group, history)
     elif rule.notification_type == constants.NotificationType.ON_RULE_RUN:
-        if history.status != constants.ApplyStatus.SUCCESS:
+        if history.status == constants.ApplyStatus.FAILURE:
             _send_exception_email(rule, ad_group, history)
-        else:
+        elif history.status == constants.ApplyStatus.SUCCESS_NO_CHANGES:
             _send_no_action_email(rule, ad_group)
 
 

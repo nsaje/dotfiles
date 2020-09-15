@@ -137,9 +137,8 @@ def _any_condition_of_types(target_types, ad_groups, rules_map) -> bool:
 
 def _write_history(rule: Rule, ad_group: core.models.AdGroup, changes: Sequence[ValueChangeData]):
     changes_dict = {c.target: c.to_dict() for c in changes}
-    history = RuleHistory.objects.create(
-        rule=rule, ad_group=ad_group, status=constants.ApplyStatus.SUCCESS, changes=changes_dict
-    )
+    status = constants.ApplyStatus.SUCCESS if changes_dict else constants.ApplyStatus.SUCCESS_NO_CHANGES
+    history = RuleHistory.objects.create(rule=rule, ad_group=ad_group, status=status, changes=changes_dict)
 
     ad_group.write_history(
         history.get_formatted_changes(),

@@ -20,7 +20,9 @@ class RuleHistory(instance.RuleHistoryInstance, models.Model):
     rule = models.ForeignKey("Rule", related_name="history", on_delete=models.CASCADE)
     ad_group = models.ForeignKey(core.models.AdGroup, related_name="rule_history", on_delete=models.PROTECT)
 
-    status = models.IntegerField(choices=constants.ApplyStatus.get_choices(), default=constants.ApplyStatus.SUCCESS)
+    status = models.IntegerField(
+        choices=constants.ApplyStatus.get_choices(), default=constants.ApplyStatus.SUCCESS, db_index=True
+    )
     failure_reason = models.IntegerField(
         choices=constants.RuleFailureReason.get_choices(), default=None, null=True, blank=True
     )

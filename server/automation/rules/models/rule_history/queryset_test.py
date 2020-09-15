@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from utils.magic_mixer import magic_mixer
 
+from ... import constants
 from . import model
 
 
@@ -17,7 +18,7 @@ class RuleHistoryQuerysetTest(TestCase):
             model.RuleHistory.objects.filter().delete()
 
     def test_exclude_without_changes(self):
-        magic_mixer.cycle(5).blend(model.RuleHistory, changes={})
+        magic_mixer.cycle(5).blend(model.RuleHistory, status=constants.ApplyStatus.SUCCESS_NO_CHANGES)
 
         rule_history_with_changes = model.RuleHistory.objects.exclude_without_changes()
         self.assertEqual(len(rule_history_with_changes), 0)

@@ -419,8 +419,13 @@ class Operator(ConstantBase):
 class ApplyStatus(ConstantBase):
     SUCCESS = 1
     FAILURE = 2
+    SUCCESS_NO_CHANGES = 3
 
-    _VALUES = {SUCCESS: "Rule application successful", FAILURE: "Rule application failed"}
+    _VALUES = {
+        SUCCESS: "Rule application successful",
+        FAILURE: "Rule application failed",
+        SUCCESS_NO_CHANGES: "Rule application successful - no changes",
+    }
 
 
 class RuleFailureReason(ConstantBase):
