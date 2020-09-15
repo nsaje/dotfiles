@@ -84,12 +84,12 @@ RELEVANT_GOAL_ETFM_FIELDS_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: ["non_bounced_visits", "avg_etfm_cost_per_non_bounced_visit"],
     constants.CampaignGoalKPI.PAGES_PER_SESSION: ["total_pageviews", "avg_etfm_cost_per_pageview"],
     constants.CampaignGoalKPI.TIME_ON_SITE: ["total_seconds", "avg_etfm_cost_per_minute"],
-    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: ["avg_etfm_cost_per_new_visitor"],
+    constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: ["avg_etfm_cost_for_new_visitor"],
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: ["etfm_cpc"],
     constants.CampaignGoalKPI.CPV: ["avg_etfm_cost_per_visit"],
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: ["avg_etfm_cost_per_non_bounced_visit", "non_bounced_visits"],
-    constants.CampaignGoalKPI.CP_NEW_VISITOR: ["avg_etfm_cost_per_new_visitor"],
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: ["avg_etfm_cost_for_new_visitor"],
     constants.CampaignGoalKPI.CP_PAGE_VIEW: ["avg_etfm_cost_per_pageview"],
     constants.CampaignGoalKPI.CPCV: ["video_etfm_cpcv"],
 }
@@ -103,7 +103,7 @@ _CAMPAIGN_GOAL_PRIMARY_ETFM_METRIC = {
     constants.CampaignGoalKPI.CPC: "local_etfm_cpc",
     constants.CampaignGoalKPI.CPV: "local_avg_etfm_cost_per_visit",
     constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: "local_avg_etfm_cost_per_non_bounced_visit",
-    constants.CampaignGoalKPI.CP_NEW_VISITOR: "local_avg_etfm_cost_per_new_visitor",
+    constants.CampaignGoalKPI.CP_NEW_VISITOR: "local_avg_etfm_cost_for_new_visitor",
     constants.CampaignGoalKPI.CP_PAGE_VIEW: "local_avg_etfm_cost_per_pageview",
     constants.CampaignGoalKPI.CPCV: "local_video_etfm_cpcv",
 }

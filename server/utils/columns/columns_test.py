@@ -13,7 +13,7 @@ class FieldNamesTest(TestCase):
     def test_field_names(self):
         self.assertEqual(columns.FieldNames.account_status, "account_status")
         self.assertEqual(columns.FieldNames.domain_link, "domain_link")
-        self.assertEqual(columns.FieldNames.avg_etfm_cost_per_new_visitor, "avg_etfm_cost_per_new_visitor")
+        self.assertEqual(columns.FieldNames.avg_etfm_cost_for_new_visitor, "avg_etfm_cost_for_new_visitor")
 
 
 @mock.patch("utils.dates_helper.local_today", lambda: datetime.date(2017, 8, 8))

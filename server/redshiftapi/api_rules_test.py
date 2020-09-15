@@ -120,7 +120,7 @@ local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
-local_avg_etfm_cost_per_new_visitor, (
+local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -216,7 +216,7 @@ local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
-local_avg_etfm_cost_per_new_visitor, (
+local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -312,7 +312,7 @@ local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
-local_avg_etfm_cost_per_new_visitor, (
+local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -408,7 +408,7 @@ local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
-local_avg_etfm_cost_per_new_visitor, (
+local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
@@ -504,7 +504,7 @@ local_avg_etfm_cost_per_visit, (
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +
   COALESCE(SUM(local_margin_nano)::FLOAT, 0)
 )::FLOAT / (NULLIF(SUM(new_visits), 0) * 1000000000)
-local_avg_etfm_cost_per_new_visitor, (
+local_avg_etfm_cost_for_new_visitor, (
   COALESCE(SUM(local_effective_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_effective_data_cost_nano)::FLOAT, 0) +
   COALESCE(SUM(local_license_fee_nano)::FLOAT, 0) +

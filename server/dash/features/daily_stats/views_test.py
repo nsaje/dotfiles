@@ -886,7 +886,7 @@ class LegacyAdGroupDailyStatsTestCase(LegacyBaseDailyStatsTestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1024,7 +1024,7 @@ class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1076,7 +1076,7 @@ class LegacyAdGroupPublishersDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1174,7 +1174,7 @@ class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1226,7 +1226,7 @@ class LegacyAdGroupPlacementsDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1323,7 +1323,7 @@ class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1375,7 +1375,7 @@ class LegacyCampaignPublishersDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1473,7 +1473,7 @@ class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",
@@ -1525,7 +1525,7 @@ class LegacyCampaignPlacementDailyStatsTestCase(DASHAPITestCase):
                             "id": "Cost per Non-Bounced Visit",
                             "name": "Cost per Non-Bounced Visit",
                         },
-                        "avg_etfm_cost_per_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
+                        "avg_etfm_cost_for_new_visitor": {"id": "Cost per New Visitor", "name": "Cost per New Visitor"},
                         "avg_etfm_cost_per_pageview": {"id": "Cost per Pageview", "name": "Cost per Pageview"},
                         "video_etfm_cpcv": {
                             "id": "Cost per Completed Video View",

@@ -166,7 +166,7 @@ GOALS_COLUMNS = {
         "spend_perc": Decimal(0.3),
     },
     CampaignGoalKPI.CP_NEW_VISITOR: {
-        "col": "avg_etfm_cost_per_new_visitor",
+        "col": "avg_etfm_cost_for_new_visitor",
         "importance": 0.7,
         "spend_perc": Decimal(0.3),
     },
@@ -183,7 +183,7 @@ GOALS_WORST_VALUE = {
     "percent_new_users": 0.0,
     "conversions": 0,
     "avg_etfm_cost_per_non_bounced_visit": None,
-    "avg_etfm_cost_per_new_visitor": None,
+    "avg_etfm_cost_for_new_visitor": None,
     "avg_etfm_cost_per_pageview": None,
     "video_etfm_cpcv": None,
 }
