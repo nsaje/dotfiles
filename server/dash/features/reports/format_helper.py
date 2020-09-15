@@ -36,6 +36,7 @@ FORMAT_4_DECIMALS = [
     "avg_etfm_cost_per_pageview",
     "avg_etfm_cost_for_new_visitor",
     "avg_etfm_cost_per_visit",
+    "avg_etfm_cost_per_unique_user",
     "etfm_mrc50_vcpm",
     "etfm_mrc100_vcpm",
     "etfm_vast4_vcpm",

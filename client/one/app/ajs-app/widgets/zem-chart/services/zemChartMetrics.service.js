@@ -289,6 +289,14 @@ angular
                 costMode: constants.costMode.PUBLIC,
                 shown: true,
             },
+            ETFM_COST_PER_UNIQUE_USER: {
+                name: 'Avg. Cost per Unique User',
+                value: 'avg_etfm_cost_per_unique_user',
+                type: TYPE_CURRENCY,
+                fractionSize: 2,
+                costMode: constants.costMode.PUBLIC,
+                shown: true,
+            },
 
             VIDEO_START: {
                 name: 'Video Start',
@@ -681,6 +689,7 @@ angular
             METRICS.ETFM_COST_PER_PAGEVIEW,
             METRICS.ETFM_COST_PER_NON_BOUNCED_VISIT,
             METRICS.ETFM_COST_PER_MINUTE,
+            METRICS.ETFM_COST_PER_UNIQUE_USER,
         ];
 
         var VIDEO_METRICS = [

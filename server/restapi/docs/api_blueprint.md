@@ -2668,6 +2668,7 @@ Any fields that can be viewed in the dashboard can be requested in a report.
 - Avg. Cost per Pageview
 - Avg. Cost per Non-Bounced Visit
 - Avg. Cost per Minute
+- Avg. Cost per Unique User
 - Account Status
 - Campaign Status
 - Ad Group Status

@@ -929,6 +929,7 @@ export const APP_CONSTANTS = {
         COST_PER_VISIT: 'avg_etfm_cost_per_visit',
         COST_PER_NON_BOUNCED_VISIT: 'avg_etfm_cost_per_non_bounced_visit',
         COST_PER_NEW_VISITOR: 'avg_etfm_cost_for_new_visitor',
+        COST_PER_UNIQUE_USER: 'avg_etfm_cost_per_unique_user',
         PIXELS_PLACEHOLDER: 'pixels_placeholder',
         CONVERSION_GOALS_PLACEHOLDER: 'conversion_goals_placeholder',
         PIXELS_AVG_COST_PLACEHOLDER: 'pixels_avg_cost_placeholder',

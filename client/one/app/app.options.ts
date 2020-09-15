@@ -137,6 +137,10 @@ export const APP_OPTIONS = {
             value: APP_CONSTANTS.chartMetric.COST_PER_NEW_VISITOR,
         },
         {
+            name: 'Avg. Cost per Unique User',
+            value: APP_CONSTANTS.chartMetric.COST_PER_UNIQUE_USER,
+        },
+        {
             name: '',
             value:
                 APP_CONSTANTS.chartMetric.CONVERSION_GOALS_AVG_COST_PLACEHOLDER,
