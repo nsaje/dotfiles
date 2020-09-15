@@ -1,3 +1,4 @@
+import core.models
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
 
@@ -112,3 +113,48 @@ class RuleConditionValidationTest(FutureBaseTestCase):
         self.rule_condition.clean({"right_operand_value": 500})
         with self.assert_multiple_validation_error([exceptions.InvalidRightOperandValue]):
             self.rule_condition.clean({"right_operand_value": None})
+
+    def test_validate_conversion_pixel_agency_rule(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account_with_agency = magic_mixer.blend(core.models.Account, agency=agency)
+        account_without_agency = magic_mixer.blend(core.models.Account)
+        agency_rule = magic_mixer.blend(Rule, agency=agency)
+
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account_with_agency)
+        rule_condition = model.RuleCondition(
+            rule=agency_rule,
+            operator=constants.Operator.GREATER_THAN,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            left_operand_window=None,
+            left_operand_modifier=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_window=None,
+            right_operand_value="300",
+        )
+        rule_condition.clean({"conversion_pixel": pixel})
+
+        pixel_without_agency = magic_mixer.blend(core.models.ConversionPixel, account=account_without_agency)
+        with self.assert_multiple_validation_error([exceptions.InvalidConversionPixel]):
+            rule_condition.clean({"conversion_pixel": pixel_without_agency})
+
+    def test_validate_conversion_pixel_account_rule(self):
+        rule_account = magic_mixer.blend(core.models.Account)
+        account = magic_mixer.blend(core.models.Account)
+        account_rule = magic_mixer.blend(Rule, account=rule_account)
+        rule_condition = model.RuleCondition(
+            rule=account_rule,
+            operator=constants.Operator.GREATER_THAN,
+            left_operand_type=constants.MetricType.TOTAL_SPEND,
+            left_operand_window=None,
+            left_operand_modifier=None,
+            right_operand_type=constants.ValueType.ABSOLUTE,
+            right_operand_window=None,
+            right_operand_value="300",
+        )
+
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=rule_account)
+        rule_condition.clean({"conversion_pixel": pixel})
+
+        pixel_without_rule_account = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        with self.assert_multiple_validation_error([exceptions.InvalidConversionPixel]):
+            rule_condition.clean({"conversion_pixel": pixel_without_rule_account})

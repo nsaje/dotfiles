@@ -119,3 +119,7 @@ class InvalidRightOperandWindow(ValidationError):
 
 class InvalidRightOperandValue(ValidationError):
     pass
+
+
+class InvalidConversionPixel(ValidationError):
+    pass

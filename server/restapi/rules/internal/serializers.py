@@ -3,6 +3,7 @@ import rest_framework.serializers
 import automation.rules
 import core.features.publisher_groups
 import core.models
+import dash.constants
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
@@ -16,6 +17,15 @@ class RuleConditionMetricSerializer(restapi.serializers.base.RESTAPIBaseSerializ
         automation.rules.MetricWindow, source="left_operand_window", allow_null=True, initial=None
     )
     modifier = rest_framework.serializers.FloatField(source="left_operand_modifier", allow_null=True)
+    conversion_pixel = rest_framework.serializers.SlugRelatedField(
+        queryset=core.models.ConversionPixel, required=False, allow_null=True, slug_field="id"
+    )
+    conversion_pixel_window = restapi.serializers.fields.DashConstantField(
+        dash.constants.ConversionWindows, required=False, allow_null=True, initial=None
+    )
+    conversion_pixel_attribution = restapi.serializers.fields.DashConstantField(
+        dash.constants.ConversionType, required=False, allow_null=True, initial=None
+    )
 
 
 class RuleConditionValueSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

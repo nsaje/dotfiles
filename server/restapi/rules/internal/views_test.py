@@ -8,6 +8,7 @@ from rest_framework import status
 import automation.rules
 import core.features.publisher_groups
 import core.models
+import dash.constants
 import restapi.common.views_base_test_case
 import utils.test_helper
 from utils.magic_mixer import get_request_mock
@@ -47,6 +48,9 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
                     "left_operand_window": automation.rules.MetricWindow.LAST_30_DAYS,
                     "left_operand_type": automation.rules.MetricType.TOTAL_SPEND,
                     "left_operand_modifier": None,
+                    "conversion_pixel": None,
+                    "conversion_pixel_window": None,
+                    "conversion_pixel_attribution": None,
                     "operator": automation.rules.Operator.GREATER_THAN,
                     "right_operand_window": None,
                     "right_operand_type": automation.rules.ValueType.ABSOLUTE,
@@ -140,6 +144,9 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         right_operand_type,
         right_operand_window,
         right_operand_value,
+        conversion_pixel=None,
+        conversion_pixel_window=None,
+        conversion_pixel_attribution=None,
     ):
         representation = {
             "operator": automation.rules.Operator.get_name(operator),
@@ -147,6 +154,13 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
                 "type": automation.rules.MetricType.get_name(left_operand_type),
                 "window": automation.rules.MetricWindow.get_name(left_operand_window) if left_operand_window else None,
                 "modifier": left_operand_modifier,
+                "conversionPixel": conversion_pixel,
+                "conversionPixelWindow": dash.constants.ConversionWindows.get_name(conversion_pixel_window)
+                if conversion_pixel_window
+                else None,
+                "conversionPixelAttribution": dash.constants.ConversionType.get_name(conversion_pixel_attribution)
+                if conversion_pixel_attribution
+                else None,
             },
             "value": {
                 "type": automation.rules.ValueType.get_name(right_operand_type),
@@ -190,6 +204,9 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
                     "right_operand_type": condition.right_operand_type,
                     "right_operand_window": condition.right_operand_window,
                     "right_operand_value": condition.right_operand_value,
+                    "conversion_pixel": condition.conversion_pixel,
+                    "conversion_pixel_window": condition.conversion_pixel_window,
+                    "conversion_pixel_attribution": condition.conversion_pixel_attribution,
                 }
                 for condition in rule_db.conditions.all()
             ],

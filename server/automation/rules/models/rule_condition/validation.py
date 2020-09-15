@@ -17,6 +17,7 @@ class RuleConditionValidationMixin:
             self._validate_right_operand_type,
             self._validate_right_operand_window,
             self._validate_right_operand_value,
+            self._validate_conversion_pixel,
             changes=changes,
         )
 
@@ -86,3 +87,16 @@ class RuleConditionValidationMixin:
                 datetime.date.fromisoformat(right_operand_value)
             except ValueError:
                 raise exceptions.InvalidRightOperandValue("Invalid value")
+
+    def _validate_conversion_pixel(self, changes):
+        conversion_pixel = changes.get("conversion_pixel", self.conversion_pixel)
+        if not conversion_pixel:
+            return
+
+        agency = self.rule.agency
+        if agency and conversion_pixel.account.agency != agency:
+            raise exceptions.InvalidConversionPixel("Conversion pixel does not belong to the rule's agency")
+
+        account = self.rule.account
+        if account and conversion_pixel.account != account:
+            raise exceptions.InvalidConversionPixel("Conversion pixel does not belong to the rule's account")
