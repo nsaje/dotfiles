@@ -35,7 +35,7 @@ POSTCLICK_FIELDS = [
     "avg_etfm_cost_per_non_bounced_visit",
     "total_pageviews",
     "avg_etfm_cost_per_pageview",
-    "avg_etfm_cost_for_new_visitor",
+    "avg_etfm_cost_per_new_visitor",
     "avg_etfm_cost_per_visit",
     "avg_etfm_cost_per_unique_user",
 ]

@@ -402,7 +402,7 @@ STATS_FIELDS_DEFAULTS = {
     "total_seconds": 0,
     "non_bounced_visits": 0,
     "local_avg_etfm_cost_per_visit": None,
-    "local_avg_etfm_cost_for_new_visitor": None,
+    "local_avg_etfm_cost_per_new_visitor": None,
     "avg_etfm_cost_per_unique_user": None,
     "local_avg_etfm_cost_per_pageview": None,
     "local_avg_etfm_cost_per_non_bounced_visit": None,
