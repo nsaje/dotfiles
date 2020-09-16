@@ -6,7 +6,6 @@ from mock import patch
 import core.models
 import dash.constants
 from utils import exc
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
@@ -16,7 +15,7 @@ from . import exceptions
 from .model import Campaign
 
 
-class LegacyCampaignManagerTestCase(BaseTestCase):
+class CampaignManagerTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(user=self.user)
@@ -164,7 +163,3 @@ class LegacyCampaignManagerTestCase(BaseTestCase):
         self.assertFalse(cloned_campaign.campaigngoal_set.all().intersection(campaign.campaigngoal_set.all()))
         self.assertEqual(1, cloned_campaign.conversiongoal_set.count())
         self.assertFalse(cloned_campaign.conversiongoal_set.all().intersection(campaign.conversiongoal_set.all()))
-
-
-class CampaignManagerTestCase(FutureBaseTestCase, LegacyCampaignManagerTestCase):
-    pass

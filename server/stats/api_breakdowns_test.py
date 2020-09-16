@@ -10,7 +10,6 @@ from dash import models
 from dash import publisher_helpers
 from stats import api_breakdowns
 from stats import constants
-from stats.common.base_test_case import FutureStatsTestCase
 from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from utils import threads
@@ -20,13 +19,19 @@ from zemauth.models import User
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-class LegacyApiBreakdownQueryTest(StatsTestCase):
+class ApiBreakdownQueryTest(StatsTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
     permissions = ["can_see_sspd_url", "can_view_platform_cost_breakdown", "can_see_managers_in_campaigns_table"]
 
     def setUp(self):
         super().setUp()
         self.maxDiff = None
+        account = models.Account.objects.get(pk=1)
+        test_helper.add_entity_permissions(
+            self.user,
+            [Permission.READ, Permission.AGENCY_SPEND_MARGIN, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE],
+            account,
+        )
 
     @mock.patch("redshiftapi.api_breakdowns.query_structure_with_stats")
     @mock.patch("redshiftapi.api_breakdowns.query")
@@ -179,18 +184,6 @@ class LegacyApiBreakdownQueryTest(StatsTestCase):
             api_breakdowns.should_use_publishers_view(
                 [constants.AD_GROUP, constants.CONTENT_AD, constants.PUBLISHER, constants.PLACEMENT]
             )
-        )
-
-
-@mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-class ApiBreakdownQueryTest(FutureStatsTestCase, LegacyApiBreakdownQueryTest):
-    def setUp(self):
-        super().setUp()
-        account = models.Account.objects.get(pk=1)
-        test_helper.add_entity_permissions(
-            self.user,
-            [Permission.READ, Permission.AGENCY_SPEND_MARGIN, Permission.MEDIA_COST_DATA_COST_LICENCE_FEE],
-            account,
         )
 
 

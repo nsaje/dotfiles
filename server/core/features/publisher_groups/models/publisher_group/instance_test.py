@@ -2,7 +2,6 @@ from unittest import mock
 
 import core.features.publisher_groups
 import core.models
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.exc import ValidationError
 from utils.magic_mixer import get_request_mock
@@ -10,7 +9,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherGroupInstanceTestCase(BaseTestCase):
+class PublisherGroupInstanceTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -376,7 +375,3 @@ class LegacyPublisherGroupInstanceTestCase(BaseTestCase):
             'This publisher group can not be deleted, because it is whitelisted in ad group "Mobile", used in 1 other locations.',
             str(err.exception),
         )
-
-
-class PublisherGroupInstanceTestCase(FutureBaseTestCase, LegacyPublisherGroupInstanceTestCase):
-    pass

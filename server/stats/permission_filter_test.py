@@ -4,7 +4,7 @@ from dash import campaign_goals
 from dash import models
 from dash.constants import Level
 from stats import permission_filter
-from stats.common.base_test_case import FutureStatsTestCase
+from stats.common.base_test_case import StatsTestCase
 from stats.helpers import Goals
 from utils import exc
 from utils import test_helper
@@ -13,7 +13,7 @@ from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class FilterTestCase(FutureStatsTestCase):
+class FilterTestCase(StatsTestCase):
     fixtures = ["test_augmenter"]
 
     def _generate_rows(self, fields):

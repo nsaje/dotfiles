@@ -8,7 +8,6 @@ from django.test import override_settings
 
 import zemauth.models
 from core.common.base_test_case import CoreTestCase
-from core.common.base_test_case import FutureCoreTestCase
 from dash import constants
 from dash import history_helpers
 from dash import models
@@ -23,7 +22,7 @@ from . import exceptions
 from . import service
 
 
-class LegacyPublisherGroupHelpersTestCase(CoreTestCase):
+class PublisherGroupHelpersTestCase(CoreTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def setUp(self):
@@ -502,11 +501,7 @@ class LegacyPublisherGroupHelpersTestCase(CoreTestCase):
         )
 
 
-class PublisherGroupHelpersTestCase(FutureCoreTestCase, LegacyPublisherGroupHelpersTestCase):
-    pass
-
-
-class PublisherGroupCSVHelpersTestCase(FutureCoreTestCase):
+class PublisherGroupCSVHelpersTestCase(CoreTestCase):
     fixtures = ["test_publishers.yaml"]
 
     def test_get_csv_content(self):
@@ -784,7 +779,7 @@ class PublisherGroupCSVHelpersTestCase(FutureCoreTestCase):
         )
 
 
-class LegacyGetOrCreatePublisherGroupTestCase(CoreTestCase):
+class GetOrCreatePublisherGroupTestCase(CoreTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -844,11 +839,7 @@ class LegacyGetOrCreatePublisherGroupTestCase(CoreTestCase):
             )
 
 
-class GetOrCreatePublisherGroupTestCase(FutureCoreTestCase, LegacyGetOrCreatePublisherGroupTestCase):
-    pass
-
-
-class AddPublisherGroupEntriesTestCase(FutureCoreTestCase):
+class AddPublisherGroupEntriesTestCase(CoreTestCase):
     def setUp(self):
         self.source = magic_mixer.blend(models.Source)
         self.request = magic_mixer.blend_request_user()
@@ -946,7 +937,7 @@ class AddPublisherGroupEntriesTestCase(FutureCoreTestCase):
         self.assertTrue(self.publisher_group_2.entries.filter(id=self.pge_3.id).exists())
 
 
-class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
+class PublisherGroupConnectionsTestCase(CoreTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -1097,6 +1088,8 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
         self.assertCountEqual(connections, [])
 
     def test_get_connections_foreign_entities_can_see_all_accounts(self):
+        self.request.user.entitypermission_set.all().delete()
+        test_helper.add_entity_permissions(self.request.user, [Permission.READ, Permission.WRITE], None)
         test_helper.add_permissions(self.request.user, ["can_see_all_accounts"])
 
         foreign_agency = magic_mixer.blend(models.Agency)
@@ -1204,10 +1197,3 @@ class LegacyPublisherGroupConnectionsTestCase(CoreTestCase):
                 connection_definitions.CONNECTION_TYPE_AD_GROUP_BLACKLIST,
                 self.ad_group.id,
             )
-
-
-class PublisherGroupConnectionsTestCase(FutureCoreTestCase, LegacyPublisherGroupConnectionsTestCase):
-    def test_get_connections_foreign_entities_can_see_all_accounts(self):
-        self.request.user.entitypermission_set.all().delete()
-        test_helper.add_entity_permissions(self.request.user, [Permission.READ, Permission.WRITE], None)
-        super().test_get_connections_foreign_entities_can_see_all_accounts()

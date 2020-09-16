@@ -3,7 +3,6 @@ import datetime
 import core.features.publisher_groups
 import core.models
 from utils import test_helper
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -11,7 +10,7 @@ from zemauth.features.entity_permission import Permission
 from . import constraints_helper
 
 
-class LegacyReportsConstraintsTestCase(BaseTestCase):
+class ReportsConstraintsTestCase(FutureBaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -121,7 +120,3 @@ class LegacyReportsConstraintsTestCase(BaseTestCase):
                 "show_archived": False,
             },
         )
-
-
-class ReportsConstraintsTestCase(FutureBaseTestCase, LegacyReportsConstraintsTestCase):
-    pass

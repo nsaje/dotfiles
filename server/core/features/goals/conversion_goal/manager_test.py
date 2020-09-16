@@ -1,7 +1,7 @@
 import core.models
 import dash.constants
 import dash.history_helpers
-from utils.base_test_case import BaseTestCase
+from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -9,7 +9,7 @@ from zemauth.features.entity_permission import Permission
 from .model import ConversionGoal
 
 
-class LegacyConversionGoalManagerTestCase(BaseTestCase):
+class ConversionGoalManagerTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)

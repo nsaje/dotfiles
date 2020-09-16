@@ -10,7 +10,6 @@ import core.models
 import dash.constants
 from core.features.bcm.exceptions import BudgetAmountExceededCreditAmount
 from utils import dates_helper
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.exc import MultipleValidationError
 from utils.exc import ValidationError
@@ -25,7 +24,7 @@ TODAY = datetime.datetime(2015, 12, 1).date()
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)
-class LegacyTestBudgetLineItemManager(BaseTestCase):
+class TestBudgetLineItemManager(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -302,11 +301,6 @@ class LegacyTestBudgetLineItemManager(BaseTestCase):
             self.assertEqual(
                 list(BudgetLineItem.objects.all().filter_present_and_future().order_by("id")), [item2, item3]
             )
-
-
-@patch.object(dates_helper, "local_today", lambda: TODAY)
-class TestBudgetLineItemManager(FutureBaseTestCase, LegacyTestBudgetLineItemManager):
-    pass
 
 
 @patch.object(dates_helper, "local_today", lambda: TODAY)

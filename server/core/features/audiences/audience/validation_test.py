@@ -1,6 +1,5 @@
 import core.models
 import dash.constants
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
@@ -9,7 +8,7 @@ from zemauth.features.entity_permission import Permission
 from . import exceptions
 
 
-class LegacyValidationTestCase(BaseTestCase):
+class ValidationTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -127,7 +126,3 @@ class LegacyValidationTestCase(BaseTestCase):
         ad_group.settings.update(self.request, exclusion_audience_targeting=[audience.id])
         with self.assertRaises(exceptions.CanNotArchive):
             audience.update(self.request, archived=True)
-
-
-class ValidationTestCase(FutureBaseTestCase, LegacyValidationTestCase):
-    pass

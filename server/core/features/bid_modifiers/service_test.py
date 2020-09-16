@@ -7,7 +7,6 @@ import dash.constants
 import dash.models
 from dash import history_helpers
 from dash.features import geolocation
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
@@ -45,7 +44,7 @@ def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
 
 
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
-class LegacyBidModifierServiceTestCase(BaseTestCase):
+class BidModifierServiceTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.ad_group = magic_mixer.blend(dash.models.AdGroup)
@@ -721,8 +720,3 @@ class LegacyBidModifierServiceTestCase(BaseTestCase):
             error_entires = [row for row in csv.DictReader(StringIO(csv_error_content))]
 
             self.assertEqual(error_entires, [result_entires[idx]])
-
-
-@mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
-class BidModifierServiceTestCase(FutureBaseTestCase, LegacyBidModifierServiceTestCase):
-    pass

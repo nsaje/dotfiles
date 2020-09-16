@@ -5,7 +5,6 @@ from django.conf import settings
 import dash.constants
 import dash.models
 from stats import constraints_helper
-from stats.common.base_test_case import FutureStatsTestCase
 from stats.common.base_test_case import StatsTestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -13,7 +12,7 @@ from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class LegacyPrepareConstraintsTestCase(StatsTestCase):
+class PrepareConstraintsTestCase(StatsTestCase):
     fixtures = ["test_api_breakdowns.yaml"]
 
     def test_prepare_all_accounts_constraints(self):
@@ -269,11 +268,7 @@ class LegacyPrepareConstraintsTestCase(StatsTestCase):
         )
 
 
-class PrepareConstraintsTestCase(FutureStatsTestCase, LegacyPrepareConstraintsTestCase):
-    pass
-
-
-class LegacyNarrowFilteredSourcesTestCase(StatsTestCase):
+class NarrowFilteredSourcesTestCase(StatsTestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ])
@@ -370,7 +365,3 @@ class LegacyNarrowFilteredSourcesTestCase(StatsTestCase):
             only_used_sources=True,
         )
         self.assertEqual(constraints["filtered_sources"], test_helper.QuerySetMatcher([self.sources[0]]))
-
-
-class NarrowFilteredSourcesTestCase(FutureStatsTestCase, LegacyNarrowFilteredSourcesTestCase):
-    pass

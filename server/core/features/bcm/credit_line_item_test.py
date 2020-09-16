@@ -8,7 +8,6 @@ import dash.constants
 import utils.exc
 import utils.test_helper
 from utils import test_helper
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
@@ -18,7 +17,7 @@ from .credit_line_item import CreditLineItem
 from .refund_line_item.model import RefundLineItem
 
 
-class LegacyTestCreditLineItemManager(BaseTestCase):
+class TestCreditLineItemManager(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -44,11 +43,7 @@ class LegacyTestCreditLineItemManager(BaseTestCase):
         self.assertEqual(item.service_fee, Decimal("0.11"))
 
 
-class TestCreditLineItemManager(FutureBaseTestCase, LegacyTestCreditLineItemManager):
-    pass
-
-
-class LegacyTestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
+class TestCreditLineItemValidateLicenseServiceFee(FutureBaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["can_see_service_fee"])
         self.request = get_request_mock(self.user)
@@ -119,13 +114,7 @@ class LegacyTestCreditLineItemValidateLicenseServiceFee(BaseTestCase):
         self.assertEqual(Decimal("0.1"), self.item.service_fee)
 
 
-class TestCreditLineItemValidateLicenseServiceFee(
-    FutureBaseTestCase, LegacyTestCreditLineItemValidateLicenseServiceFee
-):
-    pass
-
-
-class LegacyTestCreditLineItemQuerySetFilterOverlapping(BaseTestCase):
+class TestCreditLineItemQuerySetFilterOverlapping(FutureBaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         request = get_request_mock(self.user)
@@ -188,13 +177,7 @@ class LegacyTestCreditLineItemQuerySetFilterOverlapping(BaseTestCase):
         )
 
 
-class TestCreditLineItemQuerySetFilterOverlapping(
-    FutureBaseTestCase, LegacyTestCreditLineItemQuerySetFilterOverlapping
-):
-    pass
-
-
-class LegacyTestCreditLineItemAmounts(BaseTestCase):
+class TestCreditLineItemAmounts(FutureBaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
@@ -221,11 +204,7 @@ class LegacyTestCreditLineItemAmounts(BaseTestCase):
         self.assertEqual(self.item.get_available_amount(), self.base_amount + refund.amount)
 
 
-class TestCreditLineItemAmounts(FutureBaseTestCase, LegacyTestCreditLineItemAmounts):
-    pass
-
-
-class LegacyTestCreditLineItemAgency(BaseTestCase):
+class TestCreditLineItemAgency(FutureBaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
@@ -300,11 +279,7 @@ class LegacyTestCreditLineItemAgency(BaseTestCase):
             credit.update(self.request, agency=agency_two, account=None)
 
 
-class TestCreditLineItemAgency(FutureBaseTestCase, LegacyTestCreditLineItemAgency):
-    pass
-
-
-class LegacyTestCreditLineItemAccount(BaseTestCase):
+class TestCreditLineItemAccount(FutureBaseTestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
         self.request = get_request_mock(self.user)
@@ -367,7 +342,3 @@ class LegacyTestCreditLineItemAccount(BaseTestCase):
 
         with self.assertRaises(ValidationError):
             credit.update(self.request, agency=None, account=account_two)
-
-
-class TestCreditLineItemAccount(FutureBaseTestCase, LegacyTestCreditLineItemAccount):
-    pass

@@ -3,14 +3,13 @@ import mock
 import core.features.audiences
 import core.models
 import dash.constants
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyInstanceTestCase(BaseTestCase):
+class InstanceTestCase(FutureBaseTestCase):
     def setUp(self):
         super().setUp()
         self.request = get_request_mock(self.user)
@@ -90,7 +89,3 @@ class LegacyInstanceTestCase(BaseTestCase):
         self.assertTrue(audience.archived)
         audience.update(self.request, archived=False)
         self.assertFalse(audience.archived)
-
-
-class InstanceTestCase(FutureBaseTestCase, LegacyInstanceTestCase):
-    pass
