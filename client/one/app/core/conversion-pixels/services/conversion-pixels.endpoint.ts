@@ -24,9 +24,7 @@ export class ConversionPixelsEndpoint {
         const params = {accountId};
 
         return this.http
-            .get<ApiResponse<ConversionPixel[]>>(request.url, {
-                params: params,
-            })
+            .get<ApiResponse<ConversionPixel[]>>(request.url, {params})
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
@@ -61,9 +59,7 @@ export class ConversionPixelsEndpoint {
         };
 
         return this.http
-            .post<ApiResponse<ConversionPixel>>(request.url, {
-                data: data,
-            })
+            .post<ApiResponse<ConversionPixel>>(request.url, data)
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {

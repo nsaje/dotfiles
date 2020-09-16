@@ -6,7 +6,7 @@ class ConversionPixelSerializer(restapi.conversion_pixel.v1.serializers.Conversi
 
 
 class ConversionPixelCreateSerializer(restapi.conversion_pixel.v1.serializers.ConversionPixelCreateSerializer):
-    pass
+    account_id = restapi.serializers.fields.IdField(required=True)
 
 
 class ConversionPixelQueryParams(
