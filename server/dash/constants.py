@@ -2360,6 +2360,14 @@ class Environment(ConstantBase):
     _VALUES.update({UNKNOWN: "Unknown"})
 
 
+class ConnectionType(ConstantBase):
+    UNKNOWN = None
+    WIFI = "wifi"
+    CELLULAR = "cellular"
+
+    _VALUES = {UNKNOWN: "Unknown", WIFI: "Wi-Fi", CELLULAR: "Cellular"}
+
+
 class PlacementType(ConstantBase):
     UNDEFINED = None
     IN_FEED = 1

@@ -132,6 +132,7 @@ class AdGroupsView(K1APIView):
                 "target_os": ad_group.settings.target_os,
                 "target_browsers": ad_group.settings.target_browsers,
                 "exclusion_target_browsers": ad_group.settings.exclusion_target_browsers,
+                "target_connection_types": ad_group.settings.target_connection_types,
                 "target_placements": ad_group.settings.target_environments,  # TODO: plac: remove after k1 merge
                 "target_environments": ad_group.settings.target_environments,
                 "target_regions": ad_group.settings.target_regions,

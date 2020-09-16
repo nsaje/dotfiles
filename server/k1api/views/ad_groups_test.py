@@ -72,6 +72,7 @@ class AdGroupsTest(K1APIBaseTest):
                 "target_os": None,
                 "target_browsers": None,
                 "exclusion_target_browsers": None,
+                "target_connection_types": None,
                 "target_placements": None,  # TODO: plac: remove after k1 merge
                 "target_environments": None,
                 "iab_category": "IAB24",
@@ -166,6 +167,7 @@ class AdGroupsTest(K1APIBaseTest):
                 "target_os": None,
                 "target_browsers": None,
                 "exclusion_target_browsers": None,
+                "target_connection_types": None,
                 "target_placements": None,  # TODO: plac: remove after k1 merge
                 "target_environments": None,
                 "iab_category": "IAB24",

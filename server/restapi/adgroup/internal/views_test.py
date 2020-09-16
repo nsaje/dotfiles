@@ -554,6 +554,52 @@ class AdGroupViewSetTestCase(RESTAPITestCase):
             {"family": dash.constants.BrowserFamily.EDGE}, resp_json["data"]["targeting"]["browsers"]["excluded"][0]
         )
 
+    def test_put_adgroups_invalid_target_connection_types(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "Demo adgroup"
+
+        put_data["targeting"]["connectionTypes"] = ["abcd"]
+
+        r = self.client.put(
+            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        self.assertResponseError(r, "ValidationError")
+
+    def test_put_adgroups_valid_target_connection_types(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE], agency=agency)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+        put_data = resp_json["data"].copy()
+        put_data["name"] = "Demo adgroup"
+
+        put_data["targeting"]["connectionTypes"] = [
+            dash.constants.ConnectionType.get_name(dash.constants.ConnectionType.WIFI)
+        ]
+
+        r = self.client.put(
+            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(
+            [dash.constants.ConnectionType.get_name(dash.constants.ConnectionType.WIFI)],
+            resp_json["data"]["targeting"]["connectionTypes"],
+        )
+
 
 class CloneAdGroupViewTestCase(RESTAPITestCase):
     def setUp(self):
