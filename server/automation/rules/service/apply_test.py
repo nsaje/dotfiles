@@ -21,68 +21,62 @@ from .actions import ValueChangeData
 class ApplyTest(TestCase):
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_on_cooldown(self, cooldown_mock, conditions_mock, apply_mock):
+    def test_apply_rule_on_cooldown(self, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
+        rule = magic_mixer.blend(Rule, cooldown=24, target_type=constants.TargetType.PUBLISHER)
+        RuleTriggerHistory.objects.create(rule=rule, ad_group=ad_group, target="publisher1.com__234")
+        RuleTriggerHistory.objects.create(rule=rule, ad_group=ad_group, target="publisher2.com__345")
+        RuleTriggerHistory.objects.create(rule=rule, ad_group=ad_group, target="publisher3.com__456")
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
-        cooldown_mock.return_value = True
         conditions_mock.return_value = True
 
         changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(condition_values)
 
-        self.assertEqual(3, cooldown_mock.call_count)
         conditions_mock.assert_not_called()
         apply_mock.assert_not_called()
-        self.assertFalse(RuleTriggerHistory.objects.exists())
 
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_does_not_meet_conditions(self, cooldown_mock, conditions_mock, apply_mock):
+    def test_apply_rule_does_not_meet_conditions(self, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, cooldown=24)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
-        cooldown_mock.return_value = False
         conditions_mock.return_value = False
 
         changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(condition_values)
 
-        self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         apply_mock.assert_not_called()
         self.assertFalse(RuleTriggerHistory.objects.exists())
 
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_ad_archived(self, cooldown_mock, conditions_mock):
+    def test_apply_rule_ad_archived(self, conditions_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         ad1 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
         ad2 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
         ad3 = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group, archived=True)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF, cooldown=24
+        )
         stats = {str(ad1.id): {}, str(ad2.id): {}, str(ad3.id): {}}
 
-        cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
         changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertFalse(changes)
         self.assertFalse(condition_values)
 
-        self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertFalse(RuleTriggerHistory.objects.exists())
 
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_archived(self, cooldown_mock, conditions_mock):
+    def test_apply_rule_archived(self, conditions_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, archived=True)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
@@ -91,14 +85,14 @@ class ApplyTest(TestCase):
             apply.apply_rule(rule, ad_group, stats, {}, {}, {})
 
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_invalid_target_error(self, cooldown_mock, conditions_mock):
+    def test_apply_rule_invalid_target_error(self, conditions_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
         ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF)
+        rule = magic_mixer.blend(
+            Rule, target_type=constants.TargetType.AD, action_type=constants.ActionType.TURN_OFF, cooldown=24
+        )
         stats = {"-1": {}, "-2": {}, str(ad.id): {}}
 
-        cooldown_mock.return_value = False
         conditions_mock.return_value = True
 
         with self.assertRaisesRegex(Exception, "Invalid ad turn off target"):
@@ -108,13 +102,11 @@ class ApplyTest(TestCase):
 
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_no_changes(self, cooldown_mock, conditions_mock, apply_mock):
+    def test_apply_rule_no_changes(self, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, cooldown=24)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
-        cooldown_mock.return_value = False
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=1.0)
 
@@ -122,27 +114,23 @@ class ApplyTest(TestCase):
         self.assertFalse(changes)
         self.assertFalse(condition_values)
 
-        self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertEqual(3, apply_mock.call_count)
         self.assertFalse(RuleTriggerHistory.objects.exists())
 
     @mock.patch("automation.rules.service.apply._apply_action")
     @mock.patch("automation.rules.service.apply._meets_all_conditions")
-    @mock.patch("automation.rules.service.apply._is_on_cooldown")
-    def test_apply_rule_write_trigger_history(self, cooldown_mock, conditions_mock, apply_mock):
+    def test_apply_rule_write_trigger_history(self, conditions_mock, apply_mock):
         ad_group = magic_mixer.blend(core.models.AdGroup)
-        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER, cooldown=24)
         stats = {"publisher1.com__234": {}, "publisher2.com__345": {}, "publisher3.com__456": {}}
 
-        cooldown_mock.return_value = False
         conditions_mock.return_value = True
         apply_mock.return_value = ValueChangeData(target="test", old_value=1.0, new_value=2.0)
 
         changes, condition_values = apply.apply_rule(rule, ad_group, stats, {}, {}, {})
         self.assertEqual(3, len(changes))
 
-        self.assertEqual(3, cooldown_mock.call_count)
         self.assertEqual(3, conditions_mock.call_count)
         self.assertEqual(3, apply_mock.call_count)
         self.assertEqual(3, RuleTriggerHistory.objects.all().count())
@@ -228,7 +216,7 @@ class ApplyTest(TestCase):
         )
 
     @mock.patch("utils.dates_helper.utc_now")
-    def test_is_on_cooldown(self, mock_now):
+    def test_prefetch_targets_on_cooldown(self, mock_now):
         mock_now.return_value = datetime.datetime.now()
 
         ad_group = magic_mixer.blend(core.models.AdGroup)
@@ -248,13 +236,13 @@ class ApplyTest(TestCase):
         mock_utc_now = dates_helper.local_to_utc_time(local_midnight_in_2_days)
 
         mock_now.return_value = mock_utc_now - datetime.timedelta(minutes=1)
-        self.assertTrue(apply._is_on_cooldown(target, rule, ad_group))
+        self.assertTrue(target in apply._prefetch_targets_on_cooldown(rule, ad_group))
 
         mock_now.return_value = mock_utc_now
-        self.assertFalse(apply._is_on_cooldown(target, rule, ad_group))
+        self.assertFalse(target in apply._prefetch_targets_on_cooldown(rule, ad_group))
 
     def test_meet_all_conditions_left_operand_stats(self):
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         condition_1 = magic_mixer.blend(
             RuleCondition,
             rule=rule,
@@ -431,7 +419,7 @@ class ApplyTest(TestCase):
         self.assertFalse(apply._meets_all_conditions(computed))
 
     def test_meet_all_conditions_invalid_operator(self):
-        rule = magic_mixer.blend(Rule)
+        rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
         magic_mixer.blend(
             RuleCondition,
             rule=rule,
@@ -494,7 +482,7 @@ class ApplyTest(TestCase):
 
 class SettingsOperandTest(TestCase):
     def setUp(self):
-        self.rule = magic_mixer.blend(Rule)
+        self.rule = magic_mixer.blend(Rule, target_type=constants.TargetType.PUBLISHER)
 
     def test_left_operand_number_type(self):
         RuleCondition.objects.create(

@@ -5,6 +5,7 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Sequence
+from typing import Set
 from typing import Tuple
 from typing import Union
 
@@ -63,9 +64,9 @@ def apply_rule(
 
     changes = []
     per_target_condition_values = {}
+    targets_on_cooldown = _prefetch_targets_on_cooldown(rule, ad_group)
     for target, target_stats in ad_group_stats.items():
-
-        if _is_on_cooldown(target, rule, ad_group):
+        if target in targets_on_cooldown:
             continue
 
         settings_dict = _construct_target_settings_dict(
@@ -88,7 +89,7 @@ def apply_rule(
     return changes, per_target_condition_values
 
 
-def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGroup) -> bool:
+def _prefetch_targets_on_cooldown(rule: models.Rule, ad_group: core.models.AdGroup) -> Set[str]:
     # NOTE: this function assumes rules are run daily. If a rule has 24h cooldown, it should
     # trigger after 23h as well if it's a new date. This is done to account for the job not
     # running at exact same time every day because of materialization. It does not support
@@ -101,9 +102,11 @@ def _is_on_cooldown(target: str, rule: models.Rule, ad_group: core.models.AdGrou
     local_from_dt = local_midnight - datetime.timedelta(days=days_to_check)
     utc_from_dt = utils.dates_helper.local_to_utc_time(local_from_dt)
 
-    return models.RuleTriggerHistory.objects.filter(
-        target=target, rule=rule, ad_group=ad_group, triggered_dt__gte=utc_from_dt
-    ).exists()
+    return set(
+        models.RuleTriggerHistory.objects.filter(
+            rule=rule, ad_group=ad_group, triggered_dt__gte=utc_from_dt
+        ).values_list("target", flat=True)
+    )
 
 
 def _construct_target_settings_dict(
