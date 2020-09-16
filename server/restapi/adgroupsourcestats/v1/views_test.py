@@ -5,14 +5,13 @@ from django.urls import reverse
 
 import core.models
 import core.models.ad_group
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyRealtimestatsViewsTest(RESTAPITestCase):
+class RealtimestatsViewsTest(RESTAPITestCase):
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats")
     def test_adgroup_sources_realtimestats(self, mock_get):
         test_helper.remove_permissions(self.user, permissions=["can_use_restapi"])
@@ -36,7 +35,3 @@ class LegacyRealtimestatsViewsTest(RESTAPITestCase):
         self.assertEqual(resp_json["data"], expected)
 
         mock_get.assert_called_with(ad_group, use_local_currency=True)
-
-
-class RealtimestatsViewsTest(FutureRESTAPITestCase, LegacyRealtimestatsViewsTest):
-    pass

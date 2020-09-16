@@ -4,16 +4,11 @@ from django.test import override_settings
 from rest_framework.test import APIClient
 
 from utils import json_helper
-from utils.base_test_case import BaseTestCase
 from utils.base_test_case import FutureBaseTestCase
 
 
 @override_settings(R1_DEMO_MODE=True)
-class RESTAPITestCase(BaseTestCase):
-    """
-    RESTAPITestCase will be replaced with FutureRESTAPITestCase
-    after User Roles will be released.
-    """
+class RESTAPITestCase(FutureBaseTestCase):
 
     permissions = [
         "can_use_restapi",
@@ -68,8 +63,3 @@ class RESTAPITestCase(BaseTestCase):
     @staticmethod
     def normalize(d):
         return json.loads(json.dumps(d, cls=json_helper.JSONEncoder))
-
-
-@override_settings(R1_DEMO_MODE=True)
-class FutureRESTAPITestCase(FutureBaseTestCase, RESTAPITestCase):
-    pass

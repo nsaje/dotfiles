@@ -4,13 +4,12 @@ from django.urls import reverse
 import core.models
 import dash.constants
 import utils.test_helper
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAccountViewSetTest(RESTAPITestCase):
+class AccountViewSetTest(RESTAPITestCase):
     @classmethod
     def account_repr(
         cls,
@@ -568,7 +567,3 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         self.assertEqual("http://icon.url.com", account.settings.default_icon.origin_url)
 
         mock_s3_upload.assert_not_called()
-
-
-class AccountViewSetTest(FutureRESTAPITestCase, LegacyAccountViewSetTest):
-    pass

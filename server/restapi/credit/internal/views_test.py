@@ -8,13 +8,12 @@ import core.features.bcm
 import core.models
 import dash.constants
 import utils.test_helper
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCreditViewSetTest(RESTAPITestCase):
+class CreditViewSetTest(RESTAPITestCase):
     def test_get(self):
         agency = magic_mixer.blend(core.models.Agency)
         account = self.mix_account(self.user, permissions=[Permission.READ], agency=agency)
@@ -694,8 +693,6 @@ class LegacyCreditViewSetTest(RESTAPITestCase):
         resp_json_budgets_ids = sorted([int(item.get("id")) for item in resp_json["data"]])
         self.assertEqual(budgets_ids, resp_json_budgets_ids)
 
-
-class CreditViewSetTest(FutureRESTAPITestCase, LegacyCreditViewSetTest):
     @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_post_no_fee_permissions(self, mock_log_to_slack):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])

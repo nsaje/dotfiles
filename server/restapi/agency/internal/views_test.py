@@ -1,14 +1,13 @@
 from django.urls import reverse
 
 import core.models
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAgencyViewSetTest(RESTAPITestCase):
+class AgencyViewSetTest(RESTAPITestCase):
     def test_agency_list(self):
         agency_read_access = self.mix_agency(self.user, permissions=[Permission.READ])
 
@@ -42,7 +41,3 @@ class LegacyAgencyViewSetTest(RESTAPITestCase):
         resp_json_ids = [int(x.get("id")) for x in resp_json["data"]]
         for agency in agencies:
             self.assertTrue(agency.id in resp_json_ids)
-
-
-class AgencyViewSetTest(FutureRESTAPITestCase, LegacyAgencyViewSetTest):
-    pass

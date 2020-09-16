@@ -16,13 +16,12 @@ import restapi.serializers.targeting
 import utils.test_helper
 from automation import autopilot
 from dash import constants
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupViewSetTest(RESTAPITestCase):
+class AdGroupViewSetTest(RESTAPITestCase):
 
     expected_none_date_output = None
     expected_none_decimal_output = ""
@@ -1394,7 +1393,3 @@ class LegacyAdGroupViewSetTest(RESTAPITestCase):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(resp_json["data"]["targeting"]["language"]["matchingEnabled"], True)
         self.validate_against_db(resp_json["data"])
-
-
-class AdGroupViewSetTest(FutureRESTAPITestCase, LegacyAdGroupViewSetTest):
-    pass

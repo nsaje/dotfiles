@@ -3,11 +3,11 @@ import json
 from django.urls import reverse
 from mock import patch
 
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 
 
-class SegmentReachViewSetTestCase(FutureRESTAPITestCase):
+class SegmentReachViewSetTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         test_helper.add_permissions(self.user, permissions=["can_use_bluekai_targeting", "can_use_restapi"])

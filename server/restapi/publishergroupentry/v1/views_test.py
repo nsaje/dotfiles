@@ -3,24 +3,23 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 import core.features.publisher_groups
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from restapi.publishergroupentry.v1 import views
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
+from utils.test_helper import add_permissions
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherGroupEntryTest(RESTAPITestCase):
+class PublisherGroupEntryTest(RESTAPITestCase):
     def setUp(self):
-        permissions = [
-            "can_use_restapi",
-            "can_access_additional_outbrain_publisher_settings",
-            "can_use_placement_targeting",
-        ]
+        super().setUp()
+        add_permissions(
+            self.user,
+            ["can_use_restapi", "can_access_additional_outbrain_publisher_settings", "can_use_placement_targeting"],
+        )
 
         self.client = APIClient()
-        self.user = magic_mixer.blend_user(permissions=permissions)
         self.client.force_authenticate(user=self.user)
 
         self.source_one = magic_mixer.blend(core.models.Source)
@@ -395,7 +394,3 @@ class LegacyPublisherGroupEntryTest(RESTAPITestCase):
         # validate outbrainPublisherId was not changed
         pge.refresh_from_db()
         self.assertEqual(pge.outbrain_publisher_id, "")
-
-
-class PublisherGroupEntryTest(FutureRESTAPITestCase, LegacyPublisherGroupEntryTest):
-    pass

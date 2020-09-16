@@ -14,9 +14,9 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyPublisherBlacklistTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class PublisherBlacklistTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyPublisherBlacklistTest, self).setUp()
+        super(PublisherBlacklistTest, self).setUp()
         self.test_request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source)
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -399,7 +399,3 @@ class LegacyPublisherBlacklistTest(restapi.common.views_base_test_case.RESTAPITe
             new_bm_list.append(new_bm)
 
         return new_bm_list
-
-
-class PublisherBlacklistTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyPublisherBlacklistTest):
-    pass

@@ -4,13 +4,12 @@ from django.urls import reverse
 
 from core.features.videoassets import constants
 from core.features.videoassets import models
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyVideoAssetTestCase(RESTAPITestCase):
+class VideoAssetTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -143,7 +142,3 @@ class LegacyVideoAssetTestCase(RESTAPITestCase):
             format="json",
         )
         r = self.assertResponseError(r, "ValidationError")
-
-
-class VideoAssetTestCase(FutureRESTAPITestCase, LegacyVideoAssetTestCase):
-    pass

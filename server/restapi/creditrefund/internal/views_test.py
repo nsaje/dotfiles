@@ -8,13 +8,12 @@ import core.features.bcm.refund_line_item
 import core.models
 import dash.constants
 import utils.test_helper
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCreditRefundViewSetTest(RESTAPITestCase):
+class CreditRefundViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -401,7 +400,3 @@ class LegacyCreditRefundViewSetTest(RESTAPITestCase):
             "Refund account {} is not the same as credit account.".format(account_two.name),
             resp_json["details"]["accountId"],
         )
-
-
-class CreditRefundViewSetTest(FutureRESTAPITestCase, LegacyCreditRefundViewSetTest):
-    pass

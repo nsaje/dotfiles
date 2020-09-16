@@ -8,14 +8,13 @@ import core.models
 import dash.constants
 import utils.test_helper
 import zemauth
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAccountViewSetTest(RESTAPITestCase):
+class AccountViewSetTest(RESTAPITestCase):
     @classmethod
     def account_repr(
         cls,
@@ -1311,7 +1310,3 @@ class LegacyAccountViewSetTest(RESTAPITestCase):
         r = self.client.get(reverse("restapi.account.internal:accounts_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(resp_json["data"], [])
-
-
-class AccountViewSetTest(FutureRESTAPITestCase, LegacyAccountViewSetTest):
-    pass

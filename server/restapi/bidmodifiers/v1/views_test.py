@@ -12,9 +12,9 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyBidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class BidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyBidModifierViewSetTest, self).setUp()
+        super(BidModifierViewSetTest, self).setUp()
         self.request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -1008,13 +1008,9 @@ class LegacyBidModifierViewSetTest(restapi.common.views_base_test_case.RESTAPITe
         return self.client.get(reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": ad_group_id, "pk": pk}))
 
 
-class BidModifierViewSetTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierViewSetTest):
-    pass
-
-
-class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class NoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyNoPermissionTest, self).setUp()
+        super(NoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
 
     def test_list(self):
@@ -1062,7 +1058,3 @@ class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase
         self.assertEqual(
             result, {"errorCode": "PermissionDenied", "details": "You do not have permission to perform this action."}
         )
-
-
-class NoPermissionTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyNoPermissionTest):
-    pass

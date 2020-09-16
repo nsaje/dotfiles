@@ -15,9 +15,9 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class BidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyBidModifierCSVTest, self).setUp()
+        super(BidModifierCSVTest, self).setUp()
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="source_slug")
@@ -1093,13 +1093,9 @@ class LegacyBidModifierCSVTest(restapi.common.views_base_test_case.RESTAPITestCa
         )
 
 
-class BidModifierCSVTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierCSVTest):
-    pass
-
-
-class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class NoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyNoPermissionTest, self).setUp()
+        super(NoPermissionTest, self).setUp()
         test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
 
     def test_download_modifiers(self):
@@ -1193,13 +1189,9 @@ class LegacyNoPermissionTest(restapi.common.views_base_test_case.RESTAPITestCase
         )
 
 
-class NoPermissionTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyNoPermissionTest):
-    pass
-
-
-class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class BidModifierTypeSummariesTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
-        super(LegacyBidModifierTypeSummariesTest, self).setUp()
+        super(BidModifierTypeSummariesTest, self).setUp()
         account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
         bid_modifiers.service.set_bulk(
@@ -1234,9 +1226,3 @@ class LegacyBidModifierTypeSummariesTest(restapi.common.views_base_test_case.RES
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"errorCode": "MissingDataError", "details": "Ad Group does not exist"})
-
-
-class BidModifierTypeSummariesTest(
-    restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyBidModifierTypeSummariesTest
-):
-    pass

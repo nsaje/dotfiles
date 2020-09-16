@@ -6,13 +6,13 @@ from django.utils.http import urlencode
 import core.models
 import zemauth.models
 import zemauth.models.user.constants
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
+from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class UserViewSetTestBase(FutureRESTAPITestCase):
+class UserViewSetTestBase(RESTAPITestCase):
     def _setup_test_users(self):
         calling_user: zemauth.models.User = self.user
         requested_user: zemauth.models.User = magic_mixer.blend_user(permissions=["fea_use_entity_permission"])
@@ -1095,7 +1095,7 @@ class UserViewSetResendEmail(UserViewSetTestBase):
         self._assert_error(r, 404, "MissingDataError", "User does not exist")
 
 
-class CurrentUserViewSetTestCase(FutureRESTAPITestCase):
+class CurrentUserViewSetTestCase(RESTAPITestCase):
     permissions = []
 
     def setUp(self):

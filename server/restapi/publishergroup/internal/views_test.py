@@ -7,14 +7,13 @@ import core.features.history
 import core.features.publisher_groups
 import core.models
 import dash.constants
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 from zemauth.models import User
 
 
-class LegacyPublisherGroupTest(RESTAPITestCase):
+class PublisherGroupTest(RESTAPITestCase):
     def test_list(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ])
         account = magic_mixer.blend(core.models.Account, agency=agency)
@@ -219,11 +218,7 @@ class LegacyPublisherGroupTest(RESTAPITestCase):
         self.assertEqual(r.status_code, 404)
 
 
-class PublisherGroupTest(FutureRESTAPITestCase, LegacyPublisherGroupTest):
-    pass
-
-
-class LegacyAddToPublisherGroupTest(RESTAPITestCase):
+class AddToPublisherGroupTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.source = magic_mixer.blend(core.models.Source)
@@ -602,11 +597,7 @@ class LegacyAddToPublisherGroupTest(RESTAPITestCase):
         self.assertTrue("Added the following publishers globally" in history_entries[0].changes_text)
 
 
-class AddToPublisherGroupTest(FutureRESTAPITestCase, LegacyAddToPublisherGroupTest):
-    pass
-
-
-class LegacyPublisherGroupConnectionsTest(RESTAPITestCase):
+class PublisherGroupConnectionsTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -744,7 +735,3 @@ class LegacyPublisherGroupConnectionsTest(RESTAPITestCase):
         self.assertEqual(r.status_code, rest_framework.status.HTTP_400_BAD_REQUEST)
         response = self.assertResponseError(r, "ValidationError")
         self.assertEqual(response["details"], {"publisherGroupId": ["Publisher group does not exist"]})
-
-
-class PublisherGroupConnectionsTest(FutureRESTAPITestCase, LegacyPublisherGroupConnectionsTest):
-    pass

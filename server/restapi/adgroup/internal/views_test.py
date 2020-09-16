@@ -8,14 +8,13 @@ import core.models
 import dash.constants
 import dash.features.cloneadgroup
 from core.features import bid_modifiers
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
+class AdGroupViewSetTestCase(RESTAPITestCase):
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -556,11 +555,7 @@ class LegacyAdGroupViewSetTestCase(RESTAPITestCase):
         )
 
 
-class AdGroupViewSetTestCase(FutureRESTAPITestCase, LegacyAdGroupViewSetTestCase):
-    pass
-
-
-class LegacyCloneAdGroupViewTestCase(RESTAPITestCase):
+class CloneAdGroupViewTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -588,7 +583,3 @@ class LegacyCloneAdGroupViewTestCase(RESTAPITestCase):
         r = self.client.post(reverse("restapi.adgroup.internal:adgroups_clone"), data=data, format="json")
         r = self.assertResponseValid(r)
         self.assertDictContainsSubset({"id": str(cloned_ad_group.pk)}, r["data"])
-
-
-class CloneAdGroupViewTestCase(FutureRESTAPITestCase, LegacyCloneAdGroupViewTestCase):
-    pass

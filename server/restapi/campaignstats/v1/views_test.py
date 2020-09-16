@@ -5,13 +5,12 @@ from django.urls import reverse
 
 import core.models
 import redshiftapi.api_quickstats
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignStatsTest(RESTAPITestCase):
+class CampaignStatsTest(RESTAPITestCase):
     @mock.patch.object(redshiftapi.api_quickstats, "query_campaign", autospec=True)
     def test_get(self, mock_query_campaign):
         mock_query_campaign.return_value = {
@@ -57,7 +56,3 @@ class LegacyCampaignStatsTest(RESTAPITestCase):
             {"from": today, "to": today},
         )
         self.assertResponseError(r, "MissingDataError")
-
-
-class CampaignStatsTest(FutureRESTAPITestCase, LegacyCampaignStatsTest):
-    pass

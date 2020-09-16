@@ -6,14 +6,13 @@ from django.urls import reverse
 import dash.constants
 import dash.models
 import dash.views.helpers
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
+class CampaignBudgetViewSetTest(RESTAPITestCase):
     def test_get(self):
         agency = self.mix_agency(
             self.user,
@@ -111,7 +110,3 @@ class LegacyCampaignBudgetViewSetTest(RESTAPITestCase):
         self.assertTrue("margin" not in fields)
         self.assertTrue("licenseFee" not in fields)
         self.assertTrue("serviceFee" not in fields)
-
-
-class CampaignBudgetViewSetTest(FutureRESTAPITestCase, LegacyCampaignBudgetViewSetTest):
-    pass

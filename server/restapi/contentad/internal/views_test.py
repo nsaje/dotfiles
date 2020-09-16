@@ -4,13 +4,12 @@ from django.urls import reverse
 import core.models
 import dash.constants
 import dash.features.clonecontentad
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCloneContentAdsViewSetTestCase(RESTAPITestCase):
+class CloneContentAdsViewSetTestCase(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         self.account = self.mix_account(self.user, permissions=[Permission.READ, Permission.WRITE])
@@ -44,7 +43,3 @@ class LegacyCloneContentAdsViewSetTestCase(RESTAPITestCase):
         response = self.assertResponseValid(response)
 
         self.assertDictContainsSubset({"id": str(batch_clone.pk)}, response["data"]["destinationBatch"])
-
-
-class CloneContentAdsViewSetTestCase(FutureRESTAPITestCase, LegacyCloneContentAdsViewSetTestCase):
-    pass

@@ -2,13 +2,12 @@ from django.urls import reverse
 
 import core.models
 import utils.test_helper
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyConversionPixelViewSetTest(RESTAPITestCase):
+class ConversionPixelViewSetTest(RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(self.user, ["can_promote_additional_pixel", "can_redirect_pixels"])
@@ -184,7 +183,3 @@ class LegacyConversionPixelViewSetTest(RESTAPITestCase):
         self.assertTrue(resp_json["data"]["additionalPixel"])
         self.assertEqual("https://test.com", resp_json["data"]["redirectUrl"])
         self.assertEqual("pixel name notes", resp_json["data"]["notes"])
-
-
-class ConversionPixelViewSetTest(FutureRESTAPITestCase, LegacyConversionPixelViewSetTest):
-    pass

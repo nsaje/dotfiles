@@ -16,7 +16,7 @@ from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class RuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(self.user, ["fea_can_create_automation_rules"])
@@ -390,11 +390,7 @@ class LegacyRuleViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase)
         self.validate_against_db(result["data"])
 
 
-class RuleViewSetTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyRuleViewSetTest):
-    pass
-
-
-class LegacyRuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
+class RuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITestCase):
     def test_list_account_rules_histories(self):
         agency = self.mix_agency(self.user, permissions=[Permission.READ, Permission.WRITE])
         account_on_agency = magic_mixer.blend(core.models.Account, agency=agency)
@@ -550,7 +546,3 @@ class LegacyRuleHistoryViewSetTest(restapi.common.views_base_test_case.RESTAPITe
         response_ids = [int(item.get("id")) for item in result["data"]]
         expected_response_ids = [item.id for item in rule_histories]
         self.assertEqual(sorted(response_ids), sorted(expected_response_ids))
-
-
-class RuleHistoryViewSetTest(restapi.common.views_base_test_case.FutureRESTAPITestCase, LegacyRuleHistoryViewSetTest):
-    pass

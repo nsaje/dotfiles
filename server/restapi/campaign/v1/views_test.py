@@ -10,13 +10,12 @@ import utils.dates_helper
 import utils.test_helper
 from automation import autopilot
 from dash import constants
-from restapi.common.views_base_test_case import FutureRESTAPITestCase
 from restapi.common.views_base_test_case import RESTAPITestCase
 from utils.magic_mixer import magic_mixer
 from zemauth.features.entity_permission import Permission
 
 
-class LegacyCampaignViewSetTest(RESTAPITestCase):
+class CampaignViewSetTest(RESTAPITestCase):
     @classmethod
     def campaign_repr(
         cls,
@@ -525,7 +524,3 @@ class LegacyCampaignViewSetTest(RESTAPITestCase):
             format="json",
         )
         self.assertResponseError(r, "ValidationError")
-
-
-class CampaignViewSetTest(FutureRESTAPITestCase, LegacyCampaignViewSetTest):
-    pass
